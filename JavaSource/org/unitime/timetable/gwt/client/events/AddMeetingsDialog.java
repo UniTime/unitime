@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
+import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.events.StartEndTimeSelector.StartEndTime;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
@@ -129,14 +130,16 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	
 	private AsyncCallback<List<MeetingInterface>> iCallback;
 	private AcademicSessionProvider iSession;
+	private EventPropertiesProvider iProperties;
 	
 	
-	public AddMeetingsDialog(AcademicSessionProvider session, AsyncCallback<List<MeetingInterface>> callback) {
+	public AddMeetingsDialog(AcademicSessionProvider session, EventPropertiesProvider propeties, AsyncCallback<List<MeetingInterface>> callback) {
 		super(true, true);
 		setAnimationEnabled(false);
 		
 		iCallback = callback;
 		iSession = session;
+		iProperties = propeties;
 		
 		setText(MESSAGES.dialogAddMeetings());
 		setEscapeToHide(true);
@@ -178,6 +181,12 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 							AriaStatus.getInstance().setText(MESSAGES.errorNoMatchingRooms());
 						} else if (iDates.getSelectedDaysCount() > 0) {
 							iDatesHeader.clearMessage();
+							if (iProperties != null && iProperties.isTooEarly(getStartSlot(), getEndSlot())) {
+								iAvailabilityHeader.setWarningMessage(MESSAGES.warnMeetingTooEarly(TimeUtils.slot2time(getStartSlot()) + " - " + TimeUtils.slot2time(getEndSlot())));
+								AriaStatus.getInstance().setText(MESSAGES.warnMeetingTooEarly(TimeUtils.slot2aria(getStartSlot()) + " - " + TimeUtils.slot2aria(getEndSlot())));
+							} else {
+								iAvailabilityHeader.clearMessage();
+							}
 							RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(
 										getStartSlot(), getEndSlot(), getDates(), getRooms(), iEventId, iSession.getAcademicSessionId()
 									), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {

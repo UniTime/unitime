@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.hibernate.Query;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
@@ -338,6 +339,19 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 							conflict.setEndSlot(288);
 							meeting.addConflict(conflict);
 						}
+					}
+					int tooEarly = Integer.valueOf(ApplicationProperties.getProperty("unitime.event.tooEarly", "-1"));
+					if (tooEarly >= 0 && ((meeting.getStartSlot() > 0 && meeting.getStartSlot() <= tooEarly) || (meeting.getStartSlot() == 0 && meeting.getEndSlot() <= tooEarly))) {
+						MeetingConflictInterface conflict = new MeetingConflictInterface();
+						conflict.setName(MESSAGES.warnMeetingTooEarly(meeting.getAllocatedTime(CONSTANTS)));
+						conflict.setType(EventInterface.EventType.Message);
+						conflict.setMeetingDate(meeting.getMeetingDate());
+						conflict.setDayOfYear(meeting.getDayOfYear());
+						conflict.setStartOffset(0);
+						conflict.setEndOffset(0);
+						conflict.setStartSlot(0);
+						conflict.setEndSlot(288);
+						meeting.addConflict(conflict);
 					}
 				}
 			}

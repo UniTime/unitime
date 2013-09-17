@@ -225,6 +225,24 @@ public class UniTimeHeaderPanel extends Composite {
 		}
 	}
 	
+	public void setWarningMessage(String message) {
+		setWarningMessage(message, false);
+	}
+	
+	public void setWarningMessage(String message, boolean wrap) {
+		if (message == null || message.isEmpty()) {
+			clearMessage();
+		} else {
+			iLoadingImage.setVisible(false);
+			iMessage.setHTML(message);
+			iMessage.setStyleName("unitime-WarningMessage");
+			iMessage.setVisible(true);
+			iMessage.setWordWrap(wrap);
+			for (UniTimeHeaderPanel clone: iClones)
+				clone.setWarningMessage(message, wrap);
+		}
+	}
+	
 	public void setMessage(String message) {
 		if (message == null || message.isEmpty()) {
 			clearMessage();

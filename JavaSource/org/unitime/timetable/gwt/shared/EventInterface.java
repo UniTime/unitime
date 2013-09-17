@@ -1696,6 +1696,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Boolean iEmailConfirmation = null;
 		private boolean iCanSaveFilterDefaults = false;
 		private Map<String, String> iFilterDefaults = null;
+		private Integer iTooEarlySlot = null;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -1759,6 +1760,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String getFilterDefault(String name) {
 			return (iFilterDefaults == null ? null : iFilterDefaults.get(name));
 		}
+		
+		public boolean hasTooEarlySlot() { return iTooEarlySlot != null && iTooEarlySlot > 0; }
+		public void setTooEarlySlot(int slot) { iTooEarlySlot = slot; }
+		public Integer getTooEarlySlot() { return iTooEarlySlot; }
 	}
 	
 	public static class EventDetailRpcRequest extends EventRpcRequest<EventInterface> {
