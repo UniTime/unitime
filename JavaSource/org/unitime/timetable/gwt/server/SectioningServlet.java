@@ -35,11 +35,6 @@ import java.util.TreeSet;
 
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,16 +88,17 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
+import org.unitime.timetable.onlinesectioning.CourseDetails;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseInfoMatcher;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.CheckCourses;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
+import org.unitime.timetable.onlinesectioning.basic.ListClasses;
 import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
@@ -113,6 +109,7 @@ import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.FindOnlineSectioningLogAction;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.updates.ApproveEnrollmentsAction;
+import org.unitime.timetable.onlinesectioning.updates.ChangeStudentStatus;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
 import org.unitime.timetable.onlinesectioning.updates.MassCancelAction;
 import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
@@ -220,10 +217,10 @@ public class SectioningServlet implements SectioningService {
 					course.setNote(c.getNote());
 					course.setTitle(c.getTitle());
 					course.setHasUniqueName(c.hasUniqueName());
-					Course crs = server.getCourse(c.getUniqueId());
-					if (crs != null) {
-						course.setEnrollment(crs.getEnrollments().size());
-						course.setLimit(crs.getLimit());
+					CourseDetails crd = server.getCourseDetails(c.getUniqueId());
+					if (crd != null) {
+						course.setEnrollment(crd.getEnrollment());
+						course.setLimit(crd.getLimit());
 					}
 					ret.add(course);
 				}
@@ -260,6 +257,7 @@ public class SectioningServlet implements SectioningService {
 	
 	@SuppressWarnings("unchecked")
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws SectioningException, PageAccessException {
+		if (sessionId==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		setLastSessionId(sessionId);
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
 		if (server == null) {
@@ -342,105 +340,8 @@ public class SectioningServlet implements SectioningService {
 			}
 			return results;
 		} else {
-			ArrayList<ClassAssignmentInterface.ClassAssignment> ret = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
-			Lock lock = server.readLock();
 			try {
-				if (sessionId==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
-				CourseInfo c = server.getCourseInfo(course);
-				if (c == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
-				Long studentId = getStudentId(sessionId);
-				List<Section> sections = server.getSections(c);
-				Collections.sort(sections, new Comparator<Section>() {
-					public int compare(Config c1, Config c2) {
-						int cmp = c1.getName().compareToIgnoreCase(c2.getName());
-						if (cmp != 0) return cmp;
-						return Double.compare(c1.getId(), c2.getId());
-					}
-					public boolean isParent(Subpart s1, Subpart s2) {
-						Subpart p1 = s1.getParent();
-						if (p1==null) return false;
-						if (p1.equals(s2)) return true;
-						return isParent(p1, s2);
-					}
-					public int compare(Subpart s1, Subpart s2) {
-						int cmp = compare(s1.getConfig(), s2.getConfig());
-						if (cmp != 0) return cmp;
-				        if (isParent(s1,s2)) return 1;
-				        if (isParent(s2,s1)) return -1;
-				        cmp = s1.getInstructionalType().compareTo(s2.getInstructionalType());
-				        if (cmp != 0) return cmp;
-				        return Double.compare(s1.getId(), s2.getId());
-					}
-					public int compare(Section s1, Section s2) {
-						int cmp = compare(s1.getSubpart(), s2.getSubpart());
-						if (cmp != 0) return cmp;
-						cmp = (s1.getName() == null ? "" : s1.getName()).compareTo(s2.getName() == null ? "" : s2.getName());
-						if (cmp != 0) return cmp;
-				        return Double.compare(s1.getId(), s2.getId());
-					}
-				});
-				Map<Long, int[]> limits = null;
-				if (OnlineSectioningService.sSectionLimitProvider != null) {
-					limits = OnlineSectioningService.sSectionLimitProvider.getSectionLimits(server.getAcademicSession(), c.getUniqueId(), sections);
-				}
-				ClassAssignmentInterface.CourseAssignment courseAssign = new ClassAssignmentInterface.CourseAssignment();
-				courseAssign.setCourseId(c.getUniqueId());
-				courseAssign.setCourseNbr(c.getCourseNbr());
-				courseAssign.setSubject(c.getSubjectArea());
-				for (Section section: sections) {
-					if (section.getLimit() == 0) continue;
-					String room = null;
-					if (section.getRooms() != null) {
-						for (RoomLocation rm: section.getRooms()) {
-							if (room == null) room = ""; else room += ", ";
-							room += rm.getName();
-						}
-					}
-					int[] limit = (limits == null ? new int[] { section.getEnrollments().size(), section.getLimit()} : limits.get(section.getId()));
-					ClassAssignmentInterface.ClassAssignment a = courseAssign.addClassAssignment();
-					a.setClassId(section.getId());
-					a.setSubpart(section.getSubpart().getName());
-					a.setSection(section.getName(c.getUniqueId()));
-					a.setClassNumber(section.getName(-1l));
-					a.setLimit(limit);
-					if (studentId != null) {
-						for (Iterator<Enrollment> i = section.getEnrollments().iterator(); i.hasNext();) {
-							Enrollment enrollment = i.next();
-							if (enrollment.getStudent().getId() == studentId) { a.setSaved(true); break; }
-						}
-					}
-					a.addNote(c.getNote());
-					a.addNote(section.getNote());
-					a.setCredit(section.getSubpart().getCredit());
-					if (section.getTime() != null) {
-						for (DayCode d: DayCode.toDayCodes(section.getTime().getDayCode()))
-							a.addDay(d.getIndex());
-						a.setStart(section.getTime().getStartSlot());
-						a.setLength(section.getTime().getLength());
-						a.setBreakTime(section.getTime().getBreakTime());
-						a.setDatePattern(section.getTime().getDatePatternName());
-					}
-					if (section.getRooms() != null) {
-						for (RoomLocation rm: section.getRooms()) {
-							a.addRoom(rm.getName());
-						}
-					}
-					if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
-						String[] instructors = section.getChoice().getInstructorNames().split(":");
-						for (String instructor: instructors) {
-							String[] nameEmail = instructor.split("\\|");
-							a.addInstructor(nameEmail[0]);
-							a.addInstructoEmailr(nameEmail.length < 2 ? "" : nameEmail[1]);
-						}
-					}
-					if (section.getParent() != null)
-						a.setParentSection(section.getParent().getName(c.getUniqueId()));
-					a.setSubpartId(section.getSubpart().getId());
-					if (a.getParentSection() == null)
-						a.setParentSection(c.getConsent());
-					a.setExpected(section.getSpaceExpected());
-					ret.add(a);
-				}
+				return server.execute(new ListClasses(course, getStudentId(sessionId)), currentUser());
 			} catch (PageAccessException e) {
 				throw e;
 			} catch (SectioningException e) {
@@ -448,12 +349,7 @@ public class SectioningServlet implements SectioningService {
 			} catch (Exception e) {
 				sLog.error(e.getMessage(), e);
 				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
-			} finally {
-				lock.release();
 			}
-			if (ret.isEmpty())
-				throw new SectioningException(MSG.exceptionNoClassesForCourse(course));
-			return ret;	
 		}
 	}
 
@@ -1869,10 +1765,7 @@ public class SectioningServlet implements SectioningService {
 		try {
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-			net.sf.cpsolver.studentsct.model.Student student = server.getStudent(studentId);
-			if (student == null)
-				throw new SectioningException(MSG.exceptionBadStudentId());
-			StudentEmail email = new StudentEmail(studentId, (Enrollment)null, student.getRequests());
+			StudentEmail email = new StudentEmail(studentId);
 			email.setCC(cc);
 			email.setEmailSubject(subject == null || subject.isEmpty() ? MSG.defaulSubject() : subject);
 			email.setMessage(message);
@@ -1892,24 +1785,7 @@ public class SectioningServlet implements SectioningService {
 		try {
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
-			StudentSectioningStatus status = (ref == null || ref.isEmpty() ? null : (StudentSectioningStatus)hibSession.createQuery(
-					"from StudentSectioningStatus where reference = :ref").setString("ref", ref).uniqueResult());
-			for (Long studentId: studentIds) {
-				Lock lock = server.lockStudent(studentId, null, true);
-				try {
-					net.sf.cpsolver.studentsct.model.Student student = server.getStudent(studentId);
-					Student dbStudent = StudentDAO.getInstance().get(studentId, hibSession);
-					if (student != null && dbStudent != null) {
-						student.setStatus(ref); dbStudent.setSectioningStatus(status);
-						hibSession.saveOrUpdate(dbStudent);
-					}
-				} finally {
-					lock.release();
-					hibSession.flush();
-				}
-			}
-			return true;
+			return server.execute(new ChangeStudentStatus(studentIds, ref), currentUser());
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
@@ -1971,7 +1847,8 @@ public class SectioningServlet implements SectioningService {
 		}
 	}
 
-	class CourseMatcher implements OnlineSectioningServer.CourseInfoMatcher {
+	static class CourseMatcher implements OnlineSectioningServer.CourseInfoMatcher {
+		private static final long serialVersionUID = 1L;
 		private boolean iAllCourseTypes, iNoCourseType;
 		private Set<String> iAllowedCourseTypes;
 		

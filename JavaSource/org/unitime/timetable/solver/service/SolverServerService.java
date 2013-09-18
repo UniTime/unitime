@@ -33,6 +33,8 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.jgroups.RemoteSolverContainer;
@@ -50,6 +52,7 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	private SolverContainer<SolverProxy> iCourseSolverContainer;
 	private SolverContainer<ExamSolverProxy> iExamSolverContainer;
 	private SolverContainer<StudentSolverProxy> iStudentSolverContainer;
+	private SolverContainer<OnlineSectioningServer> iOnlineStudentSchedulingContainer;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -68,6 +71,9 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 			iCourseSolverContainer = new SolverContainerWrapper<SolverProxy>(iServer, (RemoteSolverContainer<SolverProxy>) iServer.getCourseSolverContainer());
 			iExamSolverContainer = new SolverContainerWrapper<ExamSolverProxy>(iServer, (RemoteSolverContainer<ExamSolverProxy>) iServer.getExamSolverContainer());
 			iStudentSolverContainer = new SolverContainerWrapper<StudentSolverProxy>(iServer, (RemoteSolverContainer<StudentSolverProxy>) iServer.getStudentSolverContainer());
+			iOnlineStudentSchedulingContainer = new SolverContainerWrapper<OnlineSectioningServer>(iServer, (RemoteSolverContainer<OnlineSectioningServer>) iServer.getOnlineStudentSchedulingContainer());
+			
+			OnlineSectioningService.startService(iOnlineStudentSchedulingContainer);
 		} catch (Exception e) {
 			sLog.fatal("Failed to start solver server: " + e.getMessage(), e);
 		}
@@ -78,6 +84,9 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 		try {
 			sLog.info("Server is going down...");
 			iServer.stop();
+			
+			sLog.info("Shutting down solver server service ...");
+			OnlineSectioningService.stopService();
 			
 			sLog.info("Disconnecting from the channel...");
 			iServer.getChannel().disconnect();
@@ -160,6 +169,10 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	    }
 	    StudentSolverProxy solver = iStudentSolverContainer.createSolver(user, properties);
 	    return solver;
+	}
+	
+	public SolverContainer<OnlineSectioningServer> getOnlineStudentSchedulingContainer() {
+		return iOnlineStudentSchedulingContainer;
 	}
 	
 	public SolverServer getServer(String host) {

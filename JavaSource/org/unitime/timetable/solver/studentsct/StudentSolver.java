@@ -48,6 +48,7 @@ import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
+import org.unitime.timetable.onlinesectioning.CourseDetails;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -803,6 +804,12 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	@Override
 	public CourseInfo getCourseInfo(Long courseId) {
 		return getCourseInfoTable().get(courseId);
+	}
+	
+	@Override
+	public CourseDetails getCourseDetails(Long courseId) {
+		Course course = getCourse(courseId);
+		return course == null ? null : new CourseDetails(course);
 	}
 
 	@Override

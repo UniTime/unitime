@@ -78,6 +78,8 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 		}
 
 		final OnlineSectioningServer.CourseInfoMatcher matcher = new OnlineSectioningServer.CourseInfoMatcher() {
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public boolean match(CourseInfo course) {
 				return true;

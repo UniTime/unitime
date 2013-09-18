@@ -84,6 +84,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		int gConNeed = 0, gtConNeed = 0;
 		
 		for (CourseInfo info: server.findCourses(new OnlineSectioningServer.CourseInfoMatcher() {
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public boolean match(CourseInfo course) {
 				return isCourseVisible(course.getUniqueId()) && query().match(
@@ -192,6 +194,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		List<StudentInfo> ret = new ArrayList<StudentInfo>(students.values());
 		
 		for (Student student: server.findStudents(new OnlineSectioningServer.StudentMatcher() {
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public boolean match(Student student) {
 				return student.getRequests().isEmpty() && query().match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus()));

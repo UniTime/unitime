@@ -61,6 +61,7 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
@@ -73,7 +74,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	public static final RequestOptions sFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	public static final RequestOptions sAllResponses = new RequestOptions(ResponseMode.GET_ALL, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	
-	private static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4;
+	private static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4, SCOPE_ONLINE = 5;
 	private JChannel iChannel;
 	private RpcDispatcher iDispatcher;
 	private LockService iLockService;
@@ -83,6 +84,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	private CourseSolverContainerRemote iCourseSolverContainer;
 	private ExaminationSolverContainerRemote iExamSolverContainer;
 	private StudentSolverContainerRemote iStudentSolverContainer;
+	private OnlineStudentSchedulingContainerRemote iOnlineStudentSchedulingContainer;
 	private RemoteRoomAvailability iRemoteRoomAvailability;
 	
 	protected int iUsageBase = 0;
@@ -100,6 +102,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		iCourseSolverContainer = new CourseSolverContainerRemote(channel, SCOPE_COURSE);
 		iExamSolverContainer = new ExaminationSolverContainerRemote(channel, SCOPE_EXAM);
 		iStudentSolverContainer = new StudentSolverContainerRemote(channel, SCOPE_STUDENT);
+		iOnlineStudentSchedulingContainer = new OnlineStudentSchedulingContainerRemote(channel, SCOPE_ONLINE);
 		iRemoteRoomAvailability = new RemoteRoomAvailability(channel, SCOPE_AVAILABILITY);
 		iLockService = new LockService(channel);
 	}
@@ -114,6 +117,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		iCourseSolverContainer.start();
 		iExamSolverContainer.start();
 		iStudentSolverContainer.start();
+		iOnlineStudentSchedulingContainer.start();
 		
 		new MasterAcquiringThread().start();
 		
@@ -127,6 +131,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		iCourseSolverContainer.stop();
 		iExamSolverContainer.stop();
 		iStudentSolverContainer.stop();
+		iOnlineStudentSchedulingContainer.stop();
 	}
 	
 	public Properties getProperties() {
@@ -193,6 +198,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		ret += iCourseSolverContainer.getUsage();
 		ret += iExamSolverContainer.getUsage();
 		ret += iStudentSolverContainer.getUsage();
+		ret += iOnlineStudentSchedulingContainer.getUsage();
 		return ret;		
 	}
 	
@@ -292,6 +298,21 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	public SolverContainer<StudentSolverProxy> createStudentSolverContainerProxy(Address address) {
 		ContainerInvocationHandler<RemoteSolverContainer<StudentSolverProxy>> handler = new ContainerInvocationHandler<RemoteSolverContainer<StudentSolverProxy>>(address, iStudentSolverContainer);
 		SolverContainer<StudentSolverProxy> px = (SolverContainer<StudentSolverProxy>)Proxy.newProxyInstance(
+				SolverServerImplementation.class.getClassLoader(),
+				new Class[] {SolverContainer.class},
+				handler
+				);
+		return px;
+	}
+	
+	@Override
+	public SolverContainer<OnlineSectioningServer> getOnlineStudentSchedulingContainer() {
+		return iOnlineStudentSchedulingContainer;
+	}
+	
+	public SolverContainer<OnlineSectioningServer> createOnlineStudentSchedulingContainerProxy(Address address) {
+		ContainerInvocationHandler<RemoteSolverContainer<OnlineSectioningServer>> handler = new ContainerInvocationHandler<RemoteSolverContainer<OnlineSectioningServer>>(address, iOnlineStudentSchedulingContainer);
+		SolverContainer<OnlineSectioningServer> px = (SolverContainer<OnlineSectioningServer>)Proxy.newProxyInstance(
 				SolverServerImplementation.class.getClassLoader(),
 				new Class[] {SolverContainer.class},
 				handler
@@ -439,6 +460,10 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		
 		public SolverContainer<StudentSolverProxy> getStudentSolverContainer() {
 			return createStudentSolverContainerProxy(iAddress);
+		}
+		
+		public SolverContainer<OnlineSectioningServer> getOnlineStudentSchedulingContainer() {
+			return createOnlineStudentSchedulingContainerProxy(iAddress);
 		}
 		
 		public Address getAddress() {

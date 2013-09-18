@@ -106,7 +106,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	private Queue<Runnable> iExecutorQueue = new LinkedList<Runnable>();
 	private HashSet<CacheElement<Long>> iOfferingsToPersistExpectedSpaces = new HashSet<CacheElement<Long>>();
 	
-	OnlineSectioningServerImpl(Long sessionId, boolean waitTillStarted) throws SectioningException {
+	public OnlineSectioningServerImpl(Long sessionId, boolean waitTillStarted) throws SectioningException {
 		iConfig = new ServerConfig();
 		iDistanceMetric = new DistanceMetric(iConfig);
 		TravelTime.populateTravelTimes(iDistanceMetric, sessionId);
@@ -197,7 +197,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			iLock.readLock().unlock();
 		}
 	}
-
+	
 	@Override
 	public CourseInfo getCourseInfo(Long courseId) {
 		iLock.readLock().lock();
@@ -208,6 +208,12 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		}
 	}
 	
+	@Override
+	public CourseDetails getCourseDetails(Long courseId) {
+		Course course = getCourse(courseId);
+		return course == null ? null : new CourseDetails(course);
+	}
+
 	@Override
 	public Student getStudent(Long studentId) {
 		iLock.readLock().lock();

@@ -29,37 +29,53 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
+import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.solver.SolverProxy;
 
-public class ExaminationSolverContainerRemote extends ExaminationSolverContainer implements RemoteSolverContainer<ExamSolverProxy> {
-	private static Log sLog = LogFactory.getLog(ExaminationSolverContainerRemote.class);
+public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedulingContainer implements RemoteSolverContainer<OnlineSectioningServer> {
+	private static Log sLog = LogFactory.getLog(OnlineStudentSchedulingContainerRemote.class);
 	
 	private RpcDispatcher iDispatcher;
+	private OnlineStudentSchedulingGenericUpdater iUpdater;
 		
-	public ExaminationSolverContainerRemote(JChannel channel, short scope) {
+	public OnlineStudentSchedulingContainerRemote(JChannel channel, short scope) {
 		iDispatcher = new MuxRpcDispatcher(scope, channel, null, null, this);
+		iUpdater = new OnlineStudentSchedulingGenericUpdater(channel, this);
 	}
 	
 	@Override
 	public RpcDispatcher getDispatcher() { return iDispatcher; }
 	
 	@Override
-	public boolean createRemoteSolver(String user, DataProperties config, Address caller) {
-		super.createSolver(user, config);
+	public void start() {
+		super.start();
+		iUpdater.start();
+	}
+	
+	@Override
+	public void stop() {
+		super.stop();
+		iUpdater.stopUpdating();
+	}
+	
+	@Override
+	public boolean createRemoteSolver(String sessionId, DataProperties config, Address caller) {
+		super.createSolver(sessionId, config);
         return true;
 	}
 	
 	@Override
-	public Object invoke(String method, String user, Class[] types, Object[] args) throws Exception {
+	public Object invoke(String method, String sessionId, Class[] types, Object[] args) throws Exception {
 		try {
-			ExamSolverProxy solver = iExamSolvers.get(user);
+			OnlineSectioningServer solver = iInstances.get(Long.valueOf(sessionId));
 			if ("exists".equals(method) && types.length == 0)
 				return solver != null;
 			if (solver == null)
-				throw new Exception("Solver " + user + " does not exist.");
+				throw new Exception("Server " + sessionId + " does not exist.");
 			return solver.getClass().getMethod(method, types).invoke(solver, args);
 		} finally {
 			_RootDAO.closeCurrentThreadSessions();
@@ -67,29 +83,31 @@ public class ExaminationSolverContainerRemote extends ExaminationSolverContainer
 	}
 	
 	@Override
-	public Object dispatch(Address address, String user, Method method, Object[] args) throws Exception {
+	public Object dispatch(Address address, String sessionId, Method method, Object[] args) throws Exception {
 		try {
-			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), user, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, SolverServerImplementation.sFirstResponse);
+			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), sessionId, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, SolverServerImplementation.sFirstResponse);
 		} catch (Exception e) {
-			sLog.error("Excution of " + method + " on solver " + user + " failed: " + e.getMessage(), e);
+			if ("exists".equals(method.getName()) && e instanceof SuspectedException) return false;
+			sLog.error("Excution of " + method + " on server " + sessionId + " failed: " + e.getMessage(), e);
 			return null;
 		}
 	}
 	
 	@Override
-	public ExamSolverProxy createProxy(Address address, String user) {
-		SolverInvocationHandler handler = new SolverInvocationHandler(address, user);
-		return (ExamSolverProxy)Proxy.newProxyInstance(
-				ExamSolverProxy.class.getClassLoader(),
-				new Class[] {ExamSolverProxy.class, RemoteSolver.class, },
+	public OnlineSectioningServer createProxy(Address address, String user) {
+		ServerInvocationHandler handler = new ServerInvocationHandler(address, user);
+		OnlineSectioningServer px = (OnlineSectioningServer)Proxy.newProxyInstance(
+				SolverProxy.class.getClassLoader(),
+				new Class[] {OnlineSectioningServer.class, RemoteSolver.class, },
 				handler);
+    	return px;
 	}
     
-    public class SolverInvocationHandler implements InvocationHandler {
+    public class ServerInvocationHandler implements InvocationHandler {
     	private Address iAddress;
     	private String iUser;
     	
-    	private SolverInvocationHandler(Address address, String user) {
+    	private ServerInvocationHandler(Address address, String user) {
     		iAddress = address;
     		iUser = user;
     	}
