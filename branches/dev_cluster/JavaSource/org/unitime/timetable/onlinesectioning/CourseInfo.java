@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -28,7 +29,8 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 /**
  * @author Tomas Muller
  */
-public class CourseInfo implements Comparable<CourseInfo> {
+public class CourseInfo implements Comparable<CourseInfo>, Serializable {
+	private static final long serialVersionUID = 1L;
 	private Long iUniqueId;
 	private String iSubjectArea;
 	private String iDepartment;

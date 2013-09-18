@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.jgroups.Address;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
@@ -63,6 +64,8 @@ public interface SolverServer {
 	public SolverContainer<ExamSolverProxy> getExamSolverContainer();
 	
 	public SolverContainer<StudentSolverProxy> getStudentSolverContainer();
+	
+	public SolverContainer<OnlineSectioningServer> getOnlineStudentSchedulingContainer();
 	
 	public RoomAvailabilityInterface getRoomAvailability();
 	

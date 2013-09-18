@@ -41,6 +41,7 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableSolver;
@@ -70,12 +71,16 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 	
 	@Override
 	public Object invoke(String method, String user, Class[] types, Object[] args) throws Exception {
-		SolverProxy solver = iCourseSolvers.get(user);
-		if ("exists".equals(method) && types.length == 0)
-			return solver != null;
-		if (solver == null)
-			throw new Exception("Solver " + user + " does not exist.");
-		return solver.getClass().getMethod(method, types).invoke(solver, args);
+		try {
+			SolverProxy solver = iCourseSolvers.get(user);
+			if ("exists".equals(method) && types.length == 0)
+				return solver != null;
+			if (solver == null)
+				throw new Exception("Solver " + user + " does not exist.");
+			return solver.getClass().getMethod(method, types).invoke(solver, args);
+		} finally {
+			_RootDAO.closeCurrentThreadSessions();
+		}
 	}
 	
 	@Override

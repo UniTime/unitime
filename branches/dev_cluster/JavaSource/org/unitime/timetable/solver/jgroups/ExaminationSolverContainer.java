@@ -60,6 +60,13 @@ public class ExaminationSolverContainer implements SolverContainer<ExamSolverPro
 	}
 	
 	@Override
+	public void unloadSolver(String user) {
+		ExamSolver solver = iExamSolvers.get(user);
+		if (solver != null)
+			solver.dispose();
+	}
+	
+	@Override
 	public boolean hasSolver(String user) {
 		return iExamSolvers.containsKey(user);
 	}

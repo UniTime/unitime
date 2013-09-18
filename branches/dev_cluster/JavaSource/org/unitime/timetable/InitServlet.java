@@ -32,7 +32,6 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.events.EventExpirationService;
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LogCleaner;
 import org.unitime.timetable.util.RoomAvailability;
@@ -83,9 +82,6 @@ public class InitServlet extends HttpServlet implements Servlet {
 			Debug.info(" - Cleaning Logs ...");
 			LogCleaner.cleanupLogs();
 			
-			Debug.info(" - Starting Online Sectioning Service ...");
-			OnlineSectioningService.startService();
-			
 			Debug.info(" - Starting Event Expiration Service ...");
 			EventExpirationService.getInstance().start();
 			
@@ -114,9 +110,6 @@ public class InitServlet extends HttpServlet implements Servlet {
 			Debug.info(" - Stopping Event Expiration Service ...");
 			EventExpirationService.getInstance().interrupt();
 			
-			Debug.info(" - Stopping Online Sectioning Service ...");
-			OnlineSectioningService.stopService();
-		
 			SolverInfo.stopInfoCacheCleanup();
 		
 			ApplicationProperties.stopListener();

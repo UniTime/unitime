@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.solver.jgroups;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -29,6 +31,7 @@ import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.ifs.util.ToolBox;
 
 public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	private static Log sLog = LogFactory.getLog(SolverContainerWrapper.class);
@@ -58,11 +61,15 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	public T getSolver(String user) {
 		try {
 			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
+			List<Address> senders = new ArrayList<Address>();
 			for (Rsp<Boolean> rsp : ret) {
 				if (rsp.getValue())
-					return iContainer.createProxy(rsp.getSender(), user);
+					senders.add(rsp.getSender());
 			}
-			return null;
+			if (!senders.isEmpty())
+				return iContainer.createProxy(ToolBox.random(senders), user);
+			else
+				return null;
 		} catch (Exception e) {
 			sLog.error("Failed to retrieve solver " + user + ": " + e.getMessage(), e);
 		}
@@ -104,6 +111,19 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to start the solver: " + e.getMessage(), e);
+		}
+	}
+	
+	@Override
+	public void unloadSolver(String user) {
+		try {
+			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
+			for (Rsp<Boolean> rsp : ret) {
+				if (rsp.getValue())
+					iContainer.getDispatcher().callRemoteMethod(rsp.getSender(), "unloadSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sFirstResponse);
+			}
+		} catch (Exception e) {
+			sLog.error("Failed to unload solver " + user + ": " + e.getMessage(), e);
 		}
 	}
 

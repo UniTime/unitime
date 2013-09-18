@@ -17,26 +17,25 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.solver.jgroups;
+package org.unitime.timetable.onlinesectioning;
 
-import java.util.Set;
+import java.io.Serializable;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.studentsct.model.Course;
 
-public interface SolverContainer<T> {
-	public Set<String> getSolvers();
+public class CourseDetails implements Serializable {
+	private static final long serialVersionUID = 1L;
 	
-	public T getSolver(String user);
+	private int iEnrollment = 0, iLimit = 0;
 	
-	public boolean hasSolver(String user);
+	public CourseDetails(Course course) {
+		iEnrollment = course.getEnrollments().size();
+		iLimit = course.getLimit();
+	}
 	
-	public T createSolver(String user, DataProperties config);
+	public int getEnrollment() { return iEnrollment; }
+	public void setEnrollment(int enrollment) { iEnrollment = enrollment; }
 	
-	public void unloadSolver(String user);
-	
-	public int getUsage();
-	
-	public void start();
-	
-	public void stop();
+	public int getLimit() { return iLimit; }
+	public void setLimit(int limit) { iLimit = limit; }
 }

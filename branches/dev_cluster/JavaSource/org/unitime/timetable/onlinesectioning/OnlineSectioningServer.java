@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -51,6 +52,7 @@ public interface OnlineSectioningServer {
 	
 	public CourseInfo getCourseInfo(Long courseId);
 	public CourseInfo getCourseInfo(String course);
+	public CourseDetails getCourseDetails(Long courseId);
 	
 	public Student getStudent(Long studentId);
 	public Section getSection(Long classId);
@@ -112,11 +114,11 @@ public interface OnlineSectioningServer {
 		public void onSuccess(E result);
 	}
 	
-	public static interface CourseInfoMatcher {
+	public static interface CourseInfoMatcher extends Serializable {
 		public boolean match(CourseInfo course);
 	}
 
-	public static interface StudentMatcher {
+	public static interface StudentMatcher extends Serializable {
 		public boolean match(Student student);
 	}
 }

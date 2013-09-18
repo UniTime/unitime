@@ -60,6 +60,13 @@ public class CourseSolverContainer implements SolverContainer<SolverProxy> {
 	}
 	
 	@Override
+	public void unloadSolver(String user) {
+		TimetableSolver solver = iCourseSolvers.get(user);
+		if (solver != null)
+			solver.dispose();
+	}
+	
+	@Override
 	public boolean hasSolver(String user) {
 		return iCourseSolvers.containsKey(user);
 	}

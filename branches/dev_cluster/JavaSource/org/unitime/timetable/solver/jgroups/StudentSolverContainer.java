@@ -60,6 +60,13 @@ public class StudentSolverContainer implements SolverContainer<StudentSolverProx
 	}
 	
 	@Override
+	public void unloadSolver(String user) {
+		StudentSolver solver = iStudentSolvers.get(user);
+		if (solver != null)
+			solver.dispose();
+	}
+	
+	@Override
 	public boolean hasSolver(String user) {
 		return iStudentSolvers.containsKey(user);
 	}

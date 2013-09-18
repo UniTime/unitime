@@ -31,6 +31,7 @@ import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
 public class StudentSolverContainerRemote extends StudentSolverContainer implements RemoteSolverContainer<StudentSolverProxy> {
@@ -53,12 +54,16 @@ public class StudentSolverContainerRemote extends StudentSolverContainer impleme
 	
 	@Override
 	public Object invoke(String method, String user, Class[] types, Object[] args) throws Exception {
-		StudentSolverProxy solver = iStudentSolvers.get(user);
-		if ("exists".equals(method) && types.length == 0)
-			return solver != null;
-		if (solver == null)
-			throw new Exception("Solver " + user + " does not exist.");
-		return solver.getClass().getMethod(method, types).invoke(solver, args);
+		try {
+			StudentSolverProxy solver = iStudentSolvers.get(user);
+			if ("exists".equals(method) && types.length == 0)
+				return solver != null;
+			if (solver == null)
+				throw new Exception("Solver " + user + " does not exist.");
+			return solver.getClass().getMethod(method, types).invoke(solver, args);
+		} finally {
+			_RootDAO.closeCurrentThreadSessions();
+		}
 	}
 	
 	@Override
