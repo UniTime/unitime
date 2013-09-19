@@ -23,7 +23,7 @@
  -->
 
 <hibernate-configuration>
-<session-factory>
+<session-factory name="unitime:hibernate/SessionFactory">
 
 	<!-- MySQL Configuration -->
 	<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
