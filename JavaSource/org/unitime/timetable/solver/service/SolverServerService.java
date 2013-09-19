@@ -33,8 +33,9 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.jgroups.RemoteSolverContainer;
@@ -72,8 +73,6 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 			iExamSolverContainer = new SolverContainerWrapper<ExamSolverProxy>(iServer, (RemoteSolverContainer<ExamSolverProxy>) iServer.getExamSolverContainer());
 			iStudentSolverContainer = new SolverContainerWrapper<StudentSolverProxy>(iServer, (RemoteSolverContainer<StudentSolverProxy>) iServer.getStudentSolverContainer());
 			iOnlineStudentSchedulingContainer = new SolverContainerWrapper<OnlineSectioningServer>(iServer, (RemoteSolverContainer<OnlineSectioningServer>) iServer.getOnlineStudentSchedulingContainer());
-			
-			OnlineSectioningService.startService(iOnlineStudentSchedulingContainer);
 		} catch (Exception e) {
 			sLog.fatal("Failed to start solver server: " + e.getMessage(), e);
 		}
@@ -84,9 +83,6 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 		try {
 			sLog.info("Server is going down...");
 			iServer.stop();
-			
-			sLog.info("Shutting down solver server service ...");
-			OnlineSectioningService.stopService();
 			
 			sLog.info("Disconnecting from the channel...");
 			iServer.getChannel().disconnect();
@@ -183,5 +179,17 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 				return iServer.crateServerProxy(address);
 		}
 		return null;
+	}
+	
+	public boolean isOnlineStudentSchedulingEnabled() {
+		return !getOnlineStudentSchedulingContainer().getSolvers().isEmpty();
+	}
+	
+	public boolean isStudentRegistrationEnabled() {
+        for (Session session: SessionDAO.getInstance().findAll()) {
+                if (session.getStatusType().isTestSession()) continue;
+                if (!session.getStatusType().canOnlineSectionStudents() && !session.getStatusType().canSectionAssistStudents() && session.getStatusType().canPreRegisterStudents()) return true;
+        }
+        return false;
 	}
 }

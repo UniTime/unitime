@@ -28,12 +28,11 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 
 public class CourseTimetablingPermissions {
@@ -213,11 +212,17 @@ public class CourseTimetablingPermissions {
 	@PermissionForRight(Right.TimetablesSolutionCommit)
 	public static class TimetablesSolutionCommit implements Permission<SolverGroup> {
 		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Autowired SolverServerService solverServerService;
+		
+		private boolean hasInstance(Long sessionId) {
+			if (sessionId == null) return false;
+			return solverServerService.getOnlineStudentSchedulingContainer().hasSolver(sessionId.toString());
+		}
 
 		@Override
 		public boolean check(UserContext user, SolverGroup source) {
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(user.getCurrentAcademicSessionId());
-			if (server != null) return false;
+			if (hasInstance(user.getCurrentAcademicSessionId())) return false;
 			
 			for (Department department: source.getDepartments())
 				if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.Commit))

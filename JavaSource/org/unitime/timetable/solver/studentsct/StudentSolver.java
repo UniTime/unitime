@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -55,7 +54,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
-import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
@@ -852,17 +850,6 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 			if (offering.getId() == offeringId)
 				return offering;
 		return null;
-	}
-
-	@Override
-	public URL getSectionUrl(Long courseId, Section section) {
-        if (ApplicationProperties.getProperty("unitime.custom.SectionUrlProvider") != null) {
-        	try {
-        		SectionUrlProvider provider = (SectionUrlProvider)Class.forName(ApplicationProperties.getProperty("unitime.custom.SectionUrlProvider")).newInstance();
-        		return provider.getSectionUrl(getAcademicSession(), courseId, section);
-        	} catch (Exception e) {}
-        }
-        return null;
 	}
 
 	@Override

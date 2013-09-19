@@ -33,7 +33,6 @@ import org.unitime.timetable.model.dao.StudentSectioningQueueDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServerUpdater;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.ServerCallback;
 import org.unitime.timetable.onlinesectioning.updates.ClassAssignmentChanged;
 import org.unitime.timetable.onlinesectioning.updates.ExpireReservationsAction;
@@ -60,7 +59,7 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 		setDaemon(true);
 		setName("Updater[" + getAcademicSession().toCompactString() + "]");
 		iSleepTimeInSeconds = Long.parseLong(ApplicationProperties.getProperty("unitime.sectioning.queue.updateInterval", "30"));
-		iLog = Logger.getLogger(OnlineSectioningServerUpdater.class + ".updater[" + getAcademicSession().toCompactString() + "]"); 
+		iLog = Logger.getLogger(OnlineStudentSchedulingUpdater.class + ".updater[" + getAcademicSession().toCompactString() + "]"); 
 	}
 	
 	public void run() {

@@ -94,7 +94,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseInfoMatcher;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.basic.CheckCourses;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
@@ -122,6 +121,7 @@ import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.LoginManager;
@@ -151,6 +151,11 @@ public class SectioningServlet implements SectioningService {
 	private SessionContext getSessionContext() { return sessionContext; }
 	private @Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
 	private StudentSolverProxy getStudentSolver() { return studentSectioningSolverService.getSolver(); }
+	private @Autowired SolverServerService solverServerService;
+	private OnlineSectioningServer getServerInstance(Long academicSessionId) {
+		if (academicSessionId == null) return null;
+		return solverServerService.getOnlineStudentSchedulingContainer().getSolver(academicSessionId.toString());
+	}
 
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException, PageAccessException {
 		if (sessionId==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
@@ -158,7 +163,9 @@ public class SectioningServlet implements SectioningService {
 		
 		CourseMatcher matcher = getCourseMatcher(sessionId);
 		
-		if (OnlineSectioningService.getInstance(sessionId) == null) {
+		OnlineSectioningServer server = getServerInstance(sessionId);
+		
+		if (server == null) {
 			String types = "";
 			for (String ref: matcher.getAllowedCourseTypes())
 				types += (types.isEmpty() ? "" : ", ") + "'" + ref + "'";
@@ -208,7 +215,6 @@ public class SectioningServlet implements SectioningService {
 		} else {
 			ArrayList<ClassAssignmentInterface.CourseAssignment> ret = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			try {
-				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId); 
 				for (CourseInfo c: server.findCourses(query, limit, matcher)) {
 					CourseAssignment course = new CourseAssignment();
 					course.setCourseId(c.getUniqueId());
@@ -259,7 +265,7 @@ public class SectioningServlet implements SectioningService {
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws SectioningException, PageAccessException {
 		if (sessionId==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		setLastSessionId(sessionId);
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+		OnlineSectioningServer server = getServerInstance(sessionId);
 		if (server == null) {
 			ArrayList<ClassAssignmentInterface.ClassAssignment> results = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
@@ -356,12 +362,13 @@ public class SectioningServlet implements SectioningService {
 	public Collection<AcademicSessionProvider.AcademicSessionInfo> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException {
 		ArrayList<AcademicSessionProvider.AcademicSessionInfo> ret = new ArrayList<AcademicSessionProvider.AcademicSessionInfo>();
 		if (sectioning) {
-			for (AcademicSessionInfo s: OnlineSectioningService.getAcademicSessions()) {
+			for (String s: solverServerService.getOnlineStudentSchedulingContainer().getSolvers()) {
+				Session session = SessionDAO.getInstance().get(Long.valueOf(s));
 				ret.add(new AcademicSessionProvider.AcademicSessionInfo(
-						s.getUniqueId(),
-						s.getYear(), s.getTerm(), s.getCampus(),
-						MSG.sessionName(s.getYear(), s.getTerm(), s.getCampus()),
-						s.isSectioningEnabled()));
+						session.getUniqueId(),
+						session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
+						MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()),
+						session.getStatusType().canOnlineSectionStudents()));
 			}
 		} else {
 			for (Session session: SessionDAO.getInstance().findAll()) {
@@ -384,7 +391,7 @@ public class SectioningServlet implements SectioningService {
 		setLastSessionId(sessionId);
 		if (iCourseDetailsProvider == null)
 			throw new SectioningException(MSG.exceptionNoCustomCourseDetails());
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId); 
+		OnlineSectioningServer server = getServerInstance(sessionId); 
 		if (server == null) {
 			CourseOffering courseOffering = SaveStudentRequests.getCourse(CourseOfferingDAO.getInstance().getSession(), sessionId, course);
 			if (courseOffering == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
@@ -392,7 +399,7 @@ public class SectioningServlet implements SectioningService {
 					new AcademicSessionInfo(courseOffering.getSubjectArea().getSession()),
 					courseOffering.getSubjectAreaAbbv(), courseOffering.getCourseNbr());
 		} else {
-			CourseInfo c = OnlineSectioningService.getInstance(sessionId).getCourseInfo(course);
+			CourseInfo c = getServerInstance(sessionId).getCourseInfo(course);
 			if (c == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
 			return c.getDetails(server.getAcademicSession(), iCourseDetailsProvider);
 		}
@@ -400,7 +407,7 @@ public class SectioningServlet implements SectioningService {
 	
 	public Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException, PageAccessException {
 		setLastSessionId(sessionId);
-		CourseInfo c = OnlineSectioningService.getInstance(sessionId).getCourseInfo(course);
+		CourseInfo c = getServerInstance(sessionId).getCourseInfo(course);
 		if (c == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
 		return c.getUniqueId();
 	}
@@ -421,7 +428,7 @@ public class SectioningServlet implements SectioningService {
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(request.getAcademicSessionId());
+			OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			ClassAssignmentInterface ret = server.execute(new FindAssignmentAction(request, currentAssignment), currentUser()).get(0);
 			if (ret != null) {
@@ -455,7 +462,7 @@ public class SectioningServlet implements SectioningService {
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			if (OnlineSectioningService.getInstance(request.getAcademicSessionId()) == null) {
+			if (getServerInstance(request.getAcademicSessionId()) == null) {
 				ArrayList<String> notFound = new ArrayList<String>();
 				CourseInfoMatcher matcher = getCourseMatcher(request.getAcademicSessionId());
 				Long studentId = getStudentId(request.getAcademicSessionId());
@@ -478,7 +485,7 @@ public class SectioningServlet implements SectioningService {
 				return notFound;
 			} else {
 				request.setStudentId(getStudentId(request.getAcademicSessionId()));
-				return OnlineSectioningService.getInstance(request.getAcademicSessionId()).execute(new CheckCourses(request, getCourseMatcher(request.getAcademicSessionId())), currentUser());
+				return getServerInstance(request.getAcademicSessionId()).execute(new CheckCourses(request, getCourseMatcher(request.getAcademicSessionId())), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -538,7 +545,7 @@ public class SectioningServlet implements SectioningService {
 			setLastRequest(request);
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
 			ClassAssignmentInterface.ClassAssignment selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(request.getAcademicSessionId());
+			OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			Collection<ClassAssignmentInterface> ret = server.execute(new ComputeSuggestionsAction(request, currentAssignment, selectedAssignment, filter), currentUser());
 			if (ret != null) {
@@ -684,7 +691,7 @@ public class SectioningServlet implements SectioningService {
 		Long sessionId = getLastSessionId();
 		if (sessionId == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		if (sectioning) {
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+			OnlineSectioningServer server = getServerInstance(sessionId);
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			AcademicSessionInfo s = server.getAcademicSession();
 			if (s == null) throw new SectioningException(MSG.exceptionNoServerForSession());
@@ -722,7 +729,7 @@ public class SectioningServlet implements SectioningService {
 				return server.execute(new GetRequest(studentId), currentUser());
 			}
 			
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+			OnlineSectioningServer server = getServerInstance(sessionId);
 			if (server != null) {
 				CourseRequestInterface lastRequest = server.execute(new GetRequest(studentId), currentUser());
 				if (lastRequest == null)
@@ -850,7 +857,7 @@ public class SectioningServlet implements SectioningService {
 		
 		org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
 		try {
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+			OnlineSectioningServer server = getServerInstance(sessionId);
 			if (server == null) throw new SectioningException(MSG.exceptionBadSession());
 			ClassAssignmentInterface ret = server.execute(new GetAssignment(studentId), currentUser());
 			if (ret == null) throw new SectioningException(MSG.exceptionBadStudentId());
@@ -901,7 +908,7 @@ public class SectioningServlet implements SectioningService {
 	}
 
 	public Boolean saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException {
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(request.getAcademicSessionId());
+		OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId());
 		if (server != null) {
 			if (server.getAcademicSession().isSectioningEnabled()) return false;
 			if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.requests.save","false"))) return false;
@@ -948,7 +955,7 @@ public class SectioningServlet implements SectioningService {
 		if (!request.getAcademicSessionId().equals(sessionId))
 			throw new SectioningException(MSG.exceptionBadSession());
 		
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(request.getAcademicSessionId());
+		OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId());
 		if (server == null) throw new SectioningException(MSG.exceptionBadStudentId());
 		if (!server.getAcademicSession().isSectioningEnabled())
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
@@ -989,7 +996,7 @@ public class SectioningServlet implements SectioningService {
 				offering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering();
 			}
 			
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
+			OnlineSectioningServer server = getServerInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
 			
 			if (server == null) return null; //?? !server.getAcademicSession().isSectioningEnabled()
 			
@@ -1025,7 +1032,7 @@ public class SectioningServlet implements SectioningService {
 				
 				getSessionContext().checkPermission(offering != null ? offering : clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering(), Right.OfferingEnrollments);
 
-				OnlineSectioningServer server = OnlineSectioningService.getInstance(
+				OnlineSectioningServer server = getServerInstance(
 						clazz == null ?
 						offering.getControllingCourseOffering().getSubjectArea().getSessionId() :
 						clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getSessionId()
@@ -1214,7 +1221,7 @@ public class SectioningServlet implements SectioningService {
 					Student student = StudentDAO.getInstance().get(studentId, hibSession);
 					if (student == null) 
 						throw new SectioningException(MSG.exceptionBadStudentId());
-					OnlineSectioningServer server = OnlineSectioningService.getInstance(student.getSession().getUniqueId());
+					OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId());
 					if (server == null) {
 						ClassAssignmentInterface ret = new ClassAssignmentInterface();
 						Hashtable<Long, CourseAssignment> courses = new Hashtable<Long, ClassAssignmentInterface.CourseAssignment>();
@@ -1376,7 +1383,7 @@ public class SectioningServlet implements SectioningService {
 				offering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering();
 			}
 			
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
+			OnlineSectioningServer server = getServerInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
 			
 			UserContext user = getSessionContext().getUser();
 			String approval = new Date().getTime() + ":" + user.getExternalUserId() + ":" + user.getName();
@@ -1410,7 +1417,7 @@ public class SectioningServlet implements SectioningService {
 				offering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering();
 			}
 			
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
+			OnlineSectioningServer server = getServerInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
 			
 			UserContext user = getSessionContext().getUser();
 			String approval = new Date().getTime() + ":" + user.getExternalUserId() + ":" + user.getName();
@@ -1487,7 +1494,7 @@ public class SectioningServlet implements SectioningService {
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
 				
-				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+				OnlineSectioningServer server = getServerInstance(sessionId);
 				if (server == null)
 					throw new SectioningException(MSG.exceptionBadSession());
 				
@@ -1525,7 +1532,7 @@ public class SectioningServlet implements SectioningService {
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
 				
-				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+				OnlineSectioningServer server = getServerInstance(sessionId);
 				if (server == null)
 					throw new SectioningException(MSG.exceptionBadSession());
 				
@@ -1561,7 +1568,7 @@ public class SectioningServlet implements SectioningService {
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
 				
-				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+				OnlineSectioningServer server = getServerInstance(sessionId);
 				if (server == null)
 					throw new SectioningException(MSG.exceptionBadSession());
 				
@@ -1597,7 +1604,7 @@ public class SectioningServlet implements SectioningService {
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
 				
-				OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+				OnlineSectioningServer server = getServerInstance(sessionId);
 				if (server == null)
 					throw new SectioningException(MSG.exceptionBadSession());
 				
@@ -1682,7 +1689,7 @@ public class SectioningServlet implements SectioningService {
 					throw new SectioningException(status.getMessage());
 			}
 			
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(student.getSession().getUniqueId());
+			OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId());
 			if (server == null || !server.getAcademicSession().isSectioningEnabled())
 				throw new SectioningException(MSG.exceptionNoServerForSession());
 			
@@ -1712,7 +1719,8 @@ public class SectioningServlet implements SectioningService {
 	@Override
 	public CourseRequestInterface savedRequest(boolean online, Long studentId) throws SectioningException, PageAccessException {
 		if (online) {
-			return OnlineSectioningService.getInstance(canEnroll(online, studentId)).execute(new GetRequest(studentId), currentUser());
+			OnlineSectioningServer server = getServerInstance(canEnroll(online, studentId));
+			return server.execute(new GetRequest(studentId), currentUser());
 		} else {
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
@@ -1725,7 +1733,8 @@ public class SectioningServlet implements SectioningService {
 	@Override
 	public ClassAssignmentInterface savedResult(boolean online, Long studentId) throws SectioningException, PageAccessException {
 		if (online) {
-			return OnlineSectioningService.getInstance(canEnroll(online, studentId)).execute(new GetAssignment(studentId), currentUser());
+			OnlineSectioningServer server = getServerInstance(canEnroll(online, studentId));
+			return server.execute(new GetAssignment(studentId), currentUser());
 		} else {
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
@@ -1763,7 +1772,7 @@ public class SectioningServlet implements SectioningService {
 	@Override
 	public Boolean sendEmail(Long studentId, String subject, String message, String cc) throws SectioningException, PageAccessException {
 		try {
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(getStatusPageSessionId());
+			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			StudentEmail email = new StudentEmail(studentId);
 			email.setCC(cc);
@@ -1783,7 +1792,7 @@ public class SectioningServlet implements SectioningService {
 	@Override
 	public Boolean changeStatus(List<Long> studentIds, String ref) throws SectioningException, PageAccessException {
 		try {
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(getStatusPageSessionId());
+			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			return server.execute(new ChangeStudentStatus(studentIds, ref), currentUser());
 		} catch (PageAccessException e) {
@@ -1819,7 +1828,7 @@ public class SectioningServlet implements SectioningService {
 	@Override
 	public List<SectioningAction> changeLog(String query) throws SectioningException, PageAccessException {
 		Long sessionId = getStatusPageSessionId();
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+		OnlineSectioningServer server = getServerInstance(sessionId);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 		return server.execute(new FindOnlineSectioningLogAction(query), currentUser());
 	}
@@ -1827,7 +1836,7 @@ public class SectioningServlet implements SectioningService {
 	@Override
 	public Boolean massCancel(List<Long> studentIds, String statusRef, String subject, String message, String cc) throws SectioningException, PageAccessException {
 		try {
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(getStatusPageSessionId());
+			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			
 			getSessionContext().checkPermission(Right.StudentSchedulingAdmin);
