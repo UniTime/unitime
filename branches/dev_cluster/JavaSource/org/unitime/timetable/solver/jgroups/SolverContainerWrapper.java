@@ -45,7 +45,7 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 
 	@Override
 	public Set<String> getSolvers() {
-		Set<String> solvers = new HashSet<String>();
+		Set<String> solvers = new HashSet<String>(iContainer.getSolvers());
 		try {
 			RspList<Set<String>> ret = iContainer.getDispatcher().callRemoteMethods(null, "getSolvers", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
 			for (Rsp<Set<String>> rsp : ret) {
@@ -60,6 +60,9 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	@Override
 	public T getSolver(String user) {
 		try {
+			T solver = iContainer.getSolver(user);
+			if (solver != null) return solver;
+
 			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
 			List<Address> senders = new ArrayList<Address>();
 			for (Rsp<Boolean> rsp : ret) {
@@ -79,6 +82,8 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	@Override
 	public boolean hasSolver(String user) {
 		try {
+			if (iContainer.hasSolver(user)) return true;
+
 			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
 			for (Rsp<Boolean> rsp : ret)
 				if (rsp.getValue()) return true;
@@ -105,6 +110,10 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	        }
 			if (bestServer == null)
 				throw new RuntimeException("Not enough resources to create a solver instance, please try again later.");
+			
+			if (bestServer.getAddress().equals(iServer.getAddress()))
+				return iContainer.createSolver(user, config);
+			
 			iContainer.getDispatcher().callRemoteMethod(bestServer.getAddress(), "createRemoteSolver", new Object[] { user, config, iServer.getAddress() }, new Class[] { String.class, DataProperties.class, Address.class }, SolverServerImplementation.sFirstResponse);
 			return iContainer.createProxy(bestServer.getAddress(), user);
 		} catch (RuntimeException e) {
@@ -117,6 +126,9 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	@Override
 	public void unloadSolver(String user) {
 		try {
+			if (iContainer.hasSolver(user))
+				iContainer.unloadSolver(user);
+			
 			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
 			for (Rsp<Boolean> rsp : ret) {
 				if (rsp.getValue())
