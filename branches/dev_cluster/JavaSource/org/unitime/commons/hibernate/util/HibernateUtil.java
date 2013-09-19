@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.naming.spi.NamingManager;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -49,6 +50,7 @@ import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.IntegerType;
+import org.unitime.commons.LocalContext;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base._BaseRootDAO;
@@ -151,6 +153,9 @@ public class HibernateUtil {
 			sSessionFactory.close();
 			sSessionFactory=null;
 		}
+		
+		if (!NamingManager.hasInitialContextFactoryBuilder())
+			NamingManager.setInitialContextFactoryBuilder(new LocalContext(null));
 		
 		sLog.info("Connecting to "+getProperty(properties,"connection.url"));
 		ClassLoader classLoader = HibernateUtil.class.getClassLoader();
