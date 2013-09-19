@@ -21,9 +21,7 @@ package org.unitime.timetable.gwt.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -80,22 +78,17 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
+import org.unitime.timetable.onlinesectioning.updates.CalendarExport;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.context.UniTimeUserContext;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
-import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
 
 /**
  * @author Tomas Muller
@@ -106,6 +99,8 @@ public class CalendarServlet extends HttpServlet {
 	
 	@Autowired SessionContext sessionContext;
 	private SessionContext getSessionContext() { return sessionContext; }
+	
+	@Autowired SolverServerService solverServerService;
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		Params params = null;
@@ -140,7 +135,7 @@ public class CalendarServlet extends HttpServlet {
 		}
 		if (sessionId == null)
 			throw new ServletException("No academic session provided.");
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(sessionId);
+		OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString());
     	String classIds = params.getParameter("cid");
     	String fts = params.getParameter("ft");
     	String examIds = params.getParameter("xid");
@@ -164,44 +159,32 @@ public class CalendarServlet extends HttpServlet {
             out.println("X-WR-CALNAME:UniTime Schedule");
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
             out.println("PRODID:-//UniTime " + Constants.getVersion() + "/Schedule Calendar//NONSGML v1.0//EN");
-            if (classIds != null && !classIds.isEmpty()) {
-            	for (String classId: classIds.split(",")) {
-            		if (classId.isEmpty()) continue;
-            		String[] courseAndClassId = classId.split("-");
-            		if (courseAndClassId.length != 2) continue;
-            		try {
-            			if (server == null) {
-            				CourseOffering course = CourseOfferingDAO.getInstance().get(Long.valueOf(courseAndClassId[0]), hibSession);
-            				Class_ clazz = Class_DAO.getInstance().get(Long.valueOf(courseAndClassId[1]), hibSession);
-            				if (course == null || clazz == null) continue;
-                    		printClass(course, clazz, out);
-            			} else {
-                    		CourseInfo course = server.getCourseInfo(Long.valueOf(courseAndClassId[0]));
-                    		Section section = server.getSection(Long.valueOf(courseAndClassId[1]));
-                    		if (course == null || section == null) continue;
-                    		printSection(server, course, section, out);
-            			}
-            		} catch (NumberFormatException e) {}
+            if (server != null) {
+            	out.println(server.execute(new CalendarExport(classIds, fts), null));
+            } else { 
+            	if (classIds != null && !classIds.isEmpty()) {
+            		for (String classId: classIds.split(",")) {
+            			if (classId.isEmpty()) continue;
+            			String[] courseAndClassId = classId.split("-");
+            			if (courseAndClassId.length != 2) continue;
+        				CourseOffering course = CourseOfferingDAO.getInstance().get(Long.valueOf(courseAndClassId[0]), hibSession);
+        				Class_ clazz = Class_DAO.getInstance().get(Long.valueOf(courseAndClassId[1]), hibSession);
+        				if (course == null || clazz == null) continue;
+                		printClass(course, clazz, out);
+            		}
+            	}
+            	if (fts != null && !fts.isEmpty()) {
+        			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
+        			Date dpFirstDate = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
+        			BitSet weekCode = session.getDefaultDatePattern().getPatternBitSet();
+	        		for (String ft: fts.split(",")) {
+	        			if (ft.isEmpty()) continue;
+	        			String[] daysStartLen = ft.split("-");
+	        			if (daysStartLen.length != 3) continue;
+	        			printFreeTime(dpFirstDate, weekCode, daysStartLen[0], Integer.parseInt(daysStartLen[1]), Integer.parseInt(daysStartLen[2]), out);
+	        		}
             	}
             }
-        	if (fts != null && !fts.isEmpty()) {
-        		Date dpFirstDate = null;
-        		BitSet weekCode = null;
-        		if (server == null) {
-        			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
-        			dpFirstDate = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
-        			weekCode = session.getDefaultDatePattern().getPatternBitSet();
-        		} else {
-        			dpFirstDate = server.getAcademicSession().getDatePatternFirstDate();
-        			weekCode = server.getAcademicSession().getFreeTimePattern();
-        		}
-        		for (String ft: fts.split(",")) {
-        			if (ft.isEmpty()) continue;
-        			String[] daysStartLen = ft.split("-");
-        			if (daysStartLen.length != 3) continue;
-        			printFreeTime(dpFirstDate, weekCode, daysStartLen[0], Integer.parseInt(daysStartLen[1]), Integer.parseInt(daysStartLen[2]), out);
-        		}
-        	}
             if (examIds != null && !examIds.isEmpty()) {
             	for (String examId: examIds.split(",")) {
             		if (examId.isEmpty()) continue;
@@ -337,36 +320,6 @@ public class CalendarServlet extends HttpServlet {
         		hibSession.close();
         	out.close();
         }
-	}
-	
-	public static String getCalendar(OnlineSectioningServer server, net.sf.cpsolver.studentsct.model.Student student) throws IOException {
-		if (student == null) return null;
-		StringWriter buffer = new StringWriter();
-		PrintWriter out = new PrintWriter(buffer);
-        out.println("BEGIN:VCALENDAR");
-        out.println("VERSION:2.0");
-        out.println("CALSCALE:GREGORIAN");
-        out.println("METHOD:PUBLISH");
-        out.println("X-WR-CALNAME:UniTime Schedule");
-        out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
-        out.println("PRODID:-//UniTime " + Constants.getVersion() + "/Schedule Calendar//NONSGML v1.0//EN");
-		for (Request request: student.getRequests()) {
-			Enrollment enrollment = request.getAssignment();
-			if (enrollment == null) continue;
-			if (enrollment.isCourseRequest()) {
-				CourseInfo course = server.getCourseInfo(enrollment.getCourse().getId());
-				for (Section section: enrollment.getSections())
-					printSection(server, course, section, out);
-			} else {
-				FreeTimeRequest ft = (FreeTimeRequest)request;
-				printFreeTime(server.getAcademicSession().getDatePatternFirstDate(), server.getAcademicSession().getFreeTimePattern(), 
-						DayCode.toString(ft.getTime().getDayCode()), ft.getTime().getStartSlot(), ft.getTime().getLength(), out);
-			}
-		}
-	    out.println("END:VCALENDAR");
-    	out.flush();
-		out.close();
-		return buffer.toString();		
 	}
 	
 	private void printEvent(EventInterface event, PrintWriter out) throws IOException {
@@ -710,213 +663,6 @@ public class CalendarServlet extends HttpServlet {
         out.println("END:VEVENT");
 	}
 	
-	private static void printSection(OnlineSectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
-		TimeLocation time = section.getTime();
-		if (time == null || time.getWeekCode().isEmpty()) return;
-		
-        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-        SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
-        tf.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-    	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
-    	cal.setTime(server.getAcademicSession().getDatePatternFirstDate());
-    	int idx = time.getWeekCode().nextSetBit(0);
-    	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
-    	cal.set(Calendar.SECOND, 0);
-    	Date first = null;
-    	while (idx < time.getWeekCode().size() && first == null) {
-    		if (time.getWeekCode().get(idx)) {
-        		int dow = cal.get(Calendar.DAY_OF_WEEK);
-        		switch (dow) {
-        		case Calendar.MONDAY:
-        			if ((time.getDayCode() & DayCode.MON.getCode()) != 0) first = cal.getTime();
-        			break;
-        		case Calendar.TUESDAY:
-        			if ((time.getDayCode() & DayCode.TUE.getCode()) != 0) first = cal.getTime();
-        			break;
-        		case Calendar.WEDNESDAY:
-        			if ((time.getDayCode() & DayCode.WED.getCode()) != 0) first = cal.getTime();
-        			break;
-        		case Calendar.THURSDAY:
-        			if ((time.getDayCode() & DayCode.THU.getCode()) != 0) first = cal.getTime();
-        			break;
-        		case Calendar.FRIDAY:
-        			if ((time.getDayCode() & DayCode.FRI.getCode()) != 0) first = cal.getTime();
-        			break;
-        		case Calendar.SATURDAY:
-        			if ((time.getDayCode() & DayCode.SAT.getCode()) != 0) first = cal.getTime();
-        			break;
-        		case Calendar.SUNDAY:
-        			if ((time.getDayCode() & DayCode.SUN.getCode()) != 0) first = cal.getTime();
-        			break;
-        		}
-        	}
-    		if (first == null) {
-        		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
-    		}
-    	}
-    	if (first == null) return;
-    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * time.getLength() - time.getBreakTime());
-    	Date firstEnd = cal.getTime();
-    	int fidx = idx;
-    	
-    	cal.setTime(server.getAcademicSession().getDatePatternFirstDate());
-    	idx = time.getWeekCode().length() - 1;
-    	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
-    	cal.set(Calendar.SECOND, 0);
-    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * time.getLength() - time.getBreakTime());
-    	Date last = null;
-    	while (idx >= 0 && last == null) {
-    		if (time.getWeekCode().get(idx)) {
-        		int dow = cal.get(Calendar.DAY_OF_WEEK);
-        		switch (dow) {
-        		case Calendar.MONDAY:
-        			if ((time.getDayCode() & DayCode.MON.getCode()) != 0) last = cal.getTime();
-        			break;
-        		case Calendar.TUESDAY:
-        			if ((time.getDayCode() & DayCode.TUE.getCode()) != 0) last = cal.getTime();
-        			break;
-        		case Calendar.WEDNESDAY:
-        			if ((time.getDayCode() & DayCode.WED.getCode()) != 0) last = cal.getTime();
-        			break;
-        		case Calendar.THURSDAY:
-        			if ((time.getDayCode() & DayCode.THU.getCode()) != 0) last = cal.getTime();
-        			break;
-        		case Calendar.FRIDAY:
-        			if ((time.getDayCode() & DayCode.FRI.getCode()) != 0) last = cal.getTime();
-        			break;
-        		case Calendar.SATURDAY:
-        			if ((time.getDayCode() & DayCode.SAT.getCode()) != 0) last = cal.getTime();
-        			break;
-        		case Calendar.SUNDAY:
-        			if ((time.getDayCode() & DayCode.SUN.getCode()) != 0) last = cal.getTime();
-        			break;
-        		}
-        	}
-    		if (last == null) {
-        		cal.add(Calendar.DAY_OF_YEAR, -1); idx--;    			
-    		}
-    	}
-    	if (last == null) return;
-    	
-    	cal.setTime(server.getAcademicSession().getDatePatternFirstDate());
-    	idx = fidx;
-    	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
-    	cal.set(Calendar.SECOND, 0);
-
-        out.println("BEGIN:VEVENT");
-        out.println("DTSTART:" + df.format(first) + "T" + tf.format(first) + "Z");
-        out.println("DTEND:" + df.format(firstEnd) + "T" + tf.format(firstEnd) + "Z");
-        out.print("RRULE:FREQ=WEEKLY;BYDAY=");
-        for (Iterator<DayCode> i = DayCode.toDayCodes(time.getDayCode()).iterator(); i.hasNext(); ) {
-        	out.print(i.next().getName().substring(0, 2).toUpperCase());
-        	if (i.hasNext()) out.print(",");
-        }
-        out.println(";WKST=MO;UNTIL=" + df.format(last) + "T" + tf.format(last) + "Z");
-        ArrayList<ArrayList<String>> extra = new ArrayList<ArrayList<String>>();
-    	while (idx < time.getWeekCode().length()) {
-    		int dow = cal.get(Calendar.DAY_OF_WEEK);
-    		boolean offered = false;
-    		switch (dow) {
-    		case Calendar.MONDAY:
-    			if ((time.getDayCode() & DayCode.MON.getCode()) != 0) offered = true;
-    			break;
-    		case Calendar.TUESDAY:
-    			if ((time.getDayCode() & DayCode.TUE.getCode()) != 0) offered = true;
-    			break;
-    		case Calendar.WEDNESDAY:
-    			if ((time.getDayCode() & DayCode.WED.getCode()) != 0) offered = true;
-    			break;
-    		case Calendar.THURSDAY:
-    			if ((time.getDayCode() & DayCode.THU.getCode()) != 0) offered = true;
-    			break;
-    		case Calendar.FRIDAY:
-    			if ((time.getDayCode() & DayCode.FRI.getCode()) != 0) offered = true;
-    			break;
-    		case Calendar.SATURDAY:
-    			if ((time.getDayCode() & DayCode.SAT.getCode()) != 0) offered = true;
-    			break;
-    		case Calendar.SUNDAY:
-    			if ((time.getDayCode() & DayCode.SUN.getCode()) != 0) offered = true;
-    			break;
-    		}
-    		if (!offered) {
-        		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
-        		continue;
-    		}
-        	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
-        	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
-        	cal.set(Calendar.SECOND, 0);
-    		if (time.getWeekCode().get(idx)) {
-    			if (!tf.format(first).equals(tf.format(cal.getTime()))) {
-    				ArrayList<String> x = new ArrayList<String>(); extra.add(x);
-    		        x.add("RECURRENCE-ID:" + df.format(cal.getTime()) + "T" + tf.format(first) + "Z");
-    		        x.add("DTSTART:" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
-    		    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * time.getLength() - time.getBreakTime());
-    		        x.add("DTEND:" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
-    			}
-    		} else {
-    			out.println("EXDATE:" + df.format(cal.getTime()) + "T" + tf.format(first) + "Z");
-    		}
-    		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
-    	}
-    	printMeetingRest(server, course, section, out);
-        for (ArrayList<String> x: extra) {
-            out.println("BEGIN:VEVENT");
-            for (String s: x) out.println(s);
-            printMeetingRest(server, course, section, out);
-        }
-	}
-	
-	@SuppressWarnings("unchecked")
-	private static void printMeetingRest(OnlineSectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
-        out.println("UID:" + section.getId());
-        out.println("SEQUENCE:0");
-        out.println("SUMMARY:" + course.getSubjectArea() + " " + course.getCourseNbr() + " " +
-        		section.getSubpart().getName() + " " + section.getName(course.getUniqueId()));
-        String desc = (course.getTitle() == null ? "" : course.getTitle());
-		if (course.getConsent() != null && !course.getConsent().isEmpty())
-			desc += " (" + course.getConsent() + ")";
-			out.println("DESCRIPTION:" + desc);
-        if (section.getRooms() != null && !section.getRooms().isEmpty()) {
-        	String loc = "";
-        	for (RoomLocation r: section.getRooms()) {
-        		if (!loc.isEmpty()) loc += ", ";
-        		loc += r.getName();
-        	}
-        	out.println("LOCATION:" + loc);
-        }
-        try {
-        	URL url = server.getSectionUrl(course.getUniqueId(), section);
-        	if (url != null) out.println("URL:" + url.toString());
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
-        boolean org = false;
-		if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
-			String[] instructors = section.getChoice().getInstructorNames().split(":");
-			for (String instructor: instructors) {
-				String[] nameEmail = instructor.split("\\|");
-				//out.println("CONTACT:" + nameEmail[0] + (nameEmail[1].isEmpty() ? "" : " <" + nameEmail[1]) + ">");
-				if (!org) {
-					out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + nameEmail[0] + "\":MAILTO:" + ( nameEmail.length > 1 ? nameEmail[1] : ""));
-					org = true;
-				} else {
-					out.println("ATTENDEE;ROLE=CHAIR;CN=\"" + nameEmail[0] + "\":MAILTO:" + ( nameEmail.length > 1 ? nameEmail[1] : ""));
-				}
-			}
-		}
-		out.println("STATUS:CONFIRMED");	
-        out.println("END:VEVENT");
-	}
-	
 	private static void printFreeTime(Date dpFirstDate, BitSet weekCode, String days, int start, int len, PrintWriter out) throws IOException {
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -1058,25 +804,41 @@ public class CalendarServlet extends HttpServlet {
 		public String[] getParameterValues(String name);
 		public Enumeration<String> getParameterNames();
 	}
-	
+
 	public static class HttpParams implements Params {
-		HttpServletRequest iRequest;
+		private Map<String, String[]> iParams = new HashMap<String, String[]>();
 		
-		HttpParams(HttpServletRequest request) { iRequest = request; }
+		HttpParams(HttpServletRequest request) {
+			for (Enumeration e = request.getParameterNames(); e.hasMoreElements(); ) {
+				String name = (String)e.nextElement();
+				iParams.put(name, request.getParameterValues(name));
+			}
+		}
 
 		@Override
 		public String getParameter(String name) {
-			return iRequest.getParameter(name);
+			String[] values = iParams.get(name);
+			return (values == null || values.length <= 0 ? null : values[0]);
 		}
 
 		@Override
 		public String[] getParameterValues(String name) {
-			return iRequest.getParameterValues(name);
+			return iParams.get(name);
 		}
 		
 		@Override
 		public Enumeration<String> getParameterNames() {
-			return iRequest.getParameterNames();
+			final Iterator<String> iterator = iParams.keySet().iterator();
+			return new Enumeration<String>() {
+				@Override
+				public boolean hasMoreElements() {
+					return iterator.hasNext();
+				}
+				@Override
+				public String nextElement() {
+					return iterator.next();
+				}
+			};
 		}
 	}
 	
