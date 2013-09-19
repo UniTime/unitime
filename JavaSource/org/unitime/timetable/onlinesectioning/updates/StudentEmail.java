@@ -49,7 +49,6 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
-import org.unitime.timetable.gwt.server.CalendarServlet;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -266,7 +265,7 @@ public Long getStudentId() { return iStudentId; }
 							}
 							
 							try {
-								final String calendar = CalendarServlet.getCalendar(server, student);
+								final String calendar = CalendarExport.getCalendar(server, student);
 								if (calendar != null)
 									email.addAttachement(new DataSource() {
 										@Override
