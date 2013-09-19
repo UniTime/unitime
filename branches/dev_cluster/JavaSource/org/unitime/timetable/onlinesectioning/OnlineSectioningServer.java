@@ -20,7 +20,6 @@
 package org.unitime.timetable.onlinesectioning;
 
 import java.io.Serializable;
-import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 
@@ -58,8 +57,6 @@ public interface OnlineSectioningServer {
 	public Section getSection(Long classId);
 	public Course getCourse(Long courseId);
 	public Offering getOffering(Long offeringId);
-	
-	public URL getSectionUrl(Long courseId, Section section);
 	
 	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException;
 	public <E> void execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user, ServerCallback<E> callback) throws SectioningException;

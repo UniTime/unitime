@@ -27,6 +27,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
 /**
  * @author Tomas Muller
+ * @deprecated
  */
 public interface SectionUrlProvider {
 

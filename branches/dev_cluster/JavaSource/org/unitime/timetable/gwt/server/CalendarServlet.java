@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.events.EventLookupBackend;
@@ -96,6 +97,11 @@ import net.sf.cpsolver.coursett.model.TimeLocation;
 public class CalendarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
+	@Override
+	public void init() {
+		SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+	}
 	
 	@Autowired SessionContext sessionContext;
 	private SessionContext getSessionContext() { return sessionContext; }

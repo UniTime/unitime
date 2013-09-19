@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.studentsct.model.Config;
@@ -43,7 +42,6 @@ import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 public class ListClasses implements OnlineSectioningAction<Collection<ClassAssignmentInterface.ClassAssignment>> {
@@ -103,10 +101,6 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			        return Double.compare(s1.getId(), s2.getId());
 				}
 			});
-			Map<Long, int[]> limits = null;
-			if (OnlineSectioningService.sSectionLimitProvider != null) {
-				limits = OnlineSectioningService.sSectionLimitProvider.getSectionLimits(server.getAcademicSession(), c.getUniqueId(), sections);
-			}
 			ClassAssignmentInterface.CourseAssignment courseAssign = new ClassAssignmentInterface.CourseAssignment();
 			courseAssign.setCourseId(c.getUniqueId());
 			courseAssign.setCourseNbr(c.getCourseNbr());
@@ -120,13 +114,12 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						room += rm.getName();
 					}
 				}
-				int[] limit = (limits == null ? new int[] { section.getEnrollments().size(), section.getLimit()} : limits.get(section.getId()));
 				ClassAssignmentInterface.ClassAssignment a = courseAssign.addClassAssignment();
 				a.setClassId(section.getId());
 				a.setSubpart(section.getSubpart().getName());
 				a.setSection(section.getName(c.getUniqueId()));
 				a.setClassNumber(section.getName(-1l));
-				a.setLimit(limit);
+				a.setLimit(new int[] { section.getEnrollments().size(), section.getLimit()});
 				if (getStudentId() != null) {
 					for (Iterator<Enrollment> i = section.getEnrollments().iterator(); i.hasNext();) {
 						Enrollment enrollment = i.next();

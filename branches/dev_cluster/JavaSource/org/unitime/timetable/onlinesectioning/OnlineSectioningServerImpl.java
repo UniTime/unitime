@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -294,13 +293,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			iLock.readLock().unlock();
 		}
 	}
-	
-	@Override
-	public URL getSectionUrl(Long courseId, Section section) {
-		if (OnlineSectioningService.sSectionUrlProvider == null) return null;
-		return OnlineSectioningService.sSectionUrlProvider.getSectionUrl(getAcademicSession(), courseId, section);
-	}
-	
+		
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Section> getSections(CourseInfo courseInfo) {
