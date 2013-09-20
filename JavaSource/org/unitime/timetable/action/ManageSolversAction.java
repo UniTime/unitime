@@ -281,7 +281,7 @@ public class ManageSolversAction extends Action {
 				if (!ownerName.equals(runnerName))
 					ownerName = runnerName+" as "+ownerName;
 				Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
-				if (session == null || !sessionContext.getUser().getCurrentAuthority().hasQualifier(session)) continue;
+				if (session == null || sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), session).isEmpty()) continue;
 				String sessionLabel = "N/A";
 				if (session!=null)
 					sessionLabel = session.getLabel();
@@ -609,7 +609,7 @@ public class ManageSolversAction extends Action {
 	                if (runnerName==null)
 	                    runnerName = "N/A";
 	                Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
-	                if (session == null || !sessionContext.getUser().getCurrentAuthority().hasQualifier(session)) continue;
+	                if (session == null || sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), session).isEmpty()) continue;
 	                String sessionLabel = "N/A";
 	                if (session!=null)
 	                    sessionLabel = session.getLabel();
@@ -737,7 +737,7 @@ public class ManageSolversAction extends Action {
                    if (runnerName==null)
                        runnerName = "N/A";
                    Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
-                   if (session == null || !sessionContext.getUser().getCurrentAuthority().hasQualifier(session)) continue;
+                   if (session == null || sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), session).isEmpty()) continue;
                    String sessionLabel = session.getLabel();
                    SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(properties.getPropertyLong("General.SettingsId",new Long(-1)));
                    String settingLabel = properties.getProperty("Basic.Mode","N/A");
