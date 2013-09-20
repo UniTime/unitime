@@ -77,6 +77,12 @@
 				<line>Committed assignment was wrongly displayed for a class when the selected solution did not contain an assignment for the class.</line>
 			</description>
 		</item>
+		<item>
+			<name>Manage Solvers</name>
+			<description>
+				<line>Wrong permission check prevented the page from showing solvers from other academic sessions (only solvers from the current academic session were shown).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Solver Changes</title>
