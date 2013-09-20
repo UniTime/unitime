@@ -117,6 +117,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 				}
 			})) {
 	        	Course course = server.getCourse(ci.getUniqueId());
+	        	if (course == null) continue;
 	        	if (offerings.add(course.getOffering().getId())) {
 		            for (Config config: course.getOffering().getConfigs()) {
 		                double enrl = config.getEnrollments().size();

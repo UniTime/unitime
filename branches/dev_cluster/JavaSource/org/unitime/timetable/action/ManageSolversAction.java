@@ -715,14 +715,14 @@ public class ManageSolversAction extends Action {
                    String sessionLabel = solver.getAcademicSession().toString();
                    String mode = solver.getAcademicSession().isSectioningEnabled() ? "Online" : "Assistant";
                    Map<String,String> info = solver.execute(new GetInfo(), null);
-                   String assigned = (String)info.get("Assigned variables");
-                   String totVal = (String)info.get("Overall solution value");
-                   String compSch = (String)info.get("Students with complete schedule");
-                   String distConf = (String)info.get("Student distance conflicts");
-                   String time = (String)info.get("Time overlapping conflicts");
-                   String free = (String)info.get("Free time overlapping conflicts");
-                   String disb = (String)info.get("Average disbalance");
-                   String disb10 = (String)info.get("Sections disbalanced by 10% or more");
+                   String assigned = (info == null ? null : info.get("Assigned variables"));
+                   String totVal = (info == null ? null : info.get("Overall solution value"));
+                   String compSch = (info == null ? null : info.get("Students with complete schedule"));
+                   String distConf = (info == null ? null : info.get("Student distance conflicts"));
+                   String time = (info == null ? null : info.get("Time overlapping conflicts"));
+                   String free = (info == null ? null : info.get("Free time overlapping conflicts"));
+                   String disb = (info == null ? null : info.get("Average disbalance"));
+                   String disb10 = (info == null ? null : info.get("Sections disbalanced by 10% or more"));
                    Date loaded = new Date(solver.getConfig().getPropertyLong("General.StartUpDate", 0));
 
                    String op = "";
