@@ -83,6 +83,12 @@
 				<line>Wrong permission check prevented the page from showing solvers from other academic sessions (only solvers from the current academic session were shown).</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling: Suggestions</name>
+			<description>
+				<line>Do not print a warning message about a section not being available anymore when the user holds an individual reservation for it.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Solver Changes</title>
