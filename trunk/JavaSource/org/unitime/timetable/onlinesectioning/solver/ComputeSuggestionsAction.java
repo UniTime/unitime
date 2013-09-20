@@ -44,6 +44,7 @@ import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
+import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -176,8 +177,16 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				a: for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
 					if (a != null && !a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
 						Section section = cr.getSection(a.getClassId());
-						if (section == null || section.getLimit() == 0) {
-							messages.addMessage((a.isSaved() ? "Enrolled class" : a.isPinned() ? "Required class" : "Previously selected class") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
+						boolean hasIndividualReservation = false;
+						if (section != null && section.getLimit() == 0) {
+							for (Reservation res: cr.getReservations(cr.getCourse(a.getCourseId()))) {
+								if (!res.canAssignOverLimit()) continue;
+								Set<Section> sect = res.getSections(section.getSubpart());
+								if (sect == null || sect.contains(section)) hasIndividualReservation = true;
+							}
+						}
+						if (section == null || (section.getLimit() == 0  && !hasIndividualReservation)) {
+							messages.addMessage((a.isSaved() ? "Enrolled class" : a.isPinned() ? "Required class " : "Previously selected class ") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
 							continue a;
 						}
 						if (section.getPenalty() >= 0) selectedPenalty ++;
