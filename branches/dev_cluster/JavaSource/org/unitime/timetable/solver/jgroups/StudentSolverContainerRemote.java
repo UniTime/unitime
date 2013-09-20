@@ -98,8 +98,8 @@ public class StudentSolverContainerRemote extends StudentSolverContainer impleme
     		return iAddress.toString();
     	}
     	
-    	public String getHostLabel() {
-    		return iAddress.toString();
+    	public String getUser() {
+    		return iUser;
     	}
     	
     	@Override

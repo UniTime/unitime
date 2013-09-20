@@ -1131,6 +1131,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			setProperty("StudentWeights.MultiCriteria", "true");
 			setProperty("Reservation.CanAssignOverTheLimit", "true");
 			setProperty("General.SaveDefaultProperties", "false");
+			setProperty("General.StartUpDate", String.valueOf(new Date().getTime()));
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
 				for (SolverParameterDef def: (List<SolverParameterDef>)hibSession.createQuery(
@@ -1171,6 +1172,16 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			String value = ApplicationProperties.getProperty("unitime.sectioning.config." + key);
 			return value == null ? super.getProperty(key, defaultValue) : value;
 		}
+	}
+
+	@Override
+	public String getHost() {
+		return "local";
+	}
+
+	@Override
+	public String getUser() {
+		return getAcademicSession().getUniqueId().toString();
 	}
 	
 }

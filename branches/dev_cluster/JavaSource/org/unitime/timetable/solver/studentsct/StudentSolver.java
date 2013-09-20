@@ -188,10 +188,10 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         return "local";
     }
     
-    public String getHostLabel() {
-        return getHost();
+    public String getUser() {
+    	return getProperties().getProperty("General.OwnerPuid");
     }
-    
+ 
     public Object exec(Object[] cmd) throws Exception {
         Class[] types = new Class[(cmd.length-3)/2];
         Object[] args = new Object[(cmd.length-3)/2];

@@ -116,8 +116,8 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
     		return iAddress.toString();
     	}
     	
-    	public String getHostLabel() {
-    		return iAddress.toString();
+    	public String getUser() {
+    		return iUser;
     	}
     	
     	@Override
