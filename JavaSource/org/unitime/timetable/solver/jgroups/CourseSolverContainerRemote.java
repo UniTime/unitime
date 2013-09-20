@@ -158,8 +158,8 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
     		return iAddress.toString();
     	}
     	
-    	public String getHostLabel() {
-    		return iAddress.toString();
+    	public String getUser() {
+    		return iUser;
     	}
     	
     	public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) throws Exception {

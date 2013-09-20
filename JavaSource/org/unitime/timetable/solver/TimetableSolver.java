@@ -1611,8 +1611,8 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
         return "local";
     }
     
-    public String getHostLabel() {
-        return getHost();
+    public String getUser() {
+        return getProperties().getProperty("General.OwnerPuid");
     }
-
+    
 }

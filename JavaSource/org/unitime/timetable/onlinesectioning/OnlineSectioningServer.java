@@ -40,6 +40,9 @@ import net.sf.cpsolver.studentsct.model.Student;
  * @author Tomas Muller
  */
 public interface OnlineSectioningServer {
+	public String getHost();
+	public String getUser();
+	
 	public AcademicSessionInfo getAcademicSession();
 	public DistanceMetric getDistanceMetric();
 	public DataProperties getConfig();
