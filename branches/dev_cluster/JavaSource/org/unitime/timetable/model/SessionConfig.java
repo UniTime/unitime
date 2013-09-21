@@ -62,11 +62,16 @@ public class SessionConfig extends BaseSessionConfig {
         Properties properties = new Properties();
         if (!_RootDAO.isConfigured() || sessionId == null) return properties;
         
-        for (SessionConfig config: (List<SessionConfig>)SessionConfigDAO.getInstance().getSession().createQuery(
-        		"from SessionConfig where session.uniqueId = :sessionId").setLong("sessionId", sessionId).setCacheable(true).list()) {
-        	properties.setProperty(config.getKey(), config.getValue() == null ? "" : config.getValue());
+        org.hibernate.Session hibSession = SessionConfigDAO.getInstance().createNewSession();
+        try {
+            for (SessionConfig config: (List<SessionConfig>)hibSession.createQuery(
+            		"from SessionConfig where session.uniqueId = :sessionId").setLong("sessionId", sessionId).setCacheable(true).list()) {
+            	properties.setProperty(config.getKey(), config.getValue() == null ? "" : config.getValue());
+            }
+        } finally {
+        	hibSession.close();
         }
-        
+
         return properties;
     }
 }
