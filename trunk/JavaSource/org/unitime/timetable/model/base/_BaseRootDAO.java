@@ -254,7 +254,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 * Return a new Configuration to use
 	 */
 	 public static Configuration getNewConfiguration(String configFileName) {
-	 	return new Configuration();
+	 	return new HibernateUtil.LoggingConfiguration();
 	 }
 	
 	/**

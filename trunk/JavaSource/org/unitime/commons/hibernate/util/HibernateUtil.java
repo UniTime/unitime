@@ -36,6 +36,8 @@ import org.hibernate.Hibernate;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.SettingsFactory;
+import org.hibernate.connection.ConnectionProvider;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.dialect.Oracle8iDialect;
@@ -48,6 +50,7 @@ import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.util.ConfigHelper;
+import org.unitime.commons.hibernate.connection.LoggingConnectionProvider;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base._BaseRootDAO;
@@ -225,7 +228,7 @@ public class HibernateUtil {
 
         sLog.debug("  -- hibernate.cfg.xml altered");
         
-        Configuration cfg = new Configuration();
+        Configuration cfg = new LoggingConfiguration();
         sLog.debug("  -- configuration object created");
         
     	cfg.setEntityResolver(new EntityResolver() {
@@ -461,5 +464,29 @@ public class HibernateUtil {
     		else
     			dialect.getFunctions().put("bit_and", new SQLFunctionTemplate(Hibernate.INTEGER, "?1 & ?2"));
     	}
+    }
+    
+    public static class LoggingConfiguration extends Configuration {
+		private static final long serialVersionUID = 1L;
+		
+		public LoggingConfiguration() {
+			super(new LoggingSettingsFactory());
+		}
+    	
+    }
+    
+    public static class LoggingSettingsFactory extends SettingsFactory {
+		private static final long serialVersionUID = 1L;
+
+		public LoggingSettingsFactory() {
+    		super();
+    	}
+    	
+		protected ConnectionProvider createConnectionProvider(Properties properties) {
+			if ("true".equals(properties.getProperty("connection.logging")))
+				return new LoggingConnectionProvider(super.createConnectionProvider(properties));
+			else
+				return super.createConnectionProvider(properties);
+		}
     }
 }
