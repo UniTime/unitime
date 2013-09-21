@@ -985,9 +985,11 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			if (iPanel == null) {
 				iPanel = new AbsolutePanel();
 				iPanel.addStyleName("filter");
-				Label label = new Label(getCommand().replace('_', ' '), false);
-				label.addStyleName("command");
-				iPanel.add(label);
+				if (getCommand() != null && !getCommand().isEmpty()) {
+					Label label = new Label(getCommand().replace('_', ' '), false);
+					label.addStyleName("command");
+					iPanel.add(label);
+				}
 				AbsolutePanel other = new AbsolutePanel();
 				other.addStyleName("other");
 				for (Widget w: iWidgets) {
@@ -1111,19 +1113,36 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 
 		public Suggestion(Chip chip) {
 			iAdd = chip; iReplacement = ""; 
+			if (chip.getHint() != null) {
+				iDisplay = chip.getName();
+				iHint = " <span class='item-hint'>" + chip.getHint() + "</span>";
+			}
 		}
 		
 		public Suggestion(Chip add, Chip remove) {
 			iAdd = add; iRemove = remove; iReplacement = ""; 
+			if ((add != null ? add : remove).getHint() != null) {
+				iDisplay = (add != null ? add : remove).getName();
+				iHint = " <span class='item-hint'>" + (add != null ? add : remove).getHint() + "</span>";
+			}
 		}
 		
 		public Suggestion(String displayString, Chip add) {
-			iDisplay = displayString; iReplacement = ""; iAdd = add; iHint = "<span class='item-command'>" + add.getCommand().replace('_', ' ') + "</span>";
+			iDisplay = displayString; iReplacement = ""; iAdd = add;
+			if (add.getHint() != null) {
+				iHint = " <span class='item-hint'>" + add.getHint() + "</span>";
+			} else {
+				iHint = "<span class='item-command'>" + add.getCommand().replace('_', ' ') + "</span>";
+			}
 		}
 		
 		public Suggestion(String displayString, Chip add, Chip remove) {
 			iDisplay = displayString; iReplacement = ""; iAdd = add; iRemove = remove;
-			iHint = "<span class='item-command'>" + (add != null ? add : remove).getCommand().replace('_', ' ') + "</span>";
+			if ((add != null ? add : remove).getHint() != null) {
+				iHint = " <span class='item-hint'>" + (add != null ? add : remove).getHint() + "</span>";
+			} else {
+				iHint = "<span class='item-command'>" + (add != null ? add : remove).getCommand().replace('_', ' ') + "</span>";
+			}
 		}
 		
 		public void setDisplayString(String display) { iDisplay = display; }
