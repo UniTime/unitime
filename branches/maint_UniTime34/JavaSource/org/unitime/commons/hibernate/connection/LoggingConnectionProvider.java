@@ -32,16 +32,22 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
+import org.hibernate.connection.ConnectionProvider;
 
-public class LoggingDBCPConnectionProvider extends DBCPConnectionProvider {
-	private static final Log sLog = LogFactory.getLog(LoggingDBCPConnectionProvider.class);
-	private static final DecimalFormat sDF = new DecimalFormat("#,##0.00");
+public class LoggingConnectionProvider implements ConnectionProvider {
 	private List<Lease> iLeases = new ArrayList<Lease>();
-	private LeaseLogger iLogger = null;
+	private LeasedConnectionsLogger iLogger = null;
+	private ConnectionProvider iConnectionProvider;
+	
+	public LoggingConnectionProvider(ConnectionProvider provider) {
+		iConnectionProvider = provider;
+		iLogger = new LeasedConnectionsLogger();
+		iLogger.start();
+	}
 	
 	@Override
 	public Connection getConnection() throws SQLException {
-		Connection connection = super.getConnection();
+		Connection connection = iConnectionProvider.getConnection();
 		synchronized (iLeases) {
 			iLeases.add(new Lease(connection));
 		}
@@ -57,23 +63,27 @@ public class LoggingDBCPConnectionProvider extends DBCPConnectionProvider {
 					i.remove();
 			}
 		}
-		super.closeConnection(connection);
+		iConnectionProvider.closeConnection(connection);
 	}
 	
 	@Override
 	public void configure(Properties props) throws HibernateException {
-		super.configure(props);
-		iLogger = new LeaseLogger();
-		iLogger.start();
+		iConnectionProvider.configure(props);
 	}
 	
 	@Override
 	public void close() throws HibernateException {
-		super.close();
+		iConnectionProvider.close();
 		iLogger.interrupt();
 	}
 	
+	@Override
+	public boolean supportsAggressiveRelease() {
+		return iConnectionProvider.supportsAggressiveRelease();
+	}
+	
 	public static class Lease {
+		private static final DecimalFormat sDF = new DecimalFormat("#,##0.00");
 		private Connection iConnection;
 		private Thread iThread;
 		private StackTraceElement[] iTrace;
@@ -129,17 +139,19 @@ public class LoggingDBCPConnectionProvider extends DBCPConnectionProvider {
 		}
 	}
 	
-	public class LeaseLogger extends Thread {
+	public class LeasedConnectionsLogger extends Thread {
+		private Log iLog = LogFactory.getLog(LeasedConnectionsLogger.class);
+
 		private boolean iActive = true;
 		
-		public LeaseLogger() {
-			super("DBCP:Logger");
+		public LeasedConnectionsLogger() {
+			super("LeasedConnectionsLogger");
 			setDaemon(true);
 		}
 		
 		@Override
 		public void run() {
-			sLog.info("Database connection pool logging is enabled.");
+			iLog.info("Database connection pool logging is enabled.");
 			while (iActive) {
 				try {
 					try {
@@ -151,15 +163,15 @@ public class LoggingDBCPConnectionProvider extends DBCPConnectionProvider {
 							if (lease.getLeaseTime() > 60.0 || lease.getState() == State.TERMINATED)
 								suspicious.add(lease);
 						if (!suspicious.isEmpty())
-							sLog.info("Suspicious leases:" + ToolBox.col2string(iLeases, 2));
+							iLog.warn("Suspicious leases:" + ToolBox.col2string(iLeases, 2));
 						for (Lease lease: suspicious)
 							if (lease.getState() == State.TERMINATED) {
-								sLog.fatal("Releasing connection of a terminated thread " + lease.getName() + "." + lease.getStackTrace());
+								iLog.fatal("Releasing connection of a terminated thread " + lease.getName() + "." + lease.getStackTrace());
 								closeConnection(lease.getConnection());
 							}
 					}
 				} catch (Exception e) {
-					sLog.warn("Logging failed: " + e.getMessage(), e);
+					iLog.warn("Logging failed: " + e.getMessage(), e);
 				}
 			}
 		}
@@ -171,5 +183,4 @@ public class LoggingDBCPConnectionProvider extends DBCPConnectionProvider {
 			try { join(); } catch (InterruptedException e) {}
 		}
 	}
-
 }
