@@ -516,15 +516,6 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		} else return super.populateFilter(filter, entities);
 	}
 	
-	@Override
-	protected void addSuggestion(List<FilterBox.Suggestion> suggestions, FilterRpcResponse.Entity entity) {
-		if ("Requested By".equals(entity.getProperty("hint", null))) {
-			suggestions.add(new FilterBox.Suggestion(entity.getName(), new FilterBox.Chip("requested", entity.getAbbreviation()), getChip("requested")));
-		} else {
-			super.addSuggestion(suggestions, entity);
-		}
-	}
-	
 	private void requestedChanged(boolean fireChange) {
 		Chip oldChip = getChip("requested");
 		if (iRequested.getText().isEmpty()) {

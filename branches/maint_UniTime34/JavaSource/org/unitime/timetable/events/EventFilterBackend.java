@@ -395,7 +395,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			response.addSuggestion(event.getEventName(), event.getEventName(), event.getEventTypeLabel());
 		
 		if ((context.hasPermission(Right.EventLookupContact) || context.hasPermission(Right.EventLookupSchedule)) && (!request.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20))) {
-			EventQuery.EventInstance instance = query.select("distinct c").from("inner join e.mainContact c").exclude("sponsor").exclude("query");
+			EventQuery.EventInstance instance = query.select("distinct c").from("inner join e.mainContact c").exclude("sponsor").exclude("requested").exclude("query");
 			
 			int id = 0;
 			for (StringTokenizer s=new StringTokenizer(request.getText().trim(),", ");s.hasMoreTokens();) {
@@ -404,7 +404,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
             }
 			
 			for (EventContact contact: (List<EventContact>)instance.limit(20).query(hibSession).list())
-				response.addSuggestion(contact.getName(), contact.getName(), "Requested By");
+				response.addSuggestion(contact.getName(), contact.getName(), "Requested By", "requested");
 
 		}
 	}
