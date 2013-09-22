@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import com.google.gwt.dom.client.Style.TextAlign;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
@@ -30,6 +31,7 @@ public class NumberBox extends TextBox {
 	public NumberBox() {
 		setStyleName("gwt-SuggestBox");
 		setWidth("100px");
+		getElement().getStyle().setTextAlign(TextAlign.RIGHT);
 		addKeyPressHandler(new KeyPressHandler() {
 			@Override
 			public void onKeyPress(KeyPressEvent event) {

@@ -174,7 +174,7 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 			List<FilterBox.Chip> chips = new ArrayList<FilterBox.Chip>();
 			if (entities != null) {
 				for (FilterRpcResponse.Entity entity: entities)
-					chips.add(new FilterBox.Chip(filter.getCommand(), entity.getName(), entity.getCount() <= 0 ? null : "(" + entity.getCount() + ")"));
+					chips.add(new FilterBox.Chip(filter.getCommand(), entity.getName(), entity.getCount()));
 			}
 			simple.setValues(chips);
 			return true;

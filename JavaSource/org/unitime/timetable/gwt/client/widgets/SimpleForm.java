@@ -86,15 +86,25 @@ public class SimpleForm extends FlexTable {
 	public int addNotPrintableBottomRow(Widget widget) {
 		return addBottomRow(widget, false);
 	}
-
+	
 	public int addRow(String text, Widget widget) {
-		return addRow(new Label(text, false), widget);
+		return addRow(text, widget, iColSpan - 1);
+	}
+
+	public int addRow(String text, Widget widget, int colspan) {
+		return addRow(new Label(text, false), widget, colspan);
 	}
 	
 	public int addRow(Widget header, Widget widget) {
+		return addRow(header, widget, iColSpan - 1);
+	}
+	
+	public int addRow(Widget header, Widget widget, int colSpan) {
 		int row = getRowCount();
 		setWidget(row, 0, header);
 		setWidget(row, 1, widget);
+		if (colSpan != 1)
+			getFlexCellFormatter().setColSpan(row, 1, colSpan);
 		if (header.getElement().getId() == null || header.getElement().getId().isEmpty())
 			header.getElement().setId(DOM.createUniqueId());
 		if (widget instanceof UniTimeWidget)

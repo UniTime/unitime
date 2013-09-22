@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
 import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
@@ -69,7 +70,7 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.SuggestOracle;
 
 public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 	private ListBox iSponsors;
@@ -79,7 +80,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private FilterBox.CustomFilter iOther = null;
-	private TextBox iRequested;
+	private AriaSuggestBox iRequested;
 	private Chip iLastRequested = null;
 	
 	public EventFilterBox(AcademicSessionProvider session) {
@@ -141,9 +142,9 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		
 		Label reqLab = new Label(MESSAGES.propRequestedBy());
 
-		iRequested = new TextBox();
+		iRequested = new AriaSuggestBox(new RequestedByOracle());
 		iRequested.setStyleName("unitime-TextArea");
-		iRequested.setMaxLength(100); iRequested.setWidth("200px");
+		iRequested.setWidth("200px");
 		
 		final CheckBox conflicts = new CheckBox(MESSAGES.checkDisplayConflicts());
 		conflicts.getElement().getStyle().setMarginLeft(10, Unit.PX);
@@ -173,13 +174,13 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		addFilter(new FilterBox.StaticSimpleFilter("requested"));
 		addFilter(new FilterBox.StaticSimpleFilter("flag"));
 
-		iRequested.addChangeHandler(new ChangeHandler() {
+		iRequested.getValueBox().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
 				requestedChanged(true);
 			}
 		});
-		iRequested.addKeyPressHandler(new KeyPressHandler() {
+		iRequested.getValueBox().addKeyPressHandler(new KeyPressHandler() {
 			@Override
 			public void onKeyPress(KeyPressEvent event) {
 				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -190,7 +191,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 				});
 			}
 		});
-		iRequested.addKeyUpHandler(new KeyUpHandler() {
+		iRequested.getValueBox().addKeyUpHandler(new KeyUpHandler() {
 			@Override
 			public void onKeyUp(KeyUpEvent event) {
 				if (event.getNativeKeyCode() == KeyCodes.KEY_BACKSPACE)
@@ -202,7 +203,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 					});
 			}
 		});
-		iRequested.addBlurHandler(new BlurHandler() {
+		iRequested.getValueBox().addBlurHandler(new BlurHandler() {
 			@Override
 			public void onBlur(BlurEvent event) {
 				requestedChanged(true);
@@ -516,15 +517,6 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		} else return super.populateFilter(filter, entities);
 	}
 	
-	@Override
-	protected void addSuggestion(List<FilterBox.Suggestion> suggestions, FilterRpcResponse.Entity entity) {
-		if ("Requested By".equals(entity.getProperty("hint", null))) {
-			suggestions.add(new FilterBox.Suggestion(entity.getName(), new FilterBox.Chip("requested", entity.getAbbreviation()), getChip("requested")));
-		} else {
-			super.addSuggestion(suggestions, entity);
-		}
-	}
-	
 	private void requestedChanged(boolean fireChange) {
 		Chip oldChip = getChip("requested");
 		if (iRequested.getText().isEmpty()) {
@@ -548,4 +540,49 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		return new EventFilterRpcRequest();
 	}
 
+	public class RequestedByOracle extends SuggestOracle {
+		
+		@Override
+		public void requestSuggestions(final Request request, final Callback callback) {
+			if (!request.getQuery().isEmpty()) {
+				iFilter.getWidget().getSuggestionsProvider().getSuggestions(iFilter.getWidget().getChips(null), request.getQuery(), new AsyncCallback<Collection<FilterBox.Suggestion>>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+					}
+
+					@Override
+					public void onSuccess(Collection<FilterBox.Suggestion> result) {
+						if (result == null) return;
+						List<RequestedBySuggestion> suggestions = new ArrayList<RequestedBySuggestion>();
+						for (FilterBox.Suggestion suggestion: result) {
+							if (suggestion.getChipToAdd() != null && "requested".equals(suggestion.getChipToAdd().getCommand())) {
+								suggestions.add(new RequestedBySuggestion(suggestion));
+							}
+						}
+						callback.onSuggestionsReady(request, new Response(suggestions));
+					}
+				});
+			}
+		}
+		
+	}
+	
+	public class RequestedBySuggestion implements SuggestOracle.Suggestion {
+		private FilterBox.Suggestion iSuggestion;
+		
+		RequestedBySuggestion(FilterBox.Suggestion suggestion) {
+			iSuggestion = suggestion;
+		}
+
+		@Override
+		public String getDisplayString() {
+			return iSuggestion.getChipToAdd().getName();
+		}
+
+		@Override
+		public String getReplacementString() {
+			return iSuggestion.getChipToAdd().getName();
+		}
+	}
 }

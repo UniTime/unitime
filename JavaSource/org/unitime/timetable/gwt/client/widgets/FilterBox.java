@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
@@ -682,9 +683,13 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public static class Chip implements IsSerializable {
 		private String iCommand, iName, iValue, iHint;
+		private Integer iCount;
 		public Chip() {}
 		public Chip(String command, String value, String name, String hint) {
 			iCommand = command; iValue = value; iName = name; iHint = hint;
+		}
+		public Chip(String command, String value, int count) {
+			iCommand = command; iValue = value; iCount = count;
 		}
 		public Chip(String command, String value, String hint) {
 			this(command, value, null, hint);
@@ -696,6 +701,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		public String getValue() { return iValue; }
 		public String getHint() { return iHint; }
 		public String getName() { return iName == null ? iValue : iName; }
+		public boolean hasCount() { return iCount != null && iCount > 0; }
+		public Integer getCount() { return iCount; }
 		public void setHint(String hint) { iHint = hint; }
 		@Override
 		public boolean equals(Object other) {
@@ -873,8 +880,12 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					label.addStyleName("command");
 					popup.add(label);
 					for (final Chip value: values) {
-						HTML item = new HTML(SafeHtmlUtils.htmlEscape(value.getName()) +
-								(value.getHint() == null ? "" : "<span class='item-hint'>" + value.getHint() + "</span>") , false);
+						String html = SafeHtmlUtils.htmlEscape(value.getName());
+						if (value.getHint() != null)
+							html += "<span class='item-hint'>" + value.getHint() + "</span>";
+						else if (value.hasCount())
+							html += "<span class='item-hint'>(" + value.getCount() + ")</span>";
+						HTML item = new HTML(html, false);
 						item.addStyleName("value");
 						item.addMouseDownHandler(new MouseDownHandler() {
 							@Override
@@ -975,6 +986,21 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		
 		public boolean isVisible() { return iVisible; }
 		public void setVisible(boolean visible) { iVisible = visible; }
+		
+		private void fixHandlers(final FilterBox box, Widget w) {
+			if (w instanceof HasBlurHandlers)
+				((HasBlurHandlers)w).addBlurHandler(box.iBlurHandler);
+			if (w instanceof HasFocusHandlers)
+				((HasFocusHandlers)w).addFocusHandler(box.iFocusHandler);
+			if (w instanceof HasKeyDownHandlers)
+				((HasKeyDownHandlers)w).addKeyDownHandler(new KeyDownHandler() {
+					@Override
+					public void onKeyDown(KeyDownEvent event) {
+						if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE)
+							if (box.isFilterPopupShowing()) box.hideFilterPopup();
+					}
+				});
+		}
 
 		@Override
 		public void getPopupWidget(final FilterBox box, AsyncCallback<Widget> callback) {
@@ -985,25 +1011,19 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			if (iPanel == null) {
 				iPanel = new AbsolutePanel();
 				iPanel.addStyleName("filter");
-				Label label = new Label(getCommand().replace('_', ' '), false);
-				label.addStyleName("command");
-				iPanel.add(label);
+				if (getCommand() != null && !getCommand().isEmpty()) {
+					Label label = new Label(getCommand().replace('_', ' '), false);
+					label.addStyleName("command");
+					iPanel.add(label);
+				}
 				AbsolutePanel other = new AbsolutePanel();
 				other.addStyleName("other");
 				for (Widget w: iWidgets) {
 					w.addStyleName("inline");
-					if (w instanceof HasBlurHandlers)
-						((HasBlurHandlers)w).addBlurHandler(box.iBlurHandler);
-					if (w instanceof HasFocusHandlers)
-						((HasFocusHandlers)w).addFocusHandler(box.iFocusHandler);
-					if (w instanceof HasKeyDownHandlers)
-						((HasKeyDownHandlers)w).addKeyDownHandler(new KeyDownHandler() {
-							@Override
-							public void onKeyDown(KeyDownEvent event) {
-								if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE)
-									if (box.isFilterPopupShowing()) box.hideFilterPopup();
-							}
-						});
+					if (w instanceof AriaSuggestBox)
+						fixHandlers(box, ((AriaSuggestBox)w).getValueBox());
+					else
+						fixHandlers(box, w);
 					other.add(w);
 				}
 				iPanel.add(other);
@@ -1111,19 +1131,36 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 
 		public Suggestion(Chip chip) {
 			iAdd = chip; iReplacement = ""; 
+			if (chip.getHint() != null) {
+				iDisplay = chip.getName();
+				iHint = " <span class='item-hint'>" + chip.getHint() + "</span>";
+			}
 		}
 		
 		public Suggestion(Chip add, Chip remove) {
 			iAdd = add; iRemove = remove; iReplacement = ""; 
+			if ((add != null ? add : remove).getHint() != null) {
+				iDisplay = (add != null ? add : remove).getName();
+				iHint = " <span class='item-hint'>" + (add != null ? add : remove).getHint() + "</span>";
+			}
 		}
 		
 		public Suggestion(String displayString, Chip add) {
-			iDisplay = displayString; iReplacement = ""; iAdd = add; iHint = "<span class='item-command'>" + add.getCommand().replace('_', ' ') + "</span>";
+			iDisplay = displayString; iReplacement = ""; iAdd = add;
+			if (add.getHint() != null) {
+				iHint = " <span class='item-hint'>" + add.getHint() + "</span>";
+			} else {
+				iHint = "<span class='item-command'>" + add.getCommand().replace('_', ' ') + "</span>";
+			}
 		}
 		
 		public Suggestion(String displayString, Chip add, Chip remove) {
 			iDisplay = displayString; iReplacement = ""; iAdd = add; iRemove = remove;
-			iHint = "<span class='item-command'>" + (add != null ? add : remove).getCommand().replace('_', ' ') + "</span>";
+			if ((add != null ? add : remove).getHint() != null) {
+				iHint = " <span class='item-hint'>" + (add != null ? add : remove).getHint() + "</span>";
+			} else {
+				iHint = "<span class='item-command'>" + (add != null ? add : remove).getCommand().replace('_', ' ') + "</span>";
+			}
 		}
 		
 		public void setDisplayString(String display) { iDisplay = display; }
