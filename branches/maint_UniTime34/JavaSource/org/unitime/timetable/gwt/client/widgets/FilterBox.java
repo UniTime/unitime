@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
@@ -975,6 +976,21 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		
 		public boolean isVisible() { return iVisible; }
 		public void setVisible(boolean visible) { iVisible = visible; }
+		
+		private void fixHandlers(final FilterBox box, Widget w) {
+			if (w instanceof HasBlurHandlers)
+				((HasBlurHandlers)w).addBlurHandler(box.iBlurHandler);
+			if (w instanceof HasFocusHandlers)
+				((HasFocusHandlers)w).addFocusHandler(box.iFocusHandler);
+			if (w instanceof HasKeyDownHandlers)
+				((HasKeyDownHandlers)w).addKeyDownHandler(new KeyDownHandler() {
+					@Override
+					public void onKeyDown(KeyDownEvent event) {
+						if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE)
+							if (box.isFilterPopupShowing()) box.hideFilterPopup();
+					}
+				});
+		}
 
 		@Override
 		public void getPopupWidget(final FilterBox box, AsyncCallback<Widget> callback) {
@@ -994,18 +1010,10 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 				other.addStyleName("other");
 				for (Widget w: iWidgets) {
 					w.addStyleName("inline");
-					if (w instanceof HasBlurHandlers)
-						((HasBlurHandlers)w).addBlurHandler(box.iBlurHandler);
-					if (w instanceof HasFocusHandlers)
-						((HasFocusHandlers)w).addFocusHandler(box.iFocusHandler);
-					if (w instanceof HasKeyDownHandlers)
-						((HasKeyDownHandlers)w).addKeyDownHandler(new KeyDownHandler() {
-							@Override
-							public void onKeyDown(KeyDownEvent event) {
-								if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE)
-									if (box.isFilterPopupShowing()) box.hideFilterPopup();
-							}
-						});
+					if (w instanceof AriaSuggestBox)
+						fixHandlers(box, ((AriaSuggestBox)w).getValueBox());
+					else
+						fixHandlers(box, w);
 					other.add(w);
 				}
 				iPanel.add(other);
