@@ -134,6 +134,12 @@
 				<line>There is also a warning message "The requested time is unusual, please look at it closely." displayed on the second page of the Add Meetings dialog and below the meeting on the Add / Edit Event page.</line>
 			</description>
 		</item>
+		<item>
+			<name>Events: Event Filter</name>
+			<description>
+				<line>Requested By field of the Event Filter now provides suggestions as the main contact's name or email address is typed in.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
