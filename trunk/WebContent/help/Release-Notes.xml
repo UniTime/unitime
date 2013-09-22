@@ -97,6 +97,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Events: Event Filter</name>
+			<description>
+				<line>Requested By field of the Event Filter now provides suggestions as the main contact's name or email address is typed in.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

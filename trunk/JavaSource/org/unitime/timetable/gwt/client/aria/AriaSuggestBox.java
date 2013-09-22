@@ -166,6 +166,9 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 	        	  if (isSuggestionListShowing())
 	        		  iSuggestionMenu.executeSelected();
 	        	  break;
+	          case KeyCodes.KEY_ESCAPE:
+	        	  if (isSuggestionListShowing())
+	        		  hideSuggestionList();
 				}
 				delegateEvent(AriaSuggestBox.this, event);
 			}
