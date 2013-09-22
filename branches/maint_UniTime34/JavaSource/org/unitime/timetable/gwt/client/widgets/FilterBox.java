@@ -683,9 +683,13 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public static class Chip implements IsSerializable {
 		private String iCommand, iName, iValue, iHint;
+		private Integer iCount;
 		public Chip() {}
 		public Chip(String command, String value, String name, String hint) {
 			iCommand = command; iValue = value; iName = name; iHint = hint;
+		}
+		public Chip(String command, String value, int count) {
+			iCommand = command; iValue = value; iCount = count;
 		}
 		public Chip(String command, String value, String hint) {
 			this(command, value, null, hint);
@@ -697,6 +701,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		public String getValue() { return iValue; }
 		public String getHint() { return iHint; }
 		public String getName() { return iName == null ? iValue : iName; }
+		public boolean hasCount() { return iCount != null && iCount > 0; }
+		public Integer getCount() { return iCount; }
 		public void setHint(String hint) { iHint = hint; }
 		@Override
 		public boolean equals(Object other) {
@@ -874,8 +880,12 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					label.addStyleName("command");
 					popup.add(label);
 					for (final Chip value: values) {
-						HTML item = new HTML(SafeHtmlUtils.htmlEscape(value.getName()) +
-								(value.getHint() == null ? "" : "<span class='item-hint'>" + value.getHint() + "</span>") , false);
+						String html = SafeHtmlUtils.htmlEscape(value.getName());
+						if (value.getHint() != null)
+							html += "<span class='item-hint'>" + value.getHint() + "</span>";
+						else if (value.hasCount())
+							html += "<span class='item-hint'>(" + value.getCount() + ")</span>";
+						HTML item = new HTML(html, false);
 						item.addStyleName("value");
 						item.addMouseDownHandler(new MouseDownHandler() {
 							@Override
