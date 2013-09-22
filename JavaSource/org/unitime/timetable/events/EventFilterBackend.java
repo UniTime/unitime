@@ -374,8 +374,8 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			int id = 0;
 			for (StringTokenizer s=new StringTokenizer(request.getOption("requested").trim(),", ");s.hasMoreTokens();) {
                 String token = s.nextToken().toUpperCase();
-                requested += (requested.isEmpty() ? "" : " and ") + "(upper(e.mainContact.firstName) like '%' || :Xreq" + id + " || '%' or " +
-                		"upper(e.mainContact.middleName) like '%' || :Xreq" + id + " || '%' or upper(e.mainContact.lastName) like '%' || :Xreq" + id + " || '%' or upper(e.mainContact.emailAddress) like :Xreq" + id + " || '%')";
+                requested += (requested.isEmpty() ? "" : " and ") + "(upper(e.mainContact.firstName) like :Xreq" + id + " || '%' or " +
+                		"upper(e.mainContact.middleName) like :Xreq" + id + " || '%' or upper(e.mainContact.lastName) like :Xreq" + id + " || '%' or upper(e.mainContact.emailAddress) like :Xreq" + id + " || '%')";
                 query.addParameter("requested", "Xreq" + id, token);
                 id++;
             }
@@ -395,16 +395,16 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			response.addSuggestion(event.getEventName(), event.getEventName(), event.getEventTypeLabel());
 		
 		if ((context.hasPermission(Right.EventLookupContact) || context.hasPermission(Right.EventLookupSchedule)) && (!request.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20))) {
-			EventQuery.EventInstance instance = query.select("distinct c").from("inner join e.mainContact c").exclude("sponsor").exclude("query");
+			EventQuery.EventInstance instance = query.select("distinct c").from("inner join e.mainContact c").exclude("sponsor").exclude("requested").exclude("query");
 			
 			int id = 0;
 			for (StringTokenizer s=new StringTokenizer(request.getText().trim(),", ");s.hasMoreTokens();) {
                 String token = s.nextToken().toUpperCase();
-                instance.where("upper(c.firstName) like '%' || :cn" + id + " || '%' or upper(c.middleName) like '%' || :cn" + id + " || '%' or upper(c.lastName) like '%' || :cn" + id + " || '%' or upper(c.emailAddress) like :cn" + id + " || '%'").set("cn" + id, token);
+                instance.where("upper(c.firstName) like :cn" + id + " || '%' or upper(c.middleName) like :cn" + id + " || '%' or upper(c.lastName) like :cn" + id + " || '%' or upper(c.emailAddress) like :cn" + id + " || '%'").set("cn" + id, token);
             }
 			
 			for (EventContact contact: (List<EventContact>)instance.limit(20).query(hibSession).list())
-				response.addSuggestion(contact.getName(), contact.getName(), "Requested By");
+				response.addSuggestion(contact.getName(), contact.getName(), "Requested By", "requested");
 
 		}
 	}
