@@ -89,6 +89,12 @@
 				<line>Do not print a warning message about a section not being available anymore when the user holds an individual reservation for it.</line>
 			</description>
 		</item>
+		<item>
+			<name>GWT: Uncaught Exception</name>
+			<description>
+				<line>Do not show the red notification popup when there is an uncaught exception seen, only log it as a warning.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Solver Changes</title>
