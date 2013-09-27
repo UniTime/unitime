@@ -399,7 +399,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				}
 				response.addNote(n);
 			}
-			if (response.hasUpdatedMeetings() || (!response.hasCreatedMeetings() && !response.hasDeletedMeetings())) {
+			if (response.hasUpdatedMeetings() || (!response.hasCreatedMeetings() && !response.hasDeletedMeetings() && !response.hasCancelledMeetings())) {
 				EventNote note = new EventNote();
 				note.setEvent(event);
 				note.setNoteType(EventNote.sEventNoteTypeEditEvent);

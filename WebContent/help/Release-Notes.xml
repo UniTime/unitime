@@ -240,6 +240,12 @@
 				<line>Course-related events: show the sum of the limits of the related objects (instead of what is set on the event itself).</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Notes</name>
+			<description>
+				<line>Edit Event: Do not create EDIT event note when there are no updated meetings and there was at least one meeting cancelled (there is also CANCEL note created).</line>
+			</description>
+		</item>		
 	</category>
 </release>	
 
