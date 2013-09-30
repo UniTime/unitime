@@ -88,9 +88,15 @@ public class ApplicationConfig extends BaseApplicationConfig {
     public static Properties toProperties() {
         Properties properties = new Properties();
         if (_RootDAO.getConfiguration()==null) return properties;
-        for (Iterator i=new ApplicationConfigDAO().findAll().iterator();i.hasNext();) {
-            ApplicationConfig appcfg = (ApplicationConfig)i.next();
-             properties.setProperty(appcfg.getKey(), appcfg.getValue()==null?"":appcfg.getValue());
+        
+        org.hibernate.Session hibSession = ApplicationConfigDAO.getInstance().createNewSession();
+        try {
+            for (Iterator i=ApplicationConfigDAO.getInstance().findAll(hibSession).iterator();i.hasNext();) {
+                ApplicationConfig appcfg = (ApplicationConfig)i.next();
+                 properties.setProperty(appcfg.getKey(), appcfg.getValue()==null?"":appcfg.getValue());
+            }
+        } finally {
+        	hibSession.close();
         }
         return properties;
     }
