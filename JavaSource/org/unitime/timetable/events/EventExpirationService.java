@@ -68,7 +68,7 @@ public class EventExpirationService extends Thread {
 	}
 	
 	protected void checkForExpiredEvents() throws Exception {
-		org.hibernate.Session hibSession = EventDAO.getInstance().createNewSession();
+		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		try {
 			Transaction tx = hibSession.beginTransaction();
 			try {
