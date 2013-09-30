@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.model.QueryLog;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
@@ -321,6 +322,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 				Localization.removeLocale();
 				Formats.removeFormats();
 				ApplicationProperties.setSessionId(null);
+				_RootDAO.closeCurrentThreadSessions();
 			}
 			synchronized (this) {
 				iWaitingThread = null;

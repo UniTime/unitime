@@ -21,9 +21,10 @@ package org.unitime.timetable.gwt.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.unitime.timetable.gwt.client.page.UniTimeMenu;
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -49,13 +50,14 @@ public class Client implements EntryPoint {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static List<GwtPageChangedHandler> iGwtPageChangedHandlers = new ArrayList<GwtPageChangedHandler>();
+	public static Logger sLogger = Logger.getLogger(Client.class.getName());
 	
 	public void onModuleLoad() {
 		GWT.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 			@Override
 			public void onUncaughtException(Throwable e) {
 				Throwable u = ToolBox.unwrap(e);
-				UniTimeNotifications.error(MESSAGES.failedUncaughtException(u.getMessage()), u);
+				sLogger.log(Level.WARNING, MESSAGES.failedUncaughtException(u.getMessage()), u);
 			}
 		});
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
