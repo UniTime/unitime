@@ -114,7 +114,6 @@ public class StudentEnrollmentImport extends BaseImport {
                     "left join fetch s.courseDemands as cd " +
                     "left join fetch cd.courseRequests as cr " +
                     "left join fetch s.classEnrollments as e " +
-                    "left join fetch cr.classEnrollments as cre "+
                     "where s.session.uniqueId=:sessionId and s.externalUniqueId is not null").
                     setLong("sessionId",session.getUniqueId()).list()) { 
 	        	students.put(student.getExternalUniqueId(), student);
@@ -216,7 +215,6 @@ public class StudentEnrollmentImport extends BaseImport {
             		demands: for (CourseDemand d: student.getCourseDemands()) {
             			for (CourseRequest r: d.getCourseRequests()) {
             				if (r.getCourseOffering().equals(course)) {
-            					r.getClassEnrollments().add(enrollment);
             					enrollment.setCourseRequest(r);
             					break demands;
             				}
@@ -229,8 +227,6 @@ public class StudentEnrollmentImport extends BaseImport {
             	if (!enrollments.isEmpty()) {
             		for (StudentClassEnrollment enrollment: enrollments.values()) {
             			student.getClassEnrollments().remove(enrollment);
-            			if (enrollment.getCourseRequest() != null)
-            				enrollment.getCourseRequest().getClassEnrollments().remove(enrollment);
             			getHibSession().delete(enrollment);
                 		updatedStudents.add(student.getUniqueId());
             		}
@@ -247,8 +243,6 @@ public class StudentEnrollmentImport extends BaseImport {
  	        for (Student student: students.values()) {
         		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
         			StudentClassEnrollment enrollment = i.next();
-        			if (enrollment.getCourseRequest() != null)
-        				enrollment.getCourseRequest().getClassEnrollments().remove(enrollment);
         			getHibSession().delete(enrollment);
         			i.remove();
      	        	updatedStudents.add(student.getUniqueId());

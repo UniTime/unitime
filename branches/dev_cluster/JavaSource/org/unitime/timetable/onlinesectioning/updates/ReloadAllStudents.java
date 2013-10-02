@@ -19,9 +19,9 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
+import java.util.HashMap;
 import java.util.List;
-
-import net.sf.cpsolver.studentsct.model.Student;
+import java.util.Map;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -30,6 +30,8 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 /**
  * @author Tomas Muller
@@ -47,6 +49,7 @@ public class ReloadAllStudents extends ReloadAllData {
 			try {
 				server.clearAllStudents();
 
+				Map<Long, List<XEnrollment>> enrollmentMap = new HashMap<Long, List<XEnrollment>>();
 				List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
 		                "select distinct s from Student s " +
 		                "left join fetch s.courseDemands as cd " +
@@ -55,9 +58,9 @@ public class ReloadAllStudents extends ReloadAllData {
 		                "where s.session.uniqueId=:sessionId").
 		                setLong("sessionId", server.getAcademicSession().getUniqueId()).list();
 		        for (org.unitime.timetable.model.Student student: students) {
-		        	Student s = loadStudent(student, server, helper);
+		        	XStudent s = loadStudent(student, enrollmentMap, server, helper);
 		        	if (s != null)
-		        		server.update(s);
+		        		server.update(s, true);
 		        }
 
 				helper.commitTransaction();

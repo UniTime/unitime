@@ -144,8 +144,6 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
             StudentClassEnrollment sce = i.next();
             sce.getClazz().getStudentEnrollments().remove(sce);
-            if (sce.getCourseRequest() != null)
-            	sce.getCourseRequest().getClassEnrollments().remove(sce);
             hibSession.delete(sce); i.remove();
         }
         for (Iterator<WaitList> i = s.getWaitlists().iterator(); i.hasNext(); ) {
@@ -175,8 +173,6 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                     }
                 } else {
                     org.unitime.timetable.model.CourseRequest cr = iRequests.get(request.getId()+":"+enrollment.getOffering().getId());
-                    if (cr != null)
-                    	cr.getClassEnrollments().clear();
                     for (Iterator j=enrollment.getAssignments().iterator();j.hasNext();) {
                         Section section = (Section)j.next();
                         Class_ clazz = iClasses.get(section.getId());
@@ -196,7 +192,6 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
                         } else {
                             sce.setCourseRequest(cr);
                             sce.setCourseOffering(cr.getCourseOffering());
-                        	cr.getClassEnrollments().add(sce);
                         }
                         sce.setTimestamp(iTimeStamp);
                         s.getClassEnrollments().add(sce);

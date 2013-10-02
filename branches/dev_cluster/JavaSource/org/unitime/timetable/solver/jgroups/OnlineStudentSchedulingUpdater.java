@@ -30,6 +30,7 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningQueueDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -68,9 +69,13 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 			if (getAcademicSession() != null)
 				ApplicationProperties.setSessionId(getAcademicSession().getUniqueId());
 			while (iRun) {
-				checkForUpdates();
-				checkForExpiredReservations();
-				persistExpectedSpaces();
+				try {
+					checkForUpdates();
+					checkForExpiredReservations();
+					persistExpectedSpaces();
+				} finally {
+					_RootDAO.closeCurrentThreadSessions();
+				}
 				try {
 					sleep(iSleepTimeInSeconds * 1000);
 				} catch (InterruptedException e) {}

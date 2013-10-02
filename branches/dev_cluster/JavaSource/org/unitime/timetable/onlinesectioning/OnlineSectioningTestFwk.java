@@ -33,7 +33,6 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
 
 public abstract class OnlineSectioningTestFwk { 
@@ -80,7 +79,7 @@ public abstract class OnlineSectioningTestFwk {
         
         OnlineSectioningLogger.getInstance().setEnabled(false);
         
-        iServer = new OnlineSectioningServerImpl(session.getUniqueId(), true);
+        iServer = new OnlineSectioningServerFactory().create(session.getUniqueId(), true);
 	}
 	
 	protected void stopServer() {

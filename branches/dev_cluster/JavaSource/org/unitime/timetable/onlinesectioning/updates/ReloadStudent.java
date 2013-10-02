@@ -32,10 +32,12 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
-
-import net.sf.cpsolver.studentsct.model.Assignment;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Student;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 /**
  * @author Tomas Muller
@@ -82,41 +84,47 @@ public class ReloadStudent extends ReloadAllData {
 				try {
 					
 					// Unload student
-					Student oldStudent = server.getStudent(studentId);
+					XStudent oldStudent = server.getStudent(studentId);
 					if (oldStudent != null) {
 						OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 						enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
-						for (Request oldRequest: oldStudent.getRequests()) {
-							if (oldRequest.getInitialAssignment() != null)
-								for (Assignment assignment: oldRequest.getInitialAssignment().getAssignments())
-									enrollment.addSection(OnlineSectioningHelper.toProto(assignment, oldRequest.getInitialAssignment()));
+						for (XRequest oldRequest: oldStudent.getRequests()) {
+							if (oldRequest instanceof XCourseRequest && ((XCourseRequest)oldRequest).getEnrollment() != null) {
+								XEnrollment enrl = ((XCourseRequest)oldRequest).getEnrollment();
+								XOffering offering = server.getOffering(enrl.getOfferingId());
+								for (XSection section: offering.getSections(enrl))
+									enrollment.addSection(OnlineSectioningHelper.toProto(section, enrl));
+							}
 						}
 						action.addEnrollment(enrollment);
 						server.remove(oldStudent);
-						action.getStudentBuilder().setUniqueId(oldStudent.getId()).setExternalId(oldStudent.getExternalId());
+						action.getStudentBuilder().setUniqueId(oldStudent.getStudentId()).setExternalId(oldStudent.getExternalId()).setName(oldStudent.getName());
 					}
 
 					// Load student
 					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
-					Student newStudent = null;
+					XStudent newStudent = null;
 					if (student != null) {
-						newStudent = loadStudent(student, server, helper);
+						newStudent = loadStudent(student, null, server, helper);
 						if (newStudent != null) {
-							server.update(newStudent);
+							server.update(newStudent, true);
 							OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 							enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
-							for (Request newRequest: newStudent.getRequests()) {
+							for (XRequest newRequest: newStudent.getRequests()) {
 								action.addRequest(OnlineSectioningHelper.toProto(newRequest));
-								if (newRequest.getInitialAssignment() != null && newRequest.getInitialAssignment().isCourseRequest())
-									for (Assignment assignment: newRequest.getInitialAssignment().getAssignments())
-										enrollment.addSection(OnlineSectioningHelper.toProto(assignment, newRequest.getInitialAssignment()));
+								if (newRequest instanceof XCourseRequest && ((XCourseRequest)newRequest).getEnrollment() != null) {
+									XEnrollment enrl = ((XCourseRequest)newRequest).getEnrollment();
+									XOffering offering = server.getOffering(enrl.getOfferingId());
+									for (XSection section: offering.getSections(enrl))
+										enrollment.addSection(OnlineSectioningHelper.toProto(section, enrl));
+								}
 							}
 							action.addEnrollment(enrollment);
 						}
-						action.getStudentBuilder().setUniqueId(newStudent.getId()).setExternalId(newStudent.getExternalId());
+						action.getStudentBuilder().setUniqueId(newStudent.getStudentId()).setExternalId(newStudent.getExternalId()).setName(newStudent.getName());
 					}
 					
-					server.notifyStudentChanged(studentId, (oldStudent == null ? null : oldStudent.getRequests()), (newStudent == null ? null : newStudent.getRequests()), helper.getUser());
+					server.execute(new NotifyStudentAction(studentId, oldStudent), helper.getUser());
 
 				} finally {
 					lock.release();

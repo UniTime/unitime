@@ -21,23 +21,23 @@ package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.Set;
 
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSectioningAction<T> {
 	private static final long serialVersionUID = 1L;
 	private Set<String> iWaitlistStatuses = null;
 	
-	public boolean isWaitListed(CourseRequest request, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+	public boolean isWaitListed(XStudent student, XCourseRequest request, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		// Check wait-list toggle first
 		if (request == null || !request.isWaitlist()) return false;
 		
 		// Check student status
-		String status = request.getStudent().getStatus();
+		String status = student.getStatus();
 		if (status == null) status = server.getAcademicSession().getDefaultSectioningStatus();
 		if (status != null) {
 			if (iWaitlistStatuses == null)

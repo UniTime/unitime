@@ -89,7 +89,6 @@ public class Student extends BaseStudent implements Comparable<Student> {
             		"left join fetch s.courseDemands as cd " +
                     "left join fetch cd.courseRequests as cr " +
                     "left join fetch s.classEnrollments as e " +
-                    "left join fetch cr.classEnrollments as cre "+
                     "left join fetch s.academicAreaClassifications " +
                     "left join fetch s.posMajors " +
                     "left join fetch s.posMinors " +
@@ -110,8 +109,6 @@ public class Student extends BaseStudent implements Comparable<Student> {
        	if (!enrollments.isEmpty()) {
     		for (StudentClassEnrollment enrollment: enrollments) {
     			getClassEnrollments().remove(enrollment);
-    			if (enrollment.getCourseRequest() != null)
-    				enrollment.getCourseRequest().getClassEnrollments().remove(enrollment);
     			hibSession.delete(enrollment);
     		}
     	}

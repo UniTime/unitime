@@ -22,11 +22,6 @@ package org.unitime.timetable.onlinesectioning.basic;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Student;
-
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -34,6 +29,9 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseInfoMatcher;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 public class CheckCourses implements OnlineSectioningAction<Collection<String>> {
 	private static final long serialVersionUID = 1L;
@@ -49,7 +47,7 @@ public class CheckCourses implements OnlineSectioningAction<Collection<String>> 
 		ArrayList<String> notFound = new ArrayList<String>();
 		Lock lock = (iRequest.getStudentId() == null ? null : server.lockStudent(iRequest.getStudentId(), null, true));
 		try {
-			Student student = (iRequest.getStudentId() == null ? null : server.getStudent(iRequest.getStudentId()));
+			XStudent student = (iRequest.getStudentId() == null ? null : server.getStudent(iRequest.getStudentId()));
 			for (CourseRequestInterface.Request cr: iRequest.getCourses()) {
 				if (!cr.hasRequestedFreeTime() && cr.hasRequestedCourse() && lookup(server, student, cr.getRequestedCourse()) == null)
 					notFound.add(cr.getRequestedCourse());
@@ -73,15 +71,14 @@ public class CheckCourses implements OnlineSectioningAction<Collection<String>> 
 		}
 	}
 	
-	public CourseInfo lookup(OnlineSectioningServer server, Student student, String course) {
+	public CourseInfo lookup(OnlineSectioningServer server, XStudent student, String course) {
 		CourseInfo c = server.getCourseInfo(course);
 		if (c != null && iMatcher != null && !iMatcher.match(c)) {
 			if (student != null) {
-				for (Request r: student.getRequests())
-					if (r instanceof CourseRequest) {
-						for (Course x: ((CourseRequest)r).getCourses()) {
-							if (x.getId() == c.getUniqueId()) return c; // already requested
-						}
+				for (XRequest r: student.getRequests())
+					if (r instanceof XCourseRequest) {
+						if (((XCourseRequest)r).hasCourse(c.getUniqueId()))
+							return c; // already requested
 					}
 			}
 			return null;

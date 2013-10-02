@@ -349,9 +349,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		}
 
 		public boolean hasInstructorEmails() { return iInstructoEmails != null && !iInstructoEmails.isEmpty(); }
-		public void addInstructoEmailr(String instructorEmail) {
+		public void addInstructoEmail(String instructorEmail) {
 			if (iInstructoEmails == null) iInstructoEmails = new ArrayList<String>();
-			iInstructoEmails.add(instructorEmail);
+			iInstructoEmails.add(instructorEmail == null ? "" : instructorEmail);
 		}
 		public ArrayList<String> getInstructorEmails() { return iInstructoEmails; }
 

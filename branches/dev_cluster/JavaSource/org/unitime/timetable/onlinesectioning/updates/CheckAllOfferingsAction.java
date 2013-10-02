@@ -18,11 +18,8 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
+import java.util.Collection;
 import java.util.List;
-
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -30,6 +27,14 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XDistribution;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 public class CheckAllOfferingsAction extends CheckOfferingAction{
 	private static final long serialVersionUID = 1L;
@@ -72,22 +77,31 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 	}
 	
 	@Override
-	public boolean check(Enrollment e) {
-		if (e.getSections().size() != e.getConfig().getSubparts().size()) return false;
-		for (Section s1: e.getSections())
-			for (Section s2: e.getSections()) {
-				if (s1.getId() < s2.getId() && s1.isOverlapping(s2)) return false;
-				if (s1.getId() != s2.getId() && s1.getSubpart().getId() == s2.getSubpart().getId()) return false;
+	public boolean check(OnlineSectioningServer server, XStudent student, XOffering offering, XCourseRequest request, Collection<XDistribution> distributions) {
+		if (request.getEnrollment() == null) return true;
+		List<XSection> sections = offering.getSections(request.getEnrollment());
+		XConfig config = offering.getConfig(request.getEnrollment().getConfigId());
+		if (config == null || sections.size() != config.getSubparts().size()) return false;
+		for (XSection s1: sections) {
+			for (XSection s2: sections) {
+				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(distributions, s2)) return false;
+				if (!s1.getSectionId().equals(s2.getSectionId()) && s1.getSubpartId().equals(s2.getSubpartId())) return false;
 			}
-		for (Request r: e.getStudent().getRequests()) {
-			if (r.getId() != e.getRequest().getId() && r.getInitialAssignment() != null && r.getInitialAssignment().isOverlapping(e)) {
-				if (e.getRequest().isAlternative() && !r.isAlternative())
-					return false;
-				if (e.getRequest().isAlternative() == r.isAlternative() && e.getRequest().getPriority() > r.getPriority())
-					return false;
-			}
+			if (!offering.getSubpart(s1.getSubpartId()).getConfigId().equals(config.getConfigId())) return false;
 		}
+		for (XRequest r: student.getRequests())
+			if (r instanceof XCourseRequest && !r.getRequestId().equals(request.getRequestId()) && ((XCourseRequest)r).getEnrollment() != null) {
+				XEnrollment e = ((XCourseRequest)r).getEnrollment();
+				XOffering other = server.getOffering(e.getOfferingId());
+				if (other != null) {
+					List<XSection> assignment = other.getSections(e);
+					for (XSection section: sections)
+						if (section.isOverlapping(distributions, assignment)) {
+							if (request.isAlternative() && !r.isAlternative()) return false;
+							if (request.isAlternative() == r.isAlternative() && request.getPriority() > r.getPriority()) return false;
+						}
+				}
+			}
 		return true;
 	}
-
 }

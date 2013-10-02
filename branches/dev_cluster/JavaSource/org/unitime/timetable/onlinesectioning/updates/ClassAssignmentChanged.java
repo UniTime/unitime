@@ -21,27 +21,22 @@ package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.Section;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 
 /**
  * @author Tomas Muller
@@ -63,19 +58,6 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 
 	
 	public Collection<Long> getClassIds() { return iClassIds; }
-	
-	public Collection<Long> getCourseIds(OnlineSectioningServer server) {
-		Set<Long> courseIds = new HashSet<Long>();
-		for (Long classId: getClassIds()) {
-			Section section = server.getSection(classId);
-			if (section != null) {
-				for (Course course: section.getSubpart().getConfig().getOffering().getCourses()) {
-					courseIds.add(course.getId());
-				}
-			}
-		}
-		return courseIds;			
-	}
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -92,57 +74,30 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 					helper.warn("Class " + classId + " wos deleted -- unsupported operation (use reload offering instead).");
 					continue;
 				}
-				Lock lock = server.lockClass(classId,
+				Lock lock = server.lockOffering(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId(),
 						(List<Long>)helper.getHibSession().createQuery(
 								"select e.student.uniqueId from StudentClassEnrollment e where "+
-				                "e.clazz.uniqueId = :classId").setLong("classId", classId).list());
+				                "e.clazz.uniqueId = :classId").setLong("classId", classId).list(),
+				                true);
 				try {
-					Section section = server.getSection(clazz.getUniqueId());
-					if (section == null) {
+					XOffering offering = server.getOffering(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
+					XSection oldSection = (offering == null ? null : offering.getSection(clazz.getUniqueId()));
+					if (oldSection == null) {
 						helper.warn("Class " + clazz.getClassLabel() + " was added -- unsupported operation (use reload offering instead).");
 						continue;
 					}
-					previous.addSection(OnlineSectioningHelper.toProto(section));
+					previous.addSection(OnlineSectioningHelper.toProto(oldSection));
 					helper.info("Reloading " + clazz.getClassLabel());
-	                org.unitime.timetable.model.Assignment a = clazz.getCommittedAssignment();
-	                Placement p = (a == null ? null : a.getPlacement());
-	                if (p != null && p.getTimeLocation() != null) {
-	                	p.getTimeLocation().setDatePattern(
-	                			p.getTimeLocation().getDatePatternId(),
-	                			ReloadAllData.datePatternName(p.getTimeLocation(), server.getAcademicSession()),
-	                			p.getTimeLocation().getWeekCode());
-	                }
-	                section.setPlacement(p);
-					helper.info("  -- placement: " + p);
-
-	                int minLimit = clazz.getExpectedCapacity();
-	            	int maxLimit = clazz.getMaxExpectedCapacity();
-	            	int limit = maxLimit;
-	            	if (minLimit < maxLimit && p != null) {
-	            		int roomLimit = (int) Math.floor(p.getRoomSize() / (clazz.getRoomRatio() == null ? 1.0f : clazz.getRoomRatio()));
-	            		// int roomLimit = Math.round((clazz.getRoomRatio() == null ? 1.0f : clazz.getRoomRatio()) * p.getRoomSize());
-	            		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
-	            	}
-	                if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
-	                section.setLimit(limit);
-					helper.info("  -- limit: " + limit);
-
-	                String instructorIds = "";
-	                String instructorNames = "";
-	                for (Iterator<ClassInstructor> k = clazz.getClassInstructors().iterator(); k.hasNext(); ) {
-	                	ClassInstructor ci = k.next();
-	                	if (!ci.isLead()) continue;
-	                	if (!instructorIds.isEmpty()) {
-	                		instructorIds += ":"; instructorNames += ":";
-	                	}
-	                	instructorIds += ci.getInstructor().getUniqueId().toString();
-	                	instructorNames += ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort) + "|"  + (ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
-	                }
-	                section.getChoice().setInstructor(instructorIds, instructorNames);
-					helper.info("  -- instructor: " + instructorNames);
-
-	                section.setName(clazz.getExternalUniqueId() == null ? clazz.getClassSuffix() == null ? clazz.getSectionNumberString(helper.getHibSession()) : clazz.getClassSuffix() : clazz.getExternalUniqueId());
-					stored.addSection(OnlineSectioningHelper.toProto(section));
+					XSection newSection = new XSection(clazz, helper);
+					XSubpart subpart = offering.getSubpart(newSection.getSubpartId());
+					
+					subpart.getSections().remove(oldSection);
+					subpart.getSections().add(newSection);
+					Collections.sort(subpart.getSections());
+					
+					server.update(offering);
+					
+					stored.addSection(OnlineSectioningHelper.toProto(newSection));
 				} finally {
 					lock.release();
 				}

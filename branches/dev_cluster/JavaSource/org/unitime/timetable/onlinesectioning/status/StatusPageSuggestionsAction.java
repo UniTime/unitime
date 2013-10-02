@@ -27,14 +27,6 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -69,6 +61,15 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XInstructor;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRoom;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
@@ -593,26 +594,32 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 	}
 	
 	public static class CourseRequestMatcher extends CourseInfoMatcher {
-		private CourseRequest iRequest;
+		private XStudent iStudent;
+		private XCourseRequest iRequest;
+		private XOffering iOffering;
 		private Date iFirstDate;
 		private String iDefaultStatus;
 		
-		public CourseRequestMatcher(OnlineSectioningHelper helper, OnlineSectioningServer server, CourseInfo info, CourseRequest request, boolean isConsentToDoCourse) {
+		public CourseRequestMatcher(OnlineSectioningHelper helper, OnlineSectioningServer server, CourseInfo info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse) {
 			super(helper, info, isConsentToDoCourse);
 			iFirstDate = server.getAcademicSession().getDatePatternFirstDate();
+			iStudent = student;
 			iRequest = request;
 			iDefaultStatus = server.getAcademicSession().getDefaultSectioningStatus();
 		}
 		
-		public CourseRequest request() { return iRequest; }
-		public Enrollment enrollment() { return iRequest.getAssignment(); }
-		public Student student() { return iRequest.getStudent(); }
+		public XCourseRequest request() { return iRequest; }
+		public XEnrollment enrollment() { return iRequest.getEnrollment(); }
+		public XStudent student() { return iStudent; }
 		public String status() { return student().getStatus() == null ? iDefaultStatus : student().getStatus(); }
-		public Course course() {
-			if (enrollment() != null) return enrollment().getCourse();
-			for (Course course: request().getCourses())
-				if (course.getId() == info().getUniqueId()) return course;
-			return request().getCourses().get(0);
+		public XCourseId course() {
+			if (enrollment() != null) return enrollment();
+			for (XCourseId course: request().getCourseIds())
+				if (course.getCourseId().equals(info().getUniqueId())) return course;
+			return request().getCourseIds().get(0);
+		}
+		public XOffering offering() {
+			return iOffering;
 		}
 
 		@Override
@@ -623,28 +630,28 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if ("limit".equals(attr)) return true;
 			
 			if ("area".equals(attr)) {
-				for (AcademicAreaCode ac: student().getAcademicAreaClasiffications())
+				for (XAcademicAreaCode ac: student().getAcademicAreaClasiffications())
 					if (eq(ac.getArea(), term)) return true;
 			}
 			
 			if ("clasf".equals(attr) || "classification".equals(attr)) {
-				for (AcademicAreaCode ac: student().getAcademicAreaClasiffications())
+				for (XAcademicAreaCode ac: student().getAcademicAreaClasiffications())
 					if (eq(ac.getCode(), term)) return true;
 			}
 			
 			if ("major".equals(attr)) {
-				for (AcademicAreaCode ac: student().getMajors())
+				for (XAcademicAreaCode ac: student().getMajors())
 					if (eq(ac.getCode(), term)) return true;
 			}
 			
 			if ("group".equals(attr)) {
-				for (AcademicAreaCode ac: student().getMinors())
-					if (!"A".equals(ac.getArea()) && eq(ac.getCode(), term)) return true;
+				for (String group: student().getGroups())
+					if (eq(group, term)) return true;
 			}
 			
 			if ("accommodation".equals(attr)) {
-				for (AcademicAreaCode ac: student().getMinors())
-					if ("A".equals(ac.getArea()) && eq(ac.getCode(), term)) return true;
+				for (String acc: student().getAccomodations())
+					if (eq(acc, term)) return true;
 			}
 			
 			if ("student".equals(attr)) {
@@ -684,7 +691,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				} else if (eq("todo", term)) {
 					return isConsentToDoCourse() && enrollment() != null && enrollment().getApproval() == null;
 				} else {
-					return info().getConsent() != null && ((enrollment() != null && enrollment().getApproval() != null && (has(enrollment().getApproval().split(":")[2], term) || eq(enrollment().getApproval().split(":")[1], term))) || eq(info().getConsentAbbv(), term));
+					return info().getConsent() != null && ((enrollment() != null && enrollment().getApproval() != null && (has(enrollment().getApproval().getExternalId(), term) || eq(enrollment().getApproval().getName(), term))) || eq(info().getConsentAbbv(), term));
 				}
 			}
 			
@@ -696,7 +703,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			
 			if (enrollment() != null) {
 				
-				for (Section section: enrollment().getSections()) {
+				for (XSection section: offering().getSections(enrollment())) {
 					if (attr == null || attr.equals("crn") || attr.equals("id") || attr.equals("externalId") || attr.equals("exid") || attr.equals("name")) {
 						if (section.getName(info().getUniqueId()) != null && section.getName(info().getUniqueId()).toLowerCase().startsWith(term.toLowerCase()))
 							return true;
@@ -705,36 +712,36 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						if (section.getTime() == null && term.equalsIgnoreCase("none")) return true;
 						if (section.getTime() != null) {
 							int day = parseDay(term);
-							if (day > 0 && (section.getTime().getDayCode() & day) == day) return true;
+							if (day > 0 && (section.getTime().getDays() & day) == day) return true;
 						}
 					}
 					if (attr == null || attr.equals("time")) {
 						if (section.getTime() == null && term.equalsIgnoreCase("none")) return true;
 						if (section.getTime() != null) {
 							int start = parseStart(term);
-							if (start >= 0 && section.getTime().getStartSlot() == start) return true;
+							if (start >= 0 && section.getTime().getSlot() == start) return true;
 						}
 					}
 					if (attr != null && attr.equals("before")) {
 						if (section.getTime() != null) {
 							int end = parseStart(term);
-							if (end >= 0 && section.getTime().getStartSlot() + section.getTime().getLength() - section.getTime().getBreakTime() / 5 <= end) return true;
+							if (end >= 0 && section.getTime().getSlot() + section.getTime().getLength() - section.getTime().getBreakTime() / 5 <= end) return true;
 						}
 					}
 					if (attr != null && attr.equals("after")) {
 						if (section.getTime() != null) {
 							int start = parseStart(term);
-							if (start >= 0 && section.getTime().getStartSlot() >= start) return true;
+							if (start >= 0 && section.getTime().getSlot() >= start) return true;
 						}
 					}
 					if (attr == null || attr.equals("date")) {
 						if (section.getTime() == null && term.equalsIgnoreCase("none")) return true;
-						if (section.getTime() != null && !section.getTime().getWeekCode().isEmpty()) {
+						if (section.getTime() != null && !section.getTime().getWeeks().isEmpty()) {
 							Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
 					    	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
 					    	cal.setTime(iFirstDate);
-					    	for (int i = 0; i < section.getTime().getWeekCode().size(); i++) {
-					    		if (section.getTime().getWeekCode().get(i)) {
+					    	for (int i = 0; i < section.getTime().getWeeks().size(); i++) {
+					    		if (section.getTime().getWeeks().get(i)) {
 					    			DayCode day = null;
 					    			switch (cal.get(Calendar.DAY_OF_WEEK)) {
 					    			case Calendar.MONDAY:
@@ -752,7 +759,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					    			case Calendar.SUNDAY:
 					    				day = DayCode.SUN; break;
 					    			}
-					    			if ((section.getTime().getDayCode() & day.getCode()) == day.getCode()) {
+					    			if ((section.getTime().getDays() & day.getCode()) == day.getCode()) {
 						    			int d = cal.get(Calendar.DAY_OF_MONTH);
 						    			int m = cal.get(Calendar.MONTH) + 1;
 						    			if (df.format(cal.getTime()).equalsIgnoreCase(term) || eq(d + "." + m + ".",term) || eq(m + "/" + d, term)) return true;
@@ -765,18 +772,17 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					if (attr == null || attr.equals("room")) {
 						if ((section.getRooms() == null || section.getRooms().isEmpty()) && term.equalsIgnoreCase("none")) return true;
 						if (section.getRooms() != null) {
-							for (RoomLocation r: section.getRooms()) {
+							for (XRoom r: section.getRooms()) {
 								if (has(r.getName(), term)) return true;
 							}
 						}
 					}
 					if (attr == null || attr.equals("instr") || attr.equals("instructor")) {
-						if (attr != null && (section.getChoice().getInstructorNames() == null || section.getChoice().getInstructorNames().isEmpty()) && term.equalsIgnoreCase("none")) return true;
-						for (String instructor: section.getChoice().getInstructorNames().split(":")) {
-							String[] nameEmail = instructor.split("\\|");
-							if (has(nameEmail[0], term)) return true;
-							if (nameEmail.length == 2) {
-								String email = nameEmail[1];
+						if (attr != null && section.getInstructors().isEmpty() && term.equalsIgnoreCase("none")) return true;
+						for (XInstructor instuctor: section.getInstructors()) {
+							if (has(instuctor.getName(), term) || eq(instuctor.getExternalId(), term)) return true;
+							if (instuctor.getEmail() != null) {
+								String email = instuctor.getEmail();
 								if (email.indexOf('@') >= 0) email = email.substring(0, email.indexOf('@'));
 								if (eq(email, term)) return true;
 							}
@@ -784,8 +790,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					}
 					if (attr != null && section.getTime() != null) {
 						int start = parseStart(attr + ":" + term);
-						if (start >= 0 && section.getTime().getStartSlot() == start) return true;
-					}					
+						if (start >= 0 && section.getTime().getSlot() == start) return true;
+					}
 				}
 			}
 			
@@ -888,15 +894,15 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 	}
 	
 	public static class StudentMatcher implements TermMatcher {
-		private Student iStudent;
+		private XStudent iStudent;
 		private String iDefaultStatus;
 		
-		public StudentMatcher(Student student, String defaultStatus) {
+		public StudentMatcher(XStudent student, String defaultStatus) {
 			iStudent = student;
 			iDefaultStatus = defaultStatus;
 		}
 
-		public Student student() { return iStudent; }
+		public XStudent student() { return iStudent; }
 		public String status() {  return (iStudent.getStatus() == null ? iDefaultStatus : iStudent.getStatus()); }
 		
 		@Override
@@ -904,20 +910,20 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if (attr == null && term.isEmpty()) return true;
 			if ("limit".equals(attr)) return true;
 			if ("area".equals(attr)) {
-				for (AcademicAreaCode ac: student().getAcademicAreaClasiffications())
+				for (XAcademicAreaCode ac: student().getAcademicAreaClasiffications())
 					if (eq(ac.getArea(), term)) return true;
 			} else if ("clasf".equals(attr) || "classification".equals(attr)) {
-				for (AcademicAreaCode ac: student().getAcademicAreaClasiffications())
+				for (XAcademicAreaCode ac: student().getAcademicAreaClasiffications())
 					if (eq(ac.getCode(), term)) return true;
 			} else if ("major".equals(attr)) {
-				for (AcademicAreaCode ac: student().getMajors())
+				for (XAcademicAreaCode ac: student().getMajors())
 					if (eq(ac.getCode(), term)) return true;
 			} else if ("group".equals(attr)) {
-				for (AcademicAreaCode ac: student().getMinors())
-					if (!"A".equals(ac.getArea()) && eq(ac.getCode(), term)) return true;
+				for (String group: student().getGroups())
+					if (eq(group, term)) return true;
 			} else if ("accommodation".equals(attr)) {
-				for (AcademicAreaCode ac: student().getMinors())
-					if ("A".equals(ac.getArea()) && eq(ac.getCode(), term)) return true;
+				for (String acc: student().getAccomodations())
+					if (eq(acc, term)) return true;
 			} else if  ("student".equals(attr)) {
 				return has(student().getName(), term) || eq(student().getExternalId(), term) || eq(student().getName(), term);
 			} else if ("registered".equals(attr)) {
