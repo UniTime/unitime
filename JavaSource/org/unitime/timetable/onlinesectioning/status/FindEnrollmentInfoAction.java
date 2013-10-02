@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -84,12 +85,12 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	
 	public Long courseId() { return iCourseId; }
 	
-	public boolean isConsentToDoCourse(XCourse course) {
-		return iCoursesIcanApprove != null && course.getConsentLabel() != null && iCoursesIcanApprove.contains(course.getCourseId());
-	}
-	
 	public boolean isCourseVisible(Long courseId) {
 		return iCoursesIcoordinate == null || iCoursesIcoordinate.contains(courseId);
+	}
+	
+	public boolean isConsentToDoCourse(XCourse course) {
+		return iCoursesIcanApprove != null && course.getConsentLabel() != null && iCoursesIcanApprove.contains(course.getCourseId());
 	}
 	
 	@Override
@@ -103,15 +104,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			int gtEnrl = 0, gtWait = 0, gtRes = 0;
 			int gConNeed = 0, gtConNeed = 0;
 			
-			for (XCourseId info: server.findCourses(new OnlineSectioningServer.CourseMatcher() {
-				private static final long serialVersionUID = 1L;
-
-				@Override
-				public boolean match(XCourseId id) {
-					XCourse course = server.getCourse(id.getCourseId());
-					return course != null && isCourseVisible(course.getCourseId()) && query().match(new CourseInfoMatcher(helper, course, isConsentToDoCourse(course)));
-				}
-			})) {
+			for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery))) {
 				XOffering offering = server.getOffering(info.getOfferingId());
 				if (offering == null) continue;
 				XCourse course = offering.getCourse(info.getCourseId());
@@ -139,7 +132,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(info.getCourseId())) continue;
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(helper, server, course, student, offering, request, isConsentToDoCourse);
+					CourseRequestMatcher m = new CourseRequestMatcher(server, course, student, offering, request, isConsentToDoCourse);
 					if (query().match(m)) {
 						matchingStudents.add(request.getStudentId());
 						match++;
@@ -364,7 +357,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (!request.getEnrollment().getCourseId().equals(courseId())) {other++; continue; }
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(helper, server, info, student, offering, request, isConsentToDoCourse);
+					CourseRequestMatcher m = new CourseRequestMatcher(server, info, student, offering, request, isConsentToDoCourse);
 					if (query().match(m)) {
 						match++;
 						enrl ++;
@@ -381,7 +374,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (request.getEnrollment() != null || !request.hasCourse(courseId())) continue;
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null || !student.canAssign(request)) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(helper, server, info, student, offering, request, isConsentToDoCourse);
+					CourseRequestMatcher m = new CourseRequestMatcher(server, info, student, offering, request, isConsentToDoCourse);
 					
 					//TODO: Do we need this?
 					boolean hasEnrollment = false;
@@ -474,4 +467,33 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		return "find-enrollment-info";
 	}
 
+	public static class FindEnrollmentInfoCourseMatcher extends AbstractCourseMatcher {
+		private static final long serialVersionUID = 1L;
+		private Set<Long> iCoursesIcoordinate;
+		private Set<Long> iCoursesIcanApprove;
+		private Query iQuery;
+		
+		public FindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Query query) {
+			iCoursesIcoordinate = coursesIcoordinate;
+			iCoursesIcanApprove = coursesIcanApprove;
+			iQuery = query;
+		}
+		
+
+		public boolean isCourseVisible(Long courseId) {
+			return iCoursesIcoordinate == null || iCoursesIcoordinate.contains(courseId);
+		}
+		
+
+		public boolean isConsentToDoCourse(XCourse course) {
+			return iCoursesIcanApprove != null && course.getConsentLabel() != null && iCoursesIcanApprove.contains(course.getCourseId());
+		}
+		
+		@Override
+		public boolean match(XCourseId id) {
+			XCourse course = (id instanceof XCourse ? (XCourse) id : getServer().getCourse(id.getCourseId()));
+			return course != null && isCourseVisible(course.getCourseId()) && iQuery.match(new CourseInfoMatcher(course, isConsentToDoCourse(course)));
+		}
+		
+	}
 }

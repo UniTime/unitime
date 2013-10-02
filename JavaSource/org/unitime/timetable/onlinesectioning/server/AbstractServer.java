@@ -20,17 +20,12 @@
 package org.unitime.timetable.onlinesectioning.server;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
@@ -45,7 +40,6 @@ import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
-import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverParameter;
@@ -59,19 +53,15 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CacheElement;
 import org.unitime.timetable.onlinesectioning.HasCacheMode;
-import org.unitime.timetable.onlinesectioning.MultiLock;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
-import org.unitime.timetable.onlinesectioning.model.XCourseId;
-import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
-import org.unitime.timetable.onlinesectioning.model.XRequest;
-import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
@@ -80,38 +70,44 @@ import org.unitime.timetable.util.Formats;
 
 public abstract class AbstractServer implements OnlineSectioningServer {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	private Log iLog = LogFactory.getLog(AbstractServer.class);
+	protected Log iLog = LogFactory.getLog(AbstractServer.class);
 	private AcademicSessionInfo iAcademicSession = null;
 	private DistanceMetric iDistanceMetric = null;
 	private DataProperties iConfig = null;
 	
-	private ReentrantReadWriteLock iLock = new ReentrantReadWriteLock();
-	private MultiLock iMultiLock;
-	private Map<Long, Lock> iOfferingLocks = new Hashtable<Long, Lock>();
 	private AsyncExecutor iExecutor;
 	private Queue<Runnable> iExecutorQueue = new LinkedList<Runnable>();
 	private HashSet<CacheElement<Long>> iOfferingsToPersistExpectedSpaces = new HashSet<CacheElement<Long>>();
 	private static ThreadLocal<LinkedList<OnlineSectioningHelper>> sHelper = new ThreadLocal<LinkedList<OnlineSectioningHelper>>();
 	
-	public AbstractServer(Long sessionId, boolean waitTillStarted) throws SectioningException {
+	public AbstractServer(OnlineSectioningServerContext context) throws SectioningException {
 		iConfig = new ServerConfig();
 		iDistanceMetric = new DistanceMetric(iConfig);
-		TravelTime.populateTravelTimes(iDistanceMetric, sessionId);
+		TravelTime.populateTravelTimes(iDistanceMetric, context.getAcademicSessionId());
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		try {
-			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
+			Session session = SessionDAO.getInstance().get(context.getAcademicSessionId(), hibSession);
 			if (session == null)
-				throw new SectioningException(MSG.exceptionSessionDoesNotExist(sessionId == null ? "null" : sessionId.toString()));
+				throw new SectioningException(MSG.exceptionSessionDoesNotExist(context.getAcademicSessionId() == null ? "null" : context.getAcademicSessionId().toString()));
 			iAcademicSession = new AcademicSessionInfo(session);
 			iLog = LogFactory.getLog(OnlineSectioningServer.class.getName() + ".server[" + iAcademicSession.toCompactString() + "]");
-			iMultiLock = new MultiLock(iAcademicSession);
 			iExecutor = new AsyncExecutor();
 			iExecutor.start();
+		} finally {
+			hibSession.close();
+		}
+		iLog.info("Config: " + ToolBox.dict2string(iConfig, 2));
+		
+		load(context);
+	}
+	
+	protected void load(OnlineSectioningServerContext context) throws SectioningException {
+		try {
 			final OnlineSectioningLog.Entity user = OnlineSectioningLog.Entity.newBuilder()
-				.setExternalId(StudentClassEnrollment.SystemChange.SYSTEM.name())
-				.setName(StudentClassEnrollment.SystemChange.SYSTEM.getName())
-				.setType(OnlineSectioningLog.Entity.EntityType.OTHER).build();
-			if (waitTillStarted) {
+					.setExternalId(StudentClassEnrollment.SystemChange.SYSTEM.name())
+					.setName(StudentClassEnrollment.SystemChange.SYSTEM.getName())
+					.setType(OnlineSectioningLog.Entity.EntityType.OTHER).build();
+			if (context.isWaitTillStarted()) {
 				try {
 					execute(new ReloadAllData(), user);
 				} catch (Throwable exception) {
@@ -149,10 +145,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		} catch (Throwable t) {
 			if (t instanceof SectioningException) throw (SectioningException)t;
 			throw new SectioningException(MSG.exceptionUnknown(t.getMessage()), t);
-		} finally {
-			hibSession.close();
 		}
-		iLog.info("Config: " + ToolBox.dict2string(iConfig, 2));
 	}
 	
 	@Override
@@ -254,177 +247,6 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	}
 	
 	@Override
-	public Lock readLock() {
-		iLock.readLock().lock();
-		return new Lock() {
-			public void release() {
-				iLock.readLock().unlock();
-			}
-		};
-	}
-
-	@Override
-	public Lock writeLock() {
-		iLock.writeLock().lock();
-		return new Lock() {
-			public void release() {
-				iLock.writeLock().unlock();
-			}
-		};
-	}
-
-	@Override
-	public Lock lockAll() {
-		iLock.writeLock().lock();
-		return new Lock() {
-			public void release() {
-				iLock.writeLock().unlock();
-			}
-		};
-	}
-	
-	@Override
-	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings) {
-		Set<Long> ids = new HashSet<Long>();
-		iLock.readLock().lock();
-		try {
-			ids.add(-studentId);
-			if (offeringIds != null)
-				for (Long offeringId: offeringIds)
-					if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId))
-						ids.add(offeringId);
-			
-			XStudent student = getStudent(studentId);
-			
-			if (student != null)
-				for (XRequest r: student.getRequests()) {
-					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
-						Long offeringId = ((XCourseRequest)r).getEnrollment().getOfferingId();
-						if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId)) ids.add(offeringId);
-					}
-				}
-		} finally {
-			iLock.readLock().unlock();
-		}
-		return iMultiLock.lock(ids);
-	}
-	
-	@Override
-	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering) {
-		Set<Long> ids = new HashSet<Long>();
-		iLock.readLock().lock();
-		try {
-			if (!excludeLockedOffering || !iOfferingLocks.containsKey(offeringId))
-				ids.add(offeringId);
-			
-			if (studentIds != null)
-				for (Long studentId: studentIds)
-				ids.add(-studentId);
-			
-			Collection<XCourseRequest> requests = getRequests(offeringId);
-			if (requests != null) {
-				for (XCourseRequest request: requests)
-					ids.add(-request.getStudentId());
-			}
-		} finally {
-			iLock.readLock().unlock();
-		}
-		return iMultiLock.lock(ids);
-	}
-	
-	private Long getOfferingIdFromCourseName(String courseName) {
-		if (courseName == null) return null;
-		XCourseId c = getCourse(courseName);
-		return (c == null ? null : c.getOfferingId());
-	}
-	
-	public Lock lockRequest(CourseRequestInterface request) {
-		Set<Long> ids = new HashSet<Long>();
-		iLock.readLock().lock();
-		try {
-			if (request.getStudentId() != null)
-				ids.add(-request.getStudentId());
-			for (CourseRequestInterface.Request r: request.getCourses()) {
-				if (r.hasRequestedCourse()) {
-					Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasFirstAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasSecondAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
-					if (id != null) ids.add(id);
-				}
-			}
-			for (CourseRequestInterface.Request r: request.getAlternatives()) {
-				if (r.hasRequestedCourse()) {
-					Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasFirstAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasSecondAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
-					if (id != null) ids.add(id);
-				}
-			}
-		} finally {
-			iLock.readLock().unlock();
-		}
-		return iMultiLock.lock(ids);
-	}
-
-	@Override
-	public boolean isOfferingLocked(Long offeringId) {
-		synchronized (iOfferingLocks) {
-			return iOfferingLocks.containsKey(offeringId);
-		}
-	}
-
-	@Override
-	public void lockOffering(Long offeringId) {
-		synchronized (iOfferingLocks) {
-			if (iOfferingLocks.containsKey(offeringId)) return;
-		}
-		Lock lock = iMultiLock.lock(offeringId);
-		synchronized (iOfferingLocks) {
-			if (iOfferingLocks.containsKey(offeringId))
-				lock.release();
-			else
-				iOfferingLocks.put(offeringId, lock);
-		}
-	}
-
-	@Override
-	public void unlockOffering(Long offeringId) {
-		synchronized (iOfferingLocks) {
-			Lock lock = iOfferingLocks.remove(offeringId);
-			if (lock != null)
-				lock.release();
-		}
-	}
-	
-	@Override
-	public Collection<Long> getLockedOfferings() {
-		synchronized (iOfferingLocks) {
-			return new ArrayList<Long>(iOfferingLocks.keySet());
-		}
-	}
-	
-	@Override
-	public void releaseAllOfferingLocks() {
-		synchronized (iOfferingLocks) {
-			for (Lock lock: iOfferingLocks.values())
-				lock.release();
-			iOfferingLocks.clear();
-		}
-	}
-
-	@Override
 	public <E> void execute(final OnlineSectioningAction<E> action, final OnlineSectioningLog.Entity user, final ServerCallback<E> callback) throws SectioningException {
 		final String locale = Localization.getLocale();
 		synchronized (iExecutorQueue) {
@@ -486,7 +308,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	}
 	
 	@Override
-	public void unload() {
+	public void unload(boolean remove) {
 		if (iExecutor != null) {
 			iExecutor.iStop = true;
 			synchronized (iExecutorQueue) {

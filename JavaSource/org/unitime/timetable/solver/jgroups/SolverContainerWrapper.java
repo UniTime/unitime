@@ -37,10 +37,12 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	private static Log sLog = LogFactory.getLog(SolverContainerWrapper.class);
 	private SolverServerImplementation iServer;
 	private RemoteSolverContainer<T> iContainer;
+	private boolean iCheckLocal = true;
 
-	public SolverContainerWrapper(SolverServerImplementation server, RemoteSolverContainer<T> container) {
+	public SolverContainerWrapper(SolverServerImplementation server, RemoteSolverContainer<T> container, boolean checkLocal) {
 		iServer = server;
 		iContainer = container;
+		iCheckLocal = checkLocal;
 	}
 
 	@Override
@@ -60,8 +62,10 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	@Override
 	public T getSolver(String user) {
 		try {
-			T solver = iContainer.getSolver(user);
-			if (solver != null) return solver;
+			if (iCheckLocal) {
+				T solver = iContainer.getSolver(user);
+				if (solver != null) return solver;				
+			}
 
 			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
 			List<Address> senders = new ArrayList<Address>();

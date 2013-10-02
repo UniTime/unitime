@@ -25,26 +25,44 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.transaction.TransactionManager;
+
 import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.transaction.LockingMode;
+import org.infinispan.transaction.TransactionMode;
+import org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup;
+import org.infinispan.transaction.lookup.TransactionManagerLookup;
+import org.infinispan.util.concurrent.IsolationLevel;
+import org.springframework.transaction.jta.JtaTransactionManager;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServerFactory;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
+import org.unitime.timetable.onlinesectioning.server.ReplicatedServer;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineSectioningServer> {
 	private static Log sLog = LogFactory.getLog(OnlineStudentSchedulingContainer.class);
-	private static OnlineSectioningServerFactory sFactory = new OnlineSectioningServerFactory();
 	
 	protected Hashtable<Long, OnlineSectioningServer> iInstances = new Hashtable<Long, OnlineSectioningServer>();
 	private Hashtable<Long, OnlineStudentSchedulingUpdater> iUpdaters = new Hashtable<Long, OnlineStudentSchedulingUpdater>();
 	
 	private ReentrantReadWriteLock iGlobalLock = new ReentrantReadWriteLock();
+	private EmbeddedCacheManager iCacheManager = null;
 
 	@Override
 	public Set<String> getSolvers() {
@@ -88,21 +106,42 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		return createInstance(Long.valueOf(sessionId), config);
 	}
 	
-	public OnlineSectioningServer createInstance(Long academicSessionId, DataProperties config) {
+	public OnlineSectioningServer createInstance(final Long academicSessionId, DataProperties config) {
 		iGlobalLock.writeLock().lock();
 		try {
 			ApplicationProperties.setSessionId(academicSessionId);
-			OnlineSectioningServer s = sFactory.create(academicSessionId, false);
-			iInstances.put(academicSessionId, s);
+			Class serverClass = Class.forName(ApplicationProperties.getProperty("unitime.enrollment.server.class", ReplicatedServer.class.getName()));
+			OnlineSectioningServer server = (OnlineSectioningServer)serverClass.getConstructor(OnlineSectioningServerContext.class).newInstance(new OnlineSectioningServerContext() {
+				@Override
+				public Long getAcademicSessionId() {
+					return academicSessionId;
+				}
+
+				@Override
+				public boolean isWaitTillStarted() {
+					return false;
+				}
+
+				@Override
+				public EmbeddedCacheManager getCacheManager() {
+					return OnlineStudentSchedulingContainer.this.getCacheManager();
+				}
+				
+			});
+			iInstances.put(academicSessionId, server);
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
-				OnlineStudentSchedulingUpdater updater = new OnlineStudentSchedulingUpdater(this, s.getAcademicSession(), StudentSectioningQueue.getLastTimeStamp(hibSession, academicSessionId));
+				OnlineStudentSchedulingUpdater updater = new OnlineStudentSchedulingUpdater(this, server.getAcademicSession(), StudentSectioningQueue.getLastTimeStamp(hibSession, academicSessionId));
 				iUpdaters.put(academicSessionId, updater);
 				updater.start();
 			} finally {
 				hibSession.close();
 			}
-			return s;
+			return server;
+		} catch (SectioningException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SectioningException(e.getMessage(), e);
 		} finally {
 			iGlobalLock.writeLock().unlock();
 			ApplicationProperties.setSessionId(null);
@@ -122,7 +161,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 				u.stopUpdating();
 			OnlineSectioningServer s = iInstances.get(academicSessionId);
 			if (s != null)
-				s.unload();
+				s.unload(true);
 			iInstances.remove(academicSessionId);
 			iUpdaters.remove(academicSessionId);
 		} finally {
@@ -185,7 +224,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 				u.stopUpdating();
 				if (u.getAcademicSession() != null) {
 					OnlineSectioningServer s = iInstances.get(u.getAcademicSession().getUniqueId());
-					if (s != null) s.unload();
+					if (s != null) s.unload(false);
 				}
 			}
 			iInstances.clear();
@@ -193,6 +232,38 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 			iGlobalLock.writeLock().unlock();
 		}
 		OnlineSectioningLogger.stopLogger();
+
+		if (iCacheManager != null)
+			iCacheManager.stop();
+	}
+	
+	public EmbeddedCacheManager getCacheManager() {
+		if (iCacheManager == null) {
+			GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
+					.transport().addProperty("configurationFile", "sectioning-jgroups-tcp.xml").clusterName("UniTime:sectioning")
+					.build();
+			TransactionManagerLookup txLookup = new JBossStandaloneJTAManagerLookup();
+			if (SpringApplicationContextHolder.isInitialized()) {
+				txLookup = new TransactionManagerLookup() {
+					@Override
+					public TransactionManager getTransactionManager() throws Exception {
+						JtaTransactionManager manager = (JtaTransactionManager)SpringApplicationContextHolder.getBean("transactionManager");
+						return manager.getTransactionManager();
+					}
+				};
+			}
+			
+			Configuration config = new ConfigurationBuilder()
+					.clustering().cacheMode(CacheMode.DIST_SYNC).sync()
+					.hash().numOwners(2)
+					.transaction().transactionManagerLookup(txLookup).transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.PESSIMISTIC)
+					.locking().concurrencyLevel(1000).isolationLevel(IsolationLevel.READ_COMMITTED)
+					.deadlockDetection()
+					.build();
+			
+			iCacheManager = new DefaultCacheManager(global, config);
+		}
+		return iCacheManager;
 	}
 
 }

@@ -19,25 +19,13 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
-import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
+import org.infinispan.manager.EmbeddedCacheManager;
 
-public class OnlineSectioningServerFactory {
+public interface OnlineSectioningServerContext {
 	
-	public OnlineSectioningServerFactory() {
-		
-	}
-	
-	public OnlineSectioningServer create(Long sessionId, boolean waitTillStarted) throws SectioningException {
-		try {
-			Class server = Class.forName(ApplicationProperties.getProperty("unitime.enrollment.server.class", InMemoryServer.class.getName()));
-			return (OnlineSectioningServer)server.getConstructor(Long.class, boolean.class).newInstance(sessionId, waitTillStarted);
-		} catch (SectioningException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new SectioningException(e.getMessage(), e);
-		}
-	}
+	public Long getAcademicSessionId();
 
+	public boolean isWaitTillStarted();
+	
+	public EmbeddedCacheManager getCacheManager();
 }

@@ -27,6 +27,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
+import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
+import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -37,7 +40,7 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
-public class InMemoryServer extends AbstractServer {
+public class InMemoryServer extends AbstractLockingServer {
 	private Hashtable<Long, XCourseId> iCourseForId = new Hashtable<Long, XCourseId>();
 	private Hashtable<String, TreeSet<XCourseId>> iCourseForName = new Hashtable<String, TreeSet<XCourseId>>();
 	
@@ -47,12 +50,13 @@ public class InMemoryServer extends AbstractServer {
 	private Hashtable<Long, List<XCourseRequest>> iOfferingRequests = new Hashtable<Long, List<XCourseRequest>>();
 	private Hashtable<Long, XExpectations> iExpectations = new Hashtable<Long, XExpectations>();
 	
-	public InMemoryServer(Long sessionId, boolean waitTillStarted) throws SectioningException {
-		super(sessionId, waitTillStarted);
+	public InMemoryServer(OnlineSectioningServerContext context) throws SectioningException {
+		super(context);
 	}
 
 	@Override
 	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
+		if (matcher != null) matcher.setServer(this);
 		Lock lock = readLock();
 		try {
 			Set<XCourseId> ret = new TreeSet<XCourseId>();
@@ -75,6 +79,7 @@ public class InMemoryServer extends AbstractServer {
 
 	@Override
 	public Collection<XCourseId> findCourses(CourseMatcher matcher) {
+		if (matcher != null) matcher.setServer(this);
 		Lock lock = readLock();
 		try {
 			Set<XCourseId> ret = new TreeSet<XCourseId>();
@@ -89,6 +94,7 @@ public class InMemoryServer extends AbstractServer {
 
 	@Override
 	public Collection<XStudent> findStudents(StudentMatcher matcher) {
+		if (matcher != null) matcher.setServer(this);
 		Lock lock = readLock();
 		try {
 			List<XStudent> ret = new ArrayList<XStudent>();
