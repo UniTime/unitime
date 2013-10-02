@@ -1,0 +1,269 @@
+/*
+ * UniTime 3.5 (University Timetabling Application)
+ * Copyright (C) 2013, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
+package org.unitime.timetable.onlinesectioning.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+
+import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
+import net.sf.cpsolver.studentsct.model.CourseRequest;
+import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
+import net.sf.cpsolver.studentsct.model.Request;
+
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.AcademicAreaClassification;
+import org.unitime.timetable.model.CourseDemand;
+import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentAccomodation;
+import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+
+public class XStudent implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private Long iStudentId;
+    private String iExternalId = null, iName = null;
+    private List<XAcademicAreaCode> iAcadAreaClassifs = new ArrayList<XAcademicAreaCode>();
+    private List<XAcademicAreaCode> iMajors = new ArrayList<XAcademicAreaCode>();
+    private List<String> iGroups = new ArrayList<String>();
+    private List<String> iAccomodations = new ArrayList<String>();
+    private List<XRequest> iRequests = new ArrayList<XRequest>();
+    private String iStatus = null;
+    private Date iEmailTimeStamp = null;
+
+    public XStudent() {}
+
+    public XStudent(Student student, OnlineSectioningHelper helper, BitSet freeTimePattern) {
+    	iStudentId = student.getUniqueId();
+    	iExternalId = student.getExternalUniqueId();
+    	iName = student.getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle));
+    	iStatus = student.getSectioningStatus() == null ? null : student.getSectioningStatus().getReference();
+    	iEmailTimeStamp = student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate();
+        for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
+        	iAcadAreaClassifs.add(new XAcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(), aac.getAcademicClassification().getCode()));
+            for (PosMajor major: aac.getAcademicArea().getPosMajors())
+            	if (student.getPosMajors().contains(major))
+            		iMajors.add(new XAcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(), major.getCode()));
+        }
+        for (StudentGroup group: student.getGroups())
+        	iGroups.add(group.getGroupAbbreviation());
+        for (StudentAccomodation accomodation: student.getAccomodations())
+        	iAccomodations.add(accomodation.getAbbreviation());
+        
+		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
+			public int compare(CourseDemand d1, CourseDemand d2) {
+				if (d1.isAlternative() && !d2.isAlternative()) return 1;
+				if (!d1.isAlternative() && d2.isAlternative()) return -1;
+				int cmp = d1.getPriority().compareTo(d2.getPriority());
+				if (cmp != 0) return cmp;
+				return d1.getUniqueId().compareTo(d2.getUniqueId());
+			}
+		});
+		demands.addAll(student.getCourseDemands());
+        for (CourseDemand cd: demands) {
+            if (cd.getFreeTime() != null) {
+            	iRequests.add(new XFreeTimeRequest(cd, freeTimePattern));
+            } else if (!cd.getCourseRequests().isEmpty()) {
+            	iRequests.add(new XCourseRequest(cd, helper));
+            }
+        }
+        
+        Map<CourseOffering, List<StudentClassEnrollment>> unmatchedCourses = new HashMap<CourseOffering, List<StudentClassEnrollment>>();
+        for (StudentClassEnrollment enrollment: student.getClassEnrollments()) {
+        	if (getRequestForCourse(enrollment.getCourseOffering().getUniqueId()) != null) continue;
+        	List<StudentClassEnrollment> classes = unmatchedCourses.get(enrollment.getCourseOffering());
+        	if (classes == null) {
+        		classes = new ArrayList<StudentClassEnrollment>();
+        		unmatchedCourses.put(enrollment.getCourseOffering(), classes);
+        	}
+        	classes.add(enrollment);
+        }
+        if (!unmatchedCourses.isEmpty()) {
+        	int priority = 0;
+        	for (XRequest request: iRequests)
+        		if (!request.isAlternative() && request.getPriority() > priority) priority = request.getPriority();
+            for (CourseOffering course: new TreeSet<CourseOffering>(unmatchedCourses.keySet())) {
+            	List<StudentClassEnrollment> classes = unmatchedCourses.get(course);
+            	iRequests.add(new XCourseRequest(student, course, ++priority, helper, classes));
+            }
+        }
+        
+        Collections.sort(iRequests);
+        
+    }
+    
+    public XStudent(net.sf.cpsolver.studentsct.model.Student student) {
+    	iStudentId = student.getId();
+    	iExternalId = student.getExternalId();
+    	iName = student.getName();
+    	iStatus = student.getStatus();
+    	iEmailTimeStamp = (student.getEmailTimeStamp() == null ? null : new Date(student.getEmailTimeStamp()));
+    	for (AcademicAreaCode aac: student.getAcademicAreaClasiffications())
+    		iAcadAreaClassifs.add(new XAcademicAreaCode(aac.getArea(), aac.getCode()));
+    	for (AcademicAreaCode aac: student.getMajors())
+    		iMajors.add(new XAcademicAreaCode(aac.getArea(), aac.getCode()));
+    	for (AcademicAreaCode aac: student.getMinors()) {
+    		if ("A".equals(aac.getArea()))
+				iAccomodations.add(aac.getCode());
+			else
+				iGroups.add(aac.getCode());
+    	}
+    	for (Request request: student.getRequests()) {
+    		if (request instanceof FreeTimeRequest) {
+    			iRequests.add(new XFreeTimeRequest((FreeTimeRequest)request));
+    		} else if (request instanceof CourseRequest) {
+    			iRequests.add(new XCourseRequest((CourseRequest)request));
+    		}
+    	}
+    }
+
+    /** Student unique id */
+    public Long getStudentId() {
+        return iStudentId;
+    }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+    
+    public XCourseRequest getRequestForCourse(Long courseId) {
+    	for (XRequest request: iRequests)
+    		if (request instanceof XCourseRequest && ((XCourseRequest)request).hasCourse(courseId))
+    			return (XCourseRequest)request;
+    	return null;
+    }
+
+    /**
+     * List of academic area - classification codes ({@link AcademicAreaCode})
+     * for the given student
+     */
+    public List<XAcademicAreaCode> getAcademicAreaClasiffications() {
+        return iAcadAreaClassifs;
+    }
+
+    /**
+     * List of major codes ({@link AcademicAreaCode}) for the given student
+     */
+    public List<XAcademicAreaCode> getMajors() {
+        return iMajors;
+    }
+
+    /**
+     * List of group codes for the given student
+     */
+    public List<String> getGroups() {
+        return iGroups;
+    }
+
+    /**
+     * List of group codes for the given student
+     */
+    public List<String> getAccomodations() {
+        return iAccomodations;
+    }
+
+    /**
+     * Compare two students for equality. Two students are considered equal if
+     * they have the same id.
+     */
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || !(object instanceof XStudent))
+            return false;
+        return getStudentId().equals(((XStudent) object).getStudentId());
+    }
+
+    /**
+     * Hash code (base only on student id)
+     */
+    @Override
+    public int hashCode() {
+        return (int) (getStudentId() ^ (getStudentId() >>> 32));
+    }
+    
+    /**
+     * Get student external id
+     */
+    public String getExternalId() { return iExternalId; }
+
+    /**
+     * Get student name
+     */
+    public String getName() { return iName; }
+        
+    /**
+     * Get student status (online sectioning only)
+     */
+    public String getStatus() { return iStatus; }
+    /**
+     * Set student status
+     */
+    public void setStatus(String status) { iStatus = status; }
+    
+    /**
+     * Get last email time stamp (online sectioning only)
+     */
+    public Date getEmailTimeStamp() { return iEmailTimeStamp; }
+    /**
+     * Set last email time stamp
+     */
+    public void setEmailTimeStamp(Date emailTimeStamp) { iEmailTimeStamp = emailTimeStamp; }
+    
+    public List<XRequest> getRequests() { return iRequests; }
+    
+    /**
+     * True if the given request can be assigned to the student. A request
+     * cannot be assigned to a student when the student already has the desired
+     * number of requests assigned (i.e., number of non-alternative course
+     * requests).
+     **/
+    public boolean canAssign(XCourseRequest request) {
+        if (request.getEnrollment() != null)
+            return true;
+        int alt = 0;
+        boolean found = false;
+        for (XRequest r : iRequests) {
+            if (r.equals(request)) found = true;
+            boolean course = (r instanceof XCourseRequest);
+            boolean assigned = (!course || ((XCourseRequest)r).getEnrollment() != null || r.equals(request));
+            boolean waitlist = (course && ((XCourseRequest)r).isWaitlist());
+            if (r.isAlternative()) {
+                if (assigned || (!found && waitlist))
+                    alt--;
+            } else {
+                if (course && !waitlist && !assigned)
+                    alt++;
+            }
+        }
+        return (alt >= 0);
+    }
+}
