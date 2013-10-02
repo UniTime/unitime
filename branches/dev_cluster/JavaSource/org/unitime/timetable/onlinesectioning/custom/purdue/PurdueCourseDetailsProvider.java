@@ -41,6 +41,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
  * @author Tomas Muller
  */
 public class PurdueCourseDetailsProvider implements CourseDetailsProvider, CourseUrlProvider {
+	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static Logger sLog = Logger.getLogger(PurdueCourseDetailsProvider.class);
 

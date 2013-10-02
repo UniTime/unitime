@@ -150,6 +150,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		double bestValue = 0.0;
 		
 		CourseRequest request = convert(getRequest(), server);
+		if (request == null) return null;
 		
 		if (getLastEnrollment() != null)
 			for (Long sectionId: getLastEnrollment().getSectionIds()) {

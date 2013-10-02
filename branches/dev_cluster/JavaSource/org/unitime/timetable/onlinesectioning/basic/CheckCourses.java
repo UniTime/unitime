@@ -26,8 +26,8 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
@@ -44,6 +44,7 @@ public class CheckCourses implements OnlineSectioningAction<Collection<String>> 
 
 	@Override
 	public Collection<String> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		if (iMatcher != null) iMatcher.setServer(server);
 		ArrayList<String> notFound = new ArrayList<String>();
 		Lock lock = (iRequest.getStudentId() == null ? null : server.lockStudent(iRequest.getStudentId(), null, true));
 		try {

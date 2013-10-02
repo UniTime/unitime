@@ -19,12 +19,14 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
+import java.io.Serializable;
+
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
 /**
  * @author Tomas Muller
  */
-public interface CourseDetailsProvider {
+public interface CourseDetailsProvider extends Serializable {
 	public String getDetails(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException;
 }

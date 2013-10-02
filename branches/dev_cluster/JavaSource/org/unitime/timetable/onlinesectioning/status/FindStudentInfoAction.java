@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.match.AbstractStudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -44,7 +45,7 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseInfoMatcher;
+import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction.FindEnrollmentInfoCourseMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
 
@@ -83,16 +84,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		int gEnrl = 0, gWait = 0, gRes = 0;
 		int gtEnrl = 0, gtWait = 0, gtRes = 0;
 		int gConNeed = 0, gtConNeed = 0;
-		
-		for (XCourseId info: server.findCourses(new OnlineSectioningServer.CourseMatcher() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean match(XCourseId id) {
-				XCourse course = server.getCourse(id.getCourseId());
-				return course != null && isCourseVisible(course.getCourseId()) && query().match(new CourseInfoMatcher(helper, course, isConsentToDoCourse(course)));
-			}
-		})) {
+		for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery))) {
 			XOffering offering = server.getOffering(info.getOfferingId());
 			if (offering == null) continue;
 			XCourse course = offering.getCourse(info.getCourseId());
@@ -105,7 +97,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(info.getCourseId())) continue;
 				XStudent student = server.getStudent(request.getStudentId());
 				if (student == null) continue;
-				CourseRequestMatcher m = new CourseRequestMatcher(helper, server, course, student, offering, request, isConsentToDoCourse);
+				CourseRequestMatcher m = new CourseRequestMatcher(server, course, student, offering, request, isConsentToDoCourse);
 				if (query().match(m)) {
 					StudentInfo s = students.get(request.getStudentId());
 					if (s == null) {
@@ -200,15 +192,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		
 		List<StudentInfo> ret = new ArrayList<StudentInfo>(students.values());
 		
-		for (XStudentId id: server.findStudents(new OnlineSectioningServer.StudentMatcher() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean match(XStudentId id) {
-				XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
-				return student != null && student.getRequests().isEmpty() && query().match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus()));
-			}
-		})) {
+		for (XStudentId id: server.findStudents(new FindStudentInfoMatcher(server, query()))) {
 			XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
 			StudentInfo s = new StudentInfo();
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
@@ -268,5 +252,21 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	public String name() {
 		return "find-student-infos";
 	}
+	
+	public static class FindStudentInfoMatcher extends AbstractStudentMatcher {
+		private static final long serialVersionUID = 1L;
+		private Query iQuery;
+		private String iDefaultSectioningStatus;
+		
+		public FindStudentInfoMatcher(OnlineSectioningServer server, Query query) {
+			iQuery = query;
+			iDefaultSectioningStatus = server.getAcademicSession().getDefaultSectioningStatus();
+		}
 
+		@Override
+		public boolean match(XStudentId id) {
+			XStudent student = (id instanceof XStudent ? (XStudent)id : getServer().getStudent(id.getStudentId()));
+			return student != null && student.getRequests().isEmpty() && iQuery.match(new StudentMatcher(student, iDefaultSectioningStatus));
+		}
+	}
 }

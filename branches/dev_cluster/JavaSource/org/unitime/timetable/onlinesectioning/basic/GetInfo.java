@@ -45,9 +45,9 @@ import net.sf.cpsolver.studentsct.model.Subpart;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.StudentMatcher;
+import org.unitime.timetable.onlinesectioning.match.AnyCourseMatcher;
+import org.unitime.timetable.onlinesectioning.match.AnyStudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -77,14 +77,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 			
 			int nrVars = 0, assgnVars = 0, nrStud = 0, compStud = 0, dist = 0, overlap = 0, free = 0;
 			double value = 0.0;
-			for (XStudentId id: server.findStudents(new StudentMatcher() {
-				private static final long serialVersionUID = 1L;
-
-				@Override
-				public boolean match(XStudentId student) {
-					return true;
-				}
-			})) {
+			for (XStudentId id: server.findStudents(new AnyStudentMatcher())) {
 				Student student = convert(id, server);
 				if (student == null) continue;
 				boolean complete = true;
@@ -115,7 +108,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 					}
 				}
 			}
-			info.put("Assigned variables", df.format(100.0 * assgnVars / nrVars) + "% (" + nrVars + "/" + assgnVars + ")");
+			info.put("Assigned variables", df.format(100.0 * assgnVars / nrVars) + "% (" + assgnVars + "/" + nrVars + ")");
 			info.put("Overall solution value", df.format(value));
 			info.put("Students with complete schedule", df.format(100.0 * compStud / nrStud) + "% (" + compStud + "/" + nrStud + ")");
 			info.put("Student distance conflicts", df.format(1.0 * dist / nrStud) + " (" + dist + ")");
@@ -126,14 +119,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 	        int disbSections = 0;
 	        int disb10Sections = 0;
 	        Set<Long> offerings = new HashSet<Long>();
-	        for (XCourseId ci: server.findCourses(new CourseMatcher() {
-				private static final long serialVersionUID = 1L;
-
-				@Override
-				public boolean match(XCourseId course) {
-					return true;
-				}
-			})) {
+	        for (XCourseId ci: server.findCourses(new AnyCourseMatcher())) {
 	        	XOffering offering = server.getOffering(ci.getOfferingId());
 	        	if (offering == null) continue;
 	        	if (offerings.add(offering.getOfferingId())) {
@@ -193,7 +179,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 				FreeTimeRequest ftr = new FreeTimeRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent,
 						new TimeLocation(ft.getTime().getDays(), ft.getTime().getSlot(), ft.getTime().getLength(), 0, 0.0,
 								-1l, "Free Time", server.getAcademicSession().getFreeTimePattern(), 0));
-				ftr.assign(0, ftr.getAssignment());
+				ftr.assign(0, ftr.createEnrollment());
 			} else {
 				XCourseRequest cr = (XCourseRequest)r;
 				List<Course> courses = new ArrayList<Course>();

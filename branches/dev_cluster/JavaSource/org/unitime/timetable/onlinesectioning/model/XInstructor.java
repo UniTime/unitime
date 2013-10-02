@@ -19,9 +19,12 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Serializable;
+
 import org.unitime.timetable.model.DepartmentalInstructor;
 
-public class XInstructor {
+public class XInstructor implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private Long iUniqueId;
 	private String iExternalId;
 	private String iName;

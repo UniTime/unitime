@@ -97,6 +97,7 @@ import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.basic.ListClasses;
 import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -1455,7 +1456,7 @@ public class SectioningServlet implements SectioningService {
 		if (user == null)
 			throw new PageAccessException(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 
-		if (user.getCurrentAuthority().hasRight(Right.HasRole)) return null;
+		if (getSessionContext().hasPermission(Right.HasRole)) return null;
 		
 		HashSet<Long> courseIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.coordinators i where " +
@@ -1860,7 +1861,7 @@ public class SectioningServlet implements SectioningService {
 		}
 	}
 
-	static class CourseMatcher implements OnlineSectioningServer.CourseMatcher {
+	static class CourseMatcher extends AbstractCourseMatcher {
 		private static final long serialVersionUID = 1L;
 		private boolean iAllCourseTypes, iNoCourseType;
 		private Set<String> iAllowedCourseTypes;

@@ -53,6 +53,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
+import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -758,6 +760,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	
 	@Override
 	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
+		if (matcher != null) matcher.setServer(this);
 		List<XCourseId> ret = new ArrayList<XCourseId>(limit == null ? 100 : limit);
 		String queryInLowerCase = query.toLowerCase();
 		for (XCourse c : getCourseInfoTable().values()) {
@@ -775,6 +778,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 
 	@Override
 	public Collection<XCourseId> findCourses(CourseMatcher matcher) {
+		if (matcher != null) matcher.setServer(this);
 		List<XCourseId> ret = new ArrayList<XCourseId>();
 		for (XCourse c : getCourseInfoTable().values())
 			if (matcher.match(c)) ret.add(c);
@@ -783,6 +787,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 
 	@Override
 	public Collection<XStudentId> findStudents(StudentMatcher matcher) {
+		if (matcher != null) matcher.setServer(this);
 		List<XStudentId> ret = new ArrayList<XStudentId>();
 		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents()) {
 			if (student.isDummy()) continue;
@@ -949,7 +954,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	}
 
 	@Override
-	public void unload() {
+	public void unload(boolean remove) {
 	}
 	
 	public static class NoLock implements Lock {

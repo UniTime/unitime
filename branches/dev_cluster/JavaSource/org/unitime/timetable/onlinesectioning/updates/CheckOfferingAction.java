@@ -282,7 +282,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 					r.getAction().setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
 					r.getAction().addMessage(OnlineSectioningLog.Message.newBuilder()
 							.setLevel(OnlineSectioningLog.Message.Level.FATAL)
-							.setText(e.getMessage()));
+							.setText(e.getMessage() == null ? "null" : e.getMessage()));
 					helper.rollbackTransaction();
 					helper.error("Unable to resection student: " + e.getMessage(), e);
 				}

@@ -19,8 +19,10 @@
 */
 package org.unitime.timetable.solver.jgroups;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -102,12 +104,20 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 			String term = ApplicationProperties.getProperty("unitime.enrollment.term");
 			String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
 			
-			Set<String> solvers = new HashSet<String>();
+			boolean replicate = "true".equals(ApplicationProperties.getProperty("unitime.enrollment.server.replicated", "true"));
+			Map<String, Set<Address>> solvers = new HashMap<String, Set<Address>>();
 			try {
 				RspList<Set<String>> ret = iContainer.getDispatcher().callRemoteMethods(
 						null, "getSolvers", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
 				for (Rsp<Set<String>> rsp : ret) {
-					solvers.addAll(rsp.getValue());
+					for (String solver: rsp.getValue()) {
+						Set<Address> members = solvers.get(solver);
+						if (members == null) {
+							members = new HashSet<Address>();
+							solvers.put(solver, members);
+						}
+						members.add(rsp.getSender());
+					}
 				}
 			} catch (Exception e) {
 				iLog.error("Failed to retrieve servers: " + e.getMessage(), e);
@@ -117,7 +127,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 			for (Iterator<Session> i = SessionDAO.getInstance().findAll(hibSession).iterator(); i.hasNext(); ) {
 				Session session = i.next();
 				
-				if (solvers.contains(session.getUniqueId().toString())) continue;
+				if (!replicate && solvers.containsKey(session.getUniqueId().toString())) continue;
 				
 				if (year != null && !year.equals(session.getAcademicYear())) continue;
 				if (term != null && !term.equals(session.getAcademicTerm())) continue;
@@ -131,14 +141,30 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 						.setLong("sessionId", session.getUniqueId()).uniqueResult()).intValue();
 				if (nrSolutions == 0) continue;
 				
-				try {
-					iContainer.getDispatcher().callRemoteMethod(
-							ToolBox.random(iChannel.getView().getMembers()),
-							"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iChannel.getAddress() },
-							new Class[] { String.class, DataProperties.class, Address.class },
-							SolverServerImplementation.sFirstResponse);
-				} catch (Exception e) {
-					iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+				if (replicate) {
+					Set<Address> members = solvers.get(session.getUniqueId().toString());
+					try {
+						for (Address address: iChannel.getView().getMembers()) {
+							if (members != null && members.contains(address)) continue;
+							iContainer.getDispatcher().callRemoteMethod(
+									address,
+									"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iChannel.getAddress() },
+									new Class[] { String.class, DataProperties.class, Address.class },
+									SolverServerImplementation.sFirstResponse);
+						}
+					} catch (Exception e) {
+						iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+					}
+				} else {
+					try {
+						iContainer.getDispatcher().callRemoteMethod(
+								ToolBox.random(iChannel.getView().getMembers()),
+								"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iChannel.getAddress() },
+								new Class[] { String.class, DataProperties.class, Address.class },
+								SolverServerImplementation.sFirstResponse);
+					} catch (Exception e) {
+						iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+					}	
 				}
 			}
 		} finally {

@@ -706,60 +706,62 @@ public class ManageSolversAction extends Action {
                
                int nrLines = 0;
                
-               for (String sessionId : solverServerService.getOnlineStudentSchedulingContainer().getSolvers()) {
-            	   OnlineSectioningServer solver = solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId);
-            	   if (solver==null) continue;
-            	   DataProperties properties = solver.getConfig();
-            	   if (properties==null) continue;
-                   if (sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), new SimpleQualifier("Session", Long.valueOf(sessionId))).isEmpty()) continue;
-                   String sessionLabel = solver.getAcademicSession().toString();
-                   String mode = solver.getAcademicSession().isSectioningEnabled() ? "Online" : "Assistant";
-                   Map<String,String> info = solver.execute(new GetInfo(), null);
-                   String assigned = (info == null ? null : info.get("Assigned variables"));
-                   String totVal = (info == null ? null : info.get("Overall solution value"));
-                   String compSch = (info == null ? null : info.get("Students with complete schedule"));
-                   String distConf = (info == null ? null : info.get("Student distance conflicts"));
-                   String time = (info == null ? null : info.get("Time overlapping conflicts"));
-                   String free = (info == null ? null : info.get("Free time overlapping conflicts"));
-                   String disb = (info == null ? null : info.get("Average disbalance"));
-                   String disb10 = (info == null ? null : info.get("Sections disbalanced by 10% or more"));
-                   Date loaded = new Date(solver.getConfig().getPropertyLong("General.StartUpDate", 0));
+               for (SolverServer server: solverServerService.getServers(true)) {
+                   for (String sessionId : server.getOnlineStudentSchedulingContainer().getSolvers()) {
+                	   OnlineSectioningServer solver = server.getOnlineStudentSchedulingContainer().getSolver(sessionId);
+                	   if (solver==null) continue;
+                	   DataProperties properties = solver.getConfig();
+                	   if (properties==null) continue;
+                       if (sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), new SimpleQualifier("Session", Long.valueOf(sessionId))).isEmpty()) continue;
+                       String sessionLabel = solver.getAcademicSession().toString();
+                       String mode = solver.getAcademicSession().isSectioningEnabled() ? "Online" : "Assistant";
+                       Map<String,String> info = solver.execute(new GetInfo(), null);
+                       String assigned = (info == null ? null : info.get("Assigned variables"));
+                       String totVal = (info == null ? null : info.get("Overall solution value"));
+                       String compSch = (info == null ? null : info.get("Students with complete schedule"));
+                       String distConf = (info == null ? null : info.get("Student distance conflicts"));
+                       String time = (info == null ? null : info.get("Time overlapping conflicts"));
+                       String free = (info == null ? null : info.get("Free time overlapping conflicts"));
+                       String disb = (info == null ? null : info.get("Average disbalance"));
+                       String disb10 = (info == null ? null : info.get("Sections disbalanced by 10% or more"));
+                       Date loaded = new Date(solver.getConfig().getPropertyLong("General.StartUpDate", 0));
 
-                   String op = "";
-                   op += "<input type=\"button\" value=\"Shutdown\" onClick=\"" +
-                   			"if (confirm('Do you really want to shutdown this server?')) " +
-                   			"document.location='manageSolvers.do?op=Unload&onlineId=" + sessionId + "';" + 
-                   			" event.cancelBubble=true;\">";
-                   
-                   webTable.addLine(null, new String[] {
-                               (loaded.getTime() <= 0 ? "N/A" : sDF.format(loaded)),
-                               sessionLabel,
-                               solver.getHost(),
-                               mode,
-                               (assigned==null?"N/A":assigned),
-                               (totVal==null?"N/A":totVal),
-                               (compSch==null?"N/A":compSch), 
-                               (distConf==null?"N/A":distConf),
-                               (time==null?"N/A":time),
-                               (free==null?"N/A":free),
-                               (disb==null?"N/A":disb),
-                               (disb10==null?"N/A":disb10),
-                               op},
-                           new Comparable[] {
-                               loaded,
-                               sessionLabel,
-                               solver.getHost(),
-                               mode, 
-                               (assigned==null?"":assigned),
-                               (totVal==null?"":totVal),
-                               (compSch==null?"":compSch), 
-                               (distConf==null?"":distConf),
-                               (time==null?"":time),
-                               (free==null?"":free),
-                               (disb==null?"":disb),
-                               (disb10==null?"":disb10),
-                               null});
-                       nrLines++;
+                       String op = "";
+                       op += "<input type=\"button\" value=\"Shutdown\" onClick=\"" +
+                       			"if (confirm('Do you really want to shutdown this server?')) " +
+                       			"document.location='manageSolvers.do?op=Unload&onlineId=" + sessionId + "';" + 
+                       			" event.cancelBubble=true;\">";
+                       
+                       webTable.addLine(null, new String[] {
+                                   (loaded.getTime() <= 0 ? "N/A" : sDF.format(loaded)),
+                                   sessionLabel,
+                                   solver.getHost(),
+                                   mode,
+                                   (assigned==null?"N/A":assigned),
+                                   (totVal==null?"N/A":totVal),
+                                   (compSch==null?"N/A":compSch), 
+                                   (distConf==null?"N/A":distConf),
+                                   (time==null?"N/A":time),
+                                   (free==null?"N/A":free),
+                                   (disb==null?"N/A":disb),
+                                   (disb10==null?"N/A":disb10),
+                                   op},
+                               new Comparable[] {
+                                   loaded,
+                                   sessionLabel,
+                                   solver.getHost(),
+                                   mode, 
+                                   (assigned==null?"":assigned),
+                                   (totVal==null?"":totVal),
+                                   (compSch==null?"":compSch), 
+                                   (distConf==null?"":distConf),
+                                   (time==null?"":time),
+                                   (free==null?"":free),
+                                   (disb==null?"":disb),
+                                   (disb10==null?"":disb10),
+                                   null});
+                           nrLines++;
+                   }
                }
                if (nrLines==0)
                    webTable.addLine(null, new String[] {"<i>There is no online student scheduling server running at the moment.</i>"}, null, null );

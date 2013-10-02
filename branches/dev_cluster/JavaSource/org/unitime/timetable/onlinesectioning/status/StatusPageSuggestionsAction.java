@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning.status;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -538,19 +539,16 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		}
 	}
 	
-	public static class CourseInfoMatcher implements TermMatcher {
+	public static class CourseInfoMatcher implements TermMatcher, Serializable {
+		private static final long serialVersionUID = 1L;
 		private XCourse iInfo;
-		private OnlineSectioningHelper iHelper;
 		private boolean iConsentToDoCourse;
 		
-		public CourseInfoMatcher(OnlineSectioningHelper helper, XCourse course, boolean isConsentToDoCourse) {
-			iHelper = helper;
+		public CourseInfoMatcher(XCourse course, boolean isConsentToDoCourse) {
 			iInfo = course;
 			iConsentToDoCourse = isConsentToDoCourse;
 		}
 		
-		public OnlineSectioningHelper helper() { return iHelper; }
-
 		public XCourse info() { return iInfo; }
 		
 		public boolean isConsentToDoCourse() { return iConsentToDoCourse; }
@@ -594,18 +592,20 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 	}
 	
 	public static class CourseRequestMatcher extends CourseInfoMatcher {
+		private static final long serialVersionUID = 1L;
 		private XStudent iStudent;
 		private XCourseRequest iRequest;
 		private XOffering iOffering;
 		private Date iFirstDate;
 		private String iDefaultStatus;
 		
-		public CourseRequestMatcher(OnlineSectioningHelper helper, OnlineSectioningServer server, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse) {
-			super(helper, info, isConsentToDoCourse);
+		public CourseRequestMatcher(OnlineSectioningServer server, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse) {
+			super(info, isConsentToDoCourse);
 			iFirstDate = server.getAcademicSession().getDatePatternFirstDate();
 			iStudent = student;
 			iRequest = request;
 			iDefaultStatus = server.getAcademicSession().getDefaultSectioningStatus();
+			iOffering = offering;
 		}
 		
 		public XCourseRequest request() { return iRequest; }

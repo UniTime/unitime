@@ -39,6 +39,9 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
+import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
+import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -50,14 +53,15 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 
-public class DatabaseServer extends AbstractServer {
+public class DatabaseServer extends AbstractLockingServer {
 
-	public DatabaseServer(Long sessionId, boolean waitTillStarted) throws SectioningException {
-		super(sessionId, waitTillStarted);
+	public DatabaseServer(OnlineSectioningServerContext context) throws SectioningException {
+		super(context);
 	}
 
 	@Override
 	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
+		if (matcher != null) matcher.setServer(this);
 		Collection<XCourseId> ret = new ArrayList<XCourseId>();
 		for (CourseOffering c: (List<CourseOffering>)getCurrentHelper().getHibSession().createQuery(
 				"select c from CourseOffering c where " +
@@ -80,6 +84,7 @@ public class DatabaseServer extends AbstractServer {
 
 	@Override
 	public Collection<XCourseId> findCourses(CourseMatcher matcher) {
+		if (matcher != null) matcher.setServer(this);
 		Collection<XCourseId> ret = new ArrayList<XCourseId>();
 		for (CourseOffering c: (List<CourseOffering>)getCurrentHelper().getHibSession().createQuery(
 				"select c from CourseOffering c where " +
@@ -96,6 +101,7 @@ public class DatabaseServer extends AbstractServer {
 
 	@Override
 	public Collection<XStudent> findStudents(StudentMatcher matcher) {
+		if (matcher != null) matcher.setServer(this);
 		Collection<XStudent> ret = new ArrayList<XStudent>();
 		for (Student s: (List<Student>)getCurrentHelper().getHibSession().createQuery(
 				"select distinct s from Student s " +

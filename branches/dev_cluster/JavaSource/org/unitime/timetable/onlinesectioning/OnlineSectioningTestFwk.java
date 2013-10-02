@@ -28,11 +28,13 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
 
 public abstract class OnlineSectioningTestFwk { 
@@ -64,7 +66,7 @@ public abstract class OnlineSectioningTestFwk {
 	}
 	
 	protected void startServer() {
-        Session session = Session.getSessionUsingInitiativeYearTerm(
+        final Session session = Session.getSessionUsingInitiativeYearTerm(
                 ApplicationProperties.getProperty("initiative", "PWL"),
                 ApplicationProperties.getProperty("year","2011"),
                 ApplicationProperties.getProperty("term","Spring")
@@ -79,7 +81,22 @@ public abstract class OnlineSectioningTestFwk {
         
         OnlineSectioningLogger.getInstance().setEnabled(false);
         
-        iServer = new OnlineSectioningServerFactory().create(session.getUniqueId(), true);
+        iServer = new InMemoryServer(new OnlineSectioningServerContext() {
+			@Override
+			public boolean isWaitTillStarted() {
+				return true;
+			}
+			
+			@Override
+			public EmbeddedCacheManager getCacheManager() {
+				return null;
+			}
+			
+			@Override
+			public Long getAcademicSessionId() {
+				return session.getUniqueId();
+			}
+		});
 	}
 	
 	protected void stopServer() {
@@ -87,7 +104,7 @@ public abstract class OnlineSectioningTestFwk {
 			List<Long> offeringIds = iServer.getOfferingsToPersistExpectedSpaces(0);
 			if (!offeringIds.isEmpty())
 				iServer.execute(new PersistExpectedSpacesAction(offeringIds), user());
-			iServer.unload();
+			iServer.unload(true);
 		}
 		iServer = null;
 	}

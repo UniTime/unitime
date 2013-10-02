@@ -17,17 +17,16 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.onlinesectioning.custom;
+package org.unitime.timetable.onlinesectioning.match;
 
-import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 
-public class DummyCourseDetailsProvider implements CourseDetailsProvider {
+public class AnyStudentMatcher extends AbstractStudentMatcher {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public String getDetails(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException {
-		return "";
+	public boolean match(XStudentId student) {
+		return true;
 	}
 
 }

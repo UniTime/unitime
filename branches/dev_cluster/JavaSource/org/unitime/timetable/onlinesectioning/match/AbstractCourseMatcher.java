@@ -17,17 +17,21 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.onlinesectioning.custom;
+package org.unitime.timetable.onlinesectioning.match;
 
-import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
-public class DummyCourseDetailsProvider implements CourseDetailsProvider {
+public abstract class AbstractCourseMatcher implements CourseMatcher {
 	private static final long serialVersionUID = 1L;
+	private transient OnlineSectioningServer iServer;
 
 	@Override
-	public String getDetails(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException {
-		return "";
+	public void setServer(OnlineSectioningServer server) {
+		iServer = server;
 	}
 
+	@Override
+	public OnlineSectioningServer getServer() {
+		return iServer;
+	}
 }

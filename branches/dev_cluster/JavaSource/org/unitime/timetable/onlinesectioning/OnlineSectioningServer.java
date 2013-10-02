@@ -19,13 +19,14 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
+import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -103,7 +104,7 @@ public interface OnlineSectioningServer {
 	
 	public boolean checkDeadline(Long courseId, XTime sectionTime, Deadline type);
 	
-	public void unload();
+	public void unload(boolean remove);
 	
 	public static interface Lock {
 		void release();
@@ -112,13 +113,5 @@ public interface OnlineSectioningServer {
 	public static interface ServerCallback<E> {
 		public void onFailure(Throwable exception);
 		public void onSuccess(E result);
-	}
-	
-	public static interface CourseMatcher extends Serializable {
-		public boolean match(XCourseId course);
-	}
-
-	public static interface StudentMatcher extends Serializable {
-		public boolean match(XStudentId student);
 	}
 }

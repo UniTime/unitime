@@ -54,7 +54,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 	private static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	
 	private Query iQuery;
-	private Integer iLimit = null;
+	private Integer iLimit = 100;
 	
 	public FindOnlineSectioningLogAction(String query) {
 		iQuery = new Query(query.isEmpty() ? "limit:100" : query);
