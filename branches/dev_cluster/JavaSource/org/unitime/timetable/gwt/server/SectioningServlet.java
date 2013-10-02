@@ -88,18 +88,18 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
-import org.unitime.timetable.onlinesectioning.CourseDetails;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseInfoMatcher;
 import org.unitime.timetable.onlinesectioning.basic.CheckCourses;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.basic.ListClasses;
 import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentAction;
@@ -214,18 +214,24 @@ public class SectioningServlet implements SectioningService {
 		} else {
 			ArrayList<ClassAssignmentInterface.CourseAssignment> ret = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			try {
-				for (CourseInfo c: server.findCourses(query, limit, matcher)) {
+				for (XCourseId id: server.findCourses(query, limit, matcher)) {
+					XCourse c = server.getCourse(id.getCourseId());
+					if (c == null) continue;
 					CourseAssignment course = new CourseAssignment();
-					course.setCourseId(c.getUniqueId());
+					course.setCourseId(c.getCourseId());
 					course.setSubject(c.getSubjectArea());
-					course.setCourseNbr(c.getCourseNbr());
+					course.setCourseNbr(c.getCourseNumber());
 					course.setNote(c.getNote());
 					course.setTitle(c.getTitle());
 					course.setHasUniqueName(c.hasUniqueName());
-					CourseDetails crd = server.getCourseDetails(c.getUniqueId());
-					if (crd != null) {
-						course.setEnrollment(crd.getEnrollment());
-						course.setLimit(crd.getLimit());
+					course.setLimit(c.getLimit());
+					Collection<XCourseRequest> requests = server.getRequests(c.getOfferingId());
+					if (requests != null) {
+						int enrl = 0;
+						for (XCourseRequest r: requests)
+							if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(course.getCourseId()))
+								enrl ++;
+						course.setEnrollment(enrl);
 					}
 					ret.add(course);
 				}
@@ -398,17 +404,17 @@ public class SectioningServlet implements SectioningService {
 					new AcademicSessionInfo(courseOffering.getSubjectArea().getSession()),
 					courseOffering.getSubjectAreaAbbv(), courseOffering.getCourseNbr());
 		} else {
-			CourseInfo c = getServerInstance(sessionId).getCourseInfo(course);
+			XCourseId c = getServerInstance(sessionId).getCourse(course);
 			if (c == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
-			return c.getDetails(server.getAcademicSession(), iCourseDetailsProvider);
+			return server.getCourseDetails(c.getCourseId(), iCourseDetailsProvider);
 		}
 	}
 	
 	public Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException, PageAccessException {
 		setLastSessionId(sessionId);
-		CourseInfo c = getServerInstance(sessionId).getCourseInfo(course);
+		XCourseId c = getServerInstance(sessionId).getCourse(course);
 		if (c == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
-		return c.getUniqueId();
+		return c.getCourseId();
 	}
 
 	public ClassAssignmentInterface section(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException {
@@ -463,7 +469,7 @@ public class SectioningServlet implements SectioningService {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			if (getServerInstance(request.getAcademicSessionId()) == null) {
 				ArrayList<String> notFound = new ArrayList<String>();
-				CourseInfoMatcher matcher = getCourseMatcher(request.getAcademicSessionId());
+				CourseMatcher matcher = getCourseMatcher(request.getAcademicSessionId());
 				Long studentId = getStudentId(request.getAcademicSessionId());
 				for (CourseRequestInterface.Request cr: request.getCourses()) {
 					if (!cr.hasRequestedFreeTime() && cr.hasRequestedCourse() && lookupCourse(hibSession, request.getAcademicSessionId(), studentId, cr.getRequestedCourse(), matcher) == null)
@@ -496,7 +502,7 @@ public class SectioningServlet implements SectioningService {
 		}
 	}
 	
-	public static CourseOffering lookupCourse(org.hibernate.Session hibSession, Long sessionId, Long studentId, String courseName, CourseInfoMatcher courseMatcher) {
+	public static CourseOffering lookupCourse(org.hibernate.Session hibSession, Long sessionId, Long studentId, String courseName, CourseMatcher courseMatcher) {
 		if (studentId != null) {
 			for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
 					"select cr.courseOffering from CourseRequest cr where " +
@@ -515,7 +521,7 @@ public class SectioningServlet implements SectioningService {
 				.setString("course", courseName.toLowerCase())
 				.setLong("sessionId", sessionId)
 				.setCacheable(true).setMaxResults(1).list()) {
-			if (courseMatcher != null && !courseMatcher.match(new CourseInfo(co))) continue;
+			if (courseMatcher != null && !courseMatcher.match(new XCourse(co))) continue;
 			return co;
 		}
 		return null;
@@ -781,17 +787,17 @@ public class SectioningServlet implements SectioningService {
 								r = new CourseRequestInterface.Request();
 								for (Iterator<CourseRequest> i = cd.getCourseRequests().iterator(); i.hasNext(); ) {
 									CourseRequest course = i.next();
-									CourseInfo c = (server == null ? new CourseInfo(course.getCourseOffering()) : server.getCourseInfo(course.getCourseOffering().getUniqueId()));
+									XCourse c = (server == null ? new XCourse(course.getCourseOffering()) : server.getCourse(course.getCourseOffering().getUniqueId()));
 									if (c == null) continue;
 									switch (course.getOrder()) {
 									case 0: 
-										r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNbr() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+										r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
 										break;
 									case 1:
-										r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNbr() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+										r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
 										break;
 									case 2:
-										r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNbr() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+										r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
 									}
 								}
 								if (r.hasRequestedCourse()) {
@@ -808,17 +814,17 @@ public class SectioningServlet implements SectioningService {
 						if (!request.getCourses().isEmpty()) return request;
 					}
 					if (!student.getClassEnrollments().isEmpty()) {
-						TreeSet<CourseInfo> courses = new TreeSet<CourseInfo>();
+						TreeSet<XCourse> courses = new TreeSet<XCourse>();
 						for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
 							StudentClassEnrollment enrl = i.next();
-							CourseInfo c = (server == null ? new CourseInfo(enrl.getCourseOffering()) : server.getCourseInfo(enrl.getCourseOffering().getUniqueId()));
+							XCourse c = (server == null ? new XCourse(enrl.getCourseOffering()) : server.getCourse(enrl.getCourseOffering().getUniqueId()));
 							if (c != null)  courses.add(c);
 						}
 						request = new CourseRequestInterface();
 						request.setAcademicSessionId(sessionId);
-						for (CourseInfo c: courses) {
+						for (XCourse c: courses) {
 							CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-							r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNbr() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+							r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
 							request.getCourses().add(r);
 						}
 						if (!request.getCourses().isEmpty()) return request;
@@ -875,7 +881,7 @@ public class SectioningServlet implements SectioningService {
 					ArrayList<ClassAssignmentInterface.ClassAssignment> ret = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 					for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
 						StudentClassEnrollment enrl = i.next();
-						CourseInfo course = server.getCourseInfo(enrl.getCourseOffering().getUniqueId());
+						XCourse course = server.getCourseInfo(enrl.getCourseOffering().getUniqueId());
 						Section section = server.getSection(enrl.getClazz().getUniqueId());
 						if (course == null || section == null) continue;
 						ClassAssignmentInterface.ClassAssignment ca = new ClassAssignmentInterface.ClassAssignment();
@@ -1854,7 +1860,7 @@ public class SectioningServlet implements SectioningService {
 		}
 	}
 
-	static class CourseMatcher implements OnlineSectioningServer.CourseInfoMatcher {
+	static class CourseMatcher implements OnlineSectioningServer.CourseMatcher {
 		private static final long serialVersionUID = 1L;
 		private boolean iAllCourseTypes, iNoCourseType;
 		private Set<String> iAllowedCourseTypes;
@@ -1872,7 +1878,7 @@ public class SectioningServlet implements SectioningService {
 		public Set<String> getAllowedCourseTypes() { return iAllowedCourseTypes; }
 
 		@Override
-		public boolean match(CourseInfo course) {
+		public boolean match(XCourseId course) {
 			return course != null && course.matchType(iAllCourseTypes, iNoCourseType, iAllowedCourseTypes);
 		}
 	}

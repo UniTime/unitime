@@ -23,12 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseInfoMatcher;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -36,9 +36,9 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 public class CheckCourses implements OnlineSectioningAction<Collection<String>> {
 	private static final long serialVersionUID = 1L;
 	private CourseRequestInterface iRequest;
-	private CourseInfoMatcher iMatcher;
+	private CourseMatcher iMatcher;
 	
-	public CheckCourses(CourseRequestInterface request, CourseInfoMatcher matcher) {
+	public CheckCourses(CourseRequestInterface request, CourseMatcher matcher) {
 		iRequest = request; iMatcher = matcher;
 	}
 
@@ -71,13 +71,13 @@ public class CheckCourses implements OnlineSectioningAction<Collection<String>> 
 		}
 	}
 	
-	public CourseInfo lookup(OnlineSectioningServer server, XStudent student, String course) {
-		CourseInfo c = server.getCourseInfo(course);
+	public XCourseId lookup(OnlineSectioningServer server, XStudent student, String course) {
+		XCourseId c = server.getCourse(course);
 		if (c != null && iMatcher != null && !iMatcher.match(c)) {
 			if (student != null) {
 				for (XRequest r: student.getRequests())
 					if (r instanceof XCourseRequest) {
-						if (((XCourseRequest)r).hasCourse(c.getUniqueId()))
+						if (((XCourseRequest)r).hasCourse(c.getCourseId()))
 							return c; // already requested
 					}
 			}

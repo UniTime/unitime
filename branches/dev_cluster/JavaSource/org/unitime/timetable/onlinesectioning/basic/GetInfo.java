@@ -42,11 +42,10 @@ import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
 
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseInfoMatcher;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.StudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
@@ -59,6 +58,7 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 
@@ -77,15 +77,16 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 			
 			int nrVars = 0, assgnVars = 0, nrStud = 0, compStud = 0, dist = 0, overlap = 0, free = 0;
 			double value = 0.0;
-			for (XStudent s: server.findStudents(new StudentMatcher() {
+			for (XStudentId id: server.findStudents(new StudentMatcher() {
 				private static final long serialVersionUID = 1L;
 
 				@Override
-				public boolean match(XStudent student) {
+				public boolean match(XStudentId student) {
 					return true;
 				}
 			})) {
-				Student student = convert(s, server);
+				Student student = convert(id, server);
+				if (student == null) continue;
 				boolean complete = true;
 				for (Request request: student.getRequests()) {
 					if (request instanceof FreeTimeRequest) continue;
@@ -125,11 +126,11 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 	        int disbSections = 0;
 	        int disb10Sections = 0;
 	        Set<Long> offerings = new HashSet<Long>();
-	        for (CourseInfo ci: server.findCourses(new CourseInfoMatcher() {
+	        for (XCourseId ci: server.findCourses(new CourseMatcher() {
 				private static final long serialVersionUID = 1L;
 
 				@Override
-				public boolean match(CourseInfo course) {
+				public boolean match(XCourseId course) {
 					return true;
 				}
 			})) {
@@ -182,7 +183,9 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 		return "info";
 	}
 	
-	public static Student convert(XStudent student, OnlineSectioningServer server) {
+	public static Student convert(XStudentId id, OnlineSectioningServer server) {
+		XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
+		if (student == null) return null;
 		Student clonnedStudent = new Student(student.getStudentId());
 		for (XRequest r: student.getRequests()) {
 			if (r instanceof XFreeTimeRequest) {

@@ -38,14 +38,12 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.comparators.ClassComparator;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -107,8 +105,6 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 						spaceMap.put(offering.getOfferingId(), new HashMap<Long, Double>());
 						server.update(offering);
 					}
-					for (CourseOffering co: io.getCourseOfferings())
-						server.update(new CourseInfo(co));
 				}
 				
 		    	List<DistributionPref> distPrefs = helper.getHibSession().createQuery(

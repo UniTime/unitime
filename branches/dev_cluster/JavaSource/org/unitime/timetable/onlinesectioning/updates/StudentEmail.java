@@ -55,7 +55,6 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -85,7 +84,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	private static GwtMessages GWT = Localization.create(GwtMessages.class);
 
-	private Date iTimeStamp = null;
+	private Date iTimeStamp = new Date();
 	private static Format<Date> sTimeStampFormat = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	private static Format<Date> sConsentApprovalDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 	private String iSubject = MSG.emailDeafultSubject(), iSubjectExt = null, iMessage = null, iCC = null;
@@ -702,11 +701,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			if (request instanceof XCourseRequest) {
 				XCourseRequest cr = (XCourseRequest)request;
 				if (!getStudent().canAssign(cr)) return;
-				CourseInfo course = server.getCourseInfo(cr.getCourseIds().get(0).getCourseId());
+				XCourse course = server.getCourse(cr.getCourseIds().get(0).getCourseId());
 				out.println("<tr>");
 				String style = "color: red; border-top: 1px dashed #9CB0CE;";
 				out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getSubjectArea() + "</td>");
-				out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getCourseNbr() + "</td>");
+				out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getCourseNumber() + "</td>");
 				out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
 				out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
 				if (request.isAlternative())
@@ -760,10 +759,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	private String consent(OnlineSectioningServer server, XEnrollment enrollment) {
 		if (enrollment == null || enrollment.getCourseId() == null) return null;
-		CourseInfo info = server.getCourseInfo(enrollment.getCourseId());
-		if (info == null || info.getConsent() == null) return null;
+		XCourse info = server.getCourse(enrollment.getCourseId());
+		if (info == null || info.getConsentLabel() == null) return null;
 		if (enrollment.getApproval() == null)
-			return MSG.consentWaiting(info.getConsent().toLowerCase());
+			return MSG.consentWaiting(info.getConsentLabel().toLowerCase());
 		else 
 			return MSG.consentApproved(sConsentApprovalDateFormat.format(enrollment.getApproval().getTimeStamp()));
 	}
@@ -832,8 +831,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
 						MSG.emailCourseEnrollment(course.getSubjectArea(), course.getCourseNumber()) + "</td></tr>");
 				out.println("		<tr><td>");
-				CourseInfo info = server.getCourseInfo(course.getCourseId());
-				String consent = (info == null ? null : info.getConsent());
+				XCourse info = server.getCourse(course.getCourseId());
+				String consent = (info == null ? null : info.getConsentLabel());
 				if (newRequest !=  null && getStudent().canAssign(newRequest))
 					out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">" + 
 							(newRequest.isAlternative() ?

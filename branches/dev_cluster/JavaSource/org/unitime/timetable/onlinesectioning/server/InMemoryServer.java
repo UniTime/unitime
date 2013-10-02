@@ -23,11 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.onlinesectioning.CourseDetails;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -39,9 +38,8 @@ import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 public class InMemoryServer extends AbstractServer {
-	private Hashtable<Long, CourseInfo> iCourseForId = new Hashtable<Long, CourseInfo>();
-	private Hashtable<String, TreeSet<CourseInfo>> iCourseForName = new Hashtable<String, TreeSet<CourseInfo>>();
-	private TreeSet<CourseInfo> iCourses = new TreeSet<CourseInfo>();
+	private Hashtable<Long, XCourseId> iCourseForId = new Hashtable<Long, XCourseId>();
+	private Hashtable<String, TreeSet<XCourseId>> iCourseForName = new Hashtable<String, TreeSet<XCourseId>>();
 	
 	private Hashtable<Long, XStudent> iStudentTable = new Hashtable<Long, XStudent>();
 	private Hashtable<Long, XOffering> iOfferingTable = new Hashtable<Long, XOffering>();
@@ -54,17 +52,17 @@ public class InMemoryServer extends AbstractServer {
 	}
 
 	@Override
-	public Collection<CourseInfo> findCourses(String query, Integer limit, CourseInfoMatcher matcher) {
+	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
 		Lock lock = readLock();
 		try {
-			List<CourseInfo> ret = new ArrayList<CourseInfo>(limit == null ? 100 : limit);
+			Set<XCourseId> ret = new TreeSet<XCourseId>();
 			String queryInLowerCase = query.toLowerCase();
-			for (CourseInfo c : iCourses) {
+			for (XCourseId c : iCourseForId.values()) {
 				if (c.matchCourseName(queryInLowerCase) && (matcher == null || matcher.match(c))) ret.add(c);
 				if (limit != null && ret.size() == limit) return ret;
 			}
 			if (queryInLowerCase.length() > 2) {
-				for (CourseInfo c : iCourses) {
+				for (XCourseId c : iCourseForId.values()) {
 					if (c.matchTitle(queryInLowerCase) && (matcher == null || matcher.match(c))) ret.add(c);
 					if (limit != null && ret.size() == limit) return ret;
 				}
@@ -76,11 +74,11 @@ public class InMemoryServer extends AbstractServer {
 	}
 
 	@Override
-	public Collection<CourseInfo> findCourses(CourseInfoMatcher matcher) {
+	public Collection<XCourseId> findCourses(CourseMatcher matcher) {
 		Lock lock = readLock();
 		try {
-			List<CourseInfo> ret = new ArrayList<CourseInfo>();
-			for (CourseInfo c : iCourses) {
+			Set<XCourseId> ret = new TreeSet<XCourseId>();
+			for (XCourseId c : iCourseForId.values()) {
 				if (matcher.match(c)) ret.add(c);
 			}
 			return ret;
@@ -103,19 +101,19 @@ public class InMemoryServer extends AbstractServer {
 	}
 
 	@Override
-	public CourseInfo getCourseInfo(String course) {
+	public XCourseId getCourse(String course) {
 		Lock lock = readLock();
 		try {
 			if (course.indexOf('-') >= 0) {
 				String courseName = course.substring(0, course.indexOf('-')).trim();
 				String title = course.substring(course.indexOf('-') + 1).trim();
-				TreeSet<CourseInfo> infos = iCourseForName.get(courseName.toLowerCase());
+				TreeSet<XCourseId> infos = iCourseForName.get(courseName.toLowerCase());
 				if (infos!= null && !infos.isEmpty())
-					for (CourseInfo info: infos)
+					for (XCourseId info: infos)
 						if (title.equalsIgnoreCase(info.getTitle())) return info;
 				return null;
 			} else {
-				TreeSet<CourseInfo> infos = iCourseForName.get(course.toLowerCase());
+				TreeSet<XCourseId> infos = iCourseForName.get(course.toLowerCase());
 				if (infos!= null && !infos.isEmpty()) return infos.first();
 				return null;
 			}
@@ -124,24 +122,19 @@ public class InMemoryServer extends AbstractServer {
 		}
 	}
 	
-	@Override
-	public CourseInfo getCourseInfo(Long courseId) {
-		Lock lock = readLock();
-		try {
-			return iCourseForId.get(courseId);
-		} finally {
-			lock.release();
-		}
+	private XCourse toCourse(XCourseId course) {
+		if (course == null) return null;
+		if (course instanceof XCourse)
+			return (XCourse)course;
+		XOffering offering = getOffering(course.getOfferingId());
+		return offering == null ? null : offering.getCourse(course);
 	}
 	
 	@Override
-	public CourseDetails getCourseDetails(Long courseId) {
+	public XCourse getCourse(Long courseId) {
 		Lock lock = readLock();
 		try {
-			CourseInfo course = iCourseForId.get(courseId);
-			if (course == null) return null;
-			XOffering offering = iOfferingTable.get(course.getOfferingId());
-			return new CourseDetails(offering.getCourse(course.getUniqueId()), iOfferingRequests.get(course.getOfferingId()));
+			return toCourse(iCourseForId.get(courseId));
 		} finally {
 			lock.release();
 		}
@@ -251,20 +244,12 @@ public class InMemoryServer extends AbstractServer {
 		Lock lock = writeLock();
 		try {
 			for (XCourse course: offering.getCourses()) {
-				CourseInfo ci = iCourseForId.get(course.getCourseId());
-				if (ci != null) {
-					TreeSet<CourseInfo> courses = iCourseForName.get(ci.toString());
-					if (courses != null) {
-						courses.remove(ci);
-						if (courses.isEmpty()) {
-							iCourseForName.remove(ci.toString());
-						} else if (courses.size() == 1) {
-							for (CourseInfo x: courses)
-								x.setHasUniqueName(true);
-						}
-					}
-					iCourseForId.remove(ci.getUniqueId());
-					iCourses.remove(ci);
+				iCourseForId.remove(course.getCourseId());
+				TreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
+				if (courses != null) {
+					courses.remove(course);
+					if (courses.size() == 1) 
+						for (XCourseId x: courses) x.setHasUniqueName(true);
 				}
 			}
 			iOfferingTable.remove(offering.getOfferingId());
@@ -286,35 +271,24 @@ public class InMemoryServer extends AbstractServer {
 	public void update(XOffering offering) {
 		Lock lock = writeLock();
 		try {
-			XOffering old = iOfferingTable.get(offering.getOfferingId());
-			if (old != null) remove(old);
+			XOffering oldOffering = iOfferingTable.get(offering.getOfferingId());
+			if (oldOffering != null)
+				remove(oldOffering);
+			
 			iOfferingTable.put(offering.getOfferingId(), offering);
-		} finally {
-			lock.release();
-		}
-	}
-
-	@Override
-	public void update(CourseInfo info) {
-		Lock lock = writeLock();
-		try {
-			CourseInfo old = iCourseForId.get(info.getUniqueId());
-			iCourseForId.put(info.getUniqueId(), info);
-			TreeSet<CourseInfo> courses = iCourseForName.get(info.toString());
-			if (courses == null) {
-				courses = new TreeSet<CourseInfo>();
-				iCourseForName.put(info.toString(), courses);
+			for (XCourse course: offering.getCourses()) {
+				iCourseForId.put(course.getCourseId(), course);
+				TreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
+				if (courses == null) {
+					courses = new TreeSet<XCourseId>();
+					iCourseForName.put(course.getCourseNameInLowerCase(), courses);
+				}
+				courses.add(course);
+				if (courses.size() == 1) 
+					for (XCourseId x: courses) x.setHasUniqueName(true);
+				else if (courses.size() > 1)
+					for (XCourseId x: courses) x.setHasUniqueName(false);
 			}
-			if (old != null) {
-				courses.remove(old);
-				iCourses.remove(old);
-			}
-			courses.add(info);
-			iCourses.add(info);
-			if (courses.size() == 1) 
-				for (CourseInfo x: courses) x.setHasUniqueName(true);
-			else if (courses.size() > 1)
-				for (CourseInfo x: courses) x.setHasUniqueName(false);
 		} finally {
 			lock.release();
 		}
@@ -328,7 +302,6 @@ public class InMemoryServer extends AbstractServer {
 			iOfferingTable.clear();
 			iCourseForId.clear();
 			iCourseForName.clear();
-			iCourses.clear();
 			iOfferingRequests.clear();
 			iDistributions.clear();
 		} finally {

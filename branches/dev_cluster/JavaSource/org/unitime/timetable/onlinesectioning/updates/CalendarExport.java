@@ -34,10 +34,10 @@ import java.util.TimeZone;
 
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
@@ -70,7 +70,7 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 	        		if (classId.isEmpty()) continue;
 	        		String[] courseAndClassId = classId.split("-");
 	        		if (courseAndClassId.length != 2) continue;
-	        		CourseInfo course = server.getCourseInfo(Long.valueOf(courseAndClassId[0]));
+	        		XCourse course = server.getCourse(Long.valueOf(courseAndClassId[0]));
 	        		XOffering offering = (course == null ? null : server.getOffering(course.getOfferingId()));
 	        		XSection section = (offering == null ? null : offering.getSection(Long.valueOf(courseAndClassId[1])));
 	        		if (course == null || section == null) continue;
@@ -110,7 +110,7 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 				XCourseRequest cr = (XCourseRequest)request;
 				XEnrollment enrollment = cr.getEnrollment();
 				if (enrollment == null) continue;
-				CourseInfo course = server.getCourseInfo(enrollment.getCourseId());
+				XCourse course = server.getCourse(enrollment.getCourseId());
 				XOffering offering = server.getOffering(enrollment.getOfferingId());
 				if (course != null && offering != null)
 					for (XSection section: offering.getSections(enrollment))
@@ -127,7 +127,7 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 		return buffer.toString();		
 	}
 	
-	private static void printSection(OnlineSectioningServer server, CourseInfo course, XSection section, PrintWriter out) throws IOException {
+	private static void printSection(OnlineSectioningServer server, XCourse course, XSection section, PrintWriter out) throws IOException {
 		XTime time = section.getTime();
 		if (time == null || time.getWeeks().isEmpty()) return;
 		
@@ -293,13 +293,13 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static void printMeetingRest(OnlineSectioningServer server, CourseInfo course, XSection section, PrintWriter out) throws IOException {
+	private static void printMeetingRest(OnlineSectioningServer server, XCourse course, XSection section, PrintWriter out) throws IOException {
         out.println("UID:" + section.getSectionId());
         out.println("SEQUENCE:0");
-        out.println("SUMMARY:" + course.getSubjectArea() + " " + course.getCourseNbr() + " " + section.getSubpartName() + " " + section.getName(course.getUniqueId()));
+        out.println("SUMMARY:" + course.getSubjectArea() + " " + course.getCourseNumber() + " " + section.getSubpartName() + " " + section.getName(course.getCourseId()));
         String desc = (course.getTitle() == null ? "" : course.getTitle());
-		if (course.getConsent() != null && !course.getConsent().isEmpty())
-			desc += " (" + course.getConsent() + ")";
+		if (course.getConsentLabel() != null && !course.getConsentLabel().isEmpty())
+			desc += " (" + course.getConsentLabel() + ")";
 			out.println("DESCRIPTION:" + desc);
         if (section.getRooms() != null && !section.getRooms().isEmpty()) {
         	String loc = "";
@@ -310,7 +310,7 @@ public class CalendarExport implements OnlineSectioningAction<String>{
         	out.println("LOCATION:" + loc);
         }
         try {
-        	URL url = CourseDetailsBackend.getCourseUrl(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNbr());
+        	URL url = CourseDetailsBackend.getCourseUrl(server.getAcademicSession(), course.getSubjectArea(), course.getCourseNumber());
         	if (url != null) out.println("URL:" + url.toString());
         } catch (Exception e) {
         	e.printStackTrace();

@@ -21,11 +21,11 @@ package org.unitime.timetable.onlinesectioning.basic;
 
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
@@ -79,17 +79,17 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 					r = new CourseRequestInterface.Request();
 					int order = 0;
 					for (XCourseId courseId: ((XCourseRequest)cd).getCourseIds()) {
-						CourseInfo c = server.getCourseInfo(courseId.getCourseId());
+						XCourse c = server.getCourse(courseId.getCourseId());
 						if (c == null) continue;
 						switch (order) {
 							case 0: 
-								r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNbr() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+								r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
 								break;
 							case 1:
-								r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNbr() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+								r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
 								break;
 							case 2:
-								r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNbr() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+								r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
 							}
 						order++;
 						}

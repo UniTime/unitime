@@ -255,7 +255,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							a.setBackToBackRooms(from);
 							a.setSaved(true);
 							if (a.getParentSection() == null) {
-								String consent = server.getCourseInfo(course.getCourseId()).getConsent();
+								String consent = server.getCourse(course.getCourseId()).getConsentLabel();
 								if (consent != null) {
 									if (enrollment.getApproval() != null) {
 										a.setParentSection(MSG.consentApproved(df.format(enrollment.getApproval().getTimeStamp())));

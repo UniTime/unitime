@@ -28,12 +28,13 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
@@ -68,14 +69,15 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 		ArrayList<ClassAssignmentInterface.ClassAssignment> ret = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 		Lock lock = server.readLock();
 		try {
-			CourseInfo c = server.getCourseInfo(getCourse());
-			if (c == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(getCourse()));
-			XOffering offering = server.getOffering(c.getOfferingId());
+			XCourseId id = server.getCourse(getCourse());
+			if (id == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(getCourse()));
+			XOffering offering = server.getOffering(id.getOfferingId());
+			XCourse c = offering.getCourse(id.getCourseId());
 			XEnrollments enrollments = server.getEnrollments(c.getOfferingId());
 			XExpectations expectations = server.getExpectations(c.getOfferingId());
 			ClassAssignmentInterface.CourseAssignment courseAssign = new ClassAssignmentInterface.CourseAssignment();
-			courseAssign.setCourseId(c.getUniqueId());
-			courseAssign.setCourseNbr(c.getCourseNbr());
+			courseAssign.setCourseId(c.getCourseId());
+			courseAssign.setCourseNbr(c.getCourseNumber());
 			courseAssign.setSubject(c.getSubjectArea());
 			for (XConfig config: offering.getConfigs())
 				for (XSubpart subpart: config.getSubparts())
@@ -91,7 +93,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						ClassAssignmentInterface.ClassAssignment a = courseAssign.addClassAssignment();
 						a.setClassId(section.getSectionId());
 						a.setSubpart(subpart.getName());
-						a.setSection(section.getName(c.getUniqueId()));
+						a.setSection(section.getName(c.getCourseId()));
 						a.setClassNumber(section.getName(-1l));
 						a.setLimit(new int[] { enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 						if (getStudentId() != null) {
@@ -120,10 +122,10 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 							a.addInstructoEmail(instructor.getEmail() == null ? "" : instructor.getEmail());
 						}
 						if (section.getParentId() != null)
-							a.setParentSection(offering.getSection(section.getParentId()).getName(c.getUniqueId()));
+							a.setParentSection(offering.getSection(section.getParentId()).getName(c.getCourseId()));
 						a.setSubpartId(subpart.getSubpartId());
 						if (a.getParentSection() == null)
-							a.setParentSection(c.getConsent());
+							a.setParentSection(c.getConsentLabel());
 						a.setExpected(Math.round(expectations.getExpectedSpace(section.getSectionId())));
 						ret.add(a);
 					}

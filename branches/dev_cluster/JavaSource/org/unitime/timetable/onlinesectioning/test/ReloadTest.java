@@ -25,10 +25,10 @@ import java.util.List;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningTestFwk;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.onlinesectioning.updates.ClassAssignmentChanged;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
@@ -77,11 +77,11 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 			});
 		}
 
-		final OnlineSectioningServer.CourseInfoMatcher matcher = new OnlineSectioningServer.CourseInfoMatcher() {
+		final OnlineSectioningServer.CourseMatcher matcher = new OnlineSectioningServer.CourseMatcher() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public boolean match(CourseInfo course) {
+			public boolean match(XCourseId course) {
 				return true;
 			}
 		};

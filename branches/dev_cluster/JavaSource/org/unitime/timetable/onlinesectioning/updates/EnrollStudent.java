@@ -47,7 +47,6 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.HasCacheMode;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -55,6 +54,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
@@ -92,16 +92,16 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		Set<Long> lockedCourses = new HashSet<Long>();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 			if (ca != null && !ca.isFreeTime()) {
-				CourseInfo course = server.getCourseInfo(ca.getCourseId());
+				XCourse course = server.getCourse(ca.getCourseId());
 				if (course == null)
 					throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
 				if (server.isOfferingLocked(course.getOfferingId())) {
-					lockedCourses.add(course.getUniqueId());
+					lockedCourses.add(course.getCourseId());
 					for (CourseRequestInterface.Request r: getRequest().getCourses())
 						if (!r.isWaitList() && !r.hasRequestedFreeTime()) {
-							if ((r.hasRequestedCourse() && r.getRequestedCourse().equalsIgnoreCase(MSG.course(course.getSubjectArea(), course.getCourseNbr()))) ||
-								(r.hasFirstAlternative() && r.getFirstAlternative().equalsIgnoreCase(MSG.course(course.getSubjectArea(), course.getCourseNbr()))) ||
-								(r.hasSecondAlternative() && r.getSecondAlternative().equalsIgnoreCase(MSG.course(course.getSubjectArea(), course.getCourseNbr()))))
+							if ((r.hasRequestedCourse() && r.getRequestedCourse().equalsIgnoreCase(MSG.course(course.getSubjectArea(), course.getCourseNumber()))) ||
+								(r.hasFirstAlternative() && r.getFirstAlternative().equalsIgnoreCase(MSG.course(course.getSubjectArea(), course.getCourseNumber()))) ||
+								(r.hasSecondAlternative() && r.getSecondAlternative().equalsIgnoreCase(MSG.course(course.getSubjectArea(), course.getCourseNumber()))))
 								r.setWaitList(true);
 						}
 					// throw new SectioningException(SectioningExceptionType.COURSE_LOCKED, course.getName());

@@ -33,7 +33,6 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -77,12 +76,11 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	@Override
 	public List<ClassAssignmentInterface.Enrollment> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<ClassAssignmentInterface.Enrollment> ret = new ArrayList<ClassAssignmentInterface.Enrollment>();
-		CourseInfo info = server.getCourseInfo(courseId());
-		if (info == null) return ret;
-		XOffering offering = server.getOffering(info.getOfferingId());
+		XCourse course = server.getCourse(courseId());
+		if (course == null) return ret;
+		XOffering offering = server.getOffering(course.getOfferingId());
 		if (offering == null) return ret;
-		XCourse course = offering.getCourse(courseId());
-		XEnrollments enrollments = server.getEnrollments(info.getOfferingId());
+		XEnrollments enrollments = server.getEnrollments(course.getOfferingId());
 		DistanceMetric m = server.getDistanceMetric();
 		Collection<XDistribution> distributions = server.getDistributions(offering.getOfferingId());
 		XExpectations expectations = server.getExpectations(offering.getOfferingId());
@@ -94,7 +92,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			XStudent student = server.getStudent(request.getStudentId());
 			if (student == null) continue;
 			if (request.getEnrollment() == null && !student.canAssign(request)) continue;
-			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(helper, server, info, student, offering, request, isConsentToDoCourse()))) continue;
+			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(helper, server, course, student, offering, request, isConsentToDoCourse()))) continue;
 			
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 			st.setId(student.getStudentId());
@@ -237,7 +235,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setBackToBackRooms(from);
 					a.setSaved(true);
 					if (a.getParentSection() == null)
-						a.setParentSection(info.getConsent());
+						a.setParentSection(course.getConsentLabel());
 					a.setExpected(expectations.getExpectedSpace(section.getSectionId()));
 				}
 			}
