@@ -20,6 +20,10 @@ package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.List;
 
+import org.unitime.timetable.onlinesectioning.model.XRoom;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XTime;
+
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -85,6 +89,58 @@ public class ResectioningWeights extends StudentSchedulingAssistantWeights {
 		return weight;
 	}
 	
+	public static boolean sameRooms(XSection s, List<XRoom> rooms) {
+		if (s.getRooms() == null && rooms == null) return true;
+		if (s.getRooms() == null || rooms == null) return false;
+		return
+			s.getRooms().size() == rooms.size() &&
+			s.getRooms().containsAll(rooms);
+	}
+	
+	public static boolean sameTime(XSection s, XTime t) {
+		if (s.getTime() == null && t == null) return true;
+		if (s.getTime() == null || t == null) return false;
+		return
+			s.getTime().getSlot() == t.getSlot() &&
+			s.getTime().getLength() == t.getLength() && 
+			s.getTime().getDays() == t.getDays() && 
+			ToolBox.equals(s.getTime().getDatePatternName(), t.getDatePatternName());
+	}
+	
+	public static boolean sameChoice(Section s, Choice ch) {
+		return sameChoice(s, ch == null ? null : ch.getId());
+	}
+	
+	public static boolean sameChoice(Section s, String ch) {
+		if (s.getChoice() == null && ch == null) return true;
+		if (s.getChoice() == null || ch == null) return false;
+		return s.getChoice().getId().equals(ch);
+	}
+
+	public static boolean sameName(Long courseId, XSection s1, XSection s2) {
+		return s1.getName(courseId).equals(s2.getName(courseId));
+	}
+	
+	public static boolean isSame(Enrollment e1, Enrollment e2) {
+		if (e1.getSections().size() != e2.getSections().size()) return false;
+		s1: for (Section s1: e1.getSections()) {
+			for (Section s2: e2.getSections())
+				if (sameChoice(s1, s2.getChoice())) continue s1;
+			return false;
+		}
+		return true;
+	}
+	
+	public static boolean isVerySame(Long courseId, List<XSection> e1, List<XSection> e2) {
+		if (e1.size() != e2.size()) return false;
+		s1: for (XSection s1: e1) {
+			for (XSection s2: e2)
+				if (sameName(courseId, s1, s2) && sameTime(s1, s2.getTime()) && sameRooms(s1, s2.getRooms())) continue s1;
+			return false;
+		}
+		return true;
+	}
+	
 	public static boolean sameRooms(Section s, List<RoomLocation> rooms) {
 		if (s.getRooms() == null && rooms == null) return true;
 		if (s.getRooms() == null || rooms == null) return false;
@@ -103,38 +159,8 @@ public class ResectioningWeights extends StudentSchedulingAssistantWeights {
 			ToolBox.equals(s.getTime().getDatePatternName(), t.getDatePatternName());
 	}
 	
-	public static boolean sameChoice(Section s, Choice ch) {
-		return sameChoice(s, ch == null ? null : ch.getId());
-	}
-	
-	public static boolean sameChoice(Section s, String ch) {
-		if (s.getChoice() == null && ch == null) return true;
-		if (s.getChoice() == null || ch == null) return false;
-		return s.getChoice().getId().equals(ch);
-	}
-
 	public static boolean sameName(Long courseId, Section s1, Section s2) {
 		return s1.getName(courseId).equals(s2.getName(courseId));
-	}
-	
-	public static boolean isSame(Enrollment e1, Enrollment e2) {
-		if (e1.getSections().size() != e2.getSections().size()) return false;
-		s1: for (Section s1: e1.getSections()) {
-			for (Section s2: e2.getSections())
-				if (sameChoice(s1, s2.getChoice())) continue s1;
-			return false;
-		}
-		return true;
-	}
-	
-	public static boolean isVerySame(Enrollment e1, Enrollment e2) {
-		if (e1.getSections().size() != e2.getSections().size()) return false;
-		s1: for (Section s1: e1.getSections()) {
-			for (Section s2: e2.getSections())
-				if (sameName(e1.getCourse().getId(), s1, s2) && sameTime(s1, s2.getTime()) && sameRooms(s1, s2.getRooms())) continue s1;
-			return false;
-		}
-		return true;
 	}
 	
 	public static interface LastSectionProvider {

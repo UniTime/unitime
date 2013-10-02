@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.studentsct.model.Request;
-
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -52,6 +50,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 /**
  * @author Tomas Muller
@@ -93,26 +93,29 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				saveRequest(server, helper, student, getRequest(), getKeepEnrollments());
 				
 				// Reload student
-				net.sf.cpsolver.studentsct.model.Student oldStudent = server.getStudent(getStudentId());
-				net.sf.cpsolver.studentsct.model.Student newStudent = null;
+				XStudent oldStudent = server.getStudent(getStudentId());
+				XStudent newStudent = null;
 				try {
 					if (oldStudent != null)
 						server.remove(oldStudent);
-					newStudent = ReloadAllData.loadStudent(student, server, helper);
-					server.update(newStudent);
-					action.getStudentBuilder().setUniqueId(newStudent.getId()).setExternalId(newStudent.getExternalId());
+					newStudent = ReloadAllData.loadStudent(student, null, server, helper);
+					server.update(newStudent, true);
+					action.getStudentBuilder()
+						.setUniqueId(newStudent.getStudentId())
+						.setExternalId(newStudent.getExternalId())
+						.setName(newStudent.getName());
 					
-					for (Request r: newStudent.getRequests())
+					for (XRequest r: newStudent.getRequests())
 						action.addRequest(OnlineSectioningHelper.toProto(r));
 						
 				} catch (Exception e) {
 					// Put back the old student (the database will get rollbacked)
-					server.update(oldStudent);
+					server.update(oldStudent, true);
 					if (e instanceof RuntimeException)
 						throw (RuntimeException)e;
 					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 				}
-				server.notifyStudentChanged(getStudentId(), (oldStudent == null ? null : oldStudent.getRequests()), newStudent.getRequests(), helper.getUser());
+				server.execute(new NotifyStudentAction(getStudentId(), oldStudent), helper.getUser());
 				
 				helper.commitTransaction();
 				
@@ -233,8 +236,10 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					CourseRequest cr = null;
 					if (requests.hasNext()) {
 						cr = requests.next();
+						/*
 						if (cr.getClassEnrollments() != null)
 							cr.getClassEnrollments().clear();
+							*/
 						if (cr.getCourseRequestOptions() != null) {
 							for (Iterator<CourseRequestOption> i = cr.getCourseRequestOptions().iterator(); i.hasNext(); )
 								helper.getHibSession().delete(i.next());
@@ -245,6 +250,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
 						cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
+						// cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
 					}
 					cr.setAllowOverlap(false);
 					cr.setCredit(0);
@@ -270,15 +276,19 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					helper.getHibSession().saveOrUpdate(enrl);
 				} else {
 					enrl.setCourseRequest(cr);
+					/*
 					if (cr.getClassEnrollments() == null)
 						cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
 					cr.getClassEnrollments().add(enrl);
+					*/
 					helper.getHibSession().saveOrUpdate(enrl);
 				}
 			} else {
 				enrl.getClazz().getStudentEnrollments().remove(enrl);
+				/*
 				if (enrl.getCourseRequest() != null)
 					enrl.getCourseRequest().getClassEnrollments().remove(enrl);
+					*/
 				helper.getHibSession().delete(enrl);
 				i.remove();
 			}

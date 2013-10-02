@@ -20,23 +20,12 @@
 package org.unitime.timetable.onlinesectioning.status;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.reservation.CourseReservation;
-import net.sf.cpsolver.studentsct.reservation.CurriculumReservation;
-import net.sf.cpsolver.studentsct.reservation.GroupReservation;
-import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
-import net.sf.cpsolver.studentsct.reservation.Reservation;
+import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -48,6 +37,20 @@ import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XDistribution;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XEnrollments;
+import org.unitime.timetable.onlinesectioning.model.XExpectations;
+import org.unitime.timetable.onlinesectioning.model.XInstructor;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XRoom;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 
 public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAssignmentInterface.Enrollment>> {
 	private static final long serialVersionUID = 1L;
@@ -75,132 +78,145 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	public List<ClassAssignmentInterface.Enrollment> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<ClassAssignmentInterface.Enrollment> ret = new ArrayList<ClassAssignmentInterface.Enrollment>();
 		CourseInfo info = server.getCourseInfo(courseId());
-		Course course = server.getCourse(courseId());
-		if (course == null) return ret;
-		Section filterSection = (classId() == null ? null : server.getSection(classId()));
+		if (info == null) return ret;
+		XOffering offering = server.getOffering(info.getOfferingId());
+		if (offering == null) return ret;
+		XCourse course = offering.getCourse(courseId());
+		XEnrollments enrollments = server.getEnrollments(info.getOfferingId());
+		DistanceMetric m = server.getDistanceMetric();
+		Collection<XDistribution> distributions = server.getDistributions(offering.getOfferingId());
+		XExpectations expectations = server.getExpectations(offering.getOfferingId());
 		
-		for (CourseRequest request: course.getRequests()) {
-			if (request.getAssignment() != null && request.getAssignment().getCourse().getId() != course.getId()) continue;
-			if (filterSection != null && request.getAssignment() != null && !request.getAssignment().getSections().contains(filterSection)) continue;
-			if (request.getAssignment() == null && !request.getStudent().canAssign(request)) continue;
-			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(helper, server, info, request, isConsentToDoCourse()))) continue;
+		for (XCourseRequest request: enrollments.getRequests()) {
+			if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(courseId())) continue;
+			if (classId() != null && request.getEnrollment() != null && !request.getEnrollment().getSectionIds().contains(classId())) continue;
+			if (request.getEnrollment() == null && !request.getCourseIds().contains(course)) continue;
+			XStudent student = server.getStudent(request.getStudentId());
+			if (student == null) continue;
+			if (request.getEnrollment() == null && !student.canAssign(request)) continue;
+			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(helper, server, info, student, offering, request, isConsentToDoCourse()))) continue;
 			
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
-			st.setId(request.getStudent().getId());
-			st.setExternalId(request.getStudent().getExternalId());
-			st.setName(request.getStudent().getName());
-			for (AcademicAreaCode ac: request.getStudent().getAcademicAreaClasiffications()) {
+			st.setId(student.getStudentId());
+			st.setExternalId(student.getExternalId());
+			st.setName(student.getName());
+			for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 				st.addArea(ac.getArea());
 				st.addClassification(ac.getCode());
 			}
-			for (AcademicAreaCode ac: request.getStudent().getMajors()) {
+			for (XAcademicAreaCode ac: student.getMajors()) {
 				st.addMajor(ac.getCode());
 			}
-			for (AcademicAreaCode ac: request.getStudent().getMinors()) {
-				if ("A".equals(ac.getArea()))
-					st.addAccommodation(ac.getCode());
-				else
-					st.addGroup(ac.getCode());
+			for (String gr: student.getGroups()) {
+				st.addGroup(gr);
+			}
+			for (String acc: student.getAccomodations()) {
+				st.addAccommodation(acc);
 			}
 			
 			ClassAssignmentInterface.Enrollment e = new ClassAssignmentInterface.Enrollment();
 			e.setStudent(st);
 			e.setPriority(1 + request.getPriority());
 			CourseAssignment c = new CourseAssignment();
-			c.setCourseId(course.getId());
+			c.setCourseId(course.getCourseId());
 			c.setSubject(course.getSubjectArea());
 			c.setCourseNbr(course.getCourseNumber());
 			e.setCourse(c);
 			e.setWaitList(request.isWaitlist());
-			if (!request.getCourses().get(0).equals(course))
-				e.setAlternative(request.getCourses().get(0).getName());
+			if (!request.getCourseIds().get(0).equals(course))
+				e.setAlternative(request.getCourseIds().get(0).getCourseName());
 			if (request.isAlternative()) {
-				for (Request r: request.getStudent().getRequests()) {
-					if (r instanceof CourseRequest && !r.isAlternative() && r.getAssignment() == null) {
-						e.setAlternative(((CourseRequest)r).getCourses().get(0).getName());
+				for (XRequest r: student.getRequests()) {
+					if (r instanceof XCourseRequest && !r.isAlternative() && ((XCourseRequest)r).getEnrollment() == null) {
+						e.setAlternative(((XCourseRequest)r).getCourseIds().get(0).getCourseName());
 					}
 				}
 			}
 			if (request.getTimeStamp() != null)
-				e.setRequestedDate(new Date(request.getTimeStamp()));
-			if (request.getAssignment() != null) {
-				if (request.getAssignment().getReservation() != null) {
-					Reservation r = request.getAssignment().getReservation();
-					if (r instanceof GroupReservation) {
-						e.setReservation(MSG.reservationGroup());
-					} else if (r instanceof IndividualReservation) {
+				e.setRequestedDate(request.getTimeStamp());
+			if (request.getEnrollment() != null) {
+				if (request.getEnrollment().getReservation() != null) {
+					switch (request.getEnrollment().getReservation().getType()) {
+					case Individual:
 						e.setReservation(MSG.reservationIndividual());
-					} else if (r instanceof CourseReservation) {
+						break;
+					case Group:
+						e.setReservation(MSG.reservationGroup());
+						break;
+					case Course:
 						e.setReservation(MSG.reservationCourse());
-					} else if (r instanceof CurriculumReservation) {
+						break;
+					case Curriculum:
 						e.setReservation(MSG.reservationCurriculum());
+						break;
 					}
 				}
-				if (request.getAssignment().getTimeStamp() != null)
-					e.setEnrolledDate(new Date(request.getAssignment().getTimeStamp()));
-				if (request.getAssignment().getApproval() != null) {
-					String[] approval = request.getAssignment().getApproval().split(":");
-					e.setApprovedDate(new Date(Long.parseLong(approval[0])));
-					e.setApprovedBy(approval[2]);
+				if (request.getEnrollment().getTimeStamp() != null)
+					e.setEnrolledDate(request.getEnrollment().getTimeStamp());
+				if (request.getEnrollment().getApproval() != null) {
+					e.setApprovedDate(request.getEnrollment().getApproval().getTimeStamp());
+					e.setApprovedBy(request.getEnrollment().getApproval().getName());
 				}
 				
-				for (Section section: request.getAssignment().getSections()) {
+				for (XSection section: offering.getSections(request.getEnrollment())) {
 					ClassAssignmentInterface.ClassAssignment a = e.getCourse().addClassAssignment();
 					a.setAlternative(request.isAlternative());
-					a.setClassId(section.getId());
-					a.setSubpart(section.getSubpart().getName());
-					a.setSection(section.getName(course.getId()));
+					a.setClassId(section.getSectionId());
+					a.setSubpart(section.getSubpartName());
+					a.setSection(section.getName(course.getCourseId()));
 					a.setClassNumber(section.getName(-1l));
-					a.setLimit(new int[] {section.getEnrollments().size(), section.getLimit()});
+					a.setLimit(new int[] {enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 					if (section.getTime() != null) {
-						for (DayCode d : DayCode.toDayCodes(section.getTime().getDayCode()))
+						for (DayCode d : DayCode.toDayCodes(section.getTime().getDays()))
 							a.addDay(d.getIndex());
-						a.setStart(section.getTime().getStartSlot());
+						a.setStart(section.getTime().getSlot());
 						a.setLength(section.getTime().getLength());
 						a.setBreakTime(section.getTime().getBreakTime());
 						a.setDatePattern(section.getTime().getDatePatternName());
 					}
-					if (section.getRooms() != null) {
-						for (Iterator<RoomLocation> i = section.getRooms().iterator(); i.hasNext(); ) {
-							RoomLocation rm = i.next();
+					if (section.getNrRooms() > 0) {
+						for (XRoom rm: section.getRooms()) {
 							a.addRoom(rm.getName());
 						}
 					}
-					if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
-						String[] instructors = section.getChoice().getInstructorNames().split(":");
-						for (String instructor: instructors) {
-							String[] nameEmail = instructor.split("\\|");
-							a.addInstructor(nameEmail[0]);
-							a.addInstructoEmailr(nameEmail.length < 2 ? "" : nameEmail[1]);
+					if (section.getInstructors() != null) {
+						for (XInstructor instructor: section.getInstructors()) {
+							a.addInstructor(instructor.getName());
+							a.addInstructoEmail(instructor.getEmail());
 						}
 					}
-					if (section.getParent() != null)
-						a.setParentSection(section.getParent().getName(course.getId()));
-					a.setSubpartId(section.getSubpart().getId());
+					if (section.getParentId()!= null)
+						a.setParentSection(offering.getSection(section.getParentId()).getName(course.getCourseId()));
+					a.setSubpartId(section.getSubpartId());
 					a.addNote(course.getNote());
 					a.addNote(section.getNote());
-					a.setCredit(section.getSubpart().getCredit());
+					XSubpart subpart = offering.getSubpart(section.getSubpartId());
+					a.setCredit(subpart.getCredit());
 					int dist = 0;
 					String from = null;
 					TreeSet<String> overlap = new TreeSet<String>();
-					for (Request q: request.getStudent().getRequests()) {
-						Enrollment x = q.getAssignment();
-						if (x == null || !x.isCourseRequest() || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
-						for (Iterator<Section> j=x.getSections().iterator(); j.hasNext();) {
-							Section s = j.next();
-							if (s == section || s.getTime() == null) continue;
-							int d = server.distance(s, section);
-							if (d > dist) {
-								dist = d;
-								from = "";
-								for (Iterator<RoomLocation> k = s.getRooms().iterator(); k.hasNext();)
-									from += k.next().getName() + (k.hasNext() ? ", " : "");
-							}
-							if (d > s.getTime().getBreakTime()) {
-								a.setDistanceConflict(true);
-							}
-							if (section.getTime() != null && section.getTime().hasIntersection(s.getTime()) && !section.isToIgnoreStudentConflictsWith(s.getId())) {
-								overlap.add(MSG.clazz(x.getCourse().getSubjectArea(), x.getCourse().getCourseNumber(), s.getSubpart().getName(), s.getName(x.getCourse().getId())));
+					for (XRequest q: student.getRequests()) {
+						if (q instanceof XCourseRequest) {
+							XEnrollment otherEnrollment = ((XCourseRequest)q).getEnrollment();
+							if (otherEnrollment == null) continue;
+							XOffering otherOffering = server.getOffering(otherEnrollment.getOfferingId());
+							for (XSection otherSection: otherOffering.getSections(otherEnrollment)) {
+								if (otherSection.equals(section) || otherSection.getTime() == null) continue;
+								int d = otherSection.getDistanceInMinutes(section, m);
+								if (d > dist) {
+									dist = d;
+									from = "";
+									for (Iterator<XRoom> k = otherSection.getRooms().iterator(); k.hasNext();)
+										from += k.next().getName() + (k.hasNext() ? ", " : "");
+								}
+								if (d > otherSection.getTime().getBreakTime()) {
+									a.setDistanceConflict(true);
+								}
+								if (section.getTime() != null && section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(distributions, otherSection.getSectionId())) {
+									XCourse otherCourse = otherOffering.getCourse(otherEnrollment.getCourseId());
+									XSubpart otherSubpart = otherOffering.getSubpart(otherSection.getSubpartId());
+									overlap.add(MSG.clazz(otherCourse.getSubjectArea(), otherCourse.getCourseNumber(), otherSubpart.getName(), otherSection.getName(otherCourse.getCourseId())));
+								}
 							}
 						}
 					}
@@ -222,7 +238,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setSaved(true);
 					if (a.getParentSection() == null)
 						a.setParentSection(info.getConsent());
-					a.setExpected(Math.round(section.getSpaceExpected()));
+					a.setExpected(expectations.getExpectedSpace(section.getSectionId()));
 				}
 			}
 			ret.add(e);

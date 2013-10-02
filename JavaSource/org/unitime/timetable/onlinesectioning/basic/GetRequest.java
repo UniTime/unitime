@@ -19,15 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning.basic;
 
-import java.util.Comparator;
-import java.util.TreeSet;
-
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Student;
-
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
@@ -35,6 +26,11 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 public class GetRequest implements OnlineSectioningAction<CourseRequestInterface> {
 	private static final long serialVersionUID = 1L;
@@ -49,32 +45,22 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	public CourseRequestInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Lock lock = server.readLock();
 		try {
-			Student student = server.getStudent(iStudentId);
+			XStudent student = server.getStudent(iStudentId);
 			if (student == null) return null;
 			CourseRequestInterface request = new CourseRequestInterface();
 			request.setStudentId(iStudentId);
 			request.setSaved(true);
 			request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
-			TreeSet<Request> requests = new TreeSet<Request>(new Comparator<Request>() {
-				public int compare(Request d1, Request d2) {
-					if (d1.isAlternative() && !d2.isAlternative()) return 1;
-					if (!d1.isAlternative() && d2.isAlternative()) return -1;
-					int cmp = new Integer(d1.getPriority()).compareTo(d2.getPriority());
-					if (cmp != 0) return cmp;
-					return new Long(d1.getId()).compareTo(d2.getId());
-				}
-			});
-			requests.addAll(student.getRequests());
 			CourseRequestInterface.Request lastRequest = null;
 			int lastRequestPriority = -1;
-			for (Request cd: requests) {
+			for (XRequest cd: student.getRequests()) {
 				CourseRequestInterface.Request r = null;
-				if (cd instanceof FreeTimeRequest) {
-					FreeTimeRequest ftr = (FreeTimeRequest)cd;
+				if (cd instanceof XFreeTimeRequest) {
+					XFreeTimeRequest ftr = (XFreeTimeRequest)cd;
 					CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
-					ft.setStart(ftr.getTime().getStartSlot());
+					ft.setStart(ftr.getTime().getSlot());
 					ft.setLength(ftr.getTime().getLength());
-					for (DayCode day : DayCode.toDayCodes(ftr.getTime().getDayCode()))
+					for (DayCode day : DayCode.toDayCodes(ftr.getTime().getDays()))
 						ft.addDay(day.getIndex());
 					if (lastRequest != null && lastRequestPriority == cd.getPriority()) {
 						r = lastRequest;
@@ -89,11 +75,11 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						else
 							request.getCourses().add(r);
 					}
-				} else if (cd instanceof CourseRequest) {
+				} else if (cd instanceof XCourseRequest) {
 					r = new CourseRequestInterface.Request();
 					int order = 0;
-					for (Course course: ((CourseRequest)cd).getCourses()) {
-						CourseInfo c = server.getCourseInfo(course.getId());
+					for (XCourseId courseId: ((XCourseRequest)cd).getCourseIds()) {
+						CourseInfo c = server.getCourseInfo(courseId.getCourseId());
 						if (c == null) continue;
 						switch (order) {
 							case 0: 
@@ -107,7 +93,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 							}
 						order++;
 						}
-					r.setWaitList(((CourseRequest)cd).isWaitlist());
+					r.setWaitList(((XCourseRequest)cd).isWaitlist());
 					if (r.hasRequestedCourse()) {
 						if (cd.isAlternative())
 							request.getAlternatives().add(r);

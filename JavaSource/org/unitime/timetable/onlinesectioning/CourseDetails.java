@@ -20,17 +20,48 @@
 package org.unitime.timetable.onlinesectioning;
 
 import java.io.Serializable;
+import java.util.List;
 
 import net.sf.cpsolver.studentsct.model.Course;
+import net.sf.cpsolver.studentsct.model.Enrollment;
+
+import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 
 public class CourseDetails implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private int iEnrollment = 0, iLimit = 0;
 	
-	public CourseDetails(Course course) {
-		iEnrollment = course.getEnrollments().size();
+	public CourseDetails(XCourse course, List<XCourseRequest> requests) {
+		if (requests != null)
+			for (XCourseRequest r: requests)
+				if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(course.getCourseId()))
+					iEnrollment ++;
 		iLimit = course.getLimit();
+	}
+	
+	public CourseDetails(Course course) {
+		iEnrollment = 0;
+		for (Enrollment e: course.getEnrollments())
+			if (!e.getStudent().isDummy()) iEnrollment ++;
+		iLimit = course.getLimit();
+	}
+	
+	public CourseDetails(CourseOffering course) {
+		iEnrollment = course.getEnrollment();
+        iLimit = 0;
+        boolean unlimited = false;
+        for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
+        	if (config.isUnlimitedEnrollment()) unlimited = true;
+        	iLimit += config.getLimit();
+        }
+        if (course.getReservation() != null)
+        	iLimit = course.getReservation();
+        if (iLimit >= 9999) unlimited = true;
+        if (unlimited) iLimit = -1;
 	}
 	
 	public int getEnrollment() { return iEnrollment; }

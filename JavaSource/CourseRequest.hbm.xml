@@ -66,18 +66,6 @@
             length="10"/>
 
         <set
-            name="classEnrollments"
-            table="student_class_enrl"
-            inverse="true"
-            cascade="all"
-            lazy="true">
-
-            <cache include="non-lazy" usage="transactional"/>
-            <key column="course_request_id" foreign-key="fk_student_class_enrl_request"/>
-            <one-to-many class="StudentClassEnrollment"/>
-        </set>
-
-        <set
             name="courseRequestOptions"
             table="course_request_option"
             inverse="true"

@@ -112,7 +112,6 @@ import org.unitime.timetable.onlinesectioning.updates.ChangeStudentStatus;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
 import org.unitime.timetable.onlinesectioning.updates.MassCancelAction;
 import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
-import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
 import org.unitime.timetable.security.Qualifiable;
@@ -332,7 +331,7 @@ public class SectioningServlet implements SectioningService {
 					for (Iterator<ClassInstructor> i = clazz.getClassInstructors().iterator(); i.hasNext(); ) {
 						ClassInstructor instr = i.next();
 						a.addInstructor(instr.getInstructor().getName(DepartmentalInstructor.sNameFormatShort));
-						a.addInstructoEmailr(instr.getInstructor().getEmail());
+						a.addInstructoEmail(instr.getInstructor().getEmail());
 					}
 				}
 				if (clazz.getParentClass() != null)
@@ -1197,7 +1196,7 @@ public class SectioningServlet implements SectioningService {
 						}
 					return new ArrayList<ClassAssignmentInterface.Enrollment>(student2enrollment.values());
 				} else {
-					return server.execute(new ListEnrollments(classOrOfferingId), currentUser());
+					return server.execute(new ListEnrollments(offeringId, clazz == null ? null : clazz.getUniqueId()), currentUser());
 				}
 			} finally {
 				hibSession.close();
@@ -1276,8 +1275,7 @@ public class SectioningServlet implements SectioningService {
 									clazz.setStart(placement.getTimeLocation().getStartSlot());
 									clazz.setLength(placement.getTimeLocation().getLength());
 									clazz.setBreakTime(placement.getTimeLocation().getBreakTime());
-									//clazz.setDatePattern(placement.getTimeLocation().getDatePatternName());
-									clazz.setDatePattern(ReloadAllData.datePatternName(placement.getTimeLocation(), new AcademicSessionInfo(student.getSession())));
+									clazz.setDatePattern(placement.getTimeLocation().getDatePatternName());
 								}
 								if (placement.getNrRooms() == 1) {
 									clazz.addRoom(placement.getRoomLocation().getName());
@@ -1290,7 +1288,7 @@ public class SectioningServlet implements SectioningService {
 								for (ClassInstructor ci : enrollment.getClazz().getClassInstructors()) {
 									if (!ci.isLead()) continue;
 									clazz.addInstructor(ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort));
-									clazz.addInstructoEmailr(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
+									clazz.addInstructoEmail(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
 								}
 						}
 						demands: for (CourseDemand demand: (List<CourseDemand>)hibSession.createQuery(

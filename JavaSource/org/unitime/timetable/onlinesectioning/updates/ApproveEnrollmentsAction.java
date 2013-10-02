@@ -22,11 +22,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import net.sf.cpsolver.studentsct.model.Assignment;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Offering;
-
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -36,6 +31,13 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XApproval;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XEnrollments;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;
@@ -70,26 +72,33 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 			Lock lock = server.lockOffering(getOfferingId(), getStudentIds(), false);
 			try {
 				
-				Offering offering = server.getOffering(getOfferingId());
-				if (offering == null) 
+				XOffering offering = server.getOffering(getOfferingId());
+				XEnrollments enrollments = server.getEnrollments(getOfferingId());
+				if (offering == null || enrollments == null) 
 					throw new SectioningException(MSG.exceptionBadOffering());
 				
-				for (Config config: offering.getConfigs())
-					for (Enrollment enrollment: config.getEnrollments()) {
-						if (getStudentIds().contains(enrollment.getStudent().getId()) && iCourseIdsCanApprove.contains(enrollment.getCourse().getId())) {
+				for (XCourseRequest request: enrollments.getRequests()) {
+					XEnrollment enrollment = request.getEnrollment();
+					if (enrollment == null || !enrollment.getOfferingId().equals(getOfferingId())) continue;
+						if (getStudentIds().contains(enrollment.getStudentId()) && iCourseIdsCanApprove.contains(enrollment.getCourseId())) {
+							
+							XStudent student = server.getStudent(enrollment.getStudentId());
+							if (student == null) continue;
+							
 							
 							OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 							action.setStudent(
 									OnlineSectioningLog.Entity.newBuilder()
-									.setUniqueId(enrollment.getStudent().getId())
-									.setExternalId(enrollment.getStudent().getExternalId()));
-							action.addRequest(OnlineSectioningHelper.toProto(enrollment.getRequest()));
+									.setUniqueId(student.getStudentId())
+									.setExternalId(student.getExternalId())
+									.setName(student.getName()));
+							action.addRequest(OnlineSectioningHelper.toProto(request));
 							OnlineSectioningLog.Enrollment.Builder enrl = OnlineSectioningLog.Enrollment.newBuilder();
 							enrl.setType(OnlineSectioningLog.Enrollment.EnrollmentType.APPROVED);
-							for (Assignment assignment: enrollment.getAssignments())
+							for (XSection assignment: offering.getSections(enrollment))
 								enrl.addSection(OnlineSectioningHelper.toProto(assignment, enrollment));
 							action.addOther(OnlineSectioningLog.Entity.newBuilder()
-									.setUniqueId(offering.getId())
+									.setUniqueId(offering.getOfferingId())
 									.setName(offering.getName())
 									.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
 							action.addOther(OnlineSectioningLog.Entity.newBuilder()
@@ -98,18 +107,23 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 									.setType(OnlineSectioningLog.Entity.EntityType.MANAGER));
 							action.addEnrollment(enrl);
 							
-							enrollment.setApproval(getApproval());
-							for (StudentClassEnrollment e: (List<StudentClassEnrollment>)helper.getHibSession().createQuery(
-									"from StudentClassEnrollment e where e.student.uniqueId = :studentId and e.courseOffering.instructionalOffering = :offeringId")
-									.setLong("studentId", enrollment.getStudent().getId())
-									.setLong("offeringId", getOfferingId())
-									.list()) {
-								e.setApprovedBy(approval[1]);
-								e.setApprovedDate(approvedDate);
-								helper.getHibSession().saveOrUpdate(e);
-							}
+							XEnrollment oldEnrollment = new XEnrollment(enrollment);
 							
-							server.notifyStudentChanged(enrollment.getStudent().getId(), enrollment.getRequest(), enrollment, helper.getUser());
+							enrollment.setApproval(new XApproval(approval[1], approvedDate, approval[2]));
+							XCourseRequest r = server.assign(request, enrollment);
+							if (r != null && r.getEnrollment() != null) {
+								for (StudentClassEnrollment e: (List<StudentClassEnrollment>)helper.getHibSession().createQuery(
+										"from StudentClassEnrollment e where e.student.uniqueId = :studentId and e.courseOffering.instructionalOffering = :offeringId")
+										.setLong("studentId", enrollment.getStudentId())
+										.setLong("offeringId", getOfferingId())
+										.list()) {
+									e.setApprovedBy(approval[1]);
+									e.setApprovedDate(approvedDate);
+									helper.getHibSession().saveOrUpdate(e);
+								}
+								
+								server.execute(new NotifyStudentAction(enrollment.getStudentId(), offering, oldEnrollment), helper.getUser());
+							}
 						}
 					}
 			} finally {

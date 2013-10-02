@@ -21,16 +21,20 @@ package org.unitime.timetable.onlinesectioning.basic;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
+import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
 import net.sf.cpsolver.studentsct.model.Request;
@@ -45,6 +49,17 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseInfoMatcher;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.StudentMatcher;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XEnrollments;
+import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 
 public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
@@ -62,20 +77,22 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 			
 			int nrVars = 0, assgnVars = 0, nrStud = 0, compStud = 0, dist = 0, overlap = 0, free = 0;
 			double value = 0.0;
-			for (Student student: server.findStudents(new StudentMatcher() {
+			for (XStudent s: server.findStudents(new StudentMatcher() {
 				private static final long serialVersionUID = 1L;
 
 				@Override
-				public boolean match(Student student) {
+				public boolean match(XStudent student) {
 					return true;
 				}
 			})) {
+				Student student = convert(s, server);
 				boolean complete = true;
 				for (Request request: student.getRequests()) {
 					if (request instanceof FreeTimeRequest) continue;
-					if (request.getAssignment() != null) {
+					Enrollment enrollment = request.getAssignment();
+					if (enrollment != null) {
 						assgnVars ++; nrVars ++;
-						value += w.getWeight(request.getAssignment());
+						value += w.getWeight(enrollment);
 					} else if (student.canAssign(request)) {
 						nrVars ++; complete = false;
 					}
@@ -83,14 +100,14 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 				nrStud ++;
 				if (complete) compStud ++;
 				for (int i = 0; i < student.getRequests().size() - 1; i++) {
-					Enrollment e1 = student.getRequests().get(i).getAssignment();
-					if (e1 == null || !e1.isCourseRequest()) continue;
+					Request r1 = student.getRequests().get(i);
+					Enrollment e1 = (r1 instanceof CourseRequest ? ((CourseRequest)r1).getAssignment() : null);
+					if (e1 == null) continue;
 					dist += dc.nrConflicts(e1);
 					free += toc.nrFreeTimeConflicts(e1);
 					for (int j = i + 1; j < student.getRequests().size(); j++) {
 						Request r2 = student.getRequests().get(j);
-						if (r2 instanceof FreeTimeRequest) continue;
-						Enrollment e2 = r2.getAssignment();
+						Enrollment e2 = (r2 instanceof CourseRequest ? ((CourseRequest)r2).getAssignment() : null);
 						if (e2 == null) continue;
 						dist += dc.nrConflicts(e1, e2);
 						overlap += toc.nrConflicts(e1, e2);
@@ -116,30 +133,33 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 					return true;
 				}
 			})) {
-	        	Course course = server.getCourse(ci.getUniqueId());
-	        	if (course == null) continue;
-	        	if (offerings.add(course.getOffering().getId())) {
-		            for (Config config: course.getOffering().getConfigs()) {
-		                double enrl = config.getEnrollments().size();
-		                for (Subpart subpart: config.getSubparts()) {
+	        	XOffering offering = server.getOffering(ci.getOfferingId());
+	        	if (offering == null) continue;
+	        	if (offerings.add(offering.getOfferingId())) {
+	        		XEnrollments enrollments = server.getEnrollments(offering.getOfferingId());
+		            for (XConfig config: offering.getConfigs()) {
+		            	double enrlConf = enrollments.countEnrollmentsForConfig(config.getConfigId());
+		                for (XSubpart subpart: config.getSubparts()) {
 		                    if (subpart.getSections().size() <= 1) continue;
 		                    if (subpart.getLimit() > 0) {
 		                        // sections have limits -> desired size is section limit x (total enrollment / total limit)
-		                        double ratio = enrl / subpart.getLimit();
-		                        for (Section section: subpart.getSections()) {
+		                        double ratio = enrlConf / subpart.getLimit();
+		                        for (XSection section: subpart.getSections()) {
+		                        	double enrl = enrollments.countEnrollmentsForSection(section.getSectionId());
 		                            double desired = ratio * section.getLimit();
-		                            disbWeight += Math.abs(section.getEnrollments().size() - desired);
+		                            disbWeight += Math.abs(enrl - desired);
 		                            disbSections ++;
-		                            if (Math.abs(desired - section.getEnrollments().size()) >= Math.max(1.0, 0.1 * section.getLimit()))
+		                            if (Math.abs(desired - enrl) >= Math.max(1.0, 0.1 * section.getLimit()))
 		                                disb10Sections++;
 		                        }
 		                    } else {
 		                        // unlimited sections -> desired size is total enrollment / number of sections
-		                        for (Section section: subpart.getSections()) {
-		                            double desired = enrl / subpart.getSections().size();
-		                            disbWeight += Math.abs(section.getEnrollments().size() - desired);
+		                        for (XSection section: subpart.getSections()) {
+		                        	double enrl = enrollments.countEnrollmentsForSection(section.getSectionId());
+		                            double desired = enrlConf / subpart.getSections().size();
+		                            disbWeight += Math.abs(enrl - desired);
 		                            disbSections ++;
-		                            if (Math.abs(desired - section.getEnrollments().size()) >= Math.max(1.0, 0.1 * desired))
+		                            if (Math.abs(desired - enrl) >= Math.max(1.0, 0.1 * desired))
 		                                disb10Sections++;
 		                        }
 		                    }
@@ -160,6 +180,47 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 	@Override
 	public String name() {
 		return "info";
+	}
+	
+	public static Student convert(XStudent student, OnlineSectioningServer server) {
+		Student clonnedStudent = new Student(student.getStudentId());
+		for (XRequest r: student.getRequests()) {
+			if (r instanceof XFreeTimeRequest) {
+				XFreeTimeRequest ft = (XFreeTimeRequest)r;
+				FreeTimeRequest ftr = new FreeTimeRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent,
+						new TimeLocation(ft.getTime().getDays(), ft.getTime().getSlot(), ft.getTime().getLength(), 0, 0.0,
+								-1l, "Free Time", server.getAcademicSession().getFreeTimePattern(), 0));
+				ftr.assign(0, ftr.getAssignment());
+			} else {
+				XCourseRequest cr = (XCourseRequest)r;
+				List<Course> courses = new ArrayList<Course>();
+				for (XCourseId c: cr.getCourseIds()) {
+					XOffering offering = server.getOffering(c.getOfferingId());
+					courses.add(offering.toCourse(c.getCourseId(), student, server.getExpectations(c.getOfferingId()), server.getDistributions(c.getOfferingId()), server.getEnrollments(c.getOfferingId())));
+				}
+				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent, courses, cr.isWaitlist(), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
+				XEnrollment enrollment = cr.getEnrollment();
+				if (enrollment != null) {
+					Config config = null;
+					Set<Section> assignments = new HashSet<Section>();
+					for (Course c: clonnedRequest.getCourses()) {
+						if (enrollment.getCourseId().equals(c.getId()))
+							for (Config g: c.getOffering().getConfigs()) {
+								if (enrollment.getConfigId().equals(g.getId())) {
+									config = g;
+									for (Subpart s: g.getSubparts())
+										for (Section x: s.getSections())
+											if (enrollment.getSectionIds().contains(x.getId()))
+												assignments.add(x);
+								}
+							}
+					}
+					if (config != null)
+						clonnedRequest.assign(0, new Enrollment(clonnedRequest, 0, config, assignments));
+				}
+			}
+		}
+		return clonnedStudent;
 	}
 
 }

@@ -32,19 +32,22 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
+import org.unitime.timetable.onlinesectioning.model.XInstructor;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XRoom;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.server.CourseDetailsBackend;
 import org.unitime.timetable.util.Constants;
 
@@ -68,7 +71,8 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 	        		String[] courseAndClassId = classId.split("-");
 	        		if (courseAndClassId.length != 2) continue;
 	        		CourseInfo course = server.getCourseInfo(Long.valueOf(courseAndClassId[0]));
-	        		Section section = server.getSection(Long.valueOf(courseAndClassId[1]));
+	        		XOffering offering = (course == null ? null : server.getOffering(course.getOfferingId()));
+	        		XSection section = (offering == null ? null : offering.getSection(Long.valueOf(courseAndClassId[1])));
 	        		if (course == null || section == null) continue;
 	        		printSection(server, course, section, out);
 	        	}
@@ -90,7 +94,7 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 		}
 	}
 	
-	public static String getCalendar(OnlineSectioningServer server, net.sf.cpsolver.studentsct.model.Student student) throws IOException {
+	public static String getCalendar(OnlineSectioningServer server, XStudent student) throws IOException {
 		if (student == null) return null;
 		StringWriter buffer = new StringWriter();
 		PrintWriter out = new PrintWriter(buffer);
@@ -101,17 +105,20 @@ public class CalendarExport implements OnlineSectioningAction<String>{
         out.println("X-WR-CALNAME:UniTime Schedule");
         out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
         out.println("PRODID:-//UniTime " + Constants.getVersion() + "/Schedule Calendar//NONSGML v1.0//EN");
-		for (Request request: student.getRequests()) {
-			Enrollment enrollment = request.getAssignment();
-			if (enrollment == null) continue;
-			if (enrollment.isCourseRequest()) {
-				CourseInfo course = server.getCourseInfo(enrollment.getCourse().getId());
-				for (Section section: enrollment.getSections())
-					printSection(server, course, section, out);
-			} else {
-				FreeTimeRequest ft = (FreeTimeRequest)request;
+		for (XRequest request: student.getRequests()) {
+			if (request instanceof XCourseRequest) {
+				XCourseRequest cr = (XCourseRequest)request;
+				XEnrollment enrollment = cr.getEnrollment();
+				if (enrollment == null) continue;
+				CourseInfo course = server.getCourseInfo(enrollment.getCourseId());
+				XOffering offering = server.getOffering(enrollment.getOfferingId());
+				if (course != null && offering != null)
+					for (XSection section: offering.getSections(enrollment))
+						printSection(server, course, section, out);
+			} else if (request instanceof XFreeTimeRequest) {
+				XFreeTimeRequest ft = (XFreeTimeRequest)request;
 				printFreeTime(server.getAcademicSession().getDatePatternFirstDate(), server.getAcademicSession().getFreeTimePattern(), 
-						DayCode.toString(ft.getTime().getDayCode()), ft.getTime().getStartSlot(), ft.getTime().getLength(), out);
+						DayCode.toString(ft.getTime().getDays()), ft.getTime().getSlot(), ft.getTime().getLength(), out);
 			}
 		}
 	    out.println("END:VCALENDAR");
@@ -120,9 +127,9 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 		return buffer.toString();		
 	}
 	
-	private static void printSection(OnlineSectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
-		TimeLocation time = section.getTime();
-		if (time == null || time.getWeekCode().isEmpty()) return;
+	private static void printSection(OnlineSectioningServer server, CourseInfo course, XSection section, PrintWriter out) throws IOException {
+		XTime time = section.getTime();
+		if (time == null || time.getWeeks().isEmpty()) return;
 		
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -131,36 +138,36 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 
     	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
     	cal.setTime(server.getAcademicSession().getDatePatternFirstDate());
-    	int idx = time.getWeekCode().nextSetBit(0);
+    	int idx = time.getWeeks().nextSetBit(0);
     	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
+    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getSlot()));
+    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getSlot()));
     	cal.set(Calendar.SECOND, 0);
     	Date first = null;
-    	while (idx < time.getWeekCode().size() && first == null) {
-    		if (time.getWeekCode().get(idx)) {
+    	while (idx < time.getWeeks().size() && first == null) {
+    		if (time.getWeeks().get(idx)) {
         		int dow = cal.get(Calendar.DAY_OF_WEEK);
         		switch (dow) {
         		case Calendar.MONDAY:
-        			if ((time.getDayCode() & DayCode.MON.getCode()) != 0) first = cal.getTime();
+        			if ((time.getDays() & DayCode.MON.getCode()) != 0) first = cal.getTime();
         			break;
         		case Calendar.TUESDAY:
-        			if ((time.getDayCode() & DayCode.TUE.getCode()) != 0) first = cal.getTime();
+        			if ((time.getDays() & DayCode.TUE.getCode()) != 0) first = cal.getTime();
         			break;
         		case Calendar.WEDNESDAY:
-        			if ((time.getDayCode() & DayCode.WED.getCode()) != 0) first = cal.getTime();
+        			if ((time.getDays() & DayCode.WED.getCode()) != 0) first = cal.getTime();
         			break;
         		case Calendar.THURSDAY:
-        			if ((time.getDayCode() & DayCode.THU.getCode()) != 0) first = cal.getTime();
+        			if ((time.getDays() & DayCode.THU.getCode()) != 0) first = cal.getTime();
         			break;
         		case Calendar.FRIDAY:
-        			if ((time.getDayCode() & DayCode.FRI.getCode()) != 0) first = cal.getTime();
+        			if ((time.getDays() & DayCode.FRI.getCode()) != 0) first = cal.getTime();
         			break;
         		case Calendar.SATURDAY:
-        			if ((time.getDayCode() & DayCode.SAT.getCode()) != 0) first = cal.getTime();
+        			if ((time.getDays() & DayCode.SAT.getCode()) != 0) first = cal.getTime();
         			break;
         		case Calendar.SUNDAY:
-        			if ((time.getDayCode() & DayCode.SUN.getCode()) != 0) first = cal.getTime();
+        			if ((time.getDays() & DayCode.SUN.getCode()) != 0) first = cal.getTime();
         			break;
         		}
         	}
@@ -174,37 +181,37 @@ public class CalendarExport implements OnlineSectioningAction<String>{
     	int fidx = idx;
     	
     	cal.setTime(server.getAcademicSession().getDatePatternFirstDate());
-    	idx = time.getWeekCode().length() - 1;
+    	idx = time.getWeeks().length() - 1;
     	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
+    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getSlot()));
+    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getSlot()));
     	cal.set(Calendar.SECOND, 0);
     	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * time.getLength() - time.getBreakTime());
     	Date last = null;
     	while (idx >= 0 && last == null) {
-    		if (time.getWeekCode().get(idx)) {
+    		if (time.getWeeks().get(idx)) {
         		int dow = cal.get(Calendar.DAY_OF_WEEK);
         		switch (dow) {
         		case Calendar.MONDAY:
-        			if ((time.getDayCode() & DayCode.MON.getCode()) != 0) last = cal.getTime();
+        			if ((time.getDays() & DayCode.MON.getCode()) != 0) last = cal.getTime();
         			break;
         		case Calendar.TUESDAY:
-        			if ((time.getDayCode() & DayCode.TUE.getCode()) != 0) last = cal.getTime();
+        			if ((time.getDays() & DayCode.TUE.getCode()) != 0) last = cal.getTime();
         			break;
         		case Calendar.WEDNESDAY:
-        			if ((time.getDayCode() & DayCode.WED.getCode()) != 0) last = cal.getTime();
+        			if ((time.getDays() & DayCode.WED.getCode()) != 0) last = cal.getTime();
         			break;
         		case Calendar.THURSDAY:
-        			if ((time.getDayCode() & DayCode.THU.getCode()) != 0) last = cal.getTime();
+        			if ((time.getDays() & DayCode.THU.getCode()) != 0) last = cal.getTime();
         			break;
         		case Calendar.FRIDAY:
-        			if ((time.getDayCode() & DayCode.FRI.getCode()) != 0) last = cal.getTime();
+        			if ((time.getDays() & DayCode.FRI.getCode()) != 0) last = cal.getTime();
         			break;
         		case Calendar.SATURDAY:
-        			if ((time.getDayCode() & DayCode.SAT.getCode()) != 0) last = cal.getTime();
+        			if ((time.getDays() & DayCode.SAT.getCode()) != 0) last = cal.getTime();
         			break;
         		case Calendar.SUNDAY:
-        			if ((time.getDayCode() & DayCode.SUN.getCode()) != 0) last = cal.getTime();
+        			if ((time.getDays() & DayCode.SUN.getCode()) != 0) last = cal.getTime();
         			break;
         		}
         	}
@@ -217,54 +224,54 @@ public class CalendarExport implements OnlineSectioningAction<String>{
     	cal.setTime(server.getAcademicSession().getDatePatternFirstDate());
     	idx = fidx;
     	cal.add(Calendar.DAY_OF_YEAR, idx);
-    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
-    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
+    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getSlot()));
+    	cal.set(Calendar.MINUTE, Constants.toMinute(time.getSlot()));
     	cal.set(Calendar.SECOND, 0);
 
         out.println("BEGIN:VEVENT");
         out.println("DTSTART:" + df.format(first) + "T" + tf.format(first) + "Z");
         out.println("DTEND:" + df.format(firstEnd) + "T" + tf.format(firstEnd) + "Z");
         out.print("RRULE:FREQ=WEEKLY;BYDAY=");
-        for (Iterator<DayCode> i = DayCode.toDayCodes(time.getDayCode()).iterator(); i.hasNext(); ) {
+        for (Iterator<DayCode> i = DayCode.toDayCodes(time.getDays()).iterator(); i.hasNext(); ) {
         	out.print(i.next().getName().substring(0, 2).toUpperCase());
         	if (i.hasNext()) out.print(",");
         }
         out.println(";WKST=MO;UNTIL=" + df.format(last) + "T" + tf.format(last) + "Z");
         ArrayList<ArrayList<String>> extra = new ArrayList<ArrayList<String>>();
-    	while (idx < time.getWeekCode().length()) {
+    	while (idx < time.getWeeks().length()) {
     		int dow = cal.get(Calendar.DAY_OF_WEEK);
     		boolean offered = false;
     		switch (dow) {
     		case Calendar.MONDAY:
-    			if ((time.getDayCode() & DayCode.MON.getCode()) != 0) offered = true;
+    			if ((time.getDays() & DayCode.MON.getCode()) != 0) offered = true;
     			break;
     		case Calendar.TUESDAY:
-    			if ((time.getDayCode() & DayCode.TUE.getCode()) != 0) offered = true;
+    			if ((time.getDays() & DayCode.TUE.getCode()) != 0) offered = true;
     			break;
     		case Calendar.WEDNESDAY:
-    			if ((time.getDayCode() & DayCode.WED.getCode()) != 0) offered = true;
+    			if ((time.getDays() & DayCode.WED.getCode()) != 0) offered = true;
     			break;
     		case Calendar.THURSDAY:
-    			if ((time.getDayCode() & DayCode.THU.getCode()) != 0) offered = true;
+    			if ((time.getDays() & DayCode.THU.getCode()) != 0) offered = true;
     			break;
     		case Calendar.FRIDAY:
-    			if ((time.getDayCode() & DayCode.FRI.getCode()) != 0) offered = true;
+    			if ((time.getDays() & DayCode.FRI.getCode()) != 0) offered = true;
     			break;
     		case Calendar.SATURDAY:
-    			if ((time.getDayCode() & DayCode.SAT.getCode()) != 0) offered = true;
+    			if ((time.getDays() & DayCode.SAT.getCode()) != 0) offered = true;
     			break;
     		case Calendar.SUNDAY:
-    			if ((time.getDayCode() & DayCode.SUN.getCode()) != 0) offered = true;
+    			if ((time.getDays() & DayCode.SUN.getCode()) != 0) offered = true;
     			break;
     		}
     		if (!offered) {
         		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
         		continue;
     		}
-        	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
-        	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
+        	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getSlot()));
+        	cal.set(Calendar.MINUTE, Constants.toMinute(time.getSlot()));
         	cal.set(Calendar.SECOND, 0);
-    		if (time.getWeekCode().get(idx)) {
+    		if (time.getWeeks().get(idx)) {
     			if (!tf.format(first).equals(tf.format(cal.getTime()))) {
     				ArrayList<String> x = new ArrayList<String>(); extra.add(x);
     		        x.add("RECURRENCE-ID:" + df.format(cal.getTime()) + "T" + tf.format(first) + "Z");
@@ -286,18 +293,17 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static void printMeetingRest(OnlineSectioningServer server, CourseInfo course, Section section, PrintWriter out) throws IOException {
-        out.println("UID:" + section.getId());
+	private static void printMeetingRest(OnlineSectioningServer server, CourseInfo course, XSection section, PrintWriter out) throws IOException {
+        out.println("UID:" + section.getSectionId());
         out.println("SEQUENCE:0");
-        out.println("SUMMARY:" + course.getSubjectArea() + " " + course.getCourseNbr() + " " +
-        		section.getSubpart().getName() + " " + section.getName(course.getUniqueId()));
+        out.println("SUMMARY:" + course.getSubjectArea() + " " + course.getCourseNbr() + " " + section.getSubpartName() + " " + section.getName(course.getUniqueId()));
         String desc = (course.getTitle() == null ? "" : course.getTitle());
 		if (course.getConsent() != null && !course.getConsent().isEmpty())
 			desc += " (" + course.getConsent() + ")";
 			out.println("DESCRIPTION:" + desc);
         if (section.getRooms() != null && !section.getRooms().isEmpty()) {
         	String loc = "";
-        	for (RoomLocation r: section.getRooms()) {
+        	for (XRoom r: section.getRooms()) {
         		if (!loc.isEmpty()) loc += ", ";
         		loc += r.getName();
         	}
@@ -310,16 +316,14 @@ public class CalendarExport implements OnlineSectioningAction<String>{
         	e.printStackTrace();
         }
         boolean org = false;
-		if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
-			String[] instructors = section.getChoice().getInstructorNames().split(":");
-			for (String instructor: instructors) {
-				String[] nameEmail = instructor.split("\\|");
+        if (section.getInstructors() != null && !section.getInstructors().isEmpty()) {
+			for (XInstructor instructor: section.getInstructors()) {
 				//out.println("CONTACT:" + nameEmail[0] + (nameEmail[1].isEmpty() ? "" : " <" + nameEmail[1]) + ">");
 				if (!org) {
-					out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + nameEmail[0] + "\":MAILTO:" + ( nameEmail.length > 1 ? nameEmail[1] : ""));
+					out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + instructor.getName() + "\":MAILTO:" + ( instructor.getEmail() != null ? instructor.getEmail() : ""));
 					org = true;
 				} else {
-					out.println("ATTENDEE;ROLE=CHAIR;CN=\"" + nameEmail[0] + "\":MAILTO:" + ( nameEmail.length > 1 ? nameEmail[1] : ""));
+					out.println("ATTENDEE;ROLE=CHAIR;CN=\"" + instructor.getName() + "\":MAILTO:" + ( instructor.getEmail() != null ? instructor.getEmail() : ""));
 				}
 			}
 		}

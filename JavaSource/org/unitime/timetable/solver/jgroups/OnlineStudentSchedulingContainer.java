@@ -35,10 +35,11 @@ import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServerFactory;
 
 public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineSectioningServer> {
 	private static Log sLog = LogFactory.getLog(OnlineStudentSchedulingContainer.class);
+	private static OnlineSectioningServerFactory sFactory = new OnlineSectioningServerFactory();
 	
 	protected Hashtable<Long, OnlineSectioningServer> iInstances = new Hashtable<Long, OnlineSectioningServer>();
 	private Hashtable<Long, OnlineStudentSchedulingUpdater> iUpdaters = new Hashtable<Long, OnlineStudentSchedulingUpdater>();
@@ -91,7 +92,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		iGlobalLock.writeLock().lock();
 		try {
 			ApplicationProperties.setSessionId(academicSessionId);
-			OnlineSectioningServer s = new OnlineSectioningServerImpl(academicSessionId, false);
+			OnlineSectioningServer s = sFactory.create(academicSessionId, false);
 			iInstances.put(academicSessionId, s);
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {

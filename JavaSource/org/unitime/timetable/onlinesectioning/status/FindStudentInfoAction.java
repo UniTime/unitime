@@ -22,19 +22,12 @@ package org.unitime.timetable.onlinesectioning.status;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Student;
 
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -43,6 +36,12 @@ import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollments;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseInfoMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
@@ -92,50 +91,56 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						new CourseInfoMatcher(helper, course, isConsentToDoCourse(course)));
 			}
 		})) {
-			Course course = server.getCourse(info.getUniqueId());
-			if (course == null) continue;
+			XOffering offering = server.getOffering(info.getOfferingId());
+			if (offering == null) continue;
+			XEnrollments enrollments = server.getEnrollments(info.getOfferingId());
+			if (enrollments == null) continue;
 			boolean isConsentToDoCourse = isConsentToDoCourse(info);
 			
-			for (CourseRequest request: course.getRequests()) {
-				if (request.getAssignment() != null && request.getAssignment().getCourse().getId() != course.getId()) { continue; }
-				CourseRequestMatcher m = new CourseRequestMatcher(helper, server, info, request, isConsentToDoCourse);
+			for (XCourseRequest request: enrollments.getRequests()) {
+				if (!request.hasCourse(info.getUniqueId())) continue;
+				if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(info.getUniqueId())) continue;
+				XStudent student = server.getStudent(request.getStudentId());
+				if (student == null) continue;
+				CourseRequestMatcher m = new CourseRequestMatcher(helper, server, info, student, offering, request, isConsentToDoCourse);
 				if (query().match(m)) {
-					StudentInfo s = students.get(request.getStudent().getId());
+					StudentInfo s = students.get(request.getStudentId());
 					if (s == null) {
 						s = new StudentInfo();
-						students.put(request.getStudent().getId(), s);
+						students.put(request.getStudentId(), s);
 						ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
-						st.setId(request.getStudent().getId());
-						st.setExternalId(request.getStudent().getExternalId());
-						st.setName(request.getStudent().getName());
-						for (AcademicAreaCode ac: request.getStudent().getAcademicAreaClasiffications()) {
+						st.setId(request.getStudentId());
+						st.setExternalId(student.getExternalId());
+						st.setName(student.getName());
+						for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 							st.addArea(ac.getArea());
 							st.addClassification(ac.getCode());
 						}
-						for (AcademicAreaCode ac: request.getStudent().getMajors()) {
+						for (XAcademicAreaCode ac: student.getMajors()) {
 							st.addMajor(ac.getCode());
 						}
-						for (AcademicAreaCode ac: request.getStudent().getMinors()) {
-							if ("A".equals(ac.getArea()))
-								st.addAccommodation(ac.getCode());
-							else
-								st.addGroup(ac.getCode());
+						for (String acc: student.getAccomodations()) {
+							st.addAccommodation(acc);
+						}
+						for (String gr: student.getGroups()) {
+							st.addGroup(gr);
 						}
 						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0;
-						for (Request r: request.getStudent().getRequests()) {
-							if (r instanceof CourseRequest) {
+						for (XRequest r: student.getRequests()) {
+							if (r instanceof XCourseRequest) {
+								XCourseRequest cr = (XCourseRequest)r;
 								if (!r.isAlternative()) tReq ++;
-								if (r.getAssignment() == null) {
-									if (request.getStudent().canAssign(r)) {
+								if (cr.getEnrollment() == null) {
+									if (student.canAssign(cr)) {
 										tWait ++; gtWait ++;
 									}
 								} else {
 									tEnrl ++; gtEnrl ++;
-									if (r.getAssignment().getReservation() != null) {
+									if (cr.getEnrollment().getReservation() != null) {
 										tRes ++; gtRes ++;
 									}
-									if (r.getAssignment().getApproval() == null) {
-										CourseInfo i = server.getCourseInfo(r.getAssignment().getCourse().getId());
+									if (cr.getEnrollment().getApproval() == null) {
+										CourseInfo i = server.getCourseInfo(cr.getEnrollment().getCourseId());
 										if (i != null && i.getConsent() != null) {
 											tConNeed ++; gtConNeed ++;
 										}
@@ -152,8 +157,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setWaitlist(0);
 						s.setConsentNeeded(0);
 						s.setRequested(tReq);
-						s.setStatus(request.getStudent().getStatus() == null ? server.getAcademicSession().getDefaultSectioningStatus() : request.getStudent().getStatus());
-						s.setEmailDate(request.getStudent().getEmailTimeStamp() == null ? null : new Date(request.getStudent().getEmailTimeStamp()));
+						s.setStatus(student.getStatus() == null ? server.getAcademicSession().getDefaultSectioningStatus() : student.getStatus());
+						s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
 					}
 					if (m.enrollment() != null) {
 						s.setEnrollment(s.getEnrollment() + 1); gEnrl ++;
@@ -163,16 +168,15 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						}
 						if (m.enrollment().getTimeStamp() != null) {
 							if (s.getEnrolledDate() == null)
-								s.setEnrolledDate(new Date(m.enrollment().getTimeStamp()));
-							else
-								s.setEnrolledDate(new Date(Math.max(m.enrollment().getTimeStamp(), s.getEnrolledDate().getTime())));
+								s.setEnrolledDate(m.enrollment().getTimeStamp());
+							else if (m.enrollment().getTimeStamp().after(s.getEnrolledDate()))
+								s.setEnrolledDate(m.enrollment().getTimeStamp());
 						}
 						if (m.enrollment().getApproval() != null) {
-							long ts = Long.parseLong(m.enrollment().getApproval().split(":")[0]);
 							if (s.getApprovedDate() == null)
-								s.setApprovedDate(new Date(ts));
-							else
-								s.setApprovedDate(new Date(Math.max(ts, s.getApprovedDate().getTime())));
+								s.setApprovedDate(m.enrollment().getApproval().getTimeStamp());
+							else if (m.enrollment().getApproval().getTimeStamp().after(s.getApprovedDate()))
+								s.setApprovedDate(m.enrollment().getApproval().getTimeStamp());
 						}
 					} else if (m.student().canAssign(m.request()) && m.request().isWaitlist()) {
 						s.setWaitlist(s.getWaitlist() + 1); gWait ++;
@@ -183,9 +187,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					}
 					if (m.request().getTimeStamp() != null) {
 						if (s.getRequestedDate() == null)
-							s.setRequestedDate(new Date(m.request().getTimeStamp()));
-						else
-							s.setRequestedDate(new Date(Math.max(m.request().getTimeStamp(), s.getRequestedDate().getTime())));
+							s.setRequestedDate(m.request().getTimeStamp());
+						else if (m.request().getTimeStamp().after(s.getRequestedDate()))
+							s.setRequestedDate(m.request().getTimeStamp());
 					}
 				}
 			}
@@ -193,28 +197,28 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		
 		List<StudentInfo> ret = new ArrayList<StudentInfo>(students.values());
 		
-		for (Student student: server.findStudents(new OnlineSectioningServer.StudentMatcher() {
+		for (XStudent student: server.findStudents(new OnlineSectioningServer.StudentMatcher() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public boolean match(Student student) {
+			public boolean match(XStudent student) {
 				return student.getRequests().isEmpty() && query().match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus()));
 			}
 		})) {
 			StudentInfo s = new StudentInfo();
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
-			st.setId(student.getId());
+			st.setId(student.getStudentId());
 			st.setExternalId(student.getExternalId());
 			st.setName(student.getName());
-			for (AcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
+			for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 				st.addArea(ac.getArea());
 				st.addClassification(ac.getCode());
 			}
-			for (AcademicAreaCode ac: student.getMajors()) {
+			for (XAcademicAreaCode ac: student.getMajors()) {
 				st.addMajor(ac.getCode());
 			}
 			s.setStatus(student.getStatus() == null ? server.getAcademicSession().getDefaultSectioningStatus() : student.getStatus());
-			s.setEmailDate(student.getEmailTimeStamp() == null ? null : new Date(student.getEmailTimeStamp()));
+			s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
 			ret.add(s);
 		}
 		

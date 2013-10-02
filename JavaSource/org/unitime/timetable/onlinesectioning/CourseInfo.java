@@ -32,6 +32,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 public class CourseInfo implements Comparable<CourseInfo>, Serializable {
 	private static final long serialVersionUID = 1L;
 	private Long iUniqueId;
+	private Long iOfferingId;
 	private String iSubjectArea;
 	private String iDepartment;
 	private String iCourseNbr;
@@ -44,10 +45,10 @@ public class CourseInfo implements Comparable<CourseInfo>, Serializable {
 	private boolean iHasUniqueName = true;
 	private String iConsent = null, iConsentAbbv = null;
 	private Integer iWkEnroll = null, iWkChange = null, iWkDrop = null;
-
 	
 	public CourseInfo(CourseOffering course)  throws SectioningException {
 		iUniqueId = course.getUniqueId();
+		iOfferingId = course.getInstructionalOffering().getUniqueId();
 		iSubjectArea = course.getSubjectArea().getSubjectAreaAbbreviation();
 		iDepartment = (course.getSubjectArea().getDepartment().getDeptCode() == null ? course.getSubjectArea().getDepartment().getAbbreviation() : course.getSubjectArea().getDepartment().getDeptCode());
 		iCourseNbr = course.getCourseNbr().trim();
@@ -83,6 +84,7 @@ public class CourseInfo implements Comparable<CourseInfo>, Serializable {
 	public String getConsentAbbv() { return iConsentAbbv; }
 	public boolean hasType() { return iType != null && !iType.isEmpty(); }
 	public String getType() { return iType; }
+	public Long getOfferingId() { return iOfferingId; }
 
 	public int compareTo(CourseInfo c) {
 		int cmp = getSubjectArea().compareToIgnoreCase(c.getSubjectArea());

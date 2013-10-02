@@ -28,7 +28,6 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequestOption;
-import org.unitime.timetable.model.StudentClassEnrollment;
 
 public abstract class BaseCourseRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -40,7 +39,6 @@ public abstract class BaseCourseRequest implements Serializable {
 
 	private CourseDemand iCourseDemand;
 	private CourseOffering iCourseOffering;
-	private Set<StudentClassEnrollment> iClassEnrollments;
 	private Set<CourseRequestOption> iCourseRequestOptions;
 	private Set<ClassWaitList> iClassWaitLists;
 
@@ -78,13 +76,6 @@ public abstract class BaseCourseRequest implements Serializable {
 
 	public CourseOffering getCourseOffering() { return iCourseOffering; }
 	public void setCourseOffering(CourseOffering courseOffering) { iCourseOffering = courseOffering; }
-
-	public Set<StudentClassEnrollment> getClassEnrollments() { return iClassEnrollments; }
-	public void setClassEnrollments(Set<StudentClassEnrollment> classEnrollments) { iClassEnrollments = classEnrollments; }
-	public void addToclassEnrollments(StudentClassEnrollment studentClassEnrollment) {
-		if (iClassEnrollments == null) iClassEnrollments = new HashSet<StudentClassEnrollment>();
-		iClassEnrollments.add(studentClassEnrollment);
-	}
 
 	public Set<CourseRequestOption> getCourseRequestOptions() { return iCourseRequestOptions; }
 	public void setCourseRequestOptions(Set<CourseRequestOption> courseRequestOptions) { iCourseRequestOptions = courseRequestOptions; }

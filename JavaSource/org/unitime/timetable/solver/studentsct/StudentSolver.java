@@ -54,11 +54,18 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XDistribution;
+import org.unitime.timetable.onlinesectioning.model.XDistributionType;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XEnrollments;
+import org.unitime.timetable.onlinesectioning.model.XExpectations;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.solver.Solver;
@@ -773,29 +780,14 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	}
 
 	@Override
-	public List<Section> getSections(CourseInfo courseInfo) {
-		ArrayList<Section> sections = new ArrayList<Section>();
-		Course course = getCourse(courseInfo.getUniqueId());
-		if (course == null) return sections;
-		for (Iterator<Config> e=course.getOffering().getConfigs().iterator(); e.hasNext();) {
-			Config cfg = e.next();
-			for (Iterator<Subpart> f=cfg.getSubparts().iterator(); f.hasNext();) {
-				Subpart subpart = f.next();
-				for (Iterator<Section> g=subpart.getSections().iterator(); g.hasNext();) {
-					Section section = g.next();
-					sections.add(section);
-				}
-			}
+	public Collection<XStudent> findStudents(StudentMatcher matcher) {
+		List<XStudent> ret = new ArrayList<XStudent>();
+		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents()) {
+			if (student.isDummy()) continue;
+			XStudent s = new XStudent(student);
+			if (!student.isDummy() && matcher.match(s))
+				ret.add(s);
 		}
-		return sections;
-	}
-
-	@Override
-	public Collection<Student> findStudents(StudentMatcher matcher) {
-		List<Student> ret = new ArrayList<Student>();
-		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents())
-			if (!student.isDummy() && matcher.match(student))
-				ret.add(student);
 		return ret;
 	}
 
@@ -806,8 +798,11 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	
 	@Override
 	public CourseDetails getCourseDetails(Long courseId) {
-		Course course = getCourse(courseId);
-		return course == null ? null : new CourseDetails(course);
+		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
+			for (Course course: offering.getCourses())
+				if (course.getId() == courseId)
+					return new CourseDetails(course);
+		return null;
 	}
 
 	@Override
@@ -819,36 +814,18 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	}
 
 	@Override
-	public Student getStudent(Long studentId) {
+	public XStudent getStudent(Long studentId) {
 		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents())
 			if (!student.isDummy() && student.getId() == studentId)
-				return student;
+				return new XStudent(student);
 		return null;
 	}
 
 	@Override
-	public Section getSection(Long classId) {
-		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
-			for (Config config: offering.getConfigs())
-				for (Subpart subpart: config.getSubparts())
-					for (Section section: subpart.getSections())
-						if (section.getId() == classId) return section;
-		return null;
-	}
-
-	@Override
-	public Course getCourse(Long courseId) {
-		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
-			for (Course course: offering.getCourses())
-				if (course.getId() == courseId) return course;
-		return null;
-	}
-
-	@Override
-	public Offering getOffering(Long offeringId) {
+	public XOffering getOffering(Long offeringId) {
 		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
 			if (offering.getId() == offeringId)
-				return offering;
+				return new XOffering(offering);
 		return null;
 	}
 
@@ -910,22 +887,6 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	}
 
 	@Override
-	public void remove(Student student) {
-	}
-
-	@Override
-	public void update(Student student) {
-	}
-
-	@Override
-	public void remove(Offering offering) {
-	}
-
-	@Override
-	public void update(Offering offering) {
-	}
-
-	@Override
 	public void update(CourseInfo info) {
 	}
 
@@ -935,33 +896,6 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 
 	@Override
 	public void clearAllStudents() {
-	}
-
-	@Override
-	public void addLinkedSections(LinkedSections link) {
-	}
-
-	@Override
-	public Collection<LinkedSections> getLinkedSections(Long offeringId) {
-		Offering offering = getOffering(offeringId);
-		List<LinkedSections> ret = new ArrayList<LinkedSections>();
-		for (LinkedSections link: ((StudentSectioningModel)currentSolution().getModel()).getLinkedSections())
-			if (link.getOfferings().contains(offering))
-				ret.add(link);
-		return ret;
-	}
-
-	@Override
-	public void removeLinkedSections(Long offeringId) {
-	}
-
-	@Override
-	public void notifyStudentChanged(Long studentId, List<Request> oldRequests, List<Request> newRequests, Entity user) {
-		
-	}
-
-	@Override
-	public void notifyStudentChanged(Long studentId, Request request, Enrollment oldEnrollment, Entity user) {
 	}
 
 	@Override
@@ -986,11 +920,6 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 
 	@Override
 	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering) {
-		return new NoLock();
-	}
-
-	@Override
-	public Lock lockClass(Long classId, Collection<Long> studentIds) {
 		return new NoLock();
 	}
 
@@ -1022,37 +951,12 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	}
 
 	@Override
-	public int distance(Section s1, Section s2) {
-        if (s1.getPlacement()==null || s2.getPlacement()==null) return 0;
-        TimeLocation t1 = s1.getTime();
-        TimeLocation t2 = s2.getTime();
-        if (!t1.shareDays(t2) || !t1.shareWeeks(t2)) return 0;
-        int a1 = t1.getStartSlot(), a2 = t2.getStartSlot();
-        if (getDistanceMetric().doComputeDistanceConflictsBetweenNonBTBClasses()) {
-        	if (a1 + t1.getNrSlotsPerMeeting() <= a2) {
-        		int dist = Placement.getDistanceInMinutes(getDistanceMetric(), s1.getPlacement(), s2.getPlacement());
-        		if (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()))
-        			return dist;
-        	}
-        } else {
-        	if (a1+t1.getNrSlotsPerMeeting()==a2)
-        		return Placement.getDistanceInMinutes(getDistanceMetric(), s1.getPlacement(), s2.getPlacement());
-        }
-        return 0;
-	}
-
-	@Override
 	public void persistExpectedSpaces(Long offeringId) {
 	}
 
 	@Override
 	public List<Long> getOfferingsToPersistExpectedSpaces(long minimalAge) {
 		return null;
-	}
-
-	@Override
-	public boolean checkDeadline(Section section, Deadline type) {
-		return true;
 	}
 
 	@Override
@@ -1115,4 +1019,94 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
             return ret.toByteArray();
         }
     }
+
+	@Override
+	public Collection<XCourseRequest> getRequests(Long offeringId) {
+		List<XCourseRequest> ret = new ArrayList<XCourseRequest>();
+		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
+			if (offering.getId() == offeringId) {
+				for (Course course: offering.getCourses())
+					for (CourseRequest req: course.getRequests()) {
+						ret.add(new XCourseRequest(req));
+					}
+				break;
+			}
+		return ret;
+	}
+
+	@Override
+	public XEnrollments getEnrollments(Long offeringId) {
+		return new XEnrollments(offeringId, getRequests(offeringId));
+	}
+
+	@Override
+	public XExpectations getExpectations(Long offeringId) {
+		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
+			if (offering.getId() == offeringId)
+				return new XExpectations(offering);
+		return null;
+	}
+
+	@Override
+	public void update(XExpectations expectations) {
+	}
+
+	@Override
+	public void remove(XStudent student) {
+	}
+
+	@Override
+	public void update(XStudent student, boolean updateRequests) {
+	}
+
+	@Override
+	public void remove(XOffering offering) {
+	}
+
+	@Override
+	public void update(XOffering offering) {
+	}
+
+	@Override
+	public XCourseRequest assign(XCourseRequest request, XEnrollment enrollment) {
+		return request;
+	}
+
+	@Override
+	public XCourseRequest waitlist(XCourseRequest request, boolean waitlist) {
+		return request;
+	}
+
+	@Override
+	public void addDistribution(XDistribution distribution) {
+	}
+
+	@Override
+	public Collection<XDistribution> getDistributions(Long offeringId) {
+		Offering offering = null;
+		for (Offering o: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
+			if (o.getId() == offeringId) { offering = o; break; }
+		if (offering == null) return null;
+
+		List<XDistribution> ret = new ArrayList<XDistribution>();
+		long id = 1;
+		for (LinkedSections link: ((StudentSectioningModel)currentSolution().getModel()).getLinkedSections())
+			if (link.getOfferings().contains(offering))
+				ret.add(new XDistribution(link, id++));
+		Set<Set<Long>> ignConf = new HashSet<Set<Long>>();
+		for (Config config: offering.getConfigs())
+			for (Subpart subpart: config.getSubparts())
+				for (Section section: subpart.getSections())
+					if (section.getIgnoreConflictWithSectionIds() != null) {
+						HashSet<Long> ids = new HashSet<Long>(section.getIgnoreConflictWithSectionIds()); ids.add(section.getId());
+						if (ids.size() > 1 && !ignConf.add(ids))
+							ret.add(new XDistribution(XDistributionType.IngoreConflicts, id++, offeringId, ids));
+					}
+		return ret;
+	}
+
+	@Override
+	public boolean checkDeadline(Long courseId, XTime sectionTime, Deadline type) {
+		return true;
+	}
 }
