@@ -44,12 +44,12 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
@@ -157,7 +157,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 		Map<Long, CourseRequest> course2request = new HashMap<Long, CourseRequest>();
 		List<CourseRequest> unusedRequests = new ArrayList<CourseRequest>();
 		for (CourseRequestInterface.Request r: request.getCourses()) {
-			if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && ((server == null && getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) != null) || (server != null && server.getCourseInfo(r.getRequestedCourse()) != null)))
+			if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && ((server == null && getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) != null) || (server != null && server.getCourse(r.getRequestedCourse()) != null)))
 				r.getRequestedFreeTime().clear();			
 			if (r.hasRequestedFreeTime()) {
 				for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
@@ -194,18 +194,18 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 			} else if (r.hasRequestedCourse() || r.hasFirstAlternative() || r.hasSecondAlternative()) {
 				List<CourseOffering> courses = new ArrayList<CourseOffering>();
 				if (r.hasRequestedCourse()) {
-					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getRequestedCourse()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
+					XCourseId c = (server == null ? null : server.getCourse(r.getRequestedCourse()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getCourseId(), helper.getHibSession()));
 					if (co != null) courses.add(co);
 				}
 				if (r.hasFirstAlternative()) {
-					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getFirstAlternative()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
+					XCourseId c = (server == null ? null : server.getCourse(r.getFirstAlternative()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getCourseId(), helper.getHibSession()));
 					if (co != null) courses.add(co);
 				}
 				if (r.hasSecondAlternative()) {
-					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getSecondAlternative()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
+					XCourseId c = (server == null ? null : server.getCourse(r.getSecondAlternative()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getCourseId(), helper.getHibSession()));
 					if (co != null) courses.add(co);
 				}
 				if (courses.isEmpty()) continue;

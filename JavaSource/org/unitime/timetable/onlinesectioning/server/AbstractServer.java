@@ -58,7 +58,6 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CacheElement;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.HasCacheMode;
 import org.unitime.timetable.onlinesectioning.MultiLock;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -66,6 +65,9 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
@@ -154,12 +156,16 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	}
 	
 	@Override
-	public DistanceMetric getDistanceMetric() {
-		return iDistanceMetric;
-	}
+	public DistanceMetric getDistanceMetric() { return iDistanceMetric; }
 	
 	@Override
 	public AcademicSessionInfo getAcademicSession() { return iAcademicSession; }
+	
+	@Override
+	public String getCourseDetails(Long courseId, CourseDetailsProvider provider) {
+		XCourse course = getCourse(courseId);
+		return course == null ? null : course.getDetails(getAcademicSession(), provider);
+	}
 	
 	protected OnlineSectioningHelper getCurrentHelper() {
 		LinkedList<OnlineSectioningHelper> h = sHelper.get();
@@ -328,7 +334,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	
 	private Long getOfferingIdFromCourseName(String courseName) {
 		if (courseName == null) return null;
-		CourseInfo c = getCourseInfo(courseName);
+		XCourseId c = getCourse(courseName);
 		return (c == null ? null : c.getOfferingId());
 	}
 	
@@ -528,7 +534,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	public boolean checkDeadline(Long courseId, XTime sectionTime, Deadline type) {
 		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.deadline", "true"))) return true;
 		
-		CourseInfo info = getCourseInfo(courseId);
+		XCourse info = getCourse(courseId);
 		int deadline = 0;
 		switch (type) {
 		case NEW:

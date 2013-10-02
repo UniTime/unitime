@@ -226,7 +226,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 							a.setBackToBackRooms(from);
 							a.setSaved(true);
 							if (a.getParentSection() == null) {
-								String consent = server.getCourseInfo(course.getCourseId()).getConsent();
+								String consent = server.getCourse(course.getCourseId()).getConsentLabel();
 								if (consent != null) {
 									if (request.getEnrollment().getApproval() != null) {
 										a.setParentSection(MSG.consentApproved(df.format(request.getEnrollment().getApproval().getTimeStamp())));

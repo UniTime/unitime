@@ -39,8 +39,8 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.onlinesectioning.CourseDetails;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XDistributionType;
@@ -57,8 +57,8 @@ public class DatabaseServer extends AbstractServer {
 	}
 
 	@Override
-	public Collection<CourseInfo> findCourses(String query, Integer limit, CourseInfoMatcher matcher) {
-		Collection<CourseInfo> ret = new ArrayList<CourseInfo>();
+	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
+		Collection<XCourseId> ret = new ArrayList<XCourseId>();
 		for (CourseOffering c: (List<CourseOffering>)getCurrentHelper().getHibSession().createQuery(
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and c.instructionalOffering.notOffered = false and (" +
@@ -70,7 +70,7 @@ public class DatabaseServer extends AbstractServer {
 				.setString("q", query.toLowerCase())
 				.setLong("sessionId", getAcademicSession().getUniqueId())
 				.setCacheable(true).list()) {
-			CourseInfo course = new CourseInfo(c);
+			XCourse course = new XCourse(c);
 			if (matcher == null || matcher.match(course))
 				ret.add(course);
 			if (limit != null && ret.size() >= limit) break;
@@ -79,15 +79,15 @@ public class DatabaseServer extends AbstractServer {
 	}
 
 	@Override
-	public Collection<CourseInfo> findCourses(CourseInfoMatcher matcher) {
-		Collection<CourseInfo> ret = new ArrayList<CourseInfo>();
+	public Collection<XCourseId> findCourses(CourseMatcher matcher) {
+		Collection<XCourseId> ret = new ArrayList<XCourseId>();
 		for (CourseOffering c: (List<CourseOffering>)getCurrentHelper().getHibSession().createQuery(
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and c.instructionalOffering.notOffered = false " +
 				"order by c.subjectArea.subjectAreaAbbreviation, c.courseNbr")
 				.setLong("sessionId", getAcademicSession().getUniqueId())
 				.setCacheable(true).list()) {
-			CourseInfo course = new CourseInfo(c);
+			XCourse course = new XCourse(c);
 			if (matcher == null || matcher.match(course))
 				ret.add(course);
 		}
@@ -118,25 +118,19 @@ public class DatabaseServer extends AbstractServer {
 	}
 
 	@Override
-	public CourseInfo getCourseInfo(Long courseId) {
+	public XCourse getCourse(Long courseId) {
 		CourseOffering c = CourseOfferingDAO.getInstance().get(courseId, getCurrentHelper().getHibSession());
-		return c == null || c.getInstructionalOffering().isNotOffered() ? null : new CourseInfo(c);
+		return c == null || c.getInstructionalOffering().isNotOffered() ? null : new XCourse(c);
 	}
 
 	@Override
-	public CourseInfo getCourseInfo(String course) {
+	public XCourseId getCourse(String course) {
 		CourseOffering c = (CourseOffering)getCurrentHelper().getHibSession().createQuery(
 				"from CourseOffering where subjectAreaAbbv || ' ' || courseNbr = :name and subjectArea.session.uniqueId = :sessionId and instructionalOffering.notOffered = false")
 				.setLong("sessionId", getAcademicSession().getUniqueId())
 				.setString("name", course)
 				.setCacheable(true).setMaxResults(1).uniqueResult();
-		return c == null ? null : new CourseInfo(c);
-	}
-
-	@Override
-	public CourseDetails getCourseDetails(Long courseId) {
-		CourseOffering c = CourseOfferingDAO.getInstance().get(courseId, getCurrentHelper().getHibSession());
-		return c == null ? null : new CourseDetails(c);
+		return c == null ? null : new XCourseId(c);
 	}
 
 	@Override
@@ -184,10 +178,6 @@ public class DatabaseServer extends AbstractServer {
 
 	@Override
 	public void update(XStudent student, boolean updateRequests) {
-		org.hibernate.Session hibSession = getCurrentHelper().getHibSession();
-        hibSession.getSessionFactory().getCache().evictEntity(Student.class, student.getStudentId());
-        hibSession.getSessionFactory().getCache().evictCollection(Student.class.getName() + ".classEnrollments", student.getStudentId());
-        hibSession.getSessionFactory().getCache().evictCollection(Student.class.getName() + ".courseDemands", student.getStudentId());
 	}
 
 	@Override
@@ -196,10 +186,6 @@ public class DatabaseServer extends AbstractServer {
 
 	@Override
 	public void update(XOffering offering) {
-	}
-
-	@Override
-	public void update(CourseInfo info) {
 	}
 
 	@Override

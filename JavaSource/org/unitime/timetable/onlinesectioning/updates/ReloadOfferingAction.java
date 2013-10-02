@@ -49,7 +49,6 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -179,8 +178,6 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			newOffering = ReloadAllData.loadOffering(io, server, helper);
 			if (newOffering != null)
 				server.update(newOffering);
-			for (CourseOffering co: io.getCourseOfferings())
-				server.update(new CourseInfo(co));
 			
 			// Load linked sections and ignore student conflict constraints
 	    	List<DistributionPref> distPrefs = helper.getHibSession().createQuery(

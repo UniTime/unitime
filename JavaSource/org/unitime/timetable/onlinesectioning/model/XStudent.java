@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -35,11 +34,9 @@ import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
 import net.sf.cpsolver.studentsct.model.Request;
 
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
@@ -47,10 +44,8 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
-public class XStudent implements Serializable {
+public class XStudent extends XStudentId {
 	private static final long serialVersionUID = 1L;
-	private Long iStudentId;
-    private String iExternalId = null, iName = null;
     private List<XAcademicAreaCode> iAcadAreaClassifs = new ArrayList<XAcademicAreaCode>();
     private List<XAcademicAreaCode> iMajors = new ArrayList<XAcademicAreaCode>();
     private List<String> iGroups = new ArrayList<String>();
@@ -59,12 +54,12 @@ public class XStudent implements Serializable {
     private String iStatus = null;
     private Date iEmailTimeStamp = null;
 
-    public XStudent() {}
+    public XStudent() {
+    	super();
+    }
 
     public XStudent(Student student, OnlineSectioningHelper helper, BitSet freeTimePattern) {
-    	iStudentId = student.getUniqueId();
-    	iExternalId = student.getExternalUniqueId();
-    	iName = student.getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle));
+    	super(student, helper);
     	iStatus = student.getSectioningStatus() == null ? null : student.getSectioningStatus().getReference();
     	iEmailTimeStamp = student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate();
         for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
@@ -121,9 +116,7 @@ public class XStudent implements Serializable {
     }
     
     public XStudent(net.sf.cpsolver.studentsct.model.Student student) {
-    	iStudentId = student.getId();
-    	iExternalId = student.getExternalId();
-    	iName = student.getName();
+    	super(student);
     	iStatus = student.getStatus();
     	iEmailTimeStamp = (student.getEmailTimeStamp() == null ? null : new Date(student.getEmailTimeStamp()));
     	for (AcademicAreaCode aac: student.getAcademicAreaClasiffications())
@@ -145,16 +138,6 @@ public class XStudent implements Serializable {
     	}
     }
 
-    /** Student unique id */
-    public Long getStudentId() {
-        return iStudentId;
-    }
-
-    @Override
-    public String toString() {
-        return getName();
-    }
-    
     public XCourseRequest getRequestForCourse(Long courseId) {
     	for (XRequest request: iRequests)
     		if (request instanceof XCourseRequest && ((XCourseRequest)request).hasCourse(courseId))
@@ -190,35 +173,6 @@ public class XStudent implements Serializable {
     public List<String> getAccomodations() {
         return iAccomodations;
     }
-
-    /**
-     * Compare two students for equality. Two students are considered equal if
-     * they have the same id.
-     */
-    @Override
-    public boolean equals(Object object) {
-        if (object == null || !(object instanceof XStudent))
-            return false;
-        return getStudentId().equals(((XStudent) object).getStudentId());
-    }
-
-    /**
-     * Hash code (base only on student id)
-     */
-    @Override
-    public int hashCode() {
-        return (int) (getStudentId() ^ (getStudentId() >>> 32));
-    }
-    
-    /**
-     * Get student external id
-     */
-    public String getExternalId() { return iExternalId; }
-
-    /**
-     * Get student name
-     */
-    public String getName() { return iName; }
         
     /**
      * Get student status (online sectioning only)

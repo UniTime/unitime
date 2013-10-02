@@ -25,6 +25,9 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
@@ -32,6 +35,7 @@ import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -48,13 +52,13 @@ public interface OnlineSectioningServer {
 	public DistanceMetric getDistanceMetric();
 	public DataProperties getConfig();
 	
-	public Collection<CourseInfo> findCourses(String query, Integer limit, CourseInfoMatcher matcher);
-	public Collection<CourseInfo> findCourses(CourseInfoMatcher matcher);
-	public Collection<XStudent> findStudents(StudentMatcher matcher);
+	public Collection<? extends XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher);
+	public Collection<? extends XCourseId> findCourses(CourseMatcher matcher);
+	public Collection<? extends XStudentId> findStudents(StudentMatcher matcher);
 	
-	public CourseInfo getCourseInfo(Long courseId);
-	public CourseInfo getCourseInfo(String course);
-	public CourseDetails getCourseDetails(Long courseId);
+	public XCourse getCourse(Long courseId);
+	public XCourseId getCourse(String course);
+	public String getCourseDetails(Long courseId, CourseDetailsProvider provider);
 	
 	public XStudent getStudent(Long studentId);
 	public XOffering getOffering(Long offeringId);
@@ -70,7 +74,6 @@ public interface OnlineSectioningServer {
 	public void update(XStudent student, boolean updateRequests);
 	public void remove(XOffering offering);
 	public void update(XOffering offering);
-	public void update(CourseInfo info);
 	public void clearAll();
 	public void clearAllStudents();
 	public XCourseRequest assign(XCourseRequest request, XEnrollment enrollment);
@@ -111,11 +114,11 @@ public interface OnlineSectioningServer {
 		public void onSuccess(E result);
 	}
 	
-	public static interface CourseInfoMatcher extends Serializable {
-		public boolean match(CourseInfo course);
+	public static interface CourseMatcher extends Serializable {
+		public boolean match(XCourseId course);
 	}
 
 	public static interface StudentMatcher extends Serializable {
-		public boolean match(XStudent student);
+		public boolean match(XStudentId student);
 	}
 }

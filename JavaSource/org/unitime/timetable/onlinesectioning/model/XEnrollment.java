@@ -33,7 +33,7 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
-public class XEnrollment extends XCourseId implements Serializable, Comparable<XEnrollment> {
+public class XEnrollment extends XCourseId implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private Long iStudentId = null;
 	private Long iConfigId = null;
@@ -100,10 +100,15 @@ public class XEnrollment extends XCourseId implements Serializable, Comparable<X
 	public void setTimeStamp(Date ts) { iTimeStamp = ts; }
 
 	@Override
-	public int compareTo(XEnrollment enrollment) {
-		int cmp = getTimeStamp().compareTo(enrollment.getTimeStamp());
-		if (cmp != 0) return cmp;
-		return getStudentId().compareTo(enrollment.getStudentId());
+	public int compareTo(XCourseId courseId) {
+		if (courseId instanceof XEnrollment) {
+			XEnrollment enrollment = (XEnrollment)courseId;
+			int cmp = getTimeStamp().compareTo(enrollment.getTimeStamp());
+			if (cmp != 0) return cmp;
+			cmp = getStudentId().compareTo(enrollment.getStudentId());
+			if (cmp != 0) return cmp;
+		}
+		return super.compareTo(courseId);
 	}
 	
 	@Override

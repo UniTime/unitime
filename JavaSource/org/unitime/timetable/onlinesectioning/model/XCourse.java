@@ -21,29 +21,39 @@ package org.unitime.timetable.onlinesectioning.model;
 
 import net.sf.cpsolver.studentsct.model.Course;
 
+import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 
 public class XCourse extends XCourseId {
 	private static final long serialVersionUID = 1L;
     private String iSubjectArea = null;
     private String iCourseNumber = null;
-    private int iLimit = 0;
+    private String iDepartment = null;
+    private String iConsentLabel = null, iConsentAbbv = null;
     private String iNote = null;
-    private Long iOfferingId = null;
+    private String iDetails = null;
+    private int iLimit = 0;
     private int iProjected = 0;
+    private Integer iWkEnroll = null, iWkChange = null, iWkDrop = null;
 
     public XCourse() {
     	super();
     }
-
+    
     public XCourse(CourseOffering course, OnlineSectioningHelper helper) {
+    	this(course);
+    }
+
+    public XCourse(CourseOffering course) {
     	super(course);
-		iSubjectArea = course.getSubjectAreaAbbv();
-		iCourseNumber = course.getCourseNbr();
+		iSubjectArea = course.getSubjectAreaAbbv().trim();
+		iCourseNumber = course.getCourseNbr().trim();
 		iNote = course.getScheduleBookNote();
-		iOfferingId = course.getInstructionalOffering().getUniqueId();
+		iDepartment = (course.getSubjectArea().getDepartment().getDeptCode() == null ? course.getSubjectArea().getDepartment().getAbbreviation() : course.getSubjectArea().getDepartment().getDeptCode());
         boolean unlimited = false;
         iLimit = 0;
         for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
@@ -55,6 +65,13 @@ public class XCourse extends XCourseId {
         if (iLimit >= 9999) unlimited = true;
         if (unlimited) iLimit = -1;
         iProjected = (course.getProjectedDemand() != null ? course.getProjectedDemand().intValue() : course.getDemand() != null ? course.getDemand().intValue() : 0);
+		iWkEnroll = course.getInstructionalOffering().getLastWeekToEnroll();
+		iWkChange = course.getInstructionalOffering().getLastWeekToChange();
+		iWkDrop = course.getInstructionalOffering().getLastWeekToDrop();
+		if (course.getConsentType() != null) {
+			iConsentLabel = course.getConsentType().getLabel();
+			iConsentAbbv = course.getConsentType().getAbbv();
+		}
     }
     
     public XCourse(Course course) {
@@ -62,7 +79,6 @@ public class XCourse extends XCourseId {
 		iSubjectArea = course.getSubjectArea();
 		iCourseNumber = course.getCourseNumber();
 		iNote = course.getNote();
-		iOfferingId = course.getOffering().getId();
         iLimit = course.getLimit();
         iProjected = course.getProjected();
     }
@@ -82,24 +98,21 @@ public class XCourse extends XCourseId {
         return iLimit;
     }
     
-    public int getProjected() {
-    	return iProjected;
-    }
+    public int getProjected() { return iProjected; }
+    
+	public Integer getLastWeekToEnroll() { return iWkEnroll; }
+	public Integer getLastWeekToChange() { return iWkChange; }
+	public Integer getLastWeekToDrop() { return iWkDrop; }
+	public String getDepartment() { return iDepartment; }
+	public String getConsentLabel() { return iConsentLabel; }
+	public String getConsentAbbv() { return iConsentAbbv; }
 
     /** Course note */
     public String getNote() { return iNote; }
     
-    /** Offering id */
-    public Long getOfferingId() { return iOfferingId; }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || !(o instanceof XCourseId)) return false;
-        return getCourseId().equals(((XCourseId)o).getCourseId());
-    }
-    
-    @Override
-    public int hashCode() {
-        return (int) (getCourseId() ^ (getCourseId() >>> 32));
-    }
+	public String getDetails(AcademicSessionInfo session, CourseDetailsProvider provider) throws SectioningException {
+		if (iDetails == null && provider != null)
+			iDetails = provider.getDetails(session, getSubjectArea(), getCourseNumber());
+		return iDetails;
+	}
 }

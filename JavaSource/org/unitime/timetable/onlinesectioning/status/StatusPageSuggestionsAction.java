@@ -56,12 +56,12 @@ import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
@@ -433,10 +433,10 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					}
 			}
 			if (ret.isEmpty() && !iQuery.isEmpty()) {
-				for (CourseInfo c: server.findCourses(iQuery, iLimit, null)) {
+				for (XCourseId c: server.findCourses(iQuery, iLimit, null)) {
 					ret.add(new String[] {
-							c.getSubjectArea() + " " + c.getCourseNbr(),
-							c.getSubjectArea() + " " + c.getCourseNbr() + (c.getTitle() == null ? "" : " - " + c.getTitle())
+							c.getCourseName(),
+							c.getCourseName() + (c.getTitle() == null ? "" : " - " + c.getTitle())
 					});
 				}
 			}
@@ -539,11 +539,11 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 	}
 	
 	public static class CourseInfoMatcher implements TermMatcher {
-		private CourseInfo iInfo;
+		private XCourse iInfo;
 		private OnlineSectioningHelper iHelper;
 		private boolean iConsentToDoCourse;
 		
-		public CourseInfoMatcher(OnlineSectioningHelper helper, CourseInfo course, boolean isConsentToDoCourse) {
+		public CourseInfoMatcher(OnlineSectioningHelper helper, XCourse course, boolean isConsentToDoCourse) {
 			iHelper = helper;
 			iInfo = course;
 			iConsentToDoCourse = isConsentToDoCourse;
@@ -551,7 +551,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		
 		public OnlineSectioningHelper helper() { return iHelper; }
 
-		public CourseInfo info() { return iInfo; }
+		public XCourse info() { return iInfo; }
 		
 		public boolean isConsentToDoCourse() { return iConsentToDoCourse; }
 		
@@ -560,7 +560,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if (term.isEmpty()) return true;
 			if ("limit".equals(attr)) return true;
 			if (attr == null || "name".equals(attr) || "course".equals(attr)) {
-				return info().getSubjectArea().equalsIgnoreCase(term) || info().getCourseNbr().equalsIgnoreCase(term) || (info().getSubjectArea() + " " + info().getCourseNbr()).equalsIgnoreCase(term);
+				return info().getSubjectArea().equalsIgnoreCase(term) || info().getCourseNumber().equalsIgnoreCase(term) || (info().getSubjectArea() + " " + info().getCourseNumber()).equalsIgnoreCase(term);
 			}
 			if ((attr == null && term.length() > 2) || "title".equals(attr)) {
 				return info().getTitle().toLowerCase().contains(term.toLowerCase());
@@ -569,7 +569,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				return info().getSubjectArea().equalsIgnoreCase(term);
 			}
 			if (attr == null || "number".equals(attr)) {
-				return info().getCourseNbr().equalsIgnoreCase(term);
+				return info().getCourseNumber().equalsIgnoreCase(term);
 			}
 			if ("department".equals(attr)) {
 				return info().getDepartment().equalsIgnoreCase(term);
@@ -577,11 +577,11 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			}
 			if ("consent".equals(attr)) {
 				if ("none".equalsIgnoreCase(term))
-					return info().getConsent() == null;
+					return info().getConsentLabel() == null;
 				else if ("todo".equalsIgnoreCase(term))
 					return isConsentToDoCourse();
 				else
-					return info().getConsent() != null;
+					return info().getConsentLabel() != null;
 			}
 			if ("registered".equals(attr)) {
 				if ("true".equalsIgnoreCase(term) || "1".equalsIgnoreCase(term))
@@ -600,7 +600,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private Date iFirstDate;
 		private String iDefaultStatus;
 		
-		public CourseRequestMatcher(OnlineSectioningHelper helper, OnlineSectioningServer server, CourseInfo info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse) {
+		public CourseRequestMatcher(OnlineSectioningHelper helper, OnlineSectioningServer server, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse) {
 			super(helper, info, isConsentToDoCourse);
 			iFirstDate = server.getAcademicSession().getDatePatternFirstDate();
 			iStudent = student;
@@ -615,7 +615,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		public XCourseId course() {
 			if (enrollment() != null) return enrollment();
 			for (XCourseId course: request().getCourseIds())
-				if (course.getCourseId().equals(info().getUniqueId())) return course;
+				if (course.getCourseId().equals(info().getCourseId())) return course;
 			return request().getCourseIds().get(0);
 		}
 		public XOffering offering() {
@@ -681,17 +681,17 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			
 			if ("consent".equals(attr)) {
 				if (eq("none", term)) {
-					return info().getConsent() == null;
+					return info().getConsentLabel() == null;
 				} else if (eq("required", term)) {
-					return info().getConsent() != null;
+					return info().getConsentLabel() != null;
 				} else if (eq("approved", term)) {
-					return info().getConsent() != null && enrollment() != null && enrollment().getApproval() != null;
+					return info().getConsentLabel() != null && enrollment() != null && enrollment().getApproval() != null;
 				} else if (eq("waiting", term)) {
-					return info().getConsent() != null && enrollment() != null && enrollment().getApproval() == null;
+					return info().getConsentLabel() != null && enrollment() != null && enrollment().getApproval() == null;
 				} else if (eq("todo", term)) {
 					return isConsentToDoCourse() && enrollment() != null && enrollment().getApproval() == null;
 				} else {
-					return info().getConsent() != null && ((enrollment() != null && enrollment().getApproval() != null && (has(enrollment().getApproval().getExternalId(), term) || eq(enrollment().getApproval().getName(), term))) || eq(info().getConsentAbbv(), term));
+					return info().getConsentLabel() != null && ((enrollment() != null && enrollment().getApproval() != null && (has(enrollment().getApproval().getExternalId(), term) || eq(enrollment().getApproval().getName(), term))) || eq(info().getConsentAbbv(), term));
 				}
 			}
 			
@@ -705,7 +705,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				
 				for (XSection section: offering().getSections(enrollment())) {
 					if (attr == null || attr.equals("crn") || attr.equals("id") || attr.equals("externalId") || attr.equals("exid") || attr.equals("name")) {
-						if (section.getName(info().getUniqueId()) != null && section.getName(info().getUniqueId()).toLowerCase().startsWith(term.toLowerCase()))
+						if (section.getName(info().getCourseId()) != null && section.getName(info().getCourseId()).toLowerCase().startsWith(term.toLowerCase()))
 							return true;
 					}
 					if (attr == null || attr.equals("day")) {

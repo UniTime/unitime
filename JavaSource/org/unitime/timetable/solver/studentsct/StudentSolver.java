@@ -47,13 +47,14 @@ import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
-import org.unitime.timetable.onlinesectioning.CourseDetails;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
+import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XDistributionType;
@@ -62,6 +63,7 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
@@ -112,7 +114,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     private String iPassivationPuid = null;
     private Thread iWorkThread = null;
 
-    private transient Map<Long, CourseInfo> iCourseInfoCache = null;
+    private transient Map<Long, XCourse> iCourseInfoCache = null;
     
     public StudentSolver(DataProperties properties, StudentSolverDisposeListener disposeListener) {
         super(properties);
@@ -732,15 +734,15 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 		return getProperties();
 	}
 
-	private Map<Long, CourseInfo> getCourseInfoTable() {
+	private Map<Long, XCourse> getCourseInfoTable() {
 		if (iCourseInfoCache == null) {
 			org.hibernate.Session hibSession = CourseOfferingDAO.getInstance().createNewSession();
 			try {
-				iCourseInfoCache = new Hashtable<Long, CourseInfo>();
+				iCourseInfoCache = new Hashtable<Long, XCourse>();
 				for (CourseOffering course: (List<CourseOffering>)hibSession.createQuery(
 						"from CourseOffering x where x.subjectArea.session.uniqueId = :sessionId"
 						).setLong("sessionId", getSessionId()).setCacheable(true).list()) {
-					iCourseInfoCache.put(course.getUniqueId(), new CourseInfo(course));
+					iCourseInfoCache.put(course.getUniqueId(), new XCourse(course));
 				}
 			} finally {
 				hibSession.close();
@@ -755,15 +757,15 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	
 	
 	@Override
-	public Collection<CourseInfo> findCourses(String query, Integer limit, CourseInfoMatcher matcher) {
-		List<CourseInfo> ret = new ArrayList<CourseInfo>(limit == null ? 100 : limit);
+	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
+		List<XCourseId> ret = new ArrayList<XCourseId>(limit == null ? 100 : limit);
 		String queryInLowerCase = query.toLowerCase();
-		for (CourseInfo c : getCourseInfoTable().values()) {
+		for (XCourse c : getCourseInfoTable().values()) {
 			if (c.matchCourseName(queryInLowerCase) && (matcher == null || matcher.match(c))) ret.add(c);
 			if (limit != null && ret.size() == limit) return ret;
 		}
 		if (queryInLowerCase.length() > 2) {
-			for (CourseInfo c : getCourseInfoTable().values()) {
+			for (XCourse c : getCourseInfoTable().values()) {
 				if (c.matchTitle(queryInLowerCase) && (matcher == null || matcher.match(c))) ret.add(c);
 				if (limit != null && ret.size() == limit) return ret;
 			}
@@ -772,19 +774,19 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	}
 
 	@Override
-	public Collection<CourseInfo> findCourses(CourseInfoMatcher matcher) {
-		List<CourseInfo> ret = new ArrayList<CourseInfo>();
-		for (CourseInfo c : getCourseInfoTable().values())
+	public Collection<XCourseId> findCourses(CourseMatcher matcher) {
+		List<XCourseId> ret = new ArrayList<XCourseId>();
+		for (XCourse c : getCourseInfoTable().values())
 			if (matcher.match(c)) ret.add(c);
 		return ret;
 	}
 
 	@Override
-	public Collection<XStudent> findStudents(StudentMatcher matcher) {
-		List<XStudent> ret = new ArrayList<XStudent>();
+	public Collection<XStudentId> findStudents(StudentMatcher matcher) {
+		List<XStudentId> ret = new ArrayList<XStudentId>();
 		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents()) {
 			if (student.isDummy()) continue;
-			XStudent s = new XStudent(student);
+			XStudentId s = new XStudentId(student);
 			if (!student.isDummy() && matcher.match(s))
 				ret.add(s);
 		}
@@ -792,24 +794,15 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	}
 
 	@Override
-	public CourseInfo getCourseInfo(Long courseId) {
+	public XCourse getCourse(Long courseId) {
 		return getCourseInfoTable().get(courseId);
 	}
 	
 	@Override
-	public CourseDetails getCourseDetails(Long courseId) {
+	public XCourse getCourse(String courseName) {
 		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
 			for (Course course: offering.getCourses())
-				if (course.getId() == courseId)
-					return new CourseDetails(course);
-		return null;
-	}
-
-	@Override
-	public CourseInfo getCourseInfo(String courseName) {
-		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
-			for (Course course: offering.getCourses())
-				if (course.getName().equalsIgnoreCase(courseName)) return getCourseInfo(course.getId());
+				if (course.getName().equalsIgnoreCase(courseName)) return getCourse(course.getId());
 		return null;
 	}
 
@@ -884,10 +877,6 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 		} catch (Throwable t) {
 			callback.onFailure(t);
 		}
-	}
-
-	@Override
-	public void update(CourseInfo info) {
 	}
 
 	@Override
@@ -1108,5 +1097,11 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	@Override
 	public boolean checkDeadline(Long courseId, XTime sectionTime, Deadline type) {
 		return true;
+	}
+
+	@Override
+	public String getCourseDetails(Long courseId, CourseDetailsProvider provider) {
+		XCourse course = getCourse(courseId);
+		return course == null ? null : course.getDetails(getAcademicSession(), provider);
 	}
 }

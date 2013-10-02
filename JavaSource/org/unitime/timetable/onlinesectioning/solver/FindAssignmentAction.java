@@ -61,7 +61,6 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -69,6 +68,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XCourseReservation;
 import org.unitime.timetable.onlinesectioning.model.XDistributionType;
@@ -397,7 +397,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	}
 	
 	protected void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions) {
-		if (request.hasRequestedFreeTime() && request.hasRequestedCourse() && server.getCourseInfo(request.getRequestedCourse()) != null)
+		if (request.hasRequestedFreeTime() && request.hasRequestedCourse() && server.getCourse(request.getRequestedCourse()) != null)
 			request.getRequestedFreeTime().clear();			
 		if (request.hasRequestedFreeTime()) {
 			for (CourseRequestInterface.FreeTime freeTime: request.getRequestedFreeTime()) {
@@ -411,32 +411,32 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				new FreeTimeRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, freeTimeLoc);
 			}
 		} else if (request.hasRequestedCourse()) {
-			CourseInfo courseInfo = server.getCourseInfo(request.getRequestedCourse());
+			XCourseId courseInfo = server.getCourse(request.getRequestedCourse());
 			XOffering offering = null;
 			if (courseInfo != null) offering = server.getOffering(courseInfo.getOfferingId());
 			if (offering != null) {
 				Vector<Course> cr = new Vector<Course>();
 				Collection<XDistribution> d = server.getDistributions(offering.getOfferingId());
-				cr.add(clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getUniqueId(), student.getId(), originalStudent, classTable, d, server));
+				cr.add(clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, d, server));
 				if (d != null) distributions.addAll(d);
 				if (request.hasFirstAlternative()) {
-					CourseInfo ci = server.getCourseInfo(request.getFirstAlternative());
+					XCourseId ci = server.getCourse(request.getFirstAlternative());
 					if (ci != null) {
 						XOffering x = server.getOffering(ci.getOfferingId());
 						if (x != null) {
 							Collection<XDistribution> xd = server.getDistributions(x.getOfferingId());
-							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getUniqueId(), student.getId(), originalStudent, classTable, xd, server));
+							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), originalStudent, classTable, xd, server));
 							if (xd != null) distributions.addAll(xd);
 						}
 					}
 				}
 				if (request.hasSecondAlternative()) {
-					CourseInfo ci = server.getCourseInfo(request.getSecondAlternative());
+					XCourseId ci = server.getCourse(request.getSecondAlternative());
 					if (ci != null) {
 						XOffering x = server.getOffering(ci.getOfferingId());
 						if (x != null) {
 							Collection<XDistribution> xd = server.getDistributions(x.getOfferingId());
-							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getUniqueId(), student.getId(), originalStudent, classTable, xd, server));
+							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), originalStudent, classTable, xd, server));
 							if (xd != null) distributions.addAll(xd);
 						}
 					}
@@ -691,7 +691,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					// if (dist > 0.0) a.setDistanceConflict(true);
 					if (savedClasses != null && savedClasses.contains(section.getId())) a.setSaved(true);
 					if (a.getParentSection() == null)
-						a.setParentSection(server.getCourseInfo(course.getId()).getConsent());
+						a.setParentSection(server.getCourse(course.getId()).getConsentLabel());
 					a.setExpected(Math.round(section.getSpaceExpected()));
 				}
 				ret.add(ca);

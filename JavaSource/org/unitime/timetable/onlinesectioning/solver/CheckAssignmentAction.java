@@ -31,7 +31,6 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -69,7 +68,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Long, L
 			Set<Long> offeringIds = new HashSet<Long>();
 			for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 				if (ca != null && !ca.isFreeTime()) {
-					CourseInfo course = server.getCourseInfo(ca.getCourseId());
+					XCourse course = server.getCourse(ca.getCourseId());
 					if (course != null) offeringIds.add(course.getOfferingId());
 				}
 			
@@ -94,7 +93,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Long, L
 			// Skip free times
 			if (ca == null || ca.isFreeTime() || ca.getClassId() == null) continue;
 			
-			CourseInfo ci = server.getCourseInfo(ca.getCourseId());
+			XCourse ci = server.getCourse(ca.getCourseId());
 			if (ci == null)
 				throw new SectioningException(MSG.exceptionCourseDoesNotExist(MSG.courseName(ca.getSubject(), ca.getClassNumber())));
 			XOffering offering = server.getOffering(ci.getOfferingId());
