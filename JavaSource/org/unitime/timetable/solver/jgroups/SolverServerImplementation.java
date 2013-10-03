@@ -55,6 +55,7 @@ import org.jgroups.blocks.mux.MuxUpHandler;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.commons.jgroups.JGroupsUtils;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -595,7 +596,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
     		
 			ToolBox.configureLogging(System.getProperty("unitime.solver.log", ApplicationProperties.getDataFolder() + File.separator + "logs"), ApplicationProperties.getProperties());
     		
-			final JChannel channel = new JChannel(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml"));
+			final JChannel channel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml")));
 			
 			channel.setUpHandler(new MuxUpHandler());
 			

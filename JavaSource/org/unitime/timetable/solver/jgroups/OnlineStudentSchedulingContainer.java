@@ -240,7 +240,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 	public EmbeddedCacheManager getCacheManager() {
 		if (iCacheManager == null) {
 			GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
-					.transport().addProperty("configurationFile", "sectioning-jgroups-tcp.xml").clusterName("UniTime:sectioning")
+					.transport().addProperty("channelLookup", "org.unitime.commons.jgroups.SectioningChannelLookup").clusterName("UniTime:sectioning")
 					.build();
 			TransactionManagerLookup txLookup = new JBossStandaloneJTAManagerLookup();
 			if (SpringApplicationContextHolder.isInitialized()) {
