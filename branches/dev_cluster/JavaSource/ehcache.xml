@@ -25,9 +25,8 @@
 	<diskStore path="java.io.tmpdir" />
     
 	<cacheManagerPeerProviderFactory
-		class="net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory"
-		properties="file=hibernate-jgroups-tcp.xml, channelName=UniTime:hibernate"
-	/>
+		class="org.unitime.commons.jgroups.JGroupsCacheManagerPeerProviderFactory"
+		propertySeparator="::" />
 	
 	<defaultCache
 		maxElementsInMemory="100000"
