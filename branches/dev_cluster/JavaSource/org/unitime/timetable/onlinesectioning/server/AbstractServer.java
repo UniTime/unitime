@@ -295,7 +295,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 					}
 					job.run();
 					if (_RootDAO.closeCurrentThreadSessions())
-						iLog.warn("Job " + job + " did not close current-thread hibernate session.");
+						iLog.debug("Job " + job + " did not close current-thread hibernate session.");
 				}
 				iLog.info("Executor stopped.");
 			} finally {

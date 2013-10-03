@@ -117,4 +117,9 @@ public class XEnrollment extends XCourseId implements Serializable {
 		XEnrollment e = (XEnrollment)o;
 		return getCourseId().equals(e.getCourseId()) && getConfigId().equals(e.getConfigId()) && getSectionIds().equals(e.getSectionIds());
 	}
+	
+	@Override
+	public String toString() {
+		return getCourseName() + "/" + getSectionIds() + (getApproval() != null ? getReservation() != null ? " (ar)" : " (a)" : getReservation() != null ? " (r)" : ""); 
+	}
 }
