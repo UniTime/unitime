@@ -96,8 +96,6 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				XStudent oldStudent = server.getStudent(getStudentId());
 				XStudent newStudent = null;
 				try {
-					if (oldStudent != null)
-						server.remove(oldStudent);
 					newStudent = ReloadAllData.loadStudent(student, null, server, helper);
 					server.update(newStudent, true);
 					action.getStudentBuilder()
@@ -109,8 +107,6 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 						action.addRequest(OnlineSectioningHelper.toProto(r));
 						
 				} catch (Exception e) {
-					// Put back the old student (the database will get rollbacked)
-					server.update(oldStudent, true);
 					if (e instanceof RuntimeException)
 						throw (RuntimeException)e;
 					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);

@@ -256,9 +256,9 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 			Configuration config = new ConfigurationBuilder()
 					.clustering().cacheMode(CacheMode.DIST_SYNC).sync()
 					.hash().numOwners(2)
-					.transaction().transactionManagerLookup(txLookup).transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.PESSIMISTIC)
-					.locking().concurrencyLevel(1000).isolationLevel(IsolationLevel.READ_COMMITTED)
-					.deadlockDetection()
+					.transaction().transactionManagerLookup(txLookup).transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.PESSIMISTIC).autoCommit(true)
+					.locking().concurrencyLevel(1000).isolationLevel(IsolationLevel.READ_COMMITTED).lockAcquisitionTimeout(100)
+					// .deadlockDetection()
 					.build();
 			
 			iCacheManager = new DefaultCacheManager(global, config);

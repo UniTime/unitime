@@ -251,12 +251,9 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				XStudent oldStudent = server.getStudent(getStudentId());
 				XStudent newStudent = null;
 				try {
-					server.remove(oldStudent);
 					newStudent = ReloadAllData.loadStudent(student, null, server, helper);
 					server.update(newStudent, true);
 				} catch (Exception e) {
-					// Put back the old student (the database will get rollbacked)
-					server.update(oldStudent, true);
 					if (e instanceof RuntimeException)
 						throw (RuntimeException)e;
 					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);

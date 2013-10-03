@@ -33,6 +33,7 @@ import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
 import org.infinispan.Cache;
+import org.infinispan.context.Flag;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedCallable;
 import org.infinispan.distexec.DistributedExecutorService;
@@ -64,8 +65,8 @@ public class ReplicatedServer extends AbstractServer {
 	private Cache<String, TreeSet<XCourseId>> iCourseForName;
 	private Cache<Long, XStudent> iStudentTable;
 	private Cache<Long, XOffering> iOfferingTable;
-	private Cache<Long, List<XDistribution>> iDistributions;
-	private Cache<Long, List<XCourseRequest>> iOfferingRequests;
+	private Cache<Long, Set<XDistribution>> iDistributions;
+	private Cache<Long, Set<XCourseRequest>> iOfferingRequests;
 	private Cache<Long, XExpectations> iExpectations;
 	private Cache<Long, Boolean> iOfferingLocks;
 
@@ -102,6 +103,7 @@ public class ReplicatedServer extends AbstractServer {
 	public void unload(boolean remove) {
 		super.unload(remove);
 		if (iCacheManager.isCoordinator() && remove) {
+			iLog.info("Removing cache.");
 			iCacheManager.removeCache(cacheName("CourseForId"));
 			iCacheManager.removeCache(cacheName("CourseForName"));
 			iCacheManager.removeCache(cacheName("StudentTable"));
@@ -261,7 +263,8 @@ public class ReplicatedServer extends AbstractServer {
 	public Collection<XCourseRequest> getRequests(Long offeringId) {
 		Lock lock = readLock();
 		try {
-			return iOfferingRequests.get(offeringId);
+			Collection<XCourseRequest> requests = iOfferingRequests.get(offeringId);
+			return requests == null ? null : new ArrayList<XCourseRequest>(requests);
 		} finally {
 			lock.release();
 		}		
@@ -282,7 +285,7 @@ public class ReplicatedServer extends AbstractServer {
 	public void update(XExpectations expectations) {
 		Lock lock = writeLock();
 		try {
-			iExpectations.put(expectations.getOfferingId(), expectations);
+			iExpectations.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(expectations.getOfferingId(), expectations);
 		} finally {
 			lock.release();
 		}
@@ -297,10 +300,13 @@ public class ReplicatedServer extends AbstractServer {
 				for (XRequest request: oldStudent.getRequests())
 					if (request instanceof XCourseRequest)
 						for (XCourseId course: ((XCourseRequest)request).getCourseIds()) {
-							List<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+							Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 							if (requests != null) {
-								requests.remove(request);
-								iOfferingRequests.replace(course.getOfferingId(), requests);
+								if (!requests.remove(request))
+									iLog.warn("REMOVE[1]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
+								iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
+							} else {
+								iLog.warn("REMOVE[2]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
 							}
 						}
 			}
@@ -313,32 +319,34 @@ public class ReplicatedServer extends AbstractServer {
 	public void update(XStudent student, boolean updateRequests) {
 		Lock lock = writeLock();
 		try {
-			XStudent oldStudent = iStudentTable.put(student.getStudentId(), student);
 			if (updateRequests) {
+				XStudent oldStudent = iStudentTable.get(student.getStudentId());
+				iStudentTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(student.getStudentId(), student);
 				if (oldStudent != null) {
 					for (XRequest request: oldStudent.getRequests())
 						if (request instanceof XCourseRequest)
 							for (XCourseId course: ((XCourseRequest)request).getCourseIds()) {
-								List<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+								Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 								if (requests != null) {
-									requests.remove(request);
-									iOfferingRequests.replace(course.getOfferingId(), requests);
+									if (!requests.remove(request))
+										iLog.warn("UPDATE[1]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
+									iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
+								} else {
+									iLog.warn("UPDATE[2]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
 								}
 							}
 				}
 				for (XRequest request: student.getRequests())
 					if (request instanceof XCourseRequest)
 						for (XCourseId course: ((XCourseRequest)request).getCourseIds()) {
-							List<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
-							if (requests == null) {
-								requests = new ArrayList<XCourseRequest>();
-								requests.add((XCourseRequest)request);
-								iOfferingRequests.put(course.getOfferingId(), requests);
-							} else {
-								requests.add((XCourseRequest)request);
-								iOfferingRequests.replace(course.getOfferingId(), requests);
-							}
+							Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+							if (requests == null)
+								requests = new HashSet<XCourseRequest>();
+							requests.add((XCourseRequest)request);
+							iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
 						}
+			} else {
+				iStudentTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(student.getStudentId(), student);
 			}
 		} finally {
 			lock.release();
@@ -350,34 +358,34 @@ public class ReplicatedServer extends AbstractServer {
 		Lock lock = writeLock();
 		try {
 			for (XCourse course: offering.getCourses()) {
-				iCourseForId.remove(course.getCourseId());
+				iCourseForId.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(course.getCourseId());
 				TreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
 				if (courses != null) {
 					courses.remove(course);
 					if (courses.size() == 1) 
 						for (XCourseId x: courses) x.setHasUniqueName(true);
 					if (courses.isEmpty())
-						iCourseForName.remove(course.getCourseNameInLowerCase());
+						iCourseForName.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(course.getCourseNameInLowerCase());
 					else
-						iCourseForName.replace(course.getCourseNameInLowerCase(), courses);
+						iCourseForName.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getCourseNameInLowerCase(), courses);
 				}
 			}
-			iOfferingTable.remove(offering.getOfferingId());
-			List<XDistribution> distributions = iDistributions.get(offering.getOfferingId());
+			iOfferingTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offering.getOfferingId());
+			Set<XDistribution> distributions = iDistributions.get(offering.getOfferingId());
 			if (distributions != null && !distributions.isEmpty())
 				for (XDistribution distribution: new ArrayList<XDistribution>(distributions)) {
 					for (Long offeringId: distribution.getOfferingIds()) {
-						List<XDistribution> l = iDistributions.get(offeringId);
+						Set<XDistribution> l = iDistributions.get(offeringId);
 						if (l != null) {
 							l.remove(distribution);
 							if (l.isEmpty())
-								iDistributions.remove(offeringId);
+								iDistributions.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offeringId);
 							else
-								iDistributions.replace(offeringId, distributions);
+								iDistributions.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(offeringId, distributions);
 						}
 					}
 				}
-			iExpectations.remove(offering.getOfferingId());
+			iExpectations.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offering.getOfferingId());
 		} finally {
 			lock.release();
 		}
@@ -391,21 +399,21 @@ public class ReplicatedServer extends AbstractServer {
 			if (oldOffering != null)
 				remove(oldOffering);
 			
-			iOfferingTable.put(offering.getOfferingId(), offering);
+			iOfferingTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(offering.getOfferingId(), offering);
 			for (XCourse course: offering.getCourses()) {
-				iCourseForId.put(course.getCourseId(), course);
+				iCourseForId.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getCourseId(), course);
 				TreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
 				if (courses == null) {
 					courses = new TreeSet<XCourseId>();
 					courses.add(course);
-					iCourseForName.put(course.getCourseNameInLowerCase(), courses);
+					iCourseForName.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getCourseNameInLowerCase(), courses);
 				} else {
 					courses.add(course);
 					if (courses.size() == 1) 
 						for (XCourseId x: courses) x.setHasUniqueName(true);
 					else if (courses.size() > 1)
 						for (XCourseId x: courses) x.setHasUniqueName(false);
-					iCourseForName.replace(course.getCourseNameInLowerCase(), courses);
+					iCourseForName.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getCourseNameInLowerCase(), courses);
 				}
 			}
 		} finally {
@@ -450,10 +458,13 @@ public class ReplicatedServer extends AbstractServer {
 
 					// remove old requests
 					for (XCourseId course: cr.getCourseIds()) {
-						List<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+						Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 						if (requests != null) {
-							requests.remove(cr);
-							iOfferingRequests.replace(course.getOfferingId(), requests);
+							if (!requests.remove(cr))
+								iLog.warn("ASSIGN[1]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
+							iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
+						} else {
+							iLog.warn("ASSIGN[2]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
 						}
 					}
 
@@ -462,21 +473,25 @@ public class ReplicatedServer extends AbstractServer {
 					
 					// put new requests
 					for (XCourseId course: cr.getCourseIds()) {
-						List<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
-						if (requests == null) {
-							requests = new ArrayList<XCourseRequest>();
-							requests.add(cr);
-							iOfferingRequests.put(course.getOfferingId(), requests);
-						} else {
-							requests.add(cr);
-							iOfferingRequests.replace(course.getOfferingId(), requests);
-						}
+						Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+						if (requests == null)
+							requests = new HashSet<XCourseRequest>();
+						requests.add(cr);
+						iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
 					}
 					
+					iStudentTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(student.getStudentId(), student);
 					return cr;
 				}
 			}
-			iStudentTable.replace(student.getStudentId(), student);
+			iLog.warn("ASSIGN[3]: Request " + student + " " + request + " was not found among student requests");
+			for (XCourseId course: request.getCourseIds()) {
+				Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+				if (requests != null) {
+					requests.remove(request);
+					iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
+				}
+			}
 			return null;
 		} finally {
 			lock.release();
@@ -494,10 +509,13 @@ public class ReplicatedServer extends AbstractServer {
 
 					// remove old requests
 					for (XCourseId course: cr.getCourseIds()) {
-						List<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+						Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 						if (requests != null) {
-							requests.remove(cr);
-							iOfferingRequests.replace(course.getOfferingId(), requests);
+							if (!requests.remove(cr))
+								iLog.warn("WAITLIST[1]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
+							iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
+						} else {
+							iLog.warn("WAITLIST[2]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
 						}
 					}
 
@@ -506,21 +524,24 @@ public class ReplicatedServer extends AbstractServer {
 					
 					// put new requests
 					for (XCourseId course: cr.getCourseIds()) {
-						List<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
-						if (requests == null) {
-							requests = new ArrayList<XCourseRequest>();
-							requests.add(cr);
-							iOfferingRequests.put(course.getOfferingId(), requests);
-						} else {
-							requests.add(cr);
-							iOfferingRequests.replace(course.getOfferingId(), requests);
-						}
+						Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+						if (requests == null)
+							requests = new HashSet<XCourseRequest>();
+						iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
 					}
 					
+					iStudentTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(student.getStudentId(), student);
 					return cr;
 				}
 			}
-			iStudentTable.replace(student.getStudentId(), student);
+			iLog.warn("WAITLIST[3]: Request " + student + " " + request + " was not found among student requests");
+			for (XCourseId course: request.getCourseIds()) {
+				Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+				if (requests != null) {
+					requests.remove(request);
+					iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
+				}
+			}
 			return null;
 		} finally {
 			lock.release();
@@ -532,15 +553,11 @@ public class ReplicatedServer extends AbstractServer {
 		Lock lock = writeLock();
 		try {
 			for (Long offeringId: distribution.getOfferingIds()) {
-				List<XDistribution> distributions = iDistributions.get(offeringId);
-				if (distributions == null) {
-					distributions = new ArrayList<XDistribution>();
-					distributions.add(distribution);
-					iDistributions.put(offeringId, distributions);
-				} else {
-					distributions.add(distribution);
-					iDistributions.replace(offeringId, distributions);
-				}
+				Set<XDistribution> distributions = iDistributions.get(offeringId);
+				if (distributions == null)
+					distributions = new HashSet<XDistribution>();
+				distributions.add(distribution);
+				iDistributions.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(offeringId, distributions);
 			}
 		} finally {
 			lock.release();
@@ -663,6 +680,7 @@ public class ReplicatedServer extends AbstractServer {
 		try {
 			TransactionManager tm = getTransactionManager();
 			if (tm.getTransaction() == null) {
+				tm.setTransactionTimeout(3600);
 				tm.begin();
 				return new Lock() {
 					public void release() {
@@ -703,6 +721,7 @@ public class ReplicatedServer extends AbstractServer {
 		Lock lock = writeLock();
 		try {
 			Set<Long> ids = new HashSet<Long>();
+			ids.add(-studentId);
 			if (offeringIds != null)
 				for (Long offeringId: offeringIds)
 					if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId))
@@ -717,10 +736,10 @@ public class ReplicatedServer extends AbstractServer {
 						if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId)) ids.add(offeringId);
 					}
 				}
-			
-			iStudentTable.getAdvancedCache().lock(studentId);
-			if (!ids.isEmpty())
-				iOfferingTable.getAdvancedCache().lock(ids);
+
+			while (!iOfferingLocks.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).lock(ids)) {
+				iLog.info("Failed to lock a student " + studentId + ", retrying...");
+			}
 			
 			return lock;
 		} catch (Exception e) {
@@ -734,25 +753,23 @@ public class ReplicatedServer extends AbstractServer {
 		if (isOptimisticLocking()) return readLock();
 		Lock lock = writeLock();
 		try {
-			Set<Long> sids = new HashSet<Long>();
-			Set<Long> oids = new HashSet<Long>();
+			Set<Long> ids = new HashSet<Long>();
 			if (!excludeLockedOffering || !iOfferingLocks.containsKey(offeringId))
-				oids.add(offeringId);
+				ids.add(offeringId);
 			
 			if (studentIds != null)
 				for (Long studentId: studentIds)
-					sids.add(studentId);
+					ids.add(-studentId);
 			
 			Collection<XCourseRequest> requests = getRequests(offeringId);
 			if (requests != null) {
 				for (XCourseRequest request: requests)
-					sids.add(request.getStudentId());
+					ids.add(-request.getStudentId());
 			}
 			
-			if (!sids.isEmpty())
-				iStudentTable.getAdvancedCache().lock(sids);
-			if (!oids.isEmpty())
-				iOfferingTable.getAdvancedCache().lock(oids);
+			while (!iOfferingLocks.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).lock(ids)) {
+				iLog.info("Failed to lock an offering " + offeringId + ", retrying...");
+			}
 			
 			return lock;
 		} catch (Exception e) {
@@ -773,6 +790,7 @@ public class ReplicatedServer extends AbstractServer {
 		Lock lock = writeLock();
 		try {
 			Set<Long> ids = new HashSet<Long>();
+			ids.add(-request.getStudentId());
 			
 			for (CourseRequestInterface.Request r: request.getCourses()) {
 				if (r.hasRequestedCourse()) {
@@ -803,11 +821,10 @@ public class ReplicatedServer extends AbstractServer {
 				}
 			}
 			
-			if (request.getStudentId() != null)
-				iStudentTable.getAdvancedCache().lock(request.getStudentId());
-			if (!ids.isEmpty())
-				iOfferingTable.getAdvancedCache().lock(ids);
-			
+			while (!iOfferingLocks.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).lock(ids)) {
+				iLog.info("Failed to lock a request for student " + request.getStudentId() + ", retrying...");
+			}
+
 			return lock;
 		} catch (Exception e) {
 			lock.release();
@@ -822,12 +839,12 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public void lockOffering(Long offeringId) {
-		iOfferingLocks.put(offeringId, Boolean.TRUE);
+		iOfferingLocks.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(offeringId, Boolean.TRUE);
 	}
 
 	@Override
 	public void unlockOffering(Long offeringId) {
-		iOfferingLocks.remove(offeringId);
+		iOfferingLocks.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offeringId);
 	}
 	
 	@Override
