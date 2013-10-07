@@ -44,8 +44,8 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider, Cours
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static Logger sLog = Logger.getLogger(PurdueCourseDetailsProvider.class);
 
-	public static String sUrl = "https://esa-oas-prod-wl.itap.purdue.edu/prod/bzwsrch.p_catalog_detail?term=:year:term&subject=:subject&cnbr=:courseNbr";
-	public static String sDummyUrl = "https://esa-oas-prod-wl.itap.purdue.edu/prod/bzwsrch.p_catalog_detail?term=201020&subject=AAE&cnbr=20300";
+	public static String sUrl = "https://esa-oas-prod-wl.itap.purdue.edu/prod/bzwsrch.p_catalog_detail?term=:year:term&subject=:subject&cnbr=:courseNbr&enhanced=Y";
+	public static String sDummyUrl = "https://esa-oas-prod-wl.itap.purdue.edu/prod/bzwsrch.p_catalog_detail?term=201020&subject=AAE&cnbr=20300&enhanced=Y";
 	public static String sContentRE = "(<table [ ]*class=\"[a-z]*\" summary=\"This table lists the course detail for the selected term.\" .*)<table [ ]*class=\"[a-z]*\" summary=\"This is for formatting of the bottom links.\"";
 	public static String[][] sRemoveRE = new String[][] {
 		{"(?i)<a href=\"[^>]*\">", "<b>"},
