@@ -370,13 +370,14 @@ public class XOffering implements Serializable {
     }
     
 
-    public XReservationId guessReservation(List<XEnrollment> other, XStudent student, XEnrollment enrollment) {
+    public XReservationId guessReservation(Collection<XCourseRequest> other, XStudent student, XEnrollment enrollment) {
     	if (!enrollment.getOfferingId().equals(getOfferingId())) return null;
     	
     	Set<XReservation> reservations = new TreeSet<XReservation>();
     	boolean mustBeUsed = false;
     	for (XReservation reservation: getReservations()) {
     		if (reservation.isApplicable(student)) {
+    			if (reservation.equals(enrollment.getReservation()) && reservation.isIncluded(enrollment.getConfigId(), getSections(enrollment))) return reservation;
     			if (!mustBeUsed && reservation.mustBeUsed()) { reservations.clear(); mustBeUsed = true; }
     			if (mustBeUsed && !reservation.mustBeUsed()) continue;
     			reservations.add(reservation);
@@ -390,8 +391,8 @@ public class XOffering implements Serializable {
     			if (reservation.getLimit() < 0.0 || other == null)
     				return new XReservationId(reservation.getType(), getOfferingId(), reservation.getReservationId());
     			int used = 0;
-    			for (XEnrollment e: other)
-    				if (!enrollment.getStudentId().equals(e.getStudentId()) && reservation.equals(e.getReservation())) used ++;
+    			for (XCourseRequest r: other)
+    				if (r.getEnrollment() != null && r.getEnrollment().getOfferingId().equals(getOfferingId()) && !enrollment.getStudentId().equals(r.getStudentId()) && reservation.equals(r.getEnrollment().getReservation())) used ++;
     			if (used < reservation.getLimit())
     				return new XReservationId(reservation.getType(), getOfferingId(), reservation.getReservationId());
     		}

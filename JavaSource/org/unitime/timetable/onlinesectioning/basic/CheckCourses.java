@@ -22,7 +22,10 @@ package org.unitime.timetable.onlinesectioning.basic;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -34,6 +37,7 @@ import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 public class CheckCourses implements OnlineSectioningAction<Collection<String>> {
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static final long serialVersionUID = 1L;
 	private CourseRequestInterface iRequest;
 	private CourseMatcher iMatcher;
@@ -46,29 +50,38 @@ public class CheckCourses implements OnlineSectioningAction<Collection<String>> 
 	public Collection<String> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (iMatcher != null) iMatcher.setServer(server);
 		ArrayList<String> notFound = new ArrayList<String>();
-		Lock lock = (iRequest.getStudentId() == null ? null : server.lockStudent(iRequest.getStudentId(), null, true));
+		helper.beginTransaction();
 		try {
-			XStudent student = (iRequest.getStudentId() == null ? null : server.getStudent(iRequest.getStudentId()));
-			for (CourseRequestInterface.Request cr: iRequest.getCourses()) {
-				if (!cr.hasRequestedFreeTime() && cr.hasRequestedCourse() && lookup(server, student, cr.getRequestedCourse()) == null)
-					notFound.add(cr.getRequestedCourse());
-				if (cr.hasFirstAlternative() && lookup(server, student, cr.getFirstAlternative()) == null)
-					notFound.add(cr.getFirstAlternative());
-				if (cr.hasSecondAlternative() && lookup(server, student, cr.getSecondAlternative()) == null)
-					notFound.add(cr.getSecondAlternative());
+			Lock lock = (iRequest.getStudentId() == null ? null : server.lockStudent(iRequest.getStudentId(), null, true));
+			try {
+				XStudent student = (iRequest.getStudentId() == null ? null : server.getStudent(iRequest.getStudentId()));
+				for (CourseRequestInterface.Request cr: iRequest.getCourses()) {
+					if (!cr.hasRequestedFreeTime() && cr.hasRequestedCourse() && lookup(server, student, cr.getRequestedCourse()) == null)
+						notFound.add(cr.getRequestedCourse());
+					if (cr.hasFirstAlternative() && lookup(server, student, cr.getFirstAlternative()) == null)
+						notFound.add(cr.getFirstAlternative());
+					if (cr.hasSecondAlternative() && lookup(server, student, cr.getSecondAlternative()) == null)
+						notFound.add(cr.getSecondAlternative());
+				}
+				for (CourseRequestInterface.Request cr: iRequest.getAlternatives()) {
+					if (cr.hasRequestedCourse() && lookup(server, student, cr.getRequestedCourse()) == null)
+						notFound.add(cr.getRequestedCourse());
+					if (cr.hasFirstAlternative() && lookup(server, student, cr.getFirstAlternative()) == null)
+						notFound.add(cr.getFirstAlternative());
+					if (cr.hasSecondAlternative() && lookup(server, student, cr.getSecondAlternative()) == null)
+						notFound.add(cr.getSecondAlternative());
+				}
+			} finally {
+				if (lock != null)
+					lock.release();
 			}
-			for (CourseRequestInterface.Request cr: iRequest.getAlternatives()) {
-				if (cr.hasRequestedCourse() && lookup(server, student, cr.getRequestedCourse()) == null)
-					notFound.add(cr.getRequestedCourse());
-				if (cr.hasFirstAlternative() && lookup(server, student, cr.getFirstAlternative()) == null)
-					notFound.add(cr.getFirstAlternative());
-				if (cr.hasSecondAlternative() && lookup(server, student, cr.getSecondAlternative()) == null)
-					notFound.add(cr.getSecondAlternative());
-			}
+			helper.commitTransaction();
 			return notFound;
-		} finally {
-			if (lock != null)
-				lock.release();
+		} catch (Exception e) {
+			helper.rollbackTransaction();
+			if (e instanceof SectioningException)
+				throw (SectioningException)e;
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 	}
 	

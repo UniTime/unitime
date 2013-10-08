@@ -36,9 +36,13 @@ import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 public class XCourseRequest extends XRequest {
 	private static final long serialVersionUID = 1L;
@@ -46,7 +50,8 @@ public class XCourseRequest extends XRequest {
     private boolean iWaitlist = false;
     private Date iTimeStamp = null;
     private XEnrollment iEnrollment = null;
-    private Map<XCourseId, List<XSection>> iSectionWaitlist = null;
+    private Map<XCourseId, List<XWaitListedSection>> iSectionWaitlist = null;
+    private Map<XCourseId, OnlineSectioningLog.CourseRequestOption> iOptions = null;
 
     public XCourseRequest() {}
     
@@ -63,15 +68,26 @@ public class XCourseRequest extends XRequest {
         	iCourseIds.add(courseId);
         	if (cr.getClassWaitLists() != null) {
             	for (ClassWaitList cwl: cr.getClassWaitLists()) {
-            		if (iSectionWaitlist == null) iSectionWaitlist = new HashMap<XCourseId, List<XSection>>();
-            		List<XSection> sections = iSectionWaitlist.get(courseId);
+            		if (iSectionWaitlist == null) iSectionWaitlist = new HashMap<XCourseId, List<XWaitListedSection>>();
+            		List<XWaitListedSection> sections = iSectionWaitlist.get(courseId);
             		if (sections == null) {
-            			sections = new ArrayList<XSection>();
+            			sections = new ArrayList<XWaitListedSection>();
             			iSectionWaitlist.put(courseId, sections);
             		}
-            		sections.add(new XSection(cwl.getClazz(), helper));
+            		sections.add(new XWaitListedSection(cwl, helper));
             	}
             }
+        	for (CourseRequestOption option: cr.getCourseRequestOptions()) {
+        		if (OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT.getNumber() == option.getOptionType()) {
+					try {
+						OnlineSectioningLog.CourseRequestOption parsed = OnlineSectioningLog.CourseRequestOption.parseFrom(option.getValue());
+						if (iOptions == null) iOptions = new HashMap<XCourseId, OnlineSectioningLog.CourseRequestOption>();
+						iOptions.put(courseId, parsed);
+					} catch (InvalidProtocolBufferException e) {
+						helper.warn("Failed to parse course request options: " + e.getMessage());
+					}
+        		}
+        	}
         }
         iWaitlist = (demand.isWaitlist() != null && demand.isWaitlist());
         iTimeStamp = (demand.getTimestamp() == null ? new Date() : demand.getTimestamp());
@@ -152,31 +168,28 @@ public class XCourseRequest extends XRequest {
     public void setWaitlist(boolean waitlist) { iWaitlist = waitlist; }
     
     public boolean hasSectionWaitlist(XCourseId courseId) {
-    	List<XSection> sections = getSectionWaitlist(courseId);
+    	List<XWaitListedSection> sections = getSectionWaitlist(courseId);
     	return sections != null && !sections.isEmpty();
     }
     
-    public List<XSection> getSectionWaitlist(XCourseId courseId) {
-    	return iSectionWaitlist == null ? null : iSectionWaitlist.get(courseId);
+    public List<XWaitListedSection> getSectionWaitlist(XCourseId courseId) {
+    	return (iSectionWaitlist == null ? null : iSectionWaitlist.get(courseId));
+    }
+    
+    public OnlineSectioningLog.CourseRequestOption getOptions(Long offeringId) {
+    	if (iOptions == null) return null;
+    	XCourseId courseId = getCourseIdByOfferingId(offeringId);
+    	if (courseId == null) return null;
+    	return (courseId == null ? null : iOptions.get(courseId));
     }
     
     public void fillChoicesIn(net.sf.cpsolver.studentsct.model.CourseRequest request) {
     	if (iSectionWaitlist != null)
-    		for (Map.Entry<XCourseId, List<XSection>> entry: iSectionWaitlist.entrySet()) {
+    		for (Map.Entry<XCourseId, List<XWaitListedSection>> entry: iSectionWaitlist.entrySet()) {
     			Course course = request.getCourse(entry.getKey().getCourseId());
     			if (course != null)
-    				for (XSection section: entry.getValue()) {
-                        String instructorIds = "";
-                        String instructorNames = "";
-                        for (XInstructor instructor: section.getInstructors()) {
-                        	if (!instructorIds.isEmpty()) {
-                        		instructorIds += ":"; instructorNames += ":";
-                        	}
-                        	instructorIds += instructor.getIntructorId().toString();
-                        	instructorNames += instructor.getName() + "|"  + (instructor.getEmail() == null ? "" : instructor.getEmail());
-                        }
-                        request.getSelectedChoices().add(new Choice(course.getOffering(), section.getInstructionalType(), section.getTime() == null ? null : section.getTime().toTimeLocation(), instructorIds, instructorNames));
-    				}
+    				for (XSection section: entry.getValue())
+                        request.getSelectedChoices().add(new Choice(course.getOffering(), section.getInstructionalType(), section.getTime() == null ? null : section.getTime().toTimeLocation(), section.getInstructorIds(), section.getInstructorNames()));
     		}
     }
     

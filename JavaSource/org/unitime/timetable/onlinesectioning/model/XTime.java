@@ -137,6 +137,18 @@ public class XTime implements Serializable {
         return new StartSlotsEnum();
     }
 
+    public boolean equals(Object o) {
+    	if (o == null) return false;
+    	if (o instanceof XTime) {
+    		XTime x = (XTime)o;
+    		return getDays() == x.getDays() && getSlot() == x.getSlot() && getLength() == x.getLength() && getWeeks().equals(x.getWeeks());
+    	}
+    	if (o instanceof TimeLocation) {
+    		TimeLocation t = (TimeLocation)o;
+    		return getDays() == t.getDayCode() && getSlot() == t.getStartSlot() && getLength() == t.getLength() && getWeeks().equals(t.getWeekCode());
+    	}
+    	return false;
+    }
 	
 	@Override
 	public String toString() {

@@ -54,7 +54,6 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistributionType;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
-import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
@@ -127,8 +126,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		        	}
 		        }
 
-		        Map<Long, List<XEnrollment>> enrollmentMap = new HashMap<Long, List<XEnrollment>>();
 				if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) {
+			        Map<Long, List<XCourseRequest>> requestMap = new HashMap<Long, List<XCourseRequest>>();
 					List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
 		                    "select distinct s from Student s " +
 		                    "left join fetch s.courseDemands as cd " +
@@ -142,7 +141,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		                    "where s.session.uniqueId=:sessionId").
 		                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
 		            for (org.unitime.timetable.model.Student student: students) {
-		            	XStudent s = loadStudent(student, enrollmentMap, server, helper);
+		            	XStudent s = loadStudent(student, requestMap, server, helper);
 		            	if (s != null)
 		            		server.update(s, true);
 		            }
@@ -182,7 +181,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     	return new XOffering(io, helper);
     }
     
-    public static XStudent loadStudent(org.unitime.timetable.model.Student s, Map<Long, List<XEnrollment>> enrollmentMap, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+    public static XStudent loadStudent(org.unitime.timetable.model.Student s, Map<Long, List<XCourseRequest>> requestMap, OnlineSectioningServer server, OnlineSectioningHelper helper) {
     	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern());
     	
     	for (XRequest request: student.getRequests()) {
@@ -198,16 +197,18 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     			if (enrollment != null) {
     				XOffering offering = server.getOffering(enrollment.getOfferingId());
     				
-    				if (enrollmentMap != null) {
-        				List<XEnrollment> assigned = enrollmentMap.get(enrollment.getOfferingId());
-        				if (assigned == null) {
-        					assigned = new ArrayList<XEnrollment>();
-        					enrollmentMap.put(enrollment.getOfferingId(), assigned);
+    				if (!offering.getReservations().isEmpty()) {
+        				if (requestMap != null) {
+        					List<XCourseRequest> assigned = requestMap.get(enrollment.getOfferingId());
+        					if (assigned == null) {
+        						assigned = new ArrayList<XCourseRequest>();
+        						requestMap.put(enrollment.getOfferingId(), assigned);
+            				}
+            				enrollment.setReservation(offering.guessReservation(assigned, student, enrollment));
+        					assigned.add(courseRequest);
+        				} else {
+        					enrollment.setReservation(offering.guessReservation(server.getRequests(enrollment.getOfferingId()), student, enrollment));
         				}
-        				enrollment.setReservation(offering.guessReservation(assigned, student, enrollment));
-    				} else {
-    					XEnrollments enrollments = server.getEnrollments(enrollment.getOfferingId());
-    					enrollment.setReservation(offering.guessReservation(enrollments.getEnrollments(), student, enrollment));
     				}
     				
     				Collection<XDistribution> distributions = server.getDistributions(offering.getOfferingId());
@@ -245,7 +246,25 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     	}
     	
         return student;
-    }    
+    }
+    
+    public static XStudent loadStudentNoCheck(org.unitime.timetable.model.Student s, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+    	XStudent student = new XStudent(s, helper, server.getAcademicSession().getFreeTimePattern());
+    	
+    	for (XRequest request: student.getRequests()) {
+    		if (request instanceof XCourseRequest) {
+    			XCourseRequest courseRequest = (XCourseRequest)request;
+    			XEnrollment enrollment = courseRequest.getEnrollment();
+    			if (enrollment != null) {
+    				XOffering offering = server.getOffering(enrollment.getOfferingId());
+    				if (offering != null && !offering.getReservations().isEmpty())
+    					enrollment.setReservation(offering.guessReservation(server.getRequests(enrollment.getOfferingId()), student, enrollment));
+    			}
+    		}
+    	}
+    	
+        return student;
+    }
 
 	public static List<Collection<Class_>> getSections(DistributionPref pref) {
 		List<Collection<Class_>> ret = new ArrayList<Collection<Class_>>();

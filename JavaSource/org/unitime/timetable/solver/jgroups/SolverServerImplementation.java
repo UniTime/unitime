@@ -594,7 +594,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
     		if (System.getProperty("catalina.base") == null)
     			ApplicationProperties.getDefaultProperties().setProperty("catalina.base", ".");
     		
-			ToolBox.configureLogging(System.getProperty("unitime.solver.log", ApplicationProperties.getDataFolder() + File.separator + "logs"), ApplicationProperties.getProperties());
+			ToolBox.configureLogging();
     		
 			final JChannel channel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml")));
 			
@@ -607,6 +607,8 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 			channel.getState(null, 0);
 			
 			HibernateUtil.configureHibernate(sInstance.getProperties());
+			
+			ToolBox.configureLogging(System.getProperty("unitime.solver.log", ApplicationProperties.getDataFolder() + File.separator + "logs"), ApplicationProperties.getProperties());
 			
 			sInstance.start(null);
 			

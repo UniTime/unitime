@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -84,23 +83,36 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		if (!server.getAcademicSession().isSectioningEnabled())
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
 		
+		boolean result = true;
+		
 		for (Long offeringId: getOfferingIds()) {
-			// offering is locked -> assuming that the offering will get checked when it is unlocked
-			if (server.isOfferingLocked(offeringId)) continue;
-			// lock and check the offering
-			Lock lock = server.lockOffering(offeringId, null, false);
 			try {
-				XOffering offering = server.getOffering(offeringId);
-				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
-						.setUniqueId(offeringId)
-						.setName(offering.getName())
-						.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
-				checkOffering(server, helper, offering);
-			} finally {
-				lock.release();
+				// offering is locked -> assuming that the offering will get checked when it is unlocked
+				if (server.isOfferingLocked(offeringId)) continue;
+				
+				helper.beginTransaction();
+				// lock and check the offering
+				Lock lock = server.lockOffering(offeringId, null, false);
+				try {
+					XOffering offering = server.getOffering(offeringId);
+					helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(offeringId)
+							.setName(offering.getName())
+							.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
+					checkOffering(server, helper, offering);
+				} finally {
+					lock.release();
+				}
+				helper.commitTransaction();
+				
+			} catch (Exception e) {
+				helper.rollbackTransaction();
+				helper.fatal("Unable to check offering " + offeringId + ", reason: " + e.getMessage(), e);
+				result = false;
 			}
 		}
-		return true;
+		
+		return result;
 	}
 	
 	public void checkOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, XOffering offering) {
@@ -146,29 +158,6 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		
 		if (!queue.isEmpty()) {
 			
-			// Load course request options
-			Hashtable<Long, OnlineSectioningLog.CourseRequestOption> options = new Hashtable<Long, OnlineSectioningLog.CourseRequestOption>();
-			helper.beginTransaction();
-			try {
-				for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
-						"select o.courseRequest.courseDemand.student.uniqueId, o.value from CourseRequestOption o " +
-						"where o.courseRequest.courseOffering.instructionalOffering.uniqueId = :offeringId and " +
-						"o.optionType = :type")
-						.setLong("offeringId", offering.getOfferingId())
-						.setInteger("type", OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT.getNumber())
-						.list()) {
-					Long studentId = (Long)o[0];
-					try {
-						options.put(studentId, OnlineSectioningLog.CourseRequestOption.parseFrom((byte[])o[1]));
-					} catch (Exception e) {
-						helper.warn("Unable to parse course request options for student " + studentId + ": " + e.getMessage());
-					}
-				}
-				helper.commitTransaction();
-			} catch (Exception e) {
-				helper.warn("Unable to parse course request options: " + e.getMessage());
-			}
-			
 			DataProperties properties = new DataProperties();
 			ResectioningWeights w = new ResectioningWeights(properties);
 			DistanceConflict dc = new DistanceConflict(server.getDistanceMetric(), properties);
@@ -176,7 +165,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 			Date ts = new Date();
 			for (SectioningRequest r: queue) {
 				// helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
-				r.setOriginalEnrollment(options.get(r.getRequest().getStudentId()));
+				r.setOriginalEnrollment(r.getRequest().getOptions(offering.getOfferingId()));
 				long c0 = OnlineSectioningHelper.getCpuTime();
 				XEnrollment enrollment = r.resection(server, w, dc, toc);
 				XCourseRequest prev = r.getRequest();
@@ -202,7 +191,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				if (r.getLastEnrollment() == null && r.getRequest().getEnrollment() == null) continue;
 				if (r.getLastEnrollment() != null && r.getLastEnrollment().equals(r.getRequest().getEnrollment())) continue;
 				
-				helper.beginTransaction();
+				boolean tx = helper.beginTransaction();
 				try {
 					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudentId(), helper.getHibSession());
 					Map<Long, StudentClassEnrollment> oldEnrollments = new HashMap<Long, StudentClassEnrollment>();
@@ -278,7 +267,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 
 					server.execute(new NotifyStudentAction(r.getRequest().getStudentId(), offering, r.getLastEnrollment()), helper.getUser());
 					
-					helper.commitTransaction();
+					if (tx) helper.commitTransaction();
 					r.getAction().setResult(enrollment == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);
 				} catch (Exception e) {
 					server.assign(r.getRequest(), r.getLastEnrollment());
@@ -286,7 +275,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 					r.getAction().addMessage(OnlineSectioningLog.Message.newBuilder()
 							.setLevel(OnlineSectioningLog.Message.Level.FATAL)
 							.setText(e.getMessage() == null ? "null" : e.getMessage()));
-					helper.rollbackTransaction();
+					if (tx) helper.rollbackTransaction();
 					helper.error("Unable to resection student: " + e.getMessage(), e);
 				}
 				
