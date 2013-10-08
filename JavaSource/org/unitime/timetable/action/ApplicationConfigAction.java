@@ -96,6 +96,7 @@ public class ApplicationConfigAction extends Action {
         
         // Edit Config - Load existing config values to be edited
         if (op.equals("edit")) {
+        	sessionContext.checkPermission(Right.ApplicationConfigEdit);
             String id = request.getParameter("id");
             if (id == null || id.trim().isEmpty()) {
                 errors.add("key", new ActionMessage("errors.invalid", "Name : " + id));
@@ -134,6 +135,7 @@ public class ApplicationConfigAction extends Action {
         }
         
         if (op.equals(rsc.getMessage("button.addAppConfig"))) {
+        	sessionContext.checkPermission(Right.ApplicationConfigEdit);
             frm.reset(mapping, request);
             frm.setAllSessions(true);
             if (sessionContext.getUser().getCurrentAcademicSessionId() != null)
@@ -143,6 +145,7 @@ public class ApplicationConfigAction extends Action {
 
         // Save or update config
         if(op.equals(rsc.getMessage("button.updateAppConfig")) || op.equals(rsc.getMessage("button.createAppConfig"))) {
+        	sessionContext.checkPermission(Right.ApplicationConfigEdit);
             // Validate input
             errors = frm.validate(mapping, request);
             if (!errors.isEmpty()) {
@@ -247,6 +250,7 @@ public class ApplicationConfigAction extends Action {
 
         // Delete config
         if(op.equals(rsc.getMessage("button.deleteAppConfig"))) {
+        	sessionContext.checkPermission(Right.ApplicationConfigEdit);
             // Validate input
             errors = frm.validate(mapping, request);
             if (!errors.isEmpty()) {
@@ -332,6 +336,7 @@ public class ApplicationConfigAction extends Action {
 			}
 		}
 
+		boolean editable = sessionContext.hasPermission(Right.ApplicationConfigEdit);
 		if (properties.isEmpty()) {
 			webTable.addLine(null, new String[] {"No configuration keys found"}, null, null);
 		} else {
@@ -340,7 +345,7 @@ public class ApplicationConfigAction extends Action {
 				if (o instanceof SessionConfig) {
 					SessionConfig config = (SessionConfig)o;
 				    webTable.addLine(
-				    		"onClick=\"document.location='applicationConfig.do?op=edit&id=" + config.getKey() + "';\"",
+				    		editable ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + config.getKey() + "';\"" : null,
 				    		new String[] {config.getKey()  + " <sup><font color='#2066CE' title='Applies to " + config.getSession().getLabel() + "'>s)</font></sup>",
 				    			config.getValue() == null ? "" : config.getValue(), config.getDescription() == null ? "" : config.getDescription()},
 				    		new String[] {config.getKey(), config.getValue() == null ? "" : config.getValue(), config.getDescription() == null ? "" : config.getDescription()}
@@ -348,7 +353,7 @@ public class ApplicationConfigAction extends Action {
 				} else {
 					ApplicationConfig config = (ApplicationConfig)o;
 				    webTable.addLine(
-				    		"onClick=\"document.location='applicationConfig.do?op=edit&id=" + config.getKey() + "';\"",
+				    		editable ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + config.getKey() + "';\"" : null,
 				    		new String[] {config.getKey(), config.getValue() == null ? "" : config.getValue(), config.getDescription() == null ? "" : config.getDescription()},
 				    		new String[] {config.getKey(), config.getValue() == null ? "" : config.getValue(), config.getDescription() == null ? "" : config.getDescription()}
 				    		);

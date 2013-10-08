@@ -103,6 +103,15 @@
 				<line>Requested By field of the Event Filter now provides suggestions as the main contact's name or email address is typed in.</line>
 			</description>
 		</item>
+		<item>
+			<name>Application Config</name>
+			<description>
+				<line>Permission Application Config split into two:
+					<line>Application Config: allows to view the Application Config page (without any modification capabilities),</line>
+					<line>Application Config Edit: allows to make changes as well.</line>
+				</line>
+			</description>
+		</item>		
 	</category>
 </release>
 

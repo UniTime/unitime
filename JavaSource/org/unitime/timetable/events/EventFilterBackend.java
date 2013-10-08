@@ -379,7 +379,8 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
                 query.addParameter("requested", "Xreq" + id, token);
                 id++;
             }
-			query.addWhere("requested", requested);
+			if (id > 0)
+				query.addWhere("requested", requested);
 		}
 		
 		return query;
@@ -401,10 +402,12 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			for (StringTokenizer s=new StringTokenizer(request.getText().trim(),", ");s.hasMoreTokens();) {
                 String token = s.nextToken().toUpperCase();
                 instance.where("upper(c.firstName) like :cn" + id + " || '%' or upper(c.middleName) like :cn" + id + " || '%' or upper(c.lastName) like :cn" + id + " || '%' or upper(c.emailAddress) like :cn" + id + " || '%'").set("cn" + id, token);
+                id++;
             }
 			
-			for (EventContact contact: (List<EventContact>)instance.limit(20).query(hibSession).list())
-				response.addSuggestion(contact.getName(), contact.getName(), "Requested By", "requested");
+			if (id > 0)
+				for (EventContact contact: (List<EventContact>)instance.limit(20).query(hibSession).list())
+					response.addSuggestion(contact.getName(), contact.getName(), "Requested By", "requested");
 
 		}
 	}
