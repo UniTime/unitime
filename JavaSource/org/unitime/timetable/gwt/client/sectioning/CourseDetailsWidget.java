@@ -123,7 +123,7 @@ public class CourseDetailsWidget extends Composite {
 						reload(new CourseDetailsRpcRequest(Long.valueOf(subjectId.getValue(subjectId.getSelectedIndex())), courseNumber.getValue()));
 					} catch (NumberFormatException f) {}
 				}
-			} else if ("text".equalsIgnoreCase(courseElement.getTagName())) {
+			} else if ("input".equalsIgnoreCase(courseElement.getTagName())) {
 				final Hidden subjectId = Hidden.wrap(subjectElement);
 				final TextBox courseNumber = TextBox.wrap(courseElement);
 				courseNumber.addValueChangeHandler(new ValueChangeHandler<String>() {
