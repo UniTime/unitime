@@ -178,6 +178,8 @@ public class OnlineSectioningHelper {
     
     public boolean beginTransaction() {
         try {
+        	if (iTx != null) return false;
+        	
             iHibSession = (sTransactionCreatesNewHibSession ? new _RootDAO().createNewSession() : getHibSession());
             
             if (iCacheMode != null) {
@@ -196,7 +198,9 @@ public class OnlineSectioningHelper {
     
     public boolean commitTransaction() {
         try {
+        	if (iTx == null) return false;
             iTx.commit();
+            iTx = null;
             debug("Transaction committed.");
             return true;
         } catch (Exception e) {
@@ -212,7 +216,9 @@ public class OnlineSectioningHelper {
 
     public boolean rollbackTransaction() {
         try {
+        	if (iTx == null) return false;
             iTx.rollback();
+        	iTx = null;
             info("Transaction rollbacked.");
             return true;
         } catch (Exception e) {

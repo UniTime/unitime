@@ -25,8 +25,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.transaction.TransactionManager;
-
 import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.commons.logging.Log;
@@ -43,7 +41,6 @@ import org.infinispan.transaction.TransactionMode;
 import org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup;
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
 import org.infinispan.util.concurrent.IsolationLevel;
-import org.springframework.transaction.jta.JtaTransactionManager;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Session;
@@ -53,7 +50,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
 import org.unitime.timetable.onlinesectioning.server.ReplicatedServer;
-import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineSectioningServer> {
 	private static Log sLog = LogFactory.getLog(OnlineStudentSchedulingContainer.class);
@@ -241,8 +237,10 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		if (iCacheManager == null) {
 			GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
 					.transport().addProperty("channelLookup", "org.unitime.commons.jgroups.SectioningChannelLookup").clusterName("UniTime:sectioning")
+					.globalJmxStatistics().cacheManagerName("OnlineSchedulingCacheManager").disable()
 					.build();
 			TransactionManagerLookup txLookup = new JBossStandaloneJTAManagerLookup();
+			/*
 			if (SpringApplicationContextHolder.isInitialized()) {
 				txLookup = new TransactionManagerLookup() {
 					@Override
@@ -251,17 +249,22 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 						return manager.getTransactionManager();
 					}
 				};
-			}
-			
+			}*/
 			Configuration config = new ConfigurationBuilder()
 					.clustering().cacheMode(CacheMode.DIST_SYNC).sync()
 					.hash().numOwners(2)
-					.transaction().transactionManagerLookup(txLookup).transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.PESSIMISTIC).autoCommit(true)
-					.locking().concurrencyLevel(1000).isolationLevel(IsolationLevel.READ_COMMITTED).lockAcquisitionTimeout(100)
+					.transaction().transactionManagerLookup(txLookup).transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.OPTIMISTIC).autoCommit(true)
+					.locking().concurrencyLevel(1000).isolationLevel(IsolationLevel.READ_COMMITTED).lockAcquisitionTimeout(5000)
 					// .deadlockDetection()
 					.build();
 			
 			iCacheManager = new DefaultCacheManager(global, config);
+			iCacheManager.defineConfiguration("OfferingLocks", new ConfigurationBuilder().read(config)
+				.transaction().lockingMode(LockingMode.PESSIMISTIC)
+				.locking().lockAcquisitionTimeout(100)
+				.build()
+				);
+					
 		}
 		return iCacheManager;
 	}

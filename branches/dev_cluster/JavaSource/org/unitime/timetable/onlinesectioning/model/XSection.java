@@ -128,7 +128,7 @@ public class XSection implements Serializable, Comparable<XSection> {
     		}
     	}
     }
-
+    
     /** Section id */
     public Long getSectionId() { return iUniqueId; }
 
@@ -224,6 +224,26 @@ public class XSection implements Serializable, Comparable<XSection> {
      * Instructors
      */
     public List<XInstructor> getInstructors() { return iInstructors; }
+    
+    public String getInstructorIds() {
+    	if (iInstructors == null || iInstructors.isEmpty()) return null;
+    	StringBuffer ret = new StringBuffer();
+    	for (XInstructor instructor: iInstructors) {
+    		if (ret.length() > 0) ret.append(":");
+    		ret.append(instructor.getIntructorId());
+    	}
+    	return ret.toString();
+    }
+    
+    public String getInstructorNames() {
+    	if (iInstructors == null || iInstructors.isEmpty()) return null;
+    	StringBuffer ret = new StringBuffer();
+    	for (XInstructor instructor: iInstructors) {
+    		if (ret.length() > 0) ret.append(":");
+    		ret.append(instructor.getName() + "|"  + (instructor.getEmail() == null ? "" : instructor.getEmail()));
+    	}
+    	return ret.toString();
+    }
     
     /**
      * Returns true if student conflicts between this section and the given one are to be ignored

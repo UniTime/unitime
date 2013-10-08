@@ -30,9 +30,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedCallable;
@@ -60,6 +63,8 @@ import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 public class ReplicatedServer extends AbstractServer {
+	private boolean iLockStartsTransaction = false;
+	
 	private EmbeddedCacheManager iCacheManager;
 	private Cache<Long, XCourseId> iCourseForId;
 	private Cache<String, TreeSet<XCourseId>> iCourseForName;
@@ -78,17 +83,26 @@ public class ReplicatedServer extends AbstractServer {
 		return getAcademicSession().toCompactString() + "[" + table + "]";
 	}
 	
+	private <U,T> Cache<U,T> getCache(String name) {
+		Configuration config = iCacheManager.getCacheConfiguration(name);
+		if (config != null) {
+			iLog.info("Using " + config + " for " + name + " cache.");
+			iCacheManager.defineConfiguration(cacheName(name), config);
+		}
+		return iCacheManager.getCache(cacheName(name), true);
+	}
+	
 	@Override
 	protected void load(OnlineSectioningServerContext context) throws SectioningException {
 		iCacheManager = context.getCacheManager();
-		iCourseForId = iCacheManager.getCache(cacheName("CourseForId"), true);
-		iCourseForName = iCacheManager.getCache(cacheName("CourseForName"), true);
-		iStudentTable = iCacheManager.getCache(cacheName("StudentTable"), true);
-		iOfferingTable = iCacheManager.getCache(cacheName("OfferingTable"), true);
-		iDistributions = iCacheManager.getCache(cacheName("Distributions"), true);
-		iOfferingRequests = iCacheManager.getCache(cacheName("OfferingRequests"), true);
-		iExpectations = iCacheManager.getCache(cacheName("Expectations"), true);
-		iOfferingLocks = iCacheManager.getCache(cacheName("OfferingLocks"), true); 
+		iCourseForId = getCache("CourseForId");
+		iCourseForName = getCache("CourseForName");
+		iStudentTable = getCache("StudentTable");
+		iOfferingTable = getCache("OfferingTable");
+		iDistributions = getCache("Distributions");
+		iOfferingRequests = getCache("OfferingRequests");
+		iExpectations = getCache("Expectations");
+		iOfferingLocks = getCache("OfferingLocks");
 		if (isOptimisticLocking())
 			iLog.info("Using optimistic locking.");
 		if (iCacheManager.isCoordinator())
@@ -96,7 +110,7 @@ public class ReplicatedServer extends AbstractServer {
 	}
 	
 	private boolean isOptimisticLocking() {
-		return iOfferingTable.getAdvancedCache().getCacheConfiguration().transaction().lockingMode() == LockingMode.OPTIMISTIC;
+		return iOfferingLocks.getAdvancedCache().getCacheConfiguration().transaction().lockingMode() == LockingMode.OPTIMISTIC;
 	}
 	
 	@Override
@@ -119,6 +133,15 @@ public class ReplicatedServer extends AbstractServer {
 		return iOfferingTable.getAdvancedCache().getTransactionManager();
 	}
 	
+	private boolean inTransaction() {
+		try {
+			Transaction tx = getTransactionManager().getTransaction();
+			return tx != null && tx.getStatus() == Status.STATUS_ACTIVE;
+		} catch (SystemException e) {
+			return false;
+		}
+	}
+		
 	@Override
 	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
 		Lock lock = readLock();
@@ -677,6 +700,11 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public Lock readLock() {
+		if (!iLockStartsTransaction) {
+			return new Lock() {
+				public void release() {}
+			};
+		}
 		try {
 			TransactionManager tm = getTransactionManager();
 			if (tm.getTransaction() == null) {
@@ -717,9 +745,16 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings) {
-		if (isOptimisticLocking()) return readLock();
 		Lock lock = writeLock();
 		try {
+			if (!inTransaction()) {
+				iLog.warn("Failed to lock a student " + studentId + ": No transaction has been started.");
+				return lock;
+			}
+			if (isOptimisticLocking()) {
+				iLog.warn("Failed to lock a student " + studentId + ": No eager locks in optimistic locking.");
+				return lock;
+			}
 			Set<Long> ids = new HashSet<Long>();
 			ids.add(-studentId);
 			if (offeringIds != null)
@@ -750,9 +785,16 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering) {
-		if (isOptimisticLocking()) return readLock();
 		Lock lock = writeLock();
 		try {
+			if (!inTransaction()) {
+				iLog.warn("Failed to lock an offering " + offeringId + ": No transaction has been started.");
+				return lock;
+			}
+			if (isOptimisticLocking()) {
+				iLog.warn("Failed to lock an offering " + offeringId + ": No eager locks in optimistic locking.");
+				return lock;
+			}
 			Set<Long> ids = new HashSet<Long>();
 			if (!excludeLockedOffering || !iOfferingLocks.containsKey(offeringId))
 				ids.add(offeringId);
@@ -786,9 +828,16 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public Lock lockRequest(CourseRequestInterface request) {
-		if (isOptimisticLocking()) return readLock();
 		Lock lock = writeLock();
 		try {
+			if (!inTransaction()) {
+				iLog.warn("Failed to lock a request for student " + request.getStudentId() + ": No transaction has been started.");
+				return lock;
+			}
+			if (isOptimisticLocking()) {
+				iLog.warn("Failed to lock a request for student " + request.getStudentId() + ": No eager locks in optimistic locking.");
+				return lock;
+			}
 			Set<Long> ids = new HashSet<Long>();
 			ids.add(-request.getStudentId());
 			

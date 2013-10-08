@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -146,23 +145,6 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		// Persist expected spaces if needed
 		if (server.needPersistExpectedSpaces(offeringId))
 			PersistExpectedSpacesAction.persistExpectedSpaces(offeringId, false, server, helper);
-		
-		// Load course request options
-		Hashtable<Long, OnlineSectioningLog.CourseRequestOption> options = new Hashtable<Long, OnlineSectioningLog.CourseRequestOption>();
-		for (Object[] o: (List<Object[]>)helper.getHibSession().createQuery(
-				"select o.courseRequest.courseDemand.student.uniqueId, o.value from CourseRequestOption o " +
-				"where o.courseRequest.courseOffering.instructionalOffering.uniqueId = :offeringId and " +
-				"o.optionType = :type")
-				.setLong("offeringId", offeringId)
-				.setInteger("type", OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT.getNumber())
-				.list()) {
-			Long studentId = (Long)o[0];
-			try {
-				options.put(studentId, OnlineSectioningLog.CourseRequestOption.parseFrom((byte[])o[1]));
-			} catch (Exception e) {
-				helper.warn("Unable to parse course request options for student " + studentId + ": " + e.getMessage());
-			}
-		}
 		
 		// Existing offering
 		XOffering oldOffering = server.getOffering(offeringId);
@@ -309,8 +291,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			
 			if (oldEnrollment == null && newEnrollment == null) {
 				if (student[1].canAssign(newRequest) && isWaitListed(student[1], newRequest, server, helper))
-					queue.add(new SectioningRequest(newOffering, newRequest, student[0], null, action,
-							options.get(student[0] == null ? student[1].getStudentId() : student[0].getStudentId())));
+					queue.add(new SectioningRequest(newOffering, newRequest, student[0], null, action, (oldRequest == null ? newRequest : oldRequest).getOptions(offeringId)));
 				continue;
 			}
 			
@@ -330,7 +311,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				}
 			}
 			newRequest = server.assign(newRequest, null);
-			queue.add(new SectioningRequest(newOffering, newRequest, student[0], oldEnrollment, action, options.get(student[0] == null ? student[1].getStudentId() : student[0].getStudentId())));
+			queue.add(new SectioningRequest(newOffering, newRequest, student[0], oldEnrollment, action, (oldRequest == null ? newRequest : oldRequest).getOptions(offeringId)));
 		}
 		
 		if (!queue.isEmpty()) {

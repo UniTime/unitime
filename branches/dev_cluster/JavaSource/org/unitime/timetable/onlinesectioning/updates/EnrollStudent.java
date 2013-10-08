@@ -54,10 +54,13 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -132,9 +135,9 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			}
 		};
 		
-		Lock lock = server.lockStudent(getStudentId(), offeringIds, true);
+		helper.beginTransaction();
 		try {
-			helper.beginTransaction();
+			Lock lock = server.lockStudent(getStudentId(), offeringIds, true);
 			try {
 				OnlineSectioningLog.Action.Builder action = helper.getAction();
 				
@@ -229,10 +232,6 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					clazz.getStudentEnrollments().add(enrl);
 					enrl.setCourseOffering(cr.getCourseOffering());
 					enrl.setCourseRequest(cr);
-					/*
-					if (cr.getClassEnrollments() != null)
-						cr.getClassEnrollments().add(enrl);
-						*/
 					enrl.setTimestamp(old != null ? old.getTimestamp() : ts);
 					enrl.setStudent(student);
 					enrl.setChangedBy(old != null ? old.getChangedBy() : helper.getUser() == null ? null : helper.getUser().getExternalId());
@@ -251,7 +250,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				XStudent oldStudent = server.getStudent(getStudentId());
 				XStudent newStudent = null;
 				try {
-					newStudent = ReloadAllData.loadStudent(student, null, server, helper);
+					newStudent = ReloadAllData.loadStudentNoCheck(student, server, helper);
 					server.update(newStudent, true);
 				} catch (Exception e) {
 					if (e instanceof RuntimeException)
@@ -272,9 +271,53 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 									newRequest = (XCourseRequest)r; newEnrollment = e; break;
 								}
 							}
-						if (newEnrollment != null && newEnrollment.getSectionIds().equals(oldEnrollment.getSectionIds())) continue; // same assignment
 						
-						server.execute(new CheckOfferingAction(oldEnrollment.getOfferingId()), helper.getUser(), offeringChecked);
+						Set<Long> oldSections;
+						if (newEnrollment == null) {
+							oldSections = oldEnrollment.getSectionIds();
+						} else {
+							oldSections = new HashSet<Long>();
+							for (Long sectionId: oldEnrollment.getSectionIds())
+								if (!newEnrollment.getSectionIds().contains(sectionId))
+									oldSections.add(sectionId);
+						}
+						
+						if (oldSections.isEmpty()) continue; // same assignment
+						
+						boolean checkOffering = false;
+						XOffering offering = server.getOffering(oldEnrollment.getOfferingId());
+						if (!offering.getReservations().isEmpty()) {
+							checkOffering = true;
+							helper.info("Check offering for " + oldEnrollment.getCourseName() + ": there are reservations.");
+						} else {
+							XEnrollments enrollments = server.getEnrollments(oldEnrollment.getOfferingId());
+							for (Long sectionId: oldSections) {
+								XSection section = offering.getSection(sectionId);
+								if (section != null && section.getLimit() >= 0 && section.getLimit() - enrollments.countEnrollmentsForSection(sectionId) == 1) {
+									checkOffering = true;
+									helper.info("Check offering for " + oldEnrollment.getCourseName() + ": section " + section + " became available.");
+									break;
+								}
+							}
+							if (!checkOffering && (newEnrollment == null || !newEnrollment.getConfigId().equals(oldEnrollment.getConfigId()))) {
+								XConfig config = offering.getConfig(oldEnrollment.getConfigId());
+								if (config != null && config.getLimit() >= 0 && config.getLimit() - enrollments.countEnrollmentsForConfig(config.getConfigId()) == 1) {
+									checkOffering = true;
+									helper.info("Check offering for " + oldEnrollment.getCourseName() + ": config " + config + " became available.");
+								}
+							}
+							if (!checkOffering && (newEnrollment == null || !newEnrollment.getCourseId().equals(oldEnrollment.getCourseId()))) {
+								XCourse course = offering.getCourse(oldEnrollment.getCourseId());
+								if (course != null && course.getLimit() >= 0 && course.getLimit() - enrollments.countEnrollmentsForCourse(course.getCourseId()) == 1) {
+									checkOffering = true;
+									helper.info("Check offering for " + oldEnrollment.getCourseName() + ": course " + course + " became available.");
+								}
+							}
+						}
+						
+						if (checkOffering)
+							server.execute(new CheckOfferingAction(oldEnrollment.getOfferingId()), helper.getUser(), offeringChecked);
+						
 						updateSpace(server,
 								newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, server.getOffering(newEnrollment.getOfferingId()), newEnrollment).getAssignment(),
 								oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, server.getOffering(oldEnrollment.getOfferingId()), oldEnrollment).getAssignment());
@@ -319,16 +362,15 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				}
 
 				server.execute(new NotifyStudentAction(getStudentId(), oldStudent), helper.getUser());
-				
-				helper.commitTransaction();
-			} catch (Exception e) {
-				helper.rollbackTransaction();
-				if (e instanceof SectioningException)
-					throw (SectioningException)e;
-				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+			} finally {
+				lock.release();
 			}
-		} finally {
-			lock.release();
+			helper.commitTransaction();
+		} catch (Exception e) {
+			helper.rollbackTransaction();
+			if (e instanceof SectioningException)
+				throw (SectioningException)e;
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 		
 		return server.execute(new GetAssignment(getStudentId()), helper.getUser());

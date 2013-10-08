@@ -115,6 +115,29 @@ public class XStudent extends XStudentId {
         
     }
     
+    public static List<XRequest> loadRequests(Student student, OnlineSectioningHelper helper, BitSet freeTimePattern) {
+    	List<XRequest> requests = new ArrayList<XRequest>();
+		TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
+			public int compare(CourseDemand d1, CourseDemand d2) {
+				if (d1.isAlternative() && !d2.isAlternative()) return 1;
+				if (!d1.isAlternative() && d2.isAlternative()) return -1;
+				int cmp = d1.getPriority().compareTo(d2.getPriority());
+				if (cmp != 0) return cmp;
+				return d1.getUniqueId().compareTo(d2.getUniqueId());
+			}
+		});
+		demands.addAll(student.getCourseDemands());
+    	for (CourseDemand cd: demands) {
+            if (cd.getFreeTime() != null) {
+            	requests.add(new XFreeTimeRequest(cd, freeTimePattern));
+            } else if (!cd.getCourseRequests().isEmpty()) {
+            	requests.add(new XCourseRequest(cd, helper));
+            }
+        }
+        Collections.sort(requests);
+        return requests;
+    }
+    
     public XStudent(net.sf.cpsolver.studentsct.model.Student student) {
     	super(student);
     	iStatus = student.getStatus();
