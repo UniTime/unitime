@@ -8971,4 +8971,11 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'StudentGroupEdit'
 		</sql>
 	</update>
+	<update version="128" date="8-Oct-2013" comment="Application Config Edit Permission">
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'ApplicationConfigEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'ApplicationConfig'
+		</sql>
+	</update>
 </dbupdate>

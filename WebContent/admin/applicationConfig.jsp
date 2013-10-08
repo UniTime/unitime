@@ -28,6 +28,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tiles:importAttribute />
 
@@ -153,9 +154,11 @@
 		<TD colspan='3'>
 			<tt:section-header>
 				<tt:section-title>Application Settings</tt:section-title>
-				<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addAppConfig">
-					<bean:message key="button.addAppConfig" />
-				</html:submit> 
+				<sec:authorize access="hasPermission(null, null, 'ApplicationConfigEdit')">
+					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addAppConfig">
+						<bean:message key="button.addAppConfig" />
+					</html:submit>
+				</sec:authorize> 
 			</tt:section-header>
 		</TD>
 	</TR>
