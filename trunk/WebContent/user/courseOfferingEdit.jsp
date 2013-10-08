@@ -49,9 +49,6 @@
 	<html:hidden property="instrOfferingId"/>
 	<html:hidden property="courseOfferingId"/>
 	<html:hidden property="add"/>
-	<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
-		<html:hidden property="subjectAreaId" styleId="subjectId"/>
-	</logic:notEqual>
 	<html:hidden property="isControl"/>
 	<html:hidden property="courseName"/>
 	<html:hidden property="ioNotOffered"/>
@@ -152,7 +149,7 @@
 		</TR>
 	</logic:equal>
 	<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
-		<html:hidden property="subjectAreaId"/>
+		<html:hidden property="subjectAreaId" styleId="subjectId"/>
 	</logic:notEqual>
 	
 		
@@ -173,7 +170,7 @@
 	</sec:authorize>
 	<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and
 							!(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
-		<html:hidden property="courseNbr"/>
+		<html:hidden property="courseNbr" styleId="course"/>
 		<logic:notEmpty name="courseOfferingEditForm" property="title">
 			<TR>
 				<TD><loc:message name="propertyCourseTitle"/> </TD>
