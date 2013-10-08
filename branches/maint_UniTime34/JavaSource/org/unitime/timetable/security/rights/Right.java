@@ -495,6 +495,7 @@ public enum Right {
 	/** Administration: Defaults */
 	
 	ApplicationConfig,
+	ApplicationConfigEdit,
 	
     SettingsAdmin,
 
