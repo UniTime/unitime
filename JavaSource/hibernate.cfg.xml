@@ -87,15 +87,15 @@
 	<property name="hibernate.cache.use_second_level_cache">true</property>
 
 	<!-- Cache Provider - EhCache -->
-	<!-- 
 	<property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
-	 -->
 	
 	<!-- Cache Provider - Infinispan -->
+	<!-- 
 	<property name="hibernate.cache.region.factory_class">org.hibernate.cache.infinispan.InfinispanRegionFactory</property>
 	<property name="hibernate.transaction.factory_class">org.hibernate.engine.transaction.internal.jta.JtaTransactionFactory</property>
 	<property name="hibernate.transaction.jta.platform">org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform</property>
 	<property name="hibernate.cache.infinispan.cfg">hibernate-infinispan.xml</property>
+	 -->
 
 	<!-- Keep the cache entries in a more human-understandable format -->
 	<property name="hibernate.cache.use_structured_entries">true</property>

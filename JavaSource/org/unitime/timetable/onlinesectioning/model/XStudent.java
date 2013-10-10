@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -34,6 +38,8 @@ import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
 import net.sf.cpsolver.studentsct.model.Request;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -44,7 +50,8 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
-public class XStudent extends XStudentId {
+@SerializeWith(XStudent.XStudentSerializer.class)
+public class XStudent extends XStudentId implements Externalizable {
 	private static final long serialVersionUID = 1L;
     private List<XAcademicAreaCode> iAcadAreaClassifs = new ArrayList<XAcademicAreaCode>();
     private List<XAcademicAreaCode> iMajors = new ArrayList<XAcademicAreaCode>();
@@ -52,15 +59,22 @@ public class XStudent extends XStudentId {
     private List<String> iAccomodations = new ArrayList<String>();
     private List<XRequest> iRequests = new ArrayList<XRequest>();
     private String iStatus = null;
+    private String iEmail = null;
     private Date iEmailTimeStamp = null;
 
     public XStudent() {
     	super();
     }
+    
+    public XStudent(ObjectInput in) throws IOException, ClassNotFoundException {
+    	super();
+    	readExternal(in);
+    }
 
     public XStudent(Student student, OnlineSectioningHelper helper, BitSet freeTimePattern) {
     	super(student, helper);
     	iStatus = student.getSectioningStatus() == null ? null : student.getSectioningStatus().getReference();
+    	iEmail = student.getEmail();
     	iEmailTimeStamp = student.getScheduleEmailedDate() == null ? null : student.getScheduleEmailedDate();
         for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
         	iAcadAreaClassifs.add(new XAcademicAreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(), aac.getAcademicClassification().getCode()));
@@ -217,6 +231,8 @@ public class XStudent extends XStudentId {
     
     public List<XRequest> getRequests() { return iRequests; }
     
+    public String getEmail() { return iEmail; }
+    
     /**
      * True if the given request can be assigned to the student. A request
      * cannot be assigned to a student when the student already has the desired
@@ -243,4 +259,95 @@ public class XStudent extends XStudentId {
         }
         return (alt >= 0);
     }
+    
+    @Override
+    public String toString() {
+    	return getName() + " (" + getExternalId() + ")";
+    }
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		super.readExternal(in);
+		
+		int nrAcadAreClassifs = in.readInt();
+		iAcadAreaClassifs.clear();
+		for (int i = 0; i < nrAcadAreClassifs; i++)
+			iAcadAreaClassifs.add(new XAcademicAreaCode(in));
+		
+		int nrMajors = in.readInt();
+		iMajors.clear();
+		for (int i = 0; i < nrMajors; i++)
+			iMajors.add(new XAcademicAreaCode(in));
+		
+		int nrGroups = in.readInt();
+		iGroups.clear();
+		for (int i = 0; i < nrGroups; i++)
+			iGroups.add((String)in.readObject());
+		
+		int nrAccomodations = in.readInt();
+		iAccomodations.clear();
+		for (int i = 0; i < nrAccomodations; i++)
+			iAccomodations.add((String)in.readObject());
+		
+		int nrRequests = in.readInt();
+		iRequests.clear();
+		for (int i = 0; i < nrRequests; i++)
+			iRequests.add(in.readBoolean() ? new XCourseRequest(in) : new XFreeTimeRequest(in));
+		
+		iStatus = (String)in.readObject();
+		iEmail = (String)in.readObject();
+		iEmailTimeStamp = (in.readBoolean() ? new Date(in.readLong()) : null);
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		
+		out.writeInt(iAcadAreaClassifs.size());
+		for (XAcademicAreaCode aac: iAcadAreaClassifs)
+			aac.writeExternal(out);
+		
+		out.writeInt(iMajors.size());
+		for (XAcademicAreaCode major: iMajors)
+			major.writeExternal(out);
+		
+		out.writeInt(iGroups.size());
+		for (String group: iGroups)
+			out.writeObject(group);
+		
+		out.writeInt(iAccomodations.size());
+		for (String accomodation: iAccomodations)
+			out.writeObject(accomodation);
+		
+		out.writeInt(iRequests.size());
+		for (XRequest request: iRequests)
+			if (request instanceof XCourseRequest) {
+				out.writeBoolean(true);
+				((XCourseRequest)request).writeExternal(out);
+			} else {
+				out.writeBoolean(false);
+				((XFreeTimeRequest)request).writeExternal(out);
+			}
+		
+		out.writeObject(iStatus);
+		out.writeObject(iEmail);
+		
+		out.writeBoolean(iEmailTimeStamp != null);
+		if (iEmailTimeStamp != null)
+			out.writeLong(iEmailTimeStamp.getTime());
+	}
+	
+	public static class XStudentSerializer implements Externalizer<XStudent> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XStudent object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XStudent readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XStudent(input);
+		}
+	}
 }

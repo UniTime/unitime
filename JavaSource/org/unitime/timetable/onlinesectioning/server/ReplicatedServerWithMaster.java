@@ -29,11 +29,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
@@ -41,9 +36,10 @@ import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedCallable;
 import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.transaction.LockingMode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
@@ -54,28 +50,29 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
+import org.unitime.timetable.onlinesectioning.model.XHashSet;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XTreeSet;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.solver.jgroups.SolverServer;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
-public class ReplicatedServer extends AbstractServer {
-	private boolean iLockStartsTransaction = false;
-	
+public class ReplicatedServerWithMaster extends AbstractLockingServer {
 	private EmbeddedCacheManager iCacheManager;
 	private Cache<Long, XCourseId> iCourseForId;
-	private Cache<String, TreeSet<XCourseId>> iCourseForName;
+	private Cache<String, XTreeSet<XCourseId>> iCourseForName;
 	private Cache<Long, XStudent> iStudentTable;
 	private Cache<Long, XOffering> iOfferingTable;
-	private Cache<Long, Set<XDistribution>> iDistributions;
-	private Cache<Long, Set<XCourseRequest>> iOfferingRequests;
+	private Cache<Long, XHashSet<XDistribution>> iDistributions;
+	private Cache<Long, XHashSet<XCourseRequest>> iOfferingRequests;
 	private Cache<Long, XExpectations> iExpectations;
 	private Cache<Long, Boolean> iOfferingLocks;
 
-	public ReplicatedServer(OnlineSectioningServerContext context) throws SectioningException {
+	public ReplicatedServerWithMaster(OnlineSectioningServerContext context) throws SectioningException {
 		super(context);
 	}
 	
@@ -103,13 +100,7 @@ public class ReplicatedServer extends AbstractServer {
 		iOfferingRequests = getCache("OfferingRequests");
 		iExpectations = getCache("Expectations");
 		iOfferingLocks = getCache("OfferingLocks");
-		if (isOptimisticLocking())
-			iLog.info("Using optimistic locking.");
 		super.load(context);
-	}
-	
-	private boolean isOptimisticLocking() {
-		return iOfferingLocks.getAdvancedCache().getCacheConfiguration().transaction().lockingMode() == LockingMode.OPTIMISTIC;
 	}
 	
 	@Override
@@ -129,19 +120,13 @@ public class ReplicatedServer extends AbstractServer {
 		}
 	}
 	
-	private TransactionManager getTransactionManager() {
-		return iOfferingTable.getAdvancedCache().getTransactionManager();
+	@Override
+	protected void loadOnMaster(OnlineSectioningServerContext context) throws SectioningException {
+		clearAll();
+		releaseAllOfferingLocks();
+		super.loadOnMaster(context);
 	}
 	
-	private boolean inTransaction() {
-		try {
-			Transaction tx = getTransactionManager().getTransaction();
-			return tx != null && tx.getStatus() == Status.STATUS_ACTIVE;
-		} catch (SystemException e) {
-			return false;
-		}
-	}
-		
 	@Override
 	public Collection<XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher) {
 		Lock lock = readLock();
@@ -306,6 +291,8 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public void update(XExpectations expectations) {
+		if (!isMaster())
+			iLog.warn("Updating expectations on a slave node. That is suspicious.");
 		Lock lock = writeLock();
 		try {
 			iExpectations.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(expectations.getOfferingId(), expectations);
@@ -316,14 +303,17 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public void remove(XStudent student) {
+		if (!isMaster())
+			iLog.warn("Removing student on a slave node. That is suspicious.");
 		Lock lock = writeLock();
 		try {
 			XStudent oldStudent = iStudentTable.remove(student.getStudentId());
 			if (oldStudent != null) {
+				iLog.info("Remove " + oldStudent + " with requests " + oldStudent.getRequests());
 				for (XRequest request: oldStudent.getRequests())
 					if (request instanceof XCourseRequest)
 						for (XCourseId course: ((XCourseRequest)request).getCourseIds()) {
-							Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+							XHashSet<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 							if (requests != null) {
 								if (!requests.remove(request))
 									iLog.warn("REMOVE[1]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
@@ -340,16 +330,20 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public void update(XStudent student, boolean updateRequests) {
+		iLog.info("Update " + student + " with requests " + student.getRequests());
+		if (!isMaster())
+			iLog.warn("Updating student on a slave node. That is suspicious.");
 		Lock lock = writeLock();
 		try {
 			if (updateRequests) {
 				XStudent oldStudent = iStudentTable.get(student.getStudentId());
 				iStudentTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(student.getStudentId(), student);
 				if (oldStudent != null) {
+					iLog.info("  Was " + oldStudent + " with requests " + oldStudent.getRequests());
 					for (XRequest request: oldStudent.getRequests())
 						if (request instanceof XCourseRequest)
 							for (XCourseId course: ((XCourseRequest)request).getCourseIds()) {
-								Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+								XHashSet<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 								if (requests != null) {
 									if (!requests.remove(request))
 										iLog.warn("UPDATE[1]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
@@ -362,9 +356,9 @@ public class ReplicatedServer extends AbstractServer {
 				for (XRequest request: student.getRequests())
 					if (request instanceof XCourseRequest)
 						for (XCourseId course: ((XCourseRequest)request).getCourseIds()) {
-							Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+							XHashSet<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 							if (requests == null)
-								requests = new HashSet<XCourseRequest>();
+								requests = new XHashSet<XCourseRequest>(new XCourseRequest.XCourseRequestSerializer());
 							requests.add((XCourseRequest)request);
 							iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
 						}
@@ -378,11 +372,13 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public void remove(XOffering offering) {
+		if (!isMaster())
+			iLog.warn("Removing offering on a slave node. That is suspicious.");
 		Lock lock = writeLock();
 		try {
 			for (XCourse course: offering.getCourses()) {
 				iCourseForId.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(course.getCourseId());
-				TreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
+				XTreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
 				if (courses != null) {
 					courses.remove(course);
 					if (courses.size() == 1) 
@@ -394,11 +390,11 @@ public class ReplicatedServer extends AbstractServer {
 				}
 			}
 			iOfferingTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offering.getOfferingId());
-			Set<XDistribution> distributions = iDistributions.get(offering.getOfferingId());
+			XHashSet<XDistribution> distributions = iDistributions.get(offering.getOfferingId());
 			if (distributions != null && !distributions.isEmpty())
 				for (XDistribution distribution: new ArrayList<XDistribution>(distributions)) {
 					for (Long offeringId: distribution.getOfferingIds()) {
-						Set<XDistribution> l = iDistributions.get(offeringId);
+						XHashSet<XDistribution> l = iDistributions.get(offeringId);
 						if (l != null) {
 							l.remove(distribution);
 							if (l.isEmpty())
@@ -416,6 +412,8 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public void update(XOffering offering) {
+		if (!isMaster())
+			iLog.warn("Updating offering on a slave node. That is suspicious.");
 		Lock lock = writeLock();
 		try {
 			XOffering oldOffering = iOfferingTable.get(offering.getOfferingId());
@@ -424,11 +422,11 @@ public class ReplicatedServer extends AbstractServer {
 			
 			iOfferingTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(offering.getOfferingId(), offering);
 			for (XCourse course: offering.getCourses()) {
-				iCourseForId.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getCourseId(), course);
-				TreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
+				iCourseForId.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getCourseId(), new XCourseId(course));
+				XTreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
 				if (courses == null) {
-					courses = new TreeSet<XCourseId>();
-					courses.add(course);
+					courses = new XTreeSet<XCourseId>(new XCourseId.XCourseIdSerializer());
+					courses.add(new XCourseId(course));
 					iCourseForName.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getCourseNameInLowerCase(), courses);
 				} else {
 					courses.add(course);
@@ -446,6 +444,8 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public void clearAll() {
+		if (!isMaster())
+			iLog.warn("Clearing all data on a slave node. That is suspicious.");
 		Lock lock = writeLock();
 		try {
 			iStudentTable.clear();
@@ -461,6 +461,8 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public void clearAllStudents() {
+		if (!isMaster())
+			iLog.warn("Clearing all students on a slave node. That is suspicious.");
 		Lock lock = writeLock();
 		try {
 			iStudentTable.clear();
@@ -472,6 +474,9 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public XCourseRequest assign(XCourseRequest request, XEnrollment enrollment) {
+		iLog.info("Assign " + request + " with " + enrollment);
+		if (!isMaster())
+			iLog.warn("Assigning a request on a slave node. That is suspicious.");
 		Lock lock = writeLock();
 		try {
 			XStudent student = iStudentTable.get(request.getStudentId());
@@ -481,7 +486,7 @@ public class ReplicatedServer extends AbstractServer {
 
 					// remove old requests
 					for (XCourseId course: cr.getCourseIds()) {
-						Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+						XHashSet<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 						if (requests != null) {
 							if (!requests.remove(cr))
 								iLog.warn("ASSIGN[1]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
@@ -496,9 +501,9 @@ public class ReplicatedServer extends AbstractServer {
 					
 					// put new requests
 					for (XCourseId course: cr.getCourseIds()) {
-						Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+						XHashSet<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 						if (requests == null)
-							requests = new HashSet<XCourseRequest>();
+							requests = new XHashSet<XCourseRequest>(new XCourseRequest.XCourseRequestSerializer());
 						requests.add(cr);
 						iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
 					}
@@ -509,7 +514,7 @@ public class ReplicatedServer extends AbstractServer {
 			}
 			iLog.warn("ASSIGN[3]: Request " + student + " " + request + " was not found among student requests");
 			for (XCourseId course: request.getCourseIds()) {
-				Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+				XHashSet<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 				if (requests != null) {
 					requests.remove(request);
 					iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
@@ -523,6 +528,8 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public XCourseRequest waitlist(XCourseRequest request, boolean waitlist) {
+		if (!isMaster())
+			iLog.warn("Wait-listing a request on a slave node. That is suspicious.");
 		Lock lock = writeLock();
 		try {
 			XStudent student = iStudentTable.get(request.getStudentId());
@@ -532,7 +539,7 @@ public class ReplicatedServer extends AbstractServer {
 
 					// remove old requests
 					for (XCourseId course: cr.getCourseIds()) {
-						Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+						XHashSet<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 						if (requests != null) {
 							if (!requests.remove(cr))
 								iLog.warn("WAITLIST[1]: Request " + student + " " + request + " was not present in the offering requests table for " + course);
@@ -547,9 +554,9 @@ public class ReplicatedServer extends AbstractServer {
 					
 					// put new requests
 					for (XCourseId course: cr.getCourseIds()) {
-						Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+						XHashSet<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 						if (requests == null)
-							requests = new HashSet<XCourseRequest>();
+							requests = new XHashSet<XCourseRequest>(new XCourseRequest.XCourseRequestSerializer());
 						iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
 					}
 					
@@ -559,7 +566,7 @@ public class ReplicatedServer extends AbstractServer {
 			}
 			iLog.warn("WAITLIST[3]: Request " + student + " " + request + " was not found among student requests");
 			for (XCourseId course: request.getCourseIds()) {
-				Set<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+				XHashSet<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
 				if (requests != null) {
 					requests.remove(request);
 					iOfferingRequests.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getOfferingId(), requests);
@@ -573,12 +580,14 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public void addDistribution(XDistribution distribution) {
+		if (!isMaster())
+			iLog.warn("Adding distribution on a slave node. That is suspicious.");
 		Lock lock = writeLock();
 		try {
 			for (Long offeringId: distribution.getOfferingIds()) {
-				Set<XDistribution> distributions = iDistributions.get(offeringId);
+				XHashSet<XDistribution> distributions = iDistributions.get(offeringId);
 				if (distributions == null)
-					distributions = new HashSet<XDistribution>();
+					distributions = new XHashSet<XDistribution>(new XDistribution.XDistributionSerializer());
 				distributions.add(distribution);
 				iDistributions.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(offeringId, distributions);
 			}
@@ -699,188 +708,32 @@ public class ReplicatedServer extends AbstractServer {
 	}
 
 	@Override
-	public Lock readLock() {
-		if (!iLockStartsTransaction) {
-			return new Lock() {
-				public void release() {}
-			};
-		}
-		try {
-			TransactionManager tm = getTransactionManager();
-			if (tm.getTransaction() == null) {
-				tm.setTransactionTimeout(3600);
-				tm.begin();
-				return new Lock() {
-					public void release() {
-						try {
-							TransactionManager tm = getTransactionManager();
-							if (tm.getStatus() == Status.STATUS_MARKED_ROLLBACK)
-								tm.rollback();
-							else
-								tm.commit();
-						} catch (Exception e) {
-							throw new SectioningException("Failed to commit a transaction: " + e.getMessage(), e);
-						}
-					}
-				};
-			} else {
-				return new Lock() {
-					public void release() {}
-				};
-			}
-		} catch (Exception e) {
-			throw new SectioningException("Failed to begin a transaction: " + e.getMessage(), e);
-		}
-	}
-
-	@Override
-	public Lock writeLock() {
-		return readLock();
-	}
-
-	@Override
-	public Lock lockAll() {
-		return readLock();
-	}
-
-	@Override
 	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings) {
-		Lock lock = writeLock();
-		try {
-			if (!inTransaction()) {
-				iLog.warn("Failed to lock a student " + studentId + ": No transaction has been started.");
-				return lock;
-			}
-			if (isOptimisticLocking()) {
-				iLog.warn("Failed to lock a student " + studentId + ": No eager locks in optimistic locking.");
-				return lock;
-			}
-			Set<Long> ids = new HashSet<Long>();
-			ids.add(-studentId);
-			if (offeringIds != null)
-				for (Long offeringId: offeringIds)
-					if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId))
-						ids.add(offeringId);
-			
-			XStudent student = getStudent(studentId);
-			
-			if (student != null)
-				for (XRequest r: student.getRequests()) {
-					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
-						Long offeringId = ((XCourseRequest)r).getEnrollment().getOfferingId();
-						if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId)) ids.add(offeringId);
-					}
-				}
-
-			while (!iOfferingLocks.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).lock(ids)) {
-				iLog.info("Failed to lock a student " + studentId + ", retrying...");
-			}
-			
-			return lock;
-		} catch (Exception e) {
-			lock.release();
-			throw new SectioningException("Failed to lock a student: " + e.getMessage(), e);
+		if (!isMaster()) {
+			iLog.warn("Failed to lock a student " + studentId + ": not executed on master.");
+			return new NoLock();
 		}
+		return super.lockStudent(studentId, offeringIds, excludeLockedOfferings);
 	}
 
 	@Override
 	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering) {
-		Lock lock = writeLock();
-		try {
-			if (!inTransaction()) {
-				iLog.warn("Failed to lock an offering " + offeringId + ": No transaction has been started.");
-				return lock;
-			}
-			if (isOptimisticLocking()) {
-				iLog.warn("Failed to lock an offering " + offeringId + ": No eager locks in optimistic locking.");
-				return lock;
-			}
-			Set<Long> ids = new HashSet<Long>();
-			if (!excludeLockedOffering || !iOfferingLocks.containsKey(offeringId))
-				ids.add(offeringId);
-			
-			if (studentIds != null)
-				for (Long studentId: studentIds)
-					ids.add(-studentId);
-			
-			Collection<XCourseRequest> requests = getRequests(offeringId);
-			if (requests != null) {
-				for (XCourseRequest request: requests)
-					ids.add(-request.getStudentId());
-			}
-			
-			while (!iOfferingLocks.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).lock(ids)) {
-				iLog.info("Failed to lock an offering " + offeringId + ", retrying...");
-			}
-			
-			return lock;
-		} catch (Exception e) {
-			lock.release();
-			throw new SectioningException("Failed to lock an offering: " + e.getMessage(), e);
+		if (!isMaster()) {
+			iLog.warn("Failed to lock an offering " + offeringId + ": not executed on master.");
+			return new NoLock();
 		}
+		return super.lockOffering(offeringId, studentIds, excludeLockedOffering);
 	}
 	
-	private Long getOfferingIdFromCourseName(String courseName) {
-		if (courseName == null) return null;
-		XCourseId c = getCourse(courseName);
-		return (c == null ? null : c.getOfferingId());
-	}
-
 	@Override
 	public Lock lockRequest(CourseRequestInterface request) {
-		Lock lock = writeLock();
-		try {
-			if (!inTransaction()) {
-				iLog.warn("Failed to lock a request for student " + request.getStudentId() + ": No transaction has been started.");
-				return lock;
-			}
-			if (isOptimisticLocking()) {
-				iLog.warn("Failed to lock a request for student " + request.getStudentId() + ": No eager locks in optimistic locking.");
-				return lock;
-			}
-			Set<Long> ids = new HashSet<Long>();
-			ids.add(-request.getStudentId());
-			
-			for (CourseRequestInterface.Request r: request.getCourses()) {
-				if (r.hasRequestedCourse()) {
-					Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasFirstAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasSecondAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
-					if (id != null) ids.add(id);
-				}
-			}
-			for (CourseRequestInterface.Request r: request.getAlternatives()) {
-				if (r.hasRequestedCourse()) {
-					Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasFirstAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasSecondAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
-					if (id != null) ids.add(id);
-				}
-			}
-			
-			while (!iOfferingLocks.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).lock(ids)) {
-				iLog.info("Failed to lock a request for student " + request.getStudentId() + ", retrying...");
-			}
-
-			return lock;
-		} catch (Exception e) {
-			lock.release();
-			throw new SectioningException("Failed to lock a request: " + e.getMessage(), e);
+		if (!isMaster()) {
+			iLog.warn("Failed to lock a request for student " + request.getStudentId() + ": not executed on master.");
+			return new NoLock();
 		}
+		return super.lockRequest(request);
 	}
-
+	
 	@Override
 	public boolean isOfferingLocked(Long offeringId) {
 		return iOfferingLocks.containsKey(offeringId);
@@ -920,5 +773,35 @@ public class ReplicatedServer extends AbstractServer {
 	@Override
 	public void releaseAllOfferingLocks() {
 		iOfferingLocks.clear();
+	}
+	
+	private static class NoLock implements Lock {
+		@Override
+		public void release() {}
+	}
+	
+	@Override
+	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException {
+		CheckMaster ch = action.getClass().getAnnotation(CheckMaster.class);
+		if (ch != null && ch.value() == Master.REQUIRED && !isMaster())
+			iLog.warn("Executing action " + action.name() + " (master required) on a slave node.");
+		else if (ch != null && ch.value() == Master.AVOID && isMaster())
+			iLog.warn("Executing action " + action.name() + " (avoid master) on a master node.");
+		E ret = super.execute(action, user);
+		return ret;
+	}
+	
+	@Override
+	public Lock writeLock() {
+		if (!isMaster())
+			iLog.warn("Asking for a WRITE lock on a slave node. That is suspicious.");
+		return super.writeLock();
+	}
+	
+	@Override
+	public Lock lockAll() {
+		if (!isMaster())
+			iLog.warn("Asking for an ALL lock on a slave node. That is suspicious.");
+		return super.lockAll();
 	}
 }

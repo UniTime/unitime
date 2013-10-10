@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -290,4 +293,54 @@ public abstract class XReservation extends XReservationId implements Comparable<
         
         return getLimit() - enrollments.countEnrollmentsForReservation(getReservationId());
     }
+    
+    @Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    	super.readExternal(in);
+    	iExpirationDate = (in.readBoolean() ? new Date(in.readLong()) : null);
+    	iOfferingId = in.readLong();
+    	
+    	int nrConfigs = in.readInt();
+    	iConfigs.clear();
+    	for (int i = 0; i < nrConfigs; i++)
+    		iConfigs.add(in.readLong());
+    	
+    	int nrSubparts = in.readInt();
+    	iSections.clear(); 
+    	for (int i = 0; i < nrSubparts; i++) {
+    		Set<Long> sections = new HashSet<Long>();
+    		iSections.put(in.readLong(), sections);
+    		int nrSection = in.readInt();
+    		for (int j = 0; j < nrSection; j++) {
+    			sections.add(in.readLong());
+    		}
+    	}
+    	iLimitCap = in.readInt();
+    	iRestrictivity = in.readDouble();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeBoolean(iExpirationDate != null);
+		if (iExpirationDate != null)
+			out.writeLong(iExpirationDate.getTime());
+		out.writeLong(iOfferingId);
+		
+		out.writeInt(iConfigs.size());
+		for (Long config: iConfigs)
+			out.writeLong(config);
+		
+		Set<Map.Entry<Long, Set<Long>>> entries = iSections.entrySet();
+		out.writeInt(entries.size());
+		for (Map.Entry<Long, Set<Long>> entry: entries) {
+			out.writeLong(entry.getKey());
+			out.writeInt(entry.getValue().size());
+			for (Long id: entry.getValue())
+				out.writeLong(id);
+		}
+		
+		out.writeInt(iLimitCap);
+		out.writeDouble(iRestrictivity);
+	}
 }

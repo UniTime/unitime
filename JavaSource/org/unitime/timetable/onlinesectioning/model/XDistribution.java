@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
@@ -29,9 +33,12 @@ import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Subpart;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.Class_;
 
-public class XDistribution implements Serializable {
+@SerializeWith(XDistribution.XDistributionSerializer.class)
+public class XDistribution implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iDistributionId = null;
 	private int iVariant = 0;
@@ -40,6 +47,10 @@ public class XDistribution implements Serializable {
 	private Set<Long> iSectionIds = new HashSet<Long>();
 	
 	public XDistribution() {};
+	
+	public XDistribution(ObjectInput in) throws IOException, ClassNotFoundException {
+		readExternal(in);
+	}
     
     public XDistribution(XDistributionType type, Long id, int variant, Collection<Class_> sections) {
     	iType = type;
@@ -95,4 +106,50 @@ public class XDistribution implements Serializable {
     public int hashCode() {
         return (int) (getDistributionId() ^ (getDistributionId() >>> 32) ^ getVariant());
     }
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iDistributionId = in.readLong();
+		iVariant = in.readInt();
+		iType = XDistributionType.values()[in.readInt()];
+		
+		int nrOfferings = in.readInt();
+		iOfferingIds.clear();
+		for (int i = 0; i < nrOfferings; i++)
+			iOfferingIds.add(in.readLong());
+		
+		int nrSections = in.readInt();
+		iSectionIds.clear();
+		for (int i = 0; i < nrSections; i++)
+			iSectionIds.add(in.readLong());
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeLong(iDistributionId);
+		out.writeInt(iVariant);
+		out.writeInt(iType.ordinal());
+		
+		out.writeInt(iOfferingIds.size());
+		for (Long offeringId: iOfferingIds)
+			out.writeLong(offeringId);
+		
+		out.writeInt(iSectionIds.size());
+		for (Long sectionId: iSectionIds)
+			out.writeLong(sectionId);
+	}
+	
+	public static class XDistributionSerializer implements Externalizer<XDistribution> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XDistribution object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XDistribution readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XDistribution(input);
+		}
+	}
 }

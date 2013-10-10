@@ -19,13 +19,17 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 
 import net.sf.cpsolver.studentsct.model.Request;
 
 import org.unitime.timetable.model.CourseDemand;
 
-public abstract class XRequest implements Serializable, Comparable<XRequest> {
+public abstract class XRequest implements Serializable, Comparable<XRequest>, Externalizable {
 	private static final long serialVersionUID = 1L;
 	protected Long iRequestId = null;
 	protected int iPriority = 0;
@@ -86,5 +90,20 @@ public abstract class XRequest implements Serializable, Comparable<XRequest> {
     public String toString() {
     	return (isAlternative() ? "A" : "") + getPriority() + ".";
     }
+    
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iRequestId = in.readLong();
+		iPriority = in.readInt();
+		iAlternative = in.readBoolean();
+		iStudentId = in.readLong();
+	}
 
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeLong(iRequestId);
+		out.writeInt(iPriority);
+		out.writeBoolean(iAlternative);
+		out.writeLong(iStudentId);
+	}
 }

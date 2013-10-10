@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -28,6 +32,8 @@ import java.util.Locale;
 
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.FreeTime;
@@ -37,7 +43,8 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 
-public class XTime implements Serializable {
+@SerializeWith(XTime.XTimeSerializer.class)
+public class XTime implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private int iSlot;
 	private int iLength;
@@ -48,6 +55,10 @@ public class XTime implements Serializable {
 	private String iDatePatternName = null;
 	
 	public XTime() {
+	}
+	
+	public XTime(ObjectInput input) throws IOException, ClassNotFoundException {
+		readExternal(input);
 	}
 	
 	public XTime(Assignment assignment, XExactTimeConversion conversion) {
@@ -294,4 +305,42 @@ public class XTime implements Serializable {
     public TimeLocation toTimeLocation() {
     	return new TimeLocation(getDays(), getSlot(), getLength(), 0, 0.0, getDatePatternId(), getDatePatternName(), getWeeks(), getBreakTime());
     }
+    
+    public static class XTimeSerializer implements Externalizer<XTime> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XTime object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XTime readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XTime(input);
+		}
+    	
+    }
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iSlot = in.readInt();
+		iLength = in.readInt();
+		iBreakTime = in.readInt();
+		iDays = in.readInt();
+		iWeeks = (BitSet)in.readObject();
+		iDatePatternId = in.readLong();
+		if (iDatePatternId < 0) iDatePatternId = null;
+		iDatePatternName = (String)in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeInt(iSlot);
+		out.writeInt(iLength);
+		out.writeInt(iBreakTime);
+		out.writeInt(iDays);
+		out.writeObject(iWeeks);
+		out.writeLong(iDatePatternId == null ? -1 : iDatePatternId);
+		out.writeObject(iDatePatternName);
+	}
 }

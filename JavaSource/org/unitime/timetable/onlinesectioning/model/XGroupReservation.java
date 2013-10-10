@@ -19,8 +19,15 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.StudentGroupReservation;
 
+@SerializeWith(XGroupReservation.XCourseReservationSerializer.class)
 public class XGroupReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private int iLimit;
@@ -28,6 +35,11 @@ public class XGroupReservation extends XReservation {
 
     public XGroupReservation() {
     	super();
+    }
+    
+    public XGroupReservation(ObjectInput in) throws IOException, ClassNotFoundException {
+    	super();
+    	readExternal(in);
     }
     
     public XGroupReservation(XOffering offering, StudentGroupReservation reservation) {
@@ -80,5 +92,33 @@ public class XGroupReservation extends XReservation {
 	@Override
 	public boolean mustBeUsed() {
 		return true;
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    	super.readExternal(in);
+    	iGroup = (String)in.readObject();
+    	iLimit = in.readInt();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeObject(iGroup);
+		out.writeInt(iLimit);
+	}
+	
+	public static class XCourseReservationSerializer implements Externalizer<XGroupReservation> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XGroupReservation object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XGroupReservation readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XGroupReservation(input);
+		}
 	}
 }

@@ -19,10 +19,18 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Date;
 
-public class XApproval implements Serializable {
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
+
+@SerializeWith(XApproval.XApprovalSerializer.class)
+public class XApproval implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	
 	private String iExternalId = null;
@@ -33,6 +41,10 @@ public class XApproval implements Serializable {
 		iExternalId = externalId;
 		iTimeStamp = timeStamp;
 		iName = name;
+	}
+	
+	public XApproval(ObjectInput in) throws IOException, ClassNotFoundException {
+		readExternal(in);
 	}
 	
 	public XApproval(String[] approval) {
@@ -46,5 +58,35 @@ public class XApproval implements Serializable {
 	public Date getTimeStamp() { return iTimeStamp; }
 	
 	public String getName() { return iName; }
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iExternalId = (String)in.readObject();
+		iTimeStamp = (in.readBoolean() ? new Date(in.readLong()) : null);
+		iName = (String)in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(iExternalId);
+		out.writeBoolean(iTimeStamp != null);
+		if (iTimeStamp != null)
+			out.writeLong(iTimeStamp.getTime());
+		out.writeObject(iName);
+	}
+	
+	public static class XApprovalSerializer implements Externalizer<XApproval> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XApproval object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XApproval readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XApproval(input);
+		}
+	}
 
 }

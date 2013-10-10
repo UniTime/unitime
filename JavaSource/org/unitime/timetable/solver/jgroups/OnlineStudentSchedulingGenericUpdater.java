@@ -52,11 +52,11 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 	private AtomicBoolean iMaster = new AtomicBoolean(false);
 	private MasterAcquiringThread iMasterThread;
 
-	public OnlineStudentSchedulingGenericUpdater(JChannel channel, OnlineStudentSchedulingContainerRemote container) {
+	public OnlineStudentSchedulingGenericUpdater(JChannel channel, LockService lockService, OnlineStudentSchedulingContainerRemote container) {
 		super();
 		iChannel = channel;
 		iContainer = container;
-		iLockService = new LockService(channel);
+		iLockService = lockService;
 		setDaemon(true);
 		setName("Updater[generic]");
 		iSleepTimeInSeconds = Long.parseLong(ApplicationProperties.getProperty("unitime.sectioning.queue.loadInterval", "300"));

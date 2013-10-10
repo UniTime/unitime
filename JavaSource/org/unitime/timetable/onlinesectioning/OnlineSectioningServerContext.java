@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning;
 
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jgroups.blocks.locking.LockService;
 
 public interface OnlineSectioningServerContext {
 	
@@ -28,4 +29,6 @@ public interface OnlineSectioningServerContext {
 	public boolean isWaitTillStarted();
 	
 	public EmbeddedCacheManager getCacheManager();
+	
+	public LockService getLockService();
 }

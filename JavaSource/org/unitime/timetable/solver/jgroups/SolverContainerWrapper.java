@@ -70,13 +70,17 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
 			List<Address> senders = new ArrayList<Address>();
 			for (Rsp<Boolean> rsp : ret) {
-				if (rsp.getValue())
+				if (rsp != null && rsp.getValue())
 					senders.add(rsp.getSender());
 			}
-			if (!senders.isEmpty())
-				return iContainer.createProxy(ToolBox.random(senders), user);
-			else
+			if (senders.isEmpty())
 				return null;
+			else if (senders.size() == 1)
+				return iContainer.createProxy(senders.get(0), user);
+			else if (iContainer instanceof ReplicatedSolverContainer)
+				return ((ReplicatedSolverContainer<T>)iContainer).createProxy(senders, user);
+			else
+				return iContainer.createProxy(ToolBox.random(senders), user);
 		} catch (Exception e) {
 			sLog.error("Failed to retrieve solver " + user + ": " + e.getMessage(), e);
 		}

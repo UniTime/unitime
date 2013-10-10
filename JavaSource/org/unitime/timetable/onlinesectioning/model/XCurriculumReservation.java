@@ -19,13 +19,19 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.PosMajor;
 
+@SerializeWith(XCurriculumReservation.XCurriculumReservationSerializer.class)
 public class XCurriculumReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private int iLimit;
@@ -35,6 +41,11 @@ public class XCurriculumReservation extends XReservation {
     
     public XCurriculumReservation() {
     	super();
+    }
+    
+    public XCurriculumReservation(ObjectInput in) throws IOException, ClassNotFoundException {
+    	super();
+    	readExternal(in);
     }
     
     public XCurriculumReservation(XOffering offering, CurriculumReservation reservation) {
@@ -134,5 +145,51 @@ public class XCurriculumReservation extends XReservation {
         return getMajors().isEmpty();
     }
     
+    @Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    	super.readExternal(in);
+    	iAcadArea = (String)in.readObject();
+    	
+    	int nrClassifications = in.readInt();
+    	iClassifications.clear();
+    	for (int i = 0; i < nrClassifications; i++)
+    		iClassifications.add((String)in.readObject());
+    	
+    	int nrMajors = in.readInt();
+    	iMajors.clear();
+    	for (int i = 0; i < nrMajors; i++)
+    		iMajors.add((String)in.readObject());
+    	
+    	iLimit = in.readInt();
+	}
 
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeObject(iAcadArea);
+		
+		out.writeInt(iClassifications.size());
+		for (String clasf: iClassifications)
+			out.writeObject(clasf);
+		
+		out.writeInt(iMajors.size());
+		for (String major: iMajors)
+			out.writeObject(major);
+		
+		out.writeInt(iLimit);
+	}
+	
+	public static class XCurriculumReservationSerializer implements Externalizer<XCurriculumReservation> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XCurriculumReservation object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XCurriculumReservation readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XCurriculumReservation(input);
+		}
+	}
 }

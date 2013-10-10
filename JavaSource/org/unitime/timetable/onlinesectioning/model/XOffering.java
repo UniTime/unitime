@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,6 +48,8 @@ import net.sf.cpsolver.studentsct.model.Subpart;
 import net.sf.cpsolver.studentsct.reservation.DummyReservation;
 import net.sf.cpsolver.studentsct.reservation.GroupReservation;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.CurriculumReservation;
@@ -54,7 +60,8 @@ import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
-public class XOffering implements Serializable {
+@SerializeWith(XOffering.XOfferingSerializer.class)
+public class XOffering implements Serializable, Externalizable {
     private static final long serialVersionUID = 1L;
 	private Long iUniqueId = null;
     private String iName = null;
@@ -63,6 +70,10 @@ public class XOffering implements Serializable {
     private List<XReservation> iReservations = new ArrayList<XReservation>();
 
     public XOffering() {
+    }
+    
+    public XOffering(ObjectInput in) throws IOException, ClassNotFoundException {
+    	readExternal(in);
     }
     
     public XOffering(InstructionalOffering offering, OnlineSectioningHelper helper) {
@@ -598,4 +609,74 @@ public class XOffering implements Serializable {
 		}
 		return clonedCourse;
     }
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iUniqueId = in.readLong();
+		iName = (String)in.readObject();
+		
+		int nrConfigs = in.readInt();
+		iConfigs.clear();
+		for (int i = 0; i < nrConfigs; i++)
+			iConfigs.add(new XConfig(in));
+		
+		int nrCourses = in.readInt();
+		for (int i = 0; i < nrCourses; i++)
+			iCourses.add(new XCourse(in));
+		
+		int nrReservations = in.readInt();
+		for (int i = 0; i < nrReservations; i++) {
+			switch (XReservationType.values()[in.readInt()]) {
+			case Course:
+				iReservations.add(new XCourseReservation(in));
+				break;
+			case Curriculum:
+				iReservations.add(new XCurriculumReservation(in));
+				break;
+			case Dummy:
+				iReservations.add(new XDummyReservation(in));
+				break;
+			case Group:
+				iReservations.add(new XGroupReservation(in));
+				break;
+			case Individual:
+				iReservations.add(new XIndividualReservation(in));
+				break;
+			}
+		}
+	}	
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeLong(iUniqueId);
+		out.writeObject(iName);
+		
+		out.writeInt(iConfigs.size());
+		for (XConfig config: iConfigs)
+			config.writeExternal(out);
+		
+		out.writeInt(iCourses.size());
+		for (XCourse course: iCourses)
+			course.writeExternal(out);
+		
+		out.writeInt(iReservations.size());
+		for (XReservation reservation: iReservations) {
+			out.writeInt(reservation.getType().ordinal());
+			reservation.writeExternal(out);
+		}
+	}
+	
+	public static class XOfferingSerializer implements Externalizer<XOffering> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XOffering object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XOffering readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XOffering(input);
+		}
+	}
 }

@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -133,7 +134,30 @@ public class ManageSolversAction extends Action {
         
         if ("Unload".equals(op) && request.getParameter("onlineId")!=null) {
         	String id = request.getParameter("onlineId");
-        	solverServerService.getOnlineStudentSchedulingContainer().unloadSolver(id);
+        	if (request.getParameter("host") != null) {
+        		SolverServer server = solverServerService.getServer(request.getParameter("host"));
+        		if (server != null) {
+        			server.getOnlineStudentSchedulingContainer().unloadSolver(id);
+        		} else {
+        			solverServerService.getOnlineStudentSchedulingContainer().unloadSolver(id);
+        		}
+        	} else {
+        		solverServerService.getOnlineStudentSchedulingContainer().unloadSolver(id);
+        	}
+        }
+        
+        if ("Unmaster".equals(op) && request.getParameter("onlineId")!=null) {
+        	String id = request.getParameter("onlineId");
+        	if (request.getParameter("host") != null) {
+        		SolverServer server = solverServerService.getServer(request.getParameter("host"));
+        		if (server != null) {
+        			OnlineSectioningServer solver = server.getOnlineStudentSchedulingContainer().getSolver(id);
+        			if (solver != null) solver.releaseMasterLockIfHeld();
+        		}
+        	} else {
+        		OnlineSectioningServer solver = solverServerService.getOnlineStudentSchedulingContainer().getSolver(id);
+        		if (solver != null) solver.releaseMasterLockIfHeld();
+        	}
         }
         
         if ("Deselect".equals(op)) {
@@ -706,7 +730,8 @@ public class ManageSolversAction extends Action {
                
                int nrLines = 0;
                
-               for (SolverServer server: solverServerService.getServers(true)) {
+               List<SolverServer> servers = solverServerService.getServers(true);
+               for (SolverServer server: servers) {
                    for (String sessionId : server.getOnlineStudentSchedulingContainer().getSolvers()) {
                 	   OnlineSectioningServer solver = server.getOnlineStudentSchedulingContainer().getSolver(sessionId);
                 	   if (solver==null) continue;
@@ -727,15 +752,26 @@ public class ManageSolversAction extends Action {
                        Date loaded = new Date(solver.getConfig().getPropertyLong("General.StartUpDate", 0));
 
                        String op = "";
-                       op += "<input type=\"button\" value=\"Shutdown\" onClick=\"" +
-                       			"if (confirm('Do you really want to shutdown this server?')) " +
-                       			"document.location='manageSolvers.do?op=Unload&onlineId=" + sessionId + "';" + 
-                       			" event.cancelBubble=true;\">";
+                       if (solver.isMaster() && servers.size() > 1) {
+                           op += "<input type=\"button\" value=\"Shutdown All\" onClick=\"" +
+                        			"if (confirm('Do you really want to shutdown this server?')) " +
+                        			"document.location='manageSolvers.do?op=Unload&onlineId=" + sessionId + "';" + 
+                        			" event.cancelBubble=true;\">&nbsp;&nbsp;";
+                           op += "<input type=\"button\" value=\"Un-Master\" onClick=\"" +
+                         			"if (confirm('Do you really want to un-master this server?')) " +
+                         			"document.location='manageSolvers.do?op=Unmaster&onlineId=" + sessionId + "&host=" + server.getHost() + "';" + 
+                         			" event.cancelBubble=true;\">";
+                       } else {
+                           op += "<input type=\"button\" value=\"Shutdown\" onClick=\"" +
+                        			"if (confirm('Do you really want to shutdown this server?')) " +
+                        			"document.location='manageSolvers.do?op=Unload&onlineId=" + sessionId + "&host=" + server.getHost() + "';" + 
+                        			" event.cancelBubble=true;\">";
+                       }
                        
                        webTable.addLine(null, new String[] {
                                    (loaded.getTime() <= 0 ? "N/A" : sDF.format(loaded)),
                                    sessionLabel,
-                                   solver.getHost(),
+                                   solver.getHost() + (solver.isMaster() ? " (master)" : ""),
                                    mode,
                                    (assigned==null?"N/A":assigned),
                                    (totVal==null?"N/A":totVal),

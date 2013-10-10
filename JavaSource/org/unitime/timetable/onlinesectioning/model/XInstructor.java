@@ -19,11 +19,18 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.DepartmentalInstructor;
 
-public class XInstructor implements Serializable {
+@SerializeWith(XInstructor.XInstructorSerializer.class)
+public class XInstructor implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iUniqueId;
 	private String iExternalId;
@@ -31,6 +38,10 @@ public class XInstructor implements Serializable {
 	private String iEmail;
 	
 	public XInstructor() {}
+	
+	public XInstructor(ObjectInput in) throws IOException, ClassNotFoundException {
+		readExternal(in);
+	}
 	
 	public XInstructor(DepartmentalInstructor instructor, String nameFormat) {
 		iUniqueId = instructor.getUniqueId();
@@ -77,4 +88,34 @@ public class XInstructor implements Serializable {
     public int hashCode() {
         return new Long(getIntructorId()).hashCode();
     }
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iUniqueId = in.readLong();
+		iExternalId = (String)in.readObject();
+		iName = (String)in.readObject();
+		iEmail = (String)in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeLong(iUniqueId);
+		out.writeObject(iExternalId);
+		out.writeObject(iName);
+		out.writeObject(iEmail);
+	}
+	
+	public static class XInstructorSerializer implements Externalizer<XInstructor> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XInstructor object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XInstructor readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XInstructor(input);
+		}
+	}
 }

@@ -19,17 +19,26 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 
+import org.infinispan.marshall.Externalizer;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
-public class XStudentId implements Serializable, Comparable<XStudentId> {
+public class XStudentId implements Serializable, Comparable<XStudentId>, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iStudentId;
     private String iExternalId = null, iName = null;
 
     public XStudentId() {}
+    
+    public XStudentId(ObjectInput in) throws IOException, ClassNotFoundException {
+    	readExternal(in);
+    }
 
     public XStudentId(Student student, OnlineSectioningHelper helper) {
     	iStudentId = student.getUniqueId();
@@ -88,4 +97,33 @@ public class XStudentId implements Serializable, Comparable<XStudentId> {
     public String toString() {
         return getName();
     }
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iStudentId = in.readLong();
+		iExternalId = (String)in.readObject();
+		iName = (String)in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeLong(iStudentId);
+		out.writeObject(iExternalId);
+		out.writeObject(iName);
+	}
+	
+	public static class XStudentIdSerializer implements Externalizer<XStudentId> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XStudentId object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XStudentId readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XStudentId(input);
+		}
+		
+	}
 }

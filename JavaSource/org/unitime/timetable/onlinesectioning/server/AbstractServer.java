@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
@@ -80,6 +81,8 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	private HashSet<CacheElement<Long>> iOfferingsToPersistExpectedSpaces = new HashSet<CacheElement<Long>>();
 	private static ThreadLocal<LinkedList<OnlineSectioningHelper>> sHelper = new ThreadLocal<LinkedList<OnlineSectioningHelper>>();
 	
+	private MasterAcquiringThread iMasterThread;
+	
 	public AbstractServer(OnlineSectioningServerContext context) throws SectioningException {
 		iConfig = new ServerConfig();
 		iDistanceMetric = new DistanceMetric(iConfig);
@@ -102,6 +105,13 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	}
 	
 	protected void load(OnlineSectioningServerContext context) throws SectioningException {
+		if (context.getLockService() != null) {
+			iMasterThread = new MasterAcquiringThread(context);
+			iMasterThread.start();
+		}
+	}
+		
+	protected void loadOnMaster(OnlineSectioningServerContext context) throws SectioningException {
 		try {
 			final OnlineSectioningLog.Entity user = OnlineSectioningLog.Entity.newBuilder()
 					.setExternalId(StudentClassEnrollment.SystemChange.SYSTEM.name())
@@ -146,6 +156,17 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			if (t instanceof SectioningException) throw (SectioningException)t;
 			throw new SectioningException(MSG.exceptionUnknown(t.getMessage()), t);
 		}
+	}
+	
+	@Override
+	public boolean isMaster() {
+		return (iMasterThread != null ? iMasterThread.isMaster() : true);
+	}
+	
+	@Override
+	public void releaseMasterLockIfHeld() {
+		if (iMasterThread != null)
+			iMasterThread.release();
 	}
 	
 	@Override
@@ -315,6 +336,8 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 				iExecutorQueue.notify();
 			}
 		}
+		if (iMasterThread != null)
+			iMasterThread.dispose();
 	}
 
 	@Override
@@ -472,5 +495,67 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	@Override
 	public XEnrollments getEnrollments(Long offeringId) {
 		return new XEnrollments(offeringId, getRequests(offeringId));
+	}
+	
+	private class MasterAcquiringThread extends Thread {
+		private java.util.concurrent.locks.Lock iLock;
+		private AtomicBoolean iMaster = new AtomicBoolean(false);
+		private boolean iStop = false;
+		private OnlineSectioningServerContext iContext;
+		
+		private MasterAcquiringThread(OnlineSectioningServerContext context) {
+			iContext = context;
+			setName("AcquiringMasterLock[" + getAcademicSession() + "]");
+			setDaemon(true);
+			iLock = context.getLockService().getLock(getAcademicSession().toCompactString() + "[master]");
+		}
+		
+		public boolean isMaster() {
+			return iMaster.get();
+		}
+		
+		@Override
+		public void run() {
+			if (iLock.tryLock()) {
+				iMaster.set(true);
+				loadOnMaster(iContext);
+			}
+			while (!iStop) {
+				try {
+					if (!iMaster.get()) {
+						iLog.info("Waiting for a master lock...");
+						iLock.lockInterruptibly();
+					}
+					iLog.info("I am the master.");
+					synchronized (iMaster) {
+						iMaster.set(true);
+						iMaster.wait();
+					}
+					if (!iMaster.get()) {
+						iLock.unlock();
+						iLog.info("I am no longer the master.");
+					}
+				} catch (InterruptedException e) {
+					
+				}
+			}
+			iLog.info("No longer looking for a master.");
+		}
+		
+		public boolean release() {
+			if (iMaster.compareAndSet(true, false)) {
+				synchronized (iMaster) {
+					iMaster.notify();
+				}
+				return true;
+			}
+			return false;
+		}
+		
+		public void dispose() {
+			iStop = true;
+			if (!release())
+				interrupt();
+		}
 	}
 }
