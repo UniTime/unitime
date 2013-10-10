@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,13 +33,16 @@ import java.util.TreeSet;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Subpart;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
-public class XConfig implements Serializable, Comparable<XConfig> {
+@SerializeWith(XConfig.XConfigSerializer.class)
+public class XConfig implements Serializable, Comparable<XConfig>, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iUniqueId = null;
     private String iName = null;
@@ -44,6 +51,10 @@ public class XConfig implements Serializable, Comparable<XConfig> {
     private List<XSubpart> iSubparts = new ArrayList<XSubpart>();
 
     public XConfig() {
+    }
+    
+    public XConfig(ObjectInput in) throws IOException, ClassNotFoundException {
+    	readExternal(in);
     }
 
     public XConfig(InstrOfferingConfig config, OnlineSectioningHelper helper) {
@@ -157,6 +168,45 @@ public class XConfig implements Serializable, Comparable<XConfig> {
 			
 			return Double.compare(a.getSubpartId(), b.getSubpartId());
 		}		
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iUniqueId = in.readLong();
+		iName = (String)in.readObject();
+		iOfferingId = in.readLong();
+		iLimit = in.readInt();
+		
+		int nrSubparts = in.readInt();
+		iSubparts.clear();
+		for (int i = 0; i < nrSubparts; i++)
+			iSubparts.add(new XSubpart(in));
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeLong(iUniqueId);
+		out.writeObject(iName);
+		out.writeLong(iOfferingId);
+		out.writeInt(iLimit);
+		
+		out.writeInt(iSubparts.size());
+		for (XSubpart subpart: iSubparts)
+			subpart.writeExternal(out);
+	}
+	
+	public static class XConfigSerializer implements Externalizer<XConfig> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XConfig object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XConfig readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XConfig(input);
+		}
 	}
 
 }

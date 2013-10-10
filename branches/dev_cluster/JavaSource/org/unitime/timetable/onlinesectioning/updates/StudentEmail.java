@@ -72,12 +72,15 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
 
+@CheckMaster(Master.REQUIRED)
 public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
@@ -175,53 +178,75 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						
 			boolean ret = false;
 			
-			helper.beginTransaction();
-			try {
-				org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
-				if (dbStudent != null && dbStudent.getEmail() != null && !dbStudent.getEmail().isEmpty()) {
-					action.getStudentBuilder().setName(dbStudent.getEmail());
-					boolean emailEnabled = true;
-					StudentSectioningStatus status = dbStudent.getSectioningStatus();
-					if (status == null) status = dbStudent.getSession().getDefaultSectioningStatus();
-					if (status != null && !status.hasOption(StudentSectioningStatus.Option.email)) {
-						emailEnabled = false;
-					}
-					
-					if (emailEnabled) {
-						final String html = generateMessage(dbStudent, server, helper);
-						if (html != null) {
-							Email email = Email.createEmail();
+			org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
+			if (dbStudent != null && dbStudent.getEmail() != null && !dbStudent.getEmail().isEmpty()) {
+				action.getStudentBuilder().setName(dbStudent.getEmail());
+				boolean emailEnabled = true;
+				StudentSectioningStatus status = dbStudent.getSectioningStatus();
+				if (status == null) status = dbStudent.getSession().getDefaultSectioningStatus();
+				if (status != null && !status.hasOption(StudentSectioningStatus.Option.email)) {
+					emailEnabled = false;
+				}
+				
+				if (emailEnabled) {
+					final String html = generateMessage(dbStudent, server, helper);
+					if (html != null) {
+						Email email = Email.createEmail();
 
-							email.addRecipient(dbStudent.getEmail(), dbStudent.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
-							
-							if (getCC() != null && !getCC().isEmpty()) {
-								helper.logOption("cc", getCC());
-								for (StringTokenizer s = new StringTokenizer(getCC(), ",;"); s.hasMoreTokens(); ) {
-									email.addRecipientCC(s.nextToken(), null);
-								}
+						email.addRecipient(dbStudent.getEmail(), dbStudent.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
+						
+						if (getCC() != null && !getCC().isEmpty()) {
+							helper.logOption("cc", getCC());
+							for (StringTokenizer s = new StringTokenizer(getCC(), ",;"); s.hasMoreTokens(); ) {
+								email.addRecipientCC(s.nextToken(), null);
+							}
+						}
+						
+						if (getEmailSubject() != null && !getEmailSubject().isEmpty()) {
+							email.setSubject(getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
+							helper.logOption("subject", getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
+						} else
+							email.setSubject(getSubject().replace("%session%", server.getAcademicSession().toString()));
+						
+						if (getMessage() != null && !getMessage().isEmpty())
+							helper.logOption("message", getMessage());
+						
+						if (helper.getUser() != null && getOldEnrollment() == null && getOldStudent() == null) {
+							TimetableManager manager = (TimetableManager)helper.getHibSession().createQuery("from TimetableManager where externalUniqueId = :id").setString("id", helper.getUser().getExternalId()).uniqueResult();
+							if (manager != null && manager.getEmailAddress() != null) {
+								email.setReplyTo(manager.getEmailAddress(), manager.getName());
+								helper.logOption("reply-to", manager.getName() + " <" + manager.getEmailAddress() + ">");
+							}
+						}
+						
+						final StringWriter buffer = new StringWriter();
+						PrintWriter out = new PrintWriter(buffer);
+						generateTimetable(out, server, helper);
+						out.flush(); out.close();							
+						email.addAttachement(new DataSource() {
+							@Override
+							public OutputStream getOutputStream() throws IOException {
+								throw new IOException("No output stream.");
 							}
 							
-							if (getEmailSubject() != null && !getEmailSubject().isEmpty()) {
-								email.setSubject(getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
-								helper.logOption("subject", getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
-							} else
-								email.setSubject(getSubject().replace("%session%", server.getAcademicSession().toString()));
-							
-							if (getMessage() != null && !getMessage().isEmpty())
-								helper.logOption("message", getMessage());
-							
-							if (helper.getUser() != null && getOldEnrollment() == null && getOldStudent() == null) {
-								TimetableManager manager = (TimetableManager)helper.getHibSession().createQuery("from TimetableManager where externalUniqueId = :id").setString("id", helper.getUser().getExternalId()).uniqueResult();
-								if (manager != null && manager.getEmailAddress() != null) {
-									email.setReplyTo(manager.getEmailAddress(), manager.getName());
-									helper.logOption("reply-to", manager.getName() + " <" + manager.getEmailAddress() + ">");
-								}
+							@Override
+							public String getName() {
+								return "message.html";
 							}
 							
-							final StringWriter buffer = new StringWriter();
-							PrintWriter out = new PrintWriter(buffer);
-							generateTimetable(out, server, helper);
-							out.flush(); out.close();							
+							@Override
+							public InputStream getInputStream() throws IOException {
+								return new ByteArrayInputStream(
+										html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()).getBytes("UTF-8"));
+							}
+							
+							@Override
+							public String getContentType() {
+								return "text/html; charset=UTF-8";
+							}
+						});
+						
+						if (iTimetableImage != null) {
 							email.addAttachement(new DataSource() {
 								@Override
 								public OutputStream getOutputStream() throws IOException {
@@ -230,22 +255,24 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 								
 								@Override
 								public String getName() {
-									return "message.html";
+									return "timetable.png";
 								}
 								
 								@Override
 								public InputStream getInputStream() throws IOException {
-									return new ByteArrayInputStream(
-											html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()).getBytes("UTF-8"));
+									return new ByteArrayInputStream(iTimetableImage);
 								}
 								
 								@Override
 								public String getContentType() {
-									return "text/html; charset=UTF-8";
+									return "image/png";
 								}
 							});
-							
-							if (iTimetableImage != null) {
+						}
+						
+						try {
+							final String calendar = CalendarExport.getCalendar(server, student);
+							if (calendar != null)
 								email.addAttachement(new DataSource() {
 									@Override
 									public OutputStream getOutputStream() throws IOException {
@@ -254,85 +281,54 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 									
 									@Override
 									public String getName() {
-										return "timetable.png";
+										return "timetable.ics";
 									}
 									
 									@Override
 									public InputStream getInputStream() throws IOException {
-										return new ByteArrayInputStream(iTimetableImage);
+										return new ByteArrayInputStream(calendar.getBytes("UTF-8"));
 									}
 									
 									@Override
 									public String getContentType() {
-										return "image/png";
+										return "text/calendar; charset=UTF-8";
 									}
 								});
-							}
-							
-							try {
-								final String calendar = CalendarExport.getCalendar(server, student);
-								if (calendar != null)
-									email.addAttachement(new DataSource() {
-										@Override
-										public OutputStream getOutputStream() throws IOException {
-											throw new IOException("No output stream.");
-										}
-										
-										@Override
-										public String getName() {
-											return "timetable.ics";
-										}
-										
-										@Override
-										public InputStream getInputStream() throws IOException {
-											return new ByteArrayInputStream(calendar.getBytes("UTF-8"));
-										}
-										
-										@Override
-										public String getContentType() {
-											return "text/calendar; charset=UTF-8";
-										}
-									});
-							} catch (IOException e) {
-								helper.warn("Unable to create calendar for student " + student.getStudentId() + ":" + e.getMessage());
-							}
-							
-							String lastMessageId = sLastMessage.get(student.getStudentId());
-							if (lastMessageId != null)
-								email.setInReplyTo(lastMessageId);
-							
-							email.setHTML(html);
-							
-							helper.logOption("email", html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()));
-
-							email.send();
-							
-							String messageId = email.getMessageId();
-							if (messageId != null)
-								sLastMessage.put(student.getStudentId(), messageId);
-							
-							Date ts = new Date();
-							dbStudent.setScheduleEmailedDate(ts);
-							student.setEmailTimeStamp(ts);
-							
-							helper.getHibSession().saveOrUpdate(dbStudent);
-							
-							server.update(student, false);
-							
-							ret = true;
-						} else {
-							helper.info("Email notification failed to generate for student " + student.getName() + ".");
+						} catch (IOException e) {
+							helper.warn("Unable to create calendar for student " + student.getStudentId() + ":" + e.getMessage());
 						}
+						
+						String lastMessageId = sLastMessage.get(student.getStudentId());
+						if (lastMessageId != null)
+							email.setInReplyTo(lastMessageId);
+						
+						email.setHTML(html);
+						
+						helper.logOption("email", html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()));
+
+						email.send();
+						
+						String messageId = email.getMessageId();
+						if (messageId != null)
+							sLastMessage.put(student.getStudentId(), messageId);
+						
+						Date ts = new Date();
+						dbStudent.setScheduleEmailedDate(ts);
+						student.setEmailTimeStamp(ts);
+						
+						helper.getHibSession().saveOrUpdate(dbStudent);
+						
+						server.update(student, false);
+						
+						ret = true;
 					} else {
-						helper.info("Email notification is disabled for student " + student.getName() + ".");
+						helper.info("Email notification failed to generate for student " + student.getName() + ".");
 					}
 				} else {
-					helper.info("Student " + student.getName() + " has no email address on file.");
+					helper.info("Email notification is disabled for student " + student.getName() + ".");
 				}
-				helper.commitTransaction();
-			} catch (Exception e) {
-				helper.rollbackTransaction();
-				throw e;
+			} else {
+				helper.info("Student " + student.getName() + " has no email address on file.");
 			}
 			
 			return ret;

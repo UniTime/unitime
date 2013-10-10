@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -32,6 +35,8 @@ import java.util.TreeSet;
 import net.sf.cpsolver.studentsct.model.Choice;
 import net.sf.cpsolver.studentsct.model.Course;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
@@ -44,6 +49,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+@SerializeWith(XCourseRequest.XCourseRequestSerializer.class)
 public class XCourseRequest extends XRequest {
 	private static final long serialVersionUID = 1L;
 	private List<XCourseId> iCourseIds = new ArrayList<XCourseId>();
@@ -54,6 +60,10 @@ public class XCourseRequest extends XRequest {
     private Map<XCourseId, OnlineSectioningLog.CourseRequestOption> iOptions = null;
 
     public XCourseRequest() {}
+    
+    public XCourseRequest(ObjectInput in) throws IOException, ClassNotFoundException {
+    	readExternal(in);
+    }
     
     public XCourseRequest(CourseDemand demand, OnlineSectioningHelper helper) {
     	super(demand);
@@ -203,6 +213,110 @@ public class XCourseRequest extends XRequest {
     	}
     	if (isWaitlist())
     		ret += " (w)";
+    	ret += " (" + getRequestId() + ")";
     	return ret;
     }
+    
+    @Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    	super.readExternal(in);
+    	
+    	int nrCourses = in.readInt();
+    	iCourseIds.clear();
+    	for (int i = 0; i < nrCourses; i++)
+    		iCourseIds.add(new XCourseId(in));
+    	
+    	iWaitlist = in.readBoolean();
+    	iTimeStamp = (in.readBoolean() ? new Date(in.readLong()) : null);
+    	iEnrollment = (in.readBoolean() ? new XEnrollment(in) : null);
+    	
+    	int nrWaitlists = in.readInt();
+    	if (nrWaitlists == 0)
+    		iSectionWaitlist = null;
+    	else {
+    		iSectionWaitlist = new HashMap<XCourseId, List<XWaitListedSection>>();
+    		for (int i = 0; i < nrWaitlists; i++) {
+    			Long courseId = in.readLong();
+				int nrSections = in.readInt();
+				List<XWaitListedSection> sections = new ArrayList<XWaitListedSection>(nrSections);
+				for (int j = 0; j < nrSections; j++)
+					sections.add(new XWaitListedSection(in));
+				for (XCourseId course: iCourseIds)
+    				if (course.getCourseId().equals(courseId)) {
+    					iSectionWaitlist.put(course, sections); break;
+    				}
+    		}
+    	}
+    	
+        int nrOptions = in.readInt();
+        if (nrOptions == 0)
+        	iOptions = null;
+        else {
+        	iOptions = new HashMap<XCourseId, OnlineSectioningLog.CourseRequestOption>();
+        	for (int i = 0; i < nrOptions; i++) {
+        		Long courseId = in.readLong();
+        		byte[] data = new byte[in.readInt()];
+        		in.read(data);
+				try {
+					for (XCourseId course: iCourseIds)
+	    				if (course.getCourseId().equals(courseId)) {
+	    					iOptions.put(course, OnlineSectioningLog.CourseRequestOption.parseFrom(data));
+	    					break;
+	    				}
+				} catch (InvalidProtocolBufferException e) { }
+        	}
+        }
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		
+		out.writeInt(iCourseIds.size());
+		for (XCourseId course: iCourseIds)
+			course.writeExternal(out);
+		
+		out.writeBoolean(iWaitlist);
+		
+		out.writeBoolean(iTimeStamp != null);
+		if (iTimeStamp != null)
+			out.writeLong(iTimeStamp.getTime());
+		
+		out.writeBoolean(iEnrollment != null);
+		if (iEnrollment != null)
+			iEnrollment.writeExternal(out);
+
+		out.writeInt(iSectionWaitlist == null ? 0 : iSectionWaitlist.size());
+		if (iSectionWaitlist != null)
+			for (Map.Entry<XCourseId, List<XWaitListedSection>> entry: iSectionWaitlist.entrySet()) {
+				out.writeLong(entry.getKey().getCourseId());
+				out.writeInt(entry.getValue().size());
+				for (XWaitListedSection section: entry.getValue()) {
+					section.writeExternal(out);
+				}
+			}
+		
+		out.writeInt(iOptions == null ? 0 : iOptions.size());
+		if (iOptions != null)
+			for (Map.Entry<XCourseId, OnlineSectioningLog.CourseRequestOption> entry: iOptions.entrySet()) {
+				out.writeLong(entry.getKey().getCourseId());
+				byte[] value = entry.getValue().toByteArray();
+				out.writeInt(value.length);
+				out.write(value);
+			}
+	}
+	
+	public static class XCourseRequestSerializer implements Externalizer<XCourseRequest> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XCourseRequest object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XCourseRequest readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XCourseRequest(input);
+		}
+	}
 }

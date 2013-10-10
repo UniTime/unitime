@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jgroups.blocks.locking.LockService;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
@@ -95,6 +96,11 @@ public abstract class OnlineSectioningTestFwk {
 			@Override
 			public Long getAcademicSessionId() {
 				return session.getUniqueId();
+			}
+
+			@Override
+			public LockService getLockService() {
+				return null;
 			}
 		});
 	}

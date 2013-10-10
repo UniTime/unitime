@@ -19,8 +19,14 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import net.sf.cpsolver.studentsct.model.Course;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -28,6 +34,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 
+@SerializeWith(XCourse.XCourseSerializer.class)
 public class XCourse extends XCourseId {
 	private static final long serialVersionUID = 1L;
     private String iSubjectArea = null;
@@ -42,6 +49,10 @@ public class XCourse extends XCourseId {
 
     public XCourse() {
     	super();
+    }
+    
+    public XCourse(ObjectInput in) throws IOException, ClassNotFoundException {
+    	readExternal(in);
     }
     
     public XCourse(CourseOffering course, OnlineSectioningHelper helper) {
@@ -114,5 +125,59 @@ public class XCourse extends XCourseId {
 		if (iDetails == null && provider != null)
 			iDetails = provider.getDetails(session, getSubjectArea(), getCourseNumber());
 		return iDetails;
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		super.readExternal(in);
+		iSubjectArea = (String)in.readObject();
+		iCourseNumber = (String)in.readObject();
+		iDepartment = (String)in.readObject();
+		iConsentLabel = (String)in.readObject();
+		iConsentAbbv = (String)in.readObject();
+		iNote = (String)in.readObject();
+		iDetails = (String)in.readObject();
+		iLimit = in.readInt();
+		iProjected = in.readInt();
+		iWkEnroll = (in.readBoolean() ? in.readInt() : null);
+		iWkChange = (in.readBoolean() ? in.readInt() : null);
+		iWkDrop = (in.readBoolean() ? in.readInt() : null);
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeObject(iSubjectArea);
+		out.writeObject(iCourseNumber);
+		out.writeObject(iDepartment);
+		out.writeObject(iConsentLabel);
+		out.writeObject(iConsentAbbv);
+		out.writeObject(iNote);
+		out.writeObject(iDetails);
+		out.writeInt(iLimit);
+		out.writeInt(iProjected);
+		out.writeBoolean(iWkEnroll != null);
+		if (iWkEnroll != null)
+			out.writeInt(iWkEnroll);
+		out.writeBoolean(iWkChange != null);
+		if (iWkChange != null)
+			out.writeInt(iWkChange);
+		out.writeBoolean(iWkDrop != null);
+		if (iWkDrop != null)
+			out.writeInt(iWkDrop);
+	}
+	
+	public static class XCourseSerializer implements Externalizer<XCourse> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XCourse object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XCourse readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XCourse(input);
+		}
 	}
 }

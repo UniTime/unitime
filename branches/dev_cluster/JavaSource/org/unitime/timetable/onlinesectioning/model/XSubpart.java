@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -28,12 +32,15 @@ import java.util.List;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Subpart;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
-public class XSubpart implements Serializable {
+@SerializeWith(XSubpart.XSubpartSerializer.class)
+public class XSubpart implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private static DecimalFormat sF3Z = new DecimalFormat("000"); 
 	private Long iUniqueId = null;
@@ -46,6 +53,10 @@ public class XSubpart implements Serializable {
     private boolean iAllowOverlap = false;
 
     public XSubpart() {}
+    
+    public XSubpart(ObjectInput in) throws IOException, ClassNotFoundException {
+    	readExternal(in);
+    }
     
     public XSubpart(SchedulingSubpart subpart, CourseCreditUnitConfig credit, OnlineSectioningHelper helper) {
     	iUniqueId = subpart.getUniqueId();
@@ -150,6 +161,59 @@ public class XSubpart implements Serializable {
     public int hashCode() {
         return (int) (getSubpartId() ^ (getSubpartId() >>> 32));
     }
-    
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iUniqueId = in.readLong();
+		iInstructionalType = (String)in.readObject();
+		iName = (String)in.readObject();
+		
+		int nrSections = in.readInt();
+		iSections.clear();
+		for (int i = 0; i < nrSections; i++)
+			iSections.add(new XSection(in));
+		
+		iConfigId = in.readLong();
+		iParentId = in.readLong();
+		if (iParentId < 0) iParentId = null;
+		
+		iCreditAbbv = (String)in.readObject();
+		iCreditText = (String)in.readObject();
+		
+		iAllowOverlap = in.readBoolean();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeLong(iUniqueId);
+		out.writeObject(iInstructionalType);
+		out.writeObject(iName);
+		
+		out.writeInt(iSections.size());
+		for (XSection section: iSections)
+			section.writeExternal(out);
+		
+		out.writeLong(iConfigId);
+		out.writeLong(iParentId == null ? -1l : iParentId);
+		
+		out.writeObject(iCreditAbbv);
+		out.writeObject(iCreditText);
+		
+		out.writeBoolean(iAllowOverlap);
+	}
+
+	public static class XSubpartSerializer implements Externalizer<XSubpart> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XSubpart object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XSubpart readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XSubpart(input);
+		}
+	}
 
 }

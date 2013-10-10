@@ -19,8 +19,14 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.onlinesectioning.model.XOffering.SimpleReservation;
 
 import net.sf.cpsolver.studentsct.reservation.CourseReservation;
@@ -29,7 +35,8 @@ import net.sf.cpsolver.studentsct.reservation.GroupReservation;
 import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
 
-public class XReservationId implements Serializable {
+@SerializeWith(XReservationId.XReservationIdSerializer.class)
+public class XReservationId implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 
 	private XReservationType iType;
@@ -38,8 +45,18 @@ public class XReservationId implements Serializable {
 	
 	public XReservationId() {}
 	
+	public XReservationId(ObjectInput in) throws IOException, ClassNotFoundException {
+		readExternal(in);
+	}
+	
 	public XReservationId(XReservationType type, Long offeringId, Long reservationId) {
 		iType = type; iOfferingId = offeringId; iReservationId = reservationId;
+	}
+	
+	public XReservationId(XReservationId reservation) {
+		iType = reservation.getType();
+		iOfferingId = reservation.getOfferingId();
+		iReservationId = reservation.getReservationId();
 	}
 	
 	public XReservationId(Reservation reservation) {
@@ -75,4 +92,32 @@ public class XReservationId implements Serializable {
         if (o == null || !(o instanceof XReservationId)) return false;
         return getReservationId() == ((XReservationId)o).getReservationId() && getOfferingId().equals(((XReservationId)o).getOfferingId());
     }
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iType = XReservationType.values()[in.readInt()];
+		iOfferingId = in.readLong();
+		iReservationId = in.readLong();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeInt(iType.ordinal());
+		out.writeLong(iOfferingId);
+		out.writeLong(iReservationId);
+	}
+	
+	public static class XReservationIdSerializer implements Externalizer<XReservationId> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XReservationId object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XReservationId readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XReservationId(input);
+		}
+	}
 }

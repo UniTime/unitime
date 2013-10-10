@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +38,8 @@ import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.model.Section;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -41,7 +47,8 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
-public class XSection implements Serializable, Comparable<XSection> {
+@SerializeWith(XSection.XSectionSerializer.class)
+public class XSection implements Serializable, Comparable<XSection>, Externalizable {
     private static final long serialVersionUID = 1L;
 	private Long iUniqueId = null;
     private String iName = null;
@@ -58,6 +65,10 @@ public class XSection implements Serializable, Comparable<XSection> {
     private String iSubpartName = null;
 
     public XSection() {
+    }
+    
+    public XSection(ObjectInput in) throws IOException, ClassNotFoundException {
+    	readExternal(in);
     }
 
     public XSection(Class_ clazz, OnlineSectioningHelper helper) {
@@ -346,4 +357,83 @@ public class XSection implements Serializable, Comparable<XSection> {
         		getTime().toTimeLocation(),
         		rooms);
     }
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iUniqueId = in.readLong();
+		iName = (String)in.readObject();
+		
+		int nrNames = in.readInt();
+		iNameByCourse.clear();
+		for (int i = 0; i < nrNames; i++)
+			iNameByCourse.put(in.readLong(), (String)in.readObject());
+		
+		iSubpartId = in.readLong();
+		iParentId = in.readLong();
+		if (iParentId < 0) iParentId = null;
+		iLimit = in.readInt();
+		iNote = (String)in.readObject();
+		iTime = (in.readBoolean() ? new XTime(in) : null);
+		
+		int nrRooms = in.readInt();
+		iRooms.clear();
+		for (int i = 0; i < nrRooms; i++)
+			iRooms.add(new XRoom(in));
+		
+		int nrInstructors = in.readInt();
+		iInstructors.clear();
+		for (int i = 0; i < nrInstructors; i++)
+			iInstructors.add(new XInstructor(in));
+		
+		iAllowOverlap = in.readBoolean();
+		iInstructionalType = (String)in.readObject();
+		iSubpartName = (String)in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeLong(iUniqueId);
+		out.writeObject(iName);
+		
+		out.writeInt(iNameByCourse.size());
+		for (Map.Entry<Long, String> entry: iNameByCourse.entrySet()) {
+			out.writeLong(entry.getKey());
+			out.writeObject(entry.getValue());
+		}
+		
+		out.writeLong(iSubpartId);
+		out.writeLong(iParentId == null ? -1l : iParentId);
+		out.writeInt(iLimit);
+		out.writeObject(iNote);
+		
+		out.writeBoolean(iTime != null);
+		if (iTime != null)
+			iTime.writeExternal(out);
+		
+		out.writeInt(iRooms.size());
+		for (XRoom room: iRooms)
+			room.writeExternal(out);
+		
+		out.writeInt(iInstructors.size());
+		for (XInstructor instructor: iInstructors)
+			instructor.writeExternal(out);
+		
+		out.writeBoolean(iAllowOverlap);
+		out.writeObject(iInstructionalType);
+		out.writeObject(iSubpartName);
+	}
+	
+	public static class XSectionSerializer implements Externalizer<XSection> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XSection object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XSection readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XSection(input);
+		}
+	}
 }

@@ -17,16 +17,19 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.onlinesectioning.model;
+package org.unitime.timetable.solver.jgroups;
 
-import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Collection;
 
-public enum XReservationType implements Serializable {
-	None,
-	Individual,
-	Group,
-	Course,
-	Curriculum,
-	Dummy,
-	;
+import org.jgroups.Address;
+
+public interface ReplicatedSolverContainer<T> extends RemoteSolverContainer<T> {
+	
+	public Object dispatch(Collection<Address> addresses, String user, Method method, Object[] args) throws Exception;
+	
+	public T createProxy(Collection<Address> addresses, String user);
+	
+	public boolean hasMaster(String user);
+
 }

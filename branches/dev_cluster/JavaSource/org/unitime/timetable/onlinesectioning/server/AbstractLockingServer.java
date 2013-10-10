@@ -46,7 +46,7 @@ public abstract class AbstractLockingServer extends AbstractServer {
 	}
 	
 	@Override
-	public void load(OnlineSectioningServerContext context) {
+	protected void load(OnlineSectioningServerContext context) {
 		iMultiLock = new MultiLock(getAcademicSession());
 		super.load(context);
 	}
@@ -89,7 +89,7 @@ public abstract class AbstractLockingServer extends AbstractServer {
 			ids.add(-studentId);
 			if (offeringIds != null)
 				for (Long offeringId: offeringIds)
-					if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId))
+					if (!excludeLockedOfferings || !isOfferingLocked(offeringId))
 						ids.add(offeringId);
 			
 			XStudent student = getStudent(studentId);
@@ -98,7 +98,7 @@ public abstract class AbstractLockingServer extends AbstractServer {
 				for (XRequest r: student.getRequests()) {
 					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
 						Long offeringId = ((XCourseRequest)r).getEnrollment().getOfferingId();
-						if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId)) ids.add(offeringId);
+						if (!excludeLockedOfferings || !isOfferingLocked(offeringId)) ids.add(offeringId);
 					}
 				}
 		} finally {
@@ -112,7 +112,7 @@ public abstract class AbstractLockingServer extends AbstractServer {
 		Set<Long> ids = new HashSet<Long>();
 		iLock.readLock().lock();
 		try {
-			if (!excludeLockedOffering || !iOfferingLocks.containsKey(offeringId))
+			if (!excludeLockedOffering || !isOfferingLocked(offeringId))
 				ids.add(offeringId);
 			
 			if (studentIds != null)

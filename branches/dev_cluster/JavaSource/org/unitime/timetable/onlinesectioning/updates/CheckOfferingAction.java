@@ -58,9 +58,12 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.onlinesectioning.solver.ResectioningWeights;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 
+@CheckMaster(Master.REQUIRED)
 public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolean> implements HasCacheMode {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);

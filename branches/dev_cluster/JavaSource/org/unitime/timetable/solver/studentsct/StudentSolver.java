@@ -1013,6 +1013,15 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
             return ret.toByteArray();
         }
     }
+	
+	@Override
+	public boolean isMaster() {
+		return true;
+	}
+	
+	@Override
+	public void releaseMasterLockIfHeld() {
+	}
 
 	@Override
 	public Collection<XCourseRequest> getRequests(Long offeringId) {

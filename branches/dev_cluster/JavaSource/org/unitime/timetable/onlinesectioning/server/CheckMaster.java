@@ -17,16 +17,21 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.onlinesectioning.model;
+package org.unitime.timetable.onlinesectioning.server;
 
-import java.io.Serializable;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public enum XReservationType implements Serializable {
-	None,
-	Individual,
-	Group,
-	Course,
-	Curriculum,
-	Dummy,
-	;
+import java.lang.annotation.Retention;
+
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Inherited
+public @interface CheckMaster {
+	public enum Master { REQUIRED, AVOID }
+	Master value() default Master.AVOID;
 }

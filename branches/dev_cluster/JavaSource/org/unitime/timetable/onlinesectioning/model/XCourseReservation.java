@@ -19,9 +19,15 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseReservation;
 
-
+@SerializeWith(XCourseReservation.XCourseReservationSerializer.class)
 public class XCourseReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private XCourseId iCourseId;
@@ -29,6 +35,11 @@ public class XCourseReservation extends XReservation {
     
     public XCourseReservation() {
     	super();
+    }
+    
+    public XCourseReservation(ObjectInput in) throws IOException, ClassNotFoundException {
+    	super();
+    	readExternal(in);
     }
     
     public XCourseReservation(XOffering offering, CourseReservation reservation) {
@@ -88,11 +99,42 @@ public class XCourseReservation extends XReservation {
     }
         
     /**
-     * Check the area, classifications and majors
+     * Check the courses
      */
     @Override
     public boolean isApplicable(XStudent student) {
-        //FIXME
-        return false;
+    	for (XRequest request: student.getRequests()) {
+    		if (request instanceof XCourseRequest && ((XCourseRequest)request).getCourseIds().contains(iCourseId))
+    			return true;
+    	}
+    	return false;
     }
+    
+    @Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    	super.readExternal(in);
+    	iCourseId = new XCourseId(in);
+    	iLimit = in.readInt();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		iCourseId.writeExternal(out);
+		out.writeInt(iLimit);
+	}
+	
+	public static class XCourseReservationSerializer implements Externalizer<XCourseReservation> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XCourseReservation object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XCourseReservation readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XCourseReservation(input);
+		}
+	}
 }

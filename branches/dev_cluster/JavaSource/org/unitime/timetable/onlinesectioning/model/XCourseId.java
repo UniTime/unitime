@@ -19,15 +19,22 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Set;
 
 import net.sf.cpsolver.studentsct.model.Course;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.timetable.model.CourseOffering;
 
-public class XCourseId implements Serializable, Comparable<XCourseId> {
+@SerializeWith(XCourseId.XCourseIdSerializer.class)
+public class XCourseId implements Serializable, Comparable<XCourseId>, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iOfferingId;
 	private Long iCourseId;
@@ -37,6 +44,10 @@ public class XCourseId implements Serializable, Comparable<XCourseId> {
     private String iType = null;
 
 	public XCourseId() {}
+	
+	public XCourseId(ObjectInput in) throws IOException, ClassNotFoundException {
+		readExternal(in);
+	}
 	
 	public XCourseId(CourseOffering course) {
 		iOfferingId = course.getInstructionalOffering().getUniqueId();
@@ -56,6 +67,7 @@ public class XCourseId implements Serializable, Comparable<XCourseId> {
 		iOfferingId = course.getOfferingId();
 		iCourseId = course.getCourseId();
 		iCourseName = course.getCourseName();
+		iTitle = course.getTitle();
 	}
 	
 	public XCourseId(Course course) {
@@ -138,6 +150,40 @@ public class XCourseId implements Serializable, Comparable<XCourseId> {
 			return allowedCourseTypes != null && allowedCourseTypes.contains(getType());
 		} else {
 			return noCourseType;
+		}
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iOfferingId = in.readLong();
+		iCourseId = in.readLong();
+		iCourseName = (String)in.readObject();
+		iTitle = (String)in.readObject();
+		iHasUniqueName = in.readBoolean();
+		iType = (String)in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeLong(iOfferingId);
+		out.writeLong(iCourseId);
+		out.writeObject(iCourseName);
+		out.writeObject(iTitle);
+		out.writeBoolean(iHasUniqueName);
+		out.writeObject(iType);
+	}
+	
+	public static class XCourseIdSerializer implements Externalizer<XCourseId> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XCourseId object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XCourseId readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XCourseId(input);
 		}
 	}
 }

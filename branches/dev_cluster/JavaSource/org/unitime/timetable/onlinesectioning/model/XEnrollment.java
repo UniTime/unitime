@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -28,11 +31,14 @@ import java.util.Set;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Section;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
+@SerializeWith(XEnrollment.XEnrollmentSerializer.class)
 public class XEnrollment extends XCourseId implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private Long iStudentId = null;
@@ -42,7 +48,14 @@ public class XEnrollment extends XCourseId implements Serializable {
     private XApproval iApproval = null;
     private XReservationId iReservation = null;
 
-	public XEnrollment() {}
+	public XEnrollment() {
+		super();
+	}
+	
+	public XEnrollment(ObjectInput in) throws IOException, ClassNotFoundException {
+		super();
+		readExternal(in);
+	}
 	
 	public XEnrollment(Student student, CourseOffering course, OnlineSectioningHelper helper, Collection<StudentClassEnrollment> enrollments) {
 		super(course);
@@ -95,7 +108,14 @@ public class XEnrollment extends XCourseId implements Serializable {
 	
 	public XReservationId getReservation() { return iReservation; }
 
-	public void setReservation(XReservationId reservation) { iReservation = reservation; }
+	public void setReservation(XReservationId reservation) {
+		if (reservation == null)
+			iReservation = null;
+		else if (reservation instanceof XReservation)
+			iReservation = new XReservationId(reservation);
+		else
+			iReservation = reservation;
+	}
 	
 	public void setTimeStamp(Date ts) { iTimeStamp = ts; }
 
@@ -121,5 +141,60 @@ public class XEnrollment extends XCourseId implements Serializable {
 	@Override
 	public String toString() {
 		return getCourseName() + "/" + getSectionIds() + (getApproval() != null ? getReservation() != null ? " (ar)" : " (a)" : getReservation() != null ? " (r)" : ""); 
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		super.readExternal(in);
+		
+		iStudentId = in.readLong();
+		iConfigId = in.readLong();
+		
+		iSectionIds.clear();
+		int nrSections = in.readInt();
+		for (int i = 0; i < nrSections; i++)
+			iSectionIds.add(in.readLong());
+		
+		iTimeStamp = (in.readBoolean() ? new Date(in.readLong()) : null);
+		iApproval = (in.readBoolean() ? new XApproval(in) : null);
+		iReservation = (in.readBoolean() ? new XReservationId(in) : null);
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		
+		out.writeLong(iStudentId);
+		out.writeLong(iConfigId);
+		
+		out.writeInt(iSectionIds.size());
+		for (Long sectionId: iSectionIds)
+			out.writeLong(sectionId);
+		
+		out.writeBoolean(iTimeStamp != null);
+		if (iTimeStamp != null)
+			out.writeLong(iTimeStamp.getTime());
+		
+		out.writeBoolean(iApproval != null);
+		if (iApproval != null)
+			iApproval.writeExternal(out);
+		
+		out.writeBoolean(iReservation != null);
+		if (iReservation != null)
+			iReservation.writeExternal(out);
+	}
+	
+	public static class XEnrollmentSerializer implements Externalizer<XEnrollment> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XEnrollment object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XEnrollment readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XEnrollment(input);
+		}
 	}
 }

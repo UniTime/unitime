@@ -240,8 +240,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	
 	public List<SolverServer> getServers(boolean onlyAvailable) {
 		List<SolverServer> servers = new ArrayList<SolverServer>();
-		if (!onlyAvailable || isActive())
-			servers.add(this);
+		if (!onlyAvailable || isActive()) servers.add(this);
 		for (Address address: iChannel.getView().getMembers()) {
 			if (address.equals(iChannel.getAddress())) continue;
 			SolverServer server = crateServerProxy(address);

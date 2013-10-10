@@ -19,14 +19,20 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Set;
 
 import net.sf.cpsolver.studentsct.reservation.GroupReservation;
 
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.Student;
 
+@SerializeWith(XIndividualReservation.XIndividualReservationSerializer.class)
 public class XIndividualReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private Set<Long> iStudentIds = new HashSet<Long>();
@@ -34,6 +40,11 @@ public class XIndividualReservation extends XReservation {
     
     public XIndividualReservation() {
         super();
+    }
+    
+    public XIndividualReservation(ObjectInput in) throws IOException, ClassNotFoundException {
+    	super();
+    	readExternal(in);
     }
 
     public XIndividualReservation(XOffering offering, IndividualReservation reservation) {
@@ -123,4 +134,42 @@ public class XIndividualReservation extends XReservation {
     		return false;
     	}
     }
+    
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    	super.readExternal(in);
+    	
+    	int nrStudents = in.readInt();
+    	iStudentIds.clear();
+    	for (int i = 0; i < nrStudents; i++)
+    		iStudentIds.add(in.readLong());
+
+    	iLimit = in.readInt();
+    	if (iLimit == -2) iLimit = null;
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		
+		out.writeInt(iStudentIds.size());
+		for (Long studentId: iStudentIds)
+			out.writeLong(studentId);
+		
+		out.writeInt(iLimit == null ? -2 : iLimit);
+	}
+	
+	public static class XIndividualReservationSerializer implements Externalizer<XIndividualReservation> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XIndividualReservation object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XIndividualReservation readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XIndividualReservation(input);
+		}
+	}
 }

@@ -19,13 +19,27 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
+
+import org.infinispan.marshall.Externalizer;
+import org.infinispan.marshall.SerializeWith;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
 
-public class XAcademicAreaCode implements Serializable {
+@SerializeWith(XAcademicAreaCode.XAcademicAreaCodeSerializer.class)
+public class XAcademicAreaCode implements Serializable, Externalizable {
     private static final long serialVersionUID = 1L;
 	private String iArea, iCode;
+	
+	public XAcademicAreaCode() {}
+	
+	public XAcademicAreaCode(ObjectInput in) throws IOException, ClassNotFoundException {
+		readExternal(in);
+	}
 
     public XAcademicAreaCode(String area, String code) {
         iArea = area;
@@ -59,4 +73,30 @@ public class XAcademicAreaCode implements Serializable {
     public String toString() {
         return getArea() + ":" + getCode();
     }
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		iArea = (String)in.readObject();
+		iCode = (String)in.readObject();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(iArea);
+		out.writeObject(iCode);
+	}
+	
+	public static class XAcademicAreaCodeSerializer implements Externalizer<XAcademicAreaCode> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void writeObject(ObjectOutput output, XAcademicAreaCode object) throws IOException {
+			object.writeExternal(output);
+		}
+
+		@Override
+		public XAcademicAreaCode readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XAcademicAreaCode(input);
+		}
+	}
 }

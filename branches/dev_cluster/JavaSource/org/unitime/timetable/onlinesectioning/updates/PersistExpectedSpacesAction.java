@@ -32,7 +32,10 @@ import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
+@CheckMaster(Master.REQUIRED)
 public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boolean>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
