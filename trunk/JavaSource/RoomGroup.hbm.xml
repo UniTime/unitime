@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="RoomGroup" table="room_group">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -75,7 +75,7 @@
             name="rooms"
             table="room_group_room"
             inverse="true">
-            <cache include="non-lazy" usage="nonstrict-read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="room_group_id"/>
             <many-to-many class="Location" column="room_id"/>
         </set>

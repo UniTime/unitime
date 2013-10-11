@@ -63,7 +63,6 @@ import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl.DummyReservation;
@@ -78,7 +77,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
-	private Hashtable<Long, int[]> iLastSectionLimit = new Hashtable<Long, int[]>();
 	private double iValue;
 	
 	public FindAssignmentAction(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
@@ -366,29 +364,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		return clonedCourse;
 	}
 	
-	@SuppressWarnings("unchecked")
-	private void updateLimits(OnlineSectioningServer server, Course course, boolean updateFromCache) {
-		if (!OnlineSectioningService.sUpdateLimitsUsingSectionLimitProvider || OnlineSectioningService.sSectionLimitProvider == null) return;
-		Hashtable<Long, Section> classes = new Hashtable<Long, Section>();
-		for (Iterator<Config> e = course.getOffering().getConfigs().iterator(); e.hasNext();) {
-			Config config = e.next();
-			for (Iterator<Subpart> f = config.getSubparts().iterator(); f.hasNext();) {
-				Subpart subpart = f.next();
-				for (Iterator<Section> g = subpart.getSections().iterator(); g.hasNext();) {
-					Section section = g.next();
-					classes.put(section.getId(), section);
-				}
-			}
-		}
-		Map<Long, int[]> limits = (updateFromCache ? 
-				OnlineSectioningService.sSectionLimitProvider.getSectionLimitsFromCache(server.getAcademicSession(), course.getId(), classes.values()) :
-					OnlineSectioningService.sSectionLimitProvider.getSectionLimits(server.getAcademicSession(), course.getId(), classes.values()));
-		for (Map.Entry<Long, int[]> entry: limits.entrySet()) {
-			classes.get(entry.getKey()).setLimit(Math.max(0 , entry.getValue()[1] - entry.getValue()[0]));
-			iLastSectionLimit.put(entry.getKey(), entry.getValue());
-		}
-	}
-	
 	protected void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Student student, Student originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<LinkedSections> linkedSections) {
 		if (request.hasRequestedFreeTime() && request.hasRequestedCourse() && server.getCourseInfo(request.getRequestedCourse()) != null)
 			request.getRequestedFreeTime().clear();			
@@ -425,7 +400,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 				}
 				for (Course clonedCourse: cr) {
-					updateLimits(server, clonedCourse, updateFromCache);
 					Collection<LinkedSections> links = server.getLinkedSections(clonedCourse.getOffering().getId());
 					if (links != null) linkedSections.addAll(links);
 				}
@@ -461,10 +435,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	
 	@SuppressWarnings("unchecked")
 	private int[] getLimit(OnlineSectioningServer server, Section section, Long studentId) {
-		if (OnlineSectioningService.sUpdateLimitsUsingSectionLimitProvider) {
-			int[] limit = iLastSectionLimit.get(section.getId());
-			if (limit != null) return limit;
-		}
 		Section original = server.getSection(section.getId());
 		int actual = original.getEnrollments().size();
 		/*

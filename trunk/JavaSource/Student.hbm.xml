@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="Student" table="student">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -94,7 +94,7 @@
             table="student_acad_area"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="student_id"/>
             <one-to-many class="AcademicAreaClassification"/>
         </set>
@@ -103,7 +103,7 @@
             name="posMajors"
             table="student_major"
             inverse="false">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="student_id" foreign-key="fk_student_major_student"/>
             <many-to-many
                 class="PosMajor"
@@ -116,7 +116,7 @@
             name="posMinors"
             table="student_minor"
             inverse="false">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="student_id" foreign-key="fk_student_minor_student"/>
             <many-to-many
                 class="PosMinor"
@@ -130,7 +130,7 @@
             table="student_to_acomodation"
             inverse="true"
             lazy="true">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="student_id" foreign-key="fk_student_acomodation_accom"/>
             <many-to-many
                 class="StudentAccomodation"
@@ -144,7 +144,7 @@
             table="student_to_group"
             inverse="true"
             lazy="true">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="student_id" foreign-key="fk_student_group_group"/>
             <many-to-many
                 class="StudentGroup"
@@ -160,7 +160,7 @@
             cascade="all"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="student_id" foreign-key="fk_waitlist_student"/>
             <one-to-many class="WaitList"/>
         </set>
@@ -172,7 +172,7 @@
             cascade="all"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="student_id" foreign-key="fk_course_demand_student"/>
             <one-to-many class="CourseDemand"/>
         </set>
@@ -184,7 +184,7 @@
             cascade="all"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="student_id" foreign-key="fk_student_class_enrl_student"/>
             <one-to-many class="StudentClassEnrollment"/>
         </set>
@@ -196,7 +196,7 @@
             cascade="all"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="student_id" foreign-key="fk_lastlike_course_demand_student"/>
             <one-to-many class="LastLikeCourseDemand"/>
         </set>

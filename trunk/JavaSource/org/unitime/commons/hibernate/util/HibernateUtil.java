@@ -27,30 +27,30 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.naming.spi.NamingManager;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Hibernate;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.SettingsFactory;
-import org.hibernate.connection.ConnectionProvider;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.dialect.function.SQLFunctionTemplate;
 import org.hibernate.dialect.function.StandardSQLFunction;
-import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.internal.util.ConfigHelper;
 import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.util.ConfigHelper;
-import org.unitime.commons.hibernate.connection.LoggingConnectionProvider;
+import org.hibernate.type.IntegerType;
+import org.unitime.commons.LocalContext;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base._BaseRootDAO;
@@ -126,6 +126,7 @@ public class HibernateUtil {
     }
     
     public static void fixSchemaInFormulas(Configuration cfg) {
+    	cfg.buildMappings();
         String schema = cfg.getProperty("default_schema"); 
         if (schema!=null) {
             for (Iterator i=cfg.getClassMappings();i.hasNext();) {
@@ -152,6 +153,9 @@ public class HibernateUtil {
 			sSessionFactory.close();
 			sSessionFactory=null;
 		}
+		
+		if (!NamingManager.hasInitialContextFactoryBuilder())
+			NamingManager.setInitialContextFactoryBuilder(new LocalContext(null));
 		
 		sLog.info("Connecting to "+getProperty(properties,"connection.url"));
 		ClassLoader classLoader = HibernateUtil.class.getClassLoader();
@@ -228,7 +232,7 @@ public class HibernateUtil {
 
         sLog.debug("  -- hibernate.cfg.xml altered");
         
-        Configuration cfg = new LoggingConfiguration();
+        Configuration cfg = new Configuration();
         sLog.debug("  -- configuration object created");
         
     	cfg.setEntityResolver(new EntityResolver() {
@@ -253,16 +257,24 @@ public class HibernateUtil {
         fixSchemaInFormulas(cfg);
         
         UniqueIdGenerator.configure(cfg);
-
-        sSessionFactory = cfg.buildSessionFactory();
-        sLog.debug("  -- session factory created");
+        
         (new _BaseRootDAO() {
-    		void setSF(SessionFactory fact, Configuration cfg) {
-    			_BaseRootDAO.sSessionFactory = fact;
+    		void setConf(Configuration cfg) {
     			_BaseRootDAO.sConfiguration = cfg;
     		}
     		protected Class getReferenceClass() { return null; }
-    	}).setSF(sSessionFactory, cfg);
+    	}).setConf(cfg);
+        sLog.debug("  -- configuration set to _BaseRootDAO");
+
+        sSessionFactory = cfg.buildSessionFactory();
+        sLog.debug("  -- session factory created");
+        
+        (new _BaseRootDAO() {
+    		void setSF(SessionFactory fact) {
+    			_BaseRootDAO.sSessionFactory = fact;
+    		}
+    		protected Class getReferenceClass() { return null; }
+    	}).setSF(sSessionFactory);
         sLog.debug("  -- session factory set to _BaseRootDAO");
         
         addBitwiseOperationsToDialect();
@@ -347,10 +359,10 @@ public class HibernateUtil {
     public static String getConnectionUrl() {
         if (sConnectionUrl==null) {
             try {
-                SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
-                Connection connection = hibSessionFactory.getConnectionProvider().getConnection();
+                SessionImplementor session = (SessionImplementor)new _RootDAO().getSession();
+                Connection connection = session.getJdbcConnectionAccess().obtainConnection();
                 sConnectionUrl = connection.getMetaData().getURL();
-                hibSessionFactory.getConnectionProvider().closeConnection(connection);
+                session.getJdbcConnectionAccess().releaseConnection(connection);
             } catch (Exception e) {
                 sLog.error("Unable to get connection string, reason: "+e.getMessage(),e);
             }
@@ -454,39 +466,14 @@ public class HibernateUtil {
     		return "str_to_date('" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "', '%Y-%m-%d')";
     }
     
-    @SuppressWarnings("deprecation")
-	public static void addBitwiseOperationsToDialect() {
+    public static void addBitwiseOperationsToDialect() {
     	SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
-    	Dialect dialect = hibSessionFactory.getSettings().getDialect();
+    	Dialect dialect = hibSessionFactory.getDialect();
     	if (!dialect.getFunctions().containsKey("bit_and")) {
     		if (isOracle())
-    			dialect.getFunctions().put("bit_and", new StandardSQLFunction("bitand", Hibernate.INTEGER));  
+    			dialect.getFunctions().put("bit_and", new StandardSQLFunction("bitand", IntegerType.INSTANCE));  
     		else
-    			dialect.getFunctions().put("bit_and", new SQLFunctionTemplate(Hibernate.INTEGER, "?1 & ?2"));
+    			dialect.getFunctions().put("bit_and", new SQLFunctionTemplate(IntegerType.INSTANCE, "?1 & ?2"));
     	}
-    }
-    
-    public static class LoggingConfiguration extends Configuration {
-		private static final long serialVersionUID = 1L;
-		
-		public LoggingConfiguration() {
-			super(new LoggingSettingsFactory());
-		}
-    	
-    }
-    
-    public static class LoggingSettingsFactory extends SettingsFactory {
-		private static final long serialVersionUID = 1L;
-
-		public LoggingSettingsFactory() {
-    		super();
-    	}
-    	
-		protected ConnectionProvider createConnectionProvider(Properties properties) {
-			if ("true".equals(properties.getProperty("connection.logging")))
-				return new LoggingConnectionProvider(super.createConnectionProvider(properties));
-			else
-				return super.createConnectionProvider(properties);
-		}
     }
 }

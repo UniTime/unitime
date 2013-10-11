@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="SolverPredefinedSetting" table="solver_predef_setting">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -58,7 +58,7 @@
             inverse="false"
             table="solver_parameter">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="solver_predef_setting_id" foreign-key="fk_solver_param_predef"/>
             <one-to-many class="SolverParameter"/>
         </set>

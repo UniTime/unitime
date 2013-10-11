@@ -23,12 +23,13 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 
 public class UniTimeSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
 	
     @Override
-    protected SecurityExpressionRoot createSecurityExpressionRoot(Authentication authentication, MethodInvocation invocation) {
+    protected MethodSecurityExpressionOperations createSecurityExpressionRoot(Authentication authentication, MethodInvocation invocation) {
     	MyMethodSecurityExpressionRoot root = new MyMethodSecurityExpressionRoot(authentication);
         root.setThis(invocation.getThis());
         root.setPermissionEvaluator(getPermissionEvaluator());
@@ -36,7 +37,7 @@ public class UniTimeSecurityExpressionHandler extends DefaultMethodSecurityExpre
         return root;
     }
     
-    class MyMethodSecurityExpressionRoot extends SecurityExpressionRoot {
+    class MyMethodSecurityExpressionRoot extends SecurityExpressionRoot implements MethodSecurityExpressionOperations {
         private Object filterObject;
         private Object returnObject;
         private Object target;

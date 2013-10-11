@@ -24,7 +24,7 @@
         name="RoomDept"
         table="room_dept"
         abstract="false">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"

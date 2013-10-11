@@ -39,15 +39,14 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.dom4j.Document;
-import org.hibernate.EntityMode;
 import org.hibernate.MappingException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.engine.SessionImplementor;
-import org.hibernate.hql.QueryExecutionRequestException;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.hql.internal.QueryExecutionRequestException;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
@@ -290,7 +289,7 @@ public class HibernateQueryTestAction extends Action {
                         line(s,meta.getIdentifier(x[i], session));
                         for (int j=0;j<meta.getPropertyNames().length;j++) 
                             if (!skip(meta.getPropertyTypes()[j], meta.getPropertyLaziness()[j]))
-                                line(s,meta.getPropertyValue(x[i], meta.getPropertyNames()[j], EntityMode.POJO));
+                                line(s,meta.getPropertyValue(x[i], meta.getPropertyNames()[j]));
                     }
                 }
             }
@@ -302,7 +301,7 @@ public class HibernateQueryTestAction extends Action {
                 line(s,meta.getIdentifier(o, session));
                 for (int i=0;i<meta.getPropertyNames().length;i++) 
                     if (!skip(meta.getPropertyTypes()[i],meta.getPropertyLaziness()[i]))
-                        line(s,meta.getPropertyValue(o, meta.getPropertyNames()[i], EntityMode.POJO));
+                        line(s,meta.getPropertyValue(o, meta.getPropertyNames()[i]));
             }
         }
         s.append("</tr>");

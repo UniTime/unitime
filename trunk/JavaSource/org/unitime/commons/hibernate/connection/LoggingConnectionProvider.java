@@ -25,16 +25,15 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.HibernateException;
-import org.hibernate.connection.ConnectionProvider;
+import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
 
 public class LoggingConnectionProvider implements ConnectionProvider {
+	private static final long serialVersionUID = 1L;
 	private List<Lease> iLeases = new ArrayList<Lease>();
 	private LeasedConnectionsLogger iLogger = null;
 	private ConnectionProvider iConnectionProvider;
@@ -64,17 +63,6 @@ public class LoggingConnectionProvider implements ConnectionProvider {
 			}
 		}
 		iConnectionProvider.closeConnection(connection);
-	}
-	
-	@Override
-	public void configure(Properties props) throws HibernateException {
-		iConnectionProvider.configure(props);
-	}
-	
-	@Override
-	public void close() throws HibernateException {
-		iConnectionProvider.close();
-		iLogger.interrupt();
 	}
 	
 	@Override
@@ -182,5 +170,15 @@ public class LoggingConnectionProvider implements ConnectionProvider {
 			super.interrupt();
 			try { join(); } catch (InterruptedException e) {}
 		}
+	}
+
+	@Override
+	public boolean isUnwrappableAs(Class clazz) {
+		return iConnectionProvider.isUnwrappableAs(clazz);
+	}
+
+	@Override
+	public <T> T unwrap(Class<T> clazz) {
+		return iConnectionProvider.unwrap(clazz);
 	}
 }

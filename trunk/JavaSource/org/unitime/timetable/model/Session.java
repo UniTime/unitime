@@ -41,10 +41,11 @@ import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.solver.service.SolverServerService;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.ReferenceList;
 
@@ -601,28 +602,33 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
                         "where x.student.session.uniqueId=:sessionId").
                 setLong("sessionId",sessionId).uniqueResult()).longValue()>0;
 	}
+	
+	private OnlineSectioningServer getInstance() {
+		if (getUniqueId() == null) return null;
+		return ((SolverServerService)SpringApplicationContextHolder.getBean("solverServerService")).getOnlineStudentSchedulingContainer().getSolver(getUniqueId().toString());
+	}
 
 	public Collection<Long> getLockedOfferings() {
 		if (!getStatusType().canLockOfferings()) return null;
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
+		OnlineSectioningServer server = getInstance();
 		return (server == null ? null : server.getLockedOfferings());		
 	}
 	
 	public boolean isOfferingLocked(Long offeringId) {
 		if (!getStatusType().canLockOfferings()) return false;
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
+		OnlineSectioningServer server = getInstance();
 		return server != null && server.isOfferingLocked(offeringId);
 	}
 	
 	public void lockOffering(Long offeringId) {
 		if (getStatusType().canLockOfferings()) {
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
+			OnlineSectioningServer server = getInstance();
 			if (server != null) server.lockOffering(offeringId);
 		}
 	}
 	
 	public void unlockOffering(InstructionalOffering offering, UserContext user) {
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
+		OnlineSectioningServer server = getInstance();
 		if (server != null) {
 			server.execute(new ReloadOfferingAction(offering.getUniqueId()),
 					(user == null ? null :

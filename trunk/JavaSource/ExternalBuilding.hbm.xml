@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="ExternalBuilding" table="external_building">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -65,7 +65,7 @@
             length="100"/>
 
         <set name="rooms">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="external_bldg_id"/>
             <one-to-many class="ExternalRoom"/>
         </set>

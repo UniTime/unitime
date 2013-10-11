@@ -19,12 +19,9 @@
 */
 package org.unitime.timetable.solver.service;
 
-import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,8 +35,6 @@ import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
@@ -57,42 +52,24 @@ import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.TimetableSolver;
-import org.unitime.timetable.solver.TimetableSolver.SolverDisposeListener;
-import org.unitime.timetable.solver.remote.BackupFileFilter;
-import org.unitime.timetable.solver.remote.RemoteSolverProxy;
-import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
-import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.solver.jgroups.RemoteSolver;
+import org.unitime.timetable.solver.jgroups.SolverContainer;
 
 @Service("courseTimetablingSolverService")
-public class CourseTimetablingSolverService implements SolverService<SolverProxy>, InitializingBean, DisposableBean {
+public class CourseTimetablingSolverService implements SolverService<SolverProxy> {
 	protected static Log sLog = LogFactory.getLog(CourseTimetablingSolverService.class);
-	private Map<String, SolverProxy> iSolvers = new Hashtable<String, SolverProxy>();
-	private PassivationThread iPassivation = null;
 	
 	@Autowired SessionContext sessionContext;
 	
+	@Autowired SolverServerService solverServerService;
+	
 	public SolverProxy getSolver(String puid, Long sessionId) {
 		try {
-			SolverProxy proxy = iSolvers.get(puid);
-			if (proxy!=null) {
-				if (sessionId!=null && !sessionId.equals(proxy.getProperties().getPropertyLong("General.SessionId",null))) 
-					return null;
-				return proxy;
-			}
-            Set servers = SolverRegisterService.getInstance().getServers();
-            synchronized (servers) {
-                for (Iterator i=servers.iterator();i.hasNext();) {
-                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                    if (!server.isActive()) continue;
-                    proxy = server.getSolver(puid);
-                    if (proxy!=null) {
-                        if (sessionId!=null && !sessionId.equals(proxy.getProperties().getPropertyLong("General.SessionId",null))) 
-                            return null;
-                        return proxy;
-                    }
-				}
-			}
+			SolverProxy proxy = solverServerService.getCourseSolverContainer().getSolver(puid);
+			if (proxy == null) return null;
+			if (sessionId != null && !sessionId.equals(proxy.getProperties().getPropertyLong("General.SessionId",null))) 
+	            return null;
+	        return proxy;
 		} catch (Exception e) {
 			sLog.error("Unable to retrieve solver, reason:"+e.getMessage(),e);
 		}
@@ -104,8 +81,8 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 		SolverProxy solver = (SolverProxy)sessionContext.getAttribute(SessionAttribute.CourseTimetablingSolver);
 		if (solver!=null) {
 			try {
-				if (solver instanceof RemoteSolverProxy && ((RemoteSolverProxy)solver).exists())
-					return (SolverProxy)solver;
+				if (solver instanceof RemoteSolver && ((RemoteSolver)solver).exists())
+					return solver;
 				else
 					sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
 			} catch (Exception e) {
@@ -307,63 +284,15 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 		    if (instructorFormat != null)
 		    	properties.setProperty("General.InstructorFormat",instructorFormat);
 		    
-		    if (host!=null) {
-	            Set servers = SolverRegisterService.getInstance().getServers();
-	            synchronized (servers) {
-	                for (Iterator i=servers.iterator();i.hasNext();) {
-	                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-	                    if (!server.isActive()) continue;
-	                    if (host.equals(server.getAddress().getHostName()+":"+server.getPort())) {
-	                        SolverProxy solver = server.createSolver(sessionContext.getUser().getExternalUserId(), properties);
-	                        solver.load(properties);
-	                        return solver;
-	                    }
-	                }
-	            }
-		    }
+		    SolverProxy solver = solverServerService.createCourseSolver(host, sessionContext.getUser().getExternalUserId(), properties);
+		    solver.load(properties);
 		    
-		    int memoryLimit = Integer.parseInt(ApplicationProperties.getProperty(ApplicationProperty.SolverMemoryLimit));
-		    
-		    if (!"local".equals(host) && !SolverRegisterService.getInstance().getServers().isEmpty()) {
-		    	RemoteSolverServerProxy bestServer = null;
-	            Set servers = SolverRegisterService.getInstance().getServers();
-	            synchronized (servers) {
-	                for (Iterator i=servers.iterator();i.hasNext();) {
-	                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-	                    if (!server.isActive()) continue;
-	                    if (server.getAvailableMemory() < memoryLimit) continue;
-	                    if (bestServer == null) {
-	                        bestServer = server;
-	                    } else if (bestServer.getUsage() > server.getUsage()) {
-	                        bestServer = server;
-	                    }
-	                }
-	            }
-				if (bestServer != null) {
-					SolverProxy solver = bestServer.createSolver(sessionContext.getUser().getExternalUserId(), properties);
-					solver.load(properties);
-					return solver;
-				}
-		    }
-		    
-		    if (getAvailableMemory() < memoryLimit)
-		    	throw new RuntimeException("Not enough resources to create a solver instance, please try again later.");
-		    
-	    	TimetableSolver solver = new TimetableSolver(properties, new SolverOnDispose(sessionContext.getUser().getExternalUserId()));
-	    	solver.load(properties);
-	    	iSolvers.put(sessionContext.getUser().getExternalUserId(), solver);
-	    	return solver;
+			return solver;
 		} catch (Exception e) {
 			sLog.error("Failed to start the solver: " + e.getMessage(), e);
 			throw (e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e));
 		}
 	}
-
-	private long getAvailableMemory() {
-		System.gc();
-		return Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory(); 
-	}
-
 	
 	@Override
 	public SolverProxy reload(DataProperties properties) {
@@ -399,118 +328,19 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 	
 	@Override
 	public Map<String, SolverProxy> getSolvers() {
-		Map<String,SolverProxy> solvers = new HashMap<String, SolverProxy>(iSolvers);
-        Set servers = SolverRegisterService.getInstance().getServers();
-        synchronized (servers) {
-            for (Iterator i=servers.iterator();i.hasNext();) {
-                RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                if (!server.isActive()) continue;
-                try {
-                	Map<String, RemoteSolverProxy> serverSolvers = server.getSolvers();
-                	if (serverSolvers != null)
-                		solvers.putAll(serverSolvers);
-                } catch (Exception e) {
-                	sLog.error("Failed to retrieve solvers from " + server + ": " + e.getMessage(), e);
-                }
-            }
-		}
+		Map<String,SolverProxy> solvers = new HashMap<String, SolverProxy>();
+		SolverContainer<SolverProxy> container = solverServerService.getCourseSolverContainer(); 
+		for (String user: container.getSolvers())
+			solvers.put(user, container.getSolver(user));
 		return solvers; 
 	}
 	
 	public Map<String, SolverProxy> getLocalSolvers() {
-		return iSolvers;
-	}
-	
-	private class SolverOnDispose implements SolverDisposeListener {
-        String iOwnerId = null;
-        public SolverOnDispose(String ownerId) {
-            iOwnerId = ownerId;
-        }
-        public void onDispose() {
-            iSolvers.remove(iOwnerId);
-        }
-    }
-	
-	public void backup(File folder) {
-        if (folder.exists() && !folder.isDirectory()) return;
-        folder.mkdirs();
-        File[] old = folder.listFiles(new BackupFileFilter(true, true, SolverParameterGroup.sTypeCourse));
-        for (int i=0;i<old.length;i++)
-            old[i].delete();
-		synchronized (iSolvers) {
-			for (Map.Entry<String, SolverProxy> entry: iSolvers.entrySet())
-				entry.getValue().backup(folder, entry.getKey());
-		}
-	}
-    
-    public void restore(File folder, File passivateFolder) {
-		if (!folder.exists() || !folder.isDirectory()) return;
-		synchronized (iSolvers) {
-			for (Iterator i=iSolvers.values().iterator();i.hasNext();) {
-				TimetableSolver solver = (TimetableSolver)i.next();
-				solver.dispose();
-			}
-			iSolvers.clear();
-			File[] files = folder.listFiles(new BackupFileFilter(true, false, SolverParameterGroup.sTypeCourse));
-			for (int i=0;i<files.length;i++) {
-				File file = files[i];
-				String puid = file.getName().substring(0,file.getName().indexOf('.'));
-				TimetableSolver solver = new TimetableSolver(new DataProperties(), new SolverOnDispose(puid));
-				if (solver.restore(folder,puid)) {
-					if (passivateFolder!=null)
-						solver.passivate(passivateFolder,puid);
-					iSolvers.put(puid,solver);
-				}
-			}
-		}
-	}
-    
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		iPassivation = new PassivationThread(ApplicationProperties.getPassivationFolder());
-		iPassivation.start();
-		restore(ApplicationProperties.getRestoreFolder(), ApplicationProperties.getPassivationFolder());
+		Map<String,SolverProxy> solvers = new HashMap<String, SolverProxy>();
+		SolverContainer<SolverProxy> container = solverServerService.getLocalServer().getCourseSolverContainer(); 
+		for (String user: container.getSolvers())
+			solvers.put(user, container.getSolver(user));
+		return solvers; 
 	}
 
-	@Override
-	public void destroy() throws Exception {
-		backup(ApplicationProperties.getRestoreFolder());
-		iPassivation.destroy();
-	}
-	
-	private class PassivationThread extends Thread {
-		private File iFolder = null;
-		public long iDelay = 30000;
-		public boolean iContinue = true;
-		
-		public PassivationThread(File folder) {
-			iFolder = folder;
-			setName("Passivation[CourseTimetabling]");
-			setDaemon(true);
-			setPriority(Thread.MIN_PRIORITY);
-		}
-		
-		public void run() {
-			try {
-				sLog.info("Solver passivation thread started.");
-				while (iContinue) {
-					for (Map.Entry<String, SolverProxy> entry: iSolvers.entrySet())
-						entry.getValue().passivateIfNeeded(iFolder, entry.getKey());
-					try {
-						sleep(iDelay);
-					} catch (InterruptedException e) {
-					    break;
-	                }
-				}
-				sLog.info("Solver passivation thread finished.");
-			} catch (Exception e) {
-				sLog.warn("Solver passivation thread failed, reason: " + e.getMessage(), e);
-			}
-		}
-		
-		public void destroy() {
-			iContinue = false;
-			if (isAlive()) interrupt();
-		}
-	}
 }

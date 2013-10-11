@@ -45,12 +45,11 @@ import org.apache.log4j.PropertyConfigurator;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
-import org.hibernate.EntityMode;
 import org.hibernate.FlushMode;
 import org.hibernate.NonUniqueResultException;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.BinaryType;
 import org.hibernate.type.BooleanType;
@@ -130,7 +129,7 @@ public class SessionRestore {
 	
 	private boolean lookup(Entity entity, String property, Object value) {
 		try {
-			Object object = iHibSession.createCriteria(entity.getMetaData().getMappedClass(EntityMode.POJO)).add(Restrictions.eq(property, value)).uniqueResult();
+			Object object = iHibSession.createCriteria(entity.getMetaData().getMappedClass()).add(Restrictions.eq(property, value)).uniqueResult();
 			if (object != null)
 				entity.setObject(object);
 			else
@@ -138,7 +137,7 @@ public class SessionRestore {
 			return object != null;
 		} catch (NonUniqueResultException e) {
 			message("Lookup " + entity.getAbbv() + "." + property + "=" + value +" is not unique", entity.getId());
-			List<Object> list = iHibSession.createCriteria(entity.getMetaData().getMappedClass(EntityMode.POJO)).add(Restrictions.eq(property, value)).list();
+			List<Object> list = iHibSession.createCriteria(entity.getMetaData().getMappedClass()).add(Restrictions.eq(property, value)).list();
 			if (!list.isEmpty()) {
 				Object object = list.get(0);
 				entity.setObject(object);
@@ -199,7 +198,7 @@ public class SessionRestore {
 		iProgress.setPhase(metadata.getEntityName().substring(metadata.getEntityName().lastIndexOf('.') + 1) + " [" + table.getRecordCount() + "]", table.getRecordCount());
 		for (TableData.Record record: table.getRecordList()) {
 			iProgress.incProgress();
-			Object object = metadata.getMappedClass(EntityMode.POJO).newInstance();
+			Object object = metadata.getMappedClass().newInstance();
 			for (String property: metadata.getPropertyNames()) {
 				TableData.Element element = null;
 				for (TableData.Element e: record.getElementList())
@@ -243,7 +242,7 @@ public class SessionRestore {
 					message("Unknown type " + type.getClass().getName() + " (property " + metadata.getEntityName() + "." + property + ", class " + type.getReturnedClass() + ")", "");
 				}
 				if (value != null)
-					metadata.setPropertyValue(object, property, value, EntityMode.POJO);
+					metadata.setPropertyValue(object, property, value);
 			}
 			add(new Entity(metadata, record, object, record.getId()));
 		}
@@ -486,7 +485,7 @@ public class SessionRestore {
 						if (!iHibSession.contains(value))
 							message("Required " + getAbbv() + "." + property + " has transient value", getId() + "-" + element.getValue(0));
 						else
-							getMetaData().setPropertyValue(getObject(), getMetaData().getPropertyNames()[i], value, EntityMode.POJO);
+							getMetaData().setPropertyValue(getObject(), getMetaData().getPropertyNames()[i], value);
 					}
 				}
 			}
@@ -505,7 +504,7 @@ public class SessionRestore {
 						if (!iHibSession.contains(value))
 							message("Optional " + getAbbv() + "." + property + " has transient value", getId() + "-" + element.getValue(0));
 						else
-							getMetaData().setPropertyValue(getObject(), property, value, EntityMode.POJO);
+							getMetaData().setPropertyValue(getObject(), property, value);
 					}
 				} else if (type instanceof CollectionType) {
 					TableData.Element element = getElement(property);
@@ -522,7 +521,7 @@ public class SessionRestore {
 									set.add(v);
 							}
 						}
-						getMetaData().setPropertyValue(getObject(), property, set, EntityMode.POJO);
+						getMetaData().setPropertyValue(getObject(), property, set);
 					} else if (type instanceof ListType) {
 						List<Object> set = new ArrayList<Object>();
 						for (String id: element.getValueList()) {
@@ -534,7 +533,7 @@ public class SessionRestore {
 									set.add(v);
 							}
 						}
-						getMetaData().setPropertyValue(getObject(), property, set, EntityMode.POJO);
+						getMetaData().setPropertyValue(getObject(), property, set);
 					} else {
 						message("Unimplemented collection type: " + type.getClass().getName() + " (" + getAbbv() + "." + property + ")", "");
 					}
