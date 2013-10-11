@@ -65,8 +65,8 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 		if (configFileName == null && sSessionFactory != null) return;
         if (sSessionFactoryMap != null && sSessionFactoryMap.get(configFileName) != null) return;
         HibernateUtil.configureHibernateFromRootDAO(configFileName, configuration);
-        setSessionFactory(configuration.buildSessionFactory());
         sConfiguration = configuration;
+        setSessionFactory(configuration.buildSessionFactory());
         HibernateUtil.addBitwiseOperationsToDialect();
         DatabaseUpdate.update();
 	}
@@ -151,6 +151,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 				Session session = sSessions.get();
 				if (session == null || !session.isOpen()) {
 					session = getSessionFactory(null).openSession();
+					// session.beginTransaction();
 					sSessions.set(session);
 				}
 				return session;
@@ -165,6 +166,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 				Session session = map.get(configFile);
 				if (session == null || !session.isOpen()) {
 					session = getSessionFactory(configFile).openSession();
+					// session.beginTransaction();
 					map.put(configFile, session);
 				}
 				return session;
@@ -201,10 +203,27 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 * Close all sessions for the current thread
 	 */
 	public static boolean closeCurrentThreadSessions() {
+		return closeCurrentThreadSessions(true);
+	}
+	
+	/**
+	 * Rollback all sessions for the current thread
+	 */
+	public static boolean rollbackCurrentThreadSessions() {
+		return closeCurrentThreadSessions(false);
+	}
+	
+	private static boolean closeCurrentThreadSessions(boolean commit) {
 		boolean ret = false;
 		if (sSessions != null) {
 			Session session = sSessions.get();
 			if (session != null && session.isOpen()) {
+				if (session.getTransaction() != null && session.getTransaction().isActive()) {
+					if (commit)
+						session.getTransaction().commit();
+					else
+						session.getTransaction().rollback();
+				}
 				session.close();
 				ret = true;
 			}
@@ -217,6 +236,12 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 				for (Session session: map.values()) {
 					try {
 						if (null != session && session.isOpen()) {
+							if (session.getTransaction() != null && session.getTransaction().isActive()) {
+								if (commit)
+									session.getTransaction().commit();
+								else
+									session.getTransaction().rollback();
+							}
 							session.close();
 							ret = true;
 						}
@@ -254,16 +279,22 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 * Return a new Configuration to use
 	 */
 	 public static Configuration getNewConfiguration(String configFileName) {
-	 	return new HibernateUtil.LoggingConfiguration();
+		 return new Configuration();
 	 }
 	
+	/**
+	 * @return Returns true if configured
+	 */
+	public static boolean isConfigured() {
+		return sConfiguration != null && sSessionFactory != null;
+	}	 	 
+	 
 	/**
 	 * @return Returns the configuration.
 	 */
 	public static Configuration getConfiguration() {
 		return sConfiguration;
-	}	 	 
-	 
+	}	 
 	
 	/**
 	 * Return the name of the configuration file to be used with this DAO or null if default
@@ -354,7 +385,18 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 * Return all objects related to the implementation of this DAO with no filter.
 	 */
 	public List<T> findAll () {
-		return findAll(getSession());
+		Transaction t = null;
+		Session s = null;
+		try {
+			s = getSession();
+			t = beginTransaction(s);
+			List<T> rtn = findAll(s);
+			commitTransaction(t);
+			return rtn;
+		} catch (HibernateException e) {
+			if (null != t) t.rollback();
+            throw e;
+		}
 	}
 
 	/**

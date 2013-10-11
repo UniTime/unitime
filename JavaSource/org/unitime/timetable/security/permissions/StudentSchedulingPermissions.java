@@ -27,9 +27,9 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.SolverServerService;
 
 public class StudentSchedulingPermissions {
 	
@@ -55,12 +55,19 @@ public class StudentSchedulingPermissions {
 	public static class SchedulingAssistant implements Permission<Session> {
 		@Autowired PermissionSession permissionSession;
 		
+		@Autowired SolverServerService solverServerService;
+		
+		private boolean hasInstance(Long sessionId) {
+			if (sessionId == null) return false;
+			return solverServerService.getOnlineStudentSchedulingContainer().hasSolver(sessionId.toString());
+		}
+		
 		@Override
 		public boolean check(UserContext user, Session source) {
 			if (!permissionSession.check(user, source, DepartmentStatusType.Status.StudentsAssistant, DepartmentStatusType.Status.StudentsOnline))
 				return false;
 			
-			return OnlineSectioningService.getInstance(user.getCurrentAcademicSessionId()) != null;
+			return hasInstance(user.getCurrentAcademicSessionId());
 		}
 
 		@Override

@@ -24,7 +24,7 @@
         name="StandardEventNote"
         table="standard_event_note"
         abstract="true">
-        <cache usage="read-write"/>
+        <cache usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"

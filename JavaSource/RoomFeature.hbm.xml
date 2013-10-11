@@ -24,7 +24,7 @@
         name="RoomFeature"
         table="room_feature"
         lazy="true">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -58,7 +58,7 @@
             name="rooms"
             table="room_join_room_feature"
             inverse="true">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="feature_id"/>
             <many-to-many class="Location" column="room_id"/>
         </set>

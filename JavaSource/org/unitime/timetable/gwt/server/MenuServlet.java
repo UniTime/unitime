@@ -61,7 +61,6 @@ import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
@@ -70,6 +69,7 @@ import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.Constants;
@@ -85,6 +85,9 @@ public class MenuServlet implements MenuService {
 	private static Logger sLog = Logger.getLogger(MenuServlet.class);
     private static Element iRoot = null;
     private static PageNames sPageNames = Localization.create(PageNames.class);
+    
+    @Autowired
+    private SolverServerService solverServerService;
 
 	public MenuServlet() {
 		try {
@@ -334,13 +337,13 @@ public class MenuServlet implements MenuService {
 			} else if ("isChameleon".equals(right)) {
 				return getSessionContext().isAuthenticated() && (getSessionContext().hasPermission(Right.Chameleon) || getSessionContext().getUser() instanceof UserContext.Chameleon);
 			} else if ("isSectioningEnabled".equals(right)) {
-				return OnlineSectioningService.isEnabled();
+				return solverServerService.isOnlineStudentSchedulingEnabled();
 			} else if ("isStudent".equals(right)) {
 				return getSessionContext().isAuthenticated() && getSessionContext().getUser().hasRole(Roles.ROLE_STUDENT);
 			} else if ("isInstructor".equals(right)) {
 				return getSessionContext().isAuthenticated() && getSessionContext().getUser().hasRole(Roles.ROLE_INSTRUCTOR);
 			} else if ("isRegistrationEnabled".equals(right)) {
-				return OnlineSectioningService.isRegistrationEnabled();
+				return solverServerService.isStudentRegistrationEnabled();
 			} else {
 				if ("canSeeCourses".equals(right)) {
 					return sessionContext.hasPermission(Right.InstructionalOfferings) || sessionContext.hasPermission(Right.Classes);

@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -47,10 +48,9 @@ import org.apache.log4j.PropertyConfigurator;
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.BinaryType;
 import org.hibernate.type.CollectionType;
@@ -260,7 +260,7 @@ public class SessionBackup {
             	            for (Iterator i=iHibSessionFactory.getAllClassMetadata().entrySet().iterator();i.hasNext();) {
             	                Map.Entry entry = (Map.Entry)i.next();
             	                ClassMetadata classMetadata = (ClassMetadata)entry.getValue();
-            	                if (classMetadata.getMappedClass(EntityMode.POJO).isInstance(object) && !classMetadata.hasSubclasses()) {
+            	                if (classMetadata.getMappedClass().isInstance(object) && !classMetadata.hasSubclasses()) {
             	                	meta = classMetadata; break;
             	                }
             	            }
@@ -281,7 +281,7 @@ public class SessionBackup {
             			for (String property: meta.getPropertyNames()) {
             				Type type = meta.getPropertyType(property);
                         	if (type instanceof EntityType && type.getReturnedClass().equals(Session.class)) {
-                        		Session s = (Session)meta.getPropertyValue(object, property, EntityMode.POJO);
+                        		Session s = (Session)meta.getPropertyValue(object, property);
                         		if (s != null && !s.getUniqueId().equals(iSessionId)) {
                         			iProgress.warn(meta.getEntityName().substring(meta.getEntityName().lastIndexOf('.') + 1) + "@" + id + " belongs to a different academic session (" + s + ")");
                         			continue objects; // wrong session
@@ -302,20 +302,20 @@ public class SessionBackup {
             			record.setId(id.toString());
             			for (String property: meta.getPropertyNames()) {
             				Type type = meta.getPropertyType(property);
-            				Object value = meta.getPropertyValue(object, property, EntityMode.POJO);
+            				Object value = meta.getPropertyValue(object, property);
             				if (value == null) continue;
             				TableData.Element.Builder element = TableData.Element.newBuilder();
             				element.setName(property);
             				if (type instanceof PrimitiveType) {
             					element.addValue(((PrimitiveType)type).toString(value));
             				} else if (type instanceof StringType) {	
-            					element.addValue(((StringType)type).toString(value));
+            					element.addValue(((StringType)type).toString((String)value));
             				} else if (type instanceof BinaryType) {	
-            					element.addValue(ByteString.copyFrom((byte[])value));
+            					element.addValueBytes(ByteString.copyFrom((byte[])value));
             				} else if (type instanceof TimestampType) {
-            					element.addValue(((TimestampType)type).toString(value));
+            					element.addValue(((TimestampType)type).toString((Date)value));
             				} else if (type instanceof DateType) {
-            					element.addValue(((DateType)type).toString(value));
+            					element.addValue(((DateType)type).toString((Date)value));
             				} else if (type instanceof EntityType) {
     							List<Object> ids = current.relation(property, id, false);
     							if (ids != null)
@@ -410,7 +410,7 @@ public class SessionBackup {
 		ClassMetadata meta() { return iMeta; }
 		String name() { return meta().getEntityName(); }
 		String abbv() { return meta().getEntityName().substring(meta().getEntityName().lastIndexOf('.') + 1); }
-		Class clazz() { return meta().getMappedClass(EntityMode.POJO); }
+		Class clazz() { return meta().getMappedClass(); }
 		int qid() { return iQueueItemId; }
 		Relation relation() { return iRelation; }
 		boolean contains(String name) {

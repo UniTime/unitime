@@ -24,7 +24,7 @@
         name="TimetableManager"
         abstract="false"
         table="timetable_manager">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -48,7 +48,7 @@
             lazy="true"
             inverse="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="user_uniqueid"/>
             <one-to-many class="ManagerSettings"/>
         </set>
@@ -82,7 +82,7 @@
             length="200"/>
 
         <set name="departments" table="dept_to_tt_mgr" inverse="true">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="timetable_mgr_id"/>
             <many-to-many
                 class="Department"
@@ -96,13 +96,13 @@
             cascade="all-delete-orphan"
             inverse="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="manager_id" not-null="true"/>
             <one-to-many class="ManagerRole"/>
         </set>
 
         <set name="solverGroups" table="solver_gr_to_tt_mgr" inverse="true">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="timetable_mgr_id"/>
             <many-to-many
                 class="SolverGroup"

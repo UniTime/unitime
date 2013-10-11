@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="RoomTypeOption" table="room_type_option">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <composite-id>
             <key-many-to-one
                 name="roomType"

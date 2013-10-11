@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.hibernate.util.StringHelper;
+import org.hibernate.internal.util.StringHelper;
 
 public class PrettyFormatter {
 	

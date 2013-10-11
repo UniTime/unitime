@@ -96,6 +96,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			int gConNeed = 0, gtConNeed = 0;
 			
 			for (CourseInfo info: server.findCourses(new OnlineSectioningServer.CourseInfoMatcher() {
+				private static final long serialVersionUID = 1L;
+
 				@Override
 				public boolean match(CourseInfo course) {
 					return isCourseVisible(course.getUniqueId()) && query().match(

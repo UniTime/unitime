@@ -60,7 +60,7 @@ import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.solver.remote.RemoteSolver;
+import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.BtbInstructorConstraintInfo;
 import org.unitime.timetable.solver.ui.ConflictStatisticsInfo;
@@ -133,6 +133,11 @@ public class TimetableDatabaseSaver extends TimetableSaver {
 		}
 	}
 	
+	public void refreshCourseSolution(Long solutionId) {
+		if (SolverServerImplementation.getInstance() != null)
+			SolverServerImplementation.getInstance().refreshCourseSolution(solutionId);
+	}
+	
     public void save() {
     	org.hibernate.Session hibSession = null;
     	Transaction tx = null;
@@ -186,8 +191,8 @@ public class TimetableDatabaseSaver extends TimetableSaver {
             iProgress.setPhase("Refreshing solution ...", solutionIds.length+refreshIds.size());
             for (Iterator i=refreshIds.iterator();i.hasNext();) {
                 Long solutionId = (Long)i.next();
+                refreshCourseSolution(solutionId);
                 try {
-                	RemoteSolver.refreshSolution(solutionId);
                 } catch (Exception e) {
                     iProgress.warn("Unable to refresh solution "+solutionId+", reason:"+e.getMessage(),e);
                 }
@@ -195,7 +200,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
             }
             for (int i=0;i<solutionIds.length;i++) {
                 try {
-                	RemoteSolver.refreshSolution(solutionIds[i]);
+                	refreshCourseSolution(solutionIds[i]);
                 } catch (Exception e) {
                     iProgress.warn("Unable to refresh solution "+solutionIds[i]+", reason:"+e.getMessage(),e);
                 }

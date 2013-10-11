@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="SolverParameterGroup" table="solver_parameter_group">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -75,7 +75,7 @@
             cascade="all"
             table="solver_parameter_def">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="solver_param_group_id"/>
             <one-to-many class="SolverParameterDef"/>
         </set>

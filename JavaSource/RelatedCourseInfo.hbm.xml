@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="RelatedCourseInfo" table="related_course_info">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"

@@ -28,6 +28,7 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.MessageLog;
 import org.unitime.timetable.model.dao.MessageLogDAO;
@@ -151,11 +152,14 @@ public class MessageLogAppender extends AppenderSkeleton {
 					}
 					if (messagesToSave != null) {
 						Session hibSession = MessageLogDAO.getInstance().createNewSession();
+						Transaction tx = hibSession.beginTransaction();
 						try {
 							for (MessageLog m: messagesToSave)
 								hibSession.save(m);
 							hibSession.flush();
+							tx.commit();
 						} catch (Exception e) {
+							tx.rollback();
 							System.err.println("Failed to persist " + messagesToSave.size() + " log entries:" + e.getMessage());
 						} finally {
 							hibSession.close();

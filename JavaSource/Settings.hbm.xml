@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="Settings" table="settings">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -60,7 +60,7 @@
             not-null="true"/>
 
         <set name="managerSettings" table="manager_settings">
-            <cache include="non-lazy" usage="nonstrict-read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="uniqueid"/>
             <one-to-many class="ManagerSettings"/>
         </set>

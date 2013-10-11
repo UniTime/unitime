@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="Assignment" table="assignment">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -85,7 +85,7 @@
             name="instructors"
             lazy="true"
             table="assigned_instructors">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="assignment_id"/>
             <many-to-many
                 class="DepartmentalInstructor"
@@ -98,7 +98,7 @@
             name="rooms"
             lazy="false"
             table="assigned_rooms">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="assignment_id"/>
             <many-to-many class="Location" column="room_id"/>
         </set>
@@ -118,7 +118,7 @@
             lazy="true"
             table="solver_info">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="assignment_id"/>
             <one-to-many class="AssignmentInfo"/>
         </set>
@@ -130,7 +130,7 @@
             cascade="delete-orphan"
             table="constraint_info">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="assignment_id"/>
             <many-to-many
                 class="ConstraintInfo"
