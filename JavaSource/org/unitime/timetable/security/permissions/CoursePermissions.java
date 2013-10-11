@@ -38,15 +38,22 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.SolverServerService;
 
 public class CoursePermissions {
 	
 	@Service("permissionOfferingLockNeeded")
 	public static class OfferingLockNeeded implements Permission<InstructionalOffering> {
 		@Autowired PermissionSession permissionSession;
+		
+		@Autowired SolverServerService solverServerService;
+		
+		protected OnlineSectioningServer getInstance(Long sessionId) {
+			if (sessionId == null) return null;
+			return solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString());
+		}
 
 		@Override
 		public boolean check(UserContext user, InstructionalOffering source) {
@@ -58,7 +65,7 @@ public class CoursePermissions {
 					DepartmentStatusType.Status.StudentsAssistant, DepartmentStatusType.Status.StudentsOnline))
 				return false;
 			
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(user.getCurrentAcademicSessionId());
+			OnlineSectioningServer server = getInstance(user.getCurrentAcademicSessionId());
 			
 			return server != null && !server.isOfferingLocked(source.getUniqueId());
 		}
@@ -72,6 +79,13 @@ public class CoursePermissions {
 	public static class OfferingLockNeededLimitedEdit implements Permission<InstructionalOffering> {
 		@Autowired PermissionSession permissionSession;
 
+		@Autowired SolverServerService solverServerService;
+		
+		protected OnlineSectioningServer getInstance(Long sessionId) {
+			if (sessionId == null) return null;
+			return solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString());
+		}
+
 		@Override
 		public boolean check(UserContext user, InstructionalOffering source) {
 			if (source.isNotOffered()) return false;
@@ -82,7 +96,7 @@ public class CoursePermissions {
 					DepartmentStatusType.Status.StudentsOnline))
 				return false;
 			
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(user.getCurrentAcademicSessionId());
+			OnlineSectioningServer server = getInstance(user.getCurrentAcademicSessionId());
 			
 			return server != null && server.getAcademicSession().isSectioningEnabled() && !server.isOfferingLocked(source.getUniqueId());
 		}
@@ -150,12 +164,19 @@ public class CoursePermissions {
 	public static class OfferingCanUnlock implements Permission<InstructionalOffering> {
 		@Autowired Permission<InstructionalOffering> permissionOfferingEdit;
 
+		@Autowired SolverServerService solverServerService;
+		
+		protected OnlineSectioningServer getInstance(Long sessionId) {
+			if (sessionId == null) return null;
+			return solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString());
+		}
+
 		@Override
 		public boolean check(UserContext user, InstructionalOffering source) {
 			if (!permissionOfferingEdit.check(user, source))
 				return false; // user is not able to edit the offering -> no need to lock
 
-			OnlineSectioningServer server = OnlineSectioningService.getInstance(user.getCurrentAcademicSessionId());
+			OnlineSectioningServer server = getInstance(user.getCurrentAcademicSessionId());
 			
 			return user.getCurrentAuthority().hasRight(Right.OfferingCanUnlock) && server != null && server.isOfferingLocked(source.getUniqueId());
 		}

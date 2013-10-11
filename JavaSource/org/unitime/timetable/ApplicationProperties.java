@@ -179,7 +179,7 @@ public class ApplicationProperties {
 	}
 	
 	public static Properties getConfigProperties() {
-	    if (configProps==null && _RootDAO.getConfiguration()!=null)
+	    if (configProps==null && _RootDAO.isConfigured())
 	        configProps = ApplicationConfig.toProperties();
 	    return (configProps==null?new Properties():configProps);
 	}
@@ -189,7 +189,7 @@ public class ApplicationProperties {
 	}
 	
 	public static Properties getSessionProperties(Long sessionId) {
-		if (_RootDAO.getConfiguration() == null || sessionId == null)
+		if (!_RootDAO.isConfigured() || sessionId == null)
 			return new Properties();
 		
 		Properties properties = sSessionProperties.get(sessionId);

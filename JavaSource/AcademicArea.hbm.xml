@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="AcademicArea" table="academic_area">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -64,7 +64,7 @@
             inverse="true"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="academic_area_id"/>
             <many-to-many
                 class="org.unitime.timetable.model.PosMajor"
@@ -79,7 +79,7 @@
             inverse="true"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="academic_area_id"/>
             <many-to-many
                 class="org.unitime.timetable.model.PosMinor"

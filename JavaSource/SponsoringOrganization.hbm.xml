@@ -24,7 +24,7 @@
         name="SponsoringOrganization"
         table="sponsoring_organization"
         abstract="false">
-        <cache usage="read-write"/>
+        <cache usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"

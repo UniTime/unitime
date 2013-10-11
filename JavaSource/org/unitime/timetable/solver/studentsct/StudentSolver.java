@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -48,13 +47,13 @@ import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
+import org.unitime.timetable.onlinesectioning.CourseDetails;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
-import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
@@ -804,6 +803,12 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	public CourseInfo getCourseInfo(Long courseId) {
 		return getCourseInfoTable().get(courseId);
 	}
+	
+	@Override
+	public CourseDetails getCourseDetails(Long courseId) {
+		Course course = getCourse(courseId);
+		return course == null ? null : new CourseDetails(course);
+	}
 
 	@Override
 	public CourseInfo getCourseInfo(String courseName) {
@@ -845,17 +850,6 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 			if (offering.getId() == offeringId)
 				return offering;
 		return null;
-	}
-
-	@Override
-	public URL getSectionUrl(Long courseId, Section section) {
-        if (ApplicationProperties.getProperty("unitime.custom.SectionUrlProvider") != null) {
-        	try {
-        		SectionUrlProvider provider = (SectionUrlProvider)Class.forName(ApplicationProperties.getProperty("unitime.custom.SectionUrlProvider")).newInstance();
-        		return provider.getSectionUrl(getAcademicSession(), courseId, section);
-        	} catch (Exception e) {}
-        }
-        return null;
 	}
 
 	@Override

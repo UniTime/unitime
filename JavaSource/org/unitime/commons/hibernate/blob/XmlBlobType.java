@@ -43,6 +43,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.usertype.UserType;
 
 /**
@@ -51,7 +52,7 @@ import org.hibernate.usertype.UserType;
 public class XmlBlobType implements UserType {
 	protected static Log sLog = LogFactory.getLog(XmlBlobType.class);
 	
-    public Object nullSafeGet(ResultSet rs, String[] names, Object owner) throws SQLException {
+    public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner) throws SQLException {
         Blob blob = rs.getBlob(names[0]);
         if (blob==null) return null;
 		try {
@@ -67,7 +68,7 @@ public class XmlBlobType implements UserType {
 		}
     }
 
-    public void nullSafeSet(PreparedStatement ps, Object value, int index) throws SQLException, HibernateException {
+    public void nullSafeSet(PreparedStatement ps, Object value, int index, SessionImplementor session) throws SQLException, HibernateException {
         if (value == null) {
             ps.setNull(index, sqlTypes()[0]);
         } else {
@@ -82,6 +83,7 @@ public class XmlBlobType implements UserType {
             }
         }
     }
+
 
     public Object deepCopy(Object value) {
         if (value == null) return null;

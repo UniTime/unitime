@@ -23,12 +23,15 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
+import net.sf.ehcache.CacheManager;
+
+import org.apache.log4j.Appender;
+import org.apache.log4j.Logger;
 import org.unitime.commons.Debug;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.events.EventExpirationService;
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
-import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LogCleaner;
 import org.unitime.timetable.util.RoomAvailability;
@@ -71,10 +74,6 @@ public class InitServlet extends HttpServlet implements Servlet {
 			// Now, when hibernate is initialized, we can re-initialize logging with application configuration included
 			Debug.init(ApplicationProperties.getProperties());
 			
-			Debug.info(" - Initializing Solver Register ... ");							
-			SolverRegisterService.startService();
-			SolverRegisterService.addShutdownHook();
-			
 			if (RoomAvailability.getInstance()!=null) {
 			    Debug.info(" - Initializing Room Availability Service ... ");
 			    RoomAvailability.getInstance().startService();
@@ -82,9 +81,6 @@ public class InitServlet extends HttpServlet implements Servlet {
 			
 			Debug.info(" - Cleaning Logs ...");
 			LogCleaner.cleanupLogs();
-			
-			Debug.info(" - Starting Online Sectioning Service ...");
-			OnlineSectioningService.startService();
 			
 			Debug.info(" - Starting Event Expiration Service ...");
 			EventExpirationService.getInstance().start();
@@ -95,6 +91,8 @@ public class InitServlet extends HttpServlet implements Servlet {
 		} catch (Exception e) {
 			Debug.error("UniTime Initialization Failed : " + e.getMessage(), e);
 			sInitializationException = e;
+		} finally {
+			_RootDAO.closeCurrentThreadSessions();
 		}
 	}
 
@@ -112,15 +110,6 @@ public class InitServlet extends HttpServlet implements Servlet {
 			Debug.info(" - Stopping Event Expiration Service ...");
 			EventExpirationService.getInstance().interrupt();
 			
-			Debug.info(" - Stopping Online Sectioning Service ...");
-			OnlineSectioningService.stopService();
-		
-			Debug.info(" - Stopping Solver Register ... ");							
-			SolverRegisterService.stopService();
-			try {
-				SolverRegisterService.removeShutdownHook();
-			} catch (IllegalStateException e) {}
-			
 			SolverInfo.stopInfoCacheCleanup();
 		
 			ApplicationProperties.stopListener();
@@ -131,6 +120,17 @@ public class InitServlet extends HttpServlet implements Servlet {
 	         }
 	         
 	         QueueProcessor.stopProcessor();
+	         
+	         Debug.info(" - Removing Message Log Appender ... ");
+	         Appender mlog = Logger.getRootLogger().getAppender("mlog");
+	         if (mlog != null) {
+	        	 Logger.getRootLogger().removeAppender("mlog");
+	        	 mlog.close();
+	         }
+	         
+	         Debug.info(" - Closing Hibernate ... ");
+	         HibernateUtil.closeHibernate();
+	         CacheManager.getInstance().shutdown();
 	         
 	         Debug.info("******* UniTime " + Constants.getVersion() +
 						" shut down successfully *******");

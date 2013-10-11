@@ -24,7 +24,7 @@
         name="User"
         abstract="false"
         table="users">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="username"
             column="username"

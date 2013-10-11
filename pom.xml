@@ -6,7 +6,7 @@
 	
 	<groupId>org.unitime</groupId>
 	<artifactId>unitime</artifactId>
-	<version>3.4</version>
+	<version>3.5</version>
 	<packaging>jar</packaging>
 	
 	<name>UniTime</name>
@@ -80,6 +80,17 @@
 			<version>${hibernate.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-infinispan</artifactId>
+			<version>${hibernate.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-testing</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
 			<groupId>com.lowagie</groupId>
 			<artifactId>itext</artifactId>
 			<version>${itext.version}</version>
@@ -135,6 +146,12 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-dev</artifactId>
+			<version>${gwt.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
 			<version>${validation.version}</version>
@@ -180,7 +197,7 @@
 			<version>${dbcp.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.commons</groupId>
+			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${io.version}</version>
 		</dependency>
@@ -347,6 +364,26 @@
 			<artifactId>freemarker</artifactId>
 			<version>${freemaker.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jgroups</groupId>
+			<artifactId>jgroups</artifactId>
+			<version>${jgroups.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-core</artifactId>
+			<version>${infinispan.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-spring</artifactId>
+			<version>${infinispan.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.jbossts</groupId>
+			<artifactId>jbossjta</artifactId>
+			<version>${jbossjts.version}</version>
+		</dependency>
 		<!-- To enable ojdbc14 dependency, you also need to install oracle jdbc driver: 
 				mvn install:install-file -DgroupId=com.oracle -DartifactId=ojdbc14 -Dversion=10.2.0.4.0 -Dpackaging=jar -Dfile=3rd_party/ojdbc14.jar -DgeneratePom=true
 		<dependency>
@@ -363,6 +400,16 @@
 			<version>${jython.version}</version>
 		</dependency>
 		 -->
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache-core</artifactId>
+			<version>${ehcache.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache-jgroupsreplication</artifactId>
+			<version>${ehcache-jgroups.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>${project.build.directory}/src</sourceDirectory>
@@ -551,33 +598,38 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cpsolver.version>1.2.129</cpsolver.version>
-		<hibernate.version>3.5.6-Final</hibernate.version>
+		<hibernate.version>4.2.5.Final</hibernate.version>
 		<itext.version>2.1.7</itext.version>
 		<struts.version>1.3.10</struts.version>
 		<layot.version>1.3</layot.version>
-		<protobuf.version>2.4.1</protobuf.version>
-		<gwt.version>2.5.0</gwt.version>
-		<spring.version>3.1.0.RELEASE</spring.version>
-		<spring-integration.version>2.2.3.RELEASE</spring-integration.version>
+		<protobuf.version>2.5.0</protobuf.version>
+		<gwt.version>2.5.1</gwt.version>
+		<spring.version>3.1.4.RELEASE</spring.version>
+		<spring-integration.version>2.2.4.RELEASE</spring-integration.version>
 		<servlet.version>2.5</servlet.version>
 		<jsp.version>2.1</jsp.version>
 		<validation.version>1.0.0.GA</validation.version>
-		<mail.version>1.4.5</mail.version>
-		<fileupload.version>1.2.2</fileupload.version>
-		<configuration.version>1.8</configuration.version>
+		<mail.version>1.4.7</mail.version>
+		<fileupload.version>1.3</fileupload.version>
+		<configuration.version>1.9</configuration.version>
 		<dbcp.version>1.4</dbcp.version>
 		<io.version>1.3.2</io.version>
 		<restlet.version>2.0.14</restlet.version>
-		<aspectj.version>1.6.12</aspectj.version>
-		<slf4j.version>1.5.8</slf4j.version>
-		<log4j.version>1.2.16</log4j.version>
-		<javaassist.version>3.15.0-GA</javaassist.version>
-		<mysql.version>5.1.20</mysql.version>
+		<aspectj.version>1.7.3</aspectj.version>
+		<slf4j.version>1.7.5</slf4j.version>
+		<log4j.version>1.2.17</log4j.version>
+		<javaassist.version>3.18.0-GA</javaassist.version>
+		<mysql.version>5.1.26</mysql.version>
 		<cglib.version>2.2.2</cglib.version>
 		<jstl.version>1.2</jstl.version>
-		<freemaker.version>2.3.19</freemaker.version>
+		<freemaker.version>2.3.20</freemaker.version>
 		<oracle.version>10.2.0.4.0</oracle.version>
 		<jython.version>2.5.3</jython.version>
+		<jgroups.version>3.3.5.Final</jgroups.version>
+		<infinispan.version>5.3.0.Final</infinispan.version>
+		<jbossjts.version>4.16.6.Final</jbossjts.version>
+		<ehcache.version>2.6.6</ehcache.version>
+		<ehcache-jgroups.version>1.7</ehcache-jgroups.version>
 	</properties>
 	
 	<distributionManagement>

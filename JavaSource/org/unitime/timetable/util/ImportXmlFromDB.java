@@ -28,7 +28,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.dom4j.Document;
 import org.dom4j.io.SAXReader;
-import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
@@ -52,8 +52,8 @@ public class ImportXmlFromDB {
     	        ApplicationProperties.getProperty("tmtbl.data.exchange.receive.file","{?= call timetable.receive_xml_file.receive_file(?, ?)}");
     		String exchangeDir = 
     	    	ApplicationProperties.getProperty("tmtbl.data.exchange.directory", "LOAD_SMASDEV");
-            SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
-            Connection connection = hibSessionFactory.getConnectionProvider().getConnection();
+            SessionImplementor session = (SessionImplementor)new _RootDAO().getSession();
+            Connection connection = session.getJdbcConnectionAccess().obtainConnection();
             CallableStatement call = connection.prepareCall(fileReceiveSql);
             call.registerOutParameter(1, java.sql.Types.CLOB);
 		    call.setString(2, exchangeDir);
@@ -61,7 +61,7 @@ public class ImportXmlFromDB {
             call.execute();
             String response = call.getString(1);
             call.close();
-            hibSessionFactory.getConnectionProvider().closeConnection(connection);
+            session.getJdbcConnectionAccess().releaseConnection(connection);
             if (response==null || response.length()==0) return;
             StringReader reader = new StringReader(response);
             Document document = (new SAXReader()).read(reader);

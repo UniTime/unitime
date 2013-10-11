@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="SolverGroup" table="solver_group">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -53,7 +53,7 @@
             foreign-key="fk_solver_group_session"/>
 
         <set name="timetableManagers" table="solver_gr_to_tt_mgr">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="solver_group_id"/>
             <many-to-many
                 class="TimetableManager"
@@ -79,7 +79,7 @@
             lazy="true"
             cascade="all-delete-orphan">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="owner_id"/>
             <one-to-many class="Solution"/>
         </set>

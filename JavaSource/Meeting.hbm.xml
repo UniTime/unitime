@@ -24,7 +24,7 @@
         name="Meeting"
         abstract="false"
         table="meeting">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"

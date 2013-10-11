@@ -49,7 +49,6 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
-import org.unitime.timetable.gwt.server.CalendarServlet;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -86,6 +85,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 	private Long iStudentId = null;
 	private List<Request> iOldRequests = null, iNewRequests = null;
+	private boolean iUseActualRequests = false;
 	private Enrollment iOldEnrollment = null;
 	private Date iTimeStamp = null;
 	private static Format<Date> sTimeStampFormat = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
@@ -104,7 +104,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		iTimeStamp = new Date();
 	}
 
-	public Long getStudentId() { return iStudentId; }
+	public StudentEmail(Long studentId) {
+		iStudentId = studentId;
+		iUseActualRequests = true;
+		iTimeStamp = new Date();
+	}
+	
+public Long getStudentId() { return iStudentId; }
 	public Enrollment getOldEnrollment() { return iOldEnrollment; }
 	public List<Request> getOldRequests() { return iOldRequests; }
 	public List<Request> getNewRequests() { return iNewRequests; }
@@ -143,6 +149,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				action.addEnrollment(enrollment);
 			}
 			
+			Student student = server.getStudent(getStudentId());
+			if (student == null) return false;
+			action.getStudentBuilder().setUniqueId(student.getId()).setExternalId(student.getExternalId());
+
+			if (iUseActualRequests)
+				iNewRequests = student.getRequests();
+			
 			if (getNewRequests() != null) {
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
@@ -154,11 +167,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				}
 				action.addEnrollment(enrollment);
 			}
-			
-			Student student = server.getStudent(getStudentId());
-			if (student == null) return false;
-			action.getStudentBuilder().setUniqueId(student.getId()).setExternalId(student.getExternalId());
-			
+						
 			boolean ret = false;
 			
 			helper.beginTransaction();
@@ -256,7 +265,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							}
 							
 							try {
-								final String calendar = CalendarServlet.getCalendar(server, student);
+								final String calendar = CalendarExport.getCalendar(server, student);
 								if (calendar != null)
 									email.addAttachement(new DataSource() {
 										@Override

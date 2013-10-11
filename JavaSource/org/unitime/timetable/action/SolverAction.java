@@ -22,9 +22,7 @@ package org.unitime.timetable.action;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,7 +36,6 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolverForm;
 import org.unitime.timetable.form.SolverForm.LongIdValue;
@@ -46,8 +43,8 @@ import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
-import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.solver.jgroups.SolverServer;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.ExportUtils;
 
@@ -61,28 +58,18 @@ public class SolverAction extends Action {
 	@Autowired SessionContext sessionContext;
 	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
+	
+	@Autowired SolverServerService solverServerService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SolverForm myForm = (SolverForm) form;
 		
 		sessionContext.checkPermission(Right.Solver);
         
-        try {
-        	SolverRegisterService.setupLocalSolver(request.getRequestURL().substring(0,request.getRequestURL().lastIndexOf("/")),request.getServerName(),SolverRegisterService.getPort());
-        } catch (Exception e) {
-        	Debug.error(e);
-        }
-        
 		if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.CanSelectSolverServer)) {
 			List<String> hosts = new ArrayList<String>();
-            Set servers = SolverRegisterService.getInstance().getServers();
-            synchronized (servers) {
-                for (Iterator i=servers.iterator();i.hasNext();) {
-                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                    if (server.isActive())
-                        hosts.add(server.getAddress().getHostName()+":"+server.getPort());
-                }
-			}
+			for (SolverServer server: solverServerService.getServers(true))
+				hosts.add(server.getHost());
 			Collections.sort(hosts);
 			if (ApplicationProperties.isLocalSolverEnabled())
 				hosts.add(0, "local");

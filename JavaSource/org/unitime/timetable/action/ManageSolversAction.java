@@ -21,11 +21,9 @@ package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,7 +38,6 @@ import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ManageSolversForm;
 import org.unitime.timetable.model.ExamType;
@@ -56,12 +53,11 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
-import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
-import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.solver.jgroups.SolverServer;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 
@@ -78,6 +74,7 @@ public class ManageSolversAction extends Action {
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
+	@Autowired SolverServerService solverServerService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ManageSolversForm myForm = (ManageSolversForm) form;
@@ -141,83 +138,21 @@ public class ManageSolversAction extends Action {
         }
         
         if ("Shutdown".equals(op)) {
-        	String solverName = request.getParameter("solver");
-        	if (solverName!=null) {
-                Set servers = SolverRegisterService.getInstance().getServers();
-                synchronized (servers) {
-                    for (Iterator i=servers.iterator();i.hasNext();) {
-                        RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                        if (solverName.equals(server.toString())) {
-                            server.shutdown();
-                            break;
-                        }
-                    }
-    			}
-        	}
-        }
-        
-        if ("Kill".equals(op)) {
-            String solverName = request.getParameter("solver");
-            if (solverName!=null) {
-                Set servers = SolverRegisterService.getInstance().getServers();
-                synchronized (servers) {
-                    for (Iterator i=servers.iterator();i.hasNext();) {
-                        RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                        if (solverName.equals(server.toString())) {
-                            server.kill();
-                            break;
-                        }
-                    }
-                }
-            }
+        	SolverServer server = solverServerService.getServer(request.getParameter("solver"));
+        	if (server != null)
+        		server.shutdown();
         }
 
         if ("Start Using".equals(op)) {
-            String solverName = request.getParameter("solver");
-            if (solverName!=null) {
-                Set servers = SolverRegisterService.getInstance().getServers();
-                synchronized (servers) {
-                    for (Iterator i=servers.iterator();i.hasNext();) {
-                        RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                        if (solverName.equals(server.toString())) {
-                            server.startUsing();
-                            break;
-                        }
-                    }
-                }
-            }
+        	SolverServer server = solverServerService.getServer(request.getParameter("solver"));
+        	if (server != null)
+        		server.setUsageBase(0);
         }
 
         if ("Stop Using".equals(op)) {
-            String solverName = request.getParameter("solver");
-            if (solverName!=null) {
-                Set servers = SolverRegisterService.getInstance().getServers();
-                synchronized (servers) {
-                    for (Iterator i=servers.iterator();i.hasNext();) {
-                        RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                        if (solverName.equals(server.toString())) {
-                            server.stopUsing();
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        if ("Disconnect".equals(op)) {
-            String solverName = request.getParameter("solver");
-            if (solverName!=null) {
-                Set servers = SolverRegisterService.getInstance().getServers();
-                synchronized (servers) {
-                    for (Iterator i=servers.iterator();i.hasNext();) {
-                        RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                        if (solverName.equals(server.toString())) {
-                            server.disconnectProxy();
-                            break;
-                        }
-                    }
-                }
-            }
+        	SolverServer server = solverServerService.getServer(request.getParameter("solver"));
+        	if (server != null)
+        		server.setUsageBase(1000);
         }
 
         getSolvers(request);
@@ -254,7 +189,7 @@ public class ManageSolversAction extends Action {
 			
             SolverProxy x = courseTimetablingSolverService.getSolverNoSessionCheck();
             String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
-
+            
 			HashSet solvers = new HashSet(courseTimetablingSolverService.getSolvers().values());
 			for (Iterator i=solvers.iterator();i.hasNext();) {
 				SolverProxy solver = (SolverProxy)i.next();
@@ -410,14 +345,11 @@ public class ManageSolversAction extends Action {
 			
 			int nrLines = 0;
 			
-            Set servers = SolverRegisterService.getInstance().getServers();
-            synchronized (servers) {
-                for (Iterator i=servers.iterator();i.hasNext();) {
-                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
+			for (SolverServer server: solverServerService.getServers(false)) {
                     if (!server.isActive()) {
-                        String op="<input type=\"button\" value=\"Disconnect\" onClick=\"if (confirm('Do you really want to disconnect server "+server+"?')) document.location='manageSolvers.do?op=Disconnect&solver="+server.toString()+"';\">";
+                        // String op="<input type=\"button\" value=\"Disconnect\" onClick=\"if (confirm('Do you really want to disconnect server "+server.getHost()+"?')) document.location='manageSolvers.do?op=Disconnect&solver="+server.getHost()+"';\">";
                         webTable.addLine(null, new String[] {
-                                server.getAddress().getHostName()+":"+server.getPort(),
+                                server.getHost(),
                                 "<i>inactive</i>",
                                 "",
                                 "",
@@ -427,10 +359,10 @@ public class ManageSolversAction extends Action {
                                 "",
                                 "",
                                 "",
-                                op
+                                ""
                                 },
                             new Comparable[] {
-                                server.getAddress().getHostName()+":"+server.getPort(),
+                        		server.getHost(),
                                 "",
                                 null,
                                 new Long(-1),
@@ -451,8 +383,9 @@ public class ManageSolversAction extends Action {
                     long t0 = System.currentTimeMillis();
                     long usage = server.getUsage();
                     long t1 = System.currentTimeMillis();
-                    for (Enumeration e=server.getSolvers().elements();e.hasMoreElements();) {
-                        SolverProxy solver = (SolverProxy)e.nextElement();
+                    for (String user: server.getCourseSolverContainer().getSolvers()) {
+                        SolverProxy solver = server.getCourseSolverContainer().getSolver(user);
+                        if (solver == null) continue;
                         if (solver.isPassivated()) {
                             nrPassivated++;
                         } else {
@@ -461,8 +394,9 @@ public class ManageSolversAction extends Action {
                                 nrWorking++;
                         }
                     }
-                    for (Enumeration e=server.getExamSolvers().elements();e.hasMoreElements();) {
-                        ExamSolverProxy solver = (ExamSolverProxy)e.nextElement();
+                    for (String user: server.getExamSolverContainer().getSolvers()) {
+                        ExamSolverProxy solver = server.getExamSolverContainer().getSolver(user);
+                        if (solver == null) continue;
                         if (solver.isPassivated()) {
                             nrPassivated++;
                         } else {
@@ -473,16 +407,20 @@ public class ManageSolversAction extends Action {
                     }
                     String version = server.getVersion();
                     Date startTime = server.getStartTime();
-                    String op="<input type=\"button\" value=\"Shutdown\" onClick=\"if (confirm('Do you really want to shutdown server "+server+"?')) document.location='manageSolvers.do?op=Shutdown&solver="+server.toString()+"';\">";
-                    //op+="&nbsp;&nbsp;<input type=\"button\" value=\"Disconnect\" onClick=\"if (confirm('Do you really want to disconnect server "+server+"?')) document.location='manageSolvers.do?op=Disconnect&solver="+server.toString()+"';\">";
-                    //op+="&nbsp;&nbsp;<input type=\"button\" value=\"Kill\" onClick=\"if (confirm('Do you really want to kill server "+server+"?') && confirm('DO YOU REALLY REALLY WANT TO KILL SERVER "+server+"? THIS FUNCTION IS ONLY FOR TESTING PURPOSES AND SHOULD NEVER BE USED IN PRODUCTION!!!')) document.location='manageSolvers.do?op=Kill&solver="+server.toString()+"';\">";
-                    if (usage>=1000) {
-                        op+="&nbsp;&nbsp;<input type=\"button\" value=\"Enable\" onClick=\"if (confirm('Do you really want to enable server "+server+" for the new solver instances?')) document.location='manageSolvers.do?op=Start%20Using&solver="+server.toString()+"';\">";
+                    boolean local = server.isLocal();
+                    String op = "";
+                    if (usage >= 1000) {
+                        op+="<input type=\"button\" value=\"Enable\" onClick=\"if (confirm('Do you really want to enable server "+server.getHost()+" for the new solver instances?')) document.location='manageSolvers.do?op=Start%20Using&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
                     } else {
-                        op+="&nbsp;&nbsp;<input type=\"button\" value=\"Disable\" onClick=\"if (confirm('Do you really want to disable server "+server+" for the new solver instances?')) document.location='manageSolvers.do?op=Stop%20Using&solver="+server.toString()+"';\">";
+                        op+="<input type=\"button\" value=\"Disable\" onClick=\"if (confirm('Do you really want to disable server "+server.getHost()+" for the new solver instances?')) document.location='manageSolvers.do?op=Stop%20Using&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
+                    }
+                    if (!local) {
+                    	op+="<input type=\"button\" value=\"Shutdown\" onClick=\"if (confirm('Do you really want to shutdown server "+server.getHost()+"?')) document.location='manageSolvers.do?op=Shutdown&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
+                    } else {
+                    	usage += 500;
                     }
                     webTable.addLine(null, new String[] {
-                            server.getAddress().getHostName()+":"+server.getPort(),
+                            server.getHost() + (local ? " (local)" : ""),
                             (version==null||"-1".equals(version)?"<i>N/A</i>":version),
                             (startTime==null?"<i>N/A</i>":sDF.format(startTime)),
                             df.format( ((double)mem)/1024/1024)+" MB",
@@ -495,7 +433,7 @@ public class ManageSolversAction extends Action {
                             op
                             },
                         new Comparable[] {
-                            server.getAddress().getHostName()+":"+server.getPort(),
+                            server.getHost(),
                             version,
                             startTime,
                             new Long(t1-t0),
@@ -508,71 +446,9 @@ public class ManageSolversAction extends Action {
                             null
                     });
                     nrLines++;
-                }
             }
 			
-			if (ApplicationProperties.isLocalSolverEnabled()) {
-				int nrActive = 0;
-				int nrPassivated = 0;
-				int nrWorking = 0;
-				long mem = getAvailableMemory();
-				long usage = 0;
-				Date startTime = (SolverRegisterService.getInstance()==null?null:SolverRegisterService.getInstance().getStartTime());
-				for (SolverProxy solver: courseTimetablingSolverService.getLocalSolvers().values()) {
-					usage ++;
-					if (solver.isPassivated()) {
-						nrPassivated++;
-					} else {
-						nrActive++;
-						usage ++;
-						if (solver.isWorking()) {
-							nrWorking++;
-							usage ++;
-						}
-					}
-				}
-                for (ExamSolverProxy solver: examinationSolverService.getLocalSolvers().values()) {
-                	usage ++;
-                    if (solver.isPassivated()) {
-                        nrPassivated++;
-                    } else {
-                        nrActive++;
-                        usage ++;
-                        if (solver.isWorking()) {
-                            nrWorking++;
-                            usage ++;
-                        }
-                    }
-                }
-				String version = Constants.getVersion();
-				webTable.addLine(null, new String[] {
-				        "local",
-						(version==null||"-1".equals(version)?"<i>N/A</i>":version),
-						(startTime==null?"<i>N/A</i>":sDF.format(startTime)),
-						df.format(((double)mem)/1024/1024)+" MB",
-						"N/A",
-						String.valueOf(usage),
-						String.valueOf(nrActive+nrPassivated),
-						String.valueOf(nrActive),
-						String.valueOf(nrWorking),
-						String.valueOf(nrPassivated),
-						""
-						},
-					new Comparable[] {
-						"",
-						version,
-						startTime,
-						new Long(mem),
-						new Long(0),
-						new Long(usage),
-						new Integer(nrActive+nrPassivated),
-						new Integer(nrActive),
-						new Integer(nrWorking),
-						new Integer(nrPassivated),
-						null
-				});
-				nrLines++;
-			}
+
 			if (nrLines==0)
 				webTable.addLine(null, new String[] {"<i>No solver server is running.</i>"}, null, null );
 
@@ -809,11 +685,6 @@ public class ManageSolversAction extends Action {
                throw new Exception(e);
            }
        }
-       
-   	private long getAvailableMemory() {
-		System.gc();
-		return Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory(); 
-	}
 
 }
 

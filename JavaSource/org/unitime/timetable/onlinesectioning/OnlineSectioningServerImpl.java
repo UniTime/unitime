@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -106,7 +105,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	private Queue<Runnable> iExecutorQueue = new LinkedList<Runnable>();
 	private HashSet<CacheElement<Long>> iOfferingsToPersistExpectedSpaces = new HashSet<CacheElement<Long>>();
 	
-	OnlineSectioningServerImpl(Long sessionId, boolean waitTillStarted) throws SectioningException {
+	public OnlineSectioningServerImpl(Long sessionId, boolean waitTillStarted) throws SectioningException {
 		iConfig = new ServerConfig();
 		iDistanceMetric = new DistanceMetric(iConfig);
 		TravelTime.populateTravelTimes(iDistanceMetric, sessionId);
@@ -197,7 +196,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			iLock.readLock().unlock();
 		}
 	}
-
+	
 	@Override
 	public CourseInfo getCourseInfo(Long courseId) {
 		iLock.readLock().lock();
@@ -208,6 +207,12 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		}
 	}
 	
+	@Override
+	public CourseDetails getCourseDetails(Long courseId) {
+		Course course = getCourse(courseId);
+		return course == null ? null : new CourseDetails(course);
+	}
+
 	@Override
 	public Student getStudent(Long studentId) {
 		iLock.readLock().lock();
@@ -288,13 +293,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			iLock.readLock().unlock();
 		}
 	}
-	
-	@Override
-	public URL getSectionUrl(Long courseId, Section section) {
-		if (OnlineSectioningService.sSectionUrlProvider == null) return null;
-		return OnlineSectioningService.sSectionUrlProvider.getSectionUrl(getAcademicSession(), courseId, section);
-	}
-	
+		
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Section> getSections(CourseInfo courseInfo) {
@@ -566,7 +565,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException {
 		long c0 = OnlineSectioningHelper.getCpuTime();
 		String cacheMode = getConfig().getProperty(action.name() + ".CacheMode", getConfig().getProperty("CacheMode"));
-		OnlineSectioningHelper h = new OnlineSectioningHelper(user, cacheMode == null ? null : CacheMode.parse(cacheMode));
+		OnlineSectioningHelper h = new OnlineSectioningHelper(user, cacheMode == null ? null : CacheMode.valueOf(cacheMode));
 		try {
 			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(OnlineSectioningServer.class.getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
 			h.addAction(action, getAcademicSession());

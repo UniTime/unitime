@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="CourseDemand" table="course_demand">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -76,7 +76,7 @@
             inverse="true"
             cascade="all">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="course_demand_id" foreign-key="fk_course_request_demand"/>
             <one-to-many class="CourseRequest"/>
         </set>
@@ -87,7 +87,7 @@
             inverse="true"
             cascade="all">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="course_demand_id" foreign-key="fk_student_enrl_msg_demand"/>
             <one-to-many class="StudentEnrollmentMessage"/>
         </set>

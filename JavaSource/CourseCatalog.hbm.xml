@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="CourseCatalog" table="course_catalog">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -130,7 +130,7 @@
             length="10"/>
 
         <set name="subparts" cascade="all-delete-orphan">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="course_catalog_id"/>
             <one-to-many class="CourseSubpartCredit"/>
         </set>

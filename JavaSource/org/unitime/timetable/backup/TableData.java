@@ -10,103 +10,233 @@ public final class TableData {
   }
   public interface TableOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
-    
+
     // required string name = 1;
+    /**
+     * <code>required string name = 1;</code>
+     */
     boolean hasName();
-    String getName();
-    
+    /**
+     * <code>required string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>required string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
     // repeated .Record record = 2;
+    /**
+     * <code>repeated .Record record = 2;</code>
+     */
     java.util.List<org.unitime.timetable.backup.TableData.Record> 
         getRecordList();
+    /**
+     * <code>repeated .Record record = 2;</code>
+     */
     org.unitime.timetable.backup.TableData.Record getRecord(int index);
+    /**
+     * <code>repeated .Record record = 2;</code>
+     */
     int getRecordCount();
+    /**
+     * <code>repeated .Record record = 2;</code>
+     */
     java.util.List<? extends org.unitime.timetable.backup.TableData.RecordOrBuilder> 
         getRecordOrBuilderList();
+    /**
+     * <code>repeated .Record record = 2;</code>
+     */
     org.unitime.timetable.backup.TableData.RecordOrBuilder getRecordOrBuilder(
         int index);
   }
+  /**
+   * Protobuf type {@code Table}
+   */
   public static final class Table extends
       com.google.protobuf.GeneratedMessage
       implements TableOrBuilder {
     // Use Table.newBuilder() to construct.
-    private Table(Builder builder) {
+    private Table(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
+      this.unknownFields = builder.getUnknownFields();
     }
-    private Table(boolean noInit) {}
-    
+    private Table(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
     private static final Table defaultInstance;
     public static Table getDefaultInstance() {
       return defaultInstance;
     }
-    
+
     public Table getDefaultInstanceForType() {
       return defaultInstance;
     }
-    
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private Table(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              name_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                record_ = new java.util.ArrayList<org.unitime.timetable.backup.TableData.Record>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              record_.add(input.readMessage(org.unitime.timetable.backup.TableData.Record.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          record_ = java.util.Collections.unmodifiableList(record_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.unitime.timetable.backup.TableData.internal_static_Table_descriptor;
     }
-    
+
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.unitime.timetable.backup.TableData.internal_static_Table_fieldAccessorTable;
+      return org.unitime.timetable.backup.TableData.internal_static_Table_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.unitime.timetable.backup.TableData.Table.class, org.unitime.timetable.backup.TableData.Table.Builder.class);
     }
-    
+
+    public static com.google.protobuf.Parser<Table> PARSER =
+        new com.google.protobuf.AbstractParser<Table>() {
+      public Table parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new Table(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Table> getParserForType() {
+      return PARSER;
+    }
+
     private int bitField0_;
     // required string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
+    /**
+     * <code>required string name = 1;</code>
+     */
     public boolean hasName() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
-    public String getName() {
+    /**
+     * <code>required string name = 1;</code>
+     */
+    public java.lang.String getName() {
       java.lang.Object ref = name_;
-      if (ref instanceof String) {
-        return (String) ref;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
           name_ = s;
         }
         return s;
       }
     }
-    private com.google.protobuf.ByteString getNameBytes() {
+    /**
+     * <code>required string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
       java.lang.Object ref = name_;
-      if (ref instanceof String) {
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
         name_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    
+
     // repeated .Record record = 2;
     public static final int RECORD_FIELD_NUMBER = 2;
     private java.util.List<org.unitime.timetable.backup.TableData.Record> record_;
+    /**
+     * <code>repeated .Record record = 2;</code>
+     */
     public java.util.List<org.unitime.timetable.backup.TableData.Record> getRecordList() {
       return record_;
     }
+    /**
+     * <code>repeated .Record record = 2;</code>
+     */
     public java.util.List<? extends org.unitime.timetable.backup.TableData.RecordOrBuilder> 
         getRecordOrBuilderList() {
       return record_;
     }
+    /**
+     * <code>repeated .Record record = 2;</code>
+     */
     public int getRecordCount() {
       return record_.size();
     }
+    /**
+     * <code>repeated .Record record = 2;</code>
+     */
     public org.unitime.timetable.backup.TableData.Record getRecord(int index) {
       return record_.get(index);
     }
+    /**
+     * <code>repeated .Record record = 2;</code>
+     */
     public org.unitime.timetable.backup.TableData.RecordOrBuilder getRecordOrBuilder(
         int index) {
       return record_.get(index);
     }
-    
+
     private void initFields() {
       name_ = "";
       record_ = java.util.Collections.emptyList();
@@ -115,7 +245,7 @@ public final class TableData {
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
-      
+
       if (!hasName()) {
         memoizedIsInitialized = 0;
         return false;
@@ -129,7 +259,7 @@ public final class TableData {
       memoizedIsInitialized = 1;
       return true;
     }
-    
+
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
@@ -141,12 +271,12 @@ public final class TableData {
       }
       getUnknownFields().writeTo(output);
     }
-    
+
     private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
-    
+
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
@@ -160,94 +290,83 @@ public final class TableData {
       memoizedSerializedSize = size;
       return size;
     }
-    
+
     private static final long serialVersionUID = 0L;
     @java.lang.Override
     protected java.lang.Object writeReplace()
         throws java.io.ObjectStreamException {
       return super.writeReplace();
     }
-    
+
     public static org.unitime.timetable.backup.TableData.Table parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
+      return PARSER.parseFrom(data);
     }
     public static org.unitime.timetable.backup.TableData.Table parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Table parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
+      return PARSER.parseFrom(data);
     }
     public static org.unitime.timetable.backup.TableData.Table parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Table parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
+      return PARSER.parseFrom(input);
     }
     public static org.unitime.timetable.backup.TableData.Table parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(input, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Table parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
+      return PARSER.parseDelimitedFrom(input);
     }
     public static org.unitime.timetable.backup.TableData.Table parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Table parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
+      return PARSER.parseFrom(input);
     }
     public static org.unitime.timetable.backup.TableData.Table parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(input, extensionRegistry);
     }
-    
+
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder(org.unitime.timetable.backup.TableData.Table prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
-    
+
     @java.lang.Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
+    /**
+     * Protobuf type {@code Table}
+     */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.unitime.timetable.backup.TableData.TableOrBuilder {
@@ -255,18 +374,21 @@ public final class TableData {
           getDescriptor() {
         return org.unitime.timetable.backup.TableData.internal_static_Table_descriptor;
       }
-      
+
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.unitime.timetable.backup.TableData.internal_static_Table_fieldAccessorTable;
+        return org.unitime.timetable.backup.TableData.internal_static_Table_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.unitime.timetable.backup.TableData.Table.class, org.unitime.timetable.backup.TableData.Table.Builder.class);
       }
-      
+
       // Construct using org.unitime.timetable.backup.TableData.Table.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
-      
-      private Builder(BuilderParent parent) {
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -278,7 +400,7 @@ public final class TableData {
       private static Builder create() {
         return new Builder();
       }
-      
+
       public Builder clear() {
         super.clear();
         name_ = "";
@@ -291,20 +413,20 @@ public final class TableData {
         }
         return this;
       }
-      
+
       public Builder clone() {
         return create().mergeFrom(buildPartial());
       }
-      
+
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.unitime.timetable.backup.TableData.Table.getDescriptor();
+        return org.unitime.timetable.backup.TableData.internal_static_Table_descriptor;
       }
-      
+
       public org.unitime.timetable.backup.TableData.Table getDefaultInstanceForType() {
         return org.unitime.timetable.backup.TableData.Table.getDefaultInstance();
       }
-      
+
       public org.unitime.timetable.backup.TableData.Table build() {
         org.unitime.timetable.backup.TableData.Table result = buildPartial();
         if (!result.isInitialized()) {
@@ -312,17 +434,7 @@ public final class TableData {
         }
         return result;
       }
-      
-      private org.unitime.timetable.backup.TableData.Table buildParsed()
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        org.unitime.timetable.backup.TableData.Table result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(
-            result).asInvalidProtocolBufferException();
-        }
-        return result;
-      }
-      
+
       public org.unitime.timetable.backup.TableData.Table buildPartial() {
         org.unitime.timetable.backup.TableData.Table result = new org.unitime.timetable.backup.TableData.Table(this);
         int from_bitField0_ = bitField0_;
@@ -344,7 +456,7 @@ public final class TableData {
         onBuilt();
         return result;
       }
-      
+
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.unitime.timetable.backup.TableData.Table) {
           return mergeFrom((org.unitime.timetable.backup.TableData.Table)other);
@@ -353,11 +465,13 @@ public final class TableData {
           return this;
         }
       }
-      
+
       public Builder mergeFrom(org.unitime.timetable.backup.TableData.Table other) {
         if (other == org.unitime.timetable.backup.TableData.Table.getDefaultInstance()) return this;
         if (other.hasName()) {
-          setName(other.getName());
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
         }
         if (recordBuilder_ == null) {
           if (!other.record_.isEmpty()) {
@@ -388,7 +502,7 @@ public final class TableData {
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
-      
+
       public final boolean isInitialized() {
         if (!hasName()) {
           
@@ -402,63 +516,69 @@ public final class TableData {
         }
         return true;
       }
-      
+
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder(
-            this.getUnknownFields());
-        while (true) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              this.setUnknownFields(unknownFields.build());
-              onChanged();
-              return this;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                this.setUnknownFields(unknownFields.build());
-                onChanged();
-                return this;
-              }
-              break;
-            }
-            case 10: {
-              bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
-              break;
-            }
-            case 18: {
-              org.unitime.timetable.backup.TableData.Record.Builder subBuilder = org.unitime.timetable.backup.TableData.Record.newBuilder();
-              input.readMessage(subBuilder, extensionRegistry);
-              addRecord(subBuilder.buildPartial());
-              break;
-            }
+        org.unitime.timetable.backup.TableData.Table parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.unitime.timetable.backup.TableData.Table) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
           }
         }
+        return this;
       }
-      
       private int bitField0_;
-      
+
       // required string name = 1;
       private java.lang.Object name_ = "";
+      /**
+       * <code>required string name = 1;</code>
+       */
       public boolean hasName() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
-      public String getName() {
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public java.lang.String getName() {
         java.lang.Object ref = name_;
-        if (!(ref instanceof String)) {
-          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
           name_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
-      public Builder setName(String value) {
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -467,18 +587,29 @@ public final class TableData {
         onChanged();
         return this;
       }
+      /**
+       * <code>required string name = 1;</code>
+       */
       public Builder clearName() {
         bitField0_ = (bitField0_ & ~0x00000001);
         name_ = getDefaultInstance().getName();
         onChanged();
         return this;
       }
-      void setName(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000001;
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
         name_ = value;
         onChanged();
+        return this;
       }
-      
+
       // repeated .Record record = 2;
       private java.util.List<org.unitime.timetable.backup.TableData.Record> record_ =
         java.util.Collections.emptyList();
@@ -488,10 +619,13 @@ public final class TableData {
           bitField0_ |= 0x00000002;
          }
       }
-      
+
       private com.google.protobuf.RepeatedFieldBuilder<
           org.unitime.timetable.backup.TableData.Record, org.unitime.timetable.backup.TableData.Record.Builder, org.unitime.timetable.backup.TableData.RecordOrBuilder> recordBuilder_;
-      
+
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public java.util.List<org.unitime.timetable.backup.TableData.Record> getRecordList() {
         if (recordBuilder_ == null) {
           return java.util.Collections.unmodifiableList(record_);
@@ -499,6 +633,9 @@ public final class TableData {
           return recordBuilder_.getMessageList();
         }
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public int getRecordCount() {
         if (recordBuilder_ == null) {
           return record_.size();
@@ -506,6 +643,9 @@ public final class TableData {
           return recordBuilder_.getCount();
         }
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public org.unitime.timetable.backup.TableData.Record getRecord(int index) {
         if (recordBuilder_ == null) {
           return record_.get(index);
@@ -513,6 +653,9 @@ public final class TableData {
           return recordBuilder_.getMessage(index);
         }
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public Builder setRecord(
           int index, org.unitime.timetable.backup.TableData.Record value) {
         if (recordBuilder_ == null) {
@@ -527,6 +670,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public Builder setRecord(
           int index, org.unitime.timetable.backup.TableData.Record.Builder builderForValue) {
         if (recordBuilder_ == null) {
@@ -538,6 +684,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public Builder addRecord(org.unitime.timetable.backup.TableData.Record value) {
         if (recordBuilder_ == null) {
           if (value == null) {
@@ -551,6 +700,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public Builder addRecord(
           int index, org.unitime.timetable.backup.TableData.Record value) {
         if (recordBuilder_ == null) {
@@ -565,6 +717,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public Builder addRecord(
           org.unitime.timetable.backup.TableData.Record.Builder builderForValue) {
         if (recordBuilder_ == null) {
@@ -576,6 +731,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public Builder addRecord(
           int index, org.unitime.timetable.backup.TableData.Record.Builder builderForValue) {
         if (recordBuilder_ == null) {
@@ -587,6 +745,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public Builder addAllRecord(
           java.lang.Iterable<? extends org.unitime.timetable.backup.TableData.Record> values) {
         if (recordBuilder_ == null) {
@@ -598,6 +759,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public Builder clearRecord() {
         if (recordBuilder_ == null) {
           record_ = java.util.Collections.emptyList();
@@ -608,6 +772,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public Builder removeRecord(int index) {
         if (recordBuilder_ == null) {
           ensureRecordIsMutable();
@@ -618,10 +785,16 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public org.unitime.timetable.backup.TableData.Record.Builder getRecordBuilder(
           int index) {
         return getRecordFieldBuilder().getBuilder(index);
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public org.unitime.timetable.backup.TableData.RecordOrBuilder getRecordOrBuilder(
           int index) {
         if (recordBuilder_ == null) {
@@ -629,6 +802,9 @@ public final class TableData {
           return recordBuilder_.getMessageOrBuilder(index);
         }
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public java.util.List<? extends org.unitime.timetable.backup.TableData.RecordOrBuilder> 
            getRecordOrBuilderList() {
         if (recordBuilder_ != null) {
@@ -637,15 +813,24 @@ public final class TableData {
           return java.util.Collections.unmodifiableList(record_);
         }
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public org.unitime.timetable.backup.TableData.Record.Builder addRecordBuilder() {
         return getRecordFieldBuilder().addBuilder(
             org.unitime.timetable.backup.TableData.Record.getDefaultInstance());
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public org.unitime.timetable.backup.TableData.Record.Builder addRecordBuilder(
           int index) {
         return getRecordFieldBuilder().addBuilder(
             index, org.unitime.timetable.backup.TableData.Record.getDefaultInstance());
       }
+      /**
+       * <code>repeated .Record record = 2;</code>
+       */
       public java.util.List<org.unitime.timetable.backup.TableData.Record.Builder> 
            getRecordBuilderList() {
         return getRecordFieldBuilder().getBuilderList();
@@ -664,117 +849,247 @@ public final class TableData {
         }
         return recordBuilder_;
       }
-      
+
       // @@protoc_insertion_point(builder_scope:Table)
     }
-    
+
     static {
       defaultInstance = new Table(true);
       defaultInstance.initFields();
     }
-    
+
     // @@protoc_insertion_point(class_scope:Table)
   }
-  
+
   public interface RecordOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
-    
+
     // required string id = 1;
+    /**
+     * <code>required string id = 1;</code>
+     */
     boolean hasId();
-    String getId();
-    
+    /**
+     * <code>required string id = 1;</code>
+     */
+    java.lang.String getId();
+    /**
+     * <code>required string id = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getIdBytes();
+
     // repeated .Element element = 2;
+    /**
+     * <code>repeated .Element element = 2;</code>
+     */
     java.util.List<org.unitime.timetable.backup.TableData.Element> 
         getElementList();
+    /**
+     * <code>repeated .Element element = 2;</code>
+     */
     org.unitime.timetable.backup.TableData.Element getElement(int index);
+    /**
+     * <code>repeated .Element element = 2;</code>
+     */
     int getElementCount();
+    /**
+     * <code>repeated .Element element = 2;</code>
+     */
     java.util.List<? extends org.unitime.timetable.backup.TableData.ElementOrBuilder> 
         getElementOrBuilderList();
+    /**
+     * <code>repeated .Element element = 2;</code>
+     */
     org.unitime.timetable.backup.TableData.ElementOrBuilder getElementOrBuilder(
         int index);
   }
+  /**
+   * Protobuf type {@code Record}
+   */
   public static final class Record extends
       com.google.protobuf.GeneratedMessage
       implements RecordOrBuilder {
     // Use Record.newBuilder() to construct.
-    private Record(Builder builder) {
+    private Record(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
+      this.unknownFields = builder.getUnknownFields();
     }
-    private Record(boolean noInit) {}
-    
+    private Record(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
     private static final Record defaultInstance;
     public static Record getDefaultInstance() {
       return defaultInstance;
     }
-    
+
     public Record getDefaultInstanceForType() {
       return defaultInstance;
     }
-    
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private Record(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              id_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                element_ = new java.util.ArrayList<org.unitime.timetable.backup.TableData.Element>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              element_.add(input.readMessage(org.unitime.timetable.backup.TableData.Element.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          element_ = java.util.Collections.unmodifiableList(element_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.unitime.timetable.backup.TableData.internal_static_Record_descriptor;
     }
-    
+
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.unitime.timetable.backup.TableData.internal_static_Record_fieldAccessorTable;
+      return org.unitime.timetable.backup.TableData.internal_static_Record_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.unitime.timetable.backup.TableData.Record.class, org.unitime.timetable.backup.TableData.Record.Builder.class);
     }
-    
+
+    public static com.google.protobuf.Parser<Record> PARSER =
+        new com.google.protobuf.AbstractParser<Record>() {
+      public Record parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new Record(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Record> getParserForType() {
+      return PARSER;
+    }
+
     private int bitField0_;
     // required string id = 1;
     public static final int ID_FIELD_NUMBER = 1;
     private java.lang.Object id_;
+    /**
+     * <code>required string id = 1;</code>
+     */
     public boolean hasId() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
-    public String getId() {
+    /**
+     * <code>required string id = 1;</code>
+     */
+    public java.lang.String getId() {
       java.lang.Object ref = id_;
-      if (ref instanceof String) {
-        return (String) ref;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
           id_ = s;
         }
         return s;
       }
     }
-    private com.google.protobuf.ByteString getIdBytes() {
+    /**
+     * <code>required string id = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getIdBytes() {
       java.lang.Object ref = id_;
-      if (ref instanceof String) {
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
         id_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    
+
     // repeated .Element element = 2;
     public static final int ELEMENT_FIELD_NUMBER = 2;
     private java.util.List<org.unitime.timetable.backup.TableData.Element> element_;
+    /**
+     * <code>repeated .Element element = 2;</code>
+     */
     public java.util.List<org.unitime.timetable.backup.TableData.Element> getElementList() {
       return element_;
     }
+    /**
+     * <code>repeated .Element element = 2;</code>
+     */
     public java.util.List<? extends org.unitime.timetable.backup.TableData.ElementOrBuilder> 
         getElementOrBuilderList() {
       return element_;
     }
+    /**
+     * <code>repeated .Element element = 2;</code>
+     */
     public int getElementCount() {
       return element_.size();
     }
+    /**
+     * <code>repeated .Element element = 2;</code>
+     */
     public org.unitime.timetable.backup.TableData.Element getElement(int index) {
       return element_.get(index);
     }
+    /**
+     * <code>repeated .Element element = 2;</code>
+     */
     public org.unitime.timetable.backup.TableData.ElementOrBuilder getElementOrBuilder(
         int index) {
       return element_.get(index);
     }
-    
+
     private void initFields() {
       id_ = "";
       element_ = java.util.Collections.emptyList();
@@ -783,7 +1098,7 @@ public final class TableData {
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
-      
+
       if (!hasId()) {
         memoizedIsInitialized = 0;
         return false;
@@ -797,7 +1112,7 @@ public final class TableData {
       memoizedIsInitialized = 1;
       return true;
     }
-    
+
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
@@ -809,12 +1124,12 @@ public final class TableData {
       }
       getUnknownFields().writeTo(output);
     }
-    
+
     private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
-    
+
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
@@ -828,94 +1143,83 @@ public final class TableData {
       memoizedSerializedSize = size;
       return size;
     }
-    
+
     private static final long serialVersionUID = 0L;
     @java.lang.Override
     protected java.lang.Object writeReplace()
         throws java.io.ObjectStreamException {
       return super.writeReplace();
     }
-    
+
     public static org.unitime.timetable.backup.TableData.Record parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
+      return PARSER.parseFrom(data);
     }
     public static org.unitime.timetable.backup.TableData.Record parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Record parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
+      return PARSER.parseFrom(data);
     }
     public static org.unitime.timetable.backup.TableData.Record parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Record parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
+      return PARSER.parseFrom(input);
     }
     public static org.unitime.timetable.backup.TableData.Record parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(input, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Record parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
+      return PARSER.parseDelimitedFrom(input);
     }
     public static org.unitime.timetable.backup.TableData.Record parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Record parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
+      return PARSER.parseFrom(input);
     }
     public static org.unitime.timetable.backup.TableData.Record parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(input, extensionRegistry);
     }
-    
+
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder(org.unitime.timetable.backup.TableData.Record prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
-    
+
     @java.lang.Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
+    /**
+     * Protobuf type {@code Record}
+     */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.unitime.timetable.backup.TableData.RecordOrBuilder {
@@ -923,18 +1227,21 @@ public final class TableData {
           getDescriptor() {
         return org.unitime.timetable.backup.TableData.internal_static_Record_descriptor;
       }
-      
+
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.unitime.timetable.backup.TableData.internal_static_Record_fieldAccessorTable;
+        return org.unitime.timetable.backup.TableData.internal_static_Record_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.unitime.timetable.backup.TableData.Record.class, org.unitime.timetable.backup.TableData.Record.Builder.class);
       }
-      
+
       // Construct using org.unitime.timetable.backup.TableData.Record.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
-      
-      private Builder(BuilderParent parent) {
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -946,7 +1253,7 @@ public final class TableData {
       private static Builder create() {
         return new Builder();
       }
-      
+
       public Builder clear() {
         super.clear();
         id_ = "";
@@ -959,20 +1266,20 @@ public final class TableData {
         }
         return this;
       }
-      
+
       public Builder clone() {
         return create().mergeFrom(buildPartial());
       }
-      
+
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.unitime.timetable.backup.TableData.Record.getDescriptor();
+        return org.unitime.timetable.backup.TableData.internal_static_Record_descriptor;
       }
-      
+
       public org.unitime.timetable.backup.TableData.Record getDefaultInstanceForType() {
         return org.unitime.timetable.backup.TableData.Record.getDefaultInstance();
       }
-      
+
       public org.unitime.timetable.backup.TableData.Record build() {
         org.unitime.timetable.backup.TableData.Record result = buildPartial();
         if (!result.isInitialized()) {
@@ -980,17 +1287,7 @@ public final class TableData {
         }
         return result;
       }
-      
-      private org.unitime.timetable.backup.TableData.Record buildParsed()
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        org.unitime.timetable.backup.TableData.Record result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(
-            result).asInvalidProtocolBufferException();
-        }
-        return result;
-      }
-      
+
       public org.unitime.timetable.backup.TableData.Record buildPartial() {
         org.unitime.timetable.backup.TableData.Record result = new org.unitime.timetable.backup.TableData.Record(this);
         int from_bitField0_ = bitField0_;
@@ -1012,7 +1309,7 @@ public final class TableData {
         onBuilt();
         return result;
       }
-      
+
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.unitime.timetable.backup.TableData.Record) {
           return mergeFrom((org.unitime.timetable.backup.TableData.Record)other);
@@ -1021,11 +1318,13 @@ public final class TableData {
           return this;
         }
       }
-      
+
       public Builder mergeFrom(org.unitime.timetable.backup.TableData.Record other) {
         if (other == org.unitime.timetable.backup.TableData.Record.getDefaultInstance()) return this;
         if (other.hasId()) {
-          setId(other.getId());
+          bitField0_ |= 0x00000001;
+          id_ = other.id_;
+          onChanged();
         }
         if (elementBuilder_ == null) {
           if (!other.element_.isEmpty()) {
@@ -1056,7 +1355,7 @@ public final class TableData {
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
-      
+
       public final boolean isInitialized() {
         if (!hasId()) {
           
@@ -1070,63 +1369,69 @@ public final class TableData {
         }
         return true;
       }
-      
+
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder(
-            this.getUnknownFields());
-        while (true) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              this.setUnknownFields(unknownFields.build());
-              onChanged();
-              return this;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                this.setUnknownFields(unknownFields.build());
-                onChanged();
-                return this;
-              }
-              break;
-            }
-            case 10: {
-              bitField0_ |= 0x00000001;
-              id_ = input.readBytes();
-              break;
-            }
-            case 18: {
-              org.unitime.timetable.backup.TableData.Element.Builder subBuilder = org.unitime.timetable.backup.TableData.Element.newBuilder();
-              input.readMessage(subBuilder, extensionRegistry);
-              addElement(subBuilder.buildPartial());
-              break;
-            }
+        org.unitime.timetable.backup.TableData.Record parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.unitime.timetable.backup.TableData.Record) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
           }
         }
+        return this;
       }
-      
       private int bitField0_;
-      
+
       // required string id = 1;
       private java.lang.Object id_ = "";
+      /**
+       * <code>required string id = 1;</code>
+       */
       public boolean hasId() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
-      public String getId() {
+      /**
+       * <code>required string id = 1;</code>
+       */
+      public java.lang.String getId() {
         java.lang.Object ref = id_;
-        if (!(ref instanceof String)) {
-          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
           id_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
-      public Builder setId(String value) {
+      /**
+       * <code>required string id = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getIdBytes() {
+        java.lang.Object ref = id_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          id_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string id = 1;</code>
+       */
+      public Builder setId(
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1135,18 +1440,29 @@ public final class TableData {
         onChanged();
         return this;
       }
+      /**
+       * <code>required string id = 1;</code>
+       */
       public Builder clearId() {
         bitField0_ = (bitField0_ & ~0x00000001);
         id_ = getDefaultInstance().getId();
         onChanged();
         return this;
       }
-      void setId(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000001;
+      /**
+       * <code>required string id = 1;</code>
+       */
+      public Builder setIdBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
         id_ = value;
         onChanged();
+        return this;
       }
-      
+
       // repeated .Element element = 2;
       private java.util.List<org.unitime.timetable.backup.TableData.Element> element_ =
         java.util.Collections.emptyList();
@@ -1156,10 +1472,13 @@ public final class TableData {
           bitField0_ |= 0x00000002;
          }
       }
-      
+
       private com.google.protobuf.RepeatedFieldBuilder<
           org.unitime.timetable.backup.TableData.Element, org.unitime.timetable.backup.TableData.Element.Builder, org.unitime.timetable.backup.TableData.ElementOrBuilder> elementBuilder_;
-      
+
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public java.util.List<org.unitime.timetable.backup.TableData.Element> getElementList() {
         if (elementBuilder_ == null) {
           return java.util.Collections.unmodifiableList(element_);
@@ -1167,6 +1486,9 @@ public final class TableData {
           return elementBuilder_.getMessageList();
         }
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public int getElementCount() {
         if (elementBuilder_ == null) {
           return element_.size();
@@ -1174,6 +1496,9 @@ public final class TableData {
           return elementBuilder_.getCount();
         }
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public org.unitime.timetable.backup.TableData.Element getElement(int index) {
         if (elementBuilder_ == null) {
           return element_.get(index);
@@ -1181,6 +1506,9 @@ public final class TableData {
           return elementBuilder_.getMessage(index);
         }
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public Builder setElement(
           int index, org.unitime.timetable.backup.TableData.Element value) {
         if (elementBuilder_ == null) {
@@ -1195,6 +1523,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public Builder setElement(
           int index, org.unitime.timetable.backup.TableData.Element.Builder builderForValue) {
         if (elementBuilder_ == null) {
@@ -1206,6 +1537,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public Builder addElement(org.unitime.timetable.backup.TableData.Element value) {
         if (elementBuilder_ == null) {
           if (value == null) {
@@ -1219,6 +1553,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public Builder addElement(
           int index, org.unitime.timetable.backup.TableData.Element value) {
         if (elementBuilder_ == null) {
@@ -1233,6 +1570,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public Builder addElement(
           org.unitime.timetable.backup.TableData.Element.Builder builderForValue) {
         if (elementBuilder_ == null) {
@@ -1244,6 +1584,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public Builder addElement(
           int index, org.unitime.timetable.backup.TableData.Element.Builder builderForValue) {
         if (elementBuilder_ == null) {
@@ -1255,6 +1598,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public Builder addAllElement(
           java.lang.Iterable<? extends org.unitime.timetable.backup.TableData.Element> values) {
         if (elementBuilder_ == null) {
@@ -1266,6 +1612,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public Builder clearElement() {
         if (elementBuilder_ == null) {
           element_ = java.util.Collections.emptyList();
@@ -1276,6 +1625,9 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public Builder removeElement(int index) {
         if (elementBuilder_ == null) {
           ensureElementIsMutable();
@@ -1286,10 +1638,16 @@ public final class TableData {
         }
         return this;
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public org.unitime.timetable.backup.TableData.Element.Builder getElementBuilder(
           int index) {
         return getElementFieldBuilder().getBuilder(index);
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public org.unitime.timetable.backup.TableData.ElementOrBuilder getElementOrBuilder(
           int index) {
         if (elementBuilder_ == null) {
@@ -1297,6 +1655,9 @@ public final class TableData {
           return elementBuilder_.getMessageOrBuilder(index);
         }
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public java.util.List<? extends org.unitime.timetable.backup.TableData.ElementOrBuilder> 
            getElementOrBuilderList() {
         if (elementBuilder_ != null) {
@@ -1305,15 +1666,24 @@ public final class TableData {
           return java.util.Collections.unmodifiableList(element_);
         }
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public org.unitime.timetable.backup.TableData.Element.Builder addElementBuilder() {
         return getElementFieldBuilder().addBuilder(
             org.unitime.timetable.backup.TableData.Element.getDefaultInstance());
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public org.unitime.timetable.backup.TableData.Element.Builder addElementBuilder(
           int index) {
         return getElementFieldBuilder().addBuilder(
             index, org.unitime.timetable.backup.TableData.Element.getDefaultInstance());
       }
+      /**
+       * <code>repeated .Element element = 2;</code>
+       */
       public java.util.List<org.unitime.timetable.backup.TableData.Element.Builder> 
            getElementBuilderList() {
         return getElementFieldBuilder().getBuilderList();
@@ -1332,105 +1702,236 @@ public final class TableData {
         }
         return elementBuilder_;
       }
-      
+
       // @@protoc_insertion_point(builder_scope:Record)
     }
-    
+
     static {
       defaultInstance = new Record(true);
       defaultInstance.initFields();
     }
-    
+
     // @@protoc_insertion_point(class_scope:Record)
   }
-  
+
   public interface ElementOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
-    
+
     // required string name = 1;
+    /**
+     * <code>required string name = 1;</code>
+     */
     boolean hasName();
-    String getName();
-    
+    /**
+     * <code>required string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>required string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
     // repeated string value = 2;
-    java.util.List<String> getValueList();
+    /**
+     * <code>repeated string value = 2;</code>
+     */
+    java.util.List<java.lang.String>
+    getValueList();
+    /**
+     * <code>repeated string value = 2;</code>
+     */
     int getValueCount();
-    String getValue(int index);
+    /**
+     * <code>repeated string value = 2;</code>
+     */
+    java.lang.String getValue(int index);
+    /**
+     * <code>repeated string value = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getValueBytes(int index);
   }
+  /**
+   * Protobuf type {@code Element}
+   */
   public static final class Element extends
       com.google.protobuf.GeneratedMessage
       implements ElementOrBuilder {
     // Use Element.newBuilder() to construct.
-    private Element(Builder builder) {
+    private Element(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
+      this.unknownFields = builder.getUnknownFields();
     }
-    private Element(boolean noInit) {}
-    
+    private Element(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
     private static final Element defaultInstance;
     public static Element getDefaultInstance() {
       return defaultInstance;
     }
-    
+
     public Element getDefaultInstanceForType() {
       return defaultInstance;
     }
-    
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private Element(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              name_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                value_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              value_.add(input.readBytes());
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          value_ = new com.google.protobuf.UnmodifiableLazyStringList(value_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.unitime.timetable.backup.TableData.internal_static_Element_descriptor;
     }
-    
+
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.unitime.timetable.backup.TableData.internal_static_Element_fieldAccessorTable;
+      return org.unitime.timetable.backup.TableData.internal_static_Element_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.unitime.timetable.backup.TableData.Element.class, org.unitime.timetable.backup.TableData.Element.Builder.class);
     }
-    
+
+    public static com.google.protobuf.Parser<Element> PARSER =
+        new com.google.protobuf.AbstractParser<Element>() {
+      public Element parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new Element(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Element> getParserForType() {
+      return PARSER;
+    }
+
     private int bitField0_;
     // required string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
+    /**
+     * <code>required string name = 1;</code>
+     */
     public boolean hasName() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
-    public String getName() {
+    /**
+     * <code>required string name = 1;</code>
+     */
+    public java.lang.String getName() {
       java.lang.Object ref = name_;
-      if (ref instanceof String) {
-        return (String) ref;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
           name_ = s;
         }
         return s;
       }
     }
-    private com.google.protobuf.ByteString getNameBytes() {
+    /**
+     * <code>required string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
       java.lang.Object ref = name_;
-      if (ref instanceof String) {
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
         name_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
-    
+
     // repeated string value = 2;
     public static final int VALUE_FIELD_NUMBER = 2;
     private com.google.protobuf.LazyStringList value_;
-    public java.util.List<String>
+    /**
+     * <code>repeated string value = 2;</code>
+     */
+    public java.util.List<java.lang.String>
         getValueList() {
       return value_;
     }
+    /**
+     * <code>repeated string value = 2;</code>
+     */
     public int getValueCount() {
       return value_.size();
     }
-    public String getValue(int index) {
+    /**
+     * <code>repeated string value = 2;</code>
+     */
+    public java.lang.String getValue(int index) {
       return value_.get(index);
     }
-    
+    /**
+     * <code>repeated string value = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getValueBytes(int index) {
+      return value_.getByteString(index);
+    }
+
     private void initFields() {
       name_ = "";
       value_ = com.google.protobuf.LazyStringArrayList.EMPTY;
@@ -1439,7 +1940,7 @@ public final class TableData {
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
-      
+
       if (!hasName()) {
         memoizedIsInitialized = 0;
         return false;
@@ -1447,7 +1948,7 @@ public final class TableData {
       memoizedIsInitialized = 1;
       return true;
     }
-    
+
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
@@ -1459,12 +1960,12 @@ public final class TableData {
       }
       getUnknownFields().writeTo(output);
     }
-    
+
     private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
       int size = memoizedSerializedSize;
       if (size != -1) return size;
-    
+
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
@@ -1483,94 +1984,83 @@ public final class TableData {
       memoizedSerializedSize = size;
       return size;
     }
-    
+
     private static final long serialVersionUID = 0L;
     @java.lang.Override
     protected java.lang.Object writeReplace()
         throws java.io.ObjectStreamException {
       return super.writeReplace();
     }
-    
+
     public static org.unitime.timetable.backup.TableData.Element parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
+      return PARSER.parseFrom(data);
     }
     public static org.unitime.timetable.backup.TableData.Element parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Element parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data).buildParsed();
+      return PARSER.parseFrom(data);
     }
     public static org.unitime.timetable.backup.TableData.Element parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return newBuilder().mergeFrom(data, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(data, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Element parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
+      return PARSER.parseFrom(input);
     }
     public static org.unitime.timetable.backup.TableData.Element parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(input, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Element parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
+      return PARSER.parseDelimitedFrom(input);
     }
     public static org.unitime.timetable.backup.TableData.Element parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      Builder builder = newBuilder();
-      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
-        return builder.buildParsed();
-      } else {
-        return null;
-      }
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
     public static org.unitime.timetable.backup.TableData.Element parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input).buildParsed();
+      return PARSER.parseFrom(input);
     }
     public static org.unitime.timetable.backup.TableData.Element parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return newBuilder().mergeFrom(input, extensionRegistry)
-               .buildParsed();
+      return PARSER.parseFrom(input, extensionRegistry);
     }
-    
+
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder(org.unitime.timetable.backup.TableData.Element prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
-    
+
     @java.lang.Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
+    /**
+     * Protobuf type {@code Element}
+     */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
        implements org.unitime.timetable.backup.TableData.ElementOrBuilder {
@@ -1578,18 +2068,21 @@ public final class TableData {
           getDescriptor() {
         return org.unitime.timetable.backup.TableData.internal_static_Element_descriptor;
       }
-      
+
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.unitime.timetable.backup.TableData.internal_static_Element_fieldAccessorTable;
+        return org.unitime.timetable.backup.TableData.internal_static_Element_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.unitime.timetable.backup.TableData.Element.class, org.unitime.timetable.backup.TableData.Element.Builder.class);
       }
-      
+
       // Construct using org.unitime.timetable.backup.TableData.Element.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
-      
-      private Builder(BuilderParent parent) {
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1600,7 +2093,7 @@ public final class TableData {
       private static Builder create() {
         return new Builder();
       }
-      
+
       public Builder clear() {
         super.clear();
         name_ = "";
@@ -1609,20 +2102,20 @@ public final class TableData {
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
-      
+
       public Builder clone() {
         return create().mergeFrom(buildPartial());
       }
-      
+
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.unitime.timetable.backup.TableData.Element.getDescriptor();
+        return org.unitime.timetable.backup.TableData.internal_static_Element_descriptor;
       }
-      
+
       public org.unitime.timetable.backup.TableData.Element getDefaultInstanceForType() {
         return org.unitime.timetable.backup.TableData.Element.getDefaultInstance();
       }
-      
+
       public org.unitime.timetable.backup.TableData.Element build() {
         org.unitime.timetable.backup.TableData.Element result = buildPartial();
         if (!result.isInitialized()) {
@@ -1630,17 +2123,7 @@ public final class TableData {
         }
         return result;
       }
-      
-      private org.unitime.timetable.backup.TableData.Element buildParsed()
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        org.unitime.timetable.backup.TableData.Element result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(
-            result).asInvalidProtocolBufferException();
-        }
-        return result;
-      }
-      
+
       public org.unitime.timetable.backup.TableData.Element buildPartial() {
         org.unitime.timetable.backup.TableData.Element result = new org.unitime.timetable.backup.TableData.Element(this);
         int from_bitField0_ = bitField0_;
@@ -1659,7 +2142,7 @@ public final class TableData {
         onBuilt();
         return result;
       }
-      
+
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.unitime.timetable.backup.TableData.Element) {
           return mergeFrom((org.unitime.timetable.backup.TableData.Element)other);
@@ -1668,11 +2151,13 @@ public final class TableData {
           return this;
         }
       }
-      
+
       public Builder mergeFrom(org.unitime.timetable.backup.TableData.Element other) {
         if (other == org.unitime.timetable.backup.TableData.Element.getDefaultInstance()) return this;
         if (other.hasName()) {
-          setName(other.getName());
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
         }
         if (!other.value_.isEmpty()) {
           if (value_.isEmpty()) {
@@ -1687,7 +2172,7 @@ public final class TableData {
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
-      
+
       public final boolean isInitialized() {
         if (!hasName()) {
           
@@ -1695,62 +2180,69 @@ public final class TableData {
         }
         return true;
       }
-      
+
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder(
-            this.getUnknownFields());
-        while (true) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              this.setUnknownFields(unknownFields.build());
-              onChanged();
-              return this;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                this.setUnknownFields(unknownFields.build());
-                onChanged();
-                return this;
-              }
-              break;
-            }
-            case 10: {
-              bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
-              break;
-            }
-            case 18: {
-              ensureValueIsMutable();
-              value_.add(input.readBytes());
-              break;
-            }
+        org.unitime.timetable.backup.TableData.Element parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.unitime.timetable.backup.TableData.Element) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
           }
         }
+        return this;
       }
-      
       private int bitField0_;
-      
+
       // required string name = 1;
       private java.lang.Object name_ = "";
+      /**
+       * <code>required string name = 1;</code>
+       */
       public boolean hasName() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
-      public String getName() {
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public java.lang.String getName() {
         java.lang.Object ref = name_;
-        if (!(ref instanceof String)) {
-          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
           name_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
-      public Builder setName(String value) {
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1759,18 +2251,29 @@ public final class TableData {
         onChanged();
         return this;
       }
+      /**
+       * <code>required string name = 1;</code>
+       */
       public Builder clearName() {
         bitField0_ = (bitField0_ & ~0x00000001);
         name_ = getDefaultInstance().getName();
         onChanged();
         return this;
       }
-      void setName(com.google.protobuf.ByteString value) {
-        bitField0_ |= 0x00000001;
+      /**
+       * <code>required string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
         name_ = value;
         onChanged();
+        return this;
       }
-      
+
       // repeated string value = 2;
       private com.google.protobuf.LazyStringList value_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureValueIsMutable() {
@@ -1779,18 +2282,37 @@ public final class TableData {
           bitField0_ |= 0x00000002;
          }
       }
-      public java.util.List<String>
+      /**
+       * <code>repeated string value = 2;</code>
+       */
+      public java.util.List<java.lang.String>
           getValueList() {
         return java.util.Collections.unmodifiableList(value_);
       }
+      /**
+       * <code>repeated string value = 2;</code>
+       */
       public int getValueCount() {
         return value_.size();
       }
-      public String getValue(int index) {
+      /**
+       * <code>repeated string value = 2;</code>
+       */
+      public java.lang.String getValue(int index) {
         return value_.get(index);
       }
+      /**
+       * <code>repeated string value = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getValueBytes(int index) {
+        return value_.getByteString(index);
+      }
+      /**
+       * <code>repeated string value = 2;</code>
+       */
       public Builder setValue(
-          int index, String value) {
+          int index, java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1799,7 +2321,11 @@ public final class TableData {
         onChanged();
         return this;
       }
-      public Builder addValue(String value) {
+      /**
+       * <code>repeated string value = 2;</code>
+       */
+      public Builder addValue(
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1808,36 +2334,50 @@ public final class TableData {
         onChanged();
         return this;
       }
+      /**
+       * <code>repeated string value = 2;</code>
+       */
       public Builder addAllValue(
-          java.lang.Iterable<String> values) {
+          java.lang.Iterable<java.lang.String> values) {
         ensureValueIsMutable();
         super.addAll(values, value_);
         onChanged();
         return this;
       }
+      /**
+       * <code>repeated string value = 2;</code>
+       */
       public Builder clearValue() {
         value_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
-      void addValue(com.google.protobuf.ByteString value) {
-        ensureValueIsMutable();
+      /**
+       * <code>repeated string value = 2;</code>
+       */
+      public Builder addValueBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureValueIsMutable();
         value_.add(value);
         onChanged();
+        return this;
       }
-      
+
       // @@protoc_insertion_point(builder_scope:Element)
     }
-    
+
     static {
       defaultInstance = new Element(true);
       defaultInstance.initFields();
     }
-    
+
     // @@protoc_insertion_point(class_scope:Element)
   }
-  
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_Table_descriptor;
   private static
@@ -1853,7 +2393,7 @@ public final class TableData {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_Element_fieldAccessorTable;
-  
+
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
     return descriptor;
@@ -1878,25 +2418,19 @@ public final class TableData {
           internal_static_Table_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_Table_descriptor,
-              new java.lang.String[] { "Name", "Record", },
-              org.unitime.timetable.backup.TableData.Table.class,
-              org.unitime.timetable.backup.TableData.Table.Builder.class);
+              new java.lang.String[] { "Name", "Record", });
           internal_static_Record_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_Record_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_Record_descriptor,
-              new java.lang.String[] { "Id", "Element", },
-              org.unitime.timetable.backup.TableData.Record.class,
-              org.unitime.timetable.backup.TableData.Record.Builder.class);
+              new java.lang.String[] { "Id", "Element", });
           internal_static_Element_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_Element_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_Element_descriptor,
-              new java.lang.String[] { "Name", "Value", },
-              org.unitime.timetable.backup.TableData.Element.class,
-              org.unitime.timetable.backup.TableData.Element.Builder.class);
+              new java.lang.String[] { "Name", "Value", });
           return null;
         }
       };
@@ -1905,6 +2439,6 @@ public final class TableData {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
   }
-  
+
   // @@protoc_insertion_point(outer_class_scope)
 }
