@@ -21,16 +21,25 @@ package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.Collection;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
+@CheckMaster(Master.REQUIRED)
 public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;
+	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 
 	private Collection<Long> iStudentIds = null;
 	private String iStatus = null;
@@ -47,25 +56,48 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		StudentSectioningStatus status = (hasStatus() ?
-				(StudentSectioningStatus)helper.getHibSession().createQuery(
-						"from StudentSectioningStatus where reference = :ref").setString("ref", getStatus()).uniqueResult()
-				: null);
-		for (Long studentId: getStudentIds()) {
-			Lock lock = server.lockStudent(studentId, null, true);
-			try {
-				net.sf.cpsolver.studentsct.model.Student student = server.getStudent(studentId);
-				Student dbStudent = StudentDAO.getInstance().get(studentId, helper.getHibSession());
-				if (student != null && dbStudent != null) {
-					student.setStatus(getStatus());
-					dbStudent.setSectioningStatus(status);
-					helper.getHibSession().saveOrUpdate(dbStudent);
+		helper.beginTransaction();
+		try {
+			StudentSectioningStatus status = (hasStatus() ?
+					(StudentSectioningStatus)helper.getHibSession().createQuery(
+							"from StudentSectioningStatus where reference = :ref").setString("ref", getStatus()).uniqueResult()
+					: null);
+			for (Long studentId: getStudentIds()) {
+				Lock lock = server.lockStudent(studentId, null, true);
+				try {
+					XStudent student = server.getStudent(studentId);
+					Student dbStudent = StudentDAO.getInstance().get(studentId, helper.getHibSession());
+					if (student != null && dbStudent != null) {
+						
+						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+						action.setStudent(OnlineSectioningLog.Entity.newBuilder()
+							.setUniqueId(student.getStudentId())
+							.setExternalId(student.getExternalId())
+							.setName(student.getName()));
+						if (status != null) {
+							action.addOther(OnlineSectioningLog.Entity.newBuilder()
+									.setUniqueId(status.getUniqueId())
+									.setName(status.getLabel())
+									.setExternalId(status.getReference())
+									.setType(OnlineSectioningLog.Entity.EntityType.OTHER));
+						}
+						
+						student.setStatus(getStatus());
+						dbStudent.setSectioningStatus(status);
+						helper.getHibSession().saveOrUpdate(dbStudent);
+						server.update(student, false);
+					}
+				} finally {
+					lock.release();
 				}
-			} finally {
-				lock.release();
 			}
+			helper.commitTransaction();
+			return true;			
+		} catch (Exception e) {
+			helper.rollbackTransaction();
+			if (e instanceof SectioningException) throw (SectioningException)e;
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
-		return true;
 	}
 
 	@Override

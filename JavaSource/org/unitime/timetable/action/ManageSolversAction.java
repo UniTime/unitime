@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +50,10 @@ import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.basic.GetInfo;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -128,6 +132,34 @@ public class ManageSolversAction extends Action {
             studentSectioningSolverService.removeSolver();
         }
         
+        if ("Unload".equals(op) && request.getParameter("onlineId")!=null) {
+        	String id = request.getParameter("onlineId");
+        	if (request.getParameter("host") != null) {
+        		SolverServer server = solverServerService.getServer(request.getParameter("host"));
+        		if (server != null) {
+        			server.getOnlineStudentSchedulingContainer().unloadSolver(id);
+        		} else {
+        			solverServerService.getOnlineStudentSchedulingContainer().unloadSolver(id);
+        		}
+        	} else {
+        		solverServerService.getOnlineStudentSchedulingContainer().unloadSolver(id);
+        	}
+        }
+        
+        if ("Unmaster".equals(op) && request.getParameter("onlineId")!=null) {
+        	String id = request.getParameter("onlineId");
+        	if (request.getParameter("host") != null) {
+        		SolverServer server = solverServerService.getServer(request.getParameter("host"));
+        		if (server != null) {
+        			OnlineSectioningServer solver = server.getOnlineStudentSchedulingContainer().getSolver(id);
+        			if (solver != null) solver.releaseMasterLockIfHeld();
+        		}
+        	} else {
+        		OnlineSectioningServer solver = solverServerService.getOnlineStudentSchedulingContainer().getSolver(id);
+        		if (solver != null) solver.releaseMasterLockIfHeld();
+        	}
+        }
+        
         if ("Deselect".equals(op)) {
         	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingUser);
         	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
@@ -160,6 +192,7 @@ public class ManageSolversAction extends Action {
         	getServers(request);
         getExamSolvers(request);
         getStudentSolvers(request);
+        getOnlineSolvers(request);
         return mapping.findForward("showSolvers");
 	}
 	
@@ -270,8 +303,6 @@ public class ManageSolversAction extends Action {
             	if (x!=null && ToolBox.equals(properties.getProperty("General.OwnerPuid"), xId))
             		bgColor = "rgb(168,187,225)";
                 
-                String host = solver.getHostLabel();
-                
                 String op = "";
                 op += 
                 	"<input type=\"button\" value=\"Unload\" onClick=\"" +
@@ -283,7 +314,7 @@ public class ManageSolversAction extends Action {
 							(loaded==null?"N/A":sDF.format(loaded)),
 							(lastUsed==null?"N/A":sDF.format(lastUsed)),
 							sessionLabel,
-							host,
+							solver.getHost(),
 							settingLabel,
 							status,
 							ownerName, 
@@ -534,12 +565,12 @@ public class ManageSolversAction extends Action {
                     	" event.cancelBubble=true;\">";
                     
                     ExamType examType = (examTypeId == null ? null : ExamTypeDAO.getInstance().get(examTypeId));
-	                
+                    
 	                webTable.addLine(onClick, new String[] {
 	                            (loaded==null?"N/A":sDF.format(loaded)),
 	                            (lastUsed==null?"N/A":sDF.format(lastUsed)),
 	                            sessionLabel,
-	                            solver.getHostLabel(),
+	                            solver.getHost(),
 	                            settingLabel,
 	                            status,
 	                            runnerName, 
@@ -651,7 +682,7 @@ public class ManageSolversAction extends Action {
                                (loaded==null?"N/A":sDF.format(loaded)),
                                (lastUsed==null?"N/A":sDF.format(lastUsed)),
                                sessionLabel,
-                               solver.getHostLabel(),
+                               solver.getHost(),
                                settingLabel,
                                status,
                                runnerName, 
@@ -680,6 +711,97 @@ public class ManageSolversAction extends Action {
                if (nrLines==0)
                    webTable.addLine(null, new String[] {"<i>No solver is running.</i>"}, null, null );
                request.setAttribute("ManageSolvers.stable",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord4")));
+               
+           } catch (Exception e) {
+               throw new Exception(e);
+           }
+       }
+       
+       private void getOnlineSolvers(HttpServletRequest request) throws Exception {
+           try {
+               WebTable.setOrder(sessionContext,"manageSolvers.ord5",request.getParameter("ord5"),1);
+               
+               WebTable webTable = new WebTable( 13,
+                       "Manage Online Scheduling Servers", "manageSolvers.do?ord5=%%",
+                       new String[] {"Created", "Session", "Host", "Mode", "Assign", "Total", "CompSched", "DistConf", "TimeConf", "FreeConf", "AvgDisb", "Disb[>=10%]", "Operation(s)"},
+                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+                       null );
+               webTable.setRowStyle("white-space:nowrap");
+               
+               int nrLines = 0;
+               
+               List<SolverServer> servers = solverServerService.getServers(true);
+               for (SolverServer server: servers) {
+                   for (String sessionId : server.getOnlineStudentSchedulingContainer().getSolvers()) {
+                	   OnlineSectioningServer solver = server.getOnlineStudentSchedulingContainer().getSolver(sessionId);
+                	   if (solver==null) continue;
+                	   DataProperties properties = solver.getConfig();
+                	   if (properties==null) continue;
+                       if (sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), new SimpleQualifier("Session", Long.valueOf(sessionId))).isEmpty()) continue;
+                       String sessionLabel = solver.getAcademicSession().toString();
+                       String mode = solver.getAcademicSession().isSectioningEnabled() ? "Online" : "Assistant";
+                       Map<String,String> info = solver.execute(new GetInfo(), null);
+                       String assigned = (info == null ? null : info.get("Assigned variables"));
+                       String totVal = (info == null ? null : info.get("Overall solution value"));
+                       String compSch = (info == null ? null : info.get("Students with complete schedule"));
+                       String distConf = (info == null ? null : info.get("Student distance conflicts"));
+                       String time = (info == null ? null : info.get("Time overlapping conflicts"));
+                       String free = (info == null ? null : info.get("Free time overlapping conflicts"));
+                       String disb = (info == null ? null : info.get("Average disbalance"));
+                       String disb10 = (info == null ? null : info.get("Sections disbalanced by 10% or more"));
+                       Date loaded = new Date(solver.getConfig().getPropertyLong("General.StartUpDate", 0));
+
+                       String op = "";
+                       if (solver.isMaster() && servers.size() > 1) {
+                           op += "<input type=\"button\" value=\"Shutdown All\" onClick=\"" +
+                        			"if (confirm('Do you really want to shutdown this server?')) " +
+                        			"document.location='manageSolvers.do?op=Unload&onlineId=" + sessionId + "';" + 
+                        			" event.cancelBubble=true;\">&nbsp;&nbsp;";
+                           op += "<input type=\"button\" value=\"Un-Master\" onClick=\"" +
+                         			"if (confirm('Do you really want to un-master this server?')) " +
+                         			"document.location='manageSolvers.do?op=Unmaster&onlineId=" + sessionId + "&host=" + server.getHost() + "';" + 
+                         			" event.cancelBubble=true;\">";
+                       } else {
+                           op += "<input type=\"button\" value=\"Shutdown\" onClick=\"" +
+                        			"if (confirm('Do you really want to shutdown this server?')) " +
+                        			"document.location='manageSolvers.do?op=Unload&onlineId=" + sessionId + "&host=" + server.getHost() + "';" + 
+                        			" event.cancelBubble=true;\">";
+                       }
+                       
+                       webTable.addLine(null, new String[] {
+                                   (loaded.getTime() <= 0 ? "N/A" : sDF.format(loaded)),
+                                   sessionLabel,
+                                   solver.getHost() + (solver.isMaster() ? " (master)" : ""),
+                                   mode,
+                                   (assigned==null?"N/A":assigned),
+                                   (totVal==null?"N/A":totVal),
+                                   (compSch==null?"N/A":compSch), 
+                                   (distConf==null?"N/A":distConf),
+                                   (time==null?"N/A":time),
+                                   (free==null?"N/A":free),
+                                   (disb==null?"N/A":disb),
+                                   (disb10==null?"N/A":disb10),
+                                   op},
+                               new Comparable[] {
+                                   loaded,
+                                   sessionLabel,
+                                   solver.getHost(),
+                                   mode, 
+                                   (assigned==null?"":assigned),
+                                   (totVal==null?"":totVal),
+                                   (compSch==null?"":compSch), 
+                                   (distConf==null?"":distConf),
+                                   (time==null?"":time),
+                                   (free==null?"":free),
+                                   (disb==null?"":disb),
+                                   (disb10==null?"":disb10),
+                                   null});
+                           nrLines++;
+                   }
+               }
+               if (nrLines==0)
+                   webTable.addLine(null, new String[] {"<i>There is no online student scheduling server running at the moment.</i>"}, null, null );
+               request.setAttribute("ManageSolvers.otable",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord5")));
                
            } catch (Exception e) {
                throw new Exception(e);

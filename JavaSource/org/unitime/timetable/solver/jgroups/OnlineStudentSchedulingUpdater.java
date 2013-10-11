@@ -30,6 +30,7 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningQueueDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -64,13 +65,17 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 	
 	public void run() {
 		try {
-			iLog.info((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater started.");
+			iLog.info(getAcademicSession() + " updater started.");
 			if (getAcademicSession() != null)
 				ApplicationProperties.setSessionId(getAcademicSession().getUniqueId());
 			while (iRun) {
-				checkForUpdates();
-				checkForExpiredReservations();
-				persistExpectedSpaces();
+				try {
+					checkForUpdates();
+					checkForExpiredReservations();
+					persistExpectedSpaces();
+				} finally {
+					_RootDAO.closeCurrentThreadSessions();
+				}
 				try {
 					sleep(iSleepTimeInSeconds * 1000);
 				} catch (InterruptedException e) {}
@@ -96,56 +101,13 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 		try {
 			org.hibernate.Session hibSession = StudentSectioningQueueDAO.getInstance().createNewSession();
 			try {
-				if (getAcademicSession() != null) {
-					for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, getAcademicSession().getUniqueId(), iLastTimeStamp)) {
-						try {
-							processChange(q);
-						} catch (Exception e) {
-							iLog.error("Update failed: " + e.getMessage(), e);
-						}
-						iLastTimeStamp = q.getTimeStamp();
+				for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, getAcademicSession().getUniqueId(), iLastTimeStamp)) {
+					try {
+						processChange(q);
+					} catch (Exception e) {
+						iLog.error("Update failed: " + e.getMessage(), e);
 					}
-				} else {
-					for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, null, iLastTimeStamp)) {
-						try {
-							processGenericChange(q);
-						} catch (Exception e) {
-							iLog.error("Update failed: " + e.getMessage(), e);
-						}
-						iLastTimeStamp = q.getTimeStamp();
-					}
-				}
-			} finally {
-				hibSession.close();
-			}
-		} catch (Exception e) {
-			iLog.error("Unable to check for updates: " + e.getMessage(), e);
-		}
-	}
-	
-	public void scanForNewServers() {
-		try {
-			
-			org.hibernate.Session hibSession = StudentSectioningQueueDAO.getInstance().createNewSession();
-			try {
-				if (getAcademicSession() != null) {
-					for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, getAcademicSession().getUniqueId(), iLastTimeStamp)) {
-						try {
-							processChange(q);
-						} catch (Exception e) {
-							iLog.error("Update failed: " + e.getMessage(), e);
-						}
-						iLastTimeStamp = q.getTimeStamp();
-					}
-				} else {
-					for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, null, iLastTimeStamp)) {
-						try {
-							processGenericChange(q);
-						} catch (Exception e) {
-							iLog.error("Update failed: " + e.getMessage(), e);
-						}
-						iLastTimeStamp = q.getTimeStamp();
-					}
+					iLastTimeStamp = q.getTimeStamp();
 				}
 			} finally {
 				hibSession.close();
@@ -164,7 +126,7 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 		if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) == 0) {
 			// first time after midnight (TODO: allow change)
 			OnlineSectioningServer server = iContainer.getInstance(getAcademicSession().getUniqueId());
-			if (server != null) {
+			if (server != null && server.isMaster()) {
 				iLastReservationCheck = ts;
 				try {
 					server.execute(new ExpireReservationsAction(), user());
@@ -215,7 +177,7 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 			sessionStatusChanged(q.getSessionId(), false);
 			break;
 		case STUDENT_ENROLLMENT_CHANGE:
-			if (server != null) {
+			if (server != null && server.isMaster()) {
 				List<Long> studentIds = q.getIds();
 				if (studentIds == null || studentIds.isEmpty()) {
 					iLog.info("All students changed for " + server.getAcademicSession());
@@ -226,12 +188,12 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 			}
 			break;
 		case CLASS_ASSIGNMENT_CHANGE:
-			if (server != null) {
+			if (server != null && server.isMaster()) {
 				server.execute(new ClassAssignmentChanged(q.getIds()), q.getUser());
 			}
 			break;
 		case OFFERING_CHANGE:
-			if (server != null) {
+			if (server != null && server.isMaster()) {
 				server.execute(new ReloadOfferingAction(q.getIds()), q.getUser());
 			}
 			break;
@@ -239,22 +201,7 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 			iLog.error("Student sectioning queue type " + StudentSectioningQueue.Type.values()[q.getType()] + " not known.");
 		}
 	}
-	
-	protected void processGenericChange(StudentSectioningQueue q) {
-		if (iContainer.getInstance(q.getSessionId()) != null)
-			return; // a server already exists
-		
-		// only process events that may load the server
-		switch (StudentSectioningQueue.Type.values()[q.getType()]) {
-		case SESSION_RELOAD:
-			sessionStatusChanged(q.getSessionId(), true);
-			break;
-		case SESSION_STATUS_CHANGE:
-			sessionStatusChanged(q.getSessionId(), false);
-			break;
-		}
-	}
-	
+
 	private void sessionStatusChanged(Long academicSessionId, boolean reload) {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		String year = ApplicationProperties.getProperty("unitime.enrollment.year");

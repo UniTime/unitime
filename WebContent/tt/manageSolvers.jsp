@@ -44,6 +44,12 @@
 	</TABLE>
 	<BR>
 </logic:notEmpty>
+<logic:notEmpty name="ManageSolvers.otable" scope="request">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+		<bean:write name="ManageSolvers.otable" scope="request" filter="false"/>
+	</TABLE>
+	<BR>
+</logic:notEmpty>
 <logic:notEmpty name="ManageSolvers.table2" scope="request">
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<bean:write name="ManageSolvers.table2" scope="request" filter="false"/>

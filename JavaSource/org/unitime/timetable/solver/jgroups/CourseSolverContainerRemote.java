@@ -90,7 +90,7 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 		} catch (Exception e) {
 			if ("exists".equals(method.getName()) && e instanceof SuspectedException) return false;
 			sLog.error("Excution of " + method + " on solver " + user + " failed: " + e.getMessage(), e);
-			return null;
+			throw e;
 		}
 	}
 	
@@ -158,8 +158,8 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
     		return iAddress.toString();
     	}
     	
-    	public String getHostLabel() {
-    		return iAddress.toString();
+    	public String getUser() {
+    		return iUser;
     	}
     	
     	public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) throws Exception {

@@ -25,10 +25,10 @@ import java.util.List;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningTestFwk;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
+import org.unitime.timetable.onlinesectioning.match.AnyCourseMatcher;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.onlinesectioning.updates.ClassAssignmentChanged;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
@@ -77,14 +77,6 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 			});
 		}
 
-		final OnlineSectioningServer.CourseInfoMatcher matcher = new OnlineSectioningServer.CourseInfoMatcher() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean match(CourseInfo course) {
-				return true;
-			}
-		};
 		for (final String name: (List<String>)hibSession.createQuery(
 				"select co.subjectAreaAbbv || ' ' || co.courseNbr from CourseOffering co where co.instructionalOffering.session.uniqueId = :sessionId and co.instructionalOffering.notOffered = false")
 				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
@@ -93,7 +85,7 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 				public double execute(OnlineSectioningServer s) {
 					for (int i = 1; i < name.length(); i++) {
 						sLog.info("Looking for " + name.substring(0, i) + " ...");
-						s.findCourses(name.substring(0, i), 20, matcher);
+						s.findCourses(name.substring(0, i), 20, new AnyCourseMatcher());
 					}
 					return 1.0;
 				}

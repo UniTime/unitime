@@ -32,10 +32,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import net.sf.cpsolver.coursett.Constants;
+import net.sf.cpsolver.coursett.model.Lecture;
+import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
@@ -50,7 +53,6 @@ import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
-import net.sf.cpsolver.studentsct.reservation.CourseReservation;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.unitime.localization.impl.Localization;
@@ -59,14 +61,31 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl.DummyReservation;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl.EnrollmentSectionComparator;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XCourseReservation;
+import org.unitime.timetable.onlinesectioning.model.XDistributionType;
+import org.unitime.timetable.onlinesectioning.model.XDummyReservation;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XEnrollments;
+import org.unitime.timetable.onlinesectioning.model.XExpectations;
+import org.unitime.timetable.onlinesectioning.model.XInstructor;
+import org.unitime.timetable.onlinesectioning.model.XDistribution;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XReservation;
+import org.unitime.timetable.onlinesectioning.model.XReservationType;
+import org.unitime.timetable.onlinesectioning.model.XRoom;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection;
 
 /**
@@ -109,44 +128,47 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		Set<Long> enrolled = null;
 		Lock readLock = server.readLock();
 		try {
-			Student original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
+			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
-				action.getStudentBuilder().setUniqueId(original.getId()).setExternalId(original.getExternalId());
+				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId());
 				enrolled = new HashSet<Long>();
-				for (Request r: original.getRequests()) {
-					if (r.getInitialAssignment() != null && r.getInitialAssignment().isCourseRequest())
-						for (Section s: r.getInitialAssignment().getSections())
-							enrolled.add(s.getId());
+				for (XRequest r: original.getRequests()) {
+					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null)
+						for (Long s: ((XCourseRequest)r).getEnrollment().getSectionIds())
+							enrolled.add(s);
 				}
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
-				for (Request oldRequest: original.getRequests()) {
-					if (oldRequest.getInitialAssignment() != null && oldRequest.getInitialAssignment().isCourseRequest())
-						for (Section section: oldRequest.getInitialAssignment().getSections())
-							enrollment.addSection(OnlineSectioningHelper.toProto(section, oldRequest.getInitialAssignment()));
+				for (XRequest oldRequest: original.getRequests()) {
+					if (oldRequest instanceof XCourseRequest && ((XCourseRequest)oldRequest).getEnrollment() != null) {
+						XCourseRequest cr = (XCourseRequest)oldRequest;
+						XOffering offering = server.getOffering(cr.getEnrollment().getOfferingId());
+						for (XSection section: offering.getSections(cr.getEnrollment()))
+							enrollment.addSection(OnlineSectioningHelper.toProto(section, cr.getEnrollment()));
+					}
 				}
 				action.addEnrollment(enrollment);
 			}
 			Map<Long, Section> classTable = new HashMap<Long, Section>();
-			Set<LinkedSections> linkedSections = new HashSet<LinkedSections>();
+			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, student, original, c, false, false, classTable, linkedSections);
+				addRequest(server, model, student, original, c, false, false, classTable, distributions);
 			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, student, original, c, true, false, classTable, linkedSections);
+				addRequest(server, model, student, original, c, true, false, classTable, distributions);
 			model.addStudent(student);
 			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
-			for (LinkedSections link: linkedSections) {
-				List<Section> sections = new ArrayList<Section>();
-				for (Offering offering: link.getOfferings())
-					for (Subpart subpart: link.getSubparts(offering))
-						for (Section section: link.getSections(subpart)) {
-							Section x = classTable.get(section.getId());
-							if (x != null) sections.add(x);
-						}
-				if (sections.size() >= 2)
-					model.addLinkedSections(sections);
+			for (XDistribution link: distributions) {
+				if (link.getDistributionType() == XDistributionType.LinkedSections) {
+					List<Section> sections = new ArrayList<Section>();
+					for (Long sectionId: link.getSectionIds()) {
+						Section x = classTable.get(sectionId);
+						if (x != null) sections.add(x);
+					}
+					if (sections.size() >= 2)
+						model.addLinkedSections(sections);
+				}
 			}
 		} finally {
 			readLock.release();
@@ -259,113 +281,123 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	public double value() { return iValue; }
 	
 	@SuppressWarnings("unchecked")
-	protected Course clone(Course course, long studentId, Student originalStudent, Map<Long, Section> classTable) {
-		Offering clonedOffering = new Offering(course.getOffering().getId(), course.getOffering().getName());
+	protected Course clone(XOffering offering, XEnrollments enrollments, Long courseId, long studentId, XStudent originalStudent, Map<Long, Section> sections, Collection<XDistribution> distributions, OnlineSectioningServer server) {
+		Offering clonedOffering = new Offering(offering.getOfferingId(), offering.getName());
+		XExpectations expectations = server.getExpectations(offering.getOfferingId());
+		XCourse course = offering.getCourse(courseId);
 		int courseLimit = course.getLimit();
 		if (courseLimit >= 0) {
-			courseLimit -= course.getEnrollments().size();
+			courseLimit -= enrollments.countEnrollmentsForCourse(courseId);
 			if (courseLimit < 0) courseLimit = 0;
-			for (Iterator<Enrollment> i = course.getEnrollments().iterator(); i.hasNext();) {
-				Enrollment enrollment = i.next();
-				if (enrollment.getStudent().getId() == studentId) { courseLimit++; break; }
+			for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId)) {
+				if (enrollment.getStudentId().equals(studentId)) { courseLimit++; break; }
 			}
 		}
-		Course clonedCourse = new Course(course.getId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, courseLimit, course.getProjected());
+		Course clonedCourse = new Course(courseId, course.getSubjectArea(), course.getCourseNumber(), clonedOffering, courseLimit, course.getProjected());
 		clonedCourse.setNote(course.getNote());
-		Hashtable<Config, Config> configs = new Hashtable<Config, Config>();
-		Hashtable<Subpart, Subpart> subparts = new Hashtable<Subpart, Subpart>();
-		Hashtable<Section, Section> sections = new Hashtable<Section, Section>();
-		for (Iterator<Config> e = course.getOffering().getConfigs().iterator(); e.hasNext();) {
-			Config config = e.next();
+		Hashtable<Long, Config> configs = new Hashtable<Long, Config>();
+		Hashtable<Long, Subpart> subparts = new Hashtable<Long, Subpart>();
+		for (XConfig config: offering.getConfigs()) {
 			int configLimit = config.getLimit();
 			if (configLimit >= 0) {
-				configLimit -= config.getEnrollments().size();
+				configLimit -= enrollments.countEnrollmentsForConfig(config.getConfigId());
 				if (configLimit < 0) configLimit = 0;
-				for (Iterator<Enrollment> i = config.getEnrollments().iterator(); i.hasNext();) {
-					Enrollment enrollment = i.next();
-					if (enrollment.getStudent().getId() == studentId) { configLimit++; break; }
+				for (XEnrollment enrollment: enrollments.getEnrollmentsForConfig(config.getConfigId())) {
+					if (enrollment.getStudentId().equals(studentId)) { configLimit++; break; }
 				}
 			}
-			Config clonedConfig = new Config(config.getId(), configLimit, config.getName(), clonedOffering);
-			configs.put(config, clonedConfig);
-			for (Iterator<Subpart> f = config.getSubparts().iterator(); f.hasNext();) {
-				Subpart subpart = f.next();
-				Subpart clonedSubpart = new Subpart(subpart.getId(), subpart.getInstructionalType(), subpart.getName(), clonedConfig,
-						(subpart.getParent() == null ? null: subparts.get(subpart.getParent())));
+			Config clonedConfig = new Config(config.getConfigId(), configLimit, config.getName(), clonedOffering);
+			configs.put(config.getConfigId(), clonedConfig);
+			for (XSubpart subpart: config.getSubparts()) {
+				Subpart clonedSubpart = new Subpart(subpart.getSubpartId(), subpart.getInstructionalType(), subpart.getName(), clonedConfig,
+						(subpart.getParentId() == null ? null: subparts.get(subpart.getParentId())));
 				clonedSubpart.setAllowOverlap(subpart.isAllowOverlap());
 				clonedSubpart.setCredit(subpart.getCredit());
-				subparts.put(subpart, clonedSubpart);
-				for (Iterator<Section> g = subpart.getSections().iterator(); g.hasNext();) {
-					Section section = g.next();
+				subparts.put(subpart.getSubpartId(), clonedSubpart);
+				for (XSection section: subpart.getSections()) {
 					int limit = section.getLimit();
 					if (limit >= 0) {
 						// limited section, deduct enrollments
-						limit -= section.getEnrollments().size();
+						limit -= enrollments.countEnrollmentsForSection(section.getSectionId());
 						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
 						if (studentId >= 0)
-							for (Enrollment enrollment: section.getEnrollments())
-								if (enrollment.getStudent().getId() == studentId) { limit++; break; }
+							for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId()))
+								if (enrollment.getStudentId().equals(studentId)) { limit++; break; }
 					}
-					Section clonedSection = new Section(section.getId(), limit,
-							section.getName(course.getId()), clonedSubpart, section.getPlacement(),
-							section.getChoice().getInstructorIds(), section.getChoice().getInstructorNames(),
-							(section.getParent() == null ? null : sections.get(section.getParent())));
+                    String instructorIds = "";
+                    String instructorNames = "";
+                    for (XInstructor instructor: section.getInstructors()) {
+                    	if (!instructorIds.isEmpty()) {
+                    		instructorIds += ":"; instructorNames += ":";
+                    	}
+                    	instructorIds += instructor.getIntructorId().toString();
+                    	instructorNames += instructor.getName() + "|"  + (instructor.getEmail() == null ? "" : instructor.getEmail());
+                    }
+                    List<RoomLocation> rooms = new ArrayList<RoomLocation>();
+                    for (XRoom r: section.getRooms())
+                    	rooms.add(new RoomLocation(r.getUniqueId(), r.getName(), null, 0, 0, r.getX(), r.getY(), r.getIgnoreTooFar(), null));
+                    Placement placement = section.getTime() == null ? null : new Placement(
+                    		new Lecture(section.getSectionId(), null, section.getSubpartId(), section.getName(), new ArrayList<TimeLocation>(), new ArrayList<RoomLocation>(), section.getNrRooms(), null, section.getLimit(), section.getLimit(), 1.0),
+                    		new TimeLocation(section.getTime().getDays(), section.getTime().getSlot(), section.getTime().getLength(), 0, 0.0,
+                    				section.getTime().getDatePatternId(), section.getTime().getDatePatternName(), section.getTime().getWeeks(),
+                    				section.getTime().getBreakTime()),
+                    		rooms);
+					Section clonedSection = new Section(section.getSectionId(), limit,
+							section.getName(course.getCourseId()), clonedSubpart, placement,
+							instructorIds, instructorNames,
+							(section.getParentId() == null ? null : sections.get(section.getParentId())));
 					clonedSection.setName(-1l, section.getName(-1l));
 					clonedSection.setNote(section.getNote());
-					clonedSection.setSpaceExpected(section.getSpaceExpected());
-					clonedSection.setSpaceHeld(section.getSpaceHeld());
-			        if (section.getIgnoreConflictWithSectionIds() != null)
-			        	for (Long id: section.getIgnoreConflictWithSectionIds())
-			        		clonedSection.addIgnoreConflictWith(id);
+					clonedSection.setSpaceExpected(expectations.getExpectedSpace(section.getSectionId()));
+					if (distributions != null)
+						for (XDistribution distribution: distributions)
+							if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId()))
+								for (Long id: distribution.getSectionIds())
+									if (!id.equals(section.getSectionId()))
+										clonedSection.addIgnoreConflictWith(id);
 			        if (limit > 0) {
-			        	double available = Math.round(section.getSpaceExpected() - limit);
+			        	double available = Math.round(clonedSection.getSpaceExpected() - limit);
 						clonedSection.setPenalty(available / section.getLimit());
 			        }
-					sections.put(section, clonedSection);
-					classTable.put(section.getId(), clonedSection);
+					sections.put(section.getSectionId(), clonedSection);
 				}
 			}
 		}
-		if (course.getOffering().hasReservations()) {
-			for (Reservation reservation: course.getOffering().getReservations()) {
-				int reservationLimit = (int)Math.round(reservation.getLimit());
-				if (reservationLimit >= 0) {
-					reservationLimit -= reservation.getEnrollments().size();
-					if (reservationLimit < 0) reservationLimit = 0;
-					for (Iterator<Enrollment> i = reservation.getEnrollments().iterator(); i.hasNext();) {
-						Enrollment enrollment = i.next();
-						if (enrollment.getStudent().getId() == studentId) { reservationLimit++; break; }
-					}
-					if (reservationLimit <= 0) continue;
+		for (XReservation reservation: offering.getReservations()) {
+			int reservationLimit = (int)Math.round(reservation.getLimit());
+			if (reservationLimit >= 0) {
+				reservationLimit -= enrollments.countEnrollmentsForReservation(reservation.getReservationId());
+				if (reservationLimit < 0) reservationLimit = 0;
+				for (XEnrollment enrollment: enrollments.getEnrollmentsForReservation(reservation.getReservationId())) {
+					if (enrollment.getStudentId().equals(studentId)) { reservationLimit++; break; }
 				}
-				boolean applicable = originalStudent != null && reservation.isApplicable(originalStudent);
-				if (reservation instanceof CourseReservation)
-					applicable = (course.getId() == ((CourseReservation)reservation).getCourse().getId());
-				if (reservation instanceof net.sf.cpsolver.studentsct.reservation.DummyReservation) {
-					// Ignore by reservation only flag (dummy reservation) when the student is already enrolled in the course
-					for (Enrollment enrollment: course.getEnrollments())
-						if (enrollment.getStudent().getId() == studentId) { applicable = true; break; }
-				}
-				Reservation clonedReservation = new DummyReservation(reservation.getId(), clonedOffering,
-						reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
-						applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());
-				for (Config config: reservation.getConfigs())
-					clonedReservation.addConfig(configs.get(config));
-				for (Map.Entry<Subpart, Set<Section>> entry: reservation.getSections().entrySet()) {
-					Set<Section> clonedSections = new HashSet<Section>();
-					for (Section section: entry.getValue())
-						clonedSections.add(sections.get(section));
-					clonedReservation.getSections().put(
-							subparts.get(entry.getKey()),
-							clonedSections);
-				}
+				if (reservationLimit <= 0) continue;
+			}
+			boolean applicable = originalStudent != null && reservation.isApplicable(originalStudent);
+			if (reservation instanceof XCourseReservation)
+				applicable = ((XCourseReservation)reservation).getCourseId().equals(courseId);
+			if (reservation instanceof XDummyReservation) {
+				// Ignore by reservation only flag (dummy reservation) when the student is already enrolled in the course
+				for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
+					if (enrollment.getStudentId().equals(studentId)) { applicable = true; break; }
+			}
+			Reservation clonedReservation = new XOffering.SimpleReservation(reservation.getType(), reservation.getReservationId(), clonedOffering,
+					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
+					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());
+			for (Long configId: reservation.getConfigsIds())
+				clonedReservation.addConfig(configs.get(configId));
+			for (Map.Entry<Long, Set<Long>> entry: reservation.getSections().entrySet()) {
+				Set<Section> clonedSections = new HashSet<Section>();
+				for (Long sectionId: entry.getValue())
+					clonedSections.add(sections.get(sectionId));
+				clonedReservation.getSections().put(subparts.get(entry.getKey()), clonedSections);
 			}
 		}
 		return clonedCourse;
 	}
 	
-	protected void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Student student, Student originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<LinkedSections> linkedSections) {
-		if (request.hasRequestedFreeTime() && request.hasRequestedCourse() && server.getCourseInfo(request.getRequestedCourse()) != null)
+	protected void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions) {
+		if (request.hasRequestedFreeTime() && request.hasRequestedCourse() && server.getCourse(request.getRequestedCourse()) != null)
 			request.getRequestedFreeTime().clear();			
 		if (request.hasRequestedFreeTime()) {
 			for (CourseRequestInterface.FreeTime freeTime: request.getRequestedFreeTime()) {
@@ -379,51 +411,57 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				new FreeTimeRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, freeTimeLoc);
 			}
 		} else if (request.hasRequestedCourse()) {
-			CourseInfo courseInfo = server.getCourseInfo(request.getRequestedCourse());
-			Course course = null;
-			if (courseInfo != null) course = server.getCourse(courseInfo.getUniqueId());
-			if (course != null) {
+			XCourseId courseInfo = server.getCourse(request.getRequestedCourse());
+			XOffering offering = null;
+			if (courseInfo != null) offering = server.getOffering(courseInfo.getOfferingId());
+			if (offering != null) {
 				Vector<Course> cr = new Vector<Course>();
-				cr.add(clone(course, student.getId(), originalStudent, classTable));
+				Collection<XDistribution> d = server.getDistributions(offering.getOfferingId());
+				cr.add(clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, d, server));
+				if (d != null) distributions.addAll(d);
 				if (request.hasFirstAlternative()) {
-					CourseInfo ci = server.getCourseInfo(request.getFirstAlternative());
+					XCourseId ci = server.getCourse(request.getFirstAlternative());
 					if (ci != null) {
-						Course x = server.getCourse(ci.getUniqueId());
-						if (x != null) cr.add(clone(x, student.getId(), originalStudent, classTable));
+						XOffering x = server.getOffering(ci.getOfferingId());
+						if (x != null) {
+							Collection<XDistribution> xd = server.getDistributions(x.getOfferingId());
+							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), originalStudent, classTable, xd, server));
+							if (xd != null) distributions.addAll(xd);
+						}
 					}
 				}
 				if (request.hasSecondAlternative()) {
-					CourseInfo ci = server.getCourseInfo(request.getSecondAlternative());
+					XCourseId ci = server.getCourse(request.getSecondAlternative());
 					if (ci != null) {
-						Course x = server.getCourse(ci.getUniqueId());
-						if (x != null) cr.add(clone(x, student.getId(), originalStudent, classTable));
+						XOffering x = server.getOffering(ci.getOfferingId());
+						if (x != null) {
+							Collection<XDistribution> xd = server.getDistributions(x.getOfferingId());
+							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), originalStudent, classTable, xd, server));
+							if (xd != null) distributions.addAll(xd);
+						}
 					}
-				}
-				for (Course clonedCourse: cr) {
-					Collection<LinkedSections> links = server.getLinkedSections(clonedCourse.getOffering().getId());
-					if (links != null) linkedSections.addAll(links);
 				}
 				CourseRequest clonnedRequest = new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, request.isWaitList(), null);
 				if (originalStudent != null)
-					for (Request originalRequest: originalStudent.getRequests()) {
-						Enrollment originalEnrollment = originalRequest.getAssignment();
+					for (XRequest originalRequest: originalStudent.getRequests()) {
+						XEnrollment originalEnrollment = (originalRequest instanceof XCourseRequest ? ((XCourseRequest)originalRequest).getEnrollment() : null);
 						for (Course clonnedCourse: clonnedRequest.getCourses()) {
 							if (!clonnedCourse.getOffering().hasReservations()) continue;
-							if (originalEnrollment != null && clonnedCourse.equals(originalEnrollment.getCourse())) {
+							if (originalEnrollment != null && originalEnrollment.getCourseId().equals(clonnedCourse.getId())) {
 								boolean needReservation = clonnedCourse.getOffering().getUnreservedSpace(clonnedRequest) < 1.0;
 								if (!needReservation) {
 									boolean configChecked = false;
-									for (Section originalSection: originalEnrollment.getSections()) {
-										Section clonnedSection = classTable.get(originalSection.getId()); 
+									for (Long originalSectionId: originalEnrollment.getSectionIds()) {
+										Section clonnedSection = classTable.get(originalSectionId); 
 										if (clonnedSection.getUnreservedSpace(clonnedRequest) < 1.0) { needReservation = true; break; }
 										if (!configChecked && clonnedSection.getSubpart().getConfig().getUnreservedSpace(clonnedRequest) < 1.0) { needReservation = true; break; }
 										configChecked = true;
 									}
 								}
 								if (needReservation) {
-									Reservation reservation = new DummyReservation(-originalStudent.getId(), clonnedCourse.getOffering(), 5, false, 1, true, false, false, true);
-									for (Section originalSection: originalEnrollment.getSections())
-										reservation.addSection(classTable.get(originalSection.getId()));
+									Reservation reservation = new XOffering.SimpleReservation(XReservationType.Dummy, -originalStudent.getStudentId(), clonnedCourse.getOffering(), 5, false, 1, true, false, false, true);
+									for (Long originalSectionId: originalEnrollment.getSectionIds())
+										reservation.addSection(classTable.get(originalSectionId));
 								}
 								break;
 							}
@@ -434,25 +472,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	}
 	
 	@SuppressWarnings("unchecked")
-	private int[] getLimit(OnlineSectioningServer server, Section section, Long studentId) {
-		Section original = server.getSection(section.getId());
-		int actual = original.getEnrollments().size();
-		/*
-		if (studentId != null) {
-			for (Iterator<Enrollment> i = original.getEnrollments().iterator(); i.hasNext();) {
-				Enrollment enrollment = i.next();
-				if (enrollment.getStudent().getId() == studentId) { actual--; break; }
-			}
-		}
-		*/
-		return new int[] {actual, original.getLimit()};
-	}
-	
-	@SuppressWarnings("unchecked")
 	protected ClassAssignmentInterface convert(OnlineSectioningServer server, Enrollment[] enrollments,
 			Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse, HashSet<FreeTimeRequest> requiredFreeTimes,
 			boolean computeOverlaps,
 			DistanceConflict dc, Set<Long> savedClasses) throws SectioningException {
+		DistanceMetric m = server.getDistanceMetric();
         ClassAssignmentInterface ret = new ClassAssignmentInterface();
 		int nrUnassignedCourses = 0;
 		int nrAssignedAlt = 0;
@@ -585,6 +609,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						if (s.getSections().size() > 1) { hasAlt = true; break; }
 					}
 				}
+				XOffering offering = server.getOffering(course.getOffering().getId());
+				XEnrollments enrl = server.getEnrollments(offering.getOfferingId());
 				for (Iterator<Section> i = sections.iterator(); i.hasNext();) {
 					Section section = (Section)i.next();
 					ClassAssignmentInterface.ClassAssignment a = ca.addClassAssignment();
@@ -593,7 +619,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setSubpart(section.getSubpart().getName());
 					a.setSection(section.getName(course.getId()));
 					a.setClassNumber(section.getName(-1l));
-					a.setLimit(getLimit(server, section, r.getStudent().getId()));
+					a.setLimit(new int[] {enrl.countEnrollmentsForSection(section.getId()), offering.getSection(section.getId()).getLimit()});
 					if (section.getTime() != null) {
 						for (DayCode d : DayCode.toDayCodes(section.getTime().getDayCode()))
 							a.addDay(d.getIndex());
@@ -613,7 +639,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						for (String instructor: instructors) {
 							String[] nameEmail = instructor.split("\\|");
 							a.addInstructor(nameEmail[0]);
-							a.addInstructoEmailr(nameEmail.length < 2 ? "" : nameEmail[1]);
+							a.addInstructoEmail(nameEmail.length < 2 ? "" : nameEmail[1]);
 						}
 					}
 					if (section.getParent() != null)
@@ -632,7 +658,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						for (Iterator<Section> j=x.getSections().iterator(); j.hasNext();) {
 							Section s = j.next();
 							if (s == section || s.getTime() == null) continue;
-							int d = server.distance(s, section);
+							int d = distance(m, s, section);
 							if (d > dist) {
 								dist = d;
 								from = "";
@@ -665,7 +691,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					// if (dist > 0.0) a.setDistanceConflict(true);
 					if (savedClasses != null && savedClasses.contains(section.getId())) a.setSaved(true);
 					if (a.getParentSection() == null)
-						a.setParentSection(server.getCourseInfo(course.getId()).getConsent());
+						a.setParentSection(server.getCourse(course.getId()).getConsentLabel());
 					a.setExpected(Math.round(section.getSpaceExpected()));
 				}
 				ret.add(ca);
@@ -711,5 +737,43 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	@Override
 	public String name() {
 		return "section";
+	}
+	
+	public int distance(DistanceMetric m, Section s1, Section s2) {
+        if (s1.getPlacement()==null || s2.getPlacement()==null) return 0;
+        TimeLocation t1 = s1.getTime();
+        TimeLocation t2 = s2.getTime();
+        if (!t1.shareDays(t2) || !t1.shareWeeks(t2)) return 0;
+        int a1 = t1.getStartSlot(), a2 = t2.getStartSlot();
+        if (m.doComputeDistanceConflictsBetweenNonBTBClasses()) {
+        	if (a1 + t1.getNrSlotsPerMeeting() <= a2) {
+        		int dist = Placement.getDistanceInMinutes(m, s1.getPlacement(), s2.getPlacement());
+        		if (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()))
+        			return dist;
+        	}
+        } else {
+        	if (a1+t1.getNrSlotsPerMeeting()==a2)
+        		return Placement.getDistanceInMinutes(m, s1.getPlacement(), s2.getPlacement());
+        }
+        return 0;
+    }	
+	
+	public static class EnrollmentSectionComparator implements Comparator<Section> {
+	    public boolean isParent(Section s1, Section s2) {
+			Section p1 = s1.getParent();
+			if (p1==null) return false;
+			if (p1.equals(s2)) return true;
+			return isParent(p1, s2);
+		}
+
+		public int compare(Section a, Section b) {
+			if (isParent(a, b)) return 1;
+	        if (isParent(b, a)) return -1;
+
+	        int cmp = a.getSubpart().getInstructionalType().compareToIgnoreCase(b.getSubpart().getInstructionalType());
+			if (cmp != 0) return cmp;
+			
+			return Double.compare(a.getId(), b.getId());
+		}
 	}
 }

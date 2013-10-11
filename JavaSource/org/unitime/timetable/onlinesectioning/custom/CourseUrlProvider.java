@@ -19,12 +19,13 @@
 */
 package org.unitime.timetable.onlinesectioning.custom;
 
+import java.io.Serializable;
 import java.net.URL;
 
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
-public interface CourseUrlProvider {
+public interface CourseUrlProvider extends Serializable {
 	
 	public URL getCourseUrl(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException;
 

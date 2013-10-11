@@ -37,10 +37,12 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	private static Log sLog = LogFactory.getLog(SolverContainerWrapper.class);
 	private SolverServerImplementation iServer;
 	private RemoteSolverContainer<T> iContainer;
+	private boolean iCheckLocal = true;
 
-	public SolverContainerWrapper(SolverServerImplementation server, RemoteSolverContainer<T> container) {
+	public SolverContainerWrapper(SolverServerImplementation server, RemoteSolverContainer<T> container, boolean checkLocal) {
 		iServer = server;
 		iContainer = container;
+		iCheckLocal = checkLocal;
 	}
 
 	@Override
@@ -60,19 +62,25 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	@Override
 	public T getSolver(String user) {
 		try {
-			T solver = iContainer.getSolver(user);
-			if (solver != null) return solver;
+			if (iCheckLocal) {
+				T solver = iContainer.getSolver(user);
+				if (solver != null) return solver;				
+			}
 
 			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
 			List<Address> senders = new ArrayList<Address>();
 			for (Rsp<Boolean> rsp : ret) {
-				if (rsp.getValue())
+				if (rsp != null && rsp.getValue())
 					senders.add(rsp.getSender());
 			}
-			if (!senders.isEmpty())
-				return iContainer.createProxy(ToolBox.random(senders), user);
-			else
+			if (senders.isEmpty())
 				return null;
+			else if (senders.size() == 1)
+				return iContainer.createProxy(senders.get(0), user);
+			else if (iContainer instanceof ReplicatedSolverContainer)
+				return ((ReplicatedSolverContainer<T>)iContainer).createProxy(senders, user);
+			else
+				return iContainer.createProxy(ToolBox.random(senders), user);
 		} catch (Exception e) {
 			sLog.error("Failed to retrieve solver " + user + ": " + e.getMessage(), e);
 		}

@@ -53,7 +53,7 @@ import net.sf.cpsolver.ifs.util.DataProperties;
 public interface SolverProxy extends ClassAssignmentProxy {
 	
     public String getHost();
-    public String getHostLabel();
+    public String getUser();
 
 	public void load(DataProperties properties) throws Exception;
 	public void reload(DataProperties properties) throws Exception;

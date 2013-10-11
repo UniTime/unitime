@@ -656,7 +656,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     }
                     if (assignedConfig==null) {
                         HashSet<Long> subparts = new HashSet<Long>();
-                        for (Iterator<StudentClassEnrollment> i = (cr.getClassEnrollments() == null ? s.getClassEnrollments() : cr.getClassEnrollments()).iterator(); i.hasNext(); ) {
+                        for (Iterator<StudentClassEnrollment> i = cr.getClassEnrollments().iterator(); i.hasNext(); ) {
                         	StudentClassEnrollment enrl = i.next();
                         	Section section = course.getOffering().getSection(enrl.getClazz().getUniqueId());
                             if (section!=null) {
@@ -1312,7 +1312,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     "left join fetch cr.classWaitLists as cw " +
                     "left join fetch s.classEnrollments as e " +
                     "left join fetch s.waitlists as w " +
-                    "left join fetch cr.classEnrollments as cre "+
                     (iLoadStudentInfo ? "left join fetch s.academicAreaClassifications as a left join fetch s.posMajors as mj left join fetch s.groups as g " : "") +
                     "where s.session.uniqueId=:sessionId").
                     setLong("sessionId",session.getUniqueId().longValue()).
