@@ -436,8 +436,6 @@ public class StudentSectioningImport extends BaseImport {
             					CourseRequest cr = null;
             					if (requests.hasNext()) {
             						cr = requests.next();
-            						if (cr.getClassEnrollments() != null)
-            							cr.getClassEnrollments().clear();
             						if (cr.getCourseRequestOptions() != null) {
             							for (Iterator<CourseRequestOption> j = cr.getCourseRequestOptions().iterator(); j.hasNext(); )
             								getHibSession().delete(j.next());
@@ -504,21 +502,25 @@ public class StudentSectioningImport extends BaseImport {
         				CourseRequest cr = course2request.get(enrl.getCourseOffering().getUniqueId());
         				if (cr == null) {
         					if (keepEnrollments) {
-        						enrl.getCourseRequest().getClassEnrollments().remove(enrl);
+        						// enrl.getCourseRequest().getClassEnrollments().remove(enrl);
             					enrl.setCourseRequest(null);
             					getHibSession().saveOrUpdate(enrl);
         					} else {
                 				enrl.getClazz().getStudentEnrollments().remove(enrl);
+                				/*
                 				if (enrl.getCourseRequest() != null)
                 					enrl.getCourseRequest().getClassEnrollments().remove(enrl);
+                					*/
                 				getHibSession().delete(enrl);
                 				i.remove();
         					}
         				} else {
         					enrl.setCourseRequest(cr);
+        					/*
         					if (cr.getClassEnrollments() == null)
         						cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
         					cr.getClassEnrollments().add(enrl);
+        					*/
         					getHibSession().saveOrUpdate(enrl);
         				}
             		}

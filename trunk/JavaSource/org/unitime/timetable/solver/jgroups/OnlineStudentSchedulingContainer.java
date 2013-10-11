@@ -29,13 +29,17 @@ import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.jgroups.blocks.locking.LockService;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
+import org.unitime.timetable.onlinesectioning.server.ReplicatedServerWithMaster;
 
 public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineSectioningServer> {
 	private static Log sLog = LogFactory.getLog(OnlineStudentSchedulingContainer.class);
@@ -87,25 +91,54 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		return createInstance(Long.valueOf(sessionId), config);
 	}
 	
-	public OnlineSectioningServer createInstance(Long academicSessionId, DataProperties config) {
+	public OnlineSectioningServer createInstance(final Long academicSessionId, DataProperties config) {
 		iGlobalLock.writeLock().lock();
 		try {
 			ApplicationProperties.setSessionId(academicSessionId);
-			OnlineSectioningServer s = new OnlineSectioningServerImpl(academicSessionId, false);
-			iInstances.put(academicSessionId, s);
+			Class serverClass = Class.forName(ApplicationProperties.getProperty("unitime.enrollment.server.class", ReplicatedServerWithMaster.class.getName()));
+			OnlineSectioningServer server = (OnlineSectioningServer)serverClass.getConstructor(OnlineSectioningServerContext.class).newInstance(getServerContext(academicSessionId));
+			iInstances.put(academicSessionId, server);
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
-				OnlineStudentSchedulingUpdater updater = new OnlineStudentSchedulingUpdater(this, s.getAcademicSession(), StudentSectioningQueue.getLastTimeStamp(hibSession, academicSessionId));
+				OnlineStudentSchedulingUpdater updater = new OnlineStudentSchedulingUpdater(this, server.getAcademicSession(), StudentSectioningQueue.getLastTimeStamp(hibSession, academicSessionId));
 				iUpdaters.put(academicSessionId, updater);
 				updater.start();
 			} finally {
 				hibSession.close();
 			}
-			return s;
+			return server;
+		} catch (SectioningException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SectioningException(e.getMessage(), e);
 		} finally {
 			iGlobalLock.writeLock().unlock();
 			ApplicationProperties.setSessionId(null);
 		}
+	}
+	
+	public OnlineSectioningServerContext getServerContext(final Long academicSessionId) {
+		return new OnlineSectioningServerContext() {
+			@Override
+			public Long getAcademicSessionId() {
+				return academicSessionId;
+			}
+
+			@Override
+			public boolean isWaitTillStarted() {
+				return false;
+			}
+
+			@Override
+			public EmbeddedCacheManager getCacheManager() {
+				return null;
+			}
+
+			@Override
+			public LockService getLockService() {
+				return null;
+			}
+		};
 	}
 	
 	@Override
@@ -121,7 +154,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 				u.stopUpdating();
 			OnlineSectioningServer s = iInstances.get(academicSessionId);
 			if (s != null)
-				s.unload();
+				s.unload(true);
 			iInstances.remove(academicSessionId);
 			iUpdaters.remove(academicSessionId);
 		} finally {
@@ -131,7 +164,18 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 
 	@Override
 	public int getUsage() {
-		return 100 * iInstances.size();
+		iGlobalLock.readLock().lock();
+		int ret = 0;
+		try {
+			for (OnlineSectioningServer s: iInstances.values())
+				if (s.isMaster())
+					ret += 500;
+				else
+					ret += 100;
+		} finally {
+			iGlobalLock.readLock().unlock();
+		}
+		return ret;
 	}
 
 	@Override
@@ -184,7 +228,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 				u.stopUpdating();
 				if (u.getAcademicSession() != null) {
 					OnlineSectioningServer s = iInstances.get(u.getAcademicSession().getUniqueId());
-					if (s != null) s.unload();
+					if (s != null) s.unload(false);
 				}
 			}
 			iInstances.clear();

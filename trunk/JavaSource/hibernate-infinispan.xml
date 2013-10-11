@@ -9,7 +9,7 @@
             distributedSyncTimeout="50000"
             strictPeerToPeer="false">
          <properties>
-            <property name="configurationFile" value="${unitime.hibernate.jgroups.config:hibernate-jgroups-tcp.xml}"/>
+            <property name="channelLookup" value="org.unitime.commons.jgroups.HibernateChannelLookup"/>
          </properties>
       </transport>
       <globalJmxStatistics allowDuplicateDomains="true" />

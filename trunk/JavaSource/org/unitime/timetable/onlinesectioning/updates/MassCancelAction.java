@@ -24,10 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.cpsolver.studentsct.model.Assignment;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Request;
-
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -44,7 +40,16 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 
+@CheckMaster(Master.REQUIRED)
 public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
@@ -103,8 +108,10 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 						for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
 							StudentClassEnrollment enrl = i.next();
 							enrl.getClazz().getStudentEnrollments().remove(enrl);
+							/*
 							if (enrl.getCourseRequest() != null)
 								enrl.getCourseRequest().getClassEnrollments().remove(enrl);
+								*/
 							helper.getHibSession().delete(enrl);
 							i.remove();
 						}
@@ -131,38 +138,38 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 						helper.getHibSession().saveOrUpdate(student);
 						helper.getHibSession().flush();
 						
-						net.sf.cpsolver.studentsct.model.Student oldStudent = server.getStudent(studentId);
-						net.sf.cpsolver.studentsct.model.Student newStudent = null;
+						XStudent oldStudent = server.getStudent(studentId);
+						XStudent newStudent = null;
 						try {
-							server.remove(oldStudent);
-							newStudent = ReloadAllData.loadStudent(student, server, helper);
-							server.update(newStudent);
+							newStudent = ReloadAllData.loadStudent(student, null, server, helper);
+							server.update(newStudent, true);
 						} catch (Exception e) {
-							// Put back the old student (the database will get rollbacked)
-							server.update(oldStudent);
 							if (e instanceof RuntimeException)
 								throw (RuntimeException)e;
 							throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 						}
 						
 						if (oldStudent != null) {
-							for (Request oldRequest: oldStudent.getRequests()) {
-								Enrollment oldEnrollment = oldRequest.getInitialAssignment();
-								if (oldEnrollment == null || !oldEnrollment.isCourseRequest()) continue; // free time or not assigned
-								offeringsToCheck.add(oldEnrollment.getOffering().getId());
-								EnrollStudent.updateSpace(helper, null, oldEnrollment);
+							for (XRequest oldRequest: oldStudent.getRequests()) {
+								XEnrollment oldEnrollment = (oldRequest instanceof XCourseRequest ? ((XCourseRequest)oldRequest).getEnrollment() : null);
+								if (oldEnrollment == null) continue; // free time or not assigned
+								offeringsToCheck.add(oldEnrollment.getOfferingId());
+								EnrollStudent.updateSpace(server,
+										null,
+										oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, server.getOffering(oldEnrollment.getOfferingId()), oldEnrollment).getAssignment());
 							}
 							OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 							enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
-							for (Request oldRequest: oldStudent.getRequests()) {
-								if (oldRequest.getInitialAssignment() != null)
-									for (Assignment assignment: oldRequest.getInitialAssignment().getAssignments())
-										enrollment.addSection(OnlineSectioningHelper.toProto(assignment, oldRequest.getInitialAssignment()));
+							for (XRequest oldRequest: oldStudent.getRequests()) {
+								XEnrollment oldEnrollment = (oldRequest instanceof XCourseRequest ? ((XCourseRequest)oldRequest).getEnrollment() : null);
+								if (oldEnrollment != null)
+									for (XSection section: server.getOffering(oldEnrollment.getOfferingId()).getSections(oldEnrollment))
+										enrollment.addSection(OnlineSectioningHelper.toProto(section, oldEnrollment));
 							}
 							action.addEnrollment(enrollment);
 						}
 						
-						StudentEmail email = new StudentEmail(studentId, (oldStudent == null ? null : oldStudent.getRequests()), (newStudent == null ? null : newStudent.getRequests()));
+						StudentEmail email = new StudentEmail(studentId, oldStudent);
 						email.setCC(getCC());
 						email.setEmailSubject(getSubject() == null || getSubject().isEmpty() ? MSG.defaulSubjectMassCancel() : getSubject());
 						email.setMessage(getMessage());

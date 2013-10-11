@@ -1925,7 +1925,7 @@ public class CurriculaServlet implements CurriculaService {
 						for (Iterator<ClassInstructor> i = clazz.getClassInstructors().iterator(); i.hasNext(); ) {
 							ClassInstructor instr = i.next();
 							a.addInstructor(instr.getInstructor().getName(DepartmentalInstructor.sNameFormatShort));
-							a.addInstructoEmailr(instr.getInstructor().getEmail());
+							a.addInstructoEmail(instr.getInstructor().getEmail());
 						}
 					}
 					if (clazz.getParentClass() != null)

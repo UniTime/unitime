@@ -55,65 +55,68 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
+import org.unitime.timetable.onlinesectioning.model.XInstructor;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XRoom;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
 
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.ToolBox;
-import net.sf.cpsolver.studentsct.model.Assignment;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
 
+@CheckMaster(Master.REQUIRED)
 public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	private static GwtMessages GWT = Localization.create(GwtMessages.class);
 
-	private Long iStudentId = null;
-	private List<Request> iOldRequests = null, iNewRequests = null;
-	private boolean iUseActualRequests = false;
-	private Enrollment iOldEnrollment = null;
-	private Date iTimeStamp = null;
+	private Date iTimeStamp = new Date();
 	private static Format<Date> sTimeStampFormat = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	private static Format<Date> sConsentApprovalDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 	private String iSubject = MSG.emailDeafultSubject(), iSubjectExt = null, iMessage = null, iCC = null;
 	private static Hashtable<Long, String> sLastMessage = new Hashtable<Long, String>();
 	private byte[] iTimetableImage = null;
 	
-	public StudentEmail(Long studentId, List<Request> oldRequests, List<Request> newRequests) {
-		iStudentId = studentId; iOldRequests = oldRequests; iNewRequests = newRequests;
-		iTimeStamp = new Date();
+	private Long iStudentId;
+	private XOffering iOldOffering;
+	private XEnrollment iOldEnrollment;
+	private XStudent iOldStudent;
+	private XStudent iStudent;
+	
+	public StudentEmail(Long studentId, XOffering oldOffering, XEnrollment oldEnrollment) {
+		iStudentId = studentId;
+		iOldOffering = oldOffering;
+		iOldEnrollment = oldEnrollment;
 	}
 	
-	public StudentEmail(Long studentId, Enrollment oldEnrollment, List<Request> newRequests) {
-		iStudentId = studentId; iOldEnrollment = oldEnrollment; iNewRequests = newRequests;
-		iTimeStamp = new Date();
+	public StudentEmail(Long studentId, XStudent oldStudent) {
+		iStudentId = studentId;
+		iOldStudent = oldStudent;
 	}
-
+	
 	public StudentEmail(Long studentId) {
 		iStudentId = studentId;
-		iUseActualRequests = true;
-		iTimeStamp = new Date();
 	}
 	
-public Long getStudentId() { return iStudentId; }
-	public Enrollment getOldEnrollment() { return iOldEnrollment; }
-	public List<Request> getOldRequests() { return iOldRequests; }
-	public List<Request> getNewRequests() { return iNewRequests; }
+	public Long getStudentId() { return iStudentId; }
+
 	public Date getTimeStamp() { return iTimeStamp; }
 	private String getSubject() { return iSubject; }
 	private void setSubject(String subject) { iSubject = subject; }
@@ -123,6 +126,12 @@ public Long getStudentId() { return iStudentId; }
 	public void setMessage(String message) { iMessage = message; }
 	public String getCC() { return iCC; }
 	public void setCC(String cc) { iCC = cc; }
+	
+	public XEnrollment getOldEnrollment() { return iOldEnrollment; }
+	public XOffering getOldOffering() { return iOldOffering; }
+	public XStudent getOldStudent() { return iOldStudent; }
+	public XStudent getStudent() { return iStudent; }
+	public void setStudent(XStudent student) { iStudent = student; }
 
 	@Override
 	public Boolean execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
@@ -133,90 +142,111 @@ public Long getStudentId() { return iStudentId; }
 					OnlineSectioningLog.Entity.newBuilder()
 					.setUniqueId(getStudentId()));
 			
-			if (getOldEnrollment() != null && getOldEnrollment().getAssignments() != null) {
+			if (getOldEnrollment() != null) {
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
-				for (Assignment assignment: getOldEnrollment().getAssignments())
-					enrollment.addSection(OnlineSectioningHelper.toProto(assignment, getOldEnrollment()));
+				for (XSection section: getOldOffering().getSections(getOldEnrollment()))
+					enrollment.addSection(OnlineSectioningHelper.toProto(section, getOldEnrollment()));
 				action.addEnrollment(enrollment);
-			} else if (getOldRequests() != null) {
+			} else if (getOldStudent() != null) {
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
-				for (Request r: getNewRequests())
-					if (r.getInitialAssignment() != null)
-						for (Assignment assignment: r.getInitialAssignment().getAssignments())
-							enrollment.addSection(OnlineSectioningHelper.toProto(assignment, r.getInitialAssignment()));
-				action.addEnrollment(enrollment);
-			}
-			
-			Student student = server.getStudent(getStudentId());
-			if (student == null) return false;
-			action.getStudentBuilder().setUniqueId(student.getId()).setExternalId(student.getExternalId());
-
-			if (iUseActualRequests)
-				iNewRequests = student.getRequests();
-			
-			if (getNewRequests() != null) {
-				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
-				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
-				for (Request r: getNewRequests()) {
-					action.addRequest(OnlineSectioningHelper.toProto(r));
-					if (r.getAssignment() != null)
-						for (Assignment assignment: r.getAssignment().getAssignments())
-							enrollment.addSection(OnlineSectioningHelper.toProto(assignment, r.getAssignment()));
+				for (XRequest r: getOldStudent().getRequests()) {
+					XEnrollment e = (r instanceof XCourseRequest ? ((XCourseRequest)r).getEnrollment() : null);
+					if (e != null)
+						for (XSection section: server.getOffering(e.getOfferingId()).getSections(e))
+							enrollment.addSection(OnlineSectioningHelper.toProto(section, e));
 				}
 				action.addEnrollment(enrollment);
 			}
+			
+			XStudent student = server.getStudent(getStudentId());
+			if (student == null) return false;
+			setStudent(student);
+			action.getStudentBuilder().setUniqueId(student.getStudentId()).setExternalId(student.getExternalId()).setName(student.getName());
+
+			OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
+			enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+			for (XRequest r: student.getRequests()) {
+				action.addRequest(OnlineSectioningHelper.toProto(r));
+				XEnrollment e = (r instanceof XCourseRequest ? ((XCourseRequest)r).getEnrollment() : null);
+				if (e != null)
+					for (XSection section: server.getOffering(e.getOfferingId()).getSections(e))
+						enrollment.addSection(OnlineSectioningHelper.toProto(section, e));
+			}
+			action.addEnrollment(enrollment);
 						
 			boolean ret = false;
 			
-			helper.beginTransaction();
-			try {
-				org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
-				if (dbStudent != null && dbStudent.getEmail() != null && !dbStudent.getEmail().isEmpty()) {
-					action.getStudentBuilder().setName(dbStudent.getEmail());
-					boolean emailEnabled = true;
-					StudentSectioningStatus status = dbStudent.getSectioningStatus();
-					if (status == null) status = dbStudent.getSession().getDefaultSectioningStatus();
-					if (status != null && !status.hasOption(StudentSectioningStatus.Option.email)) {
-						emailEnabled = false;
-					}
-					
-					if (emailEnabled) {
-						final String html = generateMessage(dbStudent, server, helper);
-						if (html != null) {
-							Email email = Email.createEmail();
+			org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(getStudentId(), helper.getHibSession());
+			if (dbStudent != null && dbStudent.getEmail() != null && !dbStudent.getEmail().isEmpty()) {
+				action.getStudentBuilder().setName(dbStudent.getEmail());
+				boolean emailEnabled = true;
+				StudentSectioningStatus status = dbStudent.getSectioningStatus();
+				if (status == null) status = dbStudent.getSession().getDefaultSectioningStatus();
+				if (status != null && !status.hasOption(StudentSectioningStatus.Option.email)) {
+					emailEnabled = false;
+				}
+				
+				if (emailEnabled) {
+					final String html = generateMessage(dbStudent, server, helper);
+					if (html != null) {
+						Email email = Email.createEmail();
 
-							email.addRecipient(dbStudent.getEmail(), dbStudent.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
-							
-							if (getCC() != null && !getCC().isEmpty()) {
-								helper.logOption("cc", getCC());
-								for (StringTokenizer s = new StringTokenizer(getCC(), ",;"); s.hasMoreTokens(); ) {
-									email.addRecipientCC(s.nextToken(), null);
-								}
+						email.addRecipient(dbStudent.getEmail(), dbStudent.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
+						
+						if (getCC() != null && !getCC().isEmpty()) {
+							helper.logOption("cc", getCC());
+							for (StringTokenizer s = new StringTokenizer(getCC(), ",;"); s.hasMoreTokens(); ) {
+								email.addRecipientCC(s.nextToken(), null);
+							}
+						}
+						
+						if (getEmailSubject() != null && !getEmailSubject().isEmpty()) {
+							email.setSubject(getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
+							helper.logOption("subject", getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
+						} else
+							email.setSubject(getSubject().replace("%session%", server.getAcademicSession().toString()));
+						
+						if (getMessage() != null && !getMessage().isEmpty())
+							helper.logOption("message", getMessage());
+						
+						if (helper.getUser() != null && getOldEnrollment() == null && getOldStudent() == null) {
+							TimetableManager manager = (TimetableManager)helper.getHibSession().createQuery("from TimetableManager where externalUniqueId = :id").setString("id", helper.getUser().getExternalId()).uniqueResult();
+							if (manager != null && manager.getEmailAddress() != null) {
+								email.setReplyTo(manager.getEmailAddress(), manager.getName());
+								helper.logOption("reply-to", manager.getName() + " <" + manager.getEmailAddress() + ">");
+							}
+						}
+						
+						final StringWriter buffer = new StringWriter();
+						PrintWriter out = new PrintWriter(buffer);
+						generateTimetable(out, server, helper);
+						out.flush(); out.close();							
+						email.addAttachement(new DataSource() {
+							@Override
+							public OutputStream getOutputStream() throws IOException {
+								throw new IOException("No output stream.");
 							}
 							
-							if (getEmailSubject() != null && !getEmailSubject().isEmpty()) {
-								email.setSubject(getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
-								helper.logOption("subject", getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
-							} else
-								email.setSubject(getSubject().replace("%session%", server.getAcademicSession().toString()));
-							
-							if (getMessage() != null && !getMessage().isEmpty())
-								helper.logOption("message", getMessage());
-							
-							if (helper.getUser() != null && getOldEnrollment() == null && getOldRequests() == null) {
-								TimetableManager manager = (TimetableManager)helper.getHibSession().createQuery("from TimetableManager where externalUniqueId = :id").setString("id", helper.getUser().getExternalId()).uniqueResult();
-								if (manager != null && manager.getEmailAddress() != null) {
-									email.setReplyTo(manager.getEmailAddress(), manager.getName());
-									helper.logOption("reply-to", manager.getName() + " <" + manager.getEmailAddress() + ">");
-								}
+							@Override
+							public String getName() {
+								return "message.html";
 							}
 							
-							final StringWriter buffer = new StringWriter();
-							PrintWriter out = new PrintWriter(buffer);
-							generateTimetable(out, server, helper);
-							out.flush(); out.close();							
+							@Override
+							public InputStream getInputStream() throws IOException {
+								return new ByteArrayInputStream(
+										html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()).getBytes("UTF-8"));
+							}
+							
+							@Override
+							public String getContentType() {
+								return "text/html; charset=UTF-8";
+							}
+						});
+						
+						if (iTimetableImage != null) {
 							email.addAttachement(new DataSource() {
 								@Override
 								public OutputStream getOutputStream() throws IOException {
@@ -225,22 +255,24 @@ public Long getStudentId() { return iStudentId; }
 								
 								@Override
 								public String getName() {
-									return "message.html";
+									return "timetable.png";
 								}
 								
 								@Override
 								public InputStream getInputStream() throws IOException {
-									return new ByteArrayInputStream(
-											html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()).getBytes("UTF-8"));
+									return new ByteArrayInputStream(iTimetableImage);
 								}
 								
 								@Override
 								public String getContentType() {
-									return "text/html; charset=UTF-8";
+									return "image/png";
 								}
 							});
-							
-							if (iTimetableImage != null) {
+						}
+						
+						try {
+							final String calendar = CalendarExport.getCalendar(server, student);
+							if (calendar != null)
 								email.addAttachement(new DataSource() {
 									@Override
 									public OutputStream getOutputStream() throws IOException {
@@ -249,83 +281,54 @@ public Long getStudentId() { return iStudentId; }
 									
 									@Override
 									public String getName() {
-										return "timetable.png";
+										return "timetable.ics";
 									}
 									
 									@Override
 									public InputStream getInputStream() throws IOException {
-										return new ByteArrayInputStream(iTimetableImage);
+										return new ByteArrayInputStream(calendar.getBytes("UTF-8"));
 									}
 									
 									@Override
 									public String getContentType() {
-										return "image/png";
+										return "text/calendar; charset=UTF-8";
 									}
 								});
-							}
-							
-							try {
-								final String calendar = CalendarExport.getCalendar(server, student);
-								if (calendar != null)
-									email.addAttachement(new DataSource() {
-										@Override
-										public OutputStream getOutputStream() throws IOException {
-											throw new IOException("No output stream.");
-										}
-										
-										@Override
-										public String getName() {
-											return "timetable.ics";
-										}
-										
-										@Override
-										public InputStream getInputStream() throws IOException {
-											return new ByteArrayInputStream(calendar.getBytes("UTF-8"));
-										}
-										
-										@Override
-										public String getContentType() {
-											return "text/calendar; charset=UTF-8";
-										}
-									});
-							} catch (IOException e) {
-								helper.warn("Unable to create calendar for student " + student.getId() + ":" + e.getMessage());
-							}
-							
-							String lastMessageId = sLastMessage.get(student.getId());
-							if (lastMessageId != null)
-								email.setInReplyTo(lastMessageId);
-							
-							email.setHTML(html);
-							
-							helper.logOption("email", html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()));
-
-							email.send();
-							
-							String messageId = email.getMessageId();
-							if (messageId != null)
-								sLastMessage.put(student.getId(), messageId);
-							
-							Date ts = new Date();
-							dbStudent.setScheduleEmailedDate(ts);
-							student.setEmailTimeStamp(ts.getTime());
-							
-							helper.getHibSession().saveOrUpdate(dbStudent);
-							
-							ret = true;
-						} else {
-							helper.info("Email notification failed to generate for student " + student.getName() + ".");
+						} catch (IOException e) {
+							helper.warn("Unable to create calendar for student " + student.getStudentId() + ":" + e.getMessage());
 						}
+						
+						String lastMessageId = sLastMessage.get(student.getStudentId());
+						if (lastMessageId != null)
+							email.setInReplyTo(lastMessageId);
+						
+						email.setHTML(html);
+						
+						helper.logOption("email", html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()));
+
+						email.send();
+						
+						String messageId = email.getMessageId();
+						if (messageId != null)
+							sLastMessage.put(student.getStudentId(), messageId);
+						
+						Date ts = new Date();
+						dbStudent.setScheduleEmailedDate(ts);
+						student.setEmailTimeStamp(ts);
+						
+						helper.getHibSession().saveOrUpdate(dbStudent);
+						
+						server.update(student, false);
+						
+						ret = true;
 					} else {
-						helper.info("Email notification is disabled for student " + student.getName() + ".");
+						helper.info("Email notification failed to generate for student " + student.getName() + ".");
 					}
 				} else {
-					helper.info("Student " + student.getName() + " has no email address on file.");
+					helper.info("Email notification is disabled for student " + student.getName() + ".");
 				}
-				helper.commitTransaction();
-			} catch (Exception e) {
-				helper.rollbackTransaction();
-				throw e;
+			} else {
+				helper.info("Student " + student.getName() + " has no email address on file.");
 			}
 			
 			return ret;
@@ -440,7 +443,7 @@ public Long getStudentId() { return iStudentId; }
 		
 		out.println("		</td></tr>");
 		
-		if (getNewRequests() != null && !getNewRequests().isEmpty()) {
+		if (getStudent().getRequests().isEmpty()) {
 
 			out.println("		<tr><td " +
 					"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
@@ -448,7 +451,7 @@ public Long getStudentId() { return iStudentId; }
 			out.println("		<tr><td>");
 			
 			try {
-				iTimetableImage = generateTimetableImage();
+				iTimetableImage = generateTimetableImage(server);
 			} catch (Exception e) {
 				helper.error("Unable to create PDF timetable: " + e.getMessage(), e);
 				generateTimetable(out, server, helper);
@@ -460,7 +463,7 @@ public Long getStudentId() { return iStudentId; }
 		}
 		
 		if (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER) {
-			if (getOldEnrollment() == null && getOldRequests() == null)
+			if (getOldEnrollment() == null && getOldStudent() == null)
 				out.println("		<tr><td>" + MSG.emailSentBy(helper.getUser().getName()) + "</td></tr>");
 			else
 				out.println("		<tr><td>" + MSG.emailChangesMadeBy(helper.getUser().getName()) + "</td></tr>");
@@ -516,13 +519,13 @@ public Long getStudentId() { return iStudentId; }
 		out.println("</table>");
 	}
 	
-	public static boolean equals(Section a, Section b) {
+	public static boolean equals(XSection a, XSection b) {
 		return
 			ToolBox.equals(a.getName(), b.getName()) &&
 			ToolBox.equals(a.getTime(), b.getTime()) &&
 			ToolBox.equals(a.getRooms(), b.getRooms()) && 
-			ToolBox.equals(a.getChoice(), b.getChoice()) &&
-			ToolBox.equals(a.getParent() == null ? null : a.getParent().getName(), b.getParent() == null ? null : b.getParent().getName());
+			ToolBox.equals(a.getInstructors(), b.getInstructors()) &&
+			ToolBox.equals(a.getParentId(), b.getParentId());
 	}
 	
 	private String time(int slot) {
@@ -534,24 +537,24 @@ public Long getStudentId() { return iStudentId; }
 			return h + ":" + (m < 10 ? "0" : "") + m;
 	}
 	
-	private String startTime(TimeLocation time) {
-		return time(time.getStartSlot());
+	private String startTime(XTime time) {
+		return time(time.getSlot());
 	}
 	
-	private String endTime(TimeLocation time) {
-		return time(time.getStartSlot() + time.getLength() - time.getBreakTime());
+	private String endTime(XTime time) {
+		return time(time.getSlot() + time.getLength() - time.getBreakTime());
 	}
 
-	private void generateListOfClassesLine(PrintWriter out, Request request, Section section, String style, String consent) {
+	private void generateListOfClassesLine(PrintWriter out, XOffering offering, XCourse course, XSection section, String style, String consent) {
 		out.println("<tr>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + (request.getAssignment() == null ? request.getInitialAssignment() : request.getAssignment()).getCourse().getSubjectArea() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + (request.getAssignment() == null ? request.getInitialAssignment() : request.getAssignment()).getCourse().getCourseNumber() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + section.getSubpart().getName() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + section.getName() + "</td>");
+		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getSubjectArea() + "</td>");
+		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getCourseNumber() + "</td>");
+		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + section.getSubpartName() + "</td>");
+		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + section.getName(course.getCourseId()) + "</td>");
 		if (section.getTime() == null) {
 			out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"4\">" + MSG.emailArrangeHours() + "</td>");
 		} else {
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + DayCode.toString(section.getTime().getDayCode()) + "</td>");
+			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + DayCode.toString(section.getTime().getDays()) + "</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + startTime(section.getTime()) + "</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + endTime(section.getTime()) + "</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + section.getTime().getDatePatternName() + "</td>");
@@ -560,33 +563,33 @@ public Long getStudentId() { return iStudentId; }
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
 		} else {
 			String rooms = "";
-			for (RoomLocation room: section.getRooms()) {
+			for (XRoom room: section.getRooms()) {
 				if (!rooms.isEmpty()) rooms += ", ";
 				rooms += room.getName();
 			}
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + rooms + "</td>");
 		}
-		if (section.getChoice().getInstructorNames() == null|| section.getChoice().getInstructorNames().isEmpty()) {
+		if (section.getInstructors().isEmpty()) {
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
 		} else {
-			String[] instructors = section.getChoice().getInstructorNames().split(":");
 			String html = "";
-			for (String instructor: instructors) {
-				String[] nameEmail = instructor.split("\\|");
+			for (XInstructor instructor: section.getInstructors()) {
 				if (!html.isEmpty()) html += ", ";
-				if (nameEmail.length < 2) {
-					html += nameEmail[0];
+				if (instructor.getEmail() == null) {
+					html += instructor.getName();
 				} else {
-					html += "<a href='mailto:" + nameEmail[1] + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + nameEmail[0]+ "</a>";
+					html += "<a href='mailto:" + instructor.getEmail() + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + instructor.getName()+ "</a>";
 				}
 			}
 			out.println("	<td style= \"" + style + "\">" + html + "</td>");
 		}
-		out.println("	<td style= \"" + style + "\">" + (section.getParent() == null ? consent == null ? "&nbsp;" : consent : section.getParent().getName()) + "</td>");
-		String note = (request.getAssignment() == null ? request.getInitialAssignment() : request.getAssignment()).getCourse().getNote();
+		XSection parent = (section.getParentId() == null ? null : offering.getSection(section.getParentId()));
+		out.println("	<td style= \"" + style + "\">" + (parent == null ? consent == null ? "&nbsp;" : consent : parent.getName(course.getCourseId())) + "</td>");
+		String note = course.getNote();
 		if (section.getNote() != null) note = (note == null || note.isEmpty() ? "" : note + "<br>") + section.getNote();
 		out.println("	<td style= \"" + style + "\">" + (note == null ? "&nbsp;" : note.replace("\n", "<br>")) + "</td>");
-		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(section) + "\">" + creditAbbv(section) + "</td>");
+		XSubpart subpart = offering.getSubpart(section.getSubpartId());
+		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(subpart) + "\">" + creditAbbv(subpart) + "</td>");
 		out.println("</tr>");
 	}
 	
@@ -600,19 +603,19 @@ public Long getStudentId() { return iStudentId; }
 		return "<span style='text-decoration: line-through;'>" + a + "</span> &rarr; " + b;
 	}
 	
-	private void generateListOfClassesDiff(PrintWriter out, Request request, Section old, Section section, String style, String consent) {
+	private void generateListOfClassesDiff(PrintWriter out, XOffering oldOffering, XOffering offering, XCourse course, XSection old, XSection section, String style, String consent) {
 		out.println("<tr>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + request.getAssignment().getCourse().getSubjectArea() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + request.getAssignment().getCourse().getCourseNumber() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + section.getSubpart().getName() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + diff(old.getName(), section.getName()) + "</td>");
+		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getSubjectArea() + "</td>");
+		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getCourseNumber() + "</td>");
+		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + section.getSubpartName() + "</td>");
+		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + diff(old.getName(course.getCourseId()), section.getName(course.getCourseId())) + "</td>");
 		if (section.getTime() == null) {
 			out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"4\">" +
-					diff(old.getTime() == null ? MSG.emailArrangeHours() : DayCode.toString(old.getTime().getDayCode()) + " " + startTime(old.getTime()),
+					diff(old.getTime() == null ? MSG.emailArrangeHours() : DayCode.toString(old.getTime().getDays()) + " " + startTime(old.getTime()),
 					MSG.emailArrangeHours()) + "</td>");
 		} else {
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + 
-					diff(old.getTime() == null ? null : DayCode.toString(old.getTime().getDayCode()), DayCode.toString(section.getTime().getDayCode())) +
+					diff(old.getTime() == null ? null : DayCode.toString(old.getTime().getDays()), DayCode.toString(section.getTime().getDays())) +
 					"</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + 
 					diff(old.getTime() == null ? null : startTime(old.getTime()), startTime(section.getTime())) +
@@ -627,7 +630,7 @@ public Long getStudentId() { return iStudentId; }
 	
 		String oldRooms = "";
 		if (old.getRooms() != null && !old.getRooms().isEmpty()) {
-			for (RoomLocation room: old.getRooms()) {
+			for (XRoom room: old.getRooms()) {
 				if (!oldRooms.isEmpty()) oldRooms += ", ";
 				oldRooms += room.getName();
 			}
@@ -635,7 +638,7 @@ public Long getStudentId() { return iStudentId; }
 		
 		String rooms = "";
 		if (section.getRooms() != null && !section.getRooms().isEmpty()) {
-			for (RoomLocation room: section.getRooms()) {
+			for (XRoom room: section.getRooms()) {
 				if (!rooms.isEmpty()) rooms += ", ";
 				rooms += room.getName();
 			}
@@ -643,55 +646,58 @@ public Long getStudentId() { return iStudentId; }
 		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + diff(oldRooms, rooms) + "</td>");
 		
 		String oldInstructors = "";
-		if (old.getChoice().getInstructorNames() != null && !old.getChoice().getInstructorNames().isEmpty()) {
-			for (String instructor: old.getChoice().getInstructorNames().split(":")) {
-				String[] nameEmail = instructor.split("\\|");
+		if (!old.getInstructors().isEmpty()) {
+			for (XInstructor instructor: old.getInstructors()) {
 				if (!oldInstructors.isEmpty()) oldInstructors += ", ";
-				if (nameEmail.length < 2) {
-					oldInstructors += nameEmail[0];
+				if (instructor.getEmail() == null) {
+					oldInstructors += instructor.getName();
 				} else {
-					oldInstructors += "<a href='mailto:" + nameEmail[1] + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + nameEmail[0]+ "</a>";
+					oldInstructors += "<a href='mailto:" + instructor.getEmail() + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + instructor.getName()+ "</a>";
 				}
 			}
 		}
 		String instructors = "";
-		if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
-			for (String instructor: section.getChoice().getInstructorNames().split(":")) {
-				String[] nameEmail = instructor.split("\\|");
+		if (!section.getInstructors().isEmpty()) {
+			for (XInstructor instructor: section.getInstructors()) {
 				if (!instructors.isEmpty()) instructors += ", ";
-				if (nameEmail.length < 2) {
-					instructors += nameEmail[0];
+				if (instructor.getEmail() == null) {
+					instructors += instructor.getName();
 				} else {
-					instructors += "<a href='mailto:" + nameEmail[1] + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + nameEmail[0]+ "</a>";
+					instructors += "<a href='mailto:" + instructor.getEmail() + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + instructor.getName()+ "</a>";
 				}
 			}
 		}
 		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + diff(oldInstructors, instructors) + "</td>");
 
-		out.println("	<td style= \"" + style + "\">" + (old.getParent() == null && section.getParent() == null ? consent == null ? "&nbsp;" : consent : diff(old.getParent() == null ? null : old.getParent().getName(), section.getParent() == null ? null : section.getParent().getName())) + "</td>");
+		XSection oldParent = (old.getParentId() == null ? null : oldOffering.getSection(old.getParentId()));
+		XSection parent = (section.getParentId() == null ? null : offering.getSection(section.getParentId()));
+		out.println("	<td style= \"" + style + "\">" + (oldParent == null && parent == null ? consent == null ? "&nbsp;" : consent : diff(oldParent == null ? null : oldParent.getName(course.getCourseId()), parent == null ? null : parent.getName(course.getCourseId()))) + "</td>");
 		out.println("	<td style= \"" + style + "\">" +
-				(request.getAssignment().getCourse().getNote() == null ? "" : request.getAssignment().getCourse().getNote().replace("\n", "<br>") + "<br>") +
+				(course.getNote() == null ? "" : course.getNote().replace("\n", "<br>") + "<br>") +
 				diff(old.getNote(), section.getNote()).replace("\n", "<br>") + "</td>");
-		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(section) + "\">" + diff(creditAbbv(old), creditAbbv(section)) + "</td>");
+		XSubpart oldSubpart = oldOffering.getSubpart(old.getSectionId());
+		XSubpart subpart = offering.getSubpart(section.getSubpartId());
+		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(subpart) + "\">" + diff(creditAbbv(oldSubpart), creditAbbv(subpart)) + "</td>");
 		out.println("</tr>");
 	}
 	
-	private String creditAbbv(Section section) {
-		String credit = (section == null ? null : section.getSubpart().getCredit());
+	private String creditAbbv(XSubpart subpart) {
+		String credit = (subpart == null ? null : subpart.getCredit());
 		return credit == null ? "" : credit.indexOf('|') < 0 ? credit : credit.substring(0, credit.indexOf('|')); 
 	}
 
-	private String creditText(Section section) {
-		String credit = (section == null ? null : section.getSubpart().getCredit());
+	private String creditText(XSubpart subpart) {
+		String credit = (subpart == null ? null : subpart.getCredit());
 		return credit == null ? "" : credit.indexOf('|') < 0 ? credit : credit.substring(1 + credit.indexOf('|')); 
 	}
 
-	private void generateListOfClassesLine(PrintWriter out, Request request, String consent) {
-		if (request.getAssignment() == null) {
-			if (request instanceof CourseRequest) {
-				CourseRequest cr = (CourseRequest)request;
-				if (!cr.getStudent().canAssign(cr)) return;
-				Course course = cr.getCourses().get(0);
+	private void generateListOfClassesLine(PrintWriter out, XRequest request, String consent, OnlineSectioningServer server) {
+		XEnrollment enrollment = (request instanceof XCourseRequest ? ((XCourseRequest)request).getEnrollment() : null);
+		if (enrollment == null) {
+			if (request instanceof XCourseRequest) {
+				XCourseRequest cr = (XCourseRequest)request;
+				if (!getStudent().canAssign(cr)) return;
+				XCourse course = server.getCourse(cr.getCourseIds().get(0).getCourseId());
 				out.println("<tr>");
 				String style = "color: red; border-top: 1px dashed #9CB0CE;";
 				out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getSubjectArea() + "</td>");
@@ -705,133 +711,138 @@ public Long getStudentId() { return iStudentId; }
 				out.println("</tr>");
 			}
 			return;
+		} else {
+			XOffering offering = server.getOffering(enrollment.getOfferingId());
+			XCourse course = offering.getCourse(enrollment.getCourseId());
+			boolean first = true, firstNoParent = true;
+			for (XSection section: offering.getSections(enrollment)) {
+				String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
+				generateListOfClassesLine(out, offering, course, section, style, firstNoParent ? consent : null);
+				first = false;
+				if (section.getParentId() == null) firstNoParent = false;
+			}
 		}
-		if (request instanceof FreeTimeRequest) {
-			FreeTimeRequest fr = (FreeTimeRequest)request;
+		if (request instanceof XFreeTimeRequest) {
+			XFreeTimeRequest fr = (XFreeTimeRequest)request;
 			String style = "border-top: 1px dashed #9CB0CE;";
 			out.println("<tr>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + MSG.freeTimeSubject() + "</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + MSG.freeTimeCourse() + "</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + DayCode.toString(fr.getTime().getDayCode()) + "</td>");
+			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + DayCode.toString(fr.getTime().getDays()) + "</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + startTime(fr.getTime()) + "</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + endTime(fr.getTime()) + "</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"6\">&nbsp;</td>");
 			out.println("</tr>");
 			return;
 		}
-		boolean first = true, firstNoParent = true;
-		for (Section section: request.getAssignment().getSections()) {
-			String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-			generateListOfClassesLine(out, request, section, style, firstNoParent ? consent : null);
-			first = false;
-			if (section.getParent() == null) firstNoParent = false;
-		}
 	}
 
 	
 	protected void generateListOfClasses(PrintWriter out, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		if (getNewRequests() == null && getNewRequests().isEmpty()) {
+		if (getStudent().getRequests().isEmpty()) {
 			out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">" + MSG.emailNoSchedule() + "</td></tr></table>");
 			return;
 		}
 		generateListOfClassesHeader(out);
-		for (Request request: getNewRequests()) {
-			generateListOfClassesLine(out, request, consent(server, request.getAssignment() == null ? request.getInitialAssignment() : request.getAssignment()));
+		for (XRequest request: getStudent().getRequests()) {
+			XEnrollment enrollment = (request instanceof XCourseRequest ? ((XCourseRequest)request).getEnrollment() : null);
+			generateListOfClassesLine(out, request, consent(server, enrollment), server);
 		}
 		generateListOfClassesFooter(out, true);
 	}
 	
-	private String consent(OnlineSectioningServer server, Enrollment enrollment) {
-		if (enrollment == null || enrollment.getCourse() == null) return null;
-		Course course = enrollment.getCourse();
-		if (course == null) return null;
-		CourseInfo info = server.getCourseInfo(course.getId());
-		if (info == null || info.getConsent() == null) return null;
+	private String consent(OnlineSectioningServer server, XEnrollment enrollment) {
+		if (enrollment == null || enrollment.getCourseId() == null) return null;
+		XCourse info = server.getCourse(enrollment.getCourseId());
+		if (info == null || info.getConsentLabel() == null) return null;
 		if (enrollment.getApproval() == null)
-			return MSG.consentWaiting(info.getConsent().toLowerCase());
+			return MSG.consentWaiting(info.getConsentLabel().toLowerCase());
 		else 
-			return MSG.consentApproved(sConsentApprovalDateFormat.format(new Date(Long.parseLong(enrollment.getApproval().split(":")[0]))));
+			return MSG.consentApproved(sConsentApprovalDateFormat.format(enrollment.getApproval().getTimeStamp()));
 	}
 	
 	public void generateChange(PrintWriter out, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		if (getOldEnrollment() != null) {
-			Enrollment newEnrollment = null;
-			Request newRequest = null;
-			for (Request r: getNewRequests()) {
-				if (r.equals(getOldEnrollment().getRequest())) {
-					newRequest = r;
-					newEnrollment = r.getAssignment();
+		if (getOldOffering() != null) {
+			XCourseRequest newRequest = null;
+			XOffering newOffering = null;
+			for (XRequest r: getStudent().getRequests()) {
+				if (r instanceof XCourseRequest && ((XCourseRequest)r).getCourseIdByOfferingId(getOldOffering().getOfferingId()) != null) {
+					newRequest = (XCourseRequest)r;
+					newOffering = server.getOffering(getOldOffering().getOfferingId());
 					break;
 				}
 			}
-			if (getOldEnrollment().getAssignments() == null && newEnrollment != null && newEnrollment.getCourse() != null) {
-				setSubject(MSG.emailEnrollmentNew(newEnrollment.getCourse().getSubjectArea(), newEnrollment.getCourse().getCourseNumber()));
+			if (getOldEnrollment() == null && newRequest != null && newRequest.getEnrollment() != null) {
+				XCourse course = newOffering.getCourse(newRequest.getEnrollment().getCourseId());
+				setSubject(MSG.emailEnrollmentNew(course.getSubjectArea(), course.getCourseNumber()));
 				out.println("		<tr><td " +
 						"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-						MSG.emailCourseEnrollment(newEnrollment.getCourse().getSubjectArea(), newEnrollment.getCourse().getCourseNumber()) + "</td></tr>");
+						MSG.emailCourseEnrollment(course.getSubjectArea(), course.getCourseNumber()) + "</td></tr>");
 				out.println("		<tr><td>");
 				generateListOfClassesHeader(out);
-				generateListOfClassesLine(out, newEnrollment.getRequest(), consent(server, newEnrollment));
+				generateListOfClassesLine(out, newRequest, consent(server, newRequest.getEnrollment()), server);
 				generateListOfClassesFooter(out, false);
 				out.println("		</td></tr>");
-			} else if (getOldEnrollment().getAssignments() != null && newEnrollment != null && newEnrollment.getCourse() != null) {
-				setSubject(MSG.emailEnrollmentChanged(newEnrollment.getCourse().getSubjectArea(), newEnrollment.getCourse().getCourseNumber()));
+			} else if (getOldEnrollment() != null && newRequest != null && newRequest.getEnrollment() != null) {
+				XCourse course = newOffering.getCourse(newRequest.getEnrollment().getCourseId());
+				setSubject(MSG.emailEnrollmentChanged(course.getSubjectArea(), course.getCourseNumber()));
 				out.println("		<tr><td " +
 						"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-						MSG.emailCourseEnrollment(newEnrollment.getCourse().getSubjectArea(), newEnrollment.getCourse().getCourseNumber()) + "</td></tr>");
+						MSG.emailCourseEnrollment(course.getSubjectArea(), course.getCourseNumber()) + "</td></tr>");
 				out.println("		<tr><td>");
 				generateListOfClassesHeader(out);
 				boolean first = true, firstWithNoParent = true;
-				sections: for (Section section: newEnrollment.getSections()) {
-					for (Section old: getOldEnrollment().getSections()) {
-						if (old.getSubpart().getId() == section.getSubpart().getId()) {
+				sections: for (XSection section: newOffering.getSections(newRequest.getEnrollment())) {
+					for (XSection old: getOldOffering().getSections(getOldEnrollment())) {
+						if (old.getSubpartId().equals(section.getSubpartId())) {
 							String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-							generateListOfClassesDiff(out, newEnrollment.getRequest(), old, section, style, firstWithNoParent ? consent(server, newEnrollment) : null);
+							generateListOfClassesDiff(out, getOldOffering(), newOffering, course, old, section, style, firstWithNoParent ? consent(server, newRequest.getEnrollment()) : null);
 							first = false;
-							if (section.getParent() == null && old.getParent() == null) firstWithNoParent = false;
+							if (section.getParentId() == null && old.getParentId() == null) firstWithNoParent = false;
 							continue sections;
 						}
 					}
 					String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-					generateListOfClassesLine(out, newEnrollment.getRequest(), section, style, firstWithNoParent ? consent(server, newEnrollment) : null);
+					generateListOfClassesLine(out, newOffering, course, section, style, firstWithNoParent ? consent(server, newRequest.getEnrollment()) : null);
 					first = false;
-					if (section.getParent() == null) firstWithNoParent = false;
+					if (section.getParentId() == null) firstWithNoParent = false;
 				}
-				sections: for (Section old: getOldEnrollment().getSections()) {
-					for (Section section: newEnrollment.getSections())
-						if (old.getSubpart().getId() == section.getSubpart().getId()) continue sections;
+				sections: for (XSection old: getOldOffering().getSections(getOldEnrollment())) {
+					for (XSection section: newOffering.getSections(newRequest.getEnrollment()))
+						if (old.getSubpartId().equals(section.getSubpartId())) continue sections;
 					String style = "text-decoration: line-through;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-					generateListOfClassesLine(out, getOldEnrollment().getRequest(), old, style, null);
+					generateListOfClassesLine(out, getOldOffering(), course, old, style, null);
 					first = false;
 				}
 				generateListOfClassesFooter(out, false);
 				out.println("		</td></tr>");
-			} else if (getOldEnrollment().getAssignments() != null && getOldEnrollment().getCourse() != null && newEnrollment == null) {
+			} else if (getOldEnrollment() != null && (newRequest == null || newRequest.getEnrollment() == null)) {
+				XCourse course = getOldOffering().getCourse(getOldEnrollment().getCourseId());
 				setSubject(newRequest == null
-						? MSG.emailCourseDropReject(getOldEnrollment().getCourse().getSubjectArea(), getOldEnrollment().getCourse().getCourseNumber())
-						: MSG.emailCourseDropChange(getOldEnrollment().getCourse().getSubjectArea(), getOldEnrollment().getCourse().getCourseNumber()));
+						? MSG.emailCourseDropReject(course.getSubjectArea(), course.getCourseNumber())
+						: MSG.emailCourseDropChange(course.getSubjectArea(), course.getCourseNumber()));
 				out.println("		<tr><td " +
 						"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-						MSG.emailCourseEnrollment(getOldEnrollment().getCourse().getSubjectArea(), getOldEnrollment().getCourse().getCourseNumber()) + "</td></tr>");
+						MSG.emailCourseEnrollment(course.getSubjectArea(), course.getCourseNumber()) + "</td></tr>");
 				out.println("		<tr><td>");
-				CourseInfo info = server.getCourseInfo(getOldEnrollment().getCourse().getId());
-				String consent = (info == null ? null : info.getConsent());
-				if (newRequest !=  null && newRequest.getStudent().canAssign(newRequest))
+				XCourse info = server.getCourse(course.getCourseId());
+				String consent = (info == null ? null : info.getConsentLabel());
+				if (newRequest !=  null && getStudent().canAssign(newRequest))
 					out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">" + 
 							(newRequest.isAlternative() ?
-									newRequest instanceof CourseRequest && ((CourseRequest)newRequest).isWaitlist() ? MSG.emailCourseWaitListedAlternative() : MSG.emailCourseNotEnrolledAlternative() :
-									newRequest instanceof CourseRequest && ((CourseRequest)newRequest).isWaitlist() ? MSG.emailCourseWaitListed() : MSG.emailCourseNotEnrolled()) + "</td></tr></table>");
+									newRequest.isWaitlist() ? MSG.emailCourseWaitListedAlternative() : MSG.emailCourseNotEnrolledAlternative() :
+									newRequest.isWaitlist() ? MSG.emailCourseWaitListed() : MSG.emailCourseNotEnrolled()) + "</td></tr></table>");
 				else if (newRequest == null && consent != null) {
 					out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">" + MSG.emailConsentRejected(consent.toLowerCase()) + "</td></tr></table>");
 				}
 				out.println("		</td></tr>");
 			}
-		} else if (getOldRequests() != null && !getOldRequests().isEmpty()) {
+		} else if (getOldStudent() != null && !getOldStudent().getRequests().isEmpty()) {
 			boolean somethingWasAssigned = false;
-			for (Request or: getOldRequests()) {
-				if (or instanceof CourseRequest && or.getInitialAssignment() != null) {
+			for (XRequest or: getOldStudent().getRequests()) {
+				if (or instanceof XCourseRequest && ((XCourseRequest)or).getEnrollment() != null) {
 					somethingWasAssigned = true; break;
 				}
 			}
@@ -842,57 +853,63 @@ public Long getStudentId() { return iStudentId; }
 				out.println("		<tr><td>");
 				int nrLines = 0;
 				generateListOfClassesHeader(out);
-				requests: for (Request nr: getNewRequests()) {
-					if (nr instanceof FreeTimeRequest) continue;
-					for (Request or: getOldRequests()) {
-						if (or instanceof FreeTimeRequest) continue;
-						if (or.getId() == nr.getId()) {
-							if (or.getInitialAssignment() == null) {
-								if (nr.getAssignment() == null) continue; // both unassigned
+				requests: for (XRequest nr: getStudent().getRequests()) {
+					if (nr instanceof XFreeTimeRequest) continue;
+					XCourseRequest ncr = (XCourseRequest)nr;
+					for (XRequest or: getOldStudent().getRequests()) {
+						if (or instanceof XFreeTimeRequest) continue;
+						XCourseRequest ocr = (XCourseRequest)or;
+						if (or.getRequestId().equals(nr.getRequestId())) {
+							if (ocr.getEnrollment() == null) {
+								if (ncr.getEnrollment() == null) continue; // both unassigned
 								// was assigned
 								boolean first = true, firstWithNoParent = true;
-								for (Section section: nr.getAssignment().getSections()) {
+								XOffering no = server.getOffering(ncr.getEnrollment().getOfferingId());
+								for (XSection section: no.getSections(ncr.getEnrollment())) {
 									String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, nr, section, style, firstWithNoParent ? consent(server, nr.getAssignment()) : null);
+									generateListOfClassesLine(out, no, no.getCourse(ncr.getEnrollment().getCourseId()), section, style, firstWithNoParent ? consent(server, ncr.getEnrollment()) : null);
 									nrLines++;
 									first = false;
-									if (section.getParent() == null) firstWithNoParent = false;
+									if (section.getParentId() == null) firstWithNoParent = false;
 								}
-							} else if (nr.getAssignment() == null) {
+							} else if (ncr.getEnrollment() == null) {
+								XOffering oo = server.getOffering(ocr.getEnrollment().getOfferingId());
 								// was un-assigned
 								boolean first = true;
-								for (Section section: or.getInitialAssignment().getSections()) {
+								for (XSection section: oo.getSections(ocr.getEnrollment())) {
 									String style = "text-decoration: line-through;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, or, section, style, null);
+									generateListOfClassesLine(out, oo, oo.getCourse(ocr.getEnrollment().getCourseId()), section, style, null);
 									nrLines++;
 									first = false;
 								}
 							} else {
+								XOffering no = server.getOffering(ncr.getEnrollment().getOfferingId());
+								XOffering oo = server.getOffering(ocr.getEnrollment().getOfferingId());
 								// both assigned
 								boolean first = true, firstWithNoParent = true;
-								sections: for (Section section: nr.getAssignment().getSections()) {
-									for (Section old: or.getInitialAssignment().getSections()) {
-										if (old.getSubpart().getId() == section.getSubpart().getId()) {
+								sections: for (XSection section: no.getSections(ncr.getEnrollment())) {
+									for (XSection old: oo.getSections(ocr.getEnrollment())) {
+										if (old.getSubpartId().equals(section.getSubpartId())) {
 											if (equals(section, old)) continue sections;
 											String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-											generateListOfClassesDiff(out, nr, old, section, style, firstWithNoParent ? consent(server, nr.getAssignment()) : null);
+											generateListOfClassesDiff(out, oo, no, no.getCourse(ncr.getEnrollment().getCourseId()), old, section, style, firstWithNoParent ? consent(server, ncr.getEnrollment()) : null);
 											nrLines++;
 											first = false;
-											if (section.getParent() == null && old.getParent() == null) firstWithNoParent = false;
+											if (section.getParentId() == null && old.getParentId() == null) firstWithNoParent = false;
 											continue sections;
 										}
 									}
 									String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, nr, section, style, firstWithNoParent ? consent(server, nr.getAssignment()) : null);
+									generateListOfClassesLine(out, no, no.getCourse(ncr.getEnrollment().getCourseId()), section, style, firstWithNoParent ? consent(server, ncr.getEnrollment()) : null);
 									nrLines++;
 									first = false;
-									if (section.getParent() == null) firstWithNoParent = false;
+									if (section.getParentId() == null) firstWithNoParent = false;
 								}
-								sections: for (Section old: or.getInitialAssignment().getSections()) {
-									for (Section section: nr.getAssignment().getSections())
-										if (old.getSubpart().getId() == section.getSubpart().getId()) continue sections;
+								sections: for (XSection old: oo.getSections(ocr.getEnrollment())) {
+									for (XSection section: no.getSections(ncr.getEnrollment()))
+										if (old.getSubpartId().equals(section.getSubpartId())) continue sections;
 									String style = "text-decoration: line-through;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, or, old, style, null);
+									generateListOfClassesLine(out, oo, oo.getCourse(ocr.getEnrollment().getCourseId()), old, style, null);
 									nrLines++;
 									first = false;
 								}
@@ -901,31 +918,33 @@ public Long getStudentId() { return iStudentId; }
 						}
 					}
 					// old request not found
-					if (nr.getAssignment() != null) {
+					if (ncr.getEnrollment() != null) {
+						XOffering no = server.getOffering(ncr.getEnrollment().getOfferingId());
 						boolean first = true, firstWithNoParent = true;
-						for (Section section: nr.getAssignment().getSections()) {
+						for (XSection section: no.getSections(ncr.getEnrollment())) {
 							String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-							generateListOfClassesLine(out, nr, section, style, firstWithNoParent ? consent(server, nr.getAssignment()) : null);
+							generateListOfClassesLine(out, no, no.getCourse(ncr.getEnrollment().getCourseId()), section, style, firstWithNoParent ? consent(server, ncr.getEnrollment()) : null);
 							nrLines++;
 							first = false;
-							if (section.getParent() == null) firstWithNoParent = false;
+							if (section.getParentId() == null) firstWithNoParent = false;
 						}
 					}
 				}
-				requests: for (Request or: getOldRequests()) {
-					if (or instanceof FreeTimeRequest || or.getInitialAssignment() == null) continue;
-					for (Request nr: getNewRequests()) {
-						if (or instanceof FreeTimeRequest) continue;
-						if (or.getId() == nr.getId()) continue requests;
+				requests: for (XRequest or: getOldStudent().getRequests()) {
+					if (or instanceof XFreeTimeRequest || ((XCourseRequest)or).getEnrollment() == null) continue;
+					for (XRequest nr: getStudent().getRequests()) {
+						if (or instanceof XFreeTimeRequest) continue;
+						if (or.getRequestId().equals(nr.getRequestId())) continue requests;
 					}
 					// new request not found
 					boolean first = true, firstWithNoParent = true;
-					for (Section section: or.getInitialAssignment().getSections()) {
+					XOffering oo = server.getOffering(((XCourseRequest)or).getEnrollment().getOfferingId());
+					for (XSection section: oo.getSections(((XCourseRequest)or).getEnrollment())) {
 						String style = "text-decoration: line-through; " + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-						generateListOfClassesLine(out, or, section, style, firstWithNoParent ? consent(server, or.getAssignment()) : null);
+						generateListOfClassesLine(out, oo, oo.getCourse(((XCourseRequest)or).getEnrollment().getCourseId()), section, style, firstWithNoParent ? consent(server, ((XCourseRequest)or).getEnrollment()) : null);
 						nrLines++;
 						first = false;
-						if (section.getParent() == null) firstWithNoParent = false;
+						if (section.getParentId() == null) firstWithNoParent = false;
 					}
 				}
 				if (nrLines == 0) {
@@ -940,32 +959,42 @@ public Long getStudentId() { return iStudentId; }
 		} else {
 			setSubject(MSG.emailSubjectNotification());
 		}
-		
 	}
 	
 	public void generateTimetable(PrintWriter out, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		int nrDays = 5, firstHour = 7, lastHour = 18;
 		boolean hasSat = false, hasSun = false;
-		List<Assignment> table[][] = new List[Constants.NR_DAYS][Constants.SLOTS_PER_DAY];
-		for (Request request: getNewRequests()) {
-			if (request.getAssignment() == null) continue;
-			for (Assignment assignment: request.getAssignment().getAssignments()) {
-				if (assignment.getTime() == null) continue;
-				int dayCode = assignment.getTime().getDayCode();
+		List<XSection> table[][] = new List[Constants.NR_DAYS][Constants.SLOTS_PER_DAY];
+		for (XRequest request: getStudent().getRequests()) {
+			if (request instanceof XFreeTimeRequest) {
+				XFreeTimeRequest ft = (XFreeTimeRequest)request;
+				int dayCode = ft.getTime().getDays();
 				if ((dayCode & Constants.DAY_CODES[Constants.DAY_SAT]) != 0) hasSat = true;
 				if ((dayCode & Constants.DAY_CODES[Constants.DAY_SUN]) != 0) hasSun = true;
-				int startHour = (assignment.getTime().getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN) / 60;
+				int startHour = (ft.getTime().getSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN) / 60;
 				if (startHour < firstHour) firstHour = startHour;
-				int endHour = ((assignment.getTime().getStartSlot() + assignment.getTime().getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + 59) / 60;
+				int endHour = ((ft.getTime().getSlot() + ft.getTime().getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + 59) / 60;
 				if (endHour > lastHour) lastHour = endHour;
-				for (Enumeration<Integer> e = assignment.getTime().getSlots(); e.hasMoreElements(); ) {
-					int slot = e.nextElement();
-					int day = slot / Constants.SLOTS_PER_DAY;
-					int time = slot % Constants.SLOTS_PER_DAY;
-					if (table[day][time] == null)
-						table[day][time] = new ArrayList<Assignment>();
-					table[day][time].add(assignment);
-				}
+			} else if (((XCourseRequest)request).getEnrollment() != null) {
+				XOffering offering = server.getOffering(((XCourseRequest)request).getEnrollment().getOfferingId());
+				for (XSection section: offering.getSections(((XCourseRequest)request).getEnrollment())) {
+					if (section.getTime() == null) continue;
+					int dayCode = section.getTime().getDays();
+					if ((dayCode & Constants.DAY_CODES[Constants.DAY_SAT]) != 0) hasSat = true;
+					if ((dayCode & Constants.DAY_CODES[Constants.DAY_SUN]) != 0) hasSun = true;
+					int startHour = (section.getTime().getSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN) / 60;
+					if (startHour < firstHour) firstHour = startHour;
+					int endHour = ((section.getTime().getSlot() + section.getTime().getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + 59) / 60;
+					if (endHour > lastHour) lastHour = endHour;
+					for (Enumeration<Integer> e = section.getTime().getSlots(); e.hasMoreElements(); ) {
+						int slot = e.nextElement();
+						int day = slot / Constants.SLOTS_PER_DAY;
+						int time = slot % Constants.SLOTS_PER_DAY;
+						if (table[day][time] == null)
+							table[day][time] = new ArrayList<XSection>();
+						table[day][time].add(section);
+					}
+				}				
 			}
 		}
 		if (hasSat) nrDays = 6;
@@ -1006,19 +1035,19 @@ public Long getStudentId() { return iStudentId; }
 		// working hours
 		out.println("<div style='background: #FFFDDD; width: " + (2 + 180 * nrDays) + "px; height: 500px; position: absolute; left: 0px; top: " + (25  + 50 * (7 - firstHour)) + "px;'></div>");
 		
-		for (Request request: getNewRequests()) {
-			if (request instanceof FreeTimeRequest) {
-				FreeTimeRequest fr = (FreeTimeRequest)request;
-				for (DayCode dow: DayCode.toDayCodes(fr.getTime().getDayCode())) {
+		for (XRequest request: getStudent().getRequests()) {
+			if (request instanceof XFreeTimeRequest) {
+				XFreeTimeRequest fr = (XFreeTimeRequest)request;
+				for (DayCode dow: DayCode.toDayCodes(fr.getTime().getDays())) {
 					if (dow.getIndex() >= nrDays) continue;
-					if (fr.getTime().getStartSlot() + fr.getTime().getLength() < 12 * firstHour) continue;
-					if (fr.getTime().getStartSlot() > 12 * lastHour) continue;
+					if (fr.getTime().getSlot() + fr.getTime().getLength() < 12 * firstHour) continue;
+					if (fr.getTime().getSlot() > 12 * lastHour) continue;
 					out.println("<div style='background: #FFE1DD; width: 100%; color: #BA5353; font-size: x-small; text-align: left; white-space: nowrap; overflow: hidden;" +
 							"width: 183px; height: " + (125 * fr.getTime().getLength() / 30) + "px; " +
 							"position: absolute; left: " + (180 * dow.getIndex()) + "px;" +
-							"top: " + (125 * fr.getTime().getStartSlot() / 30 - 50 * firstHour) + "px; '>");
+							"top: " + (125 * fr.getTime().getSlot() / 30 - 50 * firstHour) + "px; '>");
 					out.println("<div style='padding-left: 5px; white-space: nowrap; '>Free " +
-							DayCode.toString(fr.getTime().getDayCode()) + " " + startTime(fr.getTime()) + " - " + endTime(fr.getTime()) + "</div>");
+							DayCode.toString(fr.getTime().getDays()) + " " + startTime(fr.getTime()) + " - " + endTime(fr.getTime()) + "</div>");
 					out.println("</div>");
 				}
 			}
@@ -1041,47 +1070,44 @@ public Long getStudentId() { return iStudentId; }
 		out.println("</div>");
 		
 		int color = 0;
-		for (Request request: getNewRequests()) {
-			if (request instanceof CourseRequest && request.getAssignment() != null) {
-				for (Section section: request.getAssignment().getSections()) {
+		for (XRequest request: getStudent().getRequests()) {
+			if (request instanceof XCourseRequest && ((XCourseRequest)request).getEnrollment() != null) {
+				XOffering offering = server.getOffering(((XCourseRequest)request).getEnrollment().getOfferingId());
+				XCourse course = offering.getCourse(((XCourseRequest)request).getEnrollment().getCourseId());
+				for (XSection section: offering.getSections(((XCourseRequest)request).getEnrollment())) {
 					if (section.getTime() == null) continue;
-					for (DayCode dow: DayCode.toDayCodes(section.getTime().getDayCode())) {
+					for (DayCode dow: DayCode.toDayCodes(section.getTime().getDays())) {
 						int col = 0;
 						int index = 0;
 						for (int i = 0; i < section.getTime().getLength(); i++) {
-							col = Math.max(col, table[dow.getIndex()][section.getTime().getStartSlot() + i].size());
-							index = Math.max(index, table[dow.getIndex()][section.getTime().getStartSlot() + i].indexOf(section));
+							col = Math.max(col, table[dow.getIndex()][section.getTime().getSlot() + i].size());
+							index = Math.max(index, table[dow.getIndex()][section.getTime().getSlot() + i].indexOf(section));
 						}
 						int w =  174 / col + (index + 1 != col && col > 1 ? -3 : 0);
 						int h = 125 * section.getTime().getLength() / 30 - 3;
 						int l = 4 + 180 * dow.getIndex() + index * 174 / col;
-						int t = 1 + 125 * section.getTime().getStartSlot() / 30 - 50 * firstHour;
+						int t = 1 + 125 * section.getTime().getSlot() / 30 - 50 * firstHour;
 						out.println("<div style='overflow-x: hidden; overflow-y: hidden; width: " + w + "px; height: " + h + "px; position: absolute; left: " + l + "px; top: " + t + "px; " +
 								"position: absolute; font-size: x-small; font-family: arial; overflow: hidden; -webkit-border-radius: 6px; -moz-border-radius: 6px; color: #FFFFFF; " +
 								"border: 1px solid #" + sColor1[color] + "; background: #" + sColor2[color] + ";'>");
 						out.println("<table cellspacing='0' cellpadding='0' style='padding-left: 4px; padding-right: 4px; padding-bottom: 2px; padding-top: 2px; width: 100%; -webkit-border-top-left-radius: 5px; -webkit-border-top-right-radius: 5px; -moz-border-radius-topleft: 5px; -moz-border-radius-topright: 5px;" +
 								"background: #" + sColor1[color] + ";'><tr><td align='left' style='vertical-align: top; '>");
 						out.println("<div style='padding-left: 2px; width: 100%; font-size: x-small; white-space: nowrap; overflow: hidden; color: #FFFFFF;'>" +
-								request.getAssignment().getCourse().getSubjectArea() + " " + 
-								request.getAssignment().getCourse().getCourseNumber() + " " +
-								section.getSubpart().getName() + "</div></td></tr></tbody></table>");
+								MSG.course(course.getSubjectArea(), course.getCourseNumber()) + " " +
+								section.getSubpartName() + "</div></td></tr></tbody></table>");
 						out.println("<div style='font-size: x-small; padding-left: 4px; white-space: wrap; -webkit-border-bottom-left-radius: 5px; -webkit-border-bottom-right-radius: 5px; -moz-border-radius-bottomleft: 5px; -moz-border-radius-bottomright: 5px;'>");
 						if (section.getRooms() != null)
-							for (RoomLocation room: section.getRooms()) {
+							for (XRoom room: section.getRooms()) {
 								out.println("<span style='white-space: nowrap'>" + room.getName() + ",</span>");
 							}
-						if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
-							String[] instructors = section.getChoice().getInstructorNames().split(":");
-							for (String instructor: instructors) {
-								String[] nameEmail = instructor.split("\\|");
-								out.println("<span style='white-space: nowrap'>" + nameEmail[0] + ",</span>");
-							}
+						for (XInstructor instructor: section.getInstructors()) {
+							out.println("<span style='white-space: nowrap'>" + instructor.getName() + ",</span>");
 						}
 						if (section.getTime().getDatePatternName() != null && !section.getTime().getDatePatternName().isEmpty()) {
 							out.println("<span style='white-space: nowrap'>" + section.getTime().getDatePatternName() + "</span>");
 						}
-						if (request.getAssignment().getCourse().getNote() != null && !request.getAssignment().getCourse().getNote().isEmpty())
-							out.println("<br>" + request.getAssignment().getCourse().getNote().replace("\n", "<br>"));
+						if (course.getNote() != null && !course.getNote().isEmpty())
+							out.println("<br>" + course.getNote().replace("\n", "<br>"));
 						if (section.getNote() != null && !section.getNote().isEmpty())
 							out.println("<br>" + section.getNote().replace("\n", "<br>"));
 						out.println("</div></div>");
@@ -1102,29 +1128,40 @@ public Long getStudentId() { return iStudentId; }
 		out.println("</table>");
 	}
 	
-	public byte[] generateTimetableImage() throws IOException {
+	public byte[] generateTimetableImage(OnlineSectioningServer server) throws IOException {
 		int nrDays = 5, firstHour = 7, lastHour = 18;
 		boolean hasSat = false, hasSun = false;
-		List<Assignment> table[][] = new List[Constants.NR_DAYS][Constants.SLOTS_PER_DAY];
-		for (Request request: getNewRequests()) {
-			if (request.getAssignment() == null) continue;
-			for (Assignment assignment: request.getAssignment().getAssignments()) {
-				if (assignment.getTime() == null) continue;
-				int dayCode = assignment.getTime().getDayCode();
+		List<XSection> table[][] = new List[Constants.NR_DAYS][Constants.SLOTS_PER_DAY];
+		for (XRequest request: getStudent().getRequests()) {
+			if (request instanceof XFreeTimeRequest) {
+				XFreeTimeRequest ft = (XFreeTimeRequest)request;
+				int dayCode = ft.getTime().getDays();
 				if ((dayCode & Constants.DAY_CODES[Constants.DAY_SAT]) != 0) hasSat = true;
 				if ((dayCode & Constants.DAY_CODES[Constants.DAY_SUN]) != 0) hasSun = true;
-				int startHour = (assignment.getTime().getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN) / 60;
+				int startHour = (ft.getTime().getSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN) / 60;
 				if (startHour < firstHour) firstHour = startHour;
-				int endHour = ((assignment.getTime().getStartSlot() + assignment.getTime().getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + 59) / 60;
+				int endHour = ((ft.getTime().getSlot() + ft.getTime().getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + 59) / 60;
 				if (endHour > lastHour) lastHour = endHour;
-				for (Enumeration<Integer> e = assignment.getTime().getSlots(); e.hasMoreElements(); ) {
-					int slot = e.nextElement();
-					int day = slot / Constants.SLOTS_PER_DAY;
-					int time = slot % Constants.SLOTS_PER_DAY;
-					if (table[day][time] == null)
-						table[day][time] = new ArrayList<Assignment>();
-					table[day][time].add(assignment);
-				}
+			} else if (((XCourseRequest)request).getEnrollment() != null) {
+				XOffering offering = server.getOffering(((XCourseRequest)request).getEnrollment().getOfferingId());
+				for (XSection section: offering.getSections(((XCourseRequest)request).getEnrollment())) {
+					if (section.getTime() == null) continue;
+					int dayCode = section.getTime().getDays();
+					if ((dayCode & Constants.DAY_CODES[Constants.DAY_SAT]) != 0) hasSat = true;
+					if ((dayCode & Constants.DAY_CODES[Constants.DAY_SUN]) != 0) hasSun = true;
+					int startHour = (section.getTime().getSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN) / 60;
+					if (startHour < firstHour) firstHour = startHour;
+					int endHour = ((section.getTime().getSlot() + section.getTime().getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + 59) / 60;
+					if (endHour > lastHour) lastHour = endHour;
+					for (Enumeration<Integer> e = section.getTime().getSlots(); e.hasMoreElements(); ) {
+						int slot = e.nextElement();
+						int day = slot / Constants.SLOTS_PER_DAY;
+						int time = slot % Constants.SLOTS_PER_DAY;
+						if (table[day][time] == null)
+							table[day][time] = new ArrayList<XSection>();
+						table[day][time].add(section);
+					}
+				}				
 			}
 		}
 		if (hasSat) nrDays = 6;
@@ -1167,11 +1204,11 @@ public Long getStudentId() { return iStudentId; }
 		g.drawLine(35, 20 + 50 * (lastHour - firstHour), (39 + 180 * nrDays), 20 + 50 * (lastHour - firstHour));
 		
 		g.setColor(new Color(0xff, 0xe1, 0xdd));
-		for (Request request: getNewRequests()) {
-			if (request instanceof FreeTimeRequest) {
-				FreeTimeRequest fr = (FreeTimeRequest)request;
-				for (DayCode dow: DayCode.toDayCodes(fr.getTime().getDayCode())) {
-					g.fillRect(36 + 180 * dow.getIndex(), 21 + 125 * fr.getTime().getStartSlot() / 30 - 50 * firstHour, 182, 125 * fr.getTime().getLength() / 30 - 1);
+		for (XRequest request: getStudent().getRequests()) {
+			if (request instanceof XFreeTimeRequest) {
+				XFreeTimeRequest fr = (XFreeTimeRequest)request;
+				for (DayCode dow: DayCode.toDayCodes(fr.getTime().getDays())) {
+					g.fillRect(36 + 180 * dow.getIndex(), 21 + 125 * fr.getTime().getSlot() / 30 - 50 * firstHour, 182, 125 * fr.getTime().getLength() / 30 - 1);
 				}
 			}
 		}
@@ -1183,33 +1220,35 @@ public Long getStudentId() { return iStudentId; }
 		}
 		
 		g.setColor(new Color(0xba, 0x53, 0x53));
-		for (Request request: getNewRequests()) {
-			if (request instanceof FreeTimeRequest) {
-				FreeTimeRequest fr = (FreeTimeRequest)request;
-				for (DayCode dow: DayCode.toDayCodes(fr.getTime().getDayCode())) {
+		for (XRequest request: getStudent().getRequests()) {
+			if (request instanceof XFreeTimeRequest) {
+				XFreeTimeRequest fr = (XFreeTimeRequest)request;
+				for (DayCode dow: DayCode.toDayCodes(fr.getTime().getDays())) {
 					g.drawString(OnlineSectioningHelper.toString(fr),
 							42 + 180 * dow.getIndex(),
-							20 + 125 * fr.getTime().getStartSlot() / 30 - 50 * firstHour + fh);
+							20 + 125 * fr.getTime().getSlot() / 30 - 50 * firstHour + fh);
 				}
 			}
 		}
 		
 		int color = 0;
-		for (Request request: getNewRequests()) {
-			if (request instanceof CourseRequest && request.getAssignment() != null) {
-				for (Section section: request.getAssignment().getSections()) {
+		for (XRequest request: getStudent().getRequests()) {
+			if (request instanceof XCourseRequest && ((XCourseRequest)request).getEnrollment() != null) {
+				XOffering offering = server.getOffering(((XCourseRequest)request).getEnrollment().getOfferingId());
+				XCourse course = offering.getCourse(((XCourseRequest)request).getEnrollment().getCourseId());
+				for (XSection section: offering.getSections(((XCourseRequest)request).getEnrollment())) {
 					if (section.getTime() == null) continue;
-					for (DayCode dow: DayCode.toDayCodes(section.getTime().getDayCode())) {
+					for (DayCode dow: DayCode.toDayCodes(section.getTime().getDays())) {
 						int col = 0;
 						int index = 0;
 						for (int i = 0; i < section.getTime().getLength(); i++) {
-							col = Math.max(col, table[dow.getIndex()][section.getTime().getStartSlot() + i].size());
-							index = Math.max(index, table[dow.getIndex()][section.getTime().getStartSlot() + i].indexOf(section));
+							col = Math.max(col, table[dow.getIndex()][section.getTime().getSlot() + i].size());
+							index = Math.max(index, table[dow.getIndex()][section.getTime().getSlot() + i].indexOf(section));
 						}
 						int w = 176 / col + (index + 1 < col ? -2 : 0);
 						int h = 125 * section.getTime().getLength() / 30 - 1;
 						int l = 39 + 180 * dow.getIndex() + index * 174 / col;
-						int t = 21 + 125 * section.getTime().getStartSlot() / 30 - 50 * firstHour;
+						int t = 21 + 125 * section.getTime().getSlot() / 30 - 50 * firstHour;
 						
 						g.setColor(new Color(Integer.valueOf(sColor2[color], 16)));
 						g.fillRoundRect(l, t, w, h, 6, 6);
@@ -1220,29 +1259,23 @@ public Long getStudentId() { return iStudentId; }
 						g.fillRect(l, t + fh - 2, w, 4);
 						
 				        g.setColor(new Color(0xff, 0xff, 0xff));
-				        String text = request.getAssignment().getCourse().getSubjectArea() + " " + 
-							request.getAssignment().getCourse().getCourseNumber() + " " +
-							section.getSubpart().getName();
+				        String text = MSG.course(course.getSubjectArea(), course.getCourseNumber()) + " " + section.getSubpartName();
 				        while (g.getFontMetrics().stringWidth(text) > w - 10)
 				        	text = text.substring(0, text.length() - 1);
 				        g.drawString(text, l + 5, t + fh - 2);
 				        
 				        List<String> texts = new ArrayList<String>();
 						if (section.getRooms() != null)
-							for (RoomLocation room: section.getRooms())
+							for (XRoom room: section.getRooms())
 								texts.add(room.getName());
-						if (section.getChoice().getInstructorNames() != null && !section.getChoice().getInstructorNames().isEmpty()) {
-							String[] instructors = section.getChoice().getInstructorNames().split(":");
-							for (String instructor: instructors) {
-								String[] nameEmail = instructor.split("\\|");
-								texts.add(nameEmail[0]);
-							}
+						for (XInstructor instructor: section.getInstructors()) {
+							texts.add(instructor.getName());
 						}
 						if (section.getTime().getDatePatternName() != null && !section.getTime().getDatePatternName().isEmpty())
 							texts.add(section.getTime().getDatePatternName());
 						
-						if (request.getAssignment().getCourse().getNote() != null && !request.getAssignment().getCourse().getNote().isEmpty())
-							texts.add(request.getAssignment().getCourse().getNote().replace("\n", "; "));
+						if (course.getNote() != null && !course.getNote().isEmpty())
+							texts.add(course.getNote().replace("\n", "; "));
 						
 						if (section.getNote() != null && !section.getNote().isEmpty())
 							texts.add(section.getNote().replace("\n", "; "));

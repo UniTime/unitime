@@ -19,9 +19,9 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
+import java.util.HashMap;
 import java.util.List;
-
-import net.sf.cpsolver.studentsct.model.Student;
+import java.util.Map;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -30,10 +30,15 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
 /**
  * @author Tomas Muller
  */
+@CheckMaster(Master.REQUIRED)
 public class ReloadAllStudents extends ReloadAllData {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
@@ -46,19 +51,25 @@ public class ReloadAllStudents extends ReloadAllData {
 			helper.beginTransaction();
 			try {
 				server.clearAllStudents();
-
+				
+		        Map<Long, List<XCourseRequest>> requestMap = new HashMap<Long, List<XCourseRequest>>();
 				List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
-		                "select distinct s from Student s " +
-		                "left join fetch s.courseDemands as cd " +
-		                "left join fetch cd.courseRequests as cr " +
-		                "left join fetch s.classEnrollments as e " +
-		                "where s.session.uniqueId=:sessionId").
-		                setLong("sessionId", server.getAcademicSession().getUniqueId()).list();
-		        for (org.unitime.timetable.model.Student student: students) {
-		        	Student s = loadStudent(student, server, helper);
-		        	if (s != null)
-		        		server.update(s);
-		        }
+	                    "select distinct s from Student s " +
+	                    "left join fetch s.courseDemands as cd " +
+	                    "left join fetch cd.courseRequests as cr " +
+	                    "left join fetch cr.classWaitLists as cwl " + 
+	                    "left join fetch s.classEnrollments as e " +
+	                    "left join fetch s.academicAreaClassifications as a " +
+	                    "left join fetch s.posMajors as mj " +
+	                    "left join fetch s.waitlists as w " +
+	                    "left join fetch s.groups as g " +
+	                    "where s.session.uniqueId=:sessionId").
+	                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
+	            for (org.unitime.timetable.model.Student student: students) {
+	            	XStudent s = loadStudent(student, requestMap, server, helper);
+	            	if (s != null)
+	            		server.update(s, true);
+	            }
 
 				helper.commitTransaction();
 				return true;

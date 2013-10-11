@@ -17,25 +17,36 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.onlinesectioning;
+package org.unitime.commons.jgroups;
 
-import java.io.Serializable;
+import java.util.Properties;
 
-import net.sf.cpsolver.studentsct.model.Course;
+import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
+import org.jgroups.Channel;
+import org.jgroups.JChannel;
+import org.unitime.commons.Debug;
+import org.unitime.timetable.ApplicationProperties;
 
-public class CourseDetails implements Serializable {
-	private static final long serialVersionUID = 1L;
-	
-	private int iEnrollment = 0, iLimit = 0;
-	
-	public CourseDetails(Course course) {
-		iEnrollment = course.getEnrollments().size();
-		iLimit = course.getLimit();
+public class HibernateChannelLookup implements JGroupsChannelLookup {
+
+	@Override
+	public Channel getJGroupsChannel(Properties p) {
+		try {
+			return new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.hibernate.jgroups.config", "hibernate-jgroups-tcp.xml")));
+		} catch (Exception e) {
+			Debug.error(e.getMessage(), e);
+			return null;
+		}
 	}
-	
-	public int getEnrollment() { return iEnrollment; }
-	public void setEnrollment(int enrollment) { iEnrollment = enrollment; }
-	
-	public int getLimit() { return iLimit; }
-	public void setLimit(int limit) { iLimit = limit; }
+
+	@Override
+	public boolean shouldStartAndConnect() {
+		return true;
+	}
+
+	@Override
+	public boolean shouldStopAndDisconnect() {
+		return true;
+	}
+
 }

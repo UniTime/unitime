@@ -33,7 +33,7 @@ import net.sf.cpsolver.ifs.util.DataProperties;
 public interface StudentSolverProxy extends OnlineSectioningServer {
 
     public String getHost();
-    public String getHostLabel();
+    public String getUser();
     public void dispose();
     
     public void load(DataProperties properties);

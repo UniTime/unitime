@@ -47,6 +47,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
@@ -62,6 +63,7 @@ public class OnlineSectioningTest extends Composite {
 
 	private UniTimeWidget<UniTimeTextBox> iNbrThreads;
 	private UniTimeWidget<TextArea> iCourses, iStudents;
+	private CheckBox iWaitList;
 	private UniTimeHeaderPanel iHeader;
 	private VerticalPanel iLog;
 	private Test[] iTest;
@@ -139,6 +141,9 @@ public class OnlineSectioningTest extends Composite {
 				});				
 			}
 		});
+		
+		iWaitList = new CheckBox(); iWaitList.setValue(false);
+		form.addRow("Wait-list:", iWaitList);
 		
 		iCourses = new UniTimeWidget<TextArea>(new TextArea());
 		iCourses.getWidget().setStyleName("unitime-TextArea");
@@ -276,6 +281,7 @@ public class OnlineSectioningTest extends Composite {
 						for (String course: courses) {
 							CourseRequestInterface.Request r = new CourseRequestInterface.Request();
 							r.setRequestedCourse(course);
+							r.setWaitList(iWaitList.getValue());
 							request.getCourses().add(r);
 						}
 						checkCourses(request, new Callback<Collection<String>>() {

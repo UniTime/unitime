@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.studentsct.model.Request;
-
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -46,16 +44,21 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
 /**
  * @author Tomas Muller
  */
+@CheckMaster(Master.REQUIRED)
 public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
@@ -93,26 +96,25 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				saveRequest(server, helper, student, getRequest(), getKeepEnrollments());
 				
 				// Reload student
-				net.sf.cpsolver.studentsct.model.Student oldStudent = server.getStudent(getStudentId());
-				net.sf.cpsolver.studentsct.model.Student newStudent = null;
+				XStudent oldStudent = server.getStudent(getStudentId());
+				XStudent newStudent = null;
 				try {
-					if (oldStudent != null)
-						server.remove(oldStudent);
-					newStudent = ReloadAllData.loadStudent(student, server, helper);
-					server.update(newStudent);
-					action.getStudentBuilder().setUniqueId(newStudent.getId()).setExternalId(newStudent.getExternalId());
+					newStudent = ReloadAllData.loadStudent(student, null, server, helper);
+					server.update(newStudent, true);
+					action.getStudentBuilder()
+						.setUniqueId(newStudent.getStudentId())
+						.setExternalId(newStudent.getExternalId())
+						.setName(newStudent.getName());
 					
-					for (Request r: newStudent.getRequests())
+					for (XRequest r: newStudent.getRequests())
 						action.addRequest(OnlineSectioningHelper.toProto(r));
 						
 				} catch (Exception e) {
-					// Put back the old student (the database will get rollbacked)
-					server.update(oldStudent);
 					if (e instanceof RuntimeException)
 						throw (RuntimeException)e;
 					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 				}
-				server.notifyStudentChanged(getStudentId(), (oldStudent == null ? null : oldStudent.getRequests()), newStudent.getRequests(), helper.getUser());
+				server.execute(new NotifyStudentAction(getStudentId(), oldStudent), helper.getUser());
 				
 				helper.commitTransaction();
 				
@@ -154,7 +156,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 		Map<Long, CourseRequest> course2request = new HashMap<Long, CourseRequest>();
 		List<CourseRequest> unusedRequests = new ArrayList<CourseRequest>();
 		for (CourseRequestInterface.Request r: request.getCourses()) {
-			if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && ((server == null && getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) != null) || (server != null && server.getCourseInfo(r.getRequestedCourse()) != null)))
+			if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && ((server == null && getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) != null) || (server != null && server.getCourse(r.getRequestedCourse()) != null)))
 				r.getRequestedFreeTime().clear();			
 			if (r.hasRequestedFreeTime()) {
 				for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
@@ -191,18 +193,18 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 			} else if (r.hasRequestedCourse() || r.hasFirstAlternative() || r.hasSecondAlternative()) {
 				List<CourseOffering> courses = new ArrayList<CourseOffering>();
 				if (r.hasRequestedCourse()) {
-					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getRequestedCourse()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
+					XCourseId c = (server == null ? null : server.getCourse(r.getRequestedCourse()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getCourseId(), helper.getHibSession()));
 					if (co != null) courses.add(co);
 				}
 				if (r.hasFirstAlternative()) {
-					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getFirstAlternative()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
+					XCourseId c = (server == null ? null : server.getCourse(r.getFirstAlternative()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getCourseId(), helper.getHibSession()));
 					if (co != null) courses.add(co);
 				}
 				if (r.hasSecondAlternative()) {
-					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getSecondAlternative()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
+					XCourseId c = (server == null ? null : server.getCourse(r.getSecondAlternative()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getCourseId(), helper.getHibSession()));
 					if (co != null) courses.add(co);
 				}
 				if (courses.isEmpty()) continue;
@@ -233,8 +235,10 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					CourseRequest cr = null;
 					if (requests.hasNext()) {
 						cr = requests.next();
+						/*
 						if (cr.getClassEnrollments() != null)
 							cr.getClassEnrollments().clear();
+							*/
 						if (cr.getCourseRequestOptions() != null) {
 							for (Iterator<CourseRequestOption> i = cr.getCourseRequestOptions().iterator(); i.hasNext(); )
 								helper.getHibSession().delete(i.next());
@@ -245,6 +249,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
 						cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
+						// cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
 					}
 					cr.setAllowOverlap(false);
 					cr.setCredit(0);
@@ -270,15 +275,19 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					helper.getHibSession().saveOrUpdate(enrl);
 				} else {
 					enrl.setCourseRequest(cr);
+					/*
 					if (cr.getClassEnrollments() == null)
 						cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
 					cr.getClassEnrollments().add(enrl);
+					*/
 					helper.getHibSession().saveOrUpdate(enrl);
 				}
 			} else {
 				enrl.getClazz().getStudentEnrollments().remove(enrl);
+				/*
 				if (enrl.getCourseRequest() != null)
 					enrl.getCourseRequest().getClassEnrollments().remove(enrl);
+					*/
 				helper.getHibSession().delete(enrl);
 				i.remove();
 			}
