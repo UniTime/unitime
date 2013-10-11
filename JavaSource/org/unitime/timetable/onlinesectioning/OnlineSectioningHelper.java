@@ -43,18 +43,33 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.onlinesectioning.model.XExactTimeConversion;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
+import org.unitime.timetable.onlinesectioning.model.XInstructor;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XReservationId;
+import org.unitime.timetable.onlinesectioning.model.XRoom;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XTime;
 
 /**
  * @author Tomas Muller
  */
 public class OnlineSectioningHelper {
     protected static Log sLog = LogFactory.getLog(OnlineSectioningHelper.class);
-	private static StudentSectioningConstants CFG = Localization.create(StudentSectioningConstants.class); 
+	private static StudentSectioningConstants CFG = Localization.create(StudentSectioningConstants.class);
+	public static boolean sTransactionCreatesNewHibSession = false;
 
     public static enum LogLevel {
     	DEBUG(OnlineSectioningLog.Message.Level.DEBUG),
@@ -77,19 +92,24 @@ public class OnlineSectioningHelper {
     protected OnlineSectioningLog.Entity iUser = null;
     protected static int sBatchSize = 100;
     protected CacheMode iCacheMode = null;
+    protected XExactTimeConversion iExactTimeConversion = null;
     
     public OnlineSectioningHelper(OnlineSectioningLog.Entity user, CacheMode cacheMode) {
-    	iUser = user;
-    	iCacheMode = cacheMode;
+    	this(null, user, cacheMode);
     }
     
     public OnlineSectioningHelper(OnlineSectioningLog.Entity user) {
-    	this(user, null);
+    	this(null, user, null);
     }
     
     public OnlineSectioningHelper(org.hibernate.Session hibSession, OnlineSectioningLog.Entity user) {
+    	this(hibSession, user, null);
+    }
+    
+    public OnlineSectioningHelper(org.hibernate.Session hibSession, OnlineSectioningLog.Entity user, CacheMode cacheMode) {
     	iHibSession = hibSession;
     	iUser = user;
+    	iCacheMode = cacheMode;
     }
     
     public OnlineSectioningLog.Entity getUser() { return iUser; }
@@ -149,12 +169,18 @@ public class OnlineSectioningHelper {
     }
 
     public org.hibernate.Session getHibSession() {
-        return (iHibSession == null ? new _RootDAO().getSession() : iHibSession);
+    	if (iHibSession == null) {
+    		iHibSession = new _RootDAO().getSession();
+    		if (iCacheMode != null) iHibSession.setCacheMode(iCacheMode);
+    	}
+        return iHibSession;
     }
     
     public boolean beginTransaction() {
         try {
-            iHibSession = new _RootDAO().createNewSession();
+        	if (iTx != null) return false;
+        	
+            iHibSession = (sTransactionCreatesNewHibSession ? new _RootDAO().createNewSession() : getHibSession());
             
             if (iCacheMode != null) {
             	debug("Using hibernate cache mode " + iCacheMode + ".");
@@ -172,29 +198,37 @@ public class OnlineSectioningHelper {
     
     public boolean commitTransaction() {
         try {
+        	if (iTx == null) return false;
             iTx.commit();
+            iTx = null;
             debug("Transaction committed.");
             return true;
         } catch (Exception e) {
             fatal("Unable to commit transaction, reason: "+e.getMessage(),e);
             return false;
         } finally {
-            if (iHibSession!=null && iHibSession.isOpen())
+            if (sTransactionCreatesNewHibSession && iHibSession!=null && iHibSession.isOpen()) {
                 iHibSession.close();
+                iHibSession = null;
+            }
         }
     }
 
     public boolean rollbackTransaction() {
         try {
+        	if (iTx == null) return false;
             iTx.rollback();
+        	iTx = null;
             info("Transaction rollbacked.");
             return true;
         } catch (Exception e) {
             fatal("Unable to rollback transaction, reason: "+e.getMessage(),e);
             return false;
         } finally {
-            if (iHibSession!=null && iHibSession.isOpen())
+            if (sTransactionCreatesNewHibSession && iHibSession!=null && iHibSession.isOpen()) {
                 iHibSession.close();
+                iHibSession = null;
+            }
         }
     }
     
@@ -297,6 +331,36 @@ public class OnlineSectioningHelper {
 				iLog.info(message.getMessage(), message.getThrowable());
 			}
 		}
+    }
+    
+    public XExactTimeConversion getExactTimeConversion() {
+    	if (iExactTimeConversion == null)
+    		iExactTimeConversion = new XExactTimeConversion(getHibSession());
+    	return iExactTimeConversion;
+    }
+    
+    public String getStudentNameFormat() {
+    	return ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle);
+    }
+    
+    public String getInstructorNameFormat() {
+    	return ApplicationProperties.getProperty("unitime.enrollment.instructor.name", DepartmentalInstructor.sNameFormatInitialLast);
+    }
+    
+    public String getApproverName(String externalId, Long sessionId) {
+    	if (externalId == null) return null;
+    	TimetableManager mgr = (TimetableManager)getHibSession().createQuery( "from TimetableManager where externalUniqueId = :externalId")
+				.setString("externalId", externalId)
+				.setCacheable(true).setMaxResults(1).uniqueResult();
+		if (mgr != null)
+			return mgr.getName();
+		    		
+		DepartmentalInstructor instr = (DepartmentalInstructor)getHibSession().createQuery(
+				"from DepartmentalInstructor where externalUniqueId = :externalId and department.session.uniqueId = :sessionId")
+				.setString("externalId", externalId)
+				.setLong("sessionId", sessionId)
+				.setCacheable(true).setMaxResults(1).uniqueResult();
+		return instr == null ? externalId : instr.nameLastNameFirst();
     }
     
     public OnlineSectioningLog.Action.Builder addAction(OnlineSectioningAction<?> action, AcademicSessionInfo session) {
@@ -490,6 +554,32 @@ public class OnlineSectioningHelper {
     	return request;
     }
     
+    public static OnlineSectioningLog.Request.Builder toProto(XRequest r) {
+    	OnlineSectioningLog.Request.Builder request = OnlineSectioningLog.Request.newBuilder();
+    	request.setPriority(r.getPriority());
+    	request.setAlternative(r.isAlternative());
+    	if (r instanceof XFreeTimeRequest) {
+    		XFreeTimeRequest ft = (XFreeTimeRequest)r;
+    		if (ft.getTime() != null) {
+    			request.addFreeTime(OnlineSectioningLog.Time.newBuilder()
+    					.setDays(ft.getTime().getDays())
+    					.setStart(ft.getTime().getSlot())
+    					.setLength(ft.getTime().getLength()));
+    		}
+    	} else if (r instanceof XCourseRequest) {
+    		XCourseRequest cr = (XCourseRequest)r;
+    		for (XCourseId course: cr.getCourseIds()) {
+    			request.addCourse(OnlineSectioningLog.Entity.newBuilder()
+    					.setUniqueId(course.getCourseId())
+    					.setName(course.getCourseName()));
+    		}
+    		if (cr.getTimeStamp() != null)
+    			request.setTimeStamp(cr.getTimeStamp().getTime());
+        	request.setWaitList(cr.isWaitlist());
+    	}
+    	return request;
+    }
+    
     public static List<OnlineSectioningLog.Request> toProto(CourseRequestInterface request) {
     	List<OnlineSectioningLog.Request> ret = new ArrayList<OnlineSectioningLog.Request>();
     	int priority = 0;
@@ -553,6 +643,91 @@ public class OnlineSectioningHelper {
     	return ret;
     }
     
+    public static OnlineSectioningLog.Section.Builder toProto(XSection a, XEnrollment e) {
+    	OnlineSectioningLog.Section.Builder section = toProto(a, e == null ? null: e, e == null ? null : e.getReservation());
+    	if (e.getTimeStamp() != null)
+    		section.setTimeStamp(e.getTimeStamp().getTime());
+    	return section;
+    }
+    
+    public static OnlineSectioningLog.Section.Builder toProto(XSection a) {
+    	return toProto(a, null, null); 
+    }
+    
+    public static OnlineSectioningLog.Section.Builder toProto(XSection s, XCourseId c, XReservationId r) {
+		OnlineSectioningLog.Section.Builder section = OnlineSectioningLog.Section.newBuilder();
+		section.setClazz(
+				OnlineSectioningLog.Entity.newBuilder()
+				.setUniqueId(s.getSectionId())
+				.setExternalId(c == null ? s.getName() : s.getName(c.getCourseId()))
+				.setName(s.getName(-1l))
+				);
+		section.setSubpart(
+				OnlineSectioningLog.Entity.newBuilder()
+				.setUniqueId(s.getSubpartId())
+				.setName(s.getSubpartName())
+				.setExternalId(s.getInstructionalType())
+				);
+		
+		for (XInstructor i: s.getInstructors()) {
+			OnlineSectioningLog.Entity.Builder instructor = OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(i.getIntructorId())
+					.setName(i.getName());
+			if (i.getEmail() != null)
+				instructor.setExternalId(i.getEmail());
+			else if (i.getExternalId() != null)
+				instructor.setExternalId(i.getExternalId());
+			section.addInstructor(instructor);
+		}
+		if (c != null) {
+			section.setCourse(
+					OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(c.getCourseId())
+					.setName(c.getCourseName()));
+		}
+		if (s.getTime() != null) {
+			OnlineSectioningLog.Time.Builder time = OnlineSectioningLog.Time.newBuilder();
+			time.setDays(s.getTime().getDays());
+			time.setStart(s.getTime().getSlot());
+			time.setLength(s.getTime().getLength());
+			if (s.getTime().getDatePatternName() != null && !s.getTime().getDatePatternName().isEmpty())
+				time.setPattern(s.getTime().getDatePatternName());
+			section.setTime(time);
+		}
+		if (s.getRooms() != null) {
+			for (XRoom rm: s.getRooms()) {
+				OnlineSectioningLog.Entity.Builder room = OnlineSectioningLog.Entity.newBuilder()
+						.setUniqueId(rm.getUniqueId())
+						.setName(rm.getName());
+				if (rm.getExternalId() != null)
+						room.setExternalId(rm.getExternalId());
+				section.addLocation(room);
+			}
+		}
+    	if (r != null) {
+    		OnlineSectioningLog.Entity.Builder reservation = OnlineSectioningLog.Entity.newBuilder()
+    			.setUniqueId(r.getReservationId());
+    		switch (r.getType()) {
+    		case Group:
+    			reservation.setType(OnlineSectioningLog.Entity.EntityType.GROUP_RESERVATION);
+    			break;
+    		case Curriculum:
+    			reservation.setType(OnlineSectioningLog.Entity.EntityType.CURRICULUM_RESERVATION);
+    			break;
+    		case Individual:
+    			reservation.setType(OnlineSectioningLog.Entity.EntityType.INDIVIDUAL_RESERVATION);
+    			break;
+    		case Course:
+    			reservation.setType(OnlineSectioningLog.Entity.EntityType.COURSE_RESERVATION);
+    			break;
+    		default:
+    			reservation.setType(OnlineSectioningLog.Entity.EntityType.RESERVATION);
+    		}
+    		section.setReservation(reservation);
+    	}
+    	return section;
+    }
+    
 	public static long getCpuTime() {
 		return ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported() ? ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() : 1000000l * System.currentTimeMillis();
 	}
@@ -567,6 +742,14 @@ public class OnlineSectioningHelper {
         	return h + ":" + (m < 10 ? "0" : "") + m;
 	}
 	
+	public static String toString(XTime t) {
+		return DayCode.toString(t.getDays()) + " " + getTimeString(t.getSlot()) + " - " + getTimeString(t.getSlot() + t.getLength());
+	}
+
+	public static String toString(XFreeTimeRequest f) {
+		return CFG.freePrefix() + toString(f.getTime());
+	}
+
 	public static String toString(TimeLocation t) {
 		return DayCode.toString(t.getDayCode()) + " " + getTimeString(t.getStartSlot()) + " - " + getTimeString(t.getStartSlot() + t.getLength());
 	}

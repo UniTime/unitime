@@ -515,7 +515,7 @@ public class MenuServlet implements MenuService {
 
 				ret.put("0Type",  (studentSolver!=null?"Student Sectioning Solver":examSolver!=null?"Examinations Solver":"Course Timetabling Solver"));
 				ret.put("4Owner", ownerName);
-				ret.put("5Host", (studentSolver!=null?studentSolver.getHostLabel():examSolver!=null?examSolver.getHostLabel():solver.getHostLabel()));
+				ret.put("5Host", (studentSolver!=null?studentSolver.getHost():examSolver!=null?examSolver.getHost():solver.getHost()));
 				ret.put("1Solver", progressStatus);
 				ret.put("2Phase", progressPhase);
 				if (progressMax>0)

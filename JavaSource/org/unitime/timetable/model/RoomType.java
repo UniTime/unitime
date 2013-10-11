@@ -81,7 +81,12 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
         	opt.setBreakTime(Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getReference(), "0")));
     		return opt;
     	}
-        RoomTypeOption opt = RoomTypeOptionDAO.getInstance().get(new RoomTypeOption(this, department)); 
+        RoomTypeOption opt = (RoomTypeOption)RoomTypeOptionDAO.getInstance().getSession().createQuery(
+    			"from RoomTypeOption where department.uniqueId = :departmentId and roomType.uniqueId = :roomTypeId")
+    			.setLong("departmentId", department.getUniqueId())
+    			.setLong("roomTypeId", getUniqueId())
+    			.setCacheable(true)
+    			.uniqueResult();
         if (opt==null) opt = new RoomTypeOption(this, department);
         if (opt.getStatus() == null) opt.setStatus(RoomTypeOption.getDefaultStatus());
         if (opt.getBreakTime() == null)

@@ -32,11 +32,12 @@
         oob_thread_pool.queue_max_size="100"
         oob_thread_pool.rejection_policy="Discard"        
          />
-   <MPING bind_addr="${jgroups.bind_addr:127.0.0.1}" break_on_coord_rsp="true"
-      mcast_addr="${jgroups.mping.mcast_addr:228.2.4.6}"
-      mcast_port="${jgroups.mping.mcast_port:43366}"
-      ip_ttl="${jgroups.udp.ip_ttl:2}"
-      num_initial_members="3"/>
+   <MPING
+          bind_addr="${jgroups.bind_addr:127.0.0.1}" break_on_coord_rsp="true"
+          mcast_addr="${jgroups.mping.mcast_addr:228.2.4.6}"
+          mcast_port="${unitime.hibernate.mping_port:43366}"
+          ip_ttl="${jgroups.udp.ip_ttl:2}"
+          num_initial_members="3"/>
    <MERGE2 max_interval="30000" min_interval="10000"/>
    <FD_SOCK/>
    <FD timeout="3000" max_tries="3"/>
@@ -58,7 +59,6 @@
    <pbcast.STABLE stability_delay="500" desired_avg_gossip="5000" max_bytes="1m"/>
    <pbcast.GMS print_local_addr="false" join_timeout="3000" view_bundling="true"/>
    <tom.TOA/> <!-- the TOA is only needed for total order transactions-->
-   <UFC max_credits="200k" min_threshold="0.20"/>
    <MFC max_credits="200k" min_threshold="0.20"/>
    <FRAG2 frag_size="60000"/>
    <RSVP timeout="60000" resend_interval="500" ack_on_delivery="false" />

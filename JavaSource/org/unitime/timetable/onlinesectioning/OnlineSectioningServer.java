@@ -19,88 +19,138 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
+import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XEnrollments;
+import org.unitime.timetable.onlinesectioning.model.XDistribution;
+import org.unitime.timetable.onlinesectioning.model.XExpectations;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XStudentId;
+import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster;
+import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
-import net.sf.cpsolver.studentsct.constraint.LinkedSections;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
 
 /**
  * @author Tomas Muller
  */
 public interface OnlineSectioningServer {
+	public boolean isMaster();
+	@CheckMaster(Master.REQUIRED)
+	public void releaseMasterLockIfHeld();
+	public String getHost();
+	public String getUser();
+	
 	public AcademicSessionInfo getAcademicSession();
 	public DistanceMetric getDistanceMetric();
 	public DataProperties getConfig();
 	
-	public Collection<CourseInfo> findCourses(String query, Integer limit, CourseInfoMatcher matcher);
-	public Collection<CourseInfo> findCourses(CourseInfoMatcher matcher);
-	public List<Section> getSections(CourseInfo courseInfo);
-	public Collection<Student> findStudents(StudentMatcher matcher);
+	public Collection<? extends XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher);
+	public Collection<? extends XCourseId> findCourses(CourseMatcher matcher);
+	public Collection<? extends XStudentId> findStudents(StudentMatcher matcher);
 	
-	public CourseInfo getCourseInfo(Long courseId);
-	public CourseInfo getCourseInfo(String course);
-	public CourseDetails getCourseDetails(Long courseId);
+	public XCourse getCourse(Long courseId);
+	public XCourseId getCourse(String course);
+	public String getCourseDetails(Long courseId, CourseDetailsProvider provider);
 	
-	public Student getStudent(Long studentId);
-	public Section getSection(Long classId);
-	public Course getCourse(Long courseId);
-	public Offering getOffering(Long offeringId);
+	public XStudent getStudent(Long studentId);
+	public XOffering getOffering(Long offeringId);
+	public Collection<XCourseRequest> getRequests(Long offeringId);
+	public XEnrollments getEnrollments(Long offeringId);
+	public XExpectations getExpectations(Long offeringId);
+	
+	@CheckMaster(Master.REQUIRED)
+	public void update(XExpectations expectations);
 	
 	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException;
 	public <E> void execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user, ServerCallback<E> callback) throws SectioningException;
 	
-	public void remove(Student student);
-	public void update(Student student);
-	public void remove(Offering offering);
-	public void update(Offering offering);
-	public void update(CourseInfo info);
+	@CheckMaster(Master.REQUIRED)
+	public void remove(XStudent student);
+	
+	@CheckMaster(Master.REQUIRED)
+	public void update(XStudent student, boolean updateRequests);
+	
+	@CheckMaster(Master.REQUIRED)
+	public void remove(XOffering offering);
+	
+	@CheckMaster(Master.REQUIRED)
+	public void update(XOffering offering);
+	
+	@CheckMaster(Master.REQUIRED)
 	public void clearAll();
+	
+	@CheckMaster(Master.REQUIRED)
 	public void clearAllStudents();
 	
-	public void addLinkedSections(LinkedSections link);
-	public Collection<LinkedSections> getLinkedSections(Long offeringId);
-	public void removeLinkedSections(Long offeringId);
+	@CheckMaster(Master.REQUIRED)
+	public XCourseRequest assign(XCourseRequest request, XEnrollment enrollment);
 	
-	public void notifyStudentChanged(Long studentId, List<Request> oldRequests, List<Request> newRequests, OnlineSectioningLog.Entity user);
-	public void notifyStudentChanged(Long studentId, Request request, Enrollment oldEnrollment, OnlineSectioningLog.Entity user);
+	@CheckMaster(Master.REQUIRED)
+	public XCourseRequest waitlist(XCourseRequest request, boolean waitlist);
 	
+	@CheckMaster(Master.REQUIRED)
+	public void addDistribution(XDistribution distribution);
+	
+	public Collection<XDistribution> getDistributions(Long offeringId);
+	
+	@CheckMaster(Master.REQUIRED)
 	public Lock readLock();
+	
+	@CheckMaster(Master.REQUIRED)
 	public Lock writeLock();
+	
+	@CheckMaster(Master.REQUIRED)
 	public Lock lockAll();
+	@CheckMaster(Master.REQUIRED)
 	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings);
+	
+	@CheckMaster(Master.REQUIRED)
 	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering);
-	public Lock lockClass(Long classId, Collection<Long> studentIds);
+	
+	@CheckMaster(Master.REQUIRED)
 	public Lock lockRequest(CourseRequestInterface request);
 	
 	public boolean isOfferingLocked(Long offeringId);
+	
+	@CheckMaster(Master.REQUIRED)
 	public void lockOffering(Long offeringId);
+	
+	@CheckMaster(Master.REQUIRED)
 	public void unlockOffering(Long offeringId);
+	
 	public Collection<Long> getLockedOfferings();
+	
+	@CheckMaster(Master.REQUIRED)
 	public void releaseAllOfferingLocks();
 	
-	public int distance(Section s1, Section s2);
-	
+	@CheckMaster(Master.REQUIRED)
 	public void persistExpectedSpaces(Long offeringId);
+	
+	@CheckMaster(Master.REQUIRED)
 	public List<Long> getOfferingsToPersistExpectedSpaces(long minimalAge);
+	
+	@CheckMaster(Master.REQUIRED)
 	public boolean needPersistExpectedSpaces(Long offeringId);
 	
 	public static enum Deadline { NEW, CHANGE, DROP };
 	
-	public boolean checkDeadline(Section section, Deadline type);
+	public boolean checkDeadline(Long courseId, XTime sectionTime, Deadline type);
 	
-	public void unload();
+	public void unload(boolean remove);
 	
 	public static interface Lock {
 		void release();
@@ -109,13 +159,5 @@ public interface OnlineSectioningServer {
 	public static interface ServerCallback<E> {
 		public void onFailure(Throwable exception);
 		public void onSuccess(E result);
-	}
-	
-	public static interface CourseInfoMatcher extends Serializable {
-		public boolean match(CourseInfo course);
-	}
-
-	public static interface StudentMatcher extends Serializable {
-		public boolean match(Student student);
 	}
 }

@@ -314,8 +314,6 @@ public class StudentImport extends BaseImport {
  	        for (Student student: students.values()) {
         		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
         			StudentClassEnrollment enrollment = i.next();
-        			if (enrollment.getCourseRequest() != null)
-        				enrollment.getCourseRequest().getClassEnrollments().remove(enrollment);
         			getHibSession().delete(enrollment);
         			i.remove();
      	        	updatedStudents.add(student.getUniqueId());

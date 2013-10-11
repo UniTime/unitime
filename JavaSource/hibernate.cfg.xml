@@ -49,7 +49,7 @@
 	<!-- End of Oracle Configuration -->
 	
 	<!-- Connect database using Apache DBCP -->
-	<property name="hibernate.connection.provider_class">org.unitime.commons.hibernate.connection.DBCPConnectionProvider</property>
+	<property name="hibernate.connection.provider_class">org.unitime.commons.hibernate.connection.LoggingDBCPConnectionProvider</property>
 	<property name="hibernate.dbcp.maxIdle">5</property>
 	<property name="hibernate.dbcp.maxActive">20</property>
 	<property name="hibernate.dbcp.whenExhaustedAction">1</property>
@@ -95,7 +95,7 @@
 	<property name="hibernate.transaction.factory_class">org.hibernate.engine.transaction.internal.jta.JtaTransactionFactory</property>
 	<property name="hibernate.transaction.jta.platform">org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform</property>
 	<property name="hibernate.cache.infinispan.cfg">hibernate-infinispan.xml</property>
-	-->
+	 -->
 
 	<!-- Keep the cache entries in a more human-understandable format -->
 	<property name="hibernate.cache.use_structured_entries">true</property>

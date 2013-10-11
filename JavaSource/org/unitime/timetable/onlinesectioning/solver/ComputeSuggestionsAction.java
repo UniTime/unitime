@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
@@ -39,11 +38,9 @@ import net.sf.cpsolver.studentsct.model.Assignment;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.unitime.localization.impl.Localization;
@@ -57,6 +54,13 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XDistribution;
+import org.unitime.timetable.onlinesectioning.model.XDistributionType;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XSection;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.BestPenaltyCriterion;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSuggestions;
@@ -98,43 +102,47 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 
 		Lock readLock = server.readLock();
 		try {
-			Student original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
+			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
-				action.getStudentBuilder().setUniqueId(original.getId()).setExternalId(original.getExternalId());
+				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId());
 				enrolled = new HashSet<Long>();
-				for (Request r: original.getRequests())
-					if (r.getInitialAssignment() != null && r.getInitialAssignment().isCourseRequest())
-						for (Section s: r.getInitialAssignment().getSections())
-							enrolled.add(s.getId());
+				for (XRequest r: original.getRequests()) {
+					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null)
+						for (Long s: ((XCourseRequest)r).getEnrollment().getSectionIds())
+							enrolled.add(s);
+				}
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
-				for (Request oldRequest: original.getRequests()) {
-					if (oldRequest.getInitialAssignment() != null && oldRequest.getInitialAssignment().isCourseRequest())
-						for (Section section: oldRequest.getInitialAssignment().getSections())
-							enrollment.addSection(OnlineSectioningHelper.toProto(section, oldRequest.getInitialAssignment()));
+				for (XRequest oldRequest: original.getRequests()) {
+					if (oldRequest instanceof XCourseRequest && ((XCourseRequest)oldRequest).getEnrollment() != null) {
+						XCourseRequest cr = (XCourseRequest)oldRequest;
+						XOffering offering = server.getOffering(cr.getEnrollment().getOfferingId());
+						for (XSection section: offering.getSections(cr.getEnrollment()))
+							enrollment.addSection(OnlineSectioningHelper.toProto(section, cr.getEnrollment()));
+					}
 				}
 				action.addEnrollment(enrollment);
 			}
 			Map<Long, Section> classTable = new HashMap<Long, Section>();
-			Set<LinkedSections> linkedSections = new HashSet<LinkedSections>();
+			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, student, original, c, false, true, classTable, linkedSections);
+				addRequest(server, model, student, original, c, false, true, classTable, distributions);
 			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, student, original, c, true, true, classTable, linkedSections);
+				addRequest(server, model, student, original, c, true, true, classTable, distributions);
 			model.addStudent(student);
 			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
-			for (LinkedSections link: linkedSections) {
-				List<Section> sections = new ArrayList<Section>();
-				for (Offering offering: link.getOfferings())
-					for (Subpart subpart: link.getSubparts(offering))
-						for (Section section: link.getSections(subpart)) {
-							Section x = classTable.get(section.getId());
-							if (x != null) sections.add(x);
-						}
-				if (sections.size() >= 2)
-					model.addLinkedSections(sections);
+			for (XDistribution link: distributions) {
+				if (link.getDistributionType() == XDistributionType.LinkedSections) {
+					List<Section> sections = new ArrayList<Section>();
+					for (Long sectionId: link.getSectionIds()) {
+						Section x = classTable.get(sectionId);
+						if (x != null) sections.add(x);
+					}
+					if (sections.size() >= 2)
+						model.addLinkedSections(sections);
+				}
 			}
 		} finally {
 			readLock.release();

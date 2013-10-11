@@ -28,9 +28,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
-import net.sf.cpsolver.studentsct.model.Student;
-
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -45,6 +42,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.util.Constants;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -55,7 +54,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 	private static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	
 	private Query iQuery;
-	private Integer iLimit = null;
+	private Integer iLimit = 100;
 	
 	public FindOnlineSectioningLogAction(String query) {
 		iQuery = new Query(query.isEmpty() ? "limit:100" : query);
@@ -95,24 +94,24 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				try {
 					org.unitime.timetable.model.OnlineSectioningLog log = (org.unitime.timetable.model.OnlineSectioningLog)o[0];
 					
-					Student student = server.getStudent((Long)o[1]);
+					XStudent student = server.getStudent((Long)o[1]);
 					if (student == null) continue;
 					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
-					st.setId(student.getId());
+					st.setId(student.getStudentId());
 					st.setExternalId(student.getExternalId());
 					st.setName(student.getName());
-					for (AcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
+					for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 						st.addArea(ac.getArea());
 						st.addClassification(ac.getCode());
 					}
-					for (AcademicAreaCode ac: student.getMajors()) {
+					for (XAcademicAreaCode ac: student.getMajors()) {
 						st.addMajor(ac.getCode());
 					}
-					for (AcademicAreaCode ac: student.getMinors()) {
-						if ("A".equals(ac.getArea()))
-							st.addAccommodation(ac.getCode());
-						else
-							st.addGroup(ac.getCode());
+					for (String acc: student.getAccomodations()) {
+						st.addAccommodation(acc);
+					}
+					for (String gr: student.getGroups()) {
+						st.addGroup(gr);
 					}
 
 					SectioningAction a = new SectioningAction();
@@ -133,7 +132,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					if (action.hasResult())
 						html += "<tr><td><b>" + MSG.colResult() + ":</b></td><td>" + Constants.toInitialCase(action.getResult().name()) + "</td></tr>";
 					if (action.hasStudent()) {
-						net.sf.cpsolver.studentsct.model.Student s = server.getStudent(action.getStudent().getUniqueId());
+						XStudent s = server.getStudent(action.getStudent().getUniqueId());
 						if (s != null) {
 							html += "<tr><td><b>" + MSG.colStudent() + ":</b></td><td>" + s.getName() + "</td></tr>";
 						}

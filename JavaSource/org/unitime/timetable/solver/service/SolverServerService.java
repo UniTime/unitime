@@ -32,6 +32,7 @@ import org.jgroups.blocks.mux.MuxUpHandler;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
+import org.unitime.commons.jgroups.JGroupsUtils;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -58,7 +59,7 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		try {
-			JChannel channel = new JChannel(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml"));
+			JChannel channel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml")));
 		
 			channel.setUpHandler(new MuxUpHandler());
 			
@@ -69,10 +70,10 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 			Properties properties = ApplicationProperties.getProperties();
 			iServer.start(properties);
 			
-			iCourseSolverContainer = new SolverContainerWrapper<SolverProxy>(iServer, (RemoteSolverContainer<SolverProxy>) iServer.getCourseSolverContainer());
-			iExamSolverContainer = new SolverContainerWrapper<ExamSolverProxy>(iServer, (RemoteSolverContainer<ExamSolverProxy>) iServer.getExamSolverContainer());
-			iStudentSolverContainer = new SolverContainerWrapper<StudentSolverProxy>(iServer, (RemoteSolverContainer<StudentSolverProxy>) iServer.getStudentSolverContainer());
-			iOnlineStudentSchedulingContainer = new SolverContainerWrapper<OnlineSectioningServer>(iServer, (RemoteSolverContainer<OnlineSectioningServer>) iServer.getOnlineStudentSchedulingContainer());
+			iCourseSolverContainer = new SolverContainerWrapper<SolverProxy>(iServer, (RemoteSolverContainer<SolverProxy>) iServer.getCourseSolverContainer(), true);
+			iExamSolverContainer = new SolverContainerWrapper<ExamSolverProxy>(iServer, (RemoteSolverContainer<ExamSolverProxy>) iServer.getExamSolverContainer(), true);
+			iStudentSolverContainer = new SolverContainerWrapper<StudentSolverProxy>(iServer, (RemoteSolverContainer<StudentSolverProxy>) iServer.getStudentSolverContainer(), true);
+			iOnlineStudentSchedulingContainer = new SolverContainerWrapper<OnlineSectioningServer>(iServer, (RemoteSolverContainer<OnlineSectioningServer>) iServer.getOnlineStudentSchedulingContainer(), false);
 		} catch (Exception e) {
 			sLog.fatal("Failed to start solver server: " + e.getMessage(), e);
 		}

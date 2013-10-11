@@ -177,8 +177,8 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         return "local";
     }
     
-    public String getHostLabel() {
-        return getHost();
+    public String getUser() {
+    	return getProperties().getProperty("General.OwnerPuid");
     }
     
     public Object exec(Object[] cmd) throws Exception {

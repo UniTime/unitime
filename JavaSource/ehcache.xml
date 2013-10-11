@@ -25,9 +25,8 @@
 	<diskStore path="java.io.tmpdir" />
     
 	<cacheManagerPeerProviderFactory
-		class="net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory"
-		properties="file=hibernate-jgroups-tcp.xml, channelName=UniTime:hibernate"
-	/>
+		class="org.unitime.commons.jgroups.JGroupsCacheManagerPeerProviderFactory"
+		propertySeparator="::" />
 	
 	<defaultCache
 		maxElementsInMemory="100000"
@@ -37,7 +36,7 @@
 		overflowToDisk="false">
 		<cacheEventListenerFactory
 			class="net.sf.ehcache.distribution.jgroups.JGroupsCacheReplicatorFactory"
-			properties="replicateAsynchronously=true, replicatePuts=true, replicateUpdates=true, replicateUpdatesViaCopy=false, replicateRemovals=true"
+			properties="replicateAsynchronously=false, replicatePuts=true, replicateUpdates=true, replicateUpdatesViaCopy=true, replicateRemovals=true"
 		/>
 		<bootstrapCacheLoaderFactory
 			class="net.sf.ehcache.distribution.jgroups.JGroupsBootstrapCacheLoaderFactory"

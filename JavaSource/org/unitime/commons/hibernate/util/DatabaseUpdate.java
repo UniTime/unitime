@@ -230,6 +230,8 @@ public abstract class DatabaseUpdate {
             }
         } catch (Exception e) {
             sLog.error("Unable to execute database auto-update, reason: "+e.getMessage(), e);
+        } finally {
+        	_RootDAO.closeCurrentThreadSessions();
         }
     }
 }

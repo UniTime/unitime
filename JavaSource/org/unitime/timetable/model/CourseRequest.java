@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.unitime.timetable.model.base.BaseCourseRequest;
 
 
@@ -46,6 +49,15 @@ public class CourseRequest extends BaseCourseRequest implements Comparable {
         int cmp = getOrder().compareTo(cr.getOrder());
         if (cmp!=0) return cmp;
         return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(cr.getUniqueId() == null ? -1 : cr.getUniqueId());
+    }
+    
+    public List<StudentClassEnrollment> getClassEnrollments() {
+    	List<StudentClassEnrollment> ret = new ArrayList<StudentClassEnrollment>();
+    	for (StudentClassEnrollment e: getCourseDemand().getStudent().getClassEnrollments()) {
+			if (this.equals(e.getCourseRequest()) || (e.getCourseRequest() == null && getCourseOffering().equals(e.getCourseOffering())))
+				ret.add(e);
+    	}
+    	return ret;
     }
 
 
