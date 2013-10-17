@@ -198,7 +198,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			Roles noRole = Roles.getRole(Roles.ROLE_NONE);
 			if (noRole != null && noRole.isEnabled()) {
 				for (Session session: new TreeSet<Session>(SessionDAO.getInstance().findAll())) {
-					if (session.getStatusType() == null || !session.getStatusType().isActive() || session.getStatusType().isTestSession()) continue;
+					if (session.getStatusType() == null || !session.getStatusType().isAllowNoRole() || session.getStatusType().isTestSession()) continue;
 					List<? extends UserAuthority> authorities = getAuthorities(null, new SimpleQualifier("Session", session.getUniqueId()));
 					if (authorities.isEmpty()) {
 						UserAuthority authority = new RoleAuthority(-1l, noRole);

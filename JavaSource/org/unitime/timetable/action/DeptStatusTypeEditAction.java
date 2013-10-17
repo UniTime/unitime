@@ -239,6 +239,10 @@ public class DeptStatusTypeEditAction extends Action {
                     apply = "Department";
             } else if (s.applySession())
                 apply = "Session";
+            if (s.isAllowRollForward()) {
+            	if (rights.length()>0) rights+="; ";
+                rights += "roll-forward";
+            }
             if (s.canOwnerView() || s.canOwnerLimitedEdit() || s.canOwnerEdit()) {
                 if (rights.length()>0) rights+="; ";
                 rights += "owner can ";
@@ -312,7 +316,7 @@ public class DeptStatusTypeEditAction extends Action {
                 if (rights.length()>0) rights+="; ";
                 rights += "registration";
             }
-            if (s.canNoRoleReportExamFinal() || s.canNoRoleReportExamMidterm() || s.canNoRoleReportClass()) {
+            if (s.isAllowNoRole() || s.canNoRoleReportExamFinal() || s.canNoRoleReportExamMidterm() || s.canNoRoleReportClass()) {
                 if (rights.length()>0) rights+="; ";
                 rights += "no-role";
                 if (s.canNoRoleReportExamFinal() && s.canNoRoleReportExamMidterm() && s.canNoRoleReportClass())

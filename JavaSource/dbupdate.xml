@@ -8978,4 +8978,10 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'ApplicationConfig'
 		</sql>
 	</update>
+	<update version="129" date="17-Oct-2013" comment="Allow No Role Status Type">
+		<sql><![CDATA[
+			update %SCHEMA%.dept_status_type set status = status + 524288 where apply = 1 and status > 0 and status < 262144
+		]]></sql>
+		<sql>update %SCHEMA%.dept_status_type set status = 1048576 where apply = 1 and status = 0</sql>
+	</update>
 </dbupdate>
