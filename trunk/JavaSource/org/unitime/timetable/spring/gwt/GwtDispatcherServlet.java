@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,9 @@ import com.google.gwt.user.server.rpc.RPCRequest;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.gwt.user.server.rpc.UnexpectedException;
 
+/**
+ * @author Tomas Muller
+ */
 public class GwtDispatcherServlet extends RemoteServiceServlet {
 	private static final long serialVersionUID = 1L;
 	

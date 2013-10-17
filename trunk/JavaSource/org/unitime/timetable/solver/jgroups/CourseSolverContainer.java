@@ -36,6 +36,9 @@ import org.unitime.timetable.solver.TimetableSolver;
 import org.unitime.timetable.solver.TimetableSolver.SolverDisposeListener;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 
+/**
+ * @author Tomas Muller
+ */
 public class CourseSolverContainer implements SolverContainer<SolverProxy> {
 	private static Log sLog = LogFactory.getLog(CourseSolverContainer.class);
 	

@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -25,6 +25,9 @@ import java.net.URL;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
+/**
+ * @author Tomas Muller
+ */
 public interface CourseUrlProvider extends Serializable {
 	
 	public URL getCourseUrl(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException;

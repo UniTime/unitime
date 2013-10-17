@@ -45,6 +45,8 @@ import javax.naming.spi.NamingManager;
 /**
  * Inspired by the sample service provider that implements a hierarchical namespace in memory:
  * http://docs.oracle.com/javase/jndi/tutorial/provider/basics/names.html
+ *
+ * @author Tomas Muller
  */
 public class LocalContext implements Context, NameParser, InitialContextFactory, InitialContextFactoryBuilder {
 	protected Hashtable iEnv;

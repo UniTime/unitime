@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,9 @@ package org.unitime.timetable.gwt.command.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+/**
+ * @author Tomas Muller
+ */
 public class GwtRpc {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	

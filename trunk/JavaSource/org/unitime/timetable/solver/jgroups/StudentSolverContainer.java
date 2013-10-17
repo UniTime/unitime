@@ -36,6 +36,9 @@ import org.unitime.timetable.solver.studentsct.StudentSolver;
 import org.unitime.timetable.solver.studentsct.StudentSolver.StudentSolverDisposeListener;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
+/**
+ * @author Tomas Muller
+ */
 public class StudentSolverContainer implements SolverContainer<StudentSolverProxy> {
 	private static Log sLog = LogFactory.getLog(StudentSolverContainer.class);
 	

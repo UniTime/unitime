@@ -39,6 +39,9 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XSubpart.XSubpartSerializer.class)
 public class XSubpart implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;

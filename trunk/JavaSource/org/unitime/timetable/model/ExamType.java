@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,9 @@ import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.model.base.BaseExamType;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 
+/**
+ * @author Tomas Muller
+ */
 public class ExamType extends BaseExamType implements Comparable<ExamType> {
 	private static final long serialVersionUID = 1L;
 	protected static ExaminationMessages MSG = Localization.create(ExaminationMessages.class);

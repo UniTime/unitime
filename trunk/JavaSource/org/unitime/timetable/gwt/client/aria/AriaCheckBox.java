@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -25,6 +25,9 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.CheckBox;
 
+/**
+ * @author Tomas Muller
+ */
 public class AriaCheckBox extends CheckBox implements HasAriaLabel {
 	Element iAriaLabel;
 	

@@ -51,6 +51,9 @@ import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.server.CourseDetailsBackend;
 import org.unitime.timetable.util.Constants;
 
+/**
+ * @author Tomas Muller
+ */
 public class CalendarExport implements OnlineSectioningAction<String>{
 	private static final long serialVersionUID = 1L;
 	private String iClassIds;

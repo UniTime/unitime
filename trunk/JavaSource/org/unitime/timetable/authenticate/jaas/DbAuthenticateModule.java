@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,8 @@ import org.unitime.timetable.model.dao.UserDAO;
 /**
  * Authenticates a user by looking up username/password in the database Options:
  * debug=true/false
+ *
+ * @author Tomas Muller
  */
 public class DbAuthenticateModule extends AuthenticateModule {
 	private static Logger sLog = Logger.getLogger(DbAuthenticateModule.class);

@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -24,6 +24,9 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.security.SessionContext;
 
+/**
+ * @author Tomas Muller
+ */
 public abstract class FilterBoxBackend<T extends FilterRpcRequest> implements GwtRpcImplementation<T, FilterRpcResponse> {
 	
 	@Override

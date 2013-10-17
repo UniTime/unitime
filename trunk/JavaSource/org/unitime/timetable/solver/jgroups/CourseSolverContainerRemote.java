@@ -50,6 +50,9 @@ import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.solver.ui.TimetableInfoFileProxy;
 import org.unitime.timetable.solver.ui.TimetableInfoUtil;
 
+/**
+ * @author Tomas Muller
+ */
 public class CourseSolverContainerRemote extends CourseSolverContainer implements RemoteSolverContainer<SolverProxy> {
 	private static Log sLog = LogFactory.getLog(CourseSolverContainerRemote.class);
 	

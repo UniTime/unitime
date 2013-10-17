@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -76,6 +76,9 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * @author Tomas Muller
+ */
 public class ScriptPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);

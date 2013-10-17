@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -21,6 +21,9 @@ package org.unitime.timetable.gwt.client.page;
 
 import com.google.gwt.user.client.ui.Composite;
 
+/**
+ * @author Tomas Muller
+ */
 public abstract class UniTimeMenu extends Composite {
 	
 	public abstract void reload();

@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -47,6 +47,9 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 
+/**
+ * @author Tomas Muller
+ */
 public class CourseDetailsWidget extends Composite {
 	protected static GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);

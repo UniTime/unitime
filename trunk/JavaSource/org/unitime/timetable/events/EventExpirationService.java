@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -36,6 +36,9 @@ import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.dao.EventDAO;
 
+/**
+ * @author Tomas Muller
+ */
 public class EventExpirationService extends Thread {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Logger sLog = Logger.getLogger(EventExpirationService.class); 

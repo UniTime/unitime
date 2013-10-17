@@ -62,6 +62,9 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 
+/**
+ * @author Tomas Muller
+ */
 public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 	private static final long serialVersionUID = 1L;
 

@@ -33,6 +33,9 @@ import org.jgroups.util.RspList;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.ToolBox;
 
+/**
+ * @author Tomas Muller
+ */
 public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	private static Log sLog = LogFactory.getLog(SolverContainerWrapper.class);
 	private SolverServerImplementation iServer;

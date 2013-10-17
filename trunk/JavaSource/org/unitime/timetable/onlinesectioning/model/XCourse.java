@@ -34,6 +34,9 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XCourse.XCourseSerializer.class)
 public class XCourse extends XCourseId {
 	private static final long serialVersionUID = 1L;

@@ -44,7 +44,7 @@ import org.unitime.timetable.security.UserContext;
 
 /**
  * Various constants used in timetabling project.
- * @author Tomas Muller
+ * @author Tomas Muller, Stephanie Schluttenhofer
  */
 public class Constants extends net.sf.cpsolver.coursett.Constants {
 	public static final ConstantsMessages MSG = Localization.create(ConstantsMessages.class);

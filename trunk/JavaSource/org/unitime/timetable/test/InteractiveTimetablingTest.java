@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,9 @@ import net.sf.cpsolver.ifs.util.Progress;
 import net.sf.cpsolver.ifs.util.ProgressWriter;
 import net.sf.cpsolver.ifs.util.ToolBox;
 
+/**
+ * @author Tomas Muller
+ */
 public class InteractiveTimetablingTest {
     private static java.text.SimpleDateFormat sDateFormat = new java.text.SimpleDateFormat("yyMMdd_HHmmss",java.util.Locale.US);
     private static java.text.DecimalFormat sDoubleFormat = new java.text.DecimalFormat("0.000",new java.text.DecimalFormatSymbols(Locale.US));

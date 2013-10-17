@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -61,6 +61,9 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 
 
+/**
+ * @author Tomas Muller, Stephanie Schluttenhofer
+ */
 public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	private static final long serialVersionUID = 1L;
 	private static Log sLog = LogFactory.getLog(Solution.class);

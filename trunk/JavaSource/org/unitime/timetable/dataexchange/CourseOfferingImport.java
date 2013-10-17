@@ -1,6 +1,6 @@
 /* 
- * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2008-2009, UniTime LLC
+ * UniTime 3.1 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
 
 /**
- * @author says
+ * @author Stephanie Schluttenhofer
  *
  */
 public class CourseOfferingImport extends BaseCourseOfferingImport {

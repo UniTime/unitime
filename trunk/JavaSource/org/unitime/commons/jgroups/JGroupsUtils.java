@@ -30,6 +30,9 @@ import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.util.Util;
 import org.unitime.timetable.ApplicationProperties;
 
+/**
+ * @author Tomas Muller
+ */
 public class JGroupsUtils {
 
     public static String getProperty(String s) {

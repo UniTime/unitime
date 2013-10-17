@@ -29,6 +29,9 @@ import org.infinispan.marshall.Externalizer;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
+/**
+ * @author Tomas Muller
+ */
 public class XStudentId implements Serializable, Comparable<XStudentId>, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Long iStudentId;

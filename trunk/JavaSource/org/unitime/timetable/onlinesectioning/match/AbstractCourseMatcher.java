@@ -21,6 +21,9 @@ package org.unitime.timetable.onlinesectioning.match;
 
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
+/**
+ * @author Tomas Muller
+ */
 public abstract class AbstractCourseMatcher implements CourseMatcher {
 	private static final long serialVersionUID = 1L;
 	private transient OnlineSectioningServer iServer;

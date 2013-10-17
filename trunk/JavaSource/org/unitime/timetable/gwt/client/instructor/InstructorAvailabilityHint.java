@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,9 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+/**
+ * @author Tomas Muller
+ */
 public class InstructorAvailabilityHint {
 	private static RoomSharingWidget sSharing;
 	private static String sLastInstructorId = null;

@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,9 @@ package org.unitime.timetable.model.dao;
 import java.io.Serializable;
 
 
+/**
+ * @author Tomas Muller
+ */
 public class _RootDAO<T, K extends Serializable> extends org.unitime.timetable.model.base._BaseRootDAO<T, K> {
 
 	public Class<T> getReferenceClass () {

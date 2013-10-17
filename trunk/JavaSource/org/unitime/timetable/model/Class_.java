@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008-2009, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -66,6 +66,9 @@ import org.unitime.timetable.util.DefaultExternalClassNameHelper;
 import org.unitime.timetable.webutil.Navigation;
 
 
+/**
+ * @author Tomas Muller, Stephanie Schluttenhofer
+ */
 public class Class_ extends BaseClass_ {
     private static final long serialVersionUID = 1L;
     private static ExternalClassNameHelperInterface externalClassNameHelper = null;

@@ -69,6 +69,9 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
 
+/**
+ * @author Tomas Muller
+ */
 public class SolverServerImplementation implements MessageListener, MembershipListener, SolverServer, Receiver {
 	private static Log sLog = LogFactory.getLog(SolverServerImplementation.class);
 	private static SolverServerImplementation sInstance = null;

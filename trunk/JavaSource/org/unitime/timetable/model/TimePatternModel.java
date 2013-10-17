@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -44,6 +44,9 @@ import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
 
+/**
+ * @author Tomas Muller
+ */
 public class TimePatternModel implements RequiredTimeTableModel {
 	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	private TimePattern iTimePattern = null;

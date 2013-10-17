@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -37,6 +37,9 @@ import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Image;
 
+/**
+ * @author Tomas Muller
+ */
 public class ImageButton extends Image implements HasEnabled, Focusable, HasAriaLabel {
 	private ImageResource iUp = null, iDown = null, iOver = null, iDisabled = null;
 	private boolean iEnabled = true, iFocusing = false;

@@ -31,6 +31,9 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.RoomAvailability;
 
+/**
+ * @author Tomas Muller
+ */
 public class RemoteRoomAvailability {
 	private static Log sLog = LogFactory.getLog(RemoteRoomAvailability.class);
 	

@@ -54,6 +54,9 @@ import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.solver.SolverProxy;
 
+/**
+ * @author Tomas Muller
+ */
 public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedulingContainer implements ReplicatedSolverContainer<OnlineSectioningServer> {
 	private static Log sLog = LogFactory.getLog(OnlineStudentSchedulingContainerRemote.class);
 	

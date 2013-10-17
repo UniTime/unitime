@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,9 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.HasHTML;
 
+/**
+ * @author Tomas Muller
+ */
 public class P extends AbsolutePanel implements HasAllMouseHandlers, HasHTML {
 
 	public P(String... styles) {

@@ -29,6 +29,9 @@ import java.util.Date;
 import org.infinispan.marshall.Externalizer;
 import org.infinispan.marshall.SerializeWith;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XApproval.XApprovalSerializer.class)
 public class XApproval implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;

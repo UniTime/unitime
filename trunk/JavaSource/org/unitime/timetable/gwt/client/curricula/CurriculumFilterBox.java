@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -42,6 +42,9 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 
+/**
+ * @author Tomas Muller
+ */
 public class CurriculumFilterBox extends UniTimeFilterBox<CurriculumInterface.CurriculumFilterRpcRequest> {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private ListBox iDepartments;

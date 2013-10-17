@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2011, UniTime LLC, and individual contributors
+ * UniTime 3.3 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2011 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -34,6 +35,9 @@ import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Section;
 
+/**
+ * @author Tomas Muller
+ */
 public class ResectioningWeights extends StudentSchedulingAssistantWeights {
 	private double iSameChoiceFactor = 0.125;
 	private double iSameRoomsFactor = 0.007;

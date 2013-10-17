@@ -39,6 +39,9 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Reservation;
 
+/**
+ * @author Tomas Muller
+ */
 public abstract class XReservation extends XReservationId implements Comparable<XReservation> {
 	private static final long serialVersionUID = 1L;
 	

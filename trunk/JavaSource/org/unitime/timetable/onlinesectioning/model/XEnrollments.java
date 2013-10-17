@@ -32,6 +32,9 @@ import java.util.Map;
 
 import org.infinispan.marshall.Externalizer;
 
+/**
+ * @author Tomas Muller
+ */
 public class XEnrollments implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	

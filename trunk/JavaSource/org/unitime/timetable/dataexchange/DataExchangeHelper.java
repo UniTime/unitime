@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,9 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
 
+/**
+ * @author Tomas Muller, Stephanie Schluttenhofer
+ */
 public class DataExchangeHelper {
     protected static Log sLog = LogFactory.getLog(DataExchangeHelper.class);
     public static String sLogLevelDebug = "DEBUG";

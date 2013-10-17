@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -61,6 +61,8 @@ import org.unitime.timetable.util.LocationPermIdGenerator;
  * 
  * XDoclet definition:
  * @struts.action path="/addNonUnivLocation" name="nonUnivLocationForm" input="/admin/addNonUnivLocation.jsp" scope="request" validate="true"
+ *
+ * @author Tomas Muller
  */
 @Service("/addNonUnivLocation")
 public class AddNonUnivLocationAction extends Action {

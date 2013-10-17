@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -33,6 +33,9 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
+/**
+ * @author Tomas Muller
+ */
 public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterface> {
 	private Long iId;
 	private String iName, iDescription, iEngine, iPermission, iScript;

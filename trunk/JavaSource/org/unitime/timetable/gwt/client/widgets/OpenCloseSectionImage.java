@@ -1,6 +1,6 @@
 /*
- * UniTime 3.3 (University Timetabling Application)
- * Copyright (C) 2011, UniTime LLC, and individual contributors
+ * UniTime 3.3 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2011 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,9 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
 
+/**
+ * @author Tomas Muller
+ */
 public class OpenCloseSectionImage extends Image implements HasValueChangeHandlers<Boolean>, HasValue<Boolean> {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	

@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2011, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2011 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
 
+/**
+ * @author Tomas Muller
+ */
 public class MultiReadWriteLock {
 	protected Lock iLock = new ReentrantLock();
 	protected Condition iLockNotAvailable = iLock.newCondition(), iGlobalLockNotAvailable = iLock.newCondition();

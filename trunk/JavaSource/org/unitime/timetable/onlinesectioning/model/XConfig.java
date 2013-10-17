@@ -41,6 +41,9 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XConfig.XConfigSerializer.class)
 public class XConfig implements Serializable, Comparable<XConfig>, Externalizable {
 	private static final long serialVersionUID = 1L;

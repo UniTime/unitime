@@ -40,6 +40,9 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 
+/**
+ * @author Tomas Muller
+ */
 public class OnlineStudentSchedulingGenericUpdater extends Thread {
 	private Logger iLog;
 	private long iSleepTimeInSeconds = 5;

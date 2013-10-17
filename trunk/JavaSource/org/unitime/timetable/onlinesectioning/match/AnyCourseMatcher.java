@@ -21,6 +21,9 @@ package org.unitime.timetable.onlinesectioning.match;
 
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 
+/**
+ * @author Tomas Muller
+ */
 public class AnyCourseMatcher extends AbstractCourseMatcher {
 	private static final long serialVersionUID = 1L;
 

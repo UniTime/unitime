@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -22,6 +22,9 @@ package org.unitime.timetable.gwt.client.aria;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.user.client.ui.TextBox;
 
+/**
+ * @author Tomas Muller
+ */
 public class AriaTextBox extends TextBox implements HasAriaLabel {
 
 	@Override

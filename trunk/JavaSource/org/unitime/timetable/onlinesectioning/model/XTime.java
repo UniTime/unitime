@@ -43,6 +43,9 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XTime.XTimeSerializer.class)
 public class XTime implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;

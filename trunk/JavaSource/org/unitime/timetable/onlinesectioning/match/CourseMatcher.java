@@ -24,6 +24,9 @@ import java.io.Serializable;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 
+/**
+ * @author Tomas Muller
+ */
 public interface CourseMatcher extends Serializable {
 	public void setServer(OnlineSectioningServer server);
 	public OnlineSectioningServer getServer();

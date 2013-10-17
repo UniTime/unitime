@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -52,6 +52,8 @@ import org.unitime.timetable.security.UserContext;
  * @struts:action path="/selectPrimaryRole" name="roleListForm" input="/selectPrimaryRole.jsp" scope="request" validate="true"
  * @struts:action-forward name="success" path="/main.jsp" contextRelative="true"
  * @struts:action-forward name="fail" path="/selectPrimaryRole.jsp" contextRelative="true"
+ *
+ * @author Tomas Muller
  */
 @Service("/selectPrimaryRole")
 public class RoleListAction extends Action {
