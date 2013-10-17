@@ -26,6 +26,9 @@ import net.sf.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
 
+/**
+ * @author Tomas Muller
+ */
 public interface RemoteSolverContainer<T> extends SolverContainer<T> {
 	public boolean createRemoteSolver(String user, DataProperties config, Address caller);
 	

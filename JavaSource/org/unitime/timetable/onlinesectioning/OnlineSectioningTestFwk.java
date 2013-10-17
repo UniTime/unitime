@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2011, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2011 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,9 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
 
+/**
+ * @author Tomas Muller
+ */
 public abstract class OnlineSectioningTestFwk { 
 	protected static Logger sLog = Logger.getLogger(OnlineSectioningTestFwk.class);
 	protected static DecimalFormat sDF = new DecimalFormat("0.000");

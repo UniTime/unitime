@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,9 @@ import net.sf.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.model.base.BaseTravelTime;
 import org.unitime.timetable.model.dao.TravelTimeDAO;
 
+/**
+ * @author Tomas Muller
+ */
 public class TravelTime extends BaseTravelTime {
 	private static final long serialVersionUID = -5810111960278939304L;
 

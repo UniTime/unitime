@@ -29,6 +29,9 @@ import org.infinispan.marshall.Externalizer;
 import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.DepartmentalInstructor;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XInstructor.XInstructorSerializer.class)
 public class XInstructor implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;

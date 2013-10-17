@@ -28,6 +28,9 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
+/**
+ * @author Tomas Muller
+ */
 public interface SolverServer {
 	public boolean isLocal();
 	

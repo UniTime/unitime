@@ -23,6 +23,9 @@ import java.util.Set;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 
+/**
+ * @author Tomas Muller
+ */
 public interface SolverContainer<T> {
 	public Set<String> getSolvers();
 	

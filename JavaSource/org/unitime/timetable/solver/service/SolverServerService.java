@@ -46,6 +46,9 @@ import org.unitime.timetable.solver.jgroups.SolverServer;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
+/**
+ * @author Tomas Muller
+ */
 @Service("solverServerService")
 public class SolverServerService implements InitializingBean, DisposableBean {
 	private static Log sLog = LogFactory.getLog(SolverServerService.class);

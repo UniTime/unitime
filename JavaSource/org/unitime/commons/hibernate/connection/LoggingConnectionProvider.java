@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -32,6 +32,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
 
+/**
+ * @author Tomas Muller
+ */
 public class LoggingConnectionProvider implements ConnectionProvider {
 	private static final long serialVersionUID = 1L;
 	private List<Lease> iLeases = new ArrayList<Lease>();

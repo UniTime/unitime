@@ -24,6 +24,9 @@ import java.util.Collection;
 
 import org.jgroups.Address;
 
+/**
+ * @author Tomas Muller
+ */
 public interface ReplicatedSolverContainer<T> extends RemoteSolverContainer<T> {
 	
 	public Object dispatch(Collection<Address> addresses, String user, Method method, Object[] args) throws Exception;

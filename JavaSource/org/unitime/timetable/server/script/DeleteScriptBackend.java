@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -28,6 +28,9 @@ import org.unitime.timetable.model.Script;
 import org.unitime.timetable.model.dao.ScriptDAO;
 import org.unitime.timetable.security.SessionContext;
 
+/**
+ * @author Tomas Muller
+ */
 @GwtRpcImplements(DeleteScriptRpcRequest.class)
 public class DeleteScriptBackend implements GwtRpcImplementation<DeleteScriptRpcRequest, ScriptInterface> {
 

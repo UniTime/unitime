@@ -30,6 +30,9 @@ import org.infinispan.marshall.Externalizer;
 import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseDemand;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XFreeTimeRequest.XFreeTimeRequestSerializer.class)
 public class XFreeTimeRequest extends XRequest {
 	private static final long serialVersionUID = 1L;

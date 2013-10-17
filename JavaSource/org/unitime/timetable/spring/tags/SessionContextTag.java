@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,9 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
+/**
+ * @author Tomas Muller
+ */
 public class SessionContextTag extends BodyTagSupport {
 	private static final long serialVersionUID = 8594907730878329848L;
 	public static final String DEFAULT_ID = "MSG";

@@ -27,6 +27,9 @@ import org.infinispan.marshall.Externalizer;
 import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseReservation;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XCourseReservation.XCourseReservationSerializer.class)
 public class XCourseReservation extends XReservation {
 	private static final long serialVersionUID = 1L;

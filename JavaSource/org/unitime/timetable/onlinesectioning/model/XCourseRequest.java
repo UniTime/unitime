@@ -49,6 +49,9 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XCourseRequest.XCourseRequestSerializer.class)
 public class XCourseRequest extends XRequest {
 	private static final long serialVersionUID = 1L;

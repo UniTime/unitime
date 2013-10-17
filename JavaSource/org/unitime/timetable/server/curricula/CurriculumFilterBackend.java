@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -42,6 +42,9 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.server.FilterBoxBackend;
 import org.unitime.timetable.util.Constants;
 
+/**
+ * @author Tomas Muller
+ */
 @GwtRpcImplements(CurriculumFilterRpcRequest.class)
 public class CurriculumFilterBackend extends FilterBoxBackend<CurriculumFilterRpcRequest> {
 

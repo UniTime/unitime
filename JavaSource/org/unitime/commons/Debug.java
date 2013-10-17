@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
  * Maximum number of debug files is limited via key DEBUG_MAXFILES in configuration.
  * If the number of limited debug files exceeds, oldest debug file is deleted.
  *
- * @author  Tomas Muller
+ * @author Tomas Muller
  */
 public class Debug {
     // Number format for logging (allocated memory)

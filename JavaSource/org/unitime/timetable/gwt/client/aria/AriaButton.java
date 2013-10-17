@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -25,6 +25,9 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.user.client.ui.Button;
 
+/**
+ * @author Tomas Muller
+ */
 public class AriaButton extends Button implements HasAriaLabel {
 	
 	public AriaButton() {

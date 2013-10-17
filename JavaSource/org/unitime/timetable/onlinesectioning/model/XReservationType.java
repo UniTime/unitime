@@ -21,6 +21,9 @@ package org.unitime.timetable.onlinesectioning.model;
 
 import java.io.Serializable;
 
+/**
+ * @author Tomas Muller
+ */
 public enum XReservationType implements Serializable {
 	None,
 	Individual,

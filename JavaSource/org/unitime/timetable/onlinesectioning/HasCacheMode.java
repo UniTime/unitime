@@ -21,6 +21,9 @@ package org.unitime.timetable.onlinesectioning;
 
 import org.hibernate.CacheMode;
 
+/**
+ * @author Tomas Muller
+ */
 public interface HasCacheMode {
 	CacheMode getCacheMode();
 }

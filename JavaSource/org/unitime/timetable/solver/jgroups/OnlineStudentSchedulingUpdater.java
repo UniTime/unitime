@@ -42,6 +42,9 @@ import org.unitime.timetable.onlinesectioning.updates.ReloadAllStudents;
 import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 
+/**
+ * @author Tomas Muller
+ */
 public class OnlineStudentSchedulingUpdater extends Thread {
 	private Logger iLog;
 	private long iSleepTimeInSeconds = 5;

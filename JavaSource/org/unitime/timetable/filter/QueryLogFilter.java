@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2010 - 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -55,6 +55,9 @@ import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.model.dao.QueryLogDAO;
 import org.unitime.timetable.security.UserContext;
 
+/**
+ * @author Tomas Muller
+ */
 public class QueryLogFilter implements Filter {
 	private static Log sLog = LogFactory.getLog(QueryLogFilter.class);
 	private Saver iSaver;

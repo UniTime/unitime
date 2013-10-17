@@ -33,6 +33,9 @@ import org.infinispan.marshall.SerializeWith;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.timetable.model.CourseOffering;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XCourseId.XCourseIdSerializer.class)
 public class XCourseId implements Serializable, Comparable<XCourseId>, Externalizable {
 	private static final long serialVersionUID = 1L;

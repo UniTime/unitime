@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2011, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2011 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -80,6 +80,9 @@ import org.unitime.timetable.util.Formats.Format;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
 
+/**
+ * @author Tomas Muller
+ */
 @CheckMaster(Master.REQUIRED)
 public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;

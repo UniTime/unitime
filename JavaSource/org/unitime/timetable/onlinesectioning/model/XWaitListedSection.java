@@ -29,6 +29,9 @@ import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XWaitListedSection.XWaitListedSectionSerializer.class)
 public class XWaitListedSection extends XSection {
 	private static final long serialVersionUID = 1L;

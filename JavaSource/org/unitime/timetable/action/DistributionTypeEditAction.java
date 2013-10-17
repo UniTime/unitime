@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -61,6 +61,8 @@ import org.apache.struts.util.LabelValueBean;
  * @struts:action path="/distributionTypeEdit" name="distributionTypeEditForm" parameter="do" scope="request" validate="true"
  * @struts:action-forward name="showEdit" path="/admin/distributionTypeEdit.jsp"
  * @struts:action-forward name="showDistributionTypeList" path="/distributionTypeList.do" redirect="true"
+ *
+ * @author Tomas Muller
  */
 @Service("/distributionTypeEdit")
 public class DistributionTypeEditAction extends Action {

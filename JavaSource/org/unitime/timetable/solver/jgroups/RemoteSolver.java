@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.solver.jgroups;
 
+/**
+ * @author Tomas Muller
+ */
 public interface RemoteSolver {
 	public boolean exists();
 }

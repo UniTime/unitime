@@ -35,6 +35,9 @@ import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Subpart;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XExpectations.XExpectationsSerializer.class)
 public class XExpectations implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;

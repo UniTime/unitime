@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,9 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action;
 
+/**
+ * @author Tomas Muller
+ */
 public class UsageReport implements OnlineSectioningReport.Report {
 	private DateFormat dfHour = new SimpleDateFormat("yy-MM-dd HH");
 	private DateFormat dfDay = new SimpleDateFormat("yy-MM-dd");

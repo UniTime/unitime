@@ -27,6 +27,9 @@ import java.lang.annotation.Target;
 
 import java.lang.annotation.Retention;
 
+/**
+ * @author Tomas Muller
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})

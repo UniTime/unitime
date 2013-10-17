@@ -29,6 +29,9 @@ import net.sf.cpsolver.studentsct.model.Request;
 
 import org.unitime.timetable.model.CourseDemand;
 
+/**
+ * @author Tomas Muller
+ */
 public abstract class XRequest implements Serializable, Comparable<XRequest>, Externalizable {
 	private static final long serialVersionUID = 1L;
 	protected Long iRequestId = null;

@@ -50,6 +50,9 @@ import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XStudent.XStudentSerializer.class)
 public class XStudent extends XStudentId implements Externalizable {
 	private static final long serialVersionUID = 1L;

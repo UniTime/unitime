@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,9 @@ import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 
+/**
+ * @author Tomas Muller
+ */
 public abstract class BaseExamEventDAO extends _RootDAO<ExamEvent,Long> {
 
 	private static ExamEventDAO sInstance;

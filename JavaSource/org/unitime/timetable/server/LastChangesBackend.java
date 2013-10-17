@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,9 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.dao.ChangeLogDAO;
 import org.unitime.timetable.security.SessionContext;
 
+/**
+ * @author Tomas Muller
+ */
 @GwtRpcImplements(LastChangesRequest.class)
 public class LastChangesBackend implements GwtRpcImplementation<LastChangesRequest, GwtRpcResponseList<ChangeLogInterface>> {
 

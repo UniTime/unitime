@@ -1,6 +1,6 @@
 /* 
- * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
- * Copyright (C) 2008 - 2010, UniTime LLC
+ * UniTime 3.1 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,9 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 
 
 
+/**
+ * @author Stephanie Schluttenhofer, Tomas Muller
+ */
 public class RelatedCourseInfo extends BaseRelatedCourseInfo implements Comparable<RelatedCourseInfo> {
 	private static final long serialVersionUID = 1L;
 

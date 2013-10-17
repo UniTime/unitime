@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,9 @@ import org.unitime.timetable.model.User;
 import org.unitime.timetable.model.dao.UserDAO;
 import org.unitime.timetable.security.context.UniTimeUserContext;
 
+/**
+ * @author Tomas Muller
+ */
 @Service("unitimeUserDetailsService")
 public class UniTimeUserDetailService implements UserDetailsService {
 

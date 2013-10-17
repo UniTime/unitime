@@ -25,6 +25,9 @@ import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.dao.ExactTimeMinsDAO;
 import org.unitime.timetable.util.Constants;
 
+/**
+ * @author Tomas Muller
+ */
 public class XExactTimeConversion {
 	private int[] iBreakTimes, iLength;
 	

@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -58,6 +58,9 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 
+/**
+ * @author Tomas Muller
+ */
 public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);

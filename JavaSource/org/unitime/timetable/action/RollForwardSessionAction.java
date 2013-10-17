@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2011, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -63,6 +63,8 @@ import org.unitime.timetable.util.queue.QueueProcessor;
  * 
  * XDoclet definition:
  * @struts.action path="/exportSessionToMsf" name="exportSessionToMsfForm" input="/form/exportSessionToMsf.jsp" scope="request" validate="true"
+ *
+ * @author Tomas Muller, Stephanie Schluttenhofer
  */
 @Service("/rollForwardSession")
 public class RollForwardSessionAction extends Action {

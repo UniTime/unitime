@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -37,6 +37,8 @@ import org.unitime.timetable.security.UserContext;
  * 			-Dtmtbl.custom.properties=${TOMCAT_HOME}/custom.properties \
  * 			-cp "${TOMCAT_HOME}/webapps/UniTime/WEB-INF/lib/*:${TOMCAT_HOME}/webapps/UniTime/WEB-INF/classes:${TOMCAT_HOME}/webapps/UniTime/WEB-INF" \
  * 			org.unitime.timetable.test.SpringLoginTest
+ *
+ * @author Tomas Muller
  */
 public class SpringLoginTest {
 	

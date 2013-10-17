@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -56,6 +56,9 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayCo
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Formats;
 
+/**
+ * @author Tomas Muller
+ */
 @GwtRpcImplements(ExaminationEnrollmentsRpcRequest.class)
 public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<ExaminationEnrollmentsRpcRequest, GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);

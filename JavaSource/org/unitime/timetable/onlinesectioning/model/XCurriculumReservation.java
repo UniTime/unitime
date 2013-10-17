@@ -31,6 +31,9 @@ import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.PosMajor;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XCurriculumReservation.XCurriculumReservationSerializer.class)
 public class XCurriculumReservation extends XReservation {
 	private static final long serialVersionUID = 1L;

@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -78,6 +78,8 @@ import org.unitime.timetable.util.LookupTables;
  * 
  * XDoclet definition:
  * @struts:action path="/courseOfferingEdit" name="instructionalOfferingListForm" input="/user/instructionalOfferingSearch.jsp" scope="request"
+ *
+ * @author Tomas Muller, Heston Fernandes, Stephanie Schluttenhofer, Zuzana Mullerova
  */
 @Service("/crossListsModify")
 public class CrossListsModifyAction extends Action {

@@ -36,6 +36,9 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolver.ExamSolverDisposeListener;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 
+/**
+ * @author Tomas Muller
+ */
 public class ExaminationSolverContainer implements SolverContainer<ExamSolverProxy> {
 	private static Log sLog = LogFactory.getLog(ExaminationSolverContainer.class);
 

@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -231,8 +231,8 @@ public class CreateBaseModelFromXml extends Task {
 	
 	private void license(PrintWriter pw) {
 		pw.println("/*");
-		pw.println(" * UniTime 3.2 (University Timetabling Application)");
-		pw.println(" * Copyright (C) 2010, UniTime LLC, and individual contributors");
+		pw.println(" * UniTime 3.2 - 3.5 (University Timetabling Application)");
+		pw.println(" * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors");
 		pw.println(" * as indicated by the @authors tag.");
 		pw.println(" *");
 		pw.println(" * This program is free software; you can redistribute it and/or modify");

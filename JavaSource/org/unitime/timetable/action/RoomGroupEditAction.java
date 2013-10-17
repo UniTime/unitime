@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -68,6 +68,8 @@ import org.unitime.timetable.util.Constants;
  * @struts.action-forward name="showRoomGroupList" path="/roomGroupList.do"
  * @struts.action-forward name="showEdit" path="roomGroupEditTile"
  * @struts.action-forward name="showAdd" path="roomGroupEditTile"
+ *
+ * @author Tomas Muller
  */
 @Service("/roomGroupEdit")
 public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {

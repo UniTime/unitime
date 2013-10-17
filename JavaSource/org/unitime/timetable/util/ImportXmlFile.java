@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,8 @@ import org.unitime.timetable.dataexchange.DataExchangeHelper;
  * Where tmtbl.custom.properties points to UniTime custom properties (if there are any) and the fileToImport.xml is
  * the XML file to import.
  * The second parameter (external id of the timetabling manager under which the import is to be done) is optional.
+ *
+ * @author Tomas Muller, Stephanie Schluttenhofer
  */
 public class ImportXmlFile {
 

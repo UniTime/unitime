@@ -36,6 +36,9 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
+/**
+ * @author Tomas Muller
+ */
 public abstract class AbstractLockingServer extends AbstractServer {
 	private ReentrantReadWriteLock iLock = new ReentrantReadWriteLock();
 	private MultiLock iMultiLock;

@@ -35,6 +35,9 @@ import net.sf.cpsolver.studentsct.reservation.GroupReservation;
 import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
 import net.sf.cpsolver.studentsct.reservation.Reservation;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XReservationId.XReservationIdSerializer.class)
 public class XReservationId implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
