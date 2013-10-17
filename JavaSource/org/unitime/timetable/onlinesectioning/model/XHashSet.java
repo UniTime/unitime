@@ -28,6 +28,9 @@ import java.util.HashSet;
 import org.infinispan.marshall.Externalizer;
 import org.infinispan.marshall.SerializeWith;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XHashSet.HashSetSerializer.class)
 public class XHashSet<T extends Externalizable> extends HashSet<T> implements Externalizable {
 	private static final long serialVersionUID = 1L;

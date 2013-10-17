@@ -47,6 +47,9 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XSection.XSectionSerializer.class)
 public class XSection implements Serializable, Comparable<XSection>, Externalizable {
     private static final long serialVersionUID = 1L;

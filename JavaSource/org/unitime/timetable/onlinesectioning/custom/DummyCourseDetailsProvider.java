@@ -22,6 +22,9 @@ package org.unitime.timetable.onlinesectioning.custom;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
+/**
+ * @author Tomas Muller
+ */
 public class DummyCourseDetailsProvider implements CourseDetailsProvider {
 	private static final long serialVersionUID = 1L;
 

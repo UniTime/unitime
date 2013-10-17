@@ -36,6 +36,9 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
+/**
+ * @author Tomas Muller
+ */
 @CheckMaster(Master.REQUIRED)
 public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;

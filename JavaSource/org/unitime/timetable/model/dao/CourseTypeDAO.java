@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,9 @@ package org.unitime.timetable.model.dao;
 
 import org.unitime.timetable.model.base.BaseCourseTypeDAO;
 
+/**
+ * @author Tomas Muller
+ */
 public class CourseTypeDAO extends BaseCourseTypeDAO {
 
 	public CourseTypeDAO() {}

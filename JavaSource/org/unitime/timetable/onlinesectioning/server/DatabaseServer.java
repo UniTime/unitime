@@ -53,6 +53,9 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 
+/**
+ * @author Tomas Muller
+ */
 public class DatabaseServer extends AbstractLockingServer {
 
 	public DatabaseServer(OnlineSectioningServerContext context) throws SectioningException {

@@ -38,6 +38,9 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XEnrollment.XEnrollmentSerializer.class)
 public class XEnrollment extends XCourseId implements Serializable {
 	private static final long serialVersionUID = 1L;

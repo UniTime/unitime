@@ -22,6 +22,9 @@ package org.unitime.timetable.onlinesectioning;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jgroups.blocks.locking.LockService;
 
+/**
+ * @author Tomas Muller
+ */
 public interface OnlineSectioningServerContext {
 	
 	public Long getAcademicSessionId();

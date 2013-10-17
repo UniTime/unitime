@@ -37,6 +37,9 @@ import org.infinispan.marshall.Externalizer;
 import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.Class_;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XDistribution.XDistributionSerializer.class)
 public class XDistribution implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;

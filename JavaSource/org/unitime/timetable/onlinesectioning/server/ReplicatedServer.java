@@ -62,6 +62,9 @@ import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
+/**
+ * @author Tomas Muller
+ */
 public class ReplicatedServer extends AbstractServer {
 	private boolean iLockStartsTransaction = false;
 	

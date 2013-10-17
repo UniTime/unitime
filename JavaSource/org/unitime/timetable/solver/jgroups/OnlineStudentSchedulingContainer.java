@@ -41,6 +41,9 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
 import org.unitime.timetable.onlinesectioning.server.ReplicatedServerWithMaster;
 
+/**
+ * @author Tomas Muller
+ */
 public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineSectioningServer> {
 	private static Log sLog = LogFactory.getLog(OnlineStudentSchedulingContainer.class);
 	

@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -47,6 +47,8 @@ import org.unitime.timetable.util.LookupTables;
  * @struts.action-forward name="roomFeatureList" path="/roomFeatureList.do"
  * @struts.action-forward name="showRoomFeatureSearch" path="roomFeatureSearchTile"
  * @struts.action-forward name="showRoomFeatureList" path="roomFeatureListTile"
+ *
+ * @author Tomas Muller
  */
 @Service("/roomFeatureSearch")
 public class RoomFeatureSearchAction extends Action {

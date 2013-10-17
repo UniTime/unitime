@@ -27,6 +27,9 @@ import org.jgroups.JChannel;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 
+/**
+ * @author Tomas Muller
+ */
 public class SectioningChannelLookup implements JGroupsChannelLookup {
 
 	@Override

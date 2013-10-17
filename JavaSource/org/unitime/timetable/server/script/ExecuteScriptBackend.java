@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -27,6 +27,9 @@ import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.queue.QueueProcessor;
 
+/**
+ * @author Tomas Muller
+ */
 @GwtRpcImplements(ExecuteScriptRpcRequest.class)
 public class ExecuteScriptBackend implements GwtRpcImplementation<ExecuteScriptRpcRequest, QueueItemInterface> {
 

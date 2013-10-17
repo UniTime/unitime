@@ -34,6 +34,9 @@ import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
+/**
+ * @author Tomas Muller
+ */
 public class StudentSolverContainerRemote extends StudentSolverContainer implements RemoteSolverContainer<StudentSolverProxy> {
 	private static Log sLog = LogFactory.getLog(StudentSolverContainerRemote.class);
 	

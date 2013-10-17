@@ -30,6 +30,9 @@ import org.infinispan.marshall.SerializeWith;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XAcademicAreaCode.XAcademicAreaCodeSerializer.class)
 public class XAcademicAreaCode implements Serializable, Externalizable {
     private static final long serialVersionUID = 1L;

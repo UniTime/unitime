@@ -40,6 +40,9 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
+/**
+ * @author Tomas Muller
+ */
 public class InMemoryServer extends AbstractLockingServer {
 	private Hashtable<Long, XCourseId> iCourseForId = new Hashtable<Long, XCourseId>();
 	private Hashtable<String, TreeSet<XCourseId>> iCourseForName = new Hashtable<String, TreeSet<XCourseId>>();

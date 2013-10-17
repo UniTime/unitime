@@ -34,6 +34,9 @@ import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 
+/**
+ * @author Tomas Muller
+ */
 public class ExaminationSolverContainerRemote extends ExaminationSolverContainer implements RemoteSolverContainer<ExamSolverProxy> {
 	private static Log sLog = LogFactory.getLog(ExaminationSolverContainerRemote.class);
 	

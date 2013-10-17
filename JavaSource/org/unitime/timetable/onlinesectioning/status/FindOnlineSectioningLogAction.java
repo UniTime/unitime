@@ -1,6 +1,6 @@
 /*
- * UniTime 3.3 (University Timetabling Application)
- * Copyright (C) 2011, UniTime LLC, and individual contributors
+ * UniTime 3.3 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2011 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -48,6 +48,9 @@ import org.unitime.timetable.util.Constants;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+/**
+ * @author Tomas Muller
+ */
 public class FindOnlineSectioningLogAction implements OnlineSectioningAction<List<SectioningAction>> {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);

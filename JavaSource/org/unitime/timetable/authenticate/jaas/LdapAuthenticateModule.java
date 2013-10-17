@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,9 @@ import javax.security.auth.login.LoginException;
 import org.apache.log4j.Logger;
 import org.unitime.timetable.ApplicationProperties;
 
+/**
+ * @author Tomas Muller
+ */
 public class LdapAuthenticateModule extends AuthenticateModule {
 	private static Logger sLog = Logger.getLogger(LdapAuthenticateModule.class);
 	private String iExternalUid;

@@ -1,6 +1,6 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
- * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,9 @@ import java.util.Set;
 
 import org.unitime.timetable.export.Exporter.Printer;
 
+/**
+ * @author Tomas Muller
+ */
 public class CSVPrinter implements Printer {
 	private PrintWriter iOut;
 	private String[] iLastLine = null;

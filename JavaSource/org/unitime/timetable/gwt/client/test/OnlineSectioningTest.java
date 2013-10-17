@@ -1,6 +1,6 @@
 /*
- * UniTime 3.3 (University Timetabling Application)
- * Copyright (C) 2011 - 2012, UniTime LLC, and individual contributors
+ * UniTime 3.3 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2011 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -55,6 +55,9 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+/**
+ * @author Tomas Muller
+ */
 public class OnlineSectioningTest extends Composite {
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	private DateTimeFormat iDF = DateTimeFormat.getFormat("HH:mm:ss.SSS");

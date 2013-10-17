@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -44,6 +44,9 @@ import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
+/**
+ * @author Tomas Muller
+ */
 @Service("gwtAdminTable[type=eventDefault]")
 public class EventDefaults implements AdminTable {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);

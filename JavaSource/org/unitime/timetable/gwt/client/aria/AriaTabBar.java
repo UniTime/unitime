@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -32,6 +32,9 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.TabBar;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * @author Tomas Muller
+ */
 public class AriaTabBar extends TabBar {
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static RegExp sStripAcessKeyRegExp = RegExp.compile("(.*)<u>(\\w)</u>(.*)", "i");

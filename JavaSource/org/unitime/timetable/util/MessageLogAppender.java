@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -33,6 +33,9 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.MessageLog;
 import org.unitime.timetable.model.dao.MessageLogDAO;
 
+/**
+ * @author Tomas Muller
+ */
 public class MessageLogAppender extends AppenderSkeleton {
 	private Saver iSaver = null;
 	private Level iMinLevel = null;

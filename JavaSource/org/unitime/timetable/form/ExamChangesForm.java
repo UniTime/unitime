@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.security.SessionContext;
 
+/**
+ * @author Tomas Muller
+ */
 public class ExamChangesForm extends ExamReportForm {
 	private static final long serialVersionUID = 4093360180461644275L;
 	private String iChage = sChangeInitial;

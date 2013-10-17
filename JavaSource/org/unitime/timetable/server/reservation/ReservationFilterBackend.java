@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -65,6 +65,9 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 
+/**
+ * @author Tomas Muller
+ */
 @GwtRpcImplements(ReservationFilterRpcRequest.class)
 public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilterRpcRequest> {
 	public static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);

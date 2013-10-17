@@ -26,6 +26,9 @@ import java.io.ObjectOutput;
 import org.infinispan.marshall.Externalizer;
 import org.infinispan.marshall.SerializeWith;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XDummyReservation.XDummyReservationSerializer.class)
 public class XDummyReservation extends XReservation {
 	private static final long serialVersionUID = 1L;

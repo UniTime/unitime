@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 
 
+/**
+ * @author Tomas Muller
+ */
 public class CourseRequestOption extends BaseCourseRequestOption {
 	private static final long serialVersionUID = 1L;
 

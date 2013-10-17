@@ -29,6 +29,9 @@ import net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProvider;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 
+/**
+ * @author Tomas Muller
+ */
 public class JGroupsCacheManagerPeerProviderFactory extends CacheManagerPeerProviderFactory {
 
 	@Override

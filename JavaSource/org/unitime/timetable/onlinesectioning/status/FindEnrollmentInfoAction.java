@@ -1,6 +1,6 @@
 /*
- * UniTime 3.3 (University Timetabling Application)
- * Copyright (C) 2011, UniTime LLC, and individual contributors
+ * UniTime 3.3 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2011 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -60,6 +60,9 @@ import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseInfoMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 
+/**
+ * @author Tomas Muller
+ */
 public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<EnrollmentInfo>> {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);

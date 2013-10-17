@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@ import net.sf.cpsolver.ifs.util.JProf;
  * goes back to user as suggested in Hibernate 3 documentation: 
  * http://www.hibernate.org/hib_docs/v3/reference/en/pdf/hibernate_reference.pdf
  * 19.1.3. Initializing collections and proxies
- * @author Dagmar Murray
+ * @author Dagmar Murray, Tomas Muller
  */
 public class HibSessionFilter implements Filter {
 

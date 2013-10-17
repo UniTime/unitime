@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -60,6 +60,9 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
+/**
+ * @author Tomas Muller
+ */
 public class CourseTimetableImport extends BaseImport {
 	private DateFormat iDateFormat = null;
 	private DateFormat iTimeFormat = null;

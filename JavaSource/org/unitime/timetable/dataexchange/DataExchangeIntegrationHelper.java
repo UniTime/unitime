@@ -1,5 +1,5 @@
 /*
- * UniTime 3.4 (University Timetabling Application)
+ * UniTime 3.4 - 3.5 (University Timetabling Application)
  * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
@@ -30,6 +30,9 @@ import org.dom4j.io.SAXReader;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
 
+/**
+ * @author Tomas Muller
+ */
 @Service("dataExchangeHelper")
 public class DataExchangeIntegrationHelper {
 	

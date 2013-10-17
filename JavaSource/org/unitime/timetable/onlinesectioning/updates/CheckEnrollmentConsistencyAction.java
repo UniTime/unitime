@@ -40,6 +40,9 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
+/**
+ * @author Tomas Muller
+ */
 @CheckMaster(Master.REQUIRED)
 public class CheckEnrollmentConsistencyAction implements OnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;

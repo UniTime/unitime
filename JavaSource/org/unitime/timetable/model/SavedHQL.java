@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,9 @@ import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.UserContext;
 
+/**
+ * @author Tomas Muller, Stephanie Schluttenhofer
+ */
 public class SavedHQL extends BaseSavedHQL {
 	private static final long serialVersionUID = 2532519378106863655L;
 

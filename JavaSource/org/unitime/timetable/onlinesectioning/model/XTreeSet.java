@@ -28,6 +28,9 @@ import java.util.TreeSet;
 import org.infinispan.marshall.Externalizer;
 import org.infinispan.marshall.SerializeWith;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XTreeSet.XTreeSetSerializer.class)
 public class XTreeSet<T extends Externalizable> extends TreeSet<T> implements Externalizable {
 	private static final long serialVersionUID = 1L;

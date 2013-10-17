@@ -1,6 +1,6 @@
 /*
- * UniTime 3.3 (University Timetabling Application)
- * Copyright (C) 2011, UniTime LLC, and individual contributors
+ * UniTime 3.3 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2011 - 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,9 @@ import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 
+/**
+ * @author Tomas Muller
+ */
 public interface OnlineSectioningSelection {
 	public void setModel(StudentSectioningModel model);
 	public void setPreferredSections(Hashtable<CourseRequest, Set<Section>> preferredSections);

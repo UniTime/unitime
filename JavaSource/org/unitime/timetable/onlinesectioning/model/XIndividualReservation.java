@@ -32,6 +32,9 @@ import org.infinispan.marshall.SerializeWith;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.Student;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XIndividualReservation.XIndividualReservationSerializer.class)
 public class XIndividualReservation extends XReservation {
 	private static final long serialVersionUID = 1L;

@@ -60,6 +60,9 @@ import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
+/**
+ * @author Tomas Muller
+ */
 @SerializeWith(XOffering.XOfferingSerializer.class)
 public class XOffering implements Serializable, Externalizable {
     private static final long serialVersionUID = 1L;

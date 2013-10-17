@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
+/**
+ * @author Tomas Muller
+ */
 public enum XDistributionType {
 	LinkedSections,
 	IngoreConflicts,
