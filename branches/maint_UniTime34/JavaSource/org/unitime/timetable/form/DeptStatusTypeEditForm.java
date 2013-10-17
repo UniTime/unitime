@@ -65,7 +65,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
     private boolean iCanPreRegisterStudents = false;
     private boolean iCanOnlineSectionStudents = false;
     private boolean iTestSession = false;
-    
+    private boolean iAllowNoRole = false;
+    private boolean iAllowRollForward = false;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -114,6 +115,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
         iCanPreRegisterStudents = false;
         iCanOnlineSectionStudents = false;
         iTestSession            = false;
+        iAllowNoRole = false;
+        iAllowRollForward = false;
 	}
     
     public void setOp(String op) { iOp = op; }
@@ -174,6 +177,10 @@ public class DeptStatusTypeEditForm extends ActionForm {
     public boolean getCanOnlineSectionStudents() { return iCanOnlineSectionStudents; }
     public void setTestSession(boolean testSession) { iTestSession = testSession; }
     public boolean getTestSession() { return iTestSession; }
+    public void setAllowNoRole(boolean allowNoRole) { iAllowNoRole = allowNoRole; }
+    public boolean getAllowNoRole() { return iAllowNoRole; }
+    public void setAllowRollForward(boolean allowRollForward) { iAllowRollForward = allowRollForward; }
+    public boolean getAllowRollForward() { return iAllowRollForward; }
 
 
     public int getRights() {
@@ -197,6 +204,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
         if (getCanPreRegisterStudents()) rights += DepartmentStatusType.Status.StudentsPreRegister.toInt();
         if (getCanOnlineSectionStudents()) rights += DepartmentStatusType.Status.StudentsOnline.toInt();
         if (getTestSession()) rights += DepartmentStatusType.Status.TestSession.toInt();
+        if (getAllowNoRole()) rights += DepartmentStatusType.Status.AllowNoRole.toInt();
+        if (getAllowRollForward()) rights += DepartmentStatusType.Status.AllowRollForward.toInt();
         return rights;
     }
     public void setRights(int rights) {
@@ -219,6 +228,8 @@ public class DeptStatusTypeEditForm extends ActionForm {
         setCanPreRegisterStudents(DepartmentStatusType.Status.StudentsPreRegister.has(rights));
         setCanOnlineSectionStudents(DepartmentStatusType.Status.StudentsOnline.has(rights));
         setTestSession(DepartmentStatusType.Status.TestSession.has(rights));
+        setAllowNoRole(DepartmentStatusType.Status.AllowNoRole.has(rights));
+        setAllowRollForward(DepartmentStatusType.Status.AllowRollForward.has(rights));
     }
 	
 	public void load(DepartmentStatusType s) {

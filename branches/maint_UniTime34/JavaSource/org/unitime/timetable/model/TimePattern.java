@@ -241,8 +241,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     }
     
     public boolean isEditable() {
-    	DepartmentStatusType statusType = DepartmentStatusType.findByRef("initial");
-    	if (isTimePatternEditableInitialDataLoad() && getSession().getStatusType().getUniqueId().equals(statusType.getUniqueId())) {
+    	if (isTimePatternEditableInitialDataLoad() && getSession().getStatusType().isAllowRollForward()) {
     		return(true);
     	} else {
     		return !findAllUsed(getSession()).contains(this);

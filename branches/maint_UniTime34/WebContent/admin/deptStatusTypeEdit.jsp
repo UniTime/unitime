@@ -126,6 +126,10 @@
 			<TD><i>Midterm examination schedule can be presented to unauthenticated users or authenticated users without a role.</i></TD></TR>
 
 		<TR><TD colspan='3'><tt:section-title><br>Other</tt:section-title></TD></TR>
+		<TR><TD>Allow Roll Forward:</TD><TD><html:checkbox property="allowRollForward"/></TD>
+			<TD><i>An academic session can only be rolled forwarded into an academic session of a status that allows for roll forward.</i></TD></TR>
+		<TR><TD>Allow No Role:</TD><TD><html:checkbox property="allowNoRole"/></TD>
+			<TD><i>If the No Role role and this toggle are enabled: Users without any role are allowed to select an academic session of this status using the No Role role (e.g., on the Events page).</i></TD></TR>
 		<TR><TD nowrap>Test Session:</TD><TD><html:checkbox property="testSession"/></TD>
 			<TD><i>Academic session is marked as a test session. Such a session is not available to no-role users. Also, classes and examinations do not generate any events.</i></TD></TR>
 		

@@ -154,7 +154,21 @@
 					<line>Application Config Edit: allows to make changes as well.</line>
 				</line>
 			</description>
-		</item>		
+		</item>
+		<item>
+			<name>Session Status Types</name>
+			<description>
+				<line>Allow Roll Forward permission: an academic session can only be rolled forwarded into an academic session of a status that allows for roll forward.
+					<line>This replaces the previous (less general) behavior where the target academic session had to have the initial status (status with the reference set to 'initial', usually called Initial Data Load).</line>
+					<line>Only the initial status type has this permission enabled by default, but this enables other academic session statuses to allow for roll forward as well.</line> 
+				</line>
+				<line>Allow No Role permission: users without any other UniTime role are allowed to select an academic session of this status using the No Role role.
+					<line>This replaces the previous (less general) behavior where the academic session had to be identified as active (from other permissions).</line>
+					<line>No Role role must be also enabled for this permission to make any difference.</line> 
+				</line>
+				<line>Together, the two new permissions allow to better handle the case when an academic session is rolled forward in two phases (up to the rooms first, all the rest much later), with the event management enabled after the first phase. </line>
+			</description>
+		</item>
 	</category>
 </release>
 
