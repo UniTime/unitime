@@ -52,7 +52,10 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 		StudentsAssistant,
 		StudentsPreRegister,
 		StudentsOnline,
-		TestSession;
+		TestSession,
+		AllowNoRole,
+		AllowRollForward,
+		;
 		
 		public int toInt() { return 1 << ordinal(); }
 		public boolean has(int rights) { return (rights & toInt()) == toInt(); }
@@ -237,6 +240,14 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 
 	public boolean applyDepartment() {
 		return apply(Apply.Department.toInt());
+	}
+	
+	public boolean isAllowNoRole() {
+		return can(Status.AllowNoRole);
+	}
+	
+	public boolean isAllowRollForward() {
+		return can(Status.AllowRollForward);
 	}
 	
 	/** Status is active when someone can edit, timetable or commit*/

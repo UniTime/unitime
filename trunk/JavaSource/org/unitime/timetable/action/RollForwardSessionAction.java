@@ -45,7 +45,6 @@ import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.timetable.form.RollForwardSessionForm;
 import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
-import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -395,11 +394,10 @@ public class RollForwardSessionAction extends Action {
 		sessionList.addAll(Session.getAllSessions());
 		rollForwardSessionForm.setFromSessions(new ArrayList());
 		rollForwardSessionForm.setToSessions(new ArrayList());
-		DepartmentStatusType statusType = DepartmentStatusType.findByRef("initial");
 		Session session = null;
 		for (int i = (sessionList.size() - 1); i >= 0; i--){
 			session = (Session)sessionList.get(i);
-			if (session.getStatusType().getUniqueId().equals(statusType.getUniqueId())) {
+			if (session.getStatusType().isAllowRollForward()) {
 				rollForwardSessionForm.getToSessions().add(session);
 				if (rollForwardSessionForm.getSessionToRollForwardTo() == null){
 					rollForwardSessionForm.setSessionToRollForwardTo(session.getUniqueId());
@@ -414,14 +412,13 @@ public class RollForwardSessionAction extends Action {
 		Set subjects = new TreeSet();
 		Session session = null;
 		if (selectedSessionId == null){
-			DepartmentStatusType statusType = DepartmentStatusType.findByRef("initial");
 			boolean found = false;
 			TreeSet allSessions = Session.getAllSessions();
 			List sessionList = new ArrayList();
 			sessionList.addAll(Session.getAllSessions());
 			for (int i = (sessionList.size() - 1); i >= 0; i--){
 				session = (Session)sessionList.get(i);
-				if (session.getStatusType().getUniqueId().equals(statusType.getUniqueId())){
+				if (session.getStatusType().isAllowRollForward()){
 					found =  true;
 				}
 			}
