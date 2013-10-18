@@ -37,7 +37,6 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternTime;
@@ -193,8 +192,7 @@ public class TimePatternEditForm extends ActionForm {
 				TimePatternDays d = (TimePatternDays)i.next();
 				hibSession.save(d);
 			}
-			DepartmentStatusType statusType = DepartmentStatusType.findByRef("initial");
-			if (tp.getSession() != null && tp.getSession().getStatusType().getUniqueId().equals(statusType.getUniqueId())){
+			if (tp.getSession() != null && tp.getSession().getStatusType().isAllowRollForward()){
 				List l = hibSession.createQuery("from TimePref tp where tp.timePattern.uniqueId = :tpid").setLong("tpid", tp.getUniqueId().longValue()).list();
 				for(Iterator it = l.iterator(); it.hasNext();){
 					TimePref tpref = (TimePref) it.next();
