@@ -32,15 +32,13 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
  * @author Tomas Muller
  */
 public interface SolverServer {
+	public static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4, SCOPE_ONLINE = 5;
+
 	public boolean isLocal();
-	
-	public boolean isMaster();
 	
 	public Address getAddress();
 	
 	public Address getLocalAddress();
-	
-	public Address getMasterAddress();
 	
 	public String getHost();
 	

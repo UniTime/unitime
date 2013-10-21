@@ -61,29 +61,27 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 	private static Log sLog = LogFactory.getLog(OnlineStudentSchedulingContainerRemote.class);
 	
 	private RpcDispatcher iDispatcher;
-	private OnlineStudentSchedulingGenericUpdater iUpdater;
 	private EmbeddedCacheManager iCacheManager = null;
 	private LockService iLockService;
 
 	public OnlineStudentSchedulingContainerRemote(JChannel channel, short scope) {
 		iDispatcher = new MuxRpcDispatcher(scope, channel, null, null, this);
 		iLockService = new LockService(channel);
-		iUpdater = new OnlineStudentSchedulingGenericUpdater(channel, iLockService, this);
 	}
 	
 	@Override
 	public RpcDispatcher getDispatcher() { return iDispatcher; }
 	
+	public LockService getLockService() { return iLockService; }
+	
 	@Override
 	public void start() {
 		super.start();
-		iUpdater.start();
 	}
 	
 	@Override
 	public void stop() {
 		super.stop();
-		iUpdater.stopUpdating();
 		if (iCacheManager != null) iCacheManager.stop();
 
 	}
