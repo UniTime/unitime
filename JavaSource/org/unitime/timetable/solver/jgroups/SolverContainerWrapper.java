@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
+import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 
@@ -38,12 +39,12 @@ import net.sf.cpsolver.ifs.util.ToolBox;
  */
 public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	private static Log sLog = LogFactory.getLog(SolverContainerWrapper.class);
-	private SolverServerImplementation iServer;
+	private RpcDispatcher iDispatcher;
 	private RemoteSolverContainer<T> iContainer;
 	private boolean iCheckLocal = true;
 
-	public SolverContainerWrapper(SolverServerImplementation server, RemoteSolverContainer<T> container, boolean checkLocal) {
-		iServer = server;
+	public SolverContainerWrapper(RpcDispatcher dispatcher, RemoteSolverContainer<T> container, boolean checkLocal) {
+		iDispatcher = dispatcher;
 		iContainer = container;
 		iCheckLocal = checkLocal;
 	}
@@ -108,25 +109,27 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	@Override
 	public T createSolver(String user, DataProperties config) {
 		try {
-			SolverServer bestServer = null;
+			Address bestAddress = null;
 			int bestUsage = 0;
-			for (SolverServer server: iServer.getServers(true)) {
-				int usage = server.getUsage();
-				if (server.isLocal())
-					usage += 500;
-				if (bestServer == null || bestUsage > usage) {
-	                bestServer = server;
-	                bestUsage = usage;
-	            }
-	        }
-			if (bestServer == null)
+			RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isAvailable", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
+			for (Rsp<Boolean> rsp : ret) {
+				if (Boolean.TRUE.equals(rsp.getValue())) {
+					int usage = iDispatcher.callRemoteMethod(rsp.getSender(), "getUsage", new Object[] {}, new Class[] {}, SolverServerImplementation.sFirstResponse);
+					if (bestAddress == null || bestUsage > usage) {
+						bestAddress = rsp.getSender();
+		                bestUsage = usage;
+		            }
+				}
+			}
+				
+			if (bestAddress == null)
 				throw new RuntimeException("Not enough resources to create a solver instance, please try again later.");
 			
-			if (bestServer.getAddress().equals(iServer.getAddress()))
+			if (bestAddress.equals(iDispatcher.getChannel().getAddress()))
 				return iContainer.createSolver(user, config);
 			
-			iContainer.getDispatcher().callRemoteMethod(bestServer.getAddress(), "createRemoteSolver", new Object[] { user, config, iServer.getAddress() }, new Class[] { String.class, DataProperties.class, Address.class }, SolverServerImplementation.sFirstResponse);
-			return iContainer.createProxy(bestServer.getAddress(), user);
+			iContainer.getDispatcher().callRemoteMethod(bestAddress, "createRemoteSolver", new Object[] { user, config, iDispatcher.getChannel().getAddress() }, new Class[] { String.class, DataProperties.class, Address.class }, SolverServerImplementation.sFirstResponse);
+			return iContainer.createProxy(bestAddress, user);
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (Exception e) {

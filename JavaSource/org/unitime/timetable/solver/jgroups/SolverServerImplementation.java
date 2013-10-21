@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.ToolBox;
@@ -49,7 +47,6 @@ import org.jgroups.View;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RpcDispatcher;
-import org.jgroups.blocks.locking.LockService;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.jgroups.blocks.mux.MuxUpHandler;
 import org.jgroups.util.Rsp;
@@ -78,18 +75,15 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	public static final RequestOptions sFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	public static final RequestOptions sAllResponses = new RequestOptions(ResponseMode.GET_ALL, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	
-	private static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4, SCOPE_ONLINE = 5;
 	private JChannel iChannel;
 	private RpcDispatcher iDispatcher;
-	private LockService iLockService;
-	private AtomicBoolean iMaster = new AtomicBoolean(false);
-	private Lock iMasterLock;
 	
 	private CourseSolverContainerRemote iCourseSolverContainer;
 	private ExaminationSolverContainerRemote iExamSolverContainer;
 	private StudentSolverContainerRemote iStudentSolverContainer;
 	private OnlineStudentSchedulingContainerRemote iOnlineStudentSchedulingContainer;
 	private RemoteRoomAvailability iRemoteRoomAvailability;
+	private OnlineStudentSchedulingGenericUpdater iUpdater;
 	
 	protected int iUsageBase = 0;
 	protected Date iStartTime = new Date();
@@ -108,7 +102,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		iStudentSolverContainer = new StudentSolverContainerRemote(channel, SCOPE_STUDENT);
 		iOnlineStudentSchedulingContainer = new OnlineStudentSchedulingContainerRemote(channel, SCOPE_ONLINE);
 		iRemoteRoomAvailability = new RemoteRoomAvailability(channel, SCOPE_AVAILABILITY);
-		iLockService = new LockService(channel);
+		iUpdater = new OnlineStudentSchedulingGenericUpdater(iDispatcher, iOnlineStudentSchedulingContainer);
 	}
 	
 	public JChannel getChannel() { return iChannel; }
@@ -122,9 +116,8 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		iExamSolverContainer.start();
 		iStudentSolverContainer.start();
 		iOnlineStudentSchedulingContainer.start();
-		
-		new MasterAcquiringThread().start();
-		
+		iUpdater.start();
+
 		iActive = true;
 		sLog.info("Solver server is up and running.");
 	}
@@ -136,6 +129,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		iExamSolverContainer.stop();
 		iStudentSolverContainer.stop();
 		iOnlineStudentSchedulingContainer.stop();
+		iUpdater.stopUpdating();
 	}
 	
 	public Properties getProperties() {
@@ -171,27 +165,6 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	}
 	
 	@Override
-	public boolean isMaster() {
-		return iMaster.get();
-	}
-	
-	@Override
-	public Address getMasterAddress() {
-		if (isMaster()) return getAddress();
-		try {
-			RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isMaster", new Object[] {}, new Class[] {}, sAllResponses);
-			for (Rsp<Boolean> master: ret) {
-				if (Boolean.TRUE.equals(master.getValue()))
-					return master.getSender();
-			}
-			return null;
-		} catch (Exception e) {
-			sLog.error("Failed to retrieve master address: " + e.getMessage(), e);
-			return null;
-		}
-	}
-	
-	@Override
 	public String getHost() {
 		return iChannel.getAddressAsString();
 	}
@@ -199,11 +172,12 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	@Override
 	public int getUsage() {
 		int ret = iUsageBase;
+		if (isLocal()) ret += 500;
 		ret += iCourseSolverContainer.getUsage();
 		ret += iExamSolverContainer.getUsage();
 		ret += iStudentSolverContainer.getUsage();
 		ret += iOnlineStudentSchedulingContainer.getUsage();
-		return ret;		
+		return ret;
 	}
 	
 	@Override
@@ -248,7 +222,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 			if (address.equals(iChannel.getAddress())) continue;
 			SolverServer server = crateServerProxy(address);
 			if (onlyAvailable && !server.isAvailable()) continue;
-			servers.add(crateServerProxy(address));
+			servers.add(server);
 		}
 		return servers;
 	}
@@ -385,7 +359,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		}
 	}
 	
-	public class RoomAvailabilityInvocationHandler implements InvocationHandler {
+	public static class RoomAvailabilityInvocationHandler implements InvocationHandler {
 		private Address iAddress;
 		private RemoteRoomAvailability iAvailability;
 		
@@ -570,21 +544,6 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 			} catch (Exception e) {
 				sLog.error("Failed to stop the server: " + e.getMessage(), e);
 			}
-		}
-	}
-	
-	private class MasterAcquiringThread extends Thread {
-		MasterAcquiringThread() {
-			setName("SolverServer:AcquiringMasterLock");
-			setDaemon(true);
-		}
-		
-		@Override
-		public void run() {
-			iMasterLock = iLockService.getLock("master");
-			iMasterLock.lock();
-			iMaster.set(true);
-			sLog.info("I am the master!");
 		}
 	}
 	

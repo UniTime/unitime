@@ -29,14 +29,19 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jgroups.JChannel;
 import org.jgroups.blocks.locking.LockService;
+import org.jgroups.blocks.mux.MuxUpHandler;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.commons.jgroups.JGroupsUtils;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
+import org.unitime.timetable.solver.jgroups.DummySolverServer;
+import org.unitime.timetable.solver.jgroups.SolverServer;
 
 /**
  * @author Tomas Muller
@@ -50,6 +55,8 @@ public abstract class OnlineSectioningTestFwk {
 	private Counter iFinished = new Counter(), iExec = new Counter(), iQuality = new Counter();
 	private double iT0 = 0;
 	private double iRunTime = 0.0;
+	private JChannel iChannel = null;
+	private SolverServer iSolverServer = null;
     
 	protected void configureLogging() {
         Properties props = new Properties();
@@ -66,15 +73,20 @@ public abstract class OnlineSectioningTestFwk {
         props.setProperty("log4j.logger.org.unitime.timetable.onlinesectioning.test","INFO");
         props.setProperty("log4j.logger." + OnlineSectioningTestFwk.class.getName(), "INFO");
         props.setProperty("log4j.logger.net.sf.cpsolver.ifs.util.JProf", "INFO");
+        props.setProperty("log4j.logger.org.jgroups", "INFO");
+        props.setProperty("log4j.logger.net.sf.ehcache.distribution.jgroups", "WARN");
+        props.setProperty("log4j.logger.org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory", "ERROR");
         PropertyConfigurator.configure(props);
 	}
 	
 	protected void startServer() {
         final Session session = Session.getSessionUsingInitiativeYearTerm(
-                ApplicationProperties.getProperty("initiative", "PWL"),
-                ApplicationProperties.getProperty("year","2011"),
-                ApplicationProperties.getProperty("term","Spring")
+                ApplicationProperties.getProperty("initiative", "woebegon"),
+                ApplicationProperties.getProperty("year","2010"),
+                ApplicationProperties.getProperty("term","Fal")
                 );
+        
+        boolean remote = "true".equalsIgnoreCase(ApplicationProperties.getProperty("remote", "true"));
 
         if (session==null) {
             sLog.error("Academic session not found, use properties initiative, year, and term to set academic session.");
@@ -84,32 +96,54 @@ public abstract class OnlineSectioningTestFwk {
         }
         
         OnlineSectioningLogger.getInstance().setEnabled(false);
-        
-        iServer = new InMemoryServer(new OnlineSectioningServerContext() {
-			@Override
-			public boolean isWaitTillStarted() {
-				return true;
-			}
-			
-			@Override
-			public EmbeddedCacheManager getCacheManager() {
-				return null;
-			}
-			
-			@Override
-			public Long getAcademicSessionId() {
-				return session.getUniqueId();
-			}
 
-			@Override
-			public LockService getLockService() {
-				return null;
-			}
-		});
+        if (remote) {
+            try {
+            	iChannel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml")));
+            	iChannel.setUpHandler(new MuxUpHandler());
+        		
+        		iSolverServer = new DummySolverServer(iChannel);
+        		
+        		iChannel.connect("UniTime:rpc");
+        		iChannel.getState(null, 0);
+        		
+        		iServer = iSolverServer.getOnlineStudentSchedulingContainer().getSolver(session.getUniqueId().toString());
+        		
+                if (iServer == null)
+                	throw new Exception(session.getLabel() + " is not available");
+            } catch (Exception e) {
+            	sLog.error("Failed to access the solver server: " + e.getMessage(), e);
+            	if (iChannel != null && iChannel.isConnected()) iChannel.disconnect();
+            	if (iChannel != null && iChannel.isOpen()) iChannel.close();
+            	System.exit(0);
+            }
+        } else {
+            iServer = new InMemoryServer(new OnlineSectioningServerContext() {
+    			@Override
+    			public boolean isWaitTillStarted() {
+    				return true;
+    			}
+    			
+    			@Override
+    			public EmbeddedCacheManager getCacheManager() {
+    				return null;
+    			}
+    			
+    			@Override
+    			public Long getAcademicSessionId() {
+    				return session.getUniqueId();
+    			}
+
+    			@Override
+    			public LockService getLockService() {
+    				return null;
+    			}
+    		});
+        }
 	}
 	
 	protected void stopServer() {
-		if (iServer != null) {
+		if (iChannel == null && iServer != null) {
 			List<Long> offeringIds = iServer.getOfferingsToPersistExpectedSpaces(0);
 			if (!offeringIds.isEmpty())
 				iServer.execute(new PersistExpectedSpacesAction(offeringIds), user());
@@ -119,6 +153,8 @@ public abstract class OnlineSectioningTestFwk {
 	}
 	
 	protected void close() {
+    	if (iChannel != null && iChannel.isConnected()) iChannel.disconnect();
+    	if (iChannel != null && iChannel.isOpen()) iChannel.close();
 		OnlineSectioningLogger.stopLogger();
 		HibernateUtil.closeHibernate();
 	}
@@ -268,7 +304,7 @@ public abstract class OnlineSectioningTestFwk {
 			Collections.shuffle(operations);
 			
 			for (int c: nrConcurrent) {
-				run(nrTasks <= 0 ? operations : operations.subList(0, nrTasks), c);
+				run(nrTasks <= 0 || operations.size() <= nrTasks ? operations : operations.subList(0, nrTasks), c);
 			}
 			
 			stopServer();

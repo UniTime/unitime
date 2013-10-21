@@ -19,9 +19,11 @@
 */
 package org.unitime.timetable.solver.jgroups;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,8 +34,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.log4j.Logger;
 import org.jgroups.Address;
-import org.jgroups.JChannel;
-import org.jgroups.blocks.locking.LockService;
+import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.unitime.timetable.ApplicationProperties;
@@ -48,18 +49,16 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 	private long iSleepTimeInSeconds = 5;
 	private boolean iRun = true;
 	
-	private JChannel iChannel;
+	private RpcDispatcher iDispatcher;
 	private OnlineStudentSchedulingContainerRemote iContainer;
-	private LockService iLockService;
 	private Lock iMasterLock;
 	private AtomicBoolean iMaster = new AtomicBoolean(false);
 	private MasterAcquiringThread iMasterThread;
 
-	public OnlineStudentSchedulingGenericUpdater(JChannel channel, LockService lockService, OnlineStudentSchedulingContainerRemote container) {
+	public OnlineStudentSchedulingGenericUpdater(RpcDispatcher dispatcher, OnlineStudentSchedulingContainerRemote container) {
 		super();
-		iChannel = channel;
+		iDispatcher = dispatcher;
 		iContainer = container;
-		iLockService = lockService;
 		setDaemon(true);
 		setName("Updater[generic]");
 		iSleepTimeInSeconds = Long.parseLong(ApplicationProperties.getProperty("unitime.sectioning.queue.loadInterval", "300"));
@@ -99,7 +98,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 	
 	public void checkForNewServers() {
 		if (!iMaster.get()) return;
-		Lock lock = iLockService.getLock("updater[generic].check");
+		Lock lock = iContainer.getLockService().getLock("updater[generic].check");
 		lock.lock();
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		try {
@@ -144,14 +143,30 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 						.setLong("sessionId", session.getUniqueId()).uniqueResult()).intValue();
 				if (nrSolutions == 0) continue;
 				
+				List<Address> available = new ArrayList<Address>();
+				try {
+					RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isAvailable", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
+					for (Rsp<Boolean> rsp : ret) {
+						if (Boolean.TRUE.equals(rsp.getValue()))
+							available.add(rsp.getSender());
+					}
+				} catch (Exception e) {
+					iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+				}
+				
+				if (available.isEmpty()) {
+					iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: no server available.");
+					continue;
+				}
+				
 				if (replicate) {
 					Set<Address> members = solvers.get(session.getUniqueId().toString());
 					try {
-						for (Address address: iChannel.getView().getMembers()) {
+						for (Address address: available) {
 							if (members != null && members.contains(address)) continue;
 							iContainer.getDispatcher().callRemoteMethod(
 									address,
-									"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iChannel.getAddress() },
+									"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iDispatcher.getChannel().getAddress() },
 									new Class[] { String.class, DataProperties.class, Address.class },
 									SolverServerImplementation.sFirstResponse);
 						}
@@ -161,13 +176,13 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 				} else {
 					try {
 						iContainer.getDispatcher().callRemoteMethod(
-								ToolBox.random(iChannel.getView().getMembers()),
-								"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iChannel.getAddress() },
+								ToolBox.random(available),
+								"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iDispatcher.getChannel().getAddress() },
 								new Class[] { String.class, DataProperties.class, Address.class },
 								SolverServerImplementation.sFirstResponse);
 					} catch (Exception e) {
 						iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
-					}	
+					}
 				}
 			}
 		} finally {
@@ -184,7 +199,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		
 		@Override
 		public void run() {
-			iMasterLock = iLockService.getLock("updater[generic].master");
+			iMasterLock = iContainer.getLockService().getLock("updater[generic].master");
 			try {
 				iMasterLock.lockInterruptibly();
 				iMaster.set(true);

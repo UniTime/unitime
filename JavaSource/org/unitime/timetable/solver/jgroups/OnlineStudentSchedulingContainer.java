@@ -172,7 +172,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		try {
 			for (OnlineSectioningServer s: iInstances.values())
 				if (s.isMaster())
-					ret += 500;
+					ret += 200;
 				else
 					ret += 100;
 		} finally {

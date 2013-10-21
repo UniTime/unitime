@@ -73,10 +73,10 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 			Properties properties = ApplicationProperties.getProperties();
 			iServer.start(properties);
 			
-			iCourseSolverContainer = new SolverContainerWrapper<SolverProxy>(iServer, (RemoteSolverContainer<SolverProxy>) iServer.getCourseSolverContainer(), true);
-			iExamSolverContainer = new SolverContainerWrapper<ExamSolverProxy>(iServer, (RemoteSolverContainer<ExamSolverProxy>) iServer.getExamSolverContainer(), true);
-			iStudentSolverContainer = new SolverContainerWrapper<StudentSolverProxy>(iServer, (RemoteSolverContainer<StudentSolverProxy>) iServer.getStudentSolverContainer(), true);
-			iOnlineStudentSchedulingContainer = new SolverContainerWrapper<OnlineSectioningServer>(iServer, (RemoteSolverContainer<OnlineSectioningServer>) iServer.getOnlineStudentSchedulingContainer(), false);
+			iCourseSolverContainer = new SolverContainerWrapper<SolverProxy>(iServer.getDispatcher(), (RemoteSolverContainer<SolverProxy>) iServer.getCourseSolverContainer(), true);
+			iExamSolverContainer = new SolverContainerWrapper<ExamSolverProxy>(iServer.getDispatcher(), (RemoteSolverContainer<ExamSolverProxy>) iServer.getExamSolverContainer(), true);
+			iStudentSolverContainer = new SolverContainerWrapper<StudentSolverProxy>(iServer.getDispatcher(), (RemoteSolverContainer<StudentSolverProxy>) iServer.getStudentSolverContainer(), true);
+			iOnlineStudentSchedulingContainer = new SolverContainerWrapper<OnlineSectioningServer>(iServer.getDispatcher(), (RemoteSolverContainer<OnlineSectioningServer>) iServer.getOnlineStudentSchedulingContainer(), false);
 		} catch (Exception e) {
 			sLog.fatal("Failed to start solver server: " + e.getMessage(), e);
 		}
