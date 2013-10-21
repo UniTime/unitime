@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.UserContext;
 
 /**
@@ -85,6 +86,7 @@ public abstract class QueueItem {
 			setError(e);
 		} finally {
 			ApplicationProperties.setSessionId(null);
+			_RootDAO.closeCurrentThreadSessions();
 		}
 		iFinished = new Date();
 		iStatus = "All done.";
