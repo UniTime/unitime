@@ -447,8 +447,6 @@ public class ManageSolversAction extends Action {
                     }
                     if (!local) {
                     	op+="<input type=\"button\" value=\"Shutdown\" onClick=\"if (confirm('Do you really want to shutdown server "+server.getHost()+"?')) document.location='manageSolvers.do?op=Shutdown&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
-                    } else {
-                    	usage += 500;
                     }
                     webTable.addLine(null, new String[] {
                             server.getHost() + (local ? " (local)" : ""),
