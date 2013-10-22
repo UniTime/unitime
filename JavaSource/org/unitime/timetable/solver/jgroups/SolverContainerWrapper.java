@@ -114,7 +114,7 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 			RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isAvailable", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
 			for (Rsp<Boolean> rsp : ret) {
 				if (Boolean.TRUE.equals(rsp.getValue())) {
-					int usage = iDispatcher.callRemoteMethod(rsp.getSender(), "getUsage", new Object[] {}, new Class[] {}, SolverServerImplementation.sFirstResponse);
+					Integer usage = iDispatcher.callRemoteMethod(rsp.getSender(), "getUsage", new Object[] {}, new Class[] {}, SolverServerImplementation.sFirstResponse);
 					if (bestAddress == null || bestUsage > usage) {
 						bestAddress = rsp.getSender();
 		                bestUsage = usage;
