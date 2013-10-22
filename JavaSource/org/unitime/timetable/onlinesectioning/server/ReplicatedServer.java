@@ -51,7 +51,6 @@ import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
-import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
@@ -73,7 +72,6 @@ public class ReplicatedServer extends AbstractServer {
 	private Cache<String, TreeSet<XCourseId>> iCourseForName;
 	private Cache<Long, XStudent> iStudentTable;
 	private Cache<Long, XOffering> iOfferingTable;
-	private Cache<Long, Set<XDistribution>> iDistributions;
 	private Cache<Long, Set<XCourseRequest>> iOfferingRequests;
 	private Cache<Long, XExpectations> iExpectations;
 	private Cache<Long, Boolean> iOfferingLocks;
@@ -102,7 +100,6 @@ public class ReplicatedServer extends AbstractServer {
 		iCourseForName = getCache("CourseForName");
 		iStudentTable = getCache("StudentTable");
 		iOfferingTable = getCache("OfferingTable");
-		iDistributions = getCache("Distributions");
 		iOfferingRequests = getCache("OfferingRequests");
 		iExpectations = getCache("Expectations");
 		iOfferingLocks = getCache("OfferingLocks");
@@ -381,6 +378,10 @@ public class ReplicatedServer extends AbstractServer {
 
 	@Override
 	public void remove(XOffering offering) {
+		remove(offering, true);
+	}
+
+	protected void remove(XOffering offering, boolean removeExpectations) {
 		Lock lock = writeLock();
 		try {
 			for (XCourse course: offering.getCourses()) {
@@ -397,21 +398,8 @@ public class ReplicatedServer extends AbstractServer {
 				}
 			}
 			iOfferingTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offering.getOfferingId());
-			Set<XDistribution> distributions = iDistributions.get(offering.getOfferingId());
-			if (distributions != null && !distributions.isEmpty())
-				for (XDistribution distribution: new ArrayList<XDistribution>(distributions)) {
-					for (Long offeringId: distribution.getOfferingIds()) {
-						Set<XDistribution> l = iDistributions.get(offeringId);
-						if (l != null) {
-							l.remove(distribution);
-							if (l.isEmpty())
-								iDistributions.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offeringId);
-							else
-								iDistributions.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(offeringId, distributions);
-						}
-					}
-				}
-			iExpectations.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offering.getOfferingId());
+			if (removeExpectations)
+				iExpectations.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offering.getOfferingId());
 		} finally {
 			lock.release();
 		}
@@ -423,7 +411,7 @@ public class ReplicatedServer extends AbstractServer {
 		try {
 			XOffering oldOffering = iOfferingTable.get(offering.getOfferingId());
 			if (oldOffering != null)
-				remove(oldOffering);
+				remove(oldOffering, false);
 			
 			iOfferingTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(offering.getOfferingId(), offering);
 			for (XCourse course: offering.getCourses()) {
@@ -456,7 +444,6 @@ public class ReplicatedServer extends AbstractServer {
 			iCourseForId.clear();
 			iCourseForName.clear();
 			iOfferingRequests.clear();
-			iDistributions.clear();
 		} finally {
 			lock.release();
 		}
@@ -574,32 +561,6 @@ public class ReplicatedServer extends AbstractServer {
 		}
 	}
 
-	@Override
-	public void addDistribution(XDistribution distribution) {
-		Lock lock = writeLock();
-		try {
-			for (Long offeringId: distribution.getOfferingIds()) {
-				Set<XDistribution> distributions = iDistributions.get(offeringId);
-				if (distributions == null)
-					distributions = new HashSet<XDistribution>();
-				distributions.add(distribution);
-				iDistributions.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(offeringId, distributions);
-			}
-		} finally {
-			lock.release();
-		}		
-	}
-
-	@Override
-	public Collection<XDistribution> getDistributions(Long offeringId) {
-		Lock lock = readLock();
-		try {
-			return iDistributions.get(offeringId);
-		} finally {
-			lock.release();
-		}
-	}
-	
 	private static OnlineSectioningServer getLocalServer(Long sessionId) {
 		SolverServer server = null;
 		

@@ -20,7 +20,6 @@
 package org.unitime.timetable.onlinesectioning.basic;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -40,7 +39,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
-import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
@@ -75,7 +73,6 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 			XOffering offering = server.getOffering(iOfferingId);
 			DistanceMetric m = server.getDistanceMetric();
 			Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
-			Collection<XDistribution> distributions = server.getDistributions(iOfferingId);
 			XExpectations expectations = server.getExpectations(iOfferingId);
 
 			XEnrollments requests = server.getEnrollments(iOfferingId);
@@ -204,7 +201,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 										if (d > otherSection.getTime().getBreakTime()) {
 											a.setDistanceConflict(true);
 										}
-										if (section.getTime() != null && section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(distributions, otherSection.getSectionId())) {
+										if (section.getTime() != null && section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(offering.getDistributions(), otherSection.getSectionId())) {
 											XCourse otherCourse = otherOffering.getCourse(otherEnrollment.getCourseId());
 											XSubpart otherSubpart = otherOffering.getSubpart(otherSection.getSubpartId());
 											overlap.add(MSG.clazz(otherCourse.getSubjectArea(), otherCourse.getCourseNumber(), otherSubpart.getName(), otherSection.getName(otherCourse.getCourseId())));

@@ -150,8 +150,33 @@ public class DatabaseServer extends AbstractLockingServer {
 
 	@Override
 	public XOffering getOffering(Long offeringId) {
+		Collection<XDistribution> distributions = new ArrayList<XDistribution>();
+		List<DistributionPref> distPrefs = getCurrentHelper().getHibSession().createQuery(
+    		"select distinct p from DistributionPref p inner join p.distributionObjects o, Department d, " +
+    		"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io " +
+    		"where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId " +
+    		"and io.uniqueId = :offeringId and (o.prefGroup = c or o.prefGroup = c.schedulingSubpart) " +
+    		"and p.owner = d and p.prefLevel.prefProlog = :pref")
+    		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+    		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
+    		.setString("pref", PreferenceLevel.sRequired)
+    		.setLong("sessionId", getAcademicSession().getUniqueId())
+    		.setLong("offeringId", offeringId)
+    		.setCacheable(true)
+    		.list();
+        if (!distPrefs.isEmpty()) {
+        	for (DistributionPref pref: distPrefs) {
+        		int variant = 0;
+        		for (Collection<Class_> sections: ReloadAllData.getSections(pref)) {
+        			XDistributionType type = XDistributionType.IngoreConflicts;
+        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference()))
+        				type = XDistributionType.LinkedSections;
+        			distributions.add(new XDistribution(type, pref.getUniqueId(), variant++, sections));
+        		}
+        	}
+        }
 		InstructionalOffering o = InstructionalOfferingDAO.getInstance().get(offeringId, getCurrentHelper().getHibSession());
-		return o == null ? null : new XOffering(o, getCurrentHelper());
+		return o == null ? null : new XOffering(o, distributions, getCurrentHelper());
 	}
 
 	@Override
@@ -216,39 +241,4 @@ public class DatabaseServer extends AbstractLockingServer {
 		request.setWaitlist(waitlist);
 		return request;
 	}
-
-	@Override
-	public void addDistribution(XDistribution distribution) {
-		
-	}
-
-	@Override
-	public Collection<XDistribution> getDistributions(Long offeringId) {
-		Collection<XDistribution> distributions = new ArrayList<XDistribution>();
-		List<DistributionPref> distPrefs = getCurrentHelper().getHibSession().createQuery(
-    		"select distinct p from DistributionPref p inner join p.distributionObjects o, Department d, " +
-    		"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io " +
-    		"where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId " +
-    		"and io.uniqueId = :offeringId and (o.prefGroup = c or o.prefGroup = c.schedulingSubpart) " +
-    		"and p.owner = d and p.prefLevel.prefProlog = :pref")
-    		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
-    		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
-    		.setString("pref", PreferenceLevel.sRequired)
-    		.setLong("sessionId", getAcademicSession().getUniqueId())
-    		.setLong("offeringId", offeringId)
-    		.list();
-        if (!distPrefs.isEmpty()) {
-        	for (DistributionPref pref: distPrefs) {
-        		int variant = 0;
-        		for (Collection<Class_> sections: ReloadAllData.getSections(pref)) {
-        			XDistributionType type = XDistributionType.IngoreConflicts;
-        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference()))
-        				type = XDistributionType.LinkedSections;
-        			distributions.add(new XDistribution(type, pref.getUniqueId(), variant++, sections));
-        		}
-        	}
-        }
-        return distributions;
-	}
-
 }

@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.unitime.localization.impl.Localization;
@@ -30,7 +29,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
-import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
@@ -84,14 +82,14 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 	}
 	
 	@Override
-	public boolean check(OnlineSectioningServer server, XStudent student, XOffering offering, XCourseRequest request, Collection<XDistribution> distributions) {
+	public boolean check(OnlineSectioningServer server, XStudent student, XOffering offering, XCourseRequest request) {
 		if (request.getEnrollment() == null) return true;
 		List<XSection> sections = offering.getSections(request.getEnrollment());
 		XConfig config = offering.getConfig(request.getEnrollment().getConfigId());
 		if (config == null || sections.size() != config.getSubparts().size()) return false;
 		for (XSection s1: sections) {
 			for (XSection s2: sections) {
-				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(distributions, s2)) return false;
+				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(offering.getDistributions(), s2)) return false;
 				if (!s1.getSectionId().equals(s2.getSectionId()) && s1.getSubpartId().equals(s2.getSubpartId())) return false;
 			}
 			if (!offering.getSubpart(s1.getSubpartId()).getConfigId().equals(config.getConfigId())) return false;
@@ -103,7 +101,7 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 				if (other != null) {
 					List<XSection> assignment = other.getSections(e);
 					for (XSection section: sections)
-						if (section.isOverlapping(distributions, assignment)) {
+						if (section.isOverlapping(offering.getDistributions(), assignment)) {
 							if (request.isAlternative() && !r.isAlternative()) return false;
 							if (request.isAlternative() == r.isAlternative() && request.getPriority() > r.getPriority()) return false;
 						}

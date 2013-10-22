@@ -32,7 +32,6 @@ import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
-import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -101,11 +100,6 @@ public interface OnlineSectioningServer {
 	
 	@CheckMaster(Master.REQUIRED)
 	public XCourseRequest waitlist(XCourseRequest request, boolean waitlist);
-	
-	@CheckMaster(Master.REQUIRED)
-	public void addDistribution(XDistribution distribution);
-	
-	public Collection<XDistribution> getDistributions(Long offeringId);
 	
 	@CheckMaster(Master.REQUIRED)
 	public Lock readLock();

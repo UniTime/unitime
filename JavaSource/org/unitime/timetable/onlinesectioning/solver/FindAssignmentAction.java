@@ -281,7 +281,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	public double value() { return iValue; }
 	
 	@SuppressWarnings("unchecked")
-	protected Course clone(XOffering offering, XEnrollments enrollments, Long courseId, long studentId, XStudent originalStudent, Map<Long, Section> sections, Collection<XDistribution> distributions, OnlineSectioningServer server) {
+	protected Course clone(XOffering offering, XEnrollments enrollments, Long courseId, long studentId, XStudent originalStudent, Map<Long, Section> sections, OnlineSectioningServer server) {
 		Offering clonedOffering = new Offering(offering.getOfferingId(), offering.getName());
 		XExpectations expectations = server.getExpectations(offering.getOfferingId());
 		XCourse course = offering.getCourse(courseId);
@@ -349,12 +349,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					clonedSection.setName(-1l, section.getName(-1l));
 					clonedSection.setNote(section.getNote());
 					clonedSection.setSpaceExpected(expectations.getExpectedSpace(section.getSectionId()));
-					if (distributions != null)
-						for (XDistribution distribution: distributions)
-							if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId()))
-								for (Long id: distribution.getSectionIds())
-									if (!id.equals(section.getSectionId()))
-										clonedSection.addIgnoreConflictWith(id);
+					for (XDistribution distribution: offering.getDistributions())
+						if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId()))
+							for (Long id: distribution.getSectionIds())
+								if (!id.equals(section.getSectionId()))
+									clonedSection.addIgnoreConflictWith(id);
 			        if (limit > 0) {
 			        	double available = Math.round(clonedSection.getSpaceExpected() - limit);
 						clonedSection.setPenalty(available / section.getLimit());
@@ -416,17 +415,15 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			if (courseInfo != null) offering = server.getOffering(courseInfo.getOfferingId());
 			if (offering != null) {
 				Vector<Course> cr = new Vector<Course>();
-				Collection<XDistribution> d = server.getDistributions(offering.getOfferingId());
-				cr.add(clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, d, server));
-				if (d != null) distributions.addAll(d);
+				cr.add(clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, server));
+				distributions.addAll(offering.getDistributions());
 				if (request.hasFirstAlternative()) {
 					XCourseId ci = server.getCourse(request.getFirstAlternative());
 					if (ci != null) {
 						XOffering x = server.getOffering(ci.getOfferingId());
 						if (x != null) {
-							Collection<XDistribution> xd = server.getDistributions(x.getOfferingId());
-							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), originalStudent, classTable, xd, server));
-							if (xd != null) distributions.addAll(xd);
+							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), originalStudent, classTable, server));
+							distributions.addAll(x.getDistributions());
 						}
 					}
 				}
@@ -435,9 +432,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					if (ci != null) {
 						XOffering x = server.getOffering(ci.getOfferingId());
 						if (x != null) {
-							Collection<XDistribution> xd = server.getDistributions(x.getOfferingId());
-							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), originalStudent, classTable, xd, server));
-							if (xd != null) distributions.addAll(xd);
+							cr.add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), originalStudent, classTable, server));
+							distributions.addAll(x.getDistributions());
 						}
 					}
 				}
