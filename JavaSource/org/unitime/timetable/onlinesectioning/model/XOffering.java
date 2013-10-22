@@ -39,6 +39,7 @@ import net.sf.cpsolver.coursett.Constants;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
+import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.Offering;
@@ -71,6 +72,7 @@ public class XOffering implements Serializable, Externalizable {
     private List<XConfig> iConfigs = new ArrayList<XConfig>();
     private List<XCourse> iCourses = new ArrayList<XCourse>();
     private List<XReservation> iReservations = new ArrayList<XReservation>();
+    private List<XDistribution> iDistrubutions = new ArrayList<XDistribution>();
 
     public XOffering() {
     }
@@ -79,7 +81,7 @@ public class XOffering implements Serializable, Externalizable {
     	readExternal(in);
     }
     
-    public XOffering(InstructionalOffering offering, OnlineSectioningHelper helper) {
+    public XOffering(InstructionalOffering offering, Collection<XDistribution> distributions, OnlineSectioningHelper helper) {
     	iUniqueId = offering.getUniqueId();
     	iName = offering.getCourseName();
     	for (CourseOffering course: offering.getCourseOfferings())
@@ -99,11 +101,13 @@ public class XOffering implements Serializable, Externalizable {
         }
         if (offering.isByReservationOnly())
         	iReservations.add(new XDummyReservation(this));
+        if (distributions != null)
+        	iDistrubutions.addAll(distributions);
         
         Collections.sort(iConfigs);
     }
     
-    public XOffering(Offering offering) {
+    public XOffering(Offering offering, Collection<LinkedSections> links) {
     	iUniqueId = offering.getId();
     	iName = offering.getName();
     	for (Course course: offering.getCourses())
@@ -123,6 +127,20 @@ public class XOffering implements Serializable, Externalizable {
         		iReservations.add(new XDummyReservation(this));
         	}
     	}
+		Set<Set<Long>> ignConf = new HashSet<Set<Long>>();
+		long id = 1;
+		if (links != null)
+			for (LinkedSections link: links)
+				if (link.getOfferings().contains(offering))
+					iDistrubutions.add(new XDistribution(link, id++));
+		for (Config config: offering.getConfigs())
+			for (Subpart subpart: config.getSubparts())
+				for (Section section: subpart.getSections())
+					if (section.getIgnoreConflictWithSectionIds() != null) {
+						HashSet<Long> ids = new HashSet<Long>(section.getIgnoreConflictWithSectionIds()); ids.add(section.getId());
+						if (ids.size() > 1 && !ignConf.add(ids))
+							iDistrubutions.add(new XDistribution(XDistributionType.IngoreConflicts, id++, offering.getId(), ids));
+					}
     }
     
     /** Offering id */
@@ -612,6 +630,14 @@ public class XOffering implements Serializable, Externalizable {
 		}
 		return clonedCourse;
     }
+    
+    public void addDistribution(XDistribution distribution) {
+    	iDistrubutions.add(distribution);
+    }
+    
+    public List<XDistribution> getDistributions() {
+    	return iDistrubutions;
+    }
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -647,7 +673,11 @@ public class XOffering implements Serializable, Externalizable {
 				break;
 			}
 		}
-	}	
+		
+		int nrDistributions = in.readInt();
+		for (int i = 0; i < nrDistributions; i++)
+			iDistrubutions.add(new XDistribution(in));
+	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
@@ -667,6 +697,10 @@ public class XOffering implements Serializable, Externalizable {
 			out.writeInt(reservation.getType().ordinal());
 			reservation.writeExternal(out);
 		}
+		
+		out.writeInt(iDistrubutions.size());
+		for (XDistribution distribution: iDistrubutions)
+			distribution.writeExternal(out);
 	}
 	
 	public static class XOfferingSerializer implements Externalizer<XOffering> {

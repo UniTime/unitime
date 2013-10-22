@@ -48,7 +48,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
-import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
@@ -94,7 +93,6 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					XEnrollment enrollment = r.getEnrollment();
 					XCourseId courseId = (enrollment == null ? r.getCourseIds().get(0) : enrollment);
 					XOffering offering = server.getOffering(courseId.getOfferingId());
-					Collection<XDistribution> distributions = server.getDistributions(courseId.getOfferingId());
 					XExpectations expectations = server.getExpectations(courseId.getOfferingId());
 					XCourse course = offering.getCourse(courseId);
 
@@ -233,7 +231,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 										if (d > otherSection.getTime().getBreakTime()) {
 											a.setDistanceConflict(true);
 										}
-										if (section.getTime() != null && section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(distributions, otherSection.getSectionId())) {
+										if (section.getTime() != null && section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(offering.getDistributions(), otherSection.getSectionId())) {
 											XCourse otherCourse = otherOffering.getCourse(otherEnrollment.getCourseId());
 											XSubpart otherSubpart = otherOffering.getSubpart(otherSection.getSubpartId());
 											overlap.add(MSG.clazz(otherCourse.getSubjectArea(), otherCourse.getCourseNumber(), otherSubpart.getName(), otherSection.getName(otherCourse.getCourseId())));

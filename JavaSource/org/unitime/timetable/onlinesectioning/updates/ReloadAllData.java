@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,36 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 				long t0 = System.currentTimeMillis();
 				server.clearAll();
 
+				Map<Long, List<XDistribution>> distributions = new Hashtable<Long, List<XDistribution>>();
+		    	List<DistributionPref> distPrefs = helper.getHibSession().createQuery(
+		        		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
+		        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
+		        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+		        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
+		        		.setString("pref", PreferenceLevel.sRequired)
+		        		.setLong("sessionId", server.getAcademicSession().getUniqueId())
+		        		.list();
+		        if (!distPrefs.isEmpty()) {
+		        	for (DistributionPref pref: distPrefs) {
+		        		int variant = 0;
+		        		for (Collection<Class_> sections: getSections(pref)) {
+		        			XDistributionType type = XDistributionType.IngoreConflicts;
+		        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference()))
+		        				type = XDistributionType.LinkedSections;
+		        			XDistribution distribution = new XDistribution(type, pref.getUniqueId(), variant++, sections);
+		        			for (Long offeringId: distribution.getOfferingIds()) {
+		        				List<XDistribution> list = distributions.get(offeringId);
+		        				if (list != null) {
+		        					list = new ArrayList<XDistribution>();
+		        					distributions.put(offeringId, list);
+		        				}
+		        				list.add(distribution);
+		        			}
+		        				
+		        		}
+		        	}
+		        }
+		        
 				Map<Long, XOffering> offeringMap = new HashMap<Long, XOffering>();
 				Map<Long, XSection> sectionMap = new HashMap<Long, XSection>();
 				Map<Long, Map<Long, Double>> spaceMap = new HashMap<Long, Map<Long,Double>>();
@@ -97,7 +128,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 						"where io.session.uniqueId = :sessionId and io.notOffered = false")
 						.setLong("sessionId", server.getAcademicSession().getUniqueId()).list();
 				for (InstructionalOffering io: offerings) {
-					XOffering offering = loadOffering(io, server, helper);
+					XOffering offering = loadOffering(io, distributions.get(io.getUniqueId()), server, helper);
 					if (offering != null) {
 						offeringMap.put(offering.getOfferingId(), offering);
 						for (XConfig config: offering.getConfigs())
@@ -109,26 +140,6 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 					}
 				}
 				
-		    	List<DistributionPref> distPrefs = helper.getHibSession().createQuery(
-		        		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
-		        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
-		        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
-		        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
-		        		.setString("pref", PreferenceLevel.sRequired)
-		        		.setLong("sessionId", server.getAcademicSession().getUniqueId())
-		        		.list();
-		        if (!distPrefs.isEmpty()) {
-		        	for (DistributionPref pref: distPrefs) {
-		        		int variant = 0;
-		        		for (Collection<Class_> sections: getSections(pref)) {
-		        			XDistributionType type = XDistributionType.IngoreConflicts;
-		        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference()))
-		        				type = XDistributionType.LinkedSections;
-		        			server.addDistribution(new XDistribution(type, pref.getUniqueId(), variant++, sections));
-		        		}
-		        	}
-		        }
-
 				if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) {
 			        Map<Long, List<XCourseRequest>> requestMap = new HashMap<Long, List<XCourseRequest>>();
 					List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
@@ -179,9 +190,9 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		}		
 	}
 	
-    public static XOffering loadOffering(InstructionalOffering io, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+    public static XOffering loadOffering(InstructionalOffering io, List<XDistribution> distributions, OnlineSectioningServer server, OnlineSectioningHelper helper) {
     	if (io.getInstrOfferingConfigs().isEmpty() || io.isNotOffered()) return null;
-    	return new XOffering(io, helper);
+    	return new XOffering(io, distributions, helper);
     }
     
     public static XStudent loadStudent(org.unitime.timetable.model.Student s, Map<Long, List<XCourseRequest>> requestMap, OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -214,7 +225,6 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
         				}
     				}
     				
-    				Collection<XDistribution> distributions = server.getDistributions(offering.getOfferingId());
     				boolean mixedConfig = false;
     				for (XConfig config: offering.getConfigs()) {
     					for (XSubpart subpart: config.getSubparts()) {
@@ -222,7 +232,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     						for (XSection section: subpart.getSections()) {
     							if (enrollment.getSectionIds().contains(section.getSectionId())) {
     		    					for (XSection other: checked.keySet()) {
-    		    						if (section.isOverlapping(distributions, other)) {
+    		    						if (section.isOverlapping(offering.getDistributions(), other)) {
     		    							helper.warn("There is a problem assigning " + enrollment.getCourseName() + " to " + s.getName(helper.getStudentNameFormat()) + " (" + s.getExternalUniqueId() + "): "+
     		    									section.getSubpartName() + " " + section.getName() + " " + section.getTime() +
     		            							" overlaps with " + checked.get(other).getCourseName() + " " + other.getSubpartName() + " " + other.getName() + " " + other.getTime());

@@ -33,7 +33,6 @@ import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
-import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
@@ -49,7 +48,6 @@ public class InMemoryServer extends AbstractLockingServer {
 	
 	private Hashtable<Long, XStudent> iStudentTable = new Hashtable<Long, XStudent>();
 	private Hashtable<Long, XOffering> iOfferingTable = new Hashtable<Long, XOffering>();
-	private Hashtable<Long, List<XDistribution>> iDistributions = new Hashtable<Long, List<XDistribution>>();
 	private Hashtable<Long, List<XCourseRequest>> iOfferingRequests = new Hashtable<Long, List<XCourseRequest>>();
 	private Hashtable<Long, XExpectations> iExpectations = new Hashtable<Long, XExpectations>();
 	
@@ -250,6 +248,10 @@ public class InMemoryServer extends AbstractLockingServer {
 
 	@Override
 	public void remove(XOffering offering) {
+		remove(offering, true);
+	}
+	
+	protected void remove(XOffering offering, boolean removeExpectations) {
 		Lock lock = writeLock();
 		try {
 			for (XCourse course: offering.getCourses()) {
@@ -259,18 +261,13 @@ public class InMemoryServer extends AbstractLockingServer {
 					courses.remove(course);
 					if (courses.size() == 1) 
 						for (XCourseId x: courses) x.setHasUniqueName(true);
+					if (courses.isEmpty())
+						iCourseForName.remove(course.getCourseNameInLowerCase());
 				}
 			}
 			iOfferingTable.remove(offering.getOfferingId());
-			List<XDistribution> distributions = iDistributions.get(offering.getOfferingId());
-			if (distributions != null && !distributions.isEmpty())
-				for (XDistribution distribution: new ArrayList<XDistribution>(distributions)) {
-					for (Long offeringId: distribution.getOfferingIds()) {
-						List<XDistribution> l = iDistributions.get(offeringId);
-						if (l != null) l.remove(distribution);
-					}
-				}
-			iExpectations.remove(offering.getOfferingId());
+			if (removeExpectations)
+				iExpectations.remove(offering.getOfferingId());
 		} finally {
 			lock.release();
 		}
@@ -282,7 +279,7 @@ public class InMemoryServer extends AbstractLockingServer {
 		try {
 			XOffering oldOffering = iOfferingTable.get(offering.getOfferingId());
 			if (oldOffering != null)
-				remove(oldOffering);
+				remove(oldOffering, false);
 			
 			iOfferingTable.put(offering.getOfferingId(), offering);
 			for (XCourse course: offering.getCourses()) {
@@ -312,7 +309,6 @@ public class InMemoryServer extends AbstractLockingServer {
 			iCourseForId.clear();
 			iCourseForName.clear();
 			iOfferingRequests.clear();
-			iDistributions.clear();
 		} finally {
 			lock.release();
 		}
@@ -398,33 +394,6 @@ public class InMemoryServer extends AbstractLockingServer {
 				}
 			}
 			return null;
-		} finally {
-			lock.release();
-		}
-	}
-
-	@Override
-	public void addDistribution(XDistribution distribution) {
-		Lock lock = writeLock();
-		try {
-			for (Long offeringId: distribution.getOfferingIds()) {
-				List<XDistribution> distributions = iDistributions.get(offeringId);
-				if (distributions == null) {
-					distributions = new ArrayList<XDistribution>();
-					iDistributions.put(offeringId, distributions);
-				}
-				distributions.add(distribution);
-			}
-		} finally {
-			lock.release();
-		}		
-	}
-
-	@Override
-	public Collection<XDistribution> getDistributions(Long offeringId) {
-		Lock lock = readLock();
-		try {
-			return iDistributions.get(offeringId);
 		} finally {
 			lock.release();
 		}

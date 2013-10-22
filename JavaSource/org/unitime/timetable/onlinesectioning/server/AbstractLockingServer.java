@@ -63,6 +63,16 @@ public abstract class AbstractLockingServer extends AbstractServer {
 			}
 		};
 	}
+	
+	public Lock writeLockIfNotHeld() {
+		if (iLock == null || iLock.isWriteLockedByCurrentThread()) return null;
+		iLock.writeLock().lock();
+		return new Lock() {
+			public void release() {
+				iLock.writeLock().unlock();
+			}
+		};
+	}
 
 	@Override
 	public Lock writeLock() {
