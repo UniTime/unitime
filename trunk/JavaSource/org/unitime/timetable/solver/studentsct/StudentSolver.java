@@ -58,8 +58,6 @@ import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
-import org.unitime.timetable.onlinesectioning.model.XDistribution;
-import org.unitime.timetable.onlinesectioning.model.XDistributionType;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
@@ -83,8 +81,6 @@ import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.StudentSectioningSaver;
 import net.sf.cpsolver.studentsct.StudentSectioningXMLLoader;
 import net.sf.cpsolver.studentsct.StudentSectioningXMLSaver;
-import net.sf.cpsolver.studentsct.constraint.LinkedSections;
-import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
@@ -93,7 +89,6 @@ import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
 /**
  * @author Tomas Muller
@@ -823,7 +818,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	public XOffering getOffering(Long offeringId) {
 		for (Offering offering: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
 			if (offering.getId() == offeringId)
-				return new XOffering(offering);
+				return new XOffering(offering, ((StudentSectioningModel)currentSolution().getModel()).getLinkedSections());
 		return null;
 	}
 
@@ -1078,34 +1073,6 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	@Override
 	public XCourseRequest waitlist(XCourseRequest request, boolean waitlist) {
 		return request;
-	}
-
-	@Override
-	public void addDistribution(XDistribution distribution) {
-	}
-
-	@Override
-	public Collection<XDistribution> getDistributions(Long offeringId) {
-		Offering offering = null;
-		for (Offering o: ((StudentSectioningModel)currentSolution().getModel()).getOfferings())
-			if (o.getId() == offeringId) { offering = o; break; }
-		if (offering == null) return null;
-
-		List<XDistribution> ret = new ArrayList<XDistribution>();
-		long id = 1;
-		for (LinkedSections link: ((StudentSectioningModel)currentSolution().getModel()).getLinkedSections())
-			if (link.getOfferings().contains(offering))
-				ret.add(new XDistribution(link, id++));
-		Set<Set<Long>> ignConf = new HashSet<Set<Long>>();
-		for (Config config: offering.getConfigs())
-			for (Subpart subpart: config.getSubparts())
-				for (Section section: subpart.getSections())
-					if (section.getIgnoreConflictWithSectionIds() != null) {
-						HashSet<Long> ids = new HashSet<Long>(section.getIgnoreConflictWithSectionIds()); ids.add(section.getId());
-						if (ids.size() > 1 && !ignConf.add(ids))
-							ret.add(new XDistribution(XDistributionType.IngoreConflicts, id++, offeringId, ids));
-					}
-		return ret;
 	}
 
 	@Override

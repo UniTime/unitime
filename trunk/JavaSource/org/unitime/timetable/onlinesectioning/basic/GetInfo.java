@@ -188,7 +188,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 				List<Course> courses = new ArrayList<Course>();
 				for (XCourseId c: cr.getCourseIds()) {
 					XOffering offering = server.getOffering(c.getOfferingId());
-					courses.add(offering.toCourse(c.getCourseId(), student, server.getExpectations(c.getOfferingId()), server.getDistributions(c.getOfferingId()), server.getEnrollments(c.getOfferingId())));
+					courses.add(offering.toCourse(c.getCourseId(), student, server.getExpectations(c.getOfferingId()), offering.getDistributions(), server.getEnrollments(c.getOfferingId())));
 				}
 				CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent, courses, cr.isWaitlist(), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
 				XEnrollment enrollment = cr.getEnrollment();

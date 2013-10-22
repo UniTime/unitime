@@ -160,10 +160,6 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(offeringId, helper.getHibSession());
 		List<XDistribution> distributions = new ArrayList<XDistribution>();
 		if (io != null) {
-			newOffering = ReloadAllData.loadOffering(io, server, helper);
-			if (newOffering != null)
-				server.update(newOffering);
-			
 			// Load linked sections and ignore student conflict constraints
 	    	List<DistributionPref> distPrefs = helper.getHibSession().createQuery(
 	        		"select distinct p from DistributionPref p inner join p.distributionObjects o, Department d, " +
@@ -185,11 +181,14 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 	        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference()))
 	        				type = XDistributionType.LinkedSections;
 	        			XDistribution distribution = new XDistribution(type, pref.getUniqueId(), variant++, sections);
-	        			server.addDistribution(distribution);
 	        			distributions.add(distribution);
 	        		}
 	        	}
 	        }
+	        
+			newOffering = ReloadAllData.loadOffering(io, distributions, server, helper);
+			if (newOffering != null)
+				server.update(newOffering);
 			
 			// Load sectioning info
         	List<Object[]> infos = helper.getHibSession().createQuery(

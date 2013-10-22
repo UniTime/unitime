@@ -51,7 +51,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
-import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
@@ -127,7 +126,6 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>();
 		
 		XEnrollments enrollments = server.getEnrollments(offering.getOfferingId());
-		Collection<XDistribution> distributions = server.getDistributions(offering.getOfferingId());
 		
 		for (XCourseRequest request: enrollments.getRequests()) {
 			XStudent student = server.getStudent(request.getStudentId());
@@ -145,7 +143,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
 				action.addRequest(OnlineSectioningHelper.toProto(request));
 				queue.add(new SectioningRequest(offering, request, null, null, action, null));
-			} else if (!check(server, student, offering, request, distributions)) {
+			} else if (!check(server, student, offering, request)) {
 				OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 				action.setStudent(
 						OnlineSectioningLog.Entity.newBuilder()
@@ -291,7 +289,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		}
 	}
 	
-	public boolean check(OnlineSectioningServer server, XStudent student, XOffering offering, XCourseRequest request, Collection<XDistribution> distributions) {
+	public boolean check(OnlineSectioningServer server, XStudent student, XOffering offering, XCourseRequest request) {
 		if (request.getEnrollment() == null) return true;
 		List<XSection> sections = offering.getSections(request.getEnrollment());
 		XConfig config = offering.getConfig(request.getEnrollment().getConfigId());
@@ -300,7 +298,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		}
 		for (XSection s1: sections) {
 			for (XSection s2: sections) {
-				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(distributions, s2)) {
+				if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(offering.getDistributions(), s2)) {
 					return false;
 				}
 				if (!s1.getSectionId().equals(s2.getSectionId()) && s1.getSubpartId().equals(s2.getSubpartId())) {
@@ -318,7 +316,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				if (other != null) {
 					List<XSection> assignment = other.getSections(e);
 					for (XSection section: sections)
-						if (section.isOverlapping(distributions, assignment)) {
+						if (section.isOverlapping(offering.getDistributions(), assignment)) {
 							return false;
 						}
 				}
