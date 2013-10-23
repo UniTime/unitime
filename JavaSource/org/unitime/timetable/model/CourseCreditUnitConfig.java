@@ -92,6 +92,7 @@ public abstract class CourseCreditUnitConfig extends BaseCourseCreditUnitConfig 
 		} else {
 			return(null);
 		}
+		ccuc.setCourseCreditFormat(CourseCreditFormat.getCourseCreditForReference(creditFormat));
 		ccuc.setDefinesCreditAtCourseLevel(creditAtCourseLevel);
 		ccuc.setCreditType(creditType);
 		ccuc.setCreditUnitType(creditUnitType);
@@ -113,18 +114,18 @@ public abstract class CourseCreditUnitConfig extends BaseCourseCreditUnitConfig 
 		}
 	}
 	
-	public CourseCreditFormat getCourseCreditFormat() {
-		return CourseCreditFormat.getCourseCreditForReference(getCreditFormat());
+	public String getCreditFormat() {
+		CourseCreditFormat ccf = getCourseCreditFormat();
+		return (ccf == null ? null : ccf.getReference());
 	}
 	
 	public String getCreditFormatAbbv() {
 		CourseCreditFormat ccf = getCourseCreditFormat();
-		if (ccf==null) return "";
-		return ccf.getAbbv();
+		return (ccf == null || ccf.getAbbreviation() == null ? "" : ccf.getAbbreviation());
 	}
-
+	
 	protected void baseClone(CourseCreditUnitConfig newCreditConfig){
-		newCreditConfig.setCreditFormat(getCreditFormat());
+		newCreditConfig.setCourseCreditFormat(getCourseCreditFormat());
 		newCreditConfig.setCreditType(getCreditType());
 		newCreditConfig.setCreditUnitType(getCreditUnitType());
 		newCreditConfig.setDefinesCreditAtCourseLevel(isDefinesCreditAtCourseLevel());

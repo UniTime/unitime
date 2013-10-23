@@ -21,6 +21,7 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.CourseCreditFormat;
 import org.unitime.timetable.model.CourseCreditType;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseCreditUnitType;
@@ -34,9 +35,9 @@ public abstract class BaseCourseCreditUnitConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
-	private String iCreditFormat;
 	private Boolean iDefinesCreditAtCourseLevel;
 
+	private CourseCreditFormat iCourseCreditFormat;
 	private CourseCreditType iCreditType;
 	private CourseCreditUnitType iCreditUnitType;
 	private SchedulingSubpart iSubpartOwner;
@@ -60,12 +61,12 @@ public abstract class BaseCourseCreditUnitConfig implements Serializable {
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
-	public String getCreditFormat() { return iCreditFormat; }
-	public void setCreditFormat(String creditFormat) { iCreditFormat = creditFormat; }
-
 	public Boolean isDefinesCreditAtCourseLevel() { return iDefinesCreditAtCourseLevel; }
 	public Boolean getDefinesCreditAtCourseLevel() { return iDefinesCreditAtCourseLevel; }
 	public void setDefinesCreditAtCourseLevel(Boolean definesCreditAtCourseLevel) { iDefinesCreditAtCourseLevel = definesCreditAtCourseLevel; }
+
+	public CourseCreditFormat getCourseCreditFormat() { return iCourseCreditFormat; }
+	public void setCourseCreditFormat(CourseCreditFormat courseCreditFormat) { iCourseCreditFormat = courseCreditFormat; }
 
 	public CourseCreditType getCreditType() { return iCreditType; }
 	public void setCreditType(CourseCreditType creditType) { iCreditType = creditType; }
@@ -96,7 +97,7 @@ public abstract class BaseCourseCreditUnitConfig implements Serializable {
 
 	public String toDebugString() {
 		return "CourseCreditUnitConfig[" +
-			"\n	CreditFormat: " + getCreditFormat() +
+			"\n	CourseCreditFormat: " + getCourseCreditFormat() +
 			"\n	CreditType: " + getCreditType() +
 			"\n	CreditUnitType: " + getCreditUnitType() +
 			"\n	DefinesCreditAtCourseLevel: " + getDefinesCreditAtCourseLevel() +
