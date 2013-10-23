@@ -53,7 +53,7 @@ public class XCurriculumReservation extends XReservation {
     
     public XCurriculumReservation(XOffering offering, CurriculumReservation reservation) {
     	super(XReservationType.Curriculum, offering, reservation);
-    	iLimit = reservation.getLimit();
+    	iLimit = (reservation.getLimit() == null ? -1 : reservation.getLimit());
     	iAcadArea = reservation.getArea().getAcademicAreaAbbreviation();
     	for (AcademicClassification clasf: reservation.getClassifications())
     		iClassifications.add(clasf.getCode());
