@@ -438,10 +438,8 @@ public class ExamDistributionPrefsAction extends Action {
 	        DistributionPrefDAO dpDao = new DistributionPrefDAO();
 	        org.hibernate.Session hibSession = dpDao.getSession();
 	        tx = hibSession.getTransaction();
-	        if (tx==null || !tx.isActive()) {
+	        if (tx==null || !tx.isActive())
 	            tx = hibSession.beginTransaction();
-	        	tx.begin();
-	        }
 	        
             HashSet relatedExams = new HashSet();
 	        DistributionPref dp = dpDao.get(new Long(distPrefId));
