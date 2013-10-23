@@ -101,7 +101,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		        			XDistribution distribution = new XDistribution(type, pref.getUniqueId(), variant++, sections);
 		        			for (Long offeringId: distribution.getOfferingIds()) {
 		        				List<XDistribution> list = distributions.get(offeringId);
-		        				if (list != null) {
+		        				if (list == null) {
 		        					list = new ArrayList<XDistribution>();
 		        					distributions.put(offeringId, list);
 		        				}
