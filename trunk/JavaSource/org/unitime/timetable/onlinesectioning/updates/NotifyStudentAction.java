@@ -76,18 +76,18 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 				}
 				message += "\n  Previous assignment:";
 				if (iOldEnrollment != null) {
-					message += "\n    " + request;
+					message += "\n    " + (request == null ? iOldOffering.toString() : request.toString());
 					if (iOldEnrollment.getApproval() != null)
 						message += " (approved by " + iOldEnrollment.getApproval().getName() + ")";
 					for (XSection section: iOldOffering.getSections(iOldEnrollment))
 						message += "\n      " + courseName + " " + section.toString(iOldEnrollment.getCourseId());
 				} else {
-					message += "\n    " + request + " NOT ASSIGNED";
+					message += "\n    " + (request == null ? iOldOffering.toString() : request.toString()) + " NOT ASSIGNED";
 				}
 				message += "\n  New assignment:";
 				XOffering offering = server.getOffering(iOldOffering.getOfferingId());
 				if (offering == null || request == null || request.getEnrollment() == null) {
-					message += "\n    " + request + " NOT ASSIGNED";
+					message += "\n    " + (request == null ? iOldOffering.toString() : request.toString()) + " NOT ASSIGNED";
 				} else {
 					message += "\n    " + request;
 					if (request.getEnrollment().getApproval() != null)
