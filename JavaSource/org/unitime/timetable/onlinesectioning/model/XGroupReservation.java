@@ -47,7 +47,7 @@ public class XGroupReservation extends XReservation {
     
     public XGroupReservation(XOffering offering, StudentGroupReservation reservation) {
     	super(XReservationType.Group, offering, reservation);
-        iLimit = reservation.getLimit();
+        iLimit = (reservation.getLimit() == null ? -1 : reservation.getLimit());
         iGroup = reservation.getGroup().getGroupAbbreviation();
     }
     
