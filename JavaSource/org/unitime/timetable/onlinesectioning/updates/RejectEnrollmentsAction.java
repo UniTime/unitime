@@ -121,7 +121,6 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 						}
 						if (cr != null)
 							helper.getHibSession().delete(cr.getCourseDemand());
-						server.assign(request, null);
 						student.getRequests().remove(request);
 						server.update(student, true);
 						
