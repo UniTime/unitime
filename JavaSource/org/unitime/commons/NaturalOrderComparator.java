@@ -30,6 +30,14 @@ import java.util.Comparator;
 import java.util.List;
 
 public class NaturalOrderComparator implements Comparator<String> {
+	private static NaturalOrderComparator sInstance = null;
+	
+	public static NaturalOrderComparator getInstance() {
+		if (sInstance == null)
+			sInstance = new NaturalOrderComparator();
+		return sInstance;
+	}
+	
 	int compareRight(String a, String b)
 	{
 		int bias = 0;

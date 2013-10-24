@@ -126,7 +126,7 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 	}
 	
     public int compareTo(XCourseId c) {
-		int cmp = new NaturalOrderComparator().compare(getCourseName(), c.getCourseName());
+		int cmp = NaturalOrderComparator.getInstance().compare(getCourseName(), c.getCourseName());
 		if (cmp!=0) return cmp;
 		cmp = (getTitle() == null ? "" : getTitle()).compareToIgnoreCase(c.getTitle() == null ? "" : c.getTitle());
 		if (cmp!=0) return cmp;
