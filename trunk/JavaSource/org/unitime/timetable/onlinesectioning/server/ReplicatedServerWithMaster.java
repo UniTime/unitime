@@ -75,6 +75,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 	private Map<Long, XHashSet<XCourseRequest>> iOfferingRequests;
 	private Cache<Long, XExpectations> iExpectations;
 	private Cache<Long, Boolean> iOfferingLocks;
+	private Cache<String, Object> iConfig;
 
 	public ReplicatedServerWithMaster(OnlineSectioningServerContext context) throws SectioningException {
 		super(context);
@@ -103,6 +104,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 		iOfferingRequests = new HashMap<Long, XHashSet<XCourseRequest>>();
 		iExpectations = getCache("Expectations");
 		iOfferingLocks = getCache("OfferingLocks");
+		iConfig = getCache("Config");
 		
 		iOfferingTable.addListener(new OfferingTableListener(iOfferingTable.values()));
 		iStudentTable.addListener(new StudentTableListener(iStudentTable.values()));
@@ -110,19 +112,26 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 	}
 	
 	@Override
+	protected void setReady(boolean ready) {
+		iConfig.put("ReadyToServe", Boolean.TRUE);
+	}
+	
+	@Override
+	public boolean isReady() {
+		return Boolean.TRUE.equals(iConfig.get("ReadyToServe"));
+	}
+
+	@Override
 	public void unload(boolean remove) {
 		boolean master = isMaster();
 		super.unload(remove);
 		if (master && remove) {
 			iLog.info("Removing cache.");
-			iCacheManager.removeCache(cacheName("CourseForId"));
-			iCacheManager.removeCache(cacheName("CourseForName"));
 			iCacheManager.removeCache(cacheName("StudentTable"));
 			iCacheManager.removeCache(cacheName("OfferingTable"));
-			iCacheManager.removeCache(cacheName("Distributions"));
-			iCacheManager.removeCache(cacheName("OfferingRequests"));
 			iCacheManager.removeCache(cacheName("Expectations"));
 			iCacheManager.removeCache(cacheName("OfferingLocks"));
+			iCacheManager.removeCache(cacheName("Config"));
 		}
 	}
 	
@@ -570,13 +579,13 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 			Lock lock = writeLockIfNotHeld();
 			try {
 				for (XCourse course: offering.getCourses()) {
-					iCourseForId.put(course.getCourseId(), course);
+					iCourseForId.put(course.getCourseId(), new XCourseId(course));
 					XTreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
 					if (courses == null) {
 						courses = new XTreeSet<XCourseId>(new XCourseId.XCourseIdSerializer());
 						iCourseForName.put(course.getCourseNameInLowerCase(), courses);
 					}
-					courses.add(course);
+					courses.add(new XCourseId(course));
 					if (courses.size() == 1) 
 						for (XCourseId x: courses) x.setHasUniqueName(true);
 					else if (courses.size() > 1)

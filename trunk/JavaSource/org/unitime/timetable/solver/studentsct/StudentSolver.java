@@ -67,6 +67,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.MemoryCounter;
 
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.solution.Solution;
@@ -1084,5 +1085,15 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	public String getCourseDetails(Long courseId, CourseDetailsProvider provider) {
 		XCourse course = getCourse(courseId);
 		return course == null ? null : course.getDetails(getAcademicSession(), provider);
+	}
+
+	@Override
+	public boolean isReady() {
+		return true;
+	}
+	
+	@Override
+	public long getMemUsage() {
+		return new MemoryCounter().estimate(this);
 	}
 }
