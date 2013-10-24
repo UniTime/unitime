@@ -42,4 +42,6 @@ public interface SolverContainer<T> {
 	public void start();
 	
 	public void stop();
+	
+	public long getMemUsage(String user);
 }

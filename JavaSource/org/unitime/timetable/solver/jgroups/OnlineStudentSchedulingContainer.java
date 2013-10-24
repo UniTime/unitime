@@ -70,6 +70,12 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		return getInstance(Long.valueOf(sessionId));
 	}
 	
+	@Override
+	public long getMemUsage(String user) {
+		OnlineSectioningServer solver = getSolver(user);
+		return solver == null ? 0 : solver.getMemUsage();
+	}
+	
 	public OnlineSectioningServer getInstance(Long sessionId) {
 		iGlobalLock.readLock().lock();
 		try {

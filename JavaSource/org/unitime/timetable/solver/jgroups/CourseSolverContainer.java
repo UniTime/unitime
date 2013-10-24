@@ -35,6 +35,7 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableSolver;
 import org.unitime.timetable.solver.TimetableSolver.SolverDisposeListener;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
+import org.unitime.timetable.util.MemoryCounter;
 
 /**
  * @author Tomas Muller
@@ -53,6 +54,12 @@ public class CourseSolverContainer implements SolverContainer<SolverProxy> {
 	@Override
 	public SolverProxy getSolver(String user) {
 		return iCourseSolvers.get(user);
+	}
+	
+	@Override
+	public long getMemUsage(String user) {
+		SolverProxy solver = getSolver(user);
+		return solver == null ? 0 : new MemoryCounter().estimate(solver);
 	}
 	
 	@Override

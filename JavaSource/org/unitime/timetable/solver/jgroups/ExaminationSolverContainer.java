@@ -35,6 +35,7 @@ import org.unitime.timetable.solver.exam.ExamSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolver.ExamSolverDisposeListener;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
+import org.unitime.timetable.util.MemoryCounter;
 
 /**
  * @author Tomas Muller
@@ -53,6 +54,12 @@ public class ExaminationSolverContainer implements SolverContainer<ExamSolverPro
 	@Override
 	public ExamSolverProxy getSolver(String user) {
 		return iExamSolvers.get(user);
+	}
+	
+	@Override
+	public long getMemUsage(String user) {
+		ExamSolverProxy solver = getSolver(user);
+		return solver == null ? 0 : new MemoryCounter().estimate(solver);
 	}
 	
 	@Override
