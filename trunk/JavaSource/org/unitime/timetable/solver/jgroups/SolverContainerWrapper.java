@@ -90,6 +90,28 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 		}
 		return null;
 	}
+	
+	@Override
+	public long getMemUsage(String user) {
+		try {
+			if (iCheckLocal && iContainer.hasSolver(user))
+				return iContainer.getMemUsage(user);
+
+			RspList<Long> ret = iContainer.getDispatcher().callRemoteMethods(null, "getMemUsage", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
+			long total = 0, count = 0;
+			for (Rsp<Long> rsp : ret) {
+				if (rsp != null && rsp.getValue() != null && rsp.getValue() > 0) {
+					total += rsp.getValue();
+					count ++;
+				}
+			}
+			
+			return count == 0 ? 0 : total / count;
+		} catch (Exception e) {
+			sLog.error("Failed to retrieve allocated memory " + user + ": " + e.getMessage(), e);
+		}
+		return 0;
+	}
 
 	@Override
 	public boolean hasSolver(String user) {
