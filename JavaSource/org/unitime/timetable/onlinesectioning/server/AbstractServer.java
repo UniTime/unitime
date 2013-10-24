@@ -19,12 +19,18 @@
 */
 package org.unitime.timetable.onlinesectioning.server;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -68,6 +74,7 @@ import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantW
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.MemoryCounter;
 
 /**
  * @author Tomas Muller
@@ -79,10 +86,11 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	private DistanceMetric iDistanceMetric = null;
 	private DataProperties iConfig = null;
 	
-	private AsyncExecutor iExecutor;
+	protected AsyncExecutor iExecutor;
 	private Queue<Runnable> iExecutorQueue = new LinkedList<Runnable>();
 	private HashSet<CacheElement<Long>> iOfferingsToPersistExpectedSpaces = new HashSet<CacheElement<Long>>();
 	private static ThreadLocal<LinkedList<OnlineSectioningHelper>> sHelper = new ThreadLocal<LinkedList<OnlineSectioningHelper>>();
+	private boolean iReadyToServe = false;
 	
 	private MasterAcquiringThread iMasterThread;
 	
@@ -135,6 +143,8 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 						throw exception;
 					}
 				}
+				setReady(true);
+				getMemUsage();
 			} else {
 				execute(new ReloadAllData(), user, new ServerCallback<Boolean>() {
 					@Override
@@ -142,12 +152,19 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 						if (iAcademicSession.isSectioningEnabled())
 							execute(new CheckAllOfferingsAction(), user, new ServerCallback<Boolean>() {
 								@Override
-								public void onSuccess(Boolean result) {}
+								public void onSuccess(Boolean result) {
+									setReady(true);
+									getMemUsage();
+								}
 								@Override
 								public void onFailure(Throwable exception) {
 									iLog.error("Failed to check all offerings: " + exception.getMessage(), exception);
 								}
 							});
+						else {
+							setReady(true);
+							getMemUsage();
+						}
 					}
 					@Override
 					public void onFailure(Throwable exception) {
@@ -162,8 +179,48 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	}
 	
 	@Override
+	public long getMemUsage() {
+		Runtime rt = Runtime.getRuntime();
+		MemoryCounter mc = new MemoryCounter();
+		DecimalFormat df = new DecimalFormat("#,##0.00");
+		long total = mc.estimate(this);
+		Map<String, String> info = new HashMap<String, String>();
+		Class clazz = getClass();
+		while (clazz != null) {
+			Field[] fields = clazz.getDeclaredFields();
+			for (int i = 0; i < fields.length; i++) {
+				if (!Modifier.isStatic(fields[i].getModifiers())) {
+					if (!fields[i].getType().isPrimitive()) {
+						fields[i].setAccessible(true);
+						try {
+							Object obj = fields[i].get(this);
+							if (obj != null) {
+								long est = mc.estimate(obj);
+								if (est > 1024)
+									info.put(clazz.getSimpleName() + "." + fields[i].getName(), df.format(est / 1024.0) + " kB" + (obj instanceof Map ? " (" + ((Map)obj).size() + " records)" : obj instanceof Collection ? "(" + ((Collection)obj).size() + " records)" : ""));
+							}
+						} catch (IllegalAccessException ex) {}
+					}
+				}
+			}
+			clazz = clazz.getSuperclass();
+		}
+		iLog.info("Total Allocated " + df.format(total / 1024.0) + " kB (of " + df.format((rt.totalMemory() - rt.freeMemory()) / 1048576.0) + " MB), details: " + ToolBox.dict2string(info, 2));
+		return total;
+	}
+	
+	@Override
 	public boolean isMaster() {
 		return (iMasterThread != null ? iMasterThread.isMaster() : true);
+	}
+	
+	protected void setReady(boolean ready) {
+		iReadyToServe = ready;
+	}
+	
+	@Override
+	public boolean isReady() {
+		return iReadyToServe;
 	}
 	
 	@Override

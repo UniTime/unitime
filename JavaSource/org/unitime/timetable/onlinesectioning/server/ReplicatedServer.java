@@ -75,6 +75,7 @@ public class ReplicatedServer extends AbstractServer {
 	private Cache<Long, Set<XCourseRequest>> iOfferingRequests;
 	private Cache<Long, XExpectations> iExpectations;
 	private Cache<Long, Boolean> iOfferingLocks;
+	private Cache<String, Object> iConfig;
 
 	public ReplicatedServer(OnlineSectioningServerContext context) throws SectioningException {
 		super(context);
@@ -103,6 +104,7 @@ public class ReplicatedServer extends AbstractServer {
 		iOfferingRequests = getCache("OfferingRequests");
 		iExpectations = getCache("Expectations");
 		iOfferingLocks = getCache("OfferingLocks");
+		iConfig = getCache("Config");
 		if (isOptimisticLocking())
 			iLog.info("Using optimistic locking.");
 		super.load(context);
@@ -110,6 +112,16 @@ public class ReplicatedServer extends AbstractServer {
 	
 	private boolean isOptimisticLocking() {
 		return iOfferingLocks.getAdvancedCache().getCacheConfiguration().transaction().lockingMode() == LockingMode.OPTIMISTIC;
+	}
+	
+	@Override
+	protected void setReady(boolean ready) {
+		iConfig.put("ReadyToServe", Boolean.TRUE);
+	}
+	
+	@Override
+	public boolean isReady() {
+		return Boolean.TRUE.equals(iConfig.get("ReadyToServe"));
 	}
 	
 	@Override
@@ -126,6 +138,7 @@ public class ReplicatedServer extends AbstractServer {
 			iCacheManager.removeCache(cacheName("OfferingRequests"));
 			iCacheManager.removeCache(cacheName("Expectations"));
 			iCacheManager.removeCache(cacheName("OfferingLocks"));
+			iCacheManager.removeCache(cacheName("Config"));
 		}
 	}
 	
@@ -415,14 +428,14 @@ public class ReplicatedServer extends AbstractServer {
 			
 			iOfferingTable.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(offering.getOfferingId(), offering);
 			for (XCourse course: offering.getCourses()) {
-				iCourseForId.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getCourseId(), course);
+				iCourseForId.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getCourseId(), new XCourseId(course));
 				TreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
 				if (courses == null) {
 					courses = new TreeSet<XCourseId>();
-					courses.add(course);
+					courses.add(new XCourseId(course));
 					iCourseForName.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(course.getCourseNameInLowerCase(), courses);
 				} else {
-					courses.add(course);
+					courses.add(new XCourseId(course));
 					if (courses.size() == 1) 
 						for (XCourseId x: courses) x.setHasUniqueName(true);
 					else if (courses.size() > 1)
