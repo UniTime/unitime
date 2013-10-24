@@ -51,6 +51,10 @@ public class XGroupReservation extends XReservation {
         iGroup = reservation.getGroup().getGroupAbbreviation();
     }
     
+    public String getGroup() {
+    	return iGroup;
+    }
+    
     /**
      * Group reservations are of the second highest priority
      */
