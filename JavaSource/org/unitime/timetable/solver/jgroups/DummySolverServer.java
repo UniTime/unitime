@@ -268,6 +268,11 @@ public class DummySolverServer implements SolverServer, MessageListener {
 		}
 
 		@Override
+		public long getMemUsage(String user) {
+			return 0;
+		}
+		
+		@Override
 		public boolean hasSolver(String user) {
 			return false;
 		}

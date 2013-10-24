@@ -165,6 +165,8 @@ public class ExamSolverAction extends Action {
             config.put("Exam.Type", String.valueOf(myForm.getExamType()));
             config.put("General.StartSolver", new Boolean(start).toString());
             request.getSession().setAttribute("Exam.Type", myForm.getExamType());
+    	    if (myForm.getHost() != null)
+    	    	config.setProperty("General.Host", myForm.getHost());
     	    if (solver == null) {
     	    	solver = examinationSolverService.createSolver(config);
     	    } else if (start) {

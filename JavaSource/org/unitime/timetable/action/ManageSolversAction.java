@@ -210,10 +210,10 @@ public class ManageSolversAction extends Action {
 		try {
 			WebTable.setOrder(sessionContext,"manageSolvers.ord",request.getParameter("ord"),1);
 			
-			WebTable webTable = new WebTable( 19,
+			WebTable webTable = new WebTable( 20,
 					"Manage Course Solvers", "manageSolvers.do?ord=%%",
-					new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Assign", "Total", "Time", "Stud", "Room", "Distr", "Instr", "TooBig", "Useless", "Pert", "Note", "Operation(s)"},
-					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+					new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Assign", "Total", "Time", "Stud", "Room", "Distr", "Instr", "TooBig", "Useless", "Pert", "Note", "Operation(s)"},
+					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
 					null );
 			webTable.setRowStyle("white-space:nowrap");
 			
@@ -309,6 +309,8 @@ public class ManageSolversAction extends Action {
                 	"if (confirm('Do you really want to unload this solver?')) " +
                 	"document.location='manageSolvers.do?op=Unload&puid=" + properties.getProperty("General.OwnerPuid")+ "';" +
                 	" event.cancelBubble=true;\">";
+                
+                long mem = solverServerService.getCourseSolverContainer().getMemUsage(solver.getUser());
 
 				webTable.addLine(onClick, new String[] {
 							(loaded==null?"N/A":sDF.format(loaded)),
@@ -318,6 +320,7 @@ public class ManageSolversAction extends Action {
 							settingLabel,
 							status,
 							ownerName, 
+							new DecimalFormat("0.00").format(mem / 1048576.0) + "M",
 							assigned,
 							totVal,
 							timePr,
@@ -338,6 +341,7 @@ public class ManageSolversAction extends Action {
 							settingLabel, 
 							status,
 							ownerName,
+							mem,
 							assigned,
 							totVal,
 							timePr,
@@ -492,10 +496,10 @@ public class ManageSolversAction extends Action {
 	        try {
 	            WebTable.setOrder(sessionContext,"manageSolvers.ord3",request.getParameter("ord3"),1);
 	            
-	            WebTable webTable = new WebTable( 20,
+	            WebTable webTable = new WebTable( 21,
 	                    "Manage Examination Solvers", "manageSolvers.do?ord3=%%",
-	                    new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Type", "Assign", "Total", "StudConf", "InstConf", "Period", "Room", "RoomSplit", "RoomSize", "Distr", "Rot", "Pert", "Operation(s)"},
-	                    new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+	                    new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Type", "Assign", "Total", "StudConf", "InstConf", "Period", "Room", "RoomSplit", "RoomSize", "Distr", "Rot", "Pert", "Operation(s)"},
+	                    new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
 	                    null );
 	            webTable.setRowStyle("white-space:nowrap");
 	            
@@ -564,6 +568,8 @@ public class ManageSolversAction extends Action {
                     
                     ExamType examType = (examTypeId == null ? null : ExamTypeDAO.getInstance().get(examTypeId));
                     
+                    long mem = solverServerService.getExamSolverContainer().getMemUsage(solver.getUser());
+                    
 	                webTable.addLine(onClick, new String[] {
 	                            (loaded==null?"N/A":sDF.format(loaded)),
 	                            (lastUsed==null?"N/A":sDF.format(lastUsed)),
@@ -572,6 +578,7 @@ public class ManageSolversAction extends Action {
 	                            settingLabel,
 	                            status,
 	                            runnerName, 
+	                            new DecimalFormat("0.00").format(mem / 1048576.0) + "M",
 	                            (examType==null?"N/A?":examType.getLabel()),
 	                            (assigned==null?"N/A":assigned.indexOf(' ')>=0?assigned.substring(0,assigned.indexOf(' ')):assigned),
 	                            (totVal==null?"N/A":totVal),
@@ -593,6 +600,7 @@ public class ManageSolversAction extends Action {
 	                            settingLabel, 
 	                            status,
 	                            runnerName,
+	                            mem,
 	                            examTypeId,
 	                            (assigned==null?"":assigned),
                                 (totVal==null?"":totVal),
@@ -621,10 +629,10 @@ public class ManageSolversAction extends Action {
            try {
                WebTable.setOrder(sessionContext,"manageSolvers.ord4",request.getParameter("ord4"),1);
                
-               WebTable webTable = new WebTable( 13,
+               WebTable webTable = new WebTable( 14,
                        "Manage Student Sectioning Solvers", "manageSolvers.do?ord4=%%",
-                       new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Assign", "Total", "CompSched", "DistConf", "Pert", "Operation(s)"},
-                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+                       new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Assign", "Total", "CompSched", "DistConf", "Pert", "Operation(s)"},
+                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
                        null );
                webTable.setRowStyle("white-space:nowrap");
                
@@ -664,6 +672,7 @@ public class ManageSolversAction extends Action {
                    String pert = (String)info.get("Perturbation Penalty");
                    Date loaded = solver.getLoadedDate();
                    Date lastUsed = solver.getLastUsed(); 
+                   long mem = solver.getMemUsage();
                    
                    String bgColor = null;
                    if (x!=null && ToolBox.equals(properties.getProperty("General.OwnerPuid"), xId))
@@ -684,6 +693,7 @@ public class ManageSolversAction extends Action {
                                settingLabel,
                                status,
                                runnerName, 
+                               new DecimalFormat("0.00").format(mem / 1048576.0) + "M",
                                (assigned==null?"N/A":assigned.indexOf(' ')>=0?assigned.substring(0,assigned.indexOf(' ')):assigned),
                                (totVal==null?"N/A":totVal),
                                (compSch==null?"N/A":compSch), 
@@ -698,6 +708,7 @@ public class ManageSolversAction extends Action {
                                settingLabel, 
                                status,
                                runnerName,
+                               mem,
                                (assigned==null?"":assigned),
                                (totVal==null?"":totVal),
                                (compSch==null?"":compSch), 
@@ -719,10 +730,10 @@ public class ManageSolversAction extends Action {
            try {
                WebTable.setOrder(sessionContext,"manageSolvers.ord5",request.getParameter("ord5"),1);
                
-               WebTable webTable = new WebTable( 13,
+               WebTable webTable = new WebTable( 14,
                        "Manage Online Scheduling Servers", "manageSolvers.do?ord5=%%",
-                       new String[] {"Created", "Session", "Host", "Mode", "Assign", "Total", "CompSched", "DistConf", "TimeConf", "FreeConf", "AvgDisb", "Disb[>=10%]", "Operation(s)"},
-                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+                       new String[] {"Created", "Session", "Host", "Mode", "Mem", "Assign", "Total", "CompSched", "DistConf", "TimeConf", "FreeConf", "AvgDisb", "Disb[>=10%]", "Operation(s)"},
+                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
                        null );
                webTable.setRowStyle("white-space:nowrap");
                
@@ -736,9 +747,10 @@ public class ManageSolversAction extends Action {
                 	   DataProperties properties = solver.getConfig();
                 	   if (properties==null) continue;
                        if (sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), new SimpleQualifier("Session", Long.valueOf(sessionId))).isEmpty()) continue;
+                       long mem = solver.getMemUsage();
                        String sessionLabel = solver.getAcademicSession().toString();
                        String mode = solver.getAcademicSession().isSectioningEnabled() ? "Online" : "Assistant";
-                       Map<String,String> info = solver.execute(new GetInfo(), null);
+                       Map<String,String> info = (solver.isReady() ? solver.execute(new GetInfo(), null) : null);
                        String assigned = (info == null ? null : info.get("Assigned variables"));
                        String totVal = (info == null ? null : info.get("Overall solution value"));
                        String compSch = (info == null ? null : info.get("Students with complete schedule"));
@@ -771,6 +783,7 @@ public class ManageSolversAction extends Action {
                                    sessionLabel,
                                    solver.getHost() + (solver.isMaster() ? " (master)" : ""),
                                    mode,
+                                   new DecimalFormat("0.00").format(mem / 1048576.0) + "M",
                                    (assigned==null?"N/A":assigned),
                                    (totVal==null?"N/A":totVal),
                                    (compSch==null?"N/A":compSch), 
@@ -785,6 +798,7 @@ public class ManageSolversAction extends Action {
                                    sessionLabel,
                                    solver.getHost(),
                                    mode, 
+                                   mem,
                                    (assigned==null?"":assigned),
                                    (totVal==null?"":totVal),
                                    (compSch==null?"":compSch), 
