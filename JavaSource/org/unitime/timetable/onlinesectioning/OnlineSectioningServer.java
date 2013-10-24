@@ -140,11 +140,16 @@ public interface OnlineSectioningServer {
 	@CheckMaster(Master.REQUIRED)
 	public boolean needPersistExpectedSpaces(Long offeringId);
 	
+	@CheckMaster(Master.REQUIRED)
+	public boolean isReady();
+	
 	public static enum Deadline { NEW, CHANGE, DROP };
 	
 	public boolean checkDeadline(Long courseId, XTime sectionTime, Deadline type);
 	
 	public void unload(boolean remove);
+	
+	public long getMemUsage();
 	
 	public static interface Lock {
 		void release();
