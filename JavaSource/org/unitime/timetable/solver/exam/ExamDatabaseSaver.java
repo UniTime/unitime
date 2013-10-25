@@ -89,6 +89,9 @@ public class ExamDatabaseSaver extends ExamSaver {
         } catch (Exception e) {
             if (tx!=null) tx.rollback();
             iProgress.fatal("Unable to save a solution, reason: "+e.getMessage(),e);
+    	} finally {
+    		// here we need to close the session since this code may run in a separate thread
+    		if (hibSession!=null && hibSession.isOpen()) hibSession.close();
         }
     }
     
