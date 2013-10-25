@@ -310,8 +310,6 @@ public class ManageSolversAction extends Action {
                 	"document.location='manageSolvers.do?op=Unload&puid=" + properties.getProperty("General.OwnerPuid")+ "';" +
                 	" event.cancelBubble=true;\">";
                 
-                long mem = solverServerService.getCourseSolverContainer().getMemUsage(solver.getUser());
-
 				webTable.addLine(onClick, new String[] {
 							(loaded==null?"N/A":sDF.format(loaded)),
 							(lastUsed==null?"N/A":sDF.format(lastUsed)),
@@ -319,8 +317,8 @@ public class ManageSolversAction extends Action {
 							solver.getHost(),
 							settingLabel,
 							status,
-							ownerName, 
-							new DecimalFormat("0.00").format(mem / 1048576.0) + "M",
+							ownerName,
+							"<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>C" + solver.getUser() + "</span>",
 							assigned,
 							totVal,
 							timePr,
@@ -341,7 +339,7 @@ public class ManageSolversAction extends Action {
 							settingLabel, 
 							status,
 							ownerName,
-							mem,
+							null,
 							assigned,
 							totVal,
 							timePr,
@@ -568,8 +566,6 @@ public class ManageSolversAction extends Action {
                     
                     ExamType examType = (examTypeId == null ? null : ExamTypeDAO.getInstance().get(examTypeId));
                     
-                    long mem = solverServerService.getExamSolverContainer().getMemUsage(solver.getUser());
-                    
 	                webTable.addLine(onClick, new String[] {
 	                            (loaded==null?"N/A":sDF.format(loaded)),
 	                            (lastUsed==null?"N/A":sDF.format(lastUsed)),
@@ -578,7 +574,7 @@ public class ManageSolversAction extends Action {
 	                            settingLabel,
 	                            status,
 	                            runnerName, 
-	                            new DecimalFormat("0.00").format(mem / 1048576.0) + "M",
+	                            "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>X" + solver.getUser() + "</span>",
 	                            (examType==null?"N/A?":examType.getLabel()),
 	                            (assigned==null?"N/A":assigned.indexOf(' ')>=0?assigned.substring(0,assigned.indexOf(' ')):assigned),
 	                            (totVal==null?"N/A":totVal),
@@ -600,7 +596,7 @@ public class ManageSolversAction extends Action {
 	                            settingLabel, 
 	                            status,
 	                            runnerName,
-	                            mem,
+	                            null,
 	                            examTypeId,
 	                            (assigned==null?"":assigned),
                                 (totVal==null?"":totVal),
@@ -672,7 +668,6 @@ public class ManageSolversAction extends Action {
                    String pert = (String)info.get("Perturbation Penalty");
                    Date loaded = solver.getLoadedDate();
                    Date lastUsed = solver.getLastUsed(); 
-                   long mem = solver.getMemUsage();
                    
                    String bgColor = null;
                    if (x!=null && ToolBox.equals(properties.getProperty("General.OwnerPuid"), xId))
@@ -693,7 +688,7 @@ public class ManageSolversAction extends Action {
                                settingLabel,
                                status,
                                runnerName, 
-                               new DecimalFormat("0.00").format(mem / 1048576.0) + "M",
+                               "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>S" + solver.getUser() + "</span>",
                                (assigned==null?"N/A":assigned.indexOf(' ')>=0?assigned.substring(0,assigned.indexOf(' ')):assigned),
                                (totVal==null?"N/A":totVal),
                                (compSch==null?"N/A":compSch), 
@@ -708,7 +703,7 @@ public class ManageSolversAction extends Action {
                                settingLabel, 
                                status,
                                runnerName,
-                               mem,
+                               null,
                                (assigned==null?"":assigned),
                                (totVal==null?"":totVal),
                                (compSch==null?"":compSch), 
@@ -747,7 +742,6 @@ public class ManageSolversAction extends Action {
                 	   DataProperties properties = solver.getConfig();
                 	   if (properties==null) continue;
                        if (sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), new SimpleQualifier("Session", Long.valueOf(sessionId))).isEmpty()) continue;
-                       long mem = solver.getMemUsage();
                        String sessionLabel = solver.getAcademicSession().toString();
                        String mode = solver.getAcademicSession().isSectioningEnabled() ? "Online" : "Assistant";
                        Map<String,String> info = (solver.isReady() ? solver.execute(new GetInfo(), null) : null);
@@ -783,7 +777,7 @@ public class ManageSolversAction extends Action {
                                    sessionLabel,
                                    solver.getHost() + (solver.isMaster() ? " (master)" : ""),
                                    mode,
-                                   new DecimalFormat("0.00").format(mem / 1048576.0) + "M",
+                                   "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>O" + server.getHost() + ":" + sessionId + "</span>",
                                    (assigned==null?"N/A":assigned),
                                    (totVal==null?"N/A":totVal),
                                    (compSch==null?"N/A":compSch), 
@@ -798,7 +792,7 @@ public class ManageSolversAction extends Action {
                                    sessionLabel,
                                    solver.getHost(),
                                    mode, 
-                                   mem,
+                                   null,
                                    (assigned==null?"":assigned),
                                    (totVal==null?"":totVal),
                                    (compSch==null?"":compSch), 
