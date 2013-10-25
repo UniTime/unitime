@@ -151,6 +151,9 @@ public class ExamDatabaseLoader extends ExamLoader {
             iProgress.fatal("Unable to load examination problem, reason: "+e.getMessage(),e);
             if (tx!=null) tx.rollback();
             throw e;
+        } finally {
+    		// here we need to close the session since this code may run in a separate thread
+    		if (hibSession!=null && hibSession.isOpen()) hibSession.close();
         }
     }
     
