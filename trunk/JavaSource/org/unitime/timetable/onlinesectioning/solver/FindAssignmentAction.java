@@ -96,7 +96,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
-	private double iValue;
 	
 	public FindAssignmentAction(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
 		iRequest = request;
@@ -253,7 +252,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 
         neighbour.assign(0);
         helper.info("Solution: " + neighbour);
-		iValue = -neighbour.value();
 		
     	OnlineSectioningLog.Enrollment.Builder solution = OnlineSectioningLog.Enrollment.newBuilder();
     	solution.setType(OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED);
@@ -277,8 +275,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		
 		return rets;
 	}
-	
-	public double value() { return iValue; }
 	
 	@SuppressWarnings("unchecked")
 	protected Course clone(XOffering offering, XEnrollments enrollments, Long courseId, long studentId, XStudent originalStudent, Map<Long, Section> sections, OnlineSectioningServer server) {
@@ -727,7 +723,9 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
         	}
         }
         
-        return convert(server, enrollments, requiredSectionsForCourse, requiredFreeTimes, true, model.getDistanceConflict(), savedClasses);
+        ClassAssignmentInterface ret = convert(server, enrollments, requiredSectionsForCourse, requiredFreeTimes, true, model.getDistanceConflict(), savedClasses);
+        ret.setValue(-neighbour.value());
+        return ret;
 	}
 	
 	@Override
