@@ -59,7 +59,7 @@
    <pbcast.STABLE stability_delay="500" desired_avg_gossip="5000" max_bytes="1m"/>
    <pbcast.GMS print_local_addr="false" join_timeout="3000" view_bundling="true"/>
    <tom.TOA/> <!-- the TOA is only needed for total order transactions-->
-   <MFC max_credits="200k" min_threshold="0.20"/>
+   <MFC max_credits="2M" min_threshold="0.4"/>
    <FRAG2 frag_size="60000"/>
    <RSVP timeout="60000" resend_interval="500" ack_on_delivery="false" />
 </config>
