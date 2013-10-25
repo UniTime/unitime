@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget;
 import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.sectioning.ExaminationEnrollmentTable;
+import org.unitime.timetable.gwt.client.solver.SolverAllocatedMemory;
 
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -63,6 +64,7 @@ public enum Components {
 	instructorAvailability("UniTimeGWT:InstructorAvailability", new ComponentFactory() { public void insert(RootPanel panel) { new InstructorAvailabilityWidget().insert(panel); } }),
 	courseLink("UniTimeGWT:CourseLink", true, new ComponentFactory() { public void insert(RootPanel panel) { new CourseDetailsWidget(true).insert(panel); } }),
 	courseDetails("UniTimeGWT:CourseDetails", new ComponentFactory() { public void insert(RootPanel panel) { new CourseDetailsWidget(false).insert(panel); } }),
+	solverAllocatedMemory("UniTimeGWT:SolverAllocatedMem", true, new ComponentFactory() { public void insert(RootPanel panel) { new SolverAllocatedMemory().insert(panel); } }),
 	;
 	
 	
