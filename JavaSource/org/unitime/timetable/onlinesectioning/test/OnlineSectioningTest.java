@@ -59,10 +59,11 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 					CourseRequestInterface request = s.execute(new GetRequest(studentId), user());
 					if (request != null && !request.getCourses().isEmpty()) {
 						FindAssignmentAction action = null;
+						List<ClassAssignmentInterface> assignments = null;
 						for (int i = 1; i <= 5; i++) {
 							try {
 								action = new FindAssignmentAction(request, new ArrayList<ClassAssignmentInterface.ClassAssignment>()); 
-								List<ClassAssignmentInterface> assignments = s.execute(action, user());
+								assignments = s.execute(action, user());
 								if (assignments != null && !assignments.isEmpty()) {
 									List<ClassAssignmentInterface.ClassAssignment> assignment = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 									for (ClassAssignmentInterface.CourseAssignment course: assignments.get(0).getCourseAssignments())
@@ -77,7 +78,7 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 								}
 							}
 						}
-						return action.value();
+						return (assignments == null || assignments.isEmpty() ? 0.0 : assignments.get(0).getValue());
 					} else {
 						return 1.0;
 					}
