@@ -187,7 +187,6 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	
 	@Override
 	public long getAvailableMemory() {
-		System.gc();
 		return Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
 	}
 	
@@ -212,7 +211,9 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	
 	@Override
 	public boolean isAvailable() {
-		return isActive() && getMemoryLimit() <= getAvailableMemory();
+		if (!isActive()) return false;
+		if (getMemoryLimit() > getAvailableMemory()) System.gc();
+		return getMemoryLimit() <= getAvailableMemory();
 	}
 	
 	public List<SolverServer> getServers(boolean onlyAvailable) {
