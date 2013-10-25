@@ -121,8 +121,8 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 					if (request != null && !request.getCourses().isEmpty()) {
 						sLog.info("Find assignments for " + studentId + " ...");
 						FindAssignmentAction action = new FindAssignmentAction(request, new ArrayList<ClassAssignmentInterface.ClassAssignment>()); 
-						s.execute(action, user());
-						return action.value();
+						List<ClassAssignmentInterface> ret = s.execute(action, user());
+						return ret == null || ret.isEmpty() ? 0.0 : ret.get(0).getValue();
 					} else {
 						return 1.0;
 					}

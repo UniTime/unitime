@@ -35,6 +35,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	private ArrayList<CourseAssignment> iAssignments = new ArrayList<CourseAssignment>();
 	private ArrayList<String> iMessages = null;
 	private boolean iCanEnroll = true;
+	private double iValue = 0.0;
 	
 	public ClassAssignmentInterface() {}
 	
@@ -65,6 +66,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	
 	public boolean isCanEnroll() { return iCanEnroll; }
 	public void setCanEnroll(boolean canEnroll) { iCanEnroll = canEnroll; }
+	
+	public double getValue() { return iValue; }
+	public void setValue(double value) { iValue = value; }
 	
 	public static class CourseAssignment implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
