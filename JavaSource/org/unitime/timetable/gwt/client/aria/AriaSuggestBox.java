@@ -29,7 +29,13 @@ import com.google.gwt.aria.client.Id;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HandlesAllKeyEvents;
+import com.google.gwt.event.dom.client.HasBlurHandlers;
+import com.google.gwt.event.dom.client.HasFocusHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyPressEvent;
@@ -41,6 +47,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
@@ -250,11 +257,30 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 		return iSuggestionPopup.isShowing();
 	}
 	
-	private class SuggestionMenu extends MenuBar {
+	public SuggestionMenu getSuggestionMenu() {
+		return iSuggestionMenu;
+	}
+
+	private class SuggestionMenu extends MenuBar implements HasFocusHandlers, HasBlurHandlers {
 		SuggestionMenu() {
 			super(true);
 			setStyleName("");
 			setFocusOnHoverEnabled(false);
+			sinkEvents(Event.ONBLUR);
+			sinkEvents(Event.ONFOCUS);
+		}
+		
+		@Override
+		public void onBrowserEvent(Event event) {
+			switch (DOM.eventGetType(event)) {
+		    case Event.ONBLUR:
+		    	BlurEvent.fireNativeEvent(event, this);
+		    	break;
+		    case Event.ONFOCUS:
+		    	FocusEvent.fireNativeEvent(event, this);
+		    	break;
+			}
+			super.onBrowserEvent(event);
 		}
 		
 		public int getNumItems() {
@@ -296,6 +322,16 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 		public Suggestion getSelectedSuggestion() {
 			MenuItem selectedItem = getSelectedItem();
 			return selectedItem == null ? null : ((SuggestionMenuItem)selectedItem).getSuggestion();
+		}
+
+		@Override
+		public HandlerRegistration addBlurHandler(BlurHandler handler) {
+			return addHandler(handler, BlurEvent.getType());
+		}
+
+		@Override
+		public HandlerRegistration addFocusHandler(FocusHandler handler) {
+			return addHandler(handler, FocusEvent.getType());
 		}
 	}
 	

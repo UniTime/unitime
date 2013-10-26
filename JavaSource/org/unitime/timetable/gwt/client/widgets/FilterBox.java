@@ -1020,10 +1020,13 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 				other.addStyleName("other");
 				for (Widget w: iWidgets) {
 					w.addStyleName("inline");
-					if (w instanceof AriaSuggestBox)
+					if (w instanceof AriaSuggestBox) {
 						fixHandlers(box, ((AriaSuggestBox)w).getValueBox());
-					else
+						fixHandlers(box, ((AriaSuggestBox)w).getSuggestionMenu());
+					} else
 						fixHandlers(box, w);
+					if (w instanceof TimeSelector)
+						fixHandlers(box, ((TimeSelector)w).getTimeMenu());
 					other.add(w);
 				}
 				iPanel.add(other);

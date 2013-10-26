@@ -379,8 +379,11 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
                 query.addParameter("requested", "Xreq" + id, token);
                 id++;
             }
-			if (id > 0)
+			if (id > 0) {
+				requested = "(" + requested + ") or (upper(trim(e.mainContact.lastName || ', ' || e.mainContact.firstName || ' ' || e.mainContact.middleName)) = :Xreq)";
+				query.addParameter("requested", "Xreq", request.getOption("requested").trim().toUpperCase());
 				query.addWhere("requested", requested);
+			}
 		}
 		
 		return query;
@@ -405,10 +408,11 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
                 id++;
             }
 			
+			Set<String> contacts = new HashSet<String>();
 			if (id > 0)
 				for (EventContact contact: (List<EventContact>)instance.limit(20).query(hibSession).list())
-					response.addSuggestion(contact.getName(), contact.getName(), "Requested By", "requested");
-
+					if (contacts.add(contact.getName().trim().toLowerCase()))
+						response.addSuggestion(contact.getName().trim(), contact.getName().trim(), "Requested By", "requested");
 		}
 	}
 

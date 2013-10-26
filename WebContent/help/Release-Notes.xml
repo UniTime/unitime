@@ -30,6 +30,22 @@
 	<category>
 		<title>Bug Fixes</title>
 		<item>
+			<name>Event Filter</name>
+			<description>
+				<line>Requested By: mouse clicking on a suggested name did not update the filter.</line>
+				<line>Requested By: removed duplicate suggestions.</line>
+				<line>After / Before: mouse clicking on a suggested time should not close the filter.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.4.291</version>
+	<release-date>Fri, 18 Oct 2013</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
 			<name>Add / Edit Event</name>
 			<description>
 				<line>Course Related Event: at least one related object (a class, a configuration, a course offering, or an instructional offering) is required.</line>
