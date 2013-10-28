@@ -380,7 +380,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
                 id++;
             }
 			if (id > 0) {
-				requested = "(" + requested + ") or (upper(trim(e.mainContact.lastName || ', ' || e.mainContact.firstName || ' ' || e.mainContact.middleName)) = :Xreq)";
+				requested = "(" + requested + ") or (upper(trim(trailing ' ' from e.mainContact.lastName || ', ' || e.mainContact.firstName || ' ' || e.mainContact.middleName)) = :Xreq)";
 				query.addParameter("requested", "Xreq", request.getOption("requested").trim().toUpperCase());
 				query.addWhere("requested", requested);
 			}
