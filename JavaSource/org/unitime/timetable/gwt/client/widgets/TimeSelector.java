@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
@@ -43,6 +44,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasValue;
@@ -240,6 +242,10 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 		return iPopup.isShowing();
 	}
 	
+	public TimeMenu getTimeMenu() {
+		return iTimes;
+	}
+	
 	public static String slot2time(int slot, int diff) {
 		if (diff <= 0) return TimeUtils.slot2time(slot);
 		if (diff < 24 && diff != 12) return TimeUtils.slot2time(slot) + " (" + (5 * diff) + " mins)";
@@ -266,11 +272,27 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 		return TimeUtils.parseTime(CONSTANTS, text, (iStart == null ? null : iStart.getValue()));
 	}
 	
-	private class TimeMenu extends MenuBar {
+	public class TimeMenu extends MenuBar implements HasAllFocusHandlers {
 		TimeMenu() {
 			super(true);
 			setStyleName("");
 			setFocusOnHoverEnabled(false);
+			setFocusOnHoverEnabled(false);
+			sinkEvents(Event.ONBLUR);
+			sinkEvents(Event.ONFOCUS);
+		}
+		
+		@Override
+		public void onBrowserEvent(Event event) {
+			switch (DOM.eventGetType(event)) {
+		    case Event.ONBLUR:
+		    	BlurEvent.fireNativeEvent(event, this);
+		    	break;
+		    case Event.ONFOCUS:
+		    	FocusEvent.fireNativeEvent(event, this);
+		    	break;
+			}
+			super.onBrowserEvent(event);
 		}
 		
 		public int getNumItems() {
@@ -324,6 +346,16 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 			} else {
 				return null;
 			}
+		}
+		
+		@Override
+		public HandlerRegistration addBlurHandler(BlurHandler handler) {
+			return addHandler(handler, BlurEvent.getType());
+		}
+
+		@Override
+		public HandlerRegistration addFocusHandler(FocusHandler handler) {
+			return addHandler(handler, FocusEvent.getType());
 		}
 	}
 	
