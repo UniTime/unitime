@@ -58,6 +58,16 @@ public class UsageReport implements OnlineSectioningReport.Report {
 	public String[] getOperations() {
 		return new String[] { "section", "suggestions", "reload-student" };
 	}
+	
+	@Override
+	public String[] getExcludeUsers() {
+		return System.getProperty("exclude", "TEST").split(",");
+	}
+	
+	@Override
+	public String getLastTimeStamp() {
+		return System.getProperty("before", null);
+	}
 
 	@Override
 	public void process(OnlineSectioningReport report, String student, List<Action> actions) {

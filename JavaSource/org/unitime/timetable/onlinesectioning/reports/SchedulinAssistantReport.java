@@ -53,6 +53,16 @@ public class SchedulinAssistantReport implements OnlineSectioningReport.Report {
 	public File getReportFolder() {
 		return new File(System.getProperty("user.home", "~"));
 	}
+	
+	@Override
+	public String[] getExcludeUsers() {
+		return System.getProperty("exclude", "TEST").split(",");
+	}
+	
+	@Override
+	public String getLastTimeStamp() {
+		return System.getProperty("before", null);
+	}
 
 	@Override
 	public String[] getOperations() {
