@@ -73,6 +73,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.LastLikeCourseDemand;
+import org.unitime.timetable.model.OnlineSectioningLog;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolutionInfo;
@@ -153,6 +154,7 @@ public class SessionBackup {
     		disallowedNotNullRelations.add(Assignment.class.getName() + ".datePattern");
     		disallowedNotNullRelations.add(Assignment.class.getName() + ".timePattern");
     		disallowedNotNullRelations.add(LastLikeCourseDemand.class.getName() + ".student");
+    		disallowedNotNullRelations.add(OnlineSectioningLog.class.getName() + ".session");
     		
     		Map<String, List<QueueItem>> data = new HashMap<String, List<QueueItem>>();
     		List<QueueItem> sessions = new ArrayList<QueueItem>();
