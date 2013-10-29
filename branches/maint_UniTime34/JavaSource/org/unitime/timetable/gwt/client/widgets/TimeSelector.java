@@ -40,6 +40,9 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.HasSelectionHandlers;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -53,7 +56,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 
-public class TimeSelector extends Composite implements HasValue<Integer>, Focusable, HasAllKeyHandlers, HasAllFocusHandlers {
+public class TimeSelector extends Composite implements HasValue<Integer>, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasSelectionHandlers<Integer> {
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private TimeSelector iStart;
@@ -232,6 +235,15 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 	
 	private void showSuggestions() {
 		iPopup.showRelativeTo(iText);
+		Integer value = getValue();
+		if (value != null && (iTimes.getSelectedItemIndex() < 0 || iTimes.getItem(iTimes.getSelectedItemIndex()).getSlot() != value)) {
+			for (int i = 0; i < iTimes.getNumItems(); i++) {
+				if (iTimes.getItem(i).getSlot() == value) {
+					iTimes.selectItem(i);
+					break;
+				}
+			}
+		}
 		iTimes.scrollToView();
 	}
 	
@@ -368,6 +380,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 						hideSuggestions();
 						setValue(slot, true);
 						iLastSelected = iText.getText();
+						fireSuggestionEvent(slot);
 					}
 				}
 			);
@@ -615,4 +628,12 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 		return iText.addBlurHandler(handler);
 	}
 
+	@Override
+	public HandlerRegistration addSelectionHandler(SelectionHandler<Integer> handler) {
+		return addHandler(handler, SelectionEvent.getType());
+	}
+	
+	private void fireSuggestionEvent(Integer selectedTimeSlot) {
+		SelectionEvent.fire(this, selectedTimeSlot);
+	}
 }

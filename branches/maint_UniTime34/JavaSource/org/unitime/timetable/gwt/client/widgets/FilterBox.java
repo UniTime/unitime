@@ -62,6 +62,8 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -87,6 +89,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -1018,15 +1021,28 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 				}
 				AbsolutePanel other = new AbsolutePanel();
 				other.addStyleName("other");
-				for (Widget w: iWidgets) {
+				for (final Widget w: iWidgets) {
 					w.addStyleName("inline");
 					if (w instanceof AriaSuggestBox) {
 						fixHandlers(box, ((AriaSuggestBox)w).getValueBox());
 						fixHandlers(box, ((AriaSuggestBox)w).getSuggestionMenu());
+						((AriaSuggestBox)w).addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
+							@Override
+							public void onSelection(SelectionEvent<SuggestOracle.Suggestion> event) {
+								((AriaSuggestBox) w).setFocus(true);
+							}
+						});
 					} else
 						fixHandlers(box, w);
-					if (w instanceof TimeSelector)
+					if (w instanceof TimeSelector) {
 						fixHandlers(box, ((TimeSelector)w).getTimeMenu());
+						((TimeSelector)w).addSelectionHandler(new SelectionHandler<Integer>() {
+							@Override
+							public void onSelection(SelectionEvent<Integer> event) {
+								box.setFocus(true);
+							}
+						});
+					}
 					other.add(w);
 				}
 				iPanel.add(other);
