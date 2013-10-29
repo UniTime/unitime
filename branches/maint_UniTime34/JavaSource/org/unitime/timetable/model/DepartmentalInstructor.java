@@ -303,7 +303,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	public static List<DepartmentalInstructor> getAllForInstructor(DepartmentalInstructor di, Long sessionId) {
 		if (di.getExternalUniqueId() == null || di.getExternalUniqueId().trim().isEmpty()) {
 			ArrayList<DepartmentalInstructor> ret = new ArrayList<DepartmentalInstructor>(1);
-			ret.add(di);
+			ret.add(DepartmentalInstructorDAO.getInstance().get(di.getUniqueId()));
 			return ret;
 		}
 		return (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
