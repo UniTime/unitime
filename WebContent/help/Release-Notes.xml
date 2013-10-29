@@ -37,6 +37,12 @@
 				<line>After / Before: mouse clicking on a suggested time should not close the filter.</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Assignment</name>
+			<description>
+				<line>Fixed a lazy initialization exception that was sometimes thrown when there was an instructor with no external id assigned to the class.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
