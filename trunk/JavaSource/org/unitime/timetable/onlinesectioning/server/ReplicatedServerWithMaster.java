@@ -302,7 +302,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 
 	@Override
 	public void update(XStudent student, boolean updateRequests) {
-		iLog.info("Update " + student + " with requests " + student.getRequests());
+		iLog.debug("Update " + student + " with requests " + student.getRequests());
 		if (!isMaster())
 			iLog.warn("Updating student on a slave node. That is suspicious.");
 		Lock lock = writeLock();
