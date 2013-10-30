@@ -154,3 +154,8 @@ message CourseRequestOption {
 	required OptionType type = 1;
 	repeated Section section = 2;
 }
+
+message ExportedLog {
+	required string student = 1;
+	repeated Action action = 2;
+}
