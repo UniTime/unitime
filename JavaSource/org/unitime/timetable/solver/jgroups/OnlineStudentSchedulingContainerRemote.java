@@ -120,7 +120,7 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 			throw (Exception)e.getTargetException();
 		} catch (Exception e) {
 			if ("exists".equals(method.getName()) && e instanceof SuspectedException) return false;
-			sLog.error("Excution of " + method + " on server " + sessionId + " failed: " + e.getMessage(), e);
+			sLog.debug("Excution of " + method.getName() + " on server " + sessionId + " failed: " + e.getMessage(), e);
 			throw e;
 		}
 	}

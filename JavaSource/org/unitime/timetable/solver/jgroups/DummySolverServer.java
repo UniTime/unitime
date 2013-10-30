@@ -314,7 +314,7 @@ public class DummySolverServer implements SolverServer, MessageListener {
 			try {
 				return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), user, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, SolverServerImplementation.sFirstResponse);
 			} catch (Exception e) {
-				sLog.error("Excution of " + method + " on solver " + user + " failed: " + e.getMessage(), e);
+				sLog.debug("Excution of " + method.getName() + " on solver " + user + " failed: " + e.getMessage(), e);
 				throw e;
 			}
 		}
