@@ -95,7 +95,7 @@ public class OnlineSectioningReport implements Runnable {
         Long sessionId = session.getUniqueId();
         
 		String student = null;
-		String filter = null;
+		String filter = "";
 		String[] operations = iReport.getOperations();
 		if (operations == null) {
 			filter = "";
@@ -108,7 +108,23 @@ public class OnlineSectioningReport implements Runnable {
 			}
 			filter += ")";
 		}
-		
+		String exclude[] = iReport.getExcludeUsers();
+		if (exclude != null) {
+			if (filter.isEmpty())
+				filter += "l.user not in (";
+			else
+				filter += "and l.user not in(";
+			for (int i = 0; i < exclude.length; i++) {
+				filter += (i > 0 ? "," : "") + "'" + exclude[i] + "'";
+			}
+			filter += ")";
+		}
+		if (iReport.getLastTimeStamp() != null) {
+			if (filter.isEmpty())
+				filter += "l.timeStamp < to_timestamp('" + iReport.getLastTimeStamp() + "', 'YYYY-MM-DD')";
+			else
+				filter += "and l.timeStamp < to_timestamp('" + iReport.getLastTimeStamp() + "', 'YYYY-MM-DD')";
+		}
 		List<OnlineSectioningLog.Action> actions = new ArrayList<OnlineSectioningLog.Action>();
 		for (Iterator<org.unitime.timetable.model.OnlineSectioningLog> i = hibSession.createQuery(
 				"select l from OnlineSectioningLog l where " +
@@ -208,6 +224,8 @@ public class OnlineSectioningReport implements Runnable {
 		public String getTerm();
 		public String getCampus();
 		public String[] getOperations();
+		public String[] getExcludeUsers();
+		public String getLastTimeStamp();
 		public void process(OnlineSectioningReport report, String student, List<OnlineSectioningLog.Action> actions);
 	}
 	
