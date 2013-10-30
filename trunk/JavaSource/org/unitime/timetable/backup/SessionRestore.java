@@ -622,6 +622,8 @@ public class SessionRestore {
             in.close();
             if (debug != null) debug.close();
             
+            HibernateUtil.closeHibernate();
+            
 		} catch (Exception e) {
 			sLog.fatal("Backup failed: " + e.getMessage(), e);
 		}
