@@ -431,6 +431,17 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 					}
 					addChip(new Chip("after", text), true);
 				}
+				Chip ch2 = getChip("before");
+				if (et.getValue() == null) {
+					if (ch2 != null) removeChip(ch2, true);
+				} else {
+					String text = TimeUtils.slot2time(et.getValue());
+					if (ch2 != null) {
+						if (ch2.getCommand().equals(text)) return;
+						removeChip(ch2, false);
+					}
+					addChip(new Chip("before", text), true);
+				}	
 			}
 		});
 		et.addValueChangeHandler(new ValueChangeHandler<Integer>() {
