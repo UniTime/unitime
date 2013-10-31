@@ -73,7 +73,7 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 	private Long toStudentId(OnlineSectioningLog.Entity student) {
 		if (iStudentIds == null) return student.getUniqueId();
 		Long id = iStudentIds.get(student.getExternalId());
-		return id == null ? student.getUniqueId() : null;
+		return id == null ? student.getUniqueId() : id;
 	}
 	
 	private Long toCourseId(OnlineSectioningLog.Entity course) {
@@ -272,15 +272,18 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 	            while ((log = readLog(cin)) != null) {
 	            	List<OnlineSectioningAction<?>> actions = new ArrayList<OnlineSectioningAction<?>>();
 	            	Long studentId = null;
+	            	boolean hasSectionOrSuggestion = false;
 	            	for (OnlineSectioningLog.Action action: log.getActionList()) {
 	            		if (studentId == null && action.hasStudent() && action.getStudent().hasExternalId())
 	            			studentId = toStudentId(action.getStudent());
 	            		OnlineSectioningAction<?> a = convert(action);
 	            		if (a != null) {
+	            			if (a instanceof FindAssignmentAction || a instanceof ComputeSuggestionsAction)
+	            				hasSectionOrSuggestion = true;
 	            			actions.add(a);
 	            		}
 	            	}
-	            	if (studentId != null && !actions.isEmpty())
+	            	if (studentId != null && !actions.isEmpty() && hasSectionOrSuggestion)
 	            		operations.add(new ReplayOperation(studentId, actions));
 	            }
 			} finally {
