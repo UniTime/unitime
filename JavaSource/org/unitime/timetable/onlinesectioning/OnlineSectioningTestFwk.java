@@ -76,6 +76,8 @@ public abstract class OnlineSectioningTestFwk {
         props.setProperty("log4j.logger.org.jgroups", "INFO");
         props.setProperty("log4j.logger.net.sf.ehcache.distribution.jgroups", "WARN");
         props.setProperty("log4j.logger.org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory", "ERROR");
+        props.setProperty("log4j.logger.net.sf.ehcache.distribution.jgroups.JGroupsCacheReceiver", "ERROR");
+        props.setProperty("log4j.logger.org.unitime.timetable.solver.jgroups.DummySolverServer", "INFO");
         PropertyConfigurator.configure(props);
 	}
 	
