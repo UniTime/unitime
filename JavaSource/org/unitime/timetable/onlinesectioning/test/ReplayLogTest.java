@@ -56,6 +56,11 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 	private Map<String, Long> iCourseIds = null;
 	private Map<String, Long> iClassIds = null;
 	
+	private String[] sOkErrors = new String[] {
+			"Unable to enroll into .*, the class is no longer available\\.",
+			"No courses requested\\.",
+	};
+	
 	private ReplayLogTest(File logFile) {
 		iLogFile = logFile;
 	}
@@ -262,6 +267,7 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 			}
 		}
 		
+		int nrTasks = Integer.valueOf(System.getProperty("nrTasks", "-1"));
 		List<Operation> operations = new ArrayList<OnlineSectioningTestFwk.Operation>();
 		try {
 			FileInputStream in = new FileInputStream(iLogFile);
@@ -285,6 +291,8 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 	            	}
 	            	if (studentId != null && !actions.isEmpty() && hasSectionOrSuggestion)
 	            		operations.add(new ReplayOperation(studentId, actions));
+	            	
+	            	if (nrTasks > 0 && operations.size() >= 3 * nrTasks) break;
 	            }
 			} finally {
 				in.close();
@@ -312,7 +320,9 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 				ret = iServer.execute(action, user());
 				iGood ++;
 			} catch (SectioningException e) {
-				sLog.warn("Failed to run " + action.name() + " for " + iStudentId + ": " + e.getMessage());
+				for (String ok: sOkErrors)
+					if (e.getMessage() != null && e.getMessage().matches(ok)) return null;
+				sLog.warn("Failed to run " + action.name() + " for " + iStudentId + ": " + e.getMessage(), e);
 			}
 			return ret;
 		}
@@ -363,6 +373,8 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 	}
 	
 	public static void main(String args[]) {
-		new ReplayLogTest(new File(args[0])).test(-1, Integer.valueOf(System.getProperty("nrConcurrent", "10")));
+		new ReplayLogTest(new File(args[0])).test(
+				Integer.valueOf(System.getProperty("nrTasks", "-1")),
+				Integer.valueOf(System.getProperty("nrConcurrent", "10")));
 	}
 }
