@@ -35,9 +35,11 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.ServerCallback;
+import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.ClassAssignmentChanged;
 import org.unitime.timetable.onlinesectioning.updates.ExpireReservationsAction;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
+import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllStudents;
 import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
@@ -48,18 +50,17 @@ import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 public class OnlineStudentSchedulingUpdater extends Thread {
 	private Logger iLog;
 	private long iSleepTimeInSeconds = 5;
-	private Date iLastTimeStamp;
 	private boolean iRun = true;
-	private Long iLastReservationCheck = null;
 	
 	private OnlineStudentSchedulingContainer iContainer = null;
 	private AcademicSessionInfo iSession = null; 
+	private Date iLastTimeStamp = null;
 	
 	public OnlineStudentSchedulingUpdater(OnlineStudentSchedulingContainer container, AcademicSessionInfo session, Date lastTimeStamp) {
 		super();
 		iContainer = container;
-		iLastTimeStamp = lastTimeStamp;
 		iSession = session;
+		iLastTimeStamp = lastTimeStamp;
 		setDaemon(true);
 		setName("Updater[" + getAcademicSession().toCompactString() + "]");
 		iSleepTimeInSeconds = Long.parseLong(ApplicationProperties.getProperty("unitime.sectioning.queue.updateInterval", "30"));
@@ -73,9 +74,13 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 				ApplicationProperties.setSessionId(getAcademicSession().getUniqueId());
 			while (iRun) {
 				try {
-					checkForUpdates();
-					checkForExpiredReservations();
-					persistExpectedSpaces();
+					OnlineSectioningServer server = iContainer.getInstance(getAcademicSession().getUniqueId());
+					if (server != null && server.isMaster()) {
+						checkForUpdates(server);
+						if (!iRun) break;
+						checkForExpiredReservations(server);
+						persistExpectedSpaces(server);
+					}
 				} finally {
 					_RootDAO.closeCurrentThreadSessions();
 				}
@@ -100,17 +105,20 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 		return iContainer.getInstance(getAcademicSession().getUniqueId());
 	}
 	
-	public void checkForUpdates() {
+	public void checkForUpdates(OnlineSectioningServer server) {
 		try {
 			org.hibernate.Session hibSession = StudentSectioningQueueDAO.getInstance().createNewSession();
 			try {
+				iLastTimeStamp = server.getProperty("Updater.LastTimeStamp", iLastTimeStamp);
 				for (StudentSectioningQueue q: StudentSectioningQueue.getItems(hibSession, getAcademicSession().getUniqueId(), iLastTimeStamp)) {
 					try {
-						processChange(q);
+						processChange(server, q);
 					} catch (Exception e) {
 						iLog.error("Update failed: " + e.getMessage(), e);
 					}
+					if (!iRun) break;
 					iLastTimeStamp = q.getTimeStamp();
+					server.setProperty("Updater.LastTimeStamp", iLastTimeStamp);
 				}
 			} finally {
 				hibSession.close();
@@ -120,22 +128,19 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 		}
 	}
 	
-	public void checkForExpiredReservations() {
-		if (getAcademicSession() == null) return; // no work for general updater
+	public void checkForExpiredReservations(OnlineSectioningServer server) {
 		long ts = System.currentTimeMillis(); // current time stamp
 		// the check was done within the last hour -> no need to repeat
-		if (iLastReservationCheck != null && ts - iLastReservationCheck < 3600000) return;
+		Long lastReservationCheck = server.getProperty("Updater.LastReservationCheck", null);
+		if (lastReservationCheck != null && ts - lastReservationCheck < 3600000) return;
 		
 		if (Calendar.getInstance().get(Calendar.HOUR_OF_DAY) == 0) {
 			// first time after midnight (TODO: allow change)
-			OnlineSectioningServer server = iContainer.getInstance(getAcademicSession().getUniqueId());
-			if (server != null && server.isMaster()) {
-				iLastReservationCheck = ts;
-				try {
-					server.execute(new ExpireReservationsAction(), user());
-				} catch (Exception e) {
-					iLog.error("Expire reservations failed: " + e.getMessage(), e);
-				}
+			server.setProperty("Updater.LastReservationCheck", ts);
+			try {
+				server.execute(new ExpireReservationsAction(), user());
+			} catch (Exception e) {
+				iLog.error("Expire reservations failed: " + e.getMessage(), e);
 			}
 		}
 	}
@@ -147,113 +152,75 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 			.setType(OnlineSectioningLog.Entity.EntityType.OTHER).build();
 	}
 	
-	public void persistExpectedSpaces() {
-		if (getAcademicSession() == null) return; // no work for general updater
-		
-		OnlineSectioningServer server = iContainer.getInstance(getAcademicSession().getUniqueId());
-		if (server != null) {
-			try {
-				List<Long> offeringIds = server.getOfferingsToPersistExpectedSpaces(2000 * iSleepTimeInSeconds);
-				if (!offeringIds.isEmpty()) {
-					server.execute(new PersistExpectedSpacesAction(offeringIds), user(), new ServerCallback<Boolean>() {
-						@Override
-						public void onSuccess(Boolean result) {}
-						@Override
-						public void onFailure(Throwable exception) {
-							iLog.error("Failed to persist expected spaces: " + exception.getMessage(), exception);
-						}
-					});
-				}
-			} catch (Exception e) {
-				iLog.error("Failed to persist expected spaces: " + e.getMessage(), e);
+	public void persistExpectedSpaces(OnlineSectioningServer server) {
+		try {
+			List<Long> offeringIds = server.getOfferingsToPersistExpectedSpaces(2000 * iSleepTimeInSeconds);
+			if (!offeringIds.isEmpty()) {
+				server.execute(new PersistExpectedSpacesAction(offeringIds), user(), new ServerCallback<Boolean>() {
+					@Override
+					public void onSuccess(Boolean result) {}
+					@Override
+					public void onFailure(Throwable exception) {
+						iLog.error("Failed to persist expected spaces: " + exception.getMessage(), exception);
+					}
+				});
 			}
+		} catch (Exception e) {
+			iLog.error("Failed to persist expected spaces: " + e.getMessage(), e);
 		}
 	}
 	
-	protected void processChange(StudentSectioningQueue q) {
-		OnlineSectioningServer server = iContainer.getInstance(q.getSessionId());
+	protected void processChange(OnlineSectioningServer server, StudentSectioningQueue q) {
 		switch (StudentSectioningQueue.Type.values()[q.getType()]) {
 		case SESSION_RELOAD:
-			sessionStatusChanged(q.getSessionId(), true);
+			iLog.info("Reloading " + server.getAcademicSession());
+			server.execute(new ReloadAllData(), q.getUser());
+			if (server.getAcademicSession().isSectioningEnabled())
+				server.execute(new CheckAllOfferingsAction(), q.getUser());
 			break;
 		case SESSION_STATUS_CHANGE:
-			sessionStatusChanged(q.getSessionId(), false);
+			Session session = SessionDAO.getInstance().get(iSession.getUniqueId());
+			if (session == null || (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents())) {
+				if (iContainer instanceof OnlineStudentSchedulingContainerRemote) {
+					try {
+						((OnlineStudentSchedulingContainerRemote)iContainer).getDispatcher().callRemoteMethods(
+								null, "unload", new Object[] { session.getUniqueId(), false }, new Class[] { Long.class, boolean.class }, SolverServerImplementation.sAllResponses);
+					} catch (Exception e) {
+						iLog.error("Failed to unload server: " + e.getMessage(), e);
+					}
+				} else {
+					iContainer.unload(getAcademicSession().getUniqueId(), false);
+				}
+			} else {
+				iLog.info("Session status changed for " + session.getLabel());
+				if (server.getAcademicSession().isSectioningEnabled() && !session.getStatusType().canOnlineSectionStudents())
+					server.releaseAllOfferingLocks();
+				getAcademicSession().update(session);
+				server.setProperty("AcademicSession", getAcademicSession());
+			}
 			break;
 		case STUDENT_ENROLLMENT_CHANGE:
-			if (server != null && server.isMaster()) {
-				List<Long> studentIds = q.getIds();
-				if (studentIds == null || studentIds.isEmpty()) {
-					iLog.info("All students changed for " + server.getAcademicSession());
-					server.execute(new ReloadAllStudents(), q.getUser());
-				} else {
-					server.execute(new ReloadStudent(studentIds), q.getUser());
-				}
+			List<Long> studentIds = q.getIds();
+			if (studentIds == null || studentIds.isEmpty()) {
+				iLog.info("All students changed for " + server.getAcademicSession());
+				server.execute(new ReloadAllStudents(), q.getUser());
+			} else {
+				server.execute(new ReloadStudent(studentIds), q.getUser());
 			}
 			break;
 		case CLASS_ASSIGNMENT_CHANGE:
-			if (server != null && server.isMaster()) {
-				server.execute(new ClassAssignmentChanged(q.getIds()), q.getUser());
-			}
+			server.execute(new ClassAssignmentChanged(q.getIds()), q.getUser());
 			break;
 		case OFFERING_CHANGE:
-			if (server != null && server.isMaster()) {
-				server.execute(new ReloadOfferingAction(q.getIds()), q.getUser());
-			}
+			server.execute(new ReloadOfferingAction(q.getIds()), q.getUser());
 			break;
 		default:
 			iLog.error("Student sectioning queue type " + StudentSectioningQueue.Type.values()[q.getType()] + " not known.");
 		}
 	}
 
-	private void sessionStatusChanged(Long academicSessionId, boolean reload) {
-		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
-		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
-		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
-		String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
-		try {
-			final Session session = SessionDAO.getInstance().get(academicSessionId, hibSession);
-			
-			OnlineSectioningServer server = iContainer.getInstance(academicSessionId);
-			
-			if (session == null) {
-				if (server != null) {
-					iLog.info("Unloading " + server.getAcademicSession());
-					iContainer.unload(server.getAcademicSession().getUniqueId());
-				}
-				return;
-			}
-			iLog.info("Session status changed for " + session.getLabel());
-			
-			boolean load = true;
-			if (year != null && !year.equals(session.getAcademicYear())) load = false;
-			if (term != null && !term.equals(session.getAcademicTerm())) load = false;
-			if (campus != null && !campus.equals(session.getAcademicInitiative())) load = false;
-			if (session.getStatusType().isTestSession()) load = false;
-			if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) load = false;
-
-			if ((!load || reload) && server != null) {
-				iLog.info("Unloading " + server.getAcademicSession());
-				iContainer.unload(server.getAcademicSession().getUniqueId());
-				server = null;
-			}
-			
-			if (!load) return;
-			
-			if (server == null) {
-				iContainer.createInstance(academicSessionId, null);
-			} else {
-				if (server.getAcademicSession().isSectioningEnabled() && !session.getStatusType().canOnlineSectionStudents())
-					server.releaseAllOfferingLocks();
-				server.getAcademicSession().setSectioningEnabled(session.getStatusType().canOnlineSectionStudents());
-				server.getAcademicSession().update(session);
-			}
-		} finally {
-			hibSession.close();
-		}
-	}
-	
-	public void stopUpdating() {
+	public void stopUpdating(boolean interrupt) {
 		iRun = false;
-		interrupt();
+		if (interrupt) interrupt();
 	}
 }
