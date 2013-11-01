@@ -464,7 +464,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>org.unitime.timetable.solver.remote.core.Startup</mainClass>
+							<mainClass>org.unitime.timetable.solver.jgroups.SolverServerImplementation</mainClass>
 						</manifest>
 						<manifestEntries>
 							<Build-Number>${build.number}</Build-Number>

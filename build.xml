@@ -126,38 +126,12 @@
 				<include name="**/*.ftl" />
 			</fileset>
 			<manifest>
-				<attribute name="Main-Class" value="org.unitime.timetable.solver.remote.core.Startup" />
-				<attribute name="Class-Path" value="activation-1.1.jar antlr-2.7.6.jar backport-util-concurrent-3.1.jar commons-collections-3.1.jar commons-configuration-1.8.jar commons-dbcp-1.4.jar commons-lang-2.6.jar commons-logging-1.1.1.jar commons-pool-1.5.4.jar cpsolver-1.2.129.jar dom4j-1.6.1.jar ehcache-1.5.0.jar gwt-servlet-2.5.0.jar hibernate-core-3.5.6-Final.jar hibernate-ehcache-3.5.6-Final.jar javassist-3.15.0-GA.jar jsp-api-2.1.jar jsr107cache-1.0.jar jta-1.1.jar log4j-1.2.16.jar mail-1.4.5.jar mysql-connector-java-5.1.20.jar ojdbc14-10.2.0.4.0.jar protobuf-java-2.4.1.jar servlet-api-2.5.jar slf4j-api-1.5.8.jar slf4j-log4j12-1.5.8.jar xml-apis-1.0.b2.jar commons-logging-1.0.4.jar spring-security-core-3.1.0.RELEASE.jar" />
+				<attribute name="Main-Class" value="org.unitime.timetable.solver.jgroups.SolverServerImplementation" />
+				<attribute name="Class-Path" value="antlr-2.7.7.jar commons-dbcp-1.4.jar commons-logging-1.0.4.jar commons-pool-1.5.4.jar cpsolver-1.2.129.jar dom4j-1.6.1.jar ehcache-core-2.6.6.jar ehcache-jgroupsreplication-1.7.jar gwt-servlet-2.5.1.jar hibernate-commons-annotations-4.0.2.Final.jar hibernate-core-4.2.5.Final.jar hibernate-ehcache-4.2.5.Final.jar hibernate-infinispan-4.2.5.Final.jar hibernate-jpa-2.0-api-1.0.1.Final.jar infinispan-core-5.3.0.Final.jar javassist-3.18.0-GA.jar jboss-logging-3.1.0.GA.jar jboss-marshalling-1.3.15.GA.jar jboss-marshalling-river-1.3.15.GA.jar jboss-transaction-api_1.1_spec-1.0.1.Final.jar jgroups-3.3.5.Final.jar jsp-api-2.1.jar log4j-1.2.17.jar mail-1.4.7.jar mysql-connector-java-5.1.26.jar ojdbc14-10.2.0.4.0.jar protobuf-java-2.5.0.jar servlet-api-2.5.jar slf4j-api-1.7.5.jar slf4j-log4j12-1.7.5.jar spring-security-core-3.1.4.RELEASE.jar" />
 				<attribute name="Timetabling-Version" value="3.5_bld${build.number}"/>
 			</manifest>
 		</jar>
 	</target>
-
-	<target name="solver-jar" depends="compile-java">
-		<copy file="${src.dir}/custom.properties" tofile="${temp.dir}/custom.properties" failonerror="false" />
-		<echo message="" file="${temp.dir}/custom.properties" append="true"/>
-		<jar destfile="${dist.dir}/solver.jar">
-			<fileset dir="${build.dir}">
-				<include name="org/unitime/timetable/solver/remote/core/*.class" />
-			</fileset>
-			<fileset dir="${temp.dir}">
-				<include name="custom.properties" />
-			</fileset>
-			<fileset dir="${src.dir}">
-				<include name="application.properties" />
-				<include name="solver.key" />
-			</fileset>
-			<fileset dir="${jsp.dir}">
-				<include name="images/solver*.gif" />
-			</fileset>
-			<manifest>
-				<attribute name="Main-Class" value="org.unitime.timetable.solver.remote.core.StartupMinimal" />
-				<attribute name="Class-Path" value="tray-win32.jar" />
-				<attribute name="Timetabling-Version" value="3.5_bld${build.number}"/>
-			</manifest>
-		</jar>
-		<signjar jar="${dist.dir}/solver.jar" alias="solver" storepass="Fh3g1H03e95kf54xZ" keystore="${src.dir}/solver.key"/>
-	</target>	
 
 	<target name="copy-libs" depends="init">
 		<copy todir="${war.dir}/WEB-INF/lib" overwrite="Yes" preservelastmodified="Yes">
@@ -176,7 +150,7 @@
 		</copy>
 	</target>
 
-	<target name="copy-jsp" depends="init, solver-jar">
+	<target name="copy-jsp" depends="init, compile-java">
 		<copy todir="${war.dir}" overwrite="Yes" preservelastmodified="Yes">
 			<fileset dir="${jsp.dir}">
 				<include name="**/*.js" />
@@ -210,7 +184,6 @@
             <replacefilter token="@build.date@" property="build.date"/>
             <replacefilter token="@build.number@" property="build.number"/>
         </replace>
-		<copy todir="${war.dir}/solver" file="${dist.dir}/solver.jar"/>
 		<copy todir="${dist.dir}" file="${war.dir}/help/Release-Notes.xml"/>
 		<copy todir="${dist.dir}" file="${war.dir}/help/Release-Notes.css"/>
 	</target>
@@ -318,7 +291,6 @@
 			<tarfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
 			<tarfileset dir="${basedir}/Documentation/Database/Oracle" includes="*.sql" prefix="doc/oracle"/>
 			<tarfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
-			<tarfileset dir="${dist.dir}" includes="solver.jar" prefix="solver-min"/>
 			<tarfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
 			<tarfileset dir="${lib.dir}" prefix="solver">
 				<include name="activation-1.1.jar"/>
@@ -369,7 +341,6 @@
 			<zipfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
 			<zipfileset dir="${basedir}/Documentation/Database/Oracle" includes="*.sql" prefix="doc/oracle"/>
 			<zipfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
-			<zipfileset dir="${dist.dir}" includes="solver.jar" prefix="solver-min"/>
 			<zipfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
 			<zipfileset dir="${lib.dir}" prefix="solver">
 				<include name="activation-1.1.jar"/>
