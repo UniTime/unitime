@@ -152,15 +152,15 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 	
 	@Override
 	public void unloadSolver(String sessionId) {
-		unload(Long.valueOf(sessionId));
+		unload(Long.valueOf(sessionId), true);
 	}
 	
-	public void unload(Long academicSessionId) {
+	public void unload(Long academicSessionId, boolean interrupt) {
 		iGlobalLock.writeLock().lock();
 		try {
 			OnlineStudentSchedulingUpdater u = iUpdaters.get(academicSessionId);
 			if (u != null)
-				u.stopUpdating();
+				u.stopUpdating(interrupt);
 			OnlineSectioningServer s = iInstances.get(academicSessionId);
 			if (s != null)
 				s.unload(true);
@@ -234,7 +234,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		iGlobalLock.writeLock().lock();
 		try {
 			for (OnlineStudentSchedulingUpdater u: iUpdaters.values()) {
-				u.stopUpdating();
+				u.stopUpdating(true);
 				if (u.getAcademicSession() != null) {
 					OnlineSectioningServer s = iInstances.get(u.getAcademicSession().getUniqueId());
 					if (s != null) s.unload(false);

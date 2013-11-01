@@ -75,7 +75,6 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 	private Map<Long, XHashSet<XCourseRequest>> iOfferingRequests;
 	private Cache<Long, XExpectations> iExpectations;
 	private Cache<Long, Boolean> iOfferingLocks;
-	private Cache<String, Object> iConfig;
 
 	public ReplicatedServerWithMaster(OnlineSectioningServerContext context) throws SectioningException {
 		super(context);
@@ -104,23 +103,16 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 		iOfferingRequests = new HashMap<Long, XHashSet<XCourseRequest>>();
 		iExpectations = getCache("Expectations");
 		iOfferingLocks = getCache("OfferingLocks");
-		iConfig = getCache("Config");
+		
+		Map<String, Object> original = new HashMap<String, Object>(iProperties);
+		iProperties = getCache("Config");
+		if (iProperties.isEmpty()) iProperties.putAll(original);
 		
 		iOfferingTable.addListener(new OfferingTableListener(iOfferingTable.values()));
 		iStudentTable.addListener(new StudentTableListener(iStudentTable.values()));
 		super.load(context);
 	}
 	
-	@Override
-	protected void setReady(boolean ready) {
-		iConfig.put("ReadyToServe", Boolean.TRUE);
-	}
-	
-	@Override
-	public boolean isReady() {
-		return Boolean.TRUE.equals(iConfig.get("ReadyToServe"));
-	}
-
 	@Override
 	public void unload(boolean remove) {
 		boolean master = isMaster();

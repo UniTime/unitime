@@ -82,7 +82,6 @@ import org.unitime.timetable.util.MemoryCounter;
 public abstract class AbstractServer implements OnlineSectioningServer {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	protected Log iLog = LogFactory.getLog(AbstractServer.class);
-	private AcademicSessionInfo iAcademicSession = null;
 	private DistanceMetric iDistanceMetric = null;
 	private DataProperties iConfig = null;
 	
@@ -90,7 +89,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	private Queue<Runnable> iExecutorQueue = new LinkedList<Runnable>();
 	private HashSet<CacheElement<Long>> iOfferingsToPersistExpectedSpaces = new HashSet<CacheElement<Long>>();
 	private static ThreadLocal<LinkedList<OnlineSectioningHelper>> sHelper = new ThreadLocal<LinkedList<OnlineSectioningHelper>>();
-	private boolean iReadyToServe = false;
+	protected Map<String, Object> iProperties = new HashMap<String, Object>();
 	
 	private MasterAcquiringThread iMasterThread;
 	
@@ -103,9 +102,10 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			Session session = SessionDAO.getInstance().get(context.getAcademicSessionId(), hibSession);
 			if (session == null)
 				throw new SectioningException(MSG.exceptionSessionDoesNotExist(context.getAcademicSessionId() == null ? "null" : context.getAcademicSessionId().toString()));
-			iAcademicSession = new AcademicSessionInfo(session);
-			iLog = LogFactory.getLog(OnlineSectioningServer.class.getName() + ".server[" + iAcademicSession.toCompactString() + "]");
-			iExecutor = new AsyncExecutor();
+			AcademicSessionInfo academicSession = new AcademicSessionInfo(session);
+			iLog = LogFactory.getLog(OnlineSectioningServer.class.getName() + ".server[" + academicSession.toCompactString() + "]");
+			iProperties.put("AcademicSession", academicSession);
+			iExecutor = new AsyncExecutor(academicSession);
 			iExecutor.start();
 		} finally {
 			hibSession.close();
@@ -119,6 +119,8 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		if (context.getLockService() != null) {
 			iMasterThread = new MasterAcquiringThread(context);
 			iMasterThread.start();
+		} else {
+			loadOnMaster(context);
 		}
 	}
 		
@@ -135,7 +137,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 					iLog.error("Failed to load server: " + exception.getMessage(), exception);
 					throw exception;
 				}
-				if (iAcademicSession.isSectioningEnabled()) {
+				if (getAcademicSession().isSectioningEnabled()) {
 					try {
 						execute(new CheckAllOfferingsAction(), user);
 					} catch (Throwable exception) {
@@ -149,7 +151,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 				execute(new ReloadAllData(), user, new ServerCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
-						if (iAcademicSession.isSectioningEnabled())
+						if (getAcademicSession().isSectioningEnabled())
 							execute(new CheckAllOfferingsAction(), user, new ServerCallback<Boolean>() {
 								@Override
 								public void onSuccess(Boolean result) {
@@ -215,12 +217,12 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	}
 	
 	protected void setReady(boolean ready) {
-		iReadyToServe = ready;
+		setProperty("ReadyToServe", Boolean.TRUE);
 	}
 	
 	@Override
 	public boolean isReady() {
-		return iReadyToServe;
+		return Boolean.TRUE.equals(getProperty("ReadyToServe", Boolean.FALSE));
 	}
 	
 	@Override
@@ -233,7 +235,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	public DistanceMetric getDistanceMetric() { return iDistanceMetric; }
 	
 	@Override
-	public AcademicSessionInfo getAcademicSession() { return iAcademicSession; }
+	public AcademicSessionInfo getAcademicSession() { return getProperty("AcademicSession", null); }
 	
 	@Override
 	public String getCourseDetails(Long courseId, CourseDetailsProvider provider) {
@@ -354,8 +356,8 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	public class AsyncExecutor extends Thread {
 		private boolean iStop = false;
 		
-		public AsyncExecutor() {
-			setName("AsyncExecutor[" + getAcademicSession() + "]");
+		public AsyncExecutor(AcademicSessionInfo session) {
+			setName("AsyncExecutor[" + session + "]");
 			setDaemon(true);
 		}
 		
@@ -617,5 +619,19 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			if (!release())
 				interrupt();
 		}
+	}
+	
+	@Override
+	public <E> E getProperty(String name, E defaultValue) {
+		E ret = (E)iProperties.get(name);
+		return (ret == null ? defaultValue : ret);
+	}
+
+	@Override
+	public <E> void setProperty(String name, E value) {
+		if (value == null)
+			iProperties.remove(name);
+		else
+			iProperties.put(name,  value);
 	}
 }

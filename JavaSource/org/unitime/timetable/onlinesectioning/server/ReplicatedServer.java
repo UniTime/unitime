@@ -22,8 +22,10 @@ package org.unitime.timetable.onlinesectioning.server;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
@@ -75,7 +77,6 @@ public class ReplicatedServer extends AbstractServer {
 	private Cache<Long, Set<XCourseRequest>> iOfferingRequests;
 	private Cache<Long, XExpectations> iExpectations;
 	private Cache<Long, Boolean> iOfferingLocks;
-	private Cache<String, Object> iConfig;
 
 	public ReplicatedServer(OnlineSectioningServerContext context) throws SectioningException {
 		super(context);
@@ -104,7 +105,11 @@ public class ReplicatedServer extends AbstractServer {
 		iOfferingRequests = getCache("OfferingRequests");
 		iExpectations = getCache("Expectations");
 		iOfferingLocks = getCache("OfferingLocks");
-		iConfig = getCache("Config");
+
+		Map<String, Object> original = new HashMap<String, Object>(iProperties);
+		iProperties = getCache("Config");
+		if (iProperties.isEmpty()) iProperties.putAll(original);
+
 		if (isOptimisticLocking())
 			iLog.info("Using optimistic locking.");
 		super.load(context);
@@ -112,16 +117,6 @@ public class ReplicatedServer extends AbstractServer {
 	
 	private boolean isOptimisticLocking() {
 		return iOfferingLocks.getAdvancedCache().getCacheConfiguration().transaction().lockingMode() == LockingMode.OPTIMISTIC;
-	}
-	
-	@Override
-	protected void setReady(boolean ready) {
-		iConfig.put("ReadyToServe", Boolean.TRUE);
-	}
-	
-	@Override
-	public boolean isReady() {
-		return Boolean.TRUE.equals(iConfig.get("ReadyToServe"));
 	}
 	
 	@Override
