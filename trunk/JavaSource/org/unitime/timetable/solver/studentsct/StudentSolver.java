@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -113,6 +114,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     private Thread iWorkThread = null;
 
     private transient Map<Long, XCourse> iCourseInfoCache = null;
+    private Map<String, Object> iOnlineProperties = new HashMap<String, Object>();
     
     public StudentSolver(DataProperties properties, StudentSolverDisposeListener disposeListener) {
         super(properties);
@@ -1095,5 +1097,19 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	@Override
 	public long getMemUsage() {
 		return new MemoryCounter().estimate(this);
+	}
+
+	@Override
+	public <E> E getProperty(String name, E defaultValue) {
+		E ret = (E)iOnlineProperties.get(name);
+		return ret == null ? defaultValue : ret;
+	}
+
+	@Override
+	public <E> void setProperty(String name, E value) {
+		if (value == null)
+			iOnlineProperties.remove(name);
+		else
+			iOnlineProperties.put(name, value);
 	}
 }

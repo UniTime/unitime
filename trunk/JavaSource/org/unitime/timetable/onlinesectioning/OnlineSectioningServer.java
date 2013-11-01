@@ -151,6 +151,9 @@ public interface OnlineSectioningServer {
 	
 	public long getMemUsage();
 	
+	public <E> E getProperty(String name, E defaultValue);
+	public <E> void setProperty(String name, E value);
+	
 	public static interface Lock {
 		void release();
 	}
