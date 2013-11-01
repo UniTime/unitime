@@ -2063,7 +2063,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("{0} is not managed in UniTime or it is disabled for events.")
 	String conflictNotEventRoom(String locationName);
 	
-	@DefaultMessage("Not allowed to request an event in {0}.")
+	@DefaultMessage("{0} is currently not available for event scheduling.")
 	String conflictRoomDenied(String locationName);
 
 	@DefaultMessage("Not enough permissions to make {0} not available.")
