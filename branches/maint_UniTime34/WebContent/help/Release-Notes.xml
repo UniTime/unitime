@@ -43,6 +43,12 @@
 				<line>Fixed a lazy initialization exception that was sometimes thrown when there was an instructor with no external id assigned to the class.</line>
 			</description>
 		</item>
+		<item>
+			<name>Events</name>
+			<description>
+				<line>Fixed daylight saving time issues (ServerTimeZone did not include DST transitions).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
