@@ -47,6 +47,7 @@
 			<name>Events</name>
 			<description>
 				<line>Fixed daylight saving time issues (ServerTimeZone did not include DST transitions).</line>
+				<line>Fixed a failed to load exception when an event that has a meeting with no location is clicked.</line>
 			</description>
 		</item>
 	</category>
