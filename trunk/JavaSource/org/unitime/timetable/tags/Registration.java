@@ -127,9 +127,10 @@ public class Registration extends BodyTagSupport {
 			w.flush(); w.close();
 
 			String result = cr.post(w.toString(), String.class);
-			sLog.debug("Registration information received." );
+			sLog.info("Registration information received." );
 
-			
+			try { cr.release(); } catch (Exception e) {}
+
 			StringReader r = new StringReader(result);
 			Document output = (new SAXReader()).read(r);
 			r.close();

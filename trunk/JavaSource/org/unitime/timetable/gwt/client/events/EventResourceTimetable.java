@@ -805,8 +805,13 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						@Override
 						public void onSuccess(EventInterface result) {
 							LoadingWidget.getInstance().hide();
-							iEventDetail.setEvent(result);
-							iEventDetail.show();
+							if (result == null) {
+								iRootPanel.setWidget(iPanel);
+								UniTimePageLabel.getInstance().setPageName(getPageName());
+							} else {
+								iEventDetail.setEvent(result);
+								iEventDetail.show();
+							}
 						}
 					}, MESSAGES.waitLoading(detail.getName()));
 				} else {

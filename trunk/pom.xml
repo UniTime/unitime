@@ -384,6 +384,11 @@
 			<artifactId>jbossjta</artifactId>
 			<version>${jbossjts.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>${joda.version}</version>
+		</dependency>
 		<!-- To enable ojdbc14 dependency, you also need to install oracle jdbc driver: 
 				mvn install:install-file -DgroupId=com.oracle -DartifactId=ojdbc14 -Dversion=10.2.0.4.0 -Dpackaging=jar -Dfile=3rd_party/ojdbc14.jar -DgeneratePom=true
 		<dependency>
@@ -630,6 +635,7 @@
 		<jbossjts.version>4.16.6.Final</jbossjts.version>
 		<ehcache.version>2.6.6</ehcache.version>
 		<ehcache-jgroups.version>1.7</ehcache-jgroups.version>
+		<joda.version>2.3</joda.version>
 	</properties>
 	
 	<distributionManagement>
