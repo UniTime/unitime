@@ -19,8 +19,10 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
@@ -40,16 +42,14 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class ServerDateTimeFormat extends DateTimeFormat {
 	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static TimeZone sServerTimeZone = null;
-	private static Integer sTimeZoneOffsetInMinutes = null;
 	private static final Map<String, ServerDateTimeFormat> sFormatCache;
 	
 	static {
-		String cookie = Cookies.getCookie("UniTime:ServerTimeZoneOffsetInMinutes");
+		String cookie = Cookies.getCookie("UniTime:ServerTimeZone");
 		if (cookie != null) {
 			try {
-				sTimeZoneOffsetInMinutes = Integer.parseInt(cookie);
-				sServerTimeZone = TimeZone.createTimeZone(sTimeZoneOffsetInMinutes);
-			} catch (NumberFormatException e) {}
+				sServerTimeZone = TimeZone.createTimeZone(cookie);
+			} catch (Exception e) {}
 		}
 		if (sServerTimeZone == null) {
 			RPC.execute(new ServerTimeZoneRequest(), new AsyncCallback<ServerTimeZoneResponse>() {
@@ -58,9 +58,8 @@ public class ServerDateTimeFormat extends DateTimeFormat {
 
 				@Override
 				public void onSuccess(ServerTimeZoneResponse result) {
-					sTimeZoneOffsetInMinutes = result.getTimeZoneOffsetInMinutes();
-					sServerTimeZone = TimeZone.createTimeZone(sTimeZoneOffsetInMinutes);
-					Cookies.setCookie("UniTime:ServerTimeZoneOffsetInMinutes", String.valueOf(result.getTimeZoneOffsetInMinutes()));
+					sServerTimeZone = TimeZone.createTimeZone(result.toJsonString());
+					Cookies.setCookie("UniTime:ServerTimeZone", result.toJsonString());
 				}
 			});
 		}
@@ -75,20 +74,20 @@ public class ServerDateTimeFormat extends DateTimeFormat {
 		return sServerTimeZone;
 	}
 	
-	public static Integer getServerTimeZoneOffsetInMinutes() {
-		return sTimeZoneOffsetInMinutes;
+	public static Integer getOffset(Date date) {
+		return sServerTimeZone.getStandardOffset() - sServerTimeZone.getDaylightAdjustment(date);
 	}
 	
 	@SuppressWarnings("deprecation")
 	public static Date toLocalDate(Date serverDate) {
-		if (serverDate == null || sTimeZoneOffsetInMinutes == null) return serverDate;
-		return new Date(serverDate.getTime() + 60000 * (serverDate.getTimezoneOffset() - sTimeZoneOffsetInMinutes));
+		if (serverDate == null || sServerTimeZone == null) return serverDate;
+		return new Date(serverDate.getTime() + 60000 * (serverDate.getTimezoneOffset() - getOffset(serverDate)));
 	}
 	
 	@SuppressWarnings("deprecation")
 	public static Date toServerDate(Date localDate) {
-		if (localDate == null || sTimeZoneOffsetInMinutes == null) return localDate;
-		return new Date(localDate.getTime() + 60000 * (sTimeZoneOffsetInMinutes - localDate.getTimezoneOffset()));
+		if (localDate == null || sServerTimeZone == null) return localDate;
+		return new Date(localDate.getTime() + 60000 * (getOffset(localDate) - localDate.getTimezoneOffset()));
 	}
 	
 	@Override
@@ -108,7 +107,10 @@ public class ServerDateTimeFormat extends DateTimeFormat {
 	public static class ServerTimeZoneRequest implements GwtRpcRequest<ServerTimeZoneResponse> {}
 	
 	public static class ServerTimeZoneResponse implements GwtRpcResponse {
+		private String iId;
+		private List<String> iNames;
 		private int iTimeZoneOffsetInMinutes;
+		private List<Integer> iTransitions = null;
 		
 		public ServerTimeZoneResponse() {}
 		
@@ -116,7 +118,48 @@ public class ServerDateTimeFormat extends DateTimeFormat {
 			iTimeZoneOffsetInMinutes = timeZoneOffsetInMinutes;
 		}
 		
+		public void setId(String id) { iId = id; }
+		public String getId() { return iId; }
+		
+		public void addName(String name) {
+			if (iNames == null)
+				iNames = new ArrayList<String>();
+			iNames.add(name);
+		}
+		
+		public void setTimeZoneOffsetInMinutes(int timeZoneOffestInMinutes) { iTimeZoneOffsetInMinutes = timeZoneOffestInMinutes; }
 		public int getTimeZoneOffsetInMinutes() { return iTimeZoneOffsetInMinutes; }
+		
+		public void addTransition(int transition, int adjustment) {
+			if (iTransitions == null)
+				iTransitions = new ArrayList<Integer>();
+			iTransitions.add(transition);
+			iTransitions.add(adjustment);
+		}
+		
+		public String toJsonString() {
+			String ret = "{\"id\":\"" + getId() +"\",\"std_offset\":" + getTimeZoneOffsetInMinutes();
+			if (iTransitions != null) {
+				ret += ",\"transitions\":[";
+				for (int i = 0; i < iTransitions.size(); i++)
+					ret += (i == 0 ? "" : ",") + iTransitions.get(i);
+				ret += "]";
+			}
+			if (iNames == null) {
+				ret += ",\"names\":[]";
+			} else {
+				ret += ",\"names\":[";
+				for (int i = 0; i < iNames.size(); i++)
+					ret += (i == 0 ? "" : ",") + "\"" + iNames.get(i) + "\"";
+				ret += "]";
+			}
+			ret += "}";
+			return ret;
+		}
+		
+		public String toString() {
+			return toJsonString();
+		}
 	}
 	
 }

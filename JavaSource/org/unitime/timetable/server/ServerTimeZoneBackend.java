@@ -19,13 +19,15 @@
 */
 package org.unitime.timetable.server;
 
-import java.util.Calendar;
+import java.util.Date;
 
-import org.unitime.localization.impl.Localization;
+import org.joda.time.DateTimeZone;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat.ServerTimeZoneRequest;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat.ServerTimeZoneResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 
 /**
@@ -36,9 +38,27 @@ public class ServerTimeZoneBackend implements GwtRpcImplementation<ServerTimeZon
 
 	@Override
 	public ServerTimeZoneResponse execute(ServerTimeZoneRequest request, SessionContext context) {
-		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
-		int offsetInMinutes = -(cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / (60 * 1000);
-		return new ServerTimeZoneResponse(offsetInMinutes);
+		Date first = null, last = null;
+		for (Session session: SessionDAO.getInstance().findAll()) {
+			if (first == null || first.after(session.getEventBeginDate()))
+				first = session.getEventBeginDate();
+			if (last == null || last.before(session.getEventEndDate()))
+				last = session.getEventEndDate();
+		}
+		DateTimeZone zone = DateTimeZone.getDefault();
+		int offsetInMinutes = zone.getOffset(first.getTime()) / 60000;
+		ServerTimeZoneResponse ret = new ServerTimeZoneResponse();
+		ret.setId(zone.getID());
+		ret.addName(zone.getName(new Date().getTime()));
+		ret.setTimeZoneOffsetInMinutes(offsetInMinutes);
+		long time = first.getTime();
+		long transition;
+		while (time != (transition = zone.nextTransition(time)) && time < last.getTime()) {
+			int adjustment = (zone.getOffset(transition) / 60000) - offsetInMinutes;
+			ret.addTransition((int)(transition / 3600000), adjustment);
+			time = transition;
+		}
+		return ret;
 	}
 
 }
