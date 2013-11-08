@@ -100,7 +100,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 		try {
 			if (context != null) context.checkPermission(Right.HasRole);
 			
-			SeachContext cx = new SeachContext();
+			SearchContext cx = new SearchContext();
 			cx.setSessionId(getAcademicSessionId(context));
 			cx.setLimit(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.lookup.limit", "1000")));
 			cx.setQuery(request.getQuery().trim().toLowerCase());
@@ -161,7 +161,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
     }
 
 	
-    protected void findPeopleFromStaff(SeachContext context) throws Exception {
+    protected void findPeopleFromStaff(SearchContext context) throws Exception {
         String q = "select s from Staff s where ";
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
         	if (idx > 0) q += " and ";
@@ -188,7 +188,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         }
     }
     
-    protected void findPeopleFromEventContact(SeachContext context) throws Exception {
+    protected void findPeopleFromEventContact(SearchContext context) throws Exception {
         String q = "select s from EventContact s where ";
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
         	if (idx > 0) q += " and ";
@@ -215,7 +215,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         }
     }
     
-    protected void findPeopleFromInstructors(SeachContext context) throws Exception {
+    protected void findPeopleFromInstructors(SearchContext context) throws Exception {
         String q = "select s from DepartmentalInstructor s where s.department.session.uniqueId = :sessionId";
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
             q += " and (lower(s.firstName) like :t" + idx + " || '%' " +
@@ -244,7 +244,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         }
     }
 
-    protected void findPeopleFromStudents(SeachContext context) throws Exception {
+    protected void findPeopleFromStudents(SearchContext context) throws Exception {
         String q = "select s from Student s where s.session.uniqueId = :sessionId";
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
             q += " and (lower(s.firstName) like :t" + idx + " || '%' " +
@@ -271,7 +271,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         }
     }
     
-    protected void findPeopleFromTimetableManagers(SeachContext context) throws Exception {
+    protected void findPeopleFromTimetableManagers(SearchContext context) throws Exception {
         String q = "select s from TimetableManager s where ";
         for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
         	if (idx > 0) q += " and ";
@@ -336,7 +336,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 		return iSearchControls;
 	}
     
-    protected void findPeopleFromLdap(final SeachContext context) throws Exception {
+    protected void findPeopleFromLdap(final SearchContext context) throws Exception {
     	try {
         	if (getLdapTemplate() == null) return;
             String filter = "";
@@ -379,7 +379,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
     	}
     }
     
-    protected static class SeachContext {
+    protected static class SearchContext {
     	private Hashtable<String, PersonInterface> iPeople = new Hashtable<String, PersonInterface>();
 		private TreeSet<PersonInterface> iPeopleWithoutId = new TreeSet<PersonInterface>();
 		private int iLimit = -1;
@@ -387,7 +387,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 		private String iQuery = null;
 		private List<String> iTokens = null;
 		
-		SeachContext() {}
+		SearchContext() {}
 		
 		public void setLimit(int limit) { iLimit = limit; }
 		public int getLimit() { return iLimit; }
