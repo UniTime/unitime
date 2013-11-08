@@ -71,8 +71,10 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 	private boolean iIncludeOtherStudents = true;
 	private boolean iSetStudentCourseLimits = false;
 	private CurriculumEnrollmentPriorityProvider iEnrollmentPriorityProvider = null;
+	private DataProperties iProperties = null;
 	
 	public CurriculaRequestsCourseDemands(DataProperties config) {
+		iProperties = config;
 		iStudentCourseRequests = new StudentCourseRequests(config);
 		iIncludeOtherStudents = config.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
 		iSetStudentCourseLimits = config.getPropertyBoolean("CurriculaCourseDemands.SetStudentCourseLimits", iSetStudentCourseLimits);
@@ -305,7 +307,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 			
 			// Solve model
 			sLog.debug("Initial: " + m.getInfo());
-			m.solve();
+			m.solve(iProperties);
 			sLog.debug("Final: " + m.getInfo());
 			
 			// Save into the cache

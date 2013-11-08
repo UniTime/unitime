@@ -407,13 +407,13 @@ public class CurModel extends Model<CurVariable, CurValue> {
 			}
 			it++;
 		}
-		cfg.setProperty("HC.Iters", String.valueOf(it));
-		cfg.setProperty("HC.Value", String.valueOf(getTotalValue()));
+		cfg.setProperty("Curriculum.HC.Iters", String.valueOf(it));
+		cfg.setProperty("Curriculum.HC.Value", String.valueOf(getTotalValue()));
 		sLog.debug("  -- final value: " + this);
     }
     
     public void deluge(DataProperties cfg) {
-    	double f = cfg.getPropertyDouble("Deluge.Factor", 0.999999);
+    	double f = cfg.getPropertyDouble("Curriculum.Deluge.Factor", 0.999999);
     	sLog.debug("  -- running great deluge");
 		int it = 0;
 		double total = getTotalValue();
@@ -439,9 +439,9 @@ public class CurModel extends Model<CurVariable, CurValue> {
 			bound *= f;
 			it++;
 		}
-		cfg.setProperty("Deluge.Iters", String.valueOf(it));
+		cfg.setProperty("Curriculum.Deluge.Iters", String.valueOf(it));
 		restoreBest();
-		cfg.setProperty("Deluge.Value", String.valueOf(getTotalValue()));
+		cfg.setProperty("Curriculum.Deluge.Value", String.valueOf(getTotalValue()));
 		sLog.debug("  -- final value: " + this);
     }
     
@@ -478,6 +478,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
     }
     
     public DataProperties solve(DataProperties cfg) {
+    	if (cfg == null) cfg = new DataProperties();
     	sLog.debug("  -- setting up the solver");
     	CurVariableSelection var = new CurVariableSelection(cfg);
     	CurValueSelection vs = new CurValueSelection(cfg);
@@ -501,7 +502,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
     			sLog.debug("    -- incomplete " + course.getCourseName() + ": " + getCourse(course.getCourseId()).getStudents() + " (" + course.getSize() + "/" + course.getOriginalMaxSize() + ")");
     		}
     	}
-    	cfg.setProperty("Initial.Value", String.valueOf(getTotalValue()));
+    	cfg.setProperty("Curriculum.Initial.Value", String.valueOf(getTotalValue()));
 		sLog.debug("  -- initial value: " + this);
 		hc(cfg); // or fast(cfg);
 		deluge(cfg); // or naive(cfg);
