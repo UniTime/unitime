@@ -64,8 +64,10 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	private boolean iIncludeOtherStudents = true;
 	private boolean iSetStudentCourseLimits = false;
 	private CurriculumEnrollmentPriorityProvider iEnrollmentPriorityProvider = null;
+	private DataProperties iProperties = null;
 
 	public CurriculaCourseDemands(DataProperties properties) {
+		iProperties = properties;
 		if (properties != null)
 			iFallback = new ProjectedStudentCourseDemands(properties);
 		iIncludeOtherStudents = properties.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
@@ -189,7 +191,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 			m = cachedModel;
 		} else {
 			// Solve model
-			m.solve();
+			m.solve(iProperties);
 			
 			// Save into the cache
 			Document doc = DocumentHelper.createDocument();

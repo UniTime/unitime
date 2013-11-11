@@ -19,9 +19,10 @@
 */
 package org.unitime.timetable.server.lookup;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
@@ -31,6 +32,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -83,7 +85,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         }
 	}
 	
-	private Long getAcademicSessionId(SessionContext context) {
+	protected Long getAcademicSessionId(SessionContext context) {
 		if (context == null) return null;
 		UserContext user = context.getUser();
 		if (user == null) throw new GwtRpcException("not authenticated");
@@ -92,17 +94,20 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 		if (sessionId == null) throw new GwtRpcException("academic session not selected");
 		return sessionId;
 	}
-
 	
 	@Override
 	public GwtRpcResponseList<PersonInterface> execute(LookupRequest request, SessionContext context) {
 		try {
 			if (context != null) context.checkPermission(Right.HasRole);
 			
+			SearchContext cx = new SearchContext();
+			cx.setSessionId(getAcademicSessionId(context));
+			cx.setLimit(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.lookup.limit", "1000")));
+			cx.setQuery(request.getQuery().trim().toLowerCase());
+			if (cx.getQueryTokens().isEmpty()) return new GwtRpcResponseList<PersonInterface>();
+			
 			boolean displayWithoutId = true;
-			int maxResults = -1;
-			boolean ldap = true, students = true, staff = true, managers = true, events = true, instructors = true;
-			Long sessionId = getAcademicSessionId(context);
+			String[] sources = null;
 			if (request.hasOptions()) {
 				for (String option: request.getOptions().split(",")) {
 					option = option.trim();
@@ -113,57 +118,39 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 					else if (option.startsWith("mustHaveExternalId="))
 						displayWithoutId = !"true".equalsIgnoreCase(option.substring("mustHaveExternalId=".length()));
 					else if (option.startsWith("maxResults="))
-						maxResults = Integer.parseInt(option.substring("maxResults=".length()));
+						cx.setLimit(Integer.parseInt(option.substring("maxResults=".length())));
 					else if (option.startsWith("session="))
-						sessionId = Long.valueOf(option.substring("session=".length()));
+						cx.setSessionId(Long.valueOf(option.substring("session=".length())));
 					else if (option.startsWith("source=")) {
-						ldap = students = staff = managers = events = instructors = false;
-						for (String s: option.substring("source=".length()).split(":")) {
-							if ("ldap".equals(s)) ldap = true;
-							if ("students".equals(s)) students = true;
-							if ("staff".equals(s)) staff = true;
-							if ("managers".equals(s)) managers = true;
-							if ("events".equals(s)) events = true;
-							if ("instructors".equals(s)) instructors = true;
-						}
+						sources = option.substring("source=".length()).split(":");
 					}
 				}
 			}
-			Hashtable<String, PersonInterface> people = new Hashtable<String, PersonInterface>();
-			TreeSet<PersonInterface> peopleWithoutId = new TreeSet<PersonInterface>();
-			String q = request.getQuery().trim().toLowerCase();
-	        if (ldap) findPeopleFromLdap(people, peopleWithoutId, q);
-	        if (students) findPeopleFromStudents(people, peopleWithoutId, q, sessionId);
-	        if (instructors) findPeopleFromInstructors(people, peopleWithoutId, q, sessionId);
-	        if (staff) findPeopleFromStaff(people, peopleWithoutId, q);
-	        if (managers) findPeopleFromTimetableManagers(people, peopleWithoutId, q);
-	        if (events) findPeopleFromEventContact(people, peopleWithoutId, q);
-	        GwtRpcResponseList<PersonInterface> ret = new GwtRpcResponseList<PersonInterface>(people.values());
-	        Collections.sort(ret);
-	        if (displayWithoutId)
-	        	ret.addAll(peopleWithoutId);
-	        if (maxResults > 0 && ret.size() > maxResults) {
-	        	return new GwtRpcResponseList<PersonInterface>(ret.subList(0, maxResults));
-	        }
-			return ret;
+
+			if (sources == null) {
+				findPeopleFromLdap(cx);
+				findPeopleFromStudents(cx);
+				findPeopleFromInstructors(cx);
+				findPeopleFromStaff(cx);
+				findPeopleFromTimetableManagers(cx);
+				findPeopleFromEventContact(cx);
+			} else {
+				for (String source: sources) {
+					if ("ldap".equals(source)) findPeopleFromLdap(cx);
+					if ("students".equals(source)) findPeopleFromStudents(cx);
+					if ("staff".equals(source)) findPeopleFromInstructors(cx);
+					if ("managers".equals(source)) findPeopleFromStaff(cx);
+					if ("events".equals(source)) findPeopleFromTimetableManagers(cx);
+					if ("instructors".equals(source)) findPeopleFromEventContact(cx);
+				}
+			}
+			
+			return cx.response(displayWithoutId);
 		} catch (GwtRpcException e) {
 			throw e;
 		} catch (Exception e) {
 			sLog.error("Lookup failed: " + e.getMessage(), e);
 			throw new GwtRpcException("Lookup failed: " + e.getMessage());
-		}
-	}
-	
-	protected void addPerson(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, PersonInterface person) {
-		if (person.getId() == null || person.getId().isEmpty() || "null".equals(person.getId())) {
-			peopleWithoutId.add(person);
-		} else {
-			PersonInterface old = people.get(person.getId());
-			if (old == null) {
-				people.put(person.getId(), person);
-			} else {
-				old.merge(person);
-			}
 		}
 	}
 	
@@ -174,16 +161,26 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
     }
 
 	
-    protected void findPeopleFromStaff(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query) throws Exception {
+    protected void findPeopleFromStaff(SearchContext context) throws Exception {
         String q = "select s from Staff s where ";
-        for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken().replace("'", "''");
-            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%' or lower(s.email) like '"+t+"%')";
-            if (stk.hasMoreTokens()) q += " and ";
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
+        	if (idx > 0) q += " and ";
+            q += "(lower(s.firstName) like :t" + idx + " || '%' " +
+            		"or lower(s.firstName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.email) like :t" + idx + " || '%')";
         }
-        for (Iterator i=StaffDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
-            Staff staff = (Staff)i.next();
-            addPerson(people, peopleWithoutId, new PersonInterface(translate(staff.getExternalUniqueId(), Source.Staff), 
+        q += " order by s.lastName, s.firstName, s.middleName";
+        Query hq = StaffDAO.getInstance().getSession().createQuery(q);
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
+        	hq.setString("t" + idx, context.getQueryTokens().get(idx));
+        if (context.getLimit() > 0)
+        	hq.setMaxResults(context.getLimit());
+        for (Staff staff: (List<Staff>)hq.setCacheable(true).list()) {
+            context.addPerson(new PersonInterface(translate(staff.getExternalUniqueId(), Source.Staff), 
                     staff.getFirstName(), staff.getMiddleName(), staff.getLastName(),
                     staff.getEmail(), null, staff.getDept(), 
                     (staff.getPositionType() == null ? null : staff.getPositionType().getLabel()),
@@ -191,16 +188,26 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         }
     }
     
-    protected void findPeopleFromEventContact(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query) throws Exception {
+    protected void findPeopleFromEventContact(SearchContext context) throws Exception {
         String q = "select s from EventContact s where ";
-        for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken().replace("'", "''");
-            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%' or lower(s.emailAddress) like '"+t+"%')";
-            if (stk.hasMoreTokens()) q += " and ";
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
+        	if (idx > 0) q += " and ";
+            q += "(lower(s.firstName) like :t" + idx + " || '%' " +
+            		"or lower(s.firstName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.emailAddress) like :t" + idx + " || '%')";
         }
-        for (Iterator i=EventContactDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
-            EventContact contact = (EventContact)i.next();
-            addPerson(people, peopleWithoutId, new PersonInterface(translate(contact.getExternalUniqueId(), Source.User), 
+        q += " order by s.lastName, s.firstName, s.middleName";
+        Query hq = EventContactDAO.getInstance().getSession().createQuery(q);
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
+        	hq.setString("t" + idx, context.getQueryTokens().get(idx));
+        if (context.getLimit() > 0)
+        	hq.setMaxResults(context.getLimit());
+        for (EventContact contact: (List<EventContact>)hq.setCacheable(true).list()) {
+            context.addPerson(new PersonInterface(translate(contact.getExternalUniqueId(), Source.User), 
                     contact.getFirstName(), contact.getMiddleName(), contact.getLastName(),
                     contact.getEmailAddress(), contact.getPhone(), null, 
                     null,
@@ -208,16 +215,26 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         }
     }
     
-    protected void findPeopleFromInstructors(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query, Long sessionId) throws Exception {
-        String q = "select s from DepartmentalInstructor s where s.department.session.uniqueId="+sessionId+" and ";
-        for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken().replace("'", "''");
-            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%' or lower(s.email) like '"+t+"%')";
-            if (stk.hasMoreTokens()) q += " and ";
+    protected void findPeopleFromInstructors(SearchContext context) throws Exception {
+        String q = "select s from DepartmentalInstructor s where s.department.session.uniqueId = :sessionId";
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
+            q += " and (lower(s.firstName) like :t" + idx + " || '%' " +
+            		"or lower(s.firstName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.email) like :t" + idx + " || '%')";
         }
-        for (Iterator i=DepartmentalInstructorDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
-        	DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
-            addPerson(people, peopleWithoutId, new PersonInterface(translate(instructor.getExternalUniqueId(), Source.Staff), 
+        q += " order by s.lastName, s.firstName, s.middleName";
+        Query hq = DepartmentalInstructorDAO.getInstance().getSession().createQuery(q);
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
+        	hq.setString("t" + idx, context.getQueryTokens().get(idx));
+        hq.setLong("sessionId", context.getSessionId());
+        if (context.getLimit() > 0)
+        	hq.setMaxResults(context.getLimit());
+        for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hq.setCacheable(true).list()) {
+            context.addPerson(new PersonInterface(translate(instructor.getExternalUniqueId(), Source.Staff), 
                     Constants.toInitialCase(instructor.getFirstName()),
                     Constants.toInitialCase(instructor.getMiddleName()),
                     Constants.toInitialCase(instructor.getLastName()),
@@ -227,16 +244,26 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         }
     }
 
-    protected void findPeopleFromStudents(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query, Long sessionId) throws Exception {
-        String q = "select s from Student s where s.session.uniqueId="+sessionId+" and ";
-        for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken().replace("'", "''");
-            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%' or lower(s.email) like '"+t+"%')";
-            if (stk.hasMoreTokens()) q += " and ";
+    protected void findPeopleFromStudents(SearchContext context) throws Exception {
+        String q = "select s from Student s where s.session.uniqueId = :sessionId";
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
+            q += " and (lower(s.firstName) like :t" + idx + " || '%' " +
+            		"or lower(s.firstName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.email) like :t" + idx + " || '%')";
         }
-        for (Iterator i=StudentDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
-            Student student = (Student)i.next();
-            addPerson(people, peopleWithoutId, new PersonInterface(translate(student.getExternalUniqueId(), Source.Student), 
+        q += " order by s.lastName, s.firstName, s.middleName";
+        Query hq = StudentDAO.getInstance().getSession().createQuery(q);
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
+        	hq.setString("t" + idx, context.getQueryTokens().get(idx));
+        hq.setLong("sessionId", context.getSessionId());
+        if (context.getLimit() > 0)
+        	hq.setMaxResults(context.getLimit());
+        for (Student student: (List<Student>)hq.setCacheable(true).list()) {
+            context.addPerson(new PersonInterface(translate(student.getExternalUniqueId(), Source.Student), 
                     student.getFirstName(), student.getMiddleName(), student.getLastName(),
                     student.getEmail(), null, null, 
                     "Student",
@@ -244,16 +271,26 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         }
     }
     
-    protected void findPeopleFromTimetableManagers(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query) throws Exception {
+    protected void findPeopleFromTimetableManagers(SearchContext context) throws Exception {
         String q = "select s from TimetableManager s where ";
-        for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-            String t = stk.nextToken().replace("'", "''");
-            q += "(lower(s.firstName) like '"+t+"%' or lower(s.middleName) like '"+t+"%' or lower(s.lastName) like '"+t+"%' or lower(s.emailAddress) like '"+t+"%')";
-            if (stk.hasMoreTokens()) q += " and ";
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++) {
+        	if (idx > 0) q += " and ";
+            q += "(lower(s.firstName) like :t" + idx + " || '%' " +
+            		"or lower(s.firstName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like :t" + idx + " || '%' " +
+                	"or lower(s.middleName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like :t" + idx + " || '%' " +
+                	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
+                	"or lower(s.emailAddress) like :t" + idx + " || '%')";
         }
-        for (Iterator i=TimetableManagerDAO.getInstance().getSession().createQuery(q).iterate();i.hasNext();) {
-            TimetableManager manager = (TimetableManager)i.next();
-            addPerson(people, peopleWithoutId, new PersonInterface(translate(manager.getExternalUniqueId(), Source.User), 
+        q += " order by s.lastName, s.firstName, s.middleName";
+        Query hq = TimetableManagerDAO.getInstance().getSession().createQuery(q);
+        for (int idx = 0; idx < context.getQueryTokens().size(); idx++)
+        	hq.setString("t" + idx, context.getQueryTokens().get(idx));
+        if (context.getLimit() > 0)
+        	hq.setMaxResults(context.getLimit());
+        for (TimetableManager manager: (List<TimetableManager>)hq.setCacheable(true).list()) {
+            context.addPerson(new PersonInterface(translate(manager.getExternalUniqueId(), Source.User), 
                     manager.getFirstName(), manager.getMiddleName(), manager.getLastName(),
                     manager.getEmailAddress(), null, null, 
                  (manager.getPrimaryRole()==null?null:manager.getPrimaryRole().getAbbv()),
@@ -299,12 +336,12 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 		return iSearchControls;
 	}
     
-    protected void findPeopleFromLdap(final Hashtable<String, PersonInterface> people, final TreeSet<PersonInterface> peopleWithoutId, String query) throws Exception {
+    protected void findPeopleFromLdap(final SearchContext context) throws Exception {
     	try {
         	if (getLdapTemplate() == null) return;
             String filter = "";
-            for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
-                String t = stk.nextToken().replace('_', '*').replace('%', '*');
+            for (String token: context.getQueryTokens()) {
+                String t = token.replace('_', '*').replace('%', '*');
                 if (filter.length()==0)
                     filter = ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*)(cn=* %* *)("+ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")+"=%*))").replaceAll("%", t);
                 else
@@ -333,12 +370,69 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                             Constants.toInitialCase(getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.department","department"))),
                             Constants.toInitialCase(getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.position","position,title"))),
                             "Directory");
-    				addPerson(people, peopleWithoutId, person);
+    				context.addPerson(person);
     				return person;
     			}
     		});
     	} catch (Exception e) {
     		sLog.warn(e.getMessage());
     	}
+    }
+    
+    protected static class SearchContext {
+    	private Hashtable<String, PersonInterface> iPeople = new Hashtable<String, PersonInterface>();
+		private TreeSet<PersonInterface> iPeopleWithoutId = new TreeSet<PersonInterface>();
+		private int iLimit = -1;
+		private Long iSessionId = null;
+		private String iQuery = null;
+		private List<String> iTokens = null;
+		
+		SearchContext() {}
+		
+		public void setLimit(int limit) { iLimit = limit; }
+		public int getLimit() { return iLimit; }
+		
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public Long getSessionId() { return iSessionId; }
+		
+		public void setQuery(String query) {
+			iQuery = query;
+			if (iTokens == null)
+				iTokens = new ArrayList<String>();
+			else
+				iTokens.clear();
+			for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
+				String t = stk.nextToken();
+				iTokens.add(t.toLowerCase());
+            }
+		}
+		public String getQuery() { return iQuery; }
+		public List<String> getQueryTokens() { return iTokens; }
+		
+		public void addPerson(PersonInterface person) {
+			if (person.getId() == null || person.getId().isEmpty() || "null".equals(person.getId())) {
+				iPeopleWithoutId.add(person);
+			} else {
+				PersonInterface old = iPeople.get(person.getId());
+				if (old == null) {
+					iPeople.put(person.getId(), person);
+				} else {
+					old.merge(person);
+				}
+			}
+		}
+		
+		public GwtRpcResponseList<PersonInterface> response(boolean displayWithoutId) {
+	        GwtRpcResponseList<PersonInterface> ret = new GwtRpcResponseList<PersonInterface>(iPeople.values());
+	        Collections.sort(ret);
+	        if (displayWithoutId)
+	        	ret.addAll(iPeopleWithoutId);
+	        if (getLimit() > 0 && ret.size() > getLimit()) {
+	        	return new GwtRpcResponseList<PersonInterface>(ret.subList(0, getLimit()));
+	        } else {
+	        	return ret;
+	        }
+		}
+    	
     }
 }
