@@ -35,6 +35,14 @@
 				<line>Fixed NullPointerException when a distribution preference is removed from the model (during the purge of invalid values).</line>
 			</description>
 		</item>
+		<item>
+			<name>Curriculum Timetabling</name>
+			<description>
+				<line>Added ability to provide parameters for the curriculum solver (student conversion).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Data Exchange</title>
 		<item>
 			<name>Student XML import, Student Course Requests XML import</name>

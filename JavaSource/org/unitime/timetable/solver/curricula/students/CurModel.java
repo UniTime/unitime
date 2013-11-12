@@ -350,12 +350,13 @@ public class CurModel extends Model<CurVariable, CurValue> {
     }
     
     public void naive(DataProperties cfg) {
+    	int maxIdle = cfg.getPropertyInt("Curriculum.Naive.MaxIdle", 1000);
     	sLog.debug("  -- running naive");
 		int idle = 0, it = 0;
 		double best = getTotalValue();
 		CurStudentSwap sw = new CurStudentSwap(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this);
-		while (!getSwapCourses().isEmpty() && idle < 1000) {
+		while (!getSwapCourses().isEmpty() && idle < maxIdle) {
 			Neighbour<CurVariable, CurValue> n = sw.selectNeighbour(solution);
 			if (n == null) break;
 			double value = n.value();
@@ -375,13 +376,14 @@ public class CurModel extends Model<CurVariable, CurValue> {
     }
     
     public void hc(DataProperties cfg) {
+    	int maxIdle = cfg.getPropertyInt("Curriculum.HC.MaxIdle", 1000);
     	sLog.debug("  -- running hill climber");
 		int it = 0, idle = 0;
 		double total = getTotalValue();
 		double best = total;
 		CurHillClimber hc = new CurHillClimber(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this);
-		while (idle < 1000) {
+		while (idle < maxIdle) {
 			Neighbour<CurVariable, CurValue> n = hc.selectNeighbour(solution);
 			if (n == null) break;
 			if (unassignedVariables().isEmpty() && n.value() >= -1e7f) break;
@@ -400,15 +402,18 @@ public class CurModel extends Model<CurVariable, CurValue> {
     }
     
     public void deluge(DataProperties cfg) {
+    	double f = cfg.getPropertyDouble("Curriculum.Deluge.Factor", 0.999999);
+    	double ub = cfg.getPropertyDouble("Curriculum.Deluge.UpperBound", 1.25);
+    	double lb = cfg.getPropertyDouble("Curriculum.Deluge.LowerBound", 0.75);
     	sLog.debug("  -- running great deluge");
 		int it = 0;
 		double total = getTotalValue();
-		double bound = 1.25 * total;
+		double bound = ub * total;
 		double best = getTotalValue();
 		CurStudentSwap sw = new CurStudentSwap(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this);
 		saveBest();
-		while (!getSwapCourses().isEmpty() && bound > 0.75 * total && total > 0) {
+		while (!getSwapCourses().isEmpty() && bound > lb * total && total > 0) {
 			Neighbour<CurVariable, CurValue> n = sw.selectNeighbour(solution);
 			if (n != null) {
 				double value = n.value();
@@ -422,7 +427,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 					total += value;
 				}
 			}
-			bound *= 0.999999;
+			bound *= f;
 			it++;
 		}
 		restoreBest();
@@ -430,13 +435,14 @@ public class CurModel extends Model<CurVariable, CurValue> {
     }
     
     public void fast(DataProperties cfg) {
+    	int maxIdle = cfg.getPropertyInt("Curriculum.Fast.MaxIdle", 1000);
     	sLog.debug("  -- running fast");
 		int idle = 0, it = 0;
 		double total = getTotalValue();
 		double best = total;
 		CurSimpleMove m = new CurSimpleMove(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this);
-		while (idle < 1000) {
+		while (idle < maxIdle) {
 			Neighbour<CurVariable, CurValue> n = m.selectNeighbour(solution);
     		if (n != null) {
         		double value = n.value();
@@ -457,9 +463,9 @@ public class CurModel extends Model<CurVariable, CurValue> {
 		sLog.debug("  -- final value: " + this);
     }
     
-    public void solve() {
+    public void solve(DataProperties cfg) {
+    	if (cfg == null) cfg = new DataProperties();
     	sLog.debug("  -- setting up the solver");
-    	DataProperties cfg = new DataProperties();
     	CurVariableSelection var = new CurVariableSelection(cfg);
     	CurValueSelection vs = new CurValueSelection(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this);
@@ -483,8 +489,17 @@ public class CurModel extends Model<CurVariable, CurValue> {
     		}
     	}
 		sLog.debug("  -- initial value: " + this);
-		hc(cfg); // or fast(cfg);
-		deluge(cfg); // or naive(cfg);
+		for (String phase: cfg.getProperty("Curriculum.Phases", "HC,Deluge").split(",")) {
+			if ("hc".equalsIgnoreCase(phase)) hc(cfg);
+			else if ("fast".equalsIgnoreCase(phase)) fast(cfg);
+			else if ("deluge".equalsIgnoreCase(phase)) deluge(cfg);
+			else if ("naive".equalsIgnoreCase(phase)) naive(cfg);
+			else sLog.warn("Phase " + phase + " is not known");
+		}
+    }
+    
+    public void solve() {
+    	solve(new DataProperties());
     }
     
     public boolean isSameModel(Object o) {
