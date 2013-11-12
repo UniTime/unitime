@@ -67,8 +67,10 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 	private HashSet<Long> iCheckedCourses = new HashSet<Long>();
 	private boolean iIncludeOtherStudents = true;
 	private boolean iSetStudentCourseLimits = false;
+	private DataProperties iProperties = null;
 
 	public CurriculaLastLikeCourseDemands(DataProperties config) {
+		iProperties = config;
 		iProjectedDemands = new ProjectedStudentCourseDemands(config);
 		iIncludeOtherStudents = config.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
 		iSetStudentCourseLimits = config.getPropertyBoolean("CurriculaCourseDemands.SetStudentCourseLimits", iSetStudentCourseLimits);
@@ -280,7 +282,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 			
 			// Solve model
 			sLog.debug("Initial: " + m.getInfo());
-			m.solve();
+			m.solve(iProperties);
 			sLog.debug("Final: " + m.getInfo());
 			
 			// Save into the cache
