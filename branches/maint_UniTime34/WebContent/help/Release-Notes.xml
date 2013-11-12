@@ -28,6 +28,20 @@
 	<version>3.4.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Other Improvements</title>
+		<item>
+			<name>Curriculum Timetabling</name>
+			<description>
+				<line>Added ability to provide parameters for the curriculum solver (student conversion).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.4.299</version>
+	<release-date>Sat, 9 Nov 2013</release-date>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Event Filter</name>
