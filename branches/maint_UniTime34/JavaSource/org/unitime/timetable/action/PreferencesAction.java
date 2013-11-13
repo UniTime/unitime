@@ -492,7 +492,7 @@ public class PreferencesAction extends Action {
     	
         // Time Prefs
         if (pg instanceof DepartmentalInstructor) {
-        	if (frm.getAvailability() != null && frm.getAvailability().length() == 2016) {
+        	if (frm.getAvailability() != null && (frm.getAvailability().length() == 336 || frm.getAvailability().length() == 2016)) {
         		TimePref tp = new TimePref();
         		tp.setOwner(pg);
         		tp.setPreference(frm.getAvailability());
