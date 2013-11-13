@@ -64,6 +64,8 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 		XStudent student = server.getStudent(getStudentId());
 		if (student != null) {
 			if (iOldOffering != null) {
+				if (iOldEnrollment != null && !iOldOffering.getOfferingId().equals(iOldEnrollment.getOfferingId()))
+					iOldOffering = server.getOffering(iOldEnrollment.getOfferingId());
 				String message = "Student " + student.getName() + " (" + student.getStudentId() + ") changed.";
 				String courseName = (iOldEnrollment == null ? iOldOffering.getName() : iOldOffering.getCourse(iOldEnrollment.getCourseId()).getCourseName());
 				XCourseRequest request = null;
