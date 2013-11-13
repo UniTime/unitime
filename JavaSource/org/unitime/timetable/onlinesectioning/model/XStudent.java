@@ -25,6 +25,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -130,6 +131,40 @@ public class XStudent extends XStudentId implements Externalizable {
         
         Collections.sort(iRequests);
         
+    }
+    
+    public XStudent(XStudent student) {
+    	super(student);
+    	iStatus = student.getStatus();
+    	iEmail = student.getEmail();
+    	iEmailTimeStamp = student.getEmailTimeStamp();
+    	iAcadAreaClassifs.addAll(student.getAcademicAreaClasiffications());
+    	iMajors.addAll(student.getMajors());
+    	iGroups.addAll(student.getGroups());
+    	iAccomodations.addAll(student.getAccomodations());
+    	iRequests.addAll(student.getRequests());
+    }
+    
+    public XStudent(XStudent student, Collection<CourseDemand> demands, OnlineSectioningHelper helper, BitSet freeTimePattern) {
+    	super(student);
+    	iStatus = student.getStatus();
+    	iEmail = student.getEmail();
+    	iEmailTimeStamp = student.getEmailTimeStamp();
+    	iAcadAreaClassifs.addAll(student.getAcademicAreaClasiffications());
+    	iMajors.addAll(student.getMajors());
+    	iGroups.addAll(student.getGroups());
+    	iAccomodations.addAll(student.getAccomodations());
+
+    	if (demands != null)
+        	for (CourseDemand cd: demands) {
+                if (cd.getFreeTime() != null) {
+                	iRequests.add(new XFreeTimeRequest(cd, freeTimePattern));
+                } else if (!cd.getCourseRequests().isEmpty()) {
+                	iRequests.add(new XCourseRequest(cd, helper));
+                }
+            }
+    	
+    	Collections.sort(iRequests);
     }
     
     public static List<XRequest> loadRequests(Student student, OnlineSectioningHelper helper, BitSet freeTimePattern) {

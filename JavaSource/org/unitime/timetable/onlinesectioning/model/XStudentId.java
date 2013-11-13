@@ -55,6 +55,12 @@ public class XStudentId implements Serializable, Comparable<XStudentId>, Externa
     	iName = student.getName();
     }
 
+    public XStudentId(XStudentId student) {
+    	iStudentId = student.getStudentId();
+    	iExternalId = student.getExternalId();
+    	iName = student.getName();
+    }
+
     /** Student unique id */
     public Long getStudentId() {
         return iStudentId;
