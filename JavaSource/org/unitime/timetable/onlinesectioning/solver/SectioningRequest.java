@@ -165,6 +165,9 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 			}
 		
 		enrollments: for (Enrollment e: request.getAvaiableEnrollments()) {
+			// only consider enrollments of the offering that is being checked
+			if (e.getOffering().getId() != getOffering().getOfferingId()) continue;
+			
 			for (Request other: request.getStudent().getRequests())
 				if (other.getAssignment() != null && !other.equals(getRequest()) && other.getAssignment().isOverlapping(e))
 					continue enrollments;

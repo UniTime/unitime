@@ -84,6 +84,7 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 	@Override
 	public boolean check(OnlineSectioningServer server, XStudent student, XOffering offering, XCourseRequest request) {
 		if (request.getEnrollment() == null) return true;
+		if (!offering.getOfferingId().equals(request.getEnrollment().getOfferingId())) return true;
 		List<XSection> sections = offering.getSections(request.getEnrollment());
 		XConfig config = offering.getConfig(request.getEnrollment().getConfigId());
 		if (config == null || sections.size() != config.getSubparts().size()) return false;
