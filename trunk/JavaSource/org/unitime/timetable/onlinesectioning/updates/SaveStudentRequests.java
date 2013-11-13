@@ -99,7 +99,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				XStudent oldStudent = server.getStudent(getStudentId());
 				XStudent newStudent = null;
 				try {
-					newStudent = ReloadAllData.loadStudent(student, null, server, helper);
+					newStudent = ReloadAllData.loadStudentNoCheck(student, server, helper);
 					server.update(newStudent, true);
 					action.getStudentBuilder()
 						.setUniqueId(newStudent.getStudentId())
@@ -147,14 +147,16 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 		}
 		return null;
 	}
-
+	
+	private static CourseOffering getCourse(org.hibernate.Session hibSession, long courseId) {
+		return CourseOfferingDAO.getInstance().get(courseId, hibSession);
+	}
 	
 	public static Map<Long, CourseRequest>  saveRequest(OnlineSectioningServer server, OnlineSectioningHelper helper, Student student, CourseRequestInterface request, boolean keepEnrollments) throws SectioningException {
 		Set<CourseDemand> remaining = new TreeSet<CourseDemand>(student.getCourseDemands());
 		int priority = 0;
 		Date ts = new Date();
 		Map<Long, CourseRequest> course2request = new HashMap<Long, CourseRequest>();
-		List<CourseRequest> unusedRequests = new ArrayList<CourseRequest>();
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && ((server == null && getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) != null) || (server != null && server.getCourse(r.getRequestedCourse()) != null)))
 				r.getRequestedFreeTime().clear();			
@@ -194,17 +196,17 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				List<CourseOffering> courses = new ArrayList<CourseOffering>();
 				if (r.hasRequestedCourse()) {
 					XCourseId c = (server == null ? null : server.getCourse(r.getRequestedCourse()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getCourseId(), helper.getHibSession()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) : getCourse(helper.getHibSession(), c.getCourseId()));
 					if (co != null) courses.add(co);
 				}
 				if (r.hasFirstAlternative()) {
 					XCourseId c = (server == null ? null : server.getCourse(r.getFirstAlternative()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getCourseId(), helper.getHibSession()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getFirstAlternative()) : getCourse(helper.getHibSession(), c.getCourseId()));
 					if (co != null) courses.add(co);
 				}
 				if (r.hasSecondAlternative()) {
 					XCourseId c = (server == null ? null : server.getCourse(r.getSecondAlternative()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getCourseId(), helper.getHibSession()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getSecondAlternative()) : getCourse(helper.getHibSession(), c.getCourseId()));
 					if (co != null) courses.add(co);
 				}
 				if (courses.isEmpty()) continue;
@@ -235,10 +237,6 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					CourseRequest cr = null;
 					if (requests.hasNext()) {
 						cr = requests.next();
-						/*
-						if (cr.getClassEnrollments() != null)
-							cr.getClassEnrollments().clear();
-							*/
 						if (cr.getCourseRequestOptions() != null) {
 							for (Iterator<CourseRequestOption> i = cr.getCourseRequestOptions().iterator(); i.hasNext(); )
 								helper.getHibSession().delete(i.next());
@@ -249,7 +247,6 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 						cd.getCourseRequests().add(cr);
 						cr.setCourseDemand(cd);
 						cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
-						// cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
 					}
 					cr.setAllowOverlap(false);
 					cr.setCredit(0);
@@ -258,8 +255,9 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					course2request.put(co.getUniqueId(), cr);
 				}
 				while (requests.hasNext()) {
-					unusedRequests.add(requests.next());
-					requests.remove();
+					CourseRequest cr = requests.next();
+					cd.getCourseRequests().remove(cr);
+					helper.getHibSession().delete(cr);
 				}
 				helper.getHibSession().saveOrUpdate(cd);
 			}
@@ -275,19 +273,10 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 					helper.getHibSession().saveOrUpdate(enrl);
 				} else {
 					enrl.setCourseRequest(cr);
-					/*
-					if (cr.getClassEnrollments() == null)
-						cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
-					cr.getClassEnrollments().add(enrl);
-					*/
 					helper.getHibSession().saveOrUpdate(enrl);
 				}
 			} else {
 				enrl.getClazz().getStudentEnrollments().remove(enrl);
-				/*
-				if (enrl.getCourseRequest() != null)
-					enrl.getCourseRequest().getClassEnrollments().remove(enrl);
-					*/
 				helper.getHibSession().delete(enrl);
 				i.remove();
 			}
@@ -303,9 +292,6 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 								i.remove();
 							}
 		}
-		
-		for (CourseRequest cr: unusedRequests)
-			helper.getHibSession().delete(cr);
 		
 		for (CourseDemand cd: remaining) {
 			if (cd.getFreeTime() != null)
