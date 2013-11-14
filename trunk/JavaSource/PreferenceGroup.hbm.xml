@@ -551,7 +551,7 @@
                 class="SolverGroup"
                 column="solver_group_id"
                 not-null="false"
-                lazy="false"
+                lazy="proxy"
                 foreign-key="fk_dept_solver_gr"/>
 
             <set

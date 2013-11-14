@@ -49,7 +49,6 @@ import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
-import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.HasCacheMode;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -173,6 +172,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	                    "left join fetch cr.classWaitLists as cwl " + 
 	                    "left join fetch s.classEnrollments as e " +
 	                    "left join fetch e.clazz as c " +
+	                    "left join fetch c.managingDept as cmd " +
+	                    "left join fetch c.schedulingSubpart as ss " +
 						"where s.uniqueId = :studentId").setLong("studentId", getStudentId()).uniqueResult();
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 				
@@ -325,6 +326,24 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					}
 				}
 				
+				Map<Long, Class_> classes = new HashMap<Long, Class_>();
+				String classIds = null;
+				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
+					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || oldEnrollments.containsKey(ca.getClassId())) continue;
+					if (classIds == null)
+						classIds = ca.getClassId().toString();
+					else
+						classIds += "," + ca.getClassId();
+				}
+				if (classIds != null)
+					for (Class_ clazz: (List<Class_>)helper.getHibSession().createQuery(
+							"select c from Class_ c " +
+							"left join fetch c.studentEnrollments as e " +
+							"left join fetch c.schedulingSubpart as s " +
+							"where c.uniqueId in (" + classIds + ")").list()) {
+						classes.put(clazz.getUniqueId(), clazz);
+					}
+				
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
 					if (ca == null || ca.isFreeTime() || ca.getClassId() == null) continue;
 					CourseRequest cr = course2request.get(ca.getCourseId());
@@ -339,7 +358,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						continue;
 					}
 
-					Class_ clazz = Class_DAO.getInstance().get(ca.getClassId(), helper.getHibSession());
+					Class_ clazz = classes.get(ca.getClassId());
 					if (clazz == null) continue;
 
 					if (lockedCourses.contains(ca.getCourseId())) {
@@ -581,6 +600,6 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 
 	@Override
 	public CacheMode getCacheMode() {
-		return CacheMode.REFRESH;
+		return CacheMode.IGNORE;
 	}
 }
