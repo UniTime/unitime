@@ -270,7 +270,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException {
 		long c0 = OnlineSectioningHelper.getCpuTime();
 		String cacheMode = getConfig().getProperty(action.name() + ".CacheMode", getConfig().getProperty("CacheMode"));
-		OnlineSectioningHelper h = new OnlineSectioningHelper(user, cacheMode != null ? CacheMode.valueOf(cacheMode) : action instanceof HasCacheMode ? ((HasCacheMode)action).getCacheMode() : null);
+		OnlineSectioningHelper h = new OnlineSectioningHelper(user, cacheMode != null ? CacheMode.valueOf(cacheMode) : action instanceof HasCacheMode ? ((HasCacheMode)action).getCacheMode() : CacheMode.IGNORE);
 		
 		try {
 			setCurrentHelper(h);

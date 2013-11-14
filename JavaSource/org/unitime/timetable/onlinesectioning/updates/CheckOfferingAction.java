@@ -332,6 +332,6 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 	
 	@Override
 	public CacheMode getCacheMode() {
-		return CacheMode.REFRESH;
+		return CacheMode.IGNORE;
 	}
 }
