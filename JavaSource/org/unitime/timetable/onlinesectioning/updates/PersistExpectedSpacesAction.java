@@ -97,7 +97,9 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
 		if (expectations == null || expectations.isEmpty()) return;
 		
     	for (SectioningInfo info: (List<SectioningInfo>)helper.getHibSession().createQuery(
-    			"select i from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId").
+    			"select i from SectioningInfo i " +
+    			"left join fetch i.clazz as c " +
+    			"where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering = :offeringId").
     			setLong("offeringId", offeringId).
     			setCacheable(true).list()) {
     		Double expectation = expectations.remove(info.getClazz().getUniqueId());
