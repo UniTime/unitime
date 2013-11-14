@@ -530,7 +530,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			helper.rollbackTransaction();
 			if (e instanceof SectioningException)
 				throw (SectioningException)e;
-			helper.error(e.getMessage(), e);
+			helper.error("Failed to enroll student " + getStudentId() + ": " + e.getMessage(), e);
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 		
