@@ -39,5 +39,17 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Instructor Preferences</name>
+			<description>
+				<line>Added ability to automatically inherit instructor preferences to externally managed classes.</line>
+				<line>There is a new toggle (inherit instructor preferences) on a department which controls whether instructor preferences are to be inherited or not.</line>
+				<line>Applicable room and building preferences, global room features and groups can now be inherited onto an externally managed class as well.</line>
+				<line>If the externally managed department does not allow required time and/or room preferences, the instructor preferences are weakened accordingly.</line>
+			</description>
+		</item>
+	</category>
 </release>
 </release-history>

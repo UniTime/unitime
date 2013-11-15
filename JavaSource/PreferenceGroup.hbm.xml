@@ -480,6 +480,12 @@
                 not-null="true"/>
 
             <property
+                name="inheritInstructorPreferences"
+                column="instructor_pref"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
                 name="roomSharingColor"
                 column="rs_color"
                 type="java.lang.String"

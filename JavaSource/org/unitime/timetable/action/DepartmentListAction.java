@@ -95,13 +95,13 @@ public class DepartmentListAction extends Action {
 
         if ("Export PDF".equals(request.getParameter("op"))) {
             
-            PdfWebTable webTable = new PdfWebTable((dispLastChanges ? 10 : 9), "Department List - " + sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel(),
+            PdfWebTable webTable = new PdfWebTable((dispLastChanges ? 12 : 11), "Department List - " + sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel(),
                     "departmentList.do?ord=%%",
                     (dispLastChanges ? new String[] { "Number", "Abbv", "Name", "External\nManager", "Subjects", "Rooms",
-                            "Status", "Dist Pref\nPriority", "Allow\nRequired", "Events", "Last\nChange" } 
+                            "Status", "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events", "Last\nChange" } 
                     : new String[] { "Number", "Abbreviation", "Name", "External\nManager", "Subjects", "Rooms", "Status",
-                            "Dist Pref\nPriority", "Allow\nRequired", "Events" }),
-                    new String[] { "left", "left", "left", "left", "right", "right", "left", "right", "left", "left", "left" },
+                            "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events" }),
+                    new String[] { "left", "left", "left", "left", "right", "right", "left", "right", "left", "left", "left", "left" },
                     new boolean[] { true, true, true, true, true, true, true, true, true, false });
             for (Iterator i=departmentListForm.getDepartments().iterator();i.hasNext();) {
                 Department d = (Department) i.next();
@@ -146,6 +146,7 @@ public class DepartmentListAction extends Action {
                                 (d.getStatusType() == null ? "@@ITALIC " : "")+d.effectiveStatusType().getLabel()+(d.getStatusType() == null?"@@END_ITALIC " : ""),
                                 (d.getDistributionPrefPriority()==null && d.getDistributionPrefPriority().intValue()!=0 ? "" : d.getDistributionPrefPriority().toString()),
                                 allowReq,
+                                d.isInheritInstructorPreferences() ? "Yes" : "No",
                                 d.isAllowEvents() ? "Yes" : "No",
                                 lastChangeStr },
                            new Comparable[] {
@@ -158,6 +159,7 @@ public class DepartmentListAction extends Action {
                             d.effectiveStatusType().getOrd(),
                             d.getDistributionPrefPriority(),
                             new Integer(allowReqOrd),
+                            d.isInheritInstructorPreferences(),
                             d.isAllowEvents(),
                             lastChangeCmp });
                 }
@@ -170,17 +172,17 @@ public class DepartmentListAction extends Action {
             return null;
         }
         
-		WebTable webTable = new WebTable((dispLastChanges ? 10 : 9), "",
+		WebTable webTable = new WebTable((dispLastChanges ? 12 : 11), "",
 				"departmentList.do?ord=%%",
 				(dispLastChanges 
 					? new String[] { "Code", "Abbv", "Name", "External<br>Manager", 
-									 "Subjects", "Rooms", "Status", "Dist&nbsp;Pref Priority", 
-									 "Allow Required", "Events", "Last Change" } 
+									 "Subjects", "Rooms", "Status", "Dist&nbsp;Pref<br>Priority", 
+									 "Allow<br>Required", "Instructor<br>Preferences", "Events", "Last<br>Change" } 
 					: new String[] { "Code", "Abbreviation", "Name", "External Manager",
-									 "Subjects", "Rooms", "Status", "Dist Pref Priority", 
-									 "Allow Required", "Events" }),
-				new String[] { "left", "left", "left", "left", "right",	"right", "left", "right", "left", "left", "left" },
-				new boolean[] { true, true, true, true, true, true, true, true, true, true, false });
+									 "Subjects", "Rooms", "Status", "Dist&nbsp;Pref<br>Priority", 
+									 "Allow<br>Required", "Instructor<br>Preferences", "Events" }),
+				new String[] { "left", "left", "left", "left", "right",	"right", "left", "right", "left", "left", "left", "left" },
+				new boolean[] { true, true, true, true, true, true, true, true, true, true, true, false });
 		WebTable.setOrder(sessionContext, "DepartmentList.ord", request.getParameter("ord"), 1);
         webTable.enableHR("#9CB0CE");
         webTable.setRowStyle("white-space: nowrap");
@@ -252,6 +254,7 @@ public class DepartmentListAction extends Action {
     						(d.getDistributionPrefPriority() == null && d.getDistributionPrefPriority().intValue() != 0 
     							? "&nbsp;" : d.getDistributionPrefPriority().toString()),
     						allowReq,
+    						(d.isInheritInstructorPreferences() ? "<IMG border='0' title='Instructor preferences are to be inherited.' alt='Inherit Instructor Preferences' align='absmiddle' src='images/tick.gif'>" : ""),
     						(d.isAllowEvents() ? "<IMG border='0' title='This department has event management enabled.' alt='Event Management' align='absmiddle' src='images/tick.gif'>" : ""),
     						lastChangeStr },
     				new Comparable[] {
@@ -267,6 +270,7 @@ public class DepartmentListAction extends Action {
     						d.effectiveStatusType().getOrd(),
     						d.getDistributionPrefPriority(),
     						new Integer(allowReqOrd),
+    						d.isInheritInstructorPreferences(),
     						d.isAllowEvents(),
     						lastChangeCmp });
     		}

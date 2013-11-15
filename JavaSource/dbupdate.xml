@@ -8984,4 +8984,9 @@
 		]]></sql>
 		<sql>update %SCHEMA%.dept_status_type set status = 1048576 where apply = 1 and status = 0</sql>
 	</update>
+	<update version="130" date="13-Nov-2013" comment="Inherit Instructor Preferences Toggle">
+		<mysql>alter table %SCHEMA%.department add instructor_pref int(1) null default 1</mysql>
+		<plsql>alter table %SCHEMA%.department add instructor_pref number(1) default 1</plsql>
+		<sql>update %SCHEMA%.department set instructor_pref = 0 where external_manager = 1</sql>
+	</update>
 </dbupdate>
