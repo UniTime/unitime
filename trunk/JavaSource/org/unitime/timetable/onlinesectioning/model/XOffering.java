@@ -638,6 +638,22 @@ public class XOffering implements Serializable, Externalizable {
     public List<XDistribution> getDistributions() {
     	return iDistrubutions;
     }
+    
+    public boolean isAllowOverlap(XEnrollment enrollment) {
+    	if (enrollment.getReservation() == null) return false;
+    	for (XReservation reservation: getReservations()) {
+    		if (reservation.equals(enrollment.getReservation()) && reservation.isAllowOverlap()) return true;
+    	}
+    	return false;
+    }
+    
+    public boolean isAllowOverlap(XStudent student, Long configId, List<XSection> assignment) {
+    	for (XReservation reservation: getReservations()) {
+    		if (reservation.isAllowOverlap() && reservation.isApplicable(student) && reservation.isIncluded(configId, assignment))
+    			return true;
+    	}
+    	return false;
+    }
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
