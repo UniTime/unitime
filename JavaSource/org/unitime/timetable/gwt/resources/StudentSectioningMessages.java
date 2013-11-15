@@ -703,6 +703,18 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Unable to drop from {0} (it is after the deadline).")
 	String exceptionEnrollDeadlineDrop(String clazz);
+	
+	@DefaultMessage("Unable to enroll into {0}, enrollment is incomplete.")
+	String exceptionEnrollmentIncomplete(String course);
+	
+	@DefaultMessage("Unable to enroll into {0}, enrollment is overlapping.")
+	String exceptionEnrollmentOverlapping(String course);
+	
+	@DefaultMessage("Unable to enroll into {0}, enrollment is invalid.")
+	String exceptionEnrollmentInvalid(String course);
+
+	@DefaultMessage("Unable to enroll into {0}, enrollment is conflicting.")
+	String exceptionEnrollmentConflicting(String course);
 
 	@DefaultMessage("This feature is not supported in the current environment.")
 	String exceptionNotSupportedFeature();
