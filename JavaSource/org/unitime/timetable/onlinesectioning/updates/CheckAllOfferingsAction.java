@@ -95,17 +95,19 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 			}
 			if (!offering.getSubpart(s1.getSubpartId()).getConfigId().equals(config.getConfigId())) return false;
 		}
-		for (XRequest r: student.getRequests())
+		if (!offering.isAllowOverlap(student, request.getEnrollment().getConfigId(), sections))
+			for (XRequest r: student.getRequests())
 			if (r instanceof XCourseRequest && !r.getRequestId().equals(request.getRequestId()) && ((XCourseRequest)r).getEnrollment() != null) {
 				XEnrollment e = ((XCourseRequest)r).getEnrollment();
 				XOffering other = server.getOffering(e.getOfferingId());
 				if (other != null) {
 					List<XSection> assignment = other.getSections(e);
-					for (XSection section: sections)
-						if (section.isOverlapping(offering.getDistributions(), assignment)) {
-							if (request.isAlternative() && !r.isAlternative()) return false;
-							if (request.isAlternative() == r.isAlternative() && request.getPriority() > r.getPriority()) return false;
-						}
+					if (!other.isAllowOverlap(student, e.getConfigId(), assignment))
+						for (XSection section: sections)
+							if (section.isOverlapping(offering.getDistributions(), assignment)) {
+								if (request.isAlternative() && !r.isAlternative()) return false;
+								if (request.isAlternative() == r.isAlternative() && request.getPriority() > r.getPriority()) return false;
+							}
 				}
 			}
 		return true;

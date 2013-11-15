@@ -96,9 +96,7 @@ public class XCourseRequest extends XRequest {
 						OnlineSectioningLog.CourseRequestOption parsed = OnlineSectioningLog.CourseRequestOption.parseFrom(option.getValue());
 						if (iOptions == null) iOptions = new HashMap<XCourseId, OnlineSectioningLog.CourseRequestOption>();
 						iOptions.put(courseId, parsed);
-					} catch (InvalidProtocolBufferException e) {
-						helper.warn("Failed to parse course request options: " + e.getMessage());
-					}
+					} catch (InvalidProtocolBufferException e) {}
         		}
         	}
         }
