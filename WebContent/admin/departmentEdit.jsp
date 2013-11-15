@@ -204,6 +204,13 @@
 		</TR>
 		
 		<TR>
+			<TD nowrap>Inherit Instructor Preferences:</TD>
+			<TD>
+				<html:checkbox property="inheritInstructorPreferences"/>
+			</TD>
+		</TR>
+		
+		<TR>
 			<TD nowrap>Event Management:</TD>
 			<TD>
 				<html:checkbox property="allowEvents"/>

@@ -182,6 +182,39 @@ public class Class_ extends BaseClass_ {
 		}
 		return ret;
     }
+    
+    private Set removeDepartmentalPreferences(Set prefs) {
+    	if (prefs==null) return new TreeSet();
+    	if (prefs.isEmpty()) return prefs;
+    	Set ret = new TreeSet();
+		for (Iterator i=prefs.iterator();i.hasNext();) {
+			Preference pref = (Preference)i.next();
+    		if (pref instanceof RoomPref) {
+    			Location loc = ((RoomPref)pref).getRoom();
+    			for (RoomDept rd: loc.getRoomDepts())
+    				if (rd.getDepartment().equals(getManagingDept())) {
+    					ret.add(pref); break;
+    				}
+    		} else if (pref instanceof BuildingPref) {
+    			Building b = ((BuildingPref)pref).getBuilding();
+    			if (getAvailableBuildings().contains(b))
+    				ret.add(pref);
+    		} else if (pref instanceof RoomFeaturePref) {
+    			RoomFeature rf = ((RoomFeaturePref)pref).getRoomFeature();
+    			if (rf instanceof GlobalRoomFeature)
+    				ret.add(pref);
+    			else if (rf instanceof DepartmentRoomFeature && ((DepartmentRoomFeature)rf).getDepartment().equals(getManagingDept()))
+    				ret.add(pref);
+    		} else if (pref instanceof RoomGroupPref) {
+    			RoomGroup rg = ((RoomGroupPref)pref).getRoomGroup();
+    			if (rg.isGlobal() || getManagingDept().equals(rg.getDepartment()))
+    				ret.add(pref);
+    		} else {
+    			ret.add(pref);
+    		}
+    	}
+    	return ret;
+    }
 
     private Set<Preference> combinePreferences(Set<Preference> instrPrefs1, Set<Preference> instrPrefs2) {
     	if (instrPrefs1==null || instrPrefs1.isEmpty()) return instrPrefs2;
@@ -332,7 +365,6 @@ public class Class_ extends BaseClass_ {
     	Department mngDept = getManagingDept();
     	if (DistributionPref.class.equals(type)) {
     		return effectiveDistributionPreferences(mngDept);
-    		//return (mngDept==null?null:mngDept.getPreferences(type, this));
     	}
 
     	if (leadInstructors==null || leadInstructors.isEmpty()) return effectivePreferences(type);
@@ -340,47 +372,49 @@ public class Class_ extends BaseClass_ {
     	Set instrPrefs = null;
     	for (Enumeration e=leadInstructors.elements();e.hasMoreElements();) {
     		DepartmentalInstructor leadInstructor = (DepartmentalInstructor)e.nextElement();
-    		if (!mngDept.isExternalManager().booleanValue()) { // departmental class -> take instructor preferences as they are
-    			instrPrefs = combinePreferences(instrPrefs,leadInstructor.prefsOfTypeForDepartment(type, getControllingDept()));
-    		} else {
-    			//LLR/LAB class take weaken form of time instructor preferences
-    			if (TimePref.class.equals(type))
-    				instrPrefs = combinePreferences(instrPrefs,weakenHardPreferences(leadInstructor.prefsOfTypeForDepartment(type, getControllingDept())));
-    		}
+    		instrPrefs = combinePreferences(instrPrefs, leadInstructor.prefsOfTypeForDepartment(type, getControllingDept()));
     	}
-
-    	if (getSchedulingSubpart().getManagingDept().getUniqueId().equals(mngDept.getUniqueId())) {
-    		//subpart of the same owner -> take subpart preferences
-    		Set subpartPrefs = getSchedulingSubpart().getPreferences(type);
-    		return removeNeutralPreferences(combinePreferences(type, subpartPrefs, instrPrefs));
-    	} else {
-    		//subpart of different owner -> take only time pattern
-    		Set subpartPrefs = new TreeSet();
-    		if (TimePref.class.equals(type)) {
-    			Set subpartTimePrefs = getSchedulingSubpart().getPreferences(type);
-    			if (subpartTimePrefs!=null) {
-    				for (Iterator i=subpartTimePrefs.iterator();i.hasNext();) {
-    					TimePref tp = (TimePref)((TimePref)i.next()).clone();
-    					TimePatternModel m = tp.getTimePatternModel();
-    					if (mngDept.isExternalManager().booleanValue())
-    						m.weakenHardPreferences();
-    					tp.setTimePatternModel(m);
-    					subpartPrefs.add(tp);
-    				}
-    			}
+		// weaken instructor preferences, if needed
+		if (instrPrefs != null && !instrPrefs.isEmpty()) {
+			if (TimePref.class.equals(type)) {
+				if (mngDept.isExternalManager() && !mngDept.isAllowReqTime())
+					instrPrefs = weakenHardPreferences(instrPrefs);
+			} else {
+				if (mngDept.isExternalManager() && !mngDept.isAllowReqRoom())
+					instrPrefs = weakenHardPreferences(instrPrefs);
+			}
+		}
+		// if external department, remove departmental preferences
+		if (mngDept.isExternalManager() && instrPrefs != null && !instrPrefs.isEmpty()) { 
+			instrPrefs = removeDepartmentalPreferences(instrPrefs);
+		}
+		
+		// take subpart preferences
+		Set subpartPrefs = getSchedulingSubpart().getPreferences(type, this);
+		if (subpartPrefs != null && !subpartPrefs.isEmpty() && !mngDept.equals(getSchedulingSubpart().getManagingDept())) {
+			// different managers -> weaken preferences, if needed
+			if (TimePref.class.equals(type)) {
+				if (mngDept.isExternalManager() && !mngDept.isAllowReqTime())
+					subpartPrefs = weakenHardPreferences(subpartPrefs);
+			} else {
+				if (mngDept.isExternalManager() && !mngDept.isAllowReqRoom())
+					subpartPrefs = weakenHardPreferences(subpartPrefs);
+			}
+			// remove departmental preferences
+    		if (mngDept.isExternalManager() && instrPrefs != null && !instrPrefs.isEmpty()) { 
+    			subpartPrefs = removeDepartmentalPreferences(subpartPrefs);
     		}
-    		return removeNeutralPreferences(combinePreferences(type, subpartPrefs, instrPrefs));
-    	}
-
+		}
+		
+		return removeNeutralPreferences(combinePreferences(type, subpartPrefs, instrPrefs));
     }
-
+    
     public Set effectivePreferences(Class type) {
     	Department mngDept = getManagingDept();
     	// special handling of distribution preferences
     	if (DistributionPref.class.equals(type)) {
     		Set prefs = effectiveDistributionPreferences(mngDept);
-    			//(mngDept==null?new TreeSet():mngDept.getPreferences(type, this));
-    		if (!mngDept.isExternalManager().booleanValue()) {
+    		if (!mngDept.isExternalManager()) {
     			Set instPref = classInstructorPrefsOfType(type);
     			if (instPref!=null) prefs.addAll(instPref);
     		}
@@ -390,20 +424,28 @@ public class Class_ extends BaseClass_ {
     	Set classPrefs = getPreferences(type, this);
 
     	Set instrPrefs = null;
-    	if (mngDept == null || !mngDept.isExternalManager().booleanValue()) { // departmental class -> take instructor preferences
+    	// take instructor preferences if allowed
+    	if (mngDept.isInheritInstructorPreferences()) {
     		instrPrefs = classInstructorPrefsOfType(type);
-        	if (instrPrefs==null || instrPrefs.isEmpty()){
-        		if (!RoomPref.class.equals(type)  && getManagingDept() != null){ //Department Room Prefs are not used in this way
-        			instrPrefs = getManagingDept().getPreferences(type); //take department preference if there is no instructor pref
-        		}
-        	}
-        	if (instrPrefs==null || instrPrefs.isEmpty())
-        		instrPrefs = getSession().getPreferences(type); // get session preference if there is no instructor or dept. pref
+    		// weaken instructor preferences, if needed
+    		if (instrPrefs != null && !instrPrefs.isEmpty()) {
+    			if (mngDept.isExternalManager() && TimePref.class.equals(type)) {
+    				if (!mngDept.isAllowReqTime())
+    					instrPrefs = weakenHardPreferences(instrPrefs);
+    			} else {
+    				if (mngDept.isExternalManager() && !mngDept.isAllowReqRoom())
+    					instrPrefs = weakenHardPreferences(instrPrefs);
+    			}
+    		}
+    		// if external department, remove departmental preferences
+    		if (mngDept.isExternalManager() && instrPrefs != null && !instrPrefs.isEmpty()) { 
+    			instrPrefs = removeDepartmentalPreferences(instrPrefs);
+    		}
     	}
 
     	boolean hasExactTimePattern = false;
 		if (TimePref.class.equals(type)) {
-    		if (classPrefs!=null && !classPrefs.isEmpty()) {
+    		if (classPrefs != null && !classPrefs.isEmpty()) {
     			for (Iterator i=classPrefs.iterator();i.hasNext();) {
     				TimePref tp = (TimePref)i.next();
     				if (tp.getTimePattern()!=null && tp.getTimePattern().getType().intValue()==TimePattern.sTypeExactTime) {
@@ -412,31 +454,25 @@ public class Class_ extends BaseClass_ {
     			}
     		}
 		}
-
-    	if (mngDept!=null && mngDept.getUniqueId().equals(getSchedulingSubpart().getManagingDept().getUniqueId())) {
-    		//subpart with the same owner -> take subpart preferences
-        	Set subpartPrefs = (hasExactTimePattern?null:getSchedulingSubpart().getPreferences(type, this));
-
-        	return removeNeutralPreferences(combinePreferences(type, classPrefs, subpartPrefs, instrPrefs));
-    	} else {
-    		//subpart with different owner -> take only time pattern from subpart preferences
-    		if (TimePref.class.equals(type)) {
-    			Set subpartPrefs = (hasExactTimePattern?null:getSchedulingSubpart().getPreferences(type));
-    			Set clearedSubpartPrefs = new TreeSet();
-    			if (subpartPrefs!=null) {
-    				for (Iterator i=subpartPrefs.iterator();i.hasNext();) {
-    					TimePref tp = (TimePref)((TimePref)i.next()).clone();
-    					TimePatternModel m = tp.getTimePatternModel();
-    					if (mngDept.isExternalManager().booleanValue())
-    						m.weakenHardPreferences();
-    					tp.setTimePatternModel(m);
-    					clearedSubpartPrefs.add(tp);
-    				}
-    			}
-    			return removeNeutralPreferences(combinePreferences(type, classPrefs, clearedSubpartPrefs, instrPrefs));
-    		} else
-    			return removeNeutralPreferences(classPrefs);
-    	}
+		
+		// take subpart preferences
+		Set subpartPrefs = (hasExactTimePattern ? null : getSchedulingSubpart().getPreferences(type, this));
+		if (subpartPrefs != null && !subpartPrefs.isEmpty() && !mngDept.equals(getSchedulingSubpart().getManagingDept())) {
+			// different managers -> weaken preferences, if needed
+			if (TimePref.class.equals(type)) {
+				if (mngDept.isExternalManager() && !mngDept.isAllowReqTime())
+					subpartPrefs = weakenHardPreferences(subpartPrefs);
+			} else {
+				if (mngDept.isExternalManager() && !mngDept.isAllowReqRoom())
+					subpartPrefs = weakenHardPreferences(subpartPrefs);
+			}
+			// remove departmental preferences
+    		if (mngDept.isExternalManager() && instrPrefs != null && !instrPrefs.isEmpty()) { 
+    			subpartPrefs = removeDepartmentalPreferences(subpartPrefs);
+    		}
+		}
+		
+		return removeNeutralPreferences(combinePreferences(type, classPrefs, subpartPrefs, instrPrefs));
     }
 
     public String instructorHtml(String instructorNameFormat){
