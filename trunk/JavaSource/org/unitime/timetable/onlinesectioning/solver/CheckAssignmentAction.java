@@ -92,6 +92,8 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Long, L
 		Hashtable<Long, XCourse> config2course = new Hashtable<Long, XCourse>();
 		Hashtable<Long, XOffering> config2offering = new Hashtable<Long, XOffering>();
 		Hashtable<Long, List<XSection>> config2sections = new Hashtable<Long, List<XSection>>();
+		Hashtable<XOffering, List<XSection>> offering2sections = new Hashtable<XOffering, List<XSection>>();
+		Hashtable<XOffering, XConfig> offering2config = new Hashtable<XOffering, XConfig>();
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
 			// Skip free times
 			if (ca == null || ca.isFreeTime() || ca.getClassId() == null) continue;
@@ -119,6 +121,14 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Long, L
 					throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
 				config2course.put(subpart.getConfigId(), course);
 				config2offering.put(subpart.getConfigId(), offering);
+			}
+			sections.add(section);
+			
+			sections = offering2sections.get(offering);
+			if (sections == null) {
+				sections = new ArrayList<XSection>();
+				offering2sections.put(offering, sections);	
+				offering2config.put(offering, offering.getConfig(subpart.getConfigId()));
 			}
 			sections.add(section);
 		}
@@ -226,6 +236,39 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Long, L
 						throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
 				}
 			}
+		}
+		
+		for (Map.Entry<XOffering, List<XSection>> entry: offering2sections.entrySet()) {
+			XOffering offering = entry.getKey();
+			XConfig config = offering2config.get(entry.getKey());
+			XCourse course = config2course.get(config.getConfigId());
+			List<XSection> sections = entry.getValue();
+			if (sections.size() != config.getSubparts().size()) {
+				throw new SectioningException(MSG.exceptionEnrollmentIncomplete(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+			}
+			for (XSection s1: sections) {
+				for (XSection s2: sections) {
+					if (s1.getSectionId() < s2.getSectionId() && s1.isOverlapping(offering.getDistributions(), s2)) {
+						throw new SectioningException(MSG.exceptionEnrollmentOverlapping(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+					}
+					if (!s1.getSectionId().equals(s2.getSectionId()) && s1.getSubpartId().equals(s2.getSubpartId())) {
+						throw new SectioningException(MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+					}
+				}
+				if (!offering.getSubpart(s1.getSubpartId()).getConfigId().equals(config.getConfigId())) {
+					throw new SectioningException(MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+				}
+			}
+			if (!offering.isAllowOverlap(student, config.getConfigId(), sections))
+				for (Map.Entry<XOffering, List<XSection>> otherEntry: offering2sections.entrySet()) {
+					XOffering other = otherEntry.getKey();
+					if (!other.equals(offering) && !other.isAllowOverlap(student, offering2config.get(otherEntry.getKey()).getConfigId(), otherEntry.getValue())) {
+						List<XSection> assignment = otherEntry.getValue();
+						for (XSection section: sections)
+							if (section.isOverlapping(offering.getDistributions(), assignment))
+								throw new SectioningException(MSG.exceptionEnrollmentConflicting(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+					}
+				}
 		}
 		
 		return config2sections;
