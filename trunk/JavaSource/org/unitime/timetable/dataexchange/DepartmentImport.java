@@ -78,6 +78,7 @@ public class DepartmentImport extends BaseImport {
                     department.setAllowReqDistribution(false);
                     department.setExternalManager(false);
                     department.setAllowEvents(false);
+                    department.setInheritInstructorPreferences(true);
                     department.setDistributionPrefPriority(new Integer(0));
                 } else {
                     if("T".equalsIgnoreCase(element.attributeValue("delete"))) {
@@ -90,6 +91,7 @@ public class DepartmentImport extends BaseImport {
                 department.setDeptCode(element.attributeValue("deptCode"));
                 department.setExternalUniqueId(externalId);
                 department.setAllowEvents("true".equals(element.attributeValue("allowEvents", department.isAllowEvents() ? "true" : "false")));
+                department.setInheritInstructorPreferences("true".equals(element.attributeValue("instructorPrefs", department.isInheritInstructorPreferences() ? "true" : "false")));
                 getHibSession().saveOrUpdate(department);
                 flushIfNeeded(false);
             }
