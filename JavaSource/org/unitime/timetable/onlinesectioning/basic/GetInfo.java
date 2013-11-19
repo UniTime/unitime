@@ -256,7 +256,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
                 }
             }
             
-            info.put("Assigned variables", df.format(100.0 * assgnVars / nrVars) + "% (" + nrVars + "/" + assgnVars + ")");
+            info.put("Assigned variables", df.format(100.0 * assgnVars / nrVars) + "% (" + assgnVars + "/" + nrVars + ")");
             info.put("Overall solution value", df.format(value));
             info.put("Students with complete schedule", df.format(100.0 * compStud / nrStud) + "% (" + compStud + "/" + nrStud + ")");
             info.put("Student distance conflicts", df.format(1.0 * dist / nrStud) + " (" + dist + ")");
