@@ -3170,3 +3170,15 @@ unitime-RoomSharingWidget .legend .blank {
 	max-height: 400px;
 	overflow: hidden;
 }
+
+.unitime-CheckNotConfirmed {
+	background-color: #FFD7D7;
+}
+
+.unitime-CheckConfirmed {
+	background-color: #D7FFD7;
+}
+
+.unitime-TextChanged {
+	color: blue;
+}

@@ -133,6 +133,9 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private CheckBox iReqAttendance;
 	private ListBox iStandardNotes;
 	private SingleDateSelector iExpirationDate;
+	private CheckBox iMainContactChanged;
+	private int iMainContactChangedRow;
+	private ContactInterface iOriginalContact;
 	
 	private SimpleForm iCoursesForm;
 	
@@ -153,7 +156,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private EnrollmentTable iEnrollments;
 	private UniTimeHeaderPanel iEnrollmentHeader;
 	private int iEnrollmentRow;
-	private Button iLookupButton, iAdditionalLookupButton, iStandardNotesButton;
+	private Button iLookupButton, iAdditionalLookupButton, iStandardNotesButton, iMainContactResetButton;
 	private UniTimeDialogBox iStandardNotesBox;
 	
 	private EventInterface iEvent, iSavedEvent;
@@ -180,6 +183,9 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					iMainLName.getWidget().setText(event.getValue().getLastName() == null ? "" : event.getValue().getLastName());
 					iMainPhone.setText(event.getValue().getPhone() == null ? "" : event.getValue().getPhone());
 					iMainEmail.getWidget().setText(event.getValue().getEmail() == null ? "" : event.getValue().getEmail());
+					iOriginalContact = new ContactInterface(event.getValue());
+					iMainContactChanged.setValue(false, true);
+					checkMainContactChanged();
 				}
 			}
 		});
@@ -437,6 +443,35 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		});
 		iAdditionalLookupButton.setVisible(false);
 		
+		iMainContactResetButton = new Button(MESSAGES.buttonResetMainContact());
+		iMainContactResetButton.setWidth("75px");
+		Character resetAccessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonResetMainContact());
+		if (resetAccessKey != null) iMainContactResetButton.setAccessKey(resetAccessKey);
+		iMainContactResetButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					if (iLookupButton.isVisible()) { iOriginalContact = null; }
+					if (iOriginalContact == null) {
+						iMainExternalId = null;
+						iMainFName.setText("");
+						iMainMName.setText("");
+						iMainLName.getWidget().setText("");
+						iMainPhone.setText("");
+						iMainEmail.getWidget().setText("");
+					} else {
+						iMainExternalId = iOriginalContact.getExternalId();
+						iMainFName.setText(iOriginalContact.hasFirstName() ? iOriginalContact.getFirstName() : "");
+						iMainMName.setText(iOriginalContact.hasMiddleName() ? iOriginalContact.getMiddleName() : "");
+						iMainLName.getWidget().setText(iOriginalContact.hasLastName() ? iOriginalContact.getLastName() : "");
+						iMainPhone.setText(iOriginalContact.hasPhone() ? iOriginalContact.getPhone() : "");
+						iMainEmail.getWidget().setText(iOriginalContact.hasEmail() ? iOriginalContact.getEmail() : "");
+					}
+					iMainContactChanged.setValue(false, true);
+					checkMainContactChanged();
+				}
+		});
+		iMainContactResetButton.setVisible(false);
+		
 		
 		iMainFName = new TextBox();
 		iMainFName.setStyleName("unitime-TextBox");
@@ -444,6 +479,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iMainFName.setWidth("285px");
 		mainContact.addRow(MESSAGES.propFirstName(), iMainFName);
 		mainContact.setWidget(0, 2, iLookupButton);
+		mainContact.setWidget(0, 3, iMainContactResetButton);
 		
 		iMainMName = new TextBox();
 		iMainMName.setStyleName("unitime-TextBox");
@@ -483,8 +519,34 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iMainPhone.setWidth("285px");
 		mainContact.addRow(MESSAGES.propPhone(), iMainPhone);
 		mainContact.setWidget(mainContact.getRowCount() - 1, 2, iAdditionalLookupButton);
+		mainContact.getFlexCellFormatter().setColSpan(mainContact.getRowCount() - 1, 2, 2);
+		
+		ValueChangeHandler<String> checkMainContactHandler = new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				checkMainContactChanged();
+			}
+		};
+		iMainFName.addValueChangeHandler(checkMainContactHandler);
+		iMainMName.addValueChangeHandler(checkMainContactHandler);
+		iMainLName.getWidget().addValueChangeHandler(checkMainContactHandler);
+		iMainPhone.addValueChangeHandler(checkMainContactHandler);
+		iMainEmail.getWidget().addValueChangeHandler(checkMainContactHandler);
 		
 		iForm.addRow(MESSAGES.propMainContact(), mainContact);
+		
+		iMainContactChanged = new CheckBox(MESSAGES.checkYourContactChange());
+		iMainContactChangedRow = iForm.addRow("", iMainContactChanged);
+		iForm.getRowFormatter().setVisible(iMainContactChangedRow, false);
+		iForm.getCellFormatter().setStyleName(iMainContactChangedRow, 1, "unitime-CheckNotConfirmed");
+		
+		iMainContactChanged.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				checkMainContactChanged();
+				iHeader.clearMessage();
+			}
+		});
 		
 		iContacts = new UniTimeTable<ContactInterface>();
 		iContacts.setStyleName("unitime-EventContacts");
@@ -871,6 +933,67 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		return (iEventType.isReadOnly() ? iEvent.getType() : EventType.valueOf(iEventType.getWidget().getValue(iEventType.getWidget().getSelectedIndex())));
 	}
 	
+	public boolean hasMainContactChanged() {
+		if (iOriginalContact == null) return false;
+		boolean changed = false;
+		if (!iMainFName.getText().equals(iOriginalContact.hasFirstName() ? iOriginalContact.getFirstName() : "")) {
+			iMainFName.addStyleName("unitime-TextChanged");
+			changed = true;
+		} else {
+			iMainFName.removeStyleName("unitime-TextChanged");
+		}
+		if (!iMainMName.getText().equals(iOriginalContact.hasMiddleName() ? iOriginalContact.getMiddleName() : "")) {
+			iMainMName.addStyleName("unitime-TextChanged");
+			changed = true;
+		} else {
+			iMainMName.removeStyleName("unitime-TextChanged");
+		}
+		if (!iMainLName.getWidget().getText().equals(iOriginalContact.hasLastName() ? iOriginalContact.getLastName() : "")) {
+			iMainLName.getWidget().addStyleName("unitime-TextChanged");
+			changed = true;
+		} else {
+			iMainLName.getWidget().removeStyleName("unitime-TextChanged");
+		}
+		if (!iMainPhone.getText().equals(iOriginalContact.hasPhone() ? iOriginalContact.getPhone() : "")) {
+			iMainPhone.addStyleName("unitime-TextChanged");
+			changed = true;
+		} else {
+			iMainPhone.removeStyleName("unitime-TextChanged");
+		}
+		if (!iMainEmail.getWidget().getText().equals(iOriginalContact.hasEmail() ? iOriginalContact.getEmail() : "")) {
+			iMainEmail.getWidget().addStyleName("unitime-TextChanged");
+			changed = true;
+		} else {
+			iMainEmail.getWidget().removeStyleName("unitime-TextChanged");
+		}
+		return changed;
+	}
+	
+	public void checkMainContactChanged() {
+		if (hasMainContactChanged()) {
+			if (iOriginalContact != null && iOriginalContact.getExternalId() != null && iProperties != null && iProperties.getMainContact() != null &&
+				!iOriginalContact.getExternalId().equals(iProperties.getMainContact().getExternalId())) {
+				iMainContactChanged.setText(iMainContactChanged.getValue()
+						? MESSAGES.confirmMainContactChange(iOriginalContact.getName(MESSAGES))
+						: MESSAGES.checkMainContactChange(iOriginalContact.getName(MESSAGES)));
+			} else {
+				iMainContactChanged.setText(iMainContactChanged.getValue()
+						? MESSAGES.confirmYourContactChange()
+						: MESSAGES.checkYourContactChange());	
+			}
+			iForm.getRowFormatter().setVisible(iMainContactChangedRow, true);
+			iMainContactResetButton.setVisible(true);
+			if (iMainContactChanged.getValue()) {
+				iForm.getCellFormatter().setStyleName(iMainContactChangedRow, 1, "unitime-CheckConfirmed");
+			} else {
+				iForm.getCellFormatter().setStyleName(iMainContactChangedRow, 1, "unitime-CheckNotConfirmed");
+			}
+		} else {
+			iForm.getRowFormatter().setVisible(iMainContactChangedRow, false);
+			iMainContactResetButton.setVisible(iOriginalContact != null && iLookupButton.isVisible());
+		}
+	}
+	
 	public EventInterface getEvent() {
 		iEvent.setName(iName.getWidget().getText());
 		if (!iEventType.isReadOnly())
@@ -1165,6 +1288,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iMainLName.getWidget().setText(iEvent.getContact().hasLastName() ? iEvent.getContact().getLastName() : "");
 			iMainPhone.setText(iEvent.getContact().hasPhone() ? iEvent.getContact().getPhone() : "");
 			iMainEmail.getWidget().setText(iEvent.getContact().hasEmail() ? iEvent.getContact().getEmail() : "");
+			iOriginalContact = iEvent.getContact();
 		} else {
 			ContactInterface mainContact = (getProperties() == null || getProperties().isCanLookupMainContact() ? null : getProperties().getMainContact());
 			if (mainContact != null) {
@@ -1174,6 +1298,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iMainLName.getWidget().setText(mainContact.getLastName() == null ? "" : mainContact.getLastName());
 				iMainPhone.setText(mainContact.getPhone() == null ? "" : mainContact.getPhone());
 				iMainEmail.getWidget().setText(mainContact.getEmail() == null ? "" : mainContact.getEmail());
+				iOriginalContact = getProperties().getMainContact();
 			} else {
 				iMainExternalId = null;
 				iMainFName.setText("");
@@ -1181,8 +1306,10 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iMainLName.getWidget().setText("");
 				iMainPhone.setText("");
 				iMainEmail.getWidget().setText("");
+				iOriginalContact = null;
 			}
 		}
+		iMainContactChanged.setValue(false, true);
 		
 		iContacts.clearTable(1);
 		if (iEvent.hasAdditionalContacts()) {
@@ -1261,6 +1388,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		if (iEvent.getId() == null && (getProperties() == null || !getProperties().isCanAddEvent()))
 			UniTimeNotifications.warn(MESSAGES.warnCannotAddEvent(iSession.getAcademicSessionName()));
 		iHeader.setEnabled("update", iEvent.getId() != null);
+		checkMainContactChanged();
 	}
 	
 	public static class CourseRelatedObjectLine {
@@ -1672,6 +1800,12 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			valid = false;
 		} else {
 			iMainEmail.clearHint();
+		}
+		if (hasMainContactChanged() && !iMainContactChanged.getValue()) {
+			UniTimeNotifications.error(iMainContactChanged.getText());
+			if (valid)
+				iHeader.setErrorMessage(iMainContactChanged.getText());
+			valid = false;
 		}
 		if (iMeetings.getValue().isEmpty() && iEvent.getId() == null) {
 			UniTimeNotifications.error(MESSAGES.reqMeetings());
