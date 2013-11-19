@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.jgroups;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
@@ -81,6 +82,8 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 			if (solver == null)
 				throw new Exception("Solver " + user + " does not exist.");
 			return solver.getClass().getMethod(method, types).invoke(solver, args);
+		} catch (InvocationTargetException e) {
+			throw (Exception)e.getTargetException();
 		} finally {
 			_RootDAO.closeCurrentThreadSessions();
 		}
@@ -90,9 +93,11 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 	public Object dispatch(Address address, String user, Method method, Object[] args) throws Exception {
 		try {
 			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), user, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, SolverServerImplementation.sFirstResponse);
+		} catch (InvocationTargetException e) {
+			throw (Exception)e.getTargetException();
 		} catch (Exception e) {
 			if ("exists".equals(method.getName()) && e instanceof SuspectedException) return false;
-			sLog.error("Excution of " + method + " on solver " + user + " failed: " + e.getMessage(), e);
+			sLog.error("Excution of " + method.getName() + " on solver " + user + " failed: " + e.getMessage(), e);
 			throw e;
 		}
 	}
