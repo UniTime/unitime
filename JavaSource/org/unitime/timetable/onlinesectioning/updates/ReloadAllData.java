@@ -55,6 +55,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistributionType;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
+import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
@@ -173,6 +174,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		    		if (space != null)
 		    			space.put(sectionId, expected);
 		    	}
+		    	for (Map.Entry<Long, Map<Long, Double>> entry: spaceMap.entrySet())
+		    		server.update(new XExpectations(entry.getKey(), entry.getValue()));
 		        
 				long t1 = System.currentTimeMillis();
 				helper.info("  Update of session " + server.getAcademicSession() + " done " + new DecimalFormat("0.0").format((t1 - t0) / 1000.0) + " seconds.");
