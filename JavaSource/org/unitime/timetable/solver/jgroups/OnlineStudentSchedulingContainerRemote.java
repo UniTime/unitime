@@ -107,6 +107,8 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 			if (solver == null)
 				throw new Exception("Server " + sessionId + " does not exist.");
 			return solver.getClass().getMethod(method, types).invoke(solver, args);
+		} catch (InvocationTargetException e) {
+			throw (Exception)e.getTargetException();
 		} finally {
 			_RootDAO.closeCurrentThreadSessions();
 		}
