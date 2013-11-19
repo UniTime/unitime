@@ -240,8 +240,9 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		boolean avoidOverExpected = server.getAcademicSession().isSectioningEnabled();
 		if (avoidOverExpected && helper.getUser() != null && helper.getUser().hasType() && helper.getUser().getType() != OnlineSectioningLog.Entity.EntityType.STUDENT)
 			avoidOverExpected = false;
-		if (avoidOverExpected && "true".equals(ApplicationProperties.getProperty("unitime.sectioning.allowOverExpected")))
-			avoidOverExpected = false;
+		String override = ApplicationProperties.getProperty("unitime.sectioning.allowOverExpected");
+		if (override != null)
+			avoidOverExpected = "false".equalsIgnoreCase(override);
 		
 		int maxOverExpected = -1;
 		if (avoidOverExpected) {
@@ -287,6 +288,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		helper.info("Using " + (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
 				(server.getConfig().getPropertyBoolean("StudentWeights.PriorityWeighting", true) ? "priority" : "equal") + " weighting model" +
 				" with " + server.getConfig().getPropertyInt("Suggestions.Timeout", 5000) +" ms time limit" +
+				(maxOverExpected < 0 ? "" : ", maximal over-expected of " + maxOverExpected) +
 				" and maximal depth of " + server.getConfig().getPropertyInt("Suggestions.MaxDepth", 4) + ".");
 
         TreeSet<SuggestionsBranchAndBound.Suggestion> suggestions = suggestionBaB.computeSuggestions();
