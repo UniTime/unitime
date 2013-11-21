@@ -985,7 +985,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     		return messages.formatName(
     				hasFirstName() ? getFirstName() : "",
     				hasMiddleName() ? getMiddleName() : "",
-    				hasLastName() ? getLastName() : "");
+    				hasLastName() ? getLastName() : "").trim();
     	}
     	
     	public String getShortName() {

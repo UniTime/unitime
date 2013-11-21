@@ -35,6 +35,12 @@
 				<line>Added ability to provide parameters for the curriculum solver (student conversion).</line>
 			</description>
 		</item>
+		<item>
+			<name>Add / Edit Event</name>
+			<description>
+				<line>Added confirmation of a change in the event contact information (main contact).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
