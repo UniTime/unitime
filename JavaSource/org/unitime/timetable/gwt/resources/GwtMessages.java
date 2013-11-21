@@ -893,6 +893,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("More <u>C</u>ontacts...")
 	String buttonLookupAdditionalContact();
 	
+	@DefaultMessage("Reset")
+	String buttonResetMainContact();
+	
 	@DefaultMessage("Standard&nbsp;<u>N</u>otes...")
 	String buttonStandardNotes();
 	
@@ -1555,6 +1558,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Send email confirmation")
 	String checkSendEmailConfirmation();
+	
+	@DefaultMessage("Please confirm the change in your contact information.")
+	String checkYourContactChange();
+	
+	@DefaultMessage("Your contact information will be updated.")
+	String confirmYourContactChange();
+	
+	@DefaultMessage("Please confirm the change in the contact information for {0}.")
+	String checkMainContactChange(String name);
+	
+	@DefaultMessage("The contact information for {0} will be updated.")
+	String confirmMainContactChange(String name);
 
 	@DefaultMessage("One email per line please.")
 	String hintAdditionalEmails();
@@ -2050,7 +2065,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("No courses / clases were defined.")
 	String reqCoursesOrClasses();
-		
+	
 	@DefaultMessage("an event")
 	String anEvent();
 	
