@@ -575,10 +575,15 @@ public class InMemorySectioningTest {
 						sLog.warn(attempt + ". attempt failed for " + student.getId());
 						inc("[F] Failed attempt", attempt);
 						attempt ++;
-						if (attempt == 11) break;			
+						if (attempt == 101) break;
+						if (attempt > 10) {
+							try {
+								Thread.sleep(ToolBox.random(100 * attempt));
+							} catch (InterruptedException e) {}
+						}
 					}
-					if (attempt > 10)
-						inc("[F] Failed enrollment (all 10 attempts)");
+					if (attempt > 100)
+						inc("[F] Failed enrollment (all 100 attempts)");
 				}
 			} catch (NoSuchElementException e) {}
 		}
