@@ -38,10 +38,12 @@ import org.apache.log4j.PropertyConfigurator;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
 import org.unitime.timetable.onlinesectioning.reports.OnlineSectioningReport.Counter;
+import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
 import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningSelection;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 import org.unitime.timetable.onlinesectioning.solver.SuggestionSelection;
 import org.unitime.timetable.onlinesectioning.solver.SuggestionsBranchAndBound;
+import org.unitime.timetable.onlinesectioning.solver.expectations.PercentageOverExpected;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSuggestions;
 
@@ -58,6 +60,7 @@ import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
+import net.sf.cpsolver.studentsct.heuristics.studentord.StudentChoiceOrder;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
@@ -258,7 +261,8 @@ public class InMemorySectioningTest {
 	}
 	
 	public boolean section(Student original) {
-		StudentSectioningModel model = new TestModel(iModel.getProperties());
+		OnlineSectioningModel model = new TestModel(iModel.getProperties());
+		model.setOverExpectedCriterion(new PercentageOverExpected(1.0));
 		Student student = new Student(original.getId());
 		Hashtable<CourseRequest, Set<Section>> preferredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
 		Map<Long, Section> classTable = new HashMap<Long, Section>();
@@ -321,7 +325,7 @@ public class InMemorySectioningTest {
 					if (enrl != null && enrl.isCourseRequest() && enrl.getAssignments() != null) {
 						assigned ++;
 						for (Section section: enrl.getSections()) {
-							if (section.getPenalty() >= 0) maxOverExpected ++;
+							if (model.isOverExpected(section, enrl.getRequest())) maxOverExpected ++;
 							pairs.add(new RequestSectionPair(enrl.variable(), section));
 						}
 						enrollments.put((CourseRequest) enrl.variable(), enrl.getSections());
@@ -330,6 +334,7 @@ public class InMemorySectioningTest {
 				}
 				penalty /= assigned;
 				inc("[S] Initial Penalty", penalty);
+				double nrSuggestions = 0.0, nrAccepted = 0.0, totalSuggestions = 0.0, nrTries = 0.0;
 				for (int i = 0; i < pairs.size(); i++) {
 					RequestSectionPair pair = pairs.get(i);
 					SuggestionsBranchAndBound suggestionBaB = null;
@@ -350,6 +355,9 @@ public class InMemorySectioningTest {
 					long x0 = JProf.currentTimeMillis();
 					TreeSet<SuggestionsBranchAndBound.Suggestion> suggestions = suggestionBaB.computeSuggestions();
 					inc("[S] Suggestion CPU Time", JProf.currentTimeMillis() - x0);
+					totalSuggestions += suggestions.size();
+					if (!suggestions.isEmpty()) nrSuggestions += 1.0;
+					nrTries += 1.0;
 
 					SuggestionsBranchAndBound.Suggestion best = null;
 					for (SuggestionsBranchAndBound.Suggestion suggestion: suggestions) {
@@ -368,6 +376,7 @@ public class InMemorySectioningTest {
 						}
 					}
 					if (best != null) {
+						nrAccepted += 1.0;
 						Enrollment[] e = best.getEnrollments();
 						for (int j = 0; j < e.length; j++)
 							if (e[j] != null && e[j].getAssignments() == null) e[j] = null;
@@ -389,6 +398,15 @@ public class InMemorySectioningTest {
 					}
 				}
 				inc("[S] Final Penalty", penalty);
+				if (nrSuggestions > 0) {
+					inc("[S] Classes with suggestion", nrSuggestions);
+					inc("[S] Avg. # of suggestions", totalSuggestions / nrSuggestions);
+					inc("[S] Suggestion acceptance rate [%]", nrAccepted / nrSuggestions);
+				} else {
+					inc("[S] Student with no suggestions available", 1.0);
+				}
+				if (!pairs.isEmpty())
+					inc("[S] Probability that a class has suggestions [%]", nrSuggestions / nrTries);
 			}
 			
 			List<Enrollment> enrollments = new ArrayList<Enrollment>();
@@ -437,8 +455,6 @@ public class InMemorySectioningTest {
 					}
 				}
 				if (fail) {
-					for (Request r: original.getRequests())
-						if (r.getAssignment() != null) updateSpace(r.getAssignment(), true);
 					for (Request r: original.getRequests())
 						if (r.getAssignment() != null) r.unassign(0);
 					for (Request r: original.getRequests())
@@ -527,7 +543,8 @@ public class InMemorySectioningTest {
         sLog.info("Input: " + ToolBox.dict2string(model().getExtendedInfo(), 2));
 
         List<Student> students = new ArrayList<Student>(model().getStudents());
-        Collections.shuffle(students);
+        // Collections.shuffle(students);
+        Collections.sort(students, new StudentChoiceOrder(model().getProperties()));
         
         Iterator<Student> iterator = students.iterator();
         int nrThreads = Integer.parseInt(System.getProperty("nrConcurrent", "10"));
@@ -590,7 +607,7 @@ public class InMemorySectioningTest {
 		
 	}
 	
-	public class TestModel extends StudentSectioningModel {
+	public class TestModel extends OnlineSectioningModel {
 		public TestModel(DataProperties config) {
 			super(config);
 		}
@@ -625,7 +642,6 @@ public class InMemorySectioningTest {
 		try {
 			// System.setProperty("jprof", "cpu");
 			BasicConfigurator.configure();
-			ToolBox.setSeed(Long.valueOf(System.getProperty("seed", "13031978")));
 			
             DataProperties cfg = new DataProperties();
 			cfg.setProperty("Neighbour.BranchAndBoundTimeout", "5000");

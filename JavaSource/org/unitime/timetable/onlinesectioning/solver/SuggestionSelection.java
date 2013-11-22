@@ -84,6 +84,11 @@ public class SuggestionSelection extends BranchBoundSelection implements OnlineS
 	public BranchBoundNeighbour select(Student student) {
 		return getSelection(student).select();
 	}
+	
+	@Override
+	public void setModel(OnlineSectioningModel model) {
+		super.setModel(model);
+	}
     
     public Selection getSelection(Student student) {
         return new Selection(student);

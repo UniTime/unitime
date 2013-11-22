@@ -24,13 +24,13 @@ import java.util.Hashtable;
 import java.util.Set;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 
+import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
 import org.unitime.timetable.onlinesectioning.solver.SuggestionsBranchAndBound;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection.SelectionCriterion;
 
@@ -47,9 +47,9 @@ public class MultiCriteriaBranchAndBoundSuggestions extends SuggestionsBranchAnd
 			boolean priorityWeighting) {
 		super(properties, student, requiredSections, requiredFreeTimes, preferredSections, selectedRequest, selectedSection, filter, firstDate, maxSectionsWithPenalty);
 		if (priorityWeighting)
-			iComparator = new OnlineSectioningCriterion(student, (StudentSectioningModel)selectedRequest.getModel(), preferredSections);
+			iComparator = new OnlineSectioningCriterion(student, (OnlineSectioningModel)selectedRequest.getModel(), preferredSections);
 		else
-			iComparator = new EqualWeightCriterion(student, (StudentSectioningModel)selectedRequest.getModel(), preferredSections);
+			iComparator = new EqualWeightCriterion(student, (OnlineSectioningModel)selectedRequest.getModel(), preferredSections);
 	}
 	
 	@Override
