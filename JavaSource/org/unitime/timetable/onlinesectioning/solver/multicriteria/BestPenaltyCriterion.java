@@ -25,6 +25,7 @@ import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
 
+import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection.SelectionCriterion;
 
 /**
@@ -32,9 +33,11 @@ import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteria
  */
 public class BestPenaltyCriterion implements SelectionCriterion {
 	private Student iStudent;
+	private OnlineSectioningModel iModel;
 	
-	public BestPenaltyCriterion(Student student) {
+	public BestPenaltyCriterion(Student student, OnlineSectioningModel model) {
 		iStudent = student;
+		iModel = model;
 	}
 	
 	private Request getRequest(int index) {
@@ -45,7 +48,7 @@ public class BestPenaltyCriterion implements SelectionCriterion {
     	Request r = getRequest(index);
     	return r != null && r instanceof FreeTimeRequest;
     }
-
+	
 	@Override
 	public int compare(Enrollment[] current, Enrollment[] best) {
 		if (best == null) return -1;
@@ -66,9 +69,9 @@ public class BestPenaltyCriterion implements SelectionCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
 				for (Section section: best[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) bestPenalties++;
+		    		if (iModel.isOverExpected(section, best[idx].getRequest())) bestPenalties++;
 				for (Section section: current[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) currentPenalties++;
+		    		if (iModel.isOverExpected(section, current[idx].getRequest())) currentPenalties++;
 			}
 		}
 		if (currentPenalties < bestPenalties) return -1;
@@ -107,11 +110,11 @@ public class BestPenaltyCriterion implements SelectionCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null) {
 				for (Section section: best[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) bestPenalties++;
+		    		if (iModel.isOverExpected(section, best[idx].getRequest())) bestPenalties++;
 			}
 			if (current[idx] != null && idx < maxIdx) {
 				for (Section section: current[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) currentPenalties++;
+		    		if (iModel.isOverExpected(section, current[idx].getRequest())) currentPenalties++;
 			}
 		}
 		if (currentPenalties < bestPenalties) return true;
@@ -133,9 +136,9 @@ public class BestPenaltyCriterion implements SelectionCriterion {
 		// 2. maximize number of penalties
 		int p1 = 0, p2 = 0;
 		for (Section section: e1.getSections())
-    		if (section.getPenalty() >= 0.0) p1++;
+    		if (iModel.isOverExpected(section, e1.getRequest())) p1++;
 		for (Section section: e2.getSections())
-    		if (section.getPenalty() >= 0.0) p2++;
+    		if (iModel.isOverExpected(section, e2.getRequest())) p2++;
 		if (p1 < p2) return -1;
 		if (p2 < p1) return 1;
 

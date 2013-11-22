@@ -97,7 +97,7 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 					for (Section section: subpart.getSections()) {
 						if (section.getLimit() == 0) continue;
 						if (section.getTime() != null) hasTime = true;
-						if (section.getPenalty() < 0.0) noPenalty = true;
+						if (!((OnlineSectioningModel)cr.getModel()).isOverExpected(section, cr)) noPenalty = true;
 						if (!cr.getSelectedChoices().isEmpty() && cr.getSelectedChoices().contains(section.getChoice())) hasSelection = true;
 						if (sectionPenalty == null || sectionPenalty > section.getPenalty()) sectionPenalty = section.getPenalty();
 					}
@@ -140,7 +140,7 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 		double totalPenalty = 0.0;
 		for (Section section: enrollment.getSections()) {
     		if (section.getTime() != null) hasTime++;
-    		if (section.getPenalty() >= 0.0) penalty++;
+    		if (((OnlineSectioningModel)cr.getModel()).isOverExpected(section, cr)) penalty++;
     		totalPenalty += section.getPenalty();
     	}
     	double noTime = best[0] - (hasTime / size);
