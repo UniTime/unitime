@@ -45,7 +45,6 @@ import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.ifs.model.Value;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.ToolBox;
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
@@ -73,7 +72,7 @@ public class SuggestionsBranchAndBound {
 	private long iT0, iT1;
 	private boolean iTimeoutReached = false;
 	private int iNrSolutionsSeen = 0;
-	private StudentSectioningModel iModel;
+	private OnlineSectioningModel iModel;
 	private Hashtable<Request, List<Enrollment>> iValues = new Hashtable<Request, List<Enrollment>>();
 	private long iLastSuggestionId = 0;
 	private Query iFilter = null;
@@ -93,7 +92,7 @@ public class SuggestionsBranchAndBound {
 		iSelectedRequest = selectedRequest;
 		iSelectedSection = selectedSection;
 		iStudent = student;
-		iModel = (StudentSectioningModel)selectedRequest.getModel();
+		iModel = (OnlineSectioningModel)selectedRequest.getModel();
 		iMaxDepth = properties.getPropertyInt("Suggestions.MaxDepth", iMaxDepth);
 		iTimeout = properties.getPropertyLong("Suggestions.Timeout", iTimeout);
 		iMaxSuggestions = properties.getPropertyInt("Suggestions.MaxSuggestions", iMaxSuggestions);
@@ -173,7 +172,7 @@ public class SuggestionsBranchAndBound {
         	for (Request r: iStudent.getRequests()) {
         		if (iMaxSectionsWithPenalty >= 0 && r.getAssignment() != null && r instanceof CourseRequest) {
         			for (Section s: r.getAssignment().getSections())
-        				if (s.getPenalty() >= 0) sectionsWithPenalty ++;
+        				if (iModel.isOverExpected(s, r)) sectionsWithPenalty ++;
         		}
         		if (r.getAssignment() == null && r instanceof FreeTimeRequest) {
         			FreeTimeRequest ft = (FreeTimeRequest)r;
@@ -526,7 +525,7 @@ public class SuggestionsBranchAndBound {
         		else if (conflicts.contains(e)) { e = null; }
         		if (e != null && e.isCourseRequest()) {
         			for (Section s: e.getSections())
-        				if (s.getPenalty() >= 0) sectionsWithPenalty ++;
+        				if (iModel.isOverExpected(s, r)) sectionsWithPenalty ++;
         		}
         	}
         	if (sectionsWithPenalty > iMaxSectionsWithPenalty) return false;

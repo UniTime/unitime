@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
@@ -84,11 +83,11 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 	public ClassAssignmentInterface.ClassAssignment getSelection() { return iSelection; }
 	
 	public String getFilter() { return iFilter; }
-
+	
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
-		StudentSectioningModel model = new StudentSectioningModel(server.getConfig());
+		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig());
 
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
 
@@ -197,7 +196,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 							messages.addMessage((a.isSaved() ? "Enrolled class" : a.isPinned() ? "Required class " : "Previously selected class ") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
 							continue a;
 						}
-						if (section.getPenalty() >= 0) selectedPenalty ++;
+						if (model.isOverExpected(section, cr)) selectedPenalty ++;
 						if (a.isPinned() && !getSelection().equals(a)) 
 							requiredSections.add(section);
 						preferredSections.add(section);
@@ -256,14 +255,14 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				selection.setRequiredSections(requiredSectionsForCourse);
 				selection.setRequiredFreeTimes(requiredFreeTimes);
 				selection.setTimeout(100);
-				BranchBoundNeighbour neighbour = selection.select(student, new BestPenaltyCriterion(student));
+				BranchBoundNeighbour neighbour = selection.select(student, new BestPenaltyCriterion(student, model));
 				long x1 = System.currentTimeMillis();
 				if (neighbour != null) {
 					maxOverExpected = 0;
 					for (Enrollment enrollment: neighbour.getAssignment()) {
 						if (enrollment != null && enrollment.isCourseRequest())
 							for (Section section: enrollment.getSections())
-								if (section.getPenalty() >= 0) maxOverExpected++;
+								if (model.isOverExpected(section, enrollment.getRequest())) maxOverExpected++;
 					}
 					if (maxOverExpected < selectedPenalty) maxOverExpected = selectedPenalty;
 					helper.info("Maximum number of over-expected sections limited to " + maxOverExpected + " (computed in " + (x1 - x0) + " ms).");

@@ -22,7 +22,8 @@ package org.unitime.timetable.onlinesectioning.solver.multicriteria;
 import java.util.Hashtable;
 import java.util.Set;
 
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
+import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
+
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
@@ -35,7 +36,7 @@ import net.sf.cpsolver.studentsct.model.Subpart;
  */
 public class EqualWeightCriterion extends OnlineSectioningCriterion {
 	
-	public EqualWeightCriterion(Student student, StudentSectioningModel model, Hashtable<CourseRequest, Set<Section>> preferredSections) {
+	public EqualWeightCriterion(Student student, OnlineSectioningModel model, Hashtable<CourseRequest, Set<Section>> preferredSections) {
 		super(student, model, preferredSections);
 	}
 	
@@ -76,11 +77,11 @@ public class EqualWeightCriterion extends OnlineSectioningCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
 				for (Section section: best[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) bestPenalties++;
+		    		if (getModel().isOverExpected(section, best[idx].getRequest())) bestPenalties++;
 			}
 			if (current[idx] != null && current[idx].getAssignments() != null && current[idx].isCourseRequest()) {
 				for (Section section: current[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) currentPenalties++;
+		    		if (getModel().isOverExpected(section, current[idx].getRequest())) currentPenalties++;
 			}
 		}
 		if (currentPenalties < bestPenalties) return -1;
@@ -273,11 +274,11 @@ public class EqualWeightCriterion extends OnlineSectioningCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null) {
 				for (Section section: best[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) bestPenalties++;
+		    		if (getModel().isOverExpected(section, best[idx].getRequest())) bestPenalties++;
 			}
 			if (current[idx] != null && idx < maxIdx) {
 				for (Section section: current[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) currentPenalties++;
+		    		if (getModel().isOverExpected(section, current[idx].getRequest())) currentPenalties++;
 			}
 		}
 		if (currentPenalties < bestPenalties) return true;

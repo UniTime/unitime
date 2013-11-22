@@ -113,7 +113,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
-		StudentSectioningModel model = new StudentSectioningModel(server.getConfig());
+		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig());
 		
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
 		

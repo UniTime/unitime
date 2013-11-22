@@ -25,10 +25,10 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
+import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection.SelectionCriterion;
 
 import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
@@ -46,10 +46,10 @@ import net.sf.cpsolver.studentsct.weights.StudentWeights;
 public class OnlineSectioningCriterion implements SelectionCriterion {
 	private Hashtable<CourseRequest, Set<Section>> iPreferredSections = null;
 	private List<TimeToAvoid> iTimesToAvoid = null;
-	private StudentSectioningModel iModel;
+	private OnlineSectioningModel iModel;
 	private Student iStudent;
 	
-	public OnlineSectioningCriterion(Student student, StudentSectioningModel model, Hashtable<CourseRequest, Set<Section>> preferredSections) {
+	public OnlineSectioningCriterion(Student student, OnlineSectioningModel model, Hashtable<CourseRequest, Set<Section>> preferredSections) {
 		iStudent = student;
 		iModel = model;
     	iPreferredSections = preferredSections;
@@ -72,7 +72,7 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
     	}
 	}
 	
-	protected StudentSectioningModel getModel() {
+	protected OnlineSectioningModel getModel() {
 		return iModel;
 	}
 	
@@ -144,7 +144,7 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
     	Request r = getRequest(index);
     	return r != null && r instanceof FreeTimeRequest;
     }
-
+    
 	@Override
 	public int compare(Enrollment[] current, Enrollment[] best) {
 		if (best == null) return -1;
@@ -166,9 +166,9 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
 				for (Section section: best[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) bestPenalties++;
+		    		if (getModel().isOverExpected(section, best[idx].getRequest())) bestPenalties++;
 				for (Section section: current[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) currentPenalties++;
+		    		if (getModel().isOverExpected(section, current[idx].getRequest())) currentPenalties++;
 			}
 		}
 		if (currentPenalties < bestPenalties) return -1;
@@ -338,11 +338,11 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null) {
 				for (Section section: best[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) bestPenalties++;
+		    		if (getModel().isOverExpected(section, best[idx].getRequest())) bestPenalties++;
 			}
 			if (current[idx] != null && idx < maxIdx) {
 				for (Section section: current[idx].getSections())
-		    		if (section.getPenalty() >= 0.0) currentPenalties++;
+		    		if (getModel().isOverExpected(section, current[idx].getRequest())) currentPenalties++;
 			}
 		}
 		if (currentPenalties < bestPenalties) return true;
@@ -531,9 +531,9 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		// 2. maximize number of penalties
 		int p1 = 0, p2 = 0;
 		for (Section section: e1.getSections())
-    		if (section.getPenalty() >= 0.0) p1++;
+    		if (getModel().isOverExpected(section, e1.getRequest())) p1++;
 		for (Section section: e2.getSections())
-    		if (section.getPenalty() >= 0.0) p2++;
+    		if (getModel().isOverExpected(section, e2.getRequest())) p2++;
 		if (p1 < p2) return -1;
 		if (p2 < p1) return 1;
 

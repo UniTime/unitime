@@ -28,12 +28,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
 import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningSelection;
 
 import net.sf.cpsolver.ifs.model.GlobalConstraint;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.JProf;
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
 import net.sf.cpsolver.studentsct.model.Config;
@@ -50,7 +50,7 @@ import net.sf.cpsolver.studentsct.model.Subpart;
  */
 public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSelection {
     protected int iTimeout = 1000;
-    protected StudentSectioningModel iModel = null;
+    protected OnlineSectioningModel iModel = null;
     protected SelectionCriterion iComparator = null;
     private boolean iPriorityWeighting = true;
     
@@ -80,7 +80,7 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
     }
     
 	@Override
-	public void setModel(StudentSectioningModel model) {
+	public void setModel(OnlineSectioningModel model) {
 		iModel = model;
 	}
 
