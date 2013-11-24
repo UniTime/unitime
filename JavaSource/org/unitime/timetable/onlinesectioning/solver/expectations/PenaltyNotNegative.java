@@ -31,8 +31,16 @@ public class PenaltyNotNegative implements OverExpectedCriterion {
 	public PenaltyNotNegative(DataProperties config) {}
 
 	@Override
-	public boolean isOverExpected(Section section, Request request) {
-		return section.getPenalty() >= 0.0;
+	public double getOverExpected(Section section, Request request) {
+		if (section.getPenalty() < 0) return 0.0;
+		int subparts = section.getSubpart().getConfig().getSubparts().size();
+		return 1.0 / subparts;
+	}
+
+	
+	@Override
+	public String toString() {
+		return "not-negative";
 	}
 
 }

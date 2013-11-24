@@ -20,6 +20,10 @@
 package org.unitime.timetable.onlinesectioning.test;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,6 +47,7 @@ import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningSelection;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 import org.unitime.timetable.onlinesectioning.solver.SuggestionSelection;
 import org.unitime.timetable.onlinesectioning.solver.SuggestionsBranchAndBound;
+import org.unitime.timetable.onlinesectioning.solver.expectations.FractionallyOverExpected;
 import org.unitime.timetable.onlinesectioning.solver.expectations.PercentageOverExpected;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSuggestions;
@@ -53,7 +58,6 @@ import net.sf.cpsolver.ifs.util.DistanceMetric;
 import net.sf.cpsolver.ifs.util.JProf;
 import net.sf.cpsolver.ifs.util.ToolBox;
 import net.sf.cpsolver.studentsct.StudentPreferencePenalties;
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.StudentSectioningXMLLoader;
 import net.sf.cpsolver.studentsct.StudentSectioningXMLSaver;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
@@ -80,7 +84,7 @@ import net.sf.cpsolver.studentsct.reservation.Reservation;
 public class InMemorySectioningTest {
 	public static Logger sLog = Logger.getLogger(InMemorySectioningTest.class);
 	
-	private StudentSectioningModel iModel;
+	private OnlineSectioningModel iModel;
 	private boolean iSuggestions = false;
 	
 	private Map<String, Counter> iCounters = new HashMap<String, Counter>();
@@ -94,13 +98,25 @@ public class InMemorySectioningTest {
 		iModel.setStudentWeights(new StudentSchedulingAssistantWeights(iModel.getProperties()));
 		iSuggestions = "true".equals(System.getProperty("suggestions", iSuggestions ? "true" : "false"));
 		
+		String overexp = System.getProperty("overexp");
+		if (overexp != null) {
+			String[] x = overexp.split("[/\\-]");
+			if (x.length == 1) {
+				iModel.setOverExpectedCriterion(new PercentageOverExpected(Double.valueOf(x[0])));
+			} else {
+				iModel.setOverExpectedCriterion(new FractionallyOverExpected(Double.valueOf(x[0]), Double.valueOf(x[1])));
+			}
+		}
+		
 		sLog.info("Using " + (config.getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
 				(config.getPropertyBoolean("StudentWeights.PriorityWeighting", true) ? "priority" : "equal") + " weighting model" +
-				" with " + config.getPropertyInt("Neighbour.BranchAndBoundTimeout", 1000) +" ms time limit.");
-
+				" with over-expected " + iModel.getOverExpectedCriterion() +
+				(iSuggestions ? ", suggestions" : "") +
+				", " + System.getProperty("sort", "shuffle") + " order" +
+				" and " + config.getPropertyInt("Neighbour.BranchAndBoundTimeout", 1000) +" ms time limit.");
 	}
 	
-	public StudentSectioningModel model() { return iModel; }
+	public OnlineSectioningModel model() { return iModel; }
 	
 	public void inc(String name, double value) {
 		synchronized (iCounters) {
@@ -115,6 +131,47 @@ public class InMemorySectioningTest {
 	
 	public void inc(String name) {
 		inc(name, 1.0);
+	}
+	
+	public Counter get(String name) {
+		synchronized (iCounters) {
+			Counter c = iCounters.get(name);
+			if (c == null) {
+				c = new Counter();
+				iCounters.put(name, c);
+			}
+			return c;
+		}
+	}
+	
+	public double getPercDisbalancedSections(double perc) {
+		double disb10Sections = 0, nrSections = 0;
+        for (Offering offering: model().getOfferings()) {
+            for (Config config: offering.getConfigs()) {
+                double enrl = config.getEnrollmentWeight(null);
+                for (Subpart subpart: config.getSubparts()) {
+                    if (subpart.getSections().size() <= 1) continue;
+                	nrSections += subpart.getSections().size();
+                    if (subpart.getLimit() > 0) {
+                        // sections have limits -> desired size is section limit x (total enrollment / total limit)
+                        double ratio = enrl / subpart.getLimit();
+                        for (Section section: subpart.getSections()) {
+                            double desired = ratio * section.getLimit();
+                            if (Math.abs(desired - section.getEnrollmentWeight(null)) >= Math.max(1.0, perc * section.getLimit()))
+                                disb10Sections++;
+                        }
+                    } else {
+                        // unlimited sections -> desired size is total enrollment / number of sections
+                        for (Section section: subpart.getSections()) {
+                            double desired = enrl / subpart.getSections().size();
+                            if (Math.abs(desired - section.getEnrollmentWeight(null)) >= Math.max(1.0, perc * desired))
+                                disb10Sections++;
+                        }
+                    }
+                }
+            }
+        }
+        return 100.0 * disb10Sections / nrSections;
 	}
 	
 	protected Course clone(Course course, long studentId, Student originalStudent, Map<Long, Section> classTable) {
@@ -262,7 +319,7 @@ public class InMemorySectioningTest {
 	
 	public boolean section(Student original) {
 		OnlineSectioningModel model = new TestModel(iModel.getProperties());
-		model.setOverExpectedCriterion(new PercentageOverExpected(1.0));
+		model.setOverExpectedCriterion(iModel.getOverExpectedCriterion());
 		Student student = new Student(original.getId());
 		Hashtable<CourseRequest, Set<Section>> preferredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
 		Map<Long, Section> classTable = new HashMap<Long, Section>();
@@ -314,7 +371,7 @@ public class InMemorySectioningTest {
 		} else {
 			if (iSuggestions) {
 				StudentPreferencePenalties penalties = new StudentPreferencePenalties(StudentPreferencePenalties.sDistTypePreference);
-				int maxOverExpected = 0;
+				double maxOverExpected = 0;
 				int assigned = 0;
 				double penalty = 0.0;
 				Hashtable<CourseRequest, Set<Section>> enrollments = new Hashtable<CourseRequest, Set<Section>>();
@@ -325,7 +382,7 @@ public class InMemorySectioningTest {
 					if (enrl != null && enrl.isCourseRequest() && enrl.getAssignments() != null) {
 						assigned ++;
 						for (Section section: enrl.getSections()) {
-							if (model.isOverExpected(section, enrl.getRequest())) maxOverExpected ++;
+							maxOverExpected += model.getOverExpected(section, enrl.getRequest());
 							pairs.add(new RequestSectionPair(enrl.variable(), section));
 						}
 						enrollments.put((CourseRequest) enrl.variable(), enrl.getSections());
@@ -469,6 +526,7 @@ public class InMemorySectioningTest {
 			}
 			neighbour.assign(0);
 			int a = 0, u = 0, np = 0, zp = 0, pp = 0, cp = 0;
+			double over = 0;
 			double p = 0.0;
 			for (Request r: student.getRequests()) {
 				if (r instanceof CourseRequest) {
@@ -480,6 +538,7 @@ public class InMemorySectioningTest {
 							if (s.getLimit() > 0) {
 								p += s.getPenalty(); cp ++;
 							}
+							over += model.getOverExpected(s, r);
 						}
 						a++;
 					} else {
@@ -487,7 +546,9 @@ public class InMemorySectioningTest {
 					}
 				}
 			}
-			inc("[S] Student");
+			inc("[A] Student");
+			if (over > 0.0)
+				inc("[O] Over", over);
 			if (a > 0)
 				inc("[A] Assigned", a);
 			if (u > 0)
@@ -543,8 +604,16 @@ public class InMemorySectioningTest {
         sLog.info("Input: " + ToolBox.dict2string(model().getExtendedInfo(), 2));
 
         List<Student> students = new ArrayList<Student>(model().getStudents());
-        // Collections.shuffle(students);
-        Collections.sort(students, new StudentChoiceOrder(model().getProperties()));
+        String sort = System.getProperty("sort", "shuffle");
+        if ("shuffle".equals(sort)) {
+        	Collections.shuffle(students);
+        } else if ("choice".equals(sort)) {
+        	StudentChoiceOrder ord = new StudentChoiceOrder(model().getProperties()); ord.setReverse(false);
+        	Collections.sort(students, ord);
+        } else if ("referse".equals(sort)) {
+        	StudentChoiceOrder ord = new StudentChoiceOrder(model().getProperties()); ord.setReverse(true);
+        	Collections.sort(students, ord);
+        }
         
         Iterator<Student> iterator = students.iterator();
         int nrThreads = Integer.parseInt(System.getProperty("nrConcurrent", "10"));
@@ -573,6 +642,9 @@ public class InMemorySectioningTest {
         }
         
         sLog.info("Output: " + ToolBox.dict2string(model().getExtendedInfo(), 2));
+        long time = System.currentTimeMillis() - t0;
+        inc("[T] Run Time [m]", time / 60000.0);
+
 	}
 	
     public class Executor extends Thread {
@@ -638,9 +710,42 @@ public class InMemorySectioningTest {
 		public Section getSection() { return iSection; }
 	}
 	
+	private void stats(File input) throws IOException {
+		File file = new File(input.getParentFile(), "stats.csv");
+		DecimalFormat df = new DecimalFormat("0.00");
+		boolean ex = file.exists();
+		PrintWriter pw = new PrintWriter(new FileWriter(file, true));
+        if (!ex) {
+        	pw.println("Input File,Run Time [m],Model,Sort,Over Expected,Not Assigned,Disb. Sections [%],Distance Confs.,Time Confs. [m],CPU Assignment [ms],Has Suggestions [%],Nbr Suggestions,Acceptance [%],CPU Suggestions [ms]");
+        }
+        pw.print(input.getName() + ",");
+        pw.print(df.format(get("[T] Run Time [m]").sum()) + ",");
+        pw.print(model().getProperties().getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria " : "");
+        pw.print(model().getProperties().getPropertyBoolean("StudentWeights.PriorityWeighting", true) ? "priority" : "equal");
+        pw.print(iSuggestions ? " with suggestions": "");  pw.print(",");
+        pw.print(System.getProperty("sort", "shuffle") + ",");
+        pw.print(model().getOverExpectedCriterion() + ",");
+        
+        pw.print(get("[A] Not Assigned").count() + ",");
+        pw.print(df.format(getPercDisbalancedSections(0.1)) + ",");
+        pw.print(df.format(100.0 * model().getDistanceConflict().getTotalNrConflicts() / model().getStudents().size()) + ",");
+        pw.print(df.format(5.0 * model().getTimeOverlaps().getTotalNrConflicts() / model().getStudents().size()) + ",");
+        pw.print(df.format(get("[C] CPU Time").avg()) + ",");
+        if (iSuggestions) {
+        	pw.print(df.format(100.0 * get("[S] Probability that a class has suggestions [%]").avg()) + ",");
+        	pw.print(df.format(get("[S] Avg. # of suggestion").avg()) + ",");
+        	pw.print(df.format(100.0 * get("[S] Suggestion acceptance rate [%]").avg()) + ",");
+        	pw.print(df.format(get("[S] Suggestion CPU Time").avg()));
+        }
+        pw.println();
+        
+        pw.flush();
+        pw.close();
+	}
+	
 	public static void main(String[] args) {
 		try {
-			// System.setProperty("jprof", "cpu");
+			System.setProperty("jprof", "cpu");
 			BasicConfigurator.configure();
 			
             DataProperties cfg = new DataProperties();
@@ -670,20 +775,22 @@ public class InMemorySectioningTest {
 
             PropertyConfigurator.configure(cfg);
 
-            InMemorySectioningTest test = new InMemorySectioningTest(cfg);
+            final InMemorySectioningTest test = new InMemorySectioningTest(cfg);
             
-            File input = new File(args[0]);
+            final File input = new File(args[0]);
             StudentSectioningXMLLoader loader = new StudentSectioningXMLLoader(test.model());
             loader.setInputFile(input);
             loader.load();
             
             test.run();
-            
+    		
             Solver<Request, Enrollment> s = new Solver<Request, Enrollment>(cfg);
             s.setInitalSolution(test.model());
             StudentSectioningXMLSaver saver = new StudentSectioningXMLSaver(s);
             File output = new File(input.getParentFile(), input.getName().substring(0, input.getName().lastIndexOf('.')) + "-" + cfg.getProperty("run", "r0") + ".xml");
             saver.save(output);
+            
+            test.stats(input);
 		} catch (Exception e) {
 			sLog.error("Test failed: " + e.getMessage(), e);
 		}

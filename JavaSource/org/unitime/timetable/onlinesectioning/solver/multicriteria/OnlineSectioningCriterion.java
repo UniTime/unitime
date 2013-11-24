@@ -162,13 +162,13 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		}
 		
 		// 1. minimize number of penalties
-		int bestPenalties = 0, currentPenalties = 0;
+		double bestPenalties = 0, currentPenalties = 0;
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
 				for (Section section: best[idx].getSections())
-		    		if (getModel().isOverExpected(section, best[idx].getRequest())) bestPenalties++;
+					bestPenalties += getModel().getOverExpected(section, best[idx].getRequest());
 				for (Section section: current[idx].getSections())
-		    		if (getModel().isOverExpected(section, current[idx].getRequest())) currentPenalties++;
+					currentPenalties += getModel().getOverExpected(section, current[idx].getRequest());
 			}
 		}
 		if (currentPenalties < bestPenalties) return -1;
@@ -334,15 +334,15 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		}
 		
 		// 1. maximize number of penalties
-		int bestPenalties = 0, currentPenalties = 0;
+		double bestPenalties = 0, currentPenalties = 0;
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null) {
 				for (Section section: best[idx].getSections())
-		    		if (getModel().isOverExpected(section, best[idx].getRequest())) bestPenalties++;
+					bestPenalties += getModel().getOverExpected(section, best[idx].getRequest());
 			}
 			if (current[idx] != null && idx < maxIdx) {
 				for (Section section: current[idx].getSections())
-		    		if (getModel().isOverExpected(section, current[idx].getRequest())) currentPenalties++;
+					currentPenalties += getModel().getOverExpected(section, current[idx].getRequest());
 			}
 		}
 		if (currentPenalties < bestPenalties) return true;
@@ -529,11 +529,11 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		if (e1.getPriority() > e2.getPriority()) return 1;
 		
 		// 2. maximize number of penalties
-		int p1 = 0, p2 = 0;
+		double p1 = 0, p2 = 0;
 		for (Section section: e1.getSections())
-    		if (getModel().isOverExpected(section, e1.getRequest())) p1++;
+			p1 += getModel().getOverExpected(section, e1.getRequest());
 		for (Section section: e2.getSections())
-    		if (getModel().isOverExpected(section, e2.getRequest())) p2++;
+			p2 += getModel().getOverExpected(section, e2.getRequest());
 		if (p1 < p2) return -1;
 		if (p2 < p1) return 1;
 

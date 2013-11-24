@@ -73,15 +73,15 @@ public class EqualWeightCriterion extends OnlineSectioningCriterion {
 		if (bestAssignedAlternativity < currentAssignedAlternativity) return 1;
 		
 		// 1. minimize number of penalties
-		int bestPenalties = 0, currentPenalties = 0;
+		double bestPenalties = 0, currentPenalties = 0;
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
 				for (Section section: best[idx].getSections())
-		    		if (getModel().isOverExpected(section, best[idx].getRequest())) bestPenalties++;
+					bestPenalties += getModel().getOverExpected(section, best[idx].getRequest());
 			}
 			if (current[idx] != null && current[idx].getAssignments() != null && current[idx].isCourseRequest()) {
 				for (Section section: current[idx].getSections())
-		    		if (getModel().isOverExpected(section, current[idx].getRequest())) currentPenalties++;
+					currentPenalties += getModel().getOverExpected(section, current[idx].getRequest());
 			}
 		}
 		if (currentPenalties < bestPenalties) return -1;
@@ -270,15 +270,15 @@ public class EqualWeightCriterion extends OnlineSectioningCriterion {
 		if (bestAssignedAlternativity < currentAssignedAlternativity) return false;
 		
 		// 1. maximize number of penalties
-		int bestPenalties = 0, currentPenalties = 0;
+		double bestPenalties = 0, currentPenalties = 0;
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null) {
 				for (Section section: best[idx].getSections())
-		    		if (getModel().isOverExpected(section, best[idx].getRequest())) bestPenalties++;
+					bestPenalties += getModel().getOverExpected(section, best[idx].getRequest());
 			}
 			if (current[idx] != null && idx < maxIdx) {
 				for (Section section: current[idx].getSections())
-		    		if (getModel().isOverExpected(section, current[idx].getRequest())) currentPenalties++;
+					currentPenalties += getModel().getOverExpected(section, current[idx].getRequest());
 			}
 		}
 		if (currentPenalties < bestPenalties) return true;

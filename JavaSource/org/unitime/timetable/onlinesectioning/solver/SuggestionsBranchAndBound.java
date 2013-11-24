@@ -79,13 +79,13 @@ public class SuggestionsBranchAndBound {
 	private Date iFirstDate = null;
 	protected Comparator<Enrollment> iComparator = null;
 	protected int iMatched = 0;
-	protected int iMaxSectionsWithPenalty = 0;
+	protected double iMaxSectionsWithPenalty = 0;
 	
 	public SuggestionsBranchAndBound(DataProperties properties, Student student,
 			Hashtable<CourseRequest, Set<Section>> requiredSections,
 			Set<FreeTimeRequest> requiredFreeTimes,
 			Hashtable<CourseRequest, Set<Section>> preferredSections,
-			Request selectedRequest, Section selectedSection, String filter, Date firstDate, int maxSectionsWithPenalty) {
+			Request selectedRequest, Section selectedSection, String filter, Date firstDate, double maxSectionsWithPenalty) {
 		iRequiredSections = requiredSections;
 		iRequiredFreeTimes = requiredFreeTimes;
 		iPreferredSections = preferredSections;
@@ -168,11 +168,11 @@ public class SuggestionsBranchAndBound {
         int nrUnassigned = requests2resolve.size() - idx;
         if (nrUnassigned==0) {
         	List<FreeTimeRequest> okFreeTimes = new ArrayList<FreeTimeRequest>();
-        	int sectionsWithPenalty = 0;
+        	double sectionsWithPenalty = 0;
         	for (Request r: iStudent.getRequests()) {
         		if (iMaxSectionsWithPenalty >= 0 && r.getAssignment() != null && r instanceof CourseRequest) {
         			for (Section s: r.getAssignment().getSections())
-        				if (iModel.isOverExpected(s, r)) sectionsWithPenalty ++;
+        				sectionsWithPenalty += iModel.getOverExpected(s, r);
         		}
         		if (r.getAssignment() == null && r instanceof FreeTimeRequest) {
         			FreeTimeRequest ft = (FreeTimeRequest)r;
@@ -518,14 +518,14 @@ public class SuggestionsBranchAndBound {
             if (confIdx >= 0 && confIdx <= idx) return false;
         }
         if (iMaxSectionsWithPenalty >= 0) {
-        	int sectionsWithPenalty = 0;
+        	double sectionsWithPenalty = 0;
         	for (Request r: iStudent.getRequests()) {
         		Enrollment e = r.getAssignment();
         		if (r.equals(value.variable())) { e = value; }
         		else if (conflicts.contains(e)) { e = null; }
         		if (e != null && e.isCourseRequest()) {
         			for (Section s: e.getSections())
-        				if (iModel.isOverExpected(s, r)) sectionsWithPenalty ++;
+        				sectionsWithPenalty += iModel.getOverExpected(s, r);
         		}
         	}
         	if (sectionsWithPenalty > iMaxSectionsWithPenalty) return false;

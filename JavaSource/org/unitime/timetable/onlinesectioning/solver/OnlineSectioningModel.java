@@ -21,7 +21,7 @@ package org.unitime.timetable.onlinesectioning.solver;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
-import org.unitime.timetable.onlinesectioning.solver.expectations.MoreSpaceThanExpected;
+import org.unitime.timetable.onlinesectioning.solver.expectations.PercentageOverExpected;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
@@ -38,11 +38,11 @@ public class OnlineSectioningModel extends StudentSectioningModel {
 	public OnlineSectioningModel(DataProperties properties) {
 		super(properties);
 		try {
-            Class<OverExpectedCriterion> overExpectedCriterionClass = (Class<OverExpectedCriterion>)Class.forName(properties.getProperty("OverExpectedCriterion.Class", MoreSpaceThanExpected.class.getName()));
+            Class<OverExpectedCriterion> overExpectedCriterionClass = (Class<OverExpectedCriterion>)Class.forName(properties.getProperty("OverExpectedCriterion.Class", PercentageOverExpected.class.getName()));
             iOverExpectedCriterion = overExpectedCriterionClass.getConstructor(DataProperties.class).newInstance(properties);
         } catch (Exception e) {
         	sLog.error("Unable to create custom over-expected criterion (" + e.getMessage() + "), using default.", e);
-        	iOverExpectedCriterion = new MoreSpaceThanExpected(properties);
+        	iOverExpectedCriterion = new PercentageOverExpected(properties);
         }
 	}
 	
@@ -50,8 +50,8 @@ public class OnlineSectioningModel extends StudentSectioningModel {
 	
 	public void setOverExpectedCriterion(OverExpectedCriterion overExpectedCriterion) { iOverExpectedCriterion = overExpectedCriterion; }
 	
-	public boolean isOverExpected(Section section, Request request) {
-		return getOverExpectedCriterion().isOverExpected(section, request);
+	public double getOverExpected(Section section, Request request) {
+		return getOverExpectedCriterion().getOverExpected(section, request);
 	}
 
 }
