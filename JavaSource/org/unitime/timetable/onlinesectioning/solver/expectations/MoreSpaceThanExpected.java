@@ -20,19 +20,14 @@
 package org.unitime.timetable.onlinesectioning.solver.expectations;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
 
 /**
  * @author Tomas Muller
  */
-public class MoreSpaceThanExpected implements OverExpectedCriterion {
+public class MoreSpaceThanExpected extends PercentageOverExpected {
 	
-	public MoreSpaceThanExpected(DataProperties config) {}
-
-	@Override
-	public boolean isOverExpected(Section section, Request request) {
-		return section.getLimit() <= 0 ? false : Math.round(section.getEnrollmentWeight(request) + section.getSpaceExpected() + request.getWeight()) > section.getLimit();
+	public MoreSpaceThanExpected(DataProperties config) {
+		super(1.0);
 	}
 
 }

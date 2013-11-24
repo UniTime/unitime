@@ -43,7 +43,7 @@ public class MultiCriteriaBranchAndBoundSuggestions extends SuggestionsBranchAnd
 			Hashtable<CourseRequest, Set<Section>> requiredSections,
 			Set<FreeTimeRequest> requiredFreeTimes,
 			Hashtable<CourseRequest, Set<Section>> preferredSections,
-			Request selectedRequest, Section selectedSection, String filter, Date firstDate, int maxSectionsWithPenalty,
+			Request selectedRequest, Section selectedSection, String filter, Date firstDate, double maxSectionsWithPenalty,
 			boolean priorityWeighting) {
 		super(properties, student, requiredSections, requiredFreeTimes, preferredSections, selectedRequest, selectedSection, filter, firstDate, maxSectionsWithPenalty);
 		if (priorityWeighting)

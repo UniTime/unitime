@@ -26,23 +26,29 @@ import net.sf.cpsolver.studentsct.model.Section;
 /**
  * @author Tomas Muller
  */
-public class PercentageOverExpected implements OverExpectedCriterion {
-	private Double iPercentage = null;
+public class FractionallyOverExpected extends PercentageOverExpected {
+	private Double iMaximum = null;
 	
-	public PercentageOverExpected(DataProperties config) {
-		iPercentage = config.getPropertyDouble("OverExpected.Percentage", iPercentage);
+	public FractionallyOverExpected(DataProperties config) {
+		super(config);
+		iMaximum = config.getPropertyDouble("OverExpected.Maximum", iMaximum);
 	}
 	
-	public PercentageOverExpected(Double percentage) {
-		iPercentage = percentage;
+	public FractionallyOverExpected(Double percentage, Double maximum) {
+		super(percentage);
+		iMaximum = maximum;
 	}
 	
-	public PercentageOverExpected() {
-		this((Double)null);
+	public FractionallyOverExpected(Double percentage) {
+		this(percentage, 1.0);
 	}
 	
-	public double getPercentage() {
-		return iPercentage == null ? 1.0 : iPercentage;
+	public FractionallyOverExpected() {
+		this(null, 1.0);
+	}
+	
+	public double getMaximum(Section section) {
+		return iMaximum == null || iMaximum <= 0.0 ? section.getLimit() : iMaximum;
 	}
 
 	@Override
@@ -53,13 +59,14 @@ public class PercentageOverExpected implements OverExpectedCriterion {
 		double enrolled = section.getEnrollmentWeight(request) + request.getWeight();
 		double limit = section.getLimit();
 		int subparts = section.getSubpart().getConfig().getSubparts().size();
+		double max = getMaximum(section);
 		
-		return expected + enrolled > limit ? 1.0 / subparts : 0.0;
+		return expected + enrolled > limit ? (Math.min(max, expected + enrolled - limit) / max) / subparts : 0.0;
 	}
 	
 	@Override
 	public String toString() {
-		return "perc(" + getPercentage() + ")";
+		return "frac(" + getPercentage() + (iMaximum == null ? "" : "," + iMaximum) + ")";
 	}
 
 }

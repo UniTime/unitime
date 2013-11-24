@@ -165,7 +165,8 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 
 		Request selectedRequest = null;
 		Section selectedSection = null;
-		int selectedPenalty = 0, notAssigned = 0;
+		int notAssigned = 0;
+		double selectedPenalty = 0;
 		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
 			Request r = (Request)e.next();
 			OnlineSectioningLog.Request.Builder rq = OnlineSectioningHelper.toProto(r); 
@@ -196,7 +197,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 							messages.addMessage((a.isSaved() ? "Enrolled class" : a.isPinned() ? "Required class " : "Previously selected class ") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
 							continue a;
 						}
-						if (model.isOverExpected(section, cr)) selectedPenalty ++;
+						selectedPenalty += model.getOverExpected(section, cr);
 						if (a.isPinned() && !getSelection().equals(a)) 
 							requiredSections.add(section);
 						preferredSections.add(section);
@@ -243,7 +244,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		if (override != null)
 			avoidOverExpected = "false".equalsIgnoreCase(override);
 		
-		int maxOverExpected = -1;
+		double maxOverExpected = -1.0;
 		if (avoidOverExpected) {
 			if (notAssigned == 0) {
 				maxOverExpected = selectedPenalty;
@@ -262,7 +263,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 					for (Enrollment enrollment: neighbour.getAssignment()) {
 						if (enrollment != null && enrollment.isCourseRequest())
 							for (Section section: enrollment.getSections())
-								if (model.isOverExpected(section, enrollment.getRequest())) maxOverExpected++;
+								maxOverExpected += model.getOverExpected(section, enrollment.getRequest());
 					}
 					if (maxOverExpected < selectedPenalty) maxOverExpected = selectedPenalty;
 					helper.info("Maximum number of over-expected sections limited to " + maxOverExpected + " (computed in " + (x1 - x0) + " ms).");

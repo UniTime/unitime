@@ -31,8 +31,8 @@ public class NeverOverExpected implements OverExpectedCriterion {
 	public NeverOverExpected(DataProperties config) {}
 
 	@Override
-	public boolean isOverExpected(Section section, Request request) {
-		return false;
+	public double getOverExpected(Section section, Request request) {
+		return 0.0;
 	}
 
 }

@@ -27,6 +27,6 @@ import net.sf.cpsolver.studentsct.model.Section;
  */
 public interface OverExpectedCriterion {
 
-	public boolean isOverExpected(Section section, Request request);
+	public double getOverExpected(Section section, Request request);
 
 }
