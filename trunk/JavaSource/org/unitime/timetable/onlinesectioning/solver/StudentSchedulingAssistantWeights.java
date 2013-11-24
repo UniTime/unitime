@@ -46,11 +46,11 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
     /** deduction for sections that are not preferred (different time & instructor) */
     private double iSelectionFactor = 0.125;
     /** deduction for over expected sections */
-    private double iPenaltyFactor = 0.250;
+    private double iOverExpectedFactor = 0.250;
     /** similar to balancing factor on {@link PriorityStudentWeights} */
     private double iAvailabilityFactor = 0.050;
 	/** negative penalty means there is space available */
-	private double iAvgPenaltyFactor = 0.001;
+	private double iPenaltyFactor = 0.001;
 	
 	private Hashtable<CourseRequest, double[]> iCache = new Hashtable<CourseRequest, double[]>();
 	
@@ -61,8 +61,8 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 	public StudentSchedulingAssistantWeights(DataProperties properties) {
 		iNoTimeFactor = properties.getPropertyDouble("StudentWeights.NoTimeFactor", iNoTimeFactor);
 		iSelectionFactor = properties.getPropertyDouble("StudentWeights.SelectionFactor", iSelectionFactor);
-		iPenaltyFactor = properties.getPropertyDouble("StudentWeights.PenaltyFactor", iPenaltyFactor);
-		iAvgPenaltyFactor = properties.getPropertyDouble("StudentWeights.AvgPenaltyFactor", iAvgPenaltyFactor);
+		iOverExpectedFactor = properties.getPropertyDouble("StudentWeights.PenaltyFactor", iOverExpectedFactor);
+		iPenaltyFactor = properties.getPropertyDouble("StudentWeights.AvgPenaltyFactor", iPenaltyFactor);
 		iAvailabilityFactor = properties.getPropertyDouble("StudentWeights.AvailabilityFactor", iAvailabilityFactor);
 		iPriorityWeighting = properties.getPropertyBoolean("StudentWeights.PriorityWeighting", iPriorityWeighting);
 		if (iPriorityWeighting)
@@ -79,41 +79,41 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 		double[] cached = iCache.get(cr);
 		if (cached != null) return cached;
 		double bestTime = 0;
-		double bestPenalty = 1.0;
+		Double bestOverExpected = null;
 		Double bestAvgPenalty = null;
 		double bestSelected = 0.0;
 		for (Course course: cr.getCourses()) {
 			for (Config config: course.getOffering().getConfigs()) {
 				int size = config.getSubparts().size();
 				double sectionsWithTime = 0;
-				double sectionsWithoutPenalty = 0;
+				double overExpected = 0;
 				double penalty = 0;
 				double selectedSections = 0;
 				for (Subpart subpart: config.getSubparts()) {
 					boolean hasTime = false;
-					boolean noPenalty = false;
 					Double sectionPenalty = null;
+					Double sectionOverExpected = null;
 					boolean hasSelection = false;
 					for (Section section: subpart.getSections()) {
 						if (section.getLimit() == 0) continue;
 						if (section.getTime() != null) hasTime = true;
-						if (!((OnlineSectioningModel)cr.getModel()).isOverExpected(section, cr)) noPenalty = true;
 						if (!cr.getSelectedChoices().isEmpty() && cr.getSelectedChoices().contains(section.getChoice())) hasSelection = true;
 						if (sectionPenalty == null || sectionPenalty > section.getPenalty()) sectionPenalty = section.getPenalty();
+						double oexp = ((OnlineSectioningModel)cr.getModel()).getOverExpected(section, cr);
+						if (sectionOverExpected == null || sectionOverExpected > oexp) sectionOverExpected = oexp;
 					}
 					if (hasTime) sectionsWithTime ++;
-					if (noPenalty) sectionsWithoutPenalty ++;
 					if (sectionPenalty != null) penalty += sectionPenalty;
 					if (hasSelection) selectedSections ++;
+					if (sectionOverExpected != null) overExpected += sectionOverExpected;
 				}
 				if (sectionsWithTime / size > bestTime) bestTime = sectionsWithTime / size;
-				double sectionsWithPenalty = size - sectionsWithoutPenalty;
-				if (sectionsWithPenalty / size < bestPenalty) bestPenalty = sectionsWithPenalty / size;
+				if (bestOverExpected == null || overExpected < bestOverExpected) bestOverExpected = overExpected;
 				if (bestAvgPenalty == null || penalty / size < bestAvgPenalty) bestAvgPenalty = penalty / size;
 				if (selectedSections / size > bestSelected) bestSelected = selectedSections / size;
 			}
 		}
-		cached = new double[] { bestTime, bestPenalty, (bestAvgPenalty == null ? 0.0 : bestAvgPenalty), bestSelected };
+		cached = new double[] { bestTime, (bestOverExpected == null ? 0.0 : bestOverExpected), (bestAvgPenalty == null ? 0.0 : bestAvgPenalty), bestSelected };
 		iCache.put(cr, cached);
 		return cached;
 	}
@@ -136,16 +136,16 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 		double[] best = best(cr);
 		
 		double hasTime = 0;
-		double penalty = 0;
-		double totalPenalty = 0.0;
+		double oexp = 0;
+		double penalty = 0.0;
 		for (Section section: enrollment.getSections()) {
     		if (section.getTime() != null) hasTime++;
-    		if (((OnlineSectioningModel)cr.getModel()).isOverExpected(section, cr)) penalty++;
-    		totalPenalty += section.getPenalty();
+    		oexp += ((OnlineSectioningModel)cr.getModel()).getOverExpected(section, cr);
+    		penalty += section.getPenalty();
     	}
     	double noTime = best[0] - (hasTime / size);
-    	double penaltyFraction = (penalty / size) - best[1];
-    	double avgPenalty = (totalPenalty / size) - best[2];
+    	double overExpected = oexp - best[1];
+    	double avgPenalty = (penalty / size) - best[2];
 
     	int nrSelected = 0;
     	if (!cr.getSelectedChoices().isEmpty()) {
@@ -169,7 +169,7 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
         }
         double unavailableSizeFraction = (unavailableSize > 0 ? unavailableSize / altSectionsWithLimit : 0.0);
 		
-		weight -= penaltyFraction * base * iPenaltyFactor;
+		weight -= overExpected * base * iOverExpectedFactor;
 		
 		weight -= unselectedFraction * base * iSelectionFactor;
 		
@@ -177,7 +177,7 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 		
 		weight -= unavailableSizeFraction * base * iAvailabilityFactor;
 		
-		weight -= avgPenalty * iAvgPenaltyFactor;
+		weight -= avgPenalty * iPenaltyFactor;
 		
 		return round(weight);
 	}
