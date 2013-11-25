@@ -489,13 +489,14 @@ public class CurModel extends Model<CurVariable, CurValue> {
     	CurValueSelection vs = new CurValueSelection(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this);
     	sLog.debug("  -- creating initial assignment");
+    	boolean precise = cfg.getPropertyBoolean("Curriculum.Initial.PreciseSelection", true);
     	while (!unassignedVariables().isEmpty()) {
     		CurVariable course = var.selectVariable(solution);
     		if (course.getCourse().isComplete()) {
     			sLog.debug("    -- all complete");
     			break;
     		}
-    		CurValue student = vs.selectValueSlow(solution, course);
+    		CurValue student = (precise ? vs.selectValueSlow(solution, course) : vs.selectValueFast(solution, course));
     		if (student == null) {
     			sLog.debug("    -- no student for " + course.getCourse().getCourseName());
     			break;
