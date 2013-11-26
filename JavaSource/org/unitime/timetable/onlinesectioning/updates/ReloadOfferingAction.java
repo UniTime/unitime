@@ -416,7 +416,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			
 				EnrollStudent.updateSpace(server,
 						r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(server.getStudent(r.getRequest().getStudentId()), r.getRequest(), server, newOffering, r.getRequest().getEnrollment()).getAssignment(),
-						r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getRequest(), server, oldOffering, r.getLastEnrollment()).getAssignment());
+						r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getRequest(), server, oldOffering, r.getLastEnrollment()).getAssignment(),
+						newOffering, oldOffering);
 				server.persistExpectedSpaces(offeringId);
 
 				server.execute(new NotifyStudentAction(r.getRequest().getStudentId(), oldOffering, r.getLastEnrollment()), helper.getUser());

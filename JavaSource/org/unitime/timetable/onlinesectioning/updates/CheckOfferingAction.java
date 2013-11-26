@@ -266,7 +266,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		
 					EnrollStudent.updateSpace(server,
 							r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(server.getStudent(r.getRequest().getStudentId()), r.getRequest(), server, offering, r.getRequest().getEnrollment()).getAssignment(),
-							r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getRequest(), server, offering, r.getLastEnrollment()).getAssignment());
+							r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getRequest(), server, offering, r.getLastEnrollment()).getAssignment(),
+							offering);
 					server.persistExpectedSpaces(offering.getOfferingId());
 
 					server.execute(new NotifyStudentAction(r.getRequest().getStudentId(), offering, r.getLastEnrollment()), helper.getUser());

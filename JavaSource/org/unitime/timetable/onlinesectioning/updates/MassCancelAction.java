@@ -42,6 +42,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -157,9 +158,11 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 								XEnrollment oldEnrollment = (oldRequest instanceof XCourseRequest ? ((XCourseRequest)oldRequest).getEnrollment() : null);
 								if (oldEnrollment == null) continue; // free time or not assigned
 								offeringsToCheck.add(oldEnrollment.getOfferingId());
+								XOffering offering = server.getOffering(oldEnrollment.getOfferingId());
 								EnrollStudent.updateSpace(server,
 										null,
-										oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, server.getOffering(oldEnrollment.getOfferingId()), oldEnrollment).getAssignment());
+										oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment).getAssignment(),
+										offering);
 							}
 							OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 							enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
