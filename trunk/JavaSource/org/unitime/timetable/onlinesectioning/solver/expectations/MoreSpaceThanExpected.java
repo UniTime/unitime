@@ -29,5 +29,9 @@ public class MoreSpaceThanExpected extends PercentageOverExpected {
 	public MoreSpaceThanExpected(DataProperties config) {
 		super(1.0);
 	}
+	
+	public MoreSpaceThanExpected() {
+		super();
+	}
 
 }
