@@ -46,7 +46,6 @@ public abstract class XReservation extends XReservationId implements Comparable<
 	private static final long serialVersionUID = 1L;
 	
     private Date iExpirationDate;
-    private Long iOfferingId;
     private Set<Long> iConfigs = new HashSet<Long>();
     private Map<Long, Set<Long>> iSections = new HashMap<Long, Set<Long>>();
     private int iLimitCap = -1;
@@ -59,7 +58,6 @@ public abstract class XReservation extends XReservationId implements Comparable<
     public XReservation(XReservationType type, XOffering offering, Reservation reservation) {
     	super(type, offering.getOfferingId(), (reservation == null ? -1l : reservation.getUniqueId()));
     	if (reservation != null) {
-            iOfferingId = reservation.getInstructionalOffering().getUniqueId();
         	iExpirationDate = reservation.getExpirationDate();
         	for (InstrOfferingConfig config: reservation.getConfigurations())
         		iConfigs.add(config.getUniqueId());
@@ -75,8 +73,6 @@ public abstract class XReservation extends XReservationId implements Comparable<
                     clazz = clazz.getParentClass();
                 }
         	}
-    	} else {
-    		iOfferingId = offering.getOfferingId();
     	}
         if (!iConfigs.isEmpty()) {
         	// config cap
@@ -104,7 +100,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     }
     
     public XReservation(XReservationType type, net.sf.cpsolver.studentsct.reservation.Reservation reservation) {
-    	iOfferingId = reservation.getOffering().getId();
+    	super(type, reservation.getOffering().getId(), reservation.getId());
     	iLimitCap = (int)Math.round(reservation.getLimitCap());
     	iRestrictivity = reservation.getRestrictivity();
     	iExpirationDate = (reservation.isExpired() ? new Date(0) : null);
@@ -134,11 +130,6 @@ public abstract class XReservation extends XReservationId implements Comparable<
      */
     public abstract boolean isApplicable(XStudent student);
 
-    /**
-     * Instructional offering on which the reservation is set.
-     */
-    public Long getOfferingId() { return iOfferingId; }
-    
     /**
      * One or more configurations on which the reservation is set (optional).
      */
@@ -301,7 +292,6 @@ public abstract class XReservation extends XReservationId implements Comparable<
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     	super.readExternal(in);
     	iExpirationDate = (in.readBoolean() ? new Date(in.readLong()) : null);
-    	iOfferingId = in.readLong();
     	
     	int nrConfigs = in.readInt();
     	iConfigs.clear();
@@ -328,7 +318,6 @@ public abstract class XReservation extends XReservationId implements Comparable<
 		out.writeBoolean(iExpirationDate != null);
 		if (iExpirationDate != null)
 			out.writeLong(iExpirationDate.getTime());
-		out.writeLong(iOfferingId);
 		
 		out.writeInt(iConfigs.size());
 		for (Long config: iConfigs)
