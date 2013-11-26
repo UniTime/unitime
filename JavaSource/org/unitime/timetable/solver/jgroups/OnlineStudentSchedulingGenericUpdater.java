@@ -112,6 +112,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 				RspList<Set<String>> ret = iContainer.getDispatcher().callRemoteMethods(
 						null, "getSolvers", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
 				for (Rsp<Set<String>> rsp : ret) {
+					if (rsp.getValue() == null) continue;
 					for (String solver: rsp.getValue()) {
 						Set<Address> members = solvers.get(solver);
 						if (members == null) {

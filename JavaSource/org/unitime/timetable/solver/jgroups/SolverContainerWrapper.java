@@ -74,7 +74,7 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
 			List<Address> senders = new ArrayList<Address>();
 			for (Rsp<Boolean> rsp : ret) {
-				if (rsp != null && rsp.getValue())
+				if (rsp != null && rsp.getValue() != null && rsp.getValue())
 					senders.add(rsp.getSender());
 			}
 			if (senders.isEmpty())
