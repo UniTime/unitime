@@ -48,6 +48,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.hibernate.CacheMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -125,6 +126,7 @@ public class SessionBackup {
 	public void backup(Long sessionId) throws IOException {
 		iSessionId = sessionId;
         iHibSession = new _RootDAO().createNewSession(); 
+        iHibSession.setCacheMode(CacheMode.IGNORE);
         iHibSessionFactory = iHibSession.getSessionFactory();
         try {
     		iProgress.setStatus("Exporting Session");
