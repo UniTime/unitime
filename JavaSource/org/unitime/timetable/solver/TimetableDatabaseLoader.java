@@ -66,6 +66,7 @@ import net.sf.cpsolver.ifs.util.Progress;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
@@ -1878,8 +1879,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	org.hibernate.Session hibSession = null;
     	Transaction tx = null;
     	try {
-    		TimetableManagerDAO dao = new TimetableManagerDAO();
-    		hibSession = dao.getSession();
+    		hibSession = TimetableManagerDAO.getInstance().getSession();
+    		hibSession.setCacheMode(CacheMode.IGNORE);
+    		hibSession.setFlushMode(FlushMode.COMMIT);
+    		
     		tx = hibSession.beginTransaction(); 
     		
     		load(hibSession);
@@ -2281,11 +2284,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private void load(org.hibernate.Session hibSession) throws Exception {
 		iProgress.setStatus("Loading input data ...");
-		SolverGroupDAO dao = new SolverGroupDAO();
-		hibSession = dao.getSession();
-		
-		hibSession.setFlushMode(FlushMode.COMMIT);
-		
+
 		TravelTime.populateTravelTimes(getModel().getDistanceMetric(), iSessionId, hibSession);
 
 		iSolverGroup = null;
@@ -2294,7 +2293,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         if (iSolverGroup==null) {
         	iSolverGroup = new SolverGroup[iSolverGroupId.length];
         	for (int i=0;i<iSolverGroupId.length;i++) {
-        		iSolverGroup[i] = dao.get(iSolverGroupId[i], hibSession);
+        		iSolverGroup[i] = SolverGroupDAO.getInstance().get(iSolverGroupId[i], hibSession);
         		if (iSolverGroup[i]==null) {
         			iProgress.message(msglevel("loadFailed", Progress.MSGLEVEL_FATAL), "Unable to load solver group "+iSolverGroupId[i]+".");
         			return;

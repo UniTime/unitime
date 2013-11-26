@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.timetable.ApplicationProperties;
@@ -144,6 +145,9 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     	try {
     		TimetableManagerDAO dao = new TimetableManagerDAO();
     		hibSession = dao.getSession();
+    		hibSession.setCacheMode(CacheMode.IGNORE);
+    		hibSession.setFlushMode(FlushMode.COMMIT);
+
     		tx = hibSession.beginTransaction(); 
     		
     		Long[] solutionIds = save(hibSession);
@@ -243,7 +247,6 @@ public class TimetableDatabaseSaver extends TimetableSaver {
             if (iStudentSectioning) getModel().switchStudents();
         
     		iProgress.setStatus("Saving solution ...");
-    		hibSession.setFlushMode(FlushMode.MANUAL);
     		
     		if (iSolverGroupId==null || iSolverGroupId.length==0) {
     			iProgress.fatal("No solver group loaded.");
