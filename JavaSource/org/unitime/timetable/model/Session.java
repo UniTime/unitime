@@ -613,7 +613,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	public Collection<Long> getLockedOfferings() {
 		if (!getStatusType().canLockOfferings()) return null;
 		OnlineSectioningServer server = getInstance();
-		return (server == null ? null : server.getLockedOfferings());		
+		return (server == null || !server.isReady() ? null : server.getLockedOfferings());		
 	}
 	
 	public boolean isOfferingLocked(Long offeringId) {
