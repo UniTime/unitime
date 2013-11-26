@@ -46,6 +46,7 @@ import net.sf.cpsolver.ifs.util.JProf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.security.core.Authentication;
@@ -246,6 +247,7 @@ public class QueryLogFilter implements Filter {
 						if (iLogLimit > 0 && queriesToSave.size() >= iLogLimit)
 							sLog.warn("The limit of " + iLogLimit + " unpersisted log messages was reached, some messages have been dropped.");
 						Session hibSession = QueryLogDAO.getInstance().createNewSession();
+						hibSession.setCacheMode(CacheMode.IGNORE);
 						Transaction tx = hibSession.beginTransaction();
 						try {
 							for (QueryLog q: queriesToSave)

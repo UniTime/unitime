@@ -27,6 +27,7 @@ import java.util.Vector;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
+import org.hibernate.CacheMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.timetable.ApplicationProperties;
@@ -155,6 +156,7 @@ public class MessageLogAppender extends AppenderSkeleton {
 					}
 					if (messagesToSave != null) {
 						Session hibSession = MessageLogDAO.getInstance().createNewSession();
+						hibSession.setCacheMode(CacheMode.IGNORE);
 						Transaction tx = hibSession.beginTransaction();
 						try {
 							for (MessageLog m: messagesToSave)
