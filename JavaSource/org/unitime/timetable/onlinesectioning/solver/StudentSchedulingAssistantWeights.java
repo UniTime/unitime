@@ -22,6 +22,8 @@ package org.unitime.timetable.onlinesectioning.solver;
 import java.util.Hashtable;
 import java.util.Set;
 
+import org.unitime.timetable.onlinesectioning.solver.expectations.MoreSpaceThanExpected;
+
 import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
@@ -75,6 +77,12 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 		iCache.clear();
 	}
 	
+	private double getOverExpected(Section section, Request request) {
+		if (request.getModel() == null || !(request.getModel() instanceof OnlineSectioningModel))
+			return new MoreSpaceThanExpected().getOverExpected(section, request);
+		return ((OnlineSectioningModel)request.getModel()).getOverExpected(section, request);
+	}
+	
 	private double[] best(CourseRequest cr) {
 		double[] cached = iCache.get(cr);
 		if (cached != null) return cached;
@@ -99,7 +107,7 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 						if (section.getTime() != null) hasTime = true;
 						if (!cr.getSelectedChoices().isEmpty() && cr.getSelectedChoices().contains(section.getChoice())) hasSelection = true;
 						if (sectionPenalty == null || sectionPenalty > section.getPenalty()) sectionPenalty = section.getPenalty();
-						double oexp = ((OnlineSectioningModel)cr.getModel()).getOverExpected(section, cr);
+						double oexp = getOverExpected(section, cr);
 						if (sectionOverExpected == null || sectionOverExpected > oexp) sectionOverExpected = oexp;
 					}
 					if (hasTime) sectionsWithTime ++;
@@ -140,7 +148,7 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 		double penalty = 0.0;
 		for (Section section: enrollment.getSections()) {
     		if (section.getTime() != null) hasTime++;
-    		oexp += ((OnlineSectioningModel)cr.getModel()).getOverExpected(section, cr);
+    		oexp += getOverExpected(section, cr);
     		penalty += section.getPenalty();
     	}
     	double noTime = best[0] - (hasTime / size);
