@@ -45,6 +45,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
+import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.NonUniqueResultException;
 import org.hibernate.SessionFactory;
@@ -352,7 +353,8 @@ public class SessionRestore {
 	
 	
 	public void restore() throws IOException, InstantiationException, IllegalAccessException, DocumentException {
-        iHibSession = new _RootDAO().createNewSession(); 
+        iHibSession = new _RootDAO().createNewSession();
+        iHibSession.setCacheMode(CacheMode.IGNORE);
         iHibSessionFactory = iHibSession.getSessionFactory();
         try {
             CodedInputStream cin = CodedInputStream.newInstance(iIn);
