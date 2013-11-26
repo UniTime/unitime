@@ -40,6 +40,7 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.timetable.ApplicationProperties;
@@ -184,6 +185,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         Transaction tx = null;
         try {
             hibSession = SessionDAO.getInstance().getSession();
+            hibSession.setCacheMode(CacheMode.IGNORE);
             hibSession.setFlushMode(FlushMode.MANUAL);
             
             tx = hibSession.beginTransaction(); 

@@ -25,6 +25,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import org.hibernate.CacheMode;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -72,6 +73,7 @@ public class ExamDatabaseSaver extends ExamSaver {
     public void save() {
         iProgress.setStatus("Saving solution ...");
         org.hibernate.Session hibSession = new ExamDAO().getSession();
+        hibSession.setCacheMode(CacheMode.IGNORE);
         Transaction tx = null;
         try {
             tx = hibSession.beginTransaction();
