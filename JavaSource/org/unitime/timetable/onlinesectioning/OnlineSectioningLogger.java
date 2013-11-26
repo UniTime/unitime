@@ -31,6 +31,7 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -131,6 +132,7 @@ public class OnlineSectioningLogger extends Thread {
 						if (iLogLimit > 0 && actionsToSave.size() >= iLogLimit)
 							sLog.warn("The limit of " + iLogLimit + " unpersisted log messages was reached, some messages have been dropped.");
 						org.hibernate.Session hibSession = OnlineSectioningLogDAO.getInstance().createNewSession();
+						hibSession.setCacheMode(CacheMode.IGNORE);
 						try {
 							Hashtable<Long, Session> sessions = new Hashtable<Long, Session>();
 							for (OnlineSectioningLog.Action q: actionsToSave) {
