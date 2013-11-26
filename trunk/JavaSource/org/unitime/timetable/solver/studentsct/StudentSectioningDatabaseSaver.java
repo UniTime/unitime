@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.Class_;
@@ -90,6 +91,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         Transaction tx = null;
         try {
             hibSession = SessionDAO.getInstance().getSession();
+            hibSession.setCacheMode(CacheMode.IGNORE);
             hibSession.setFlushMode(FlushMode.MANUAL);
             
             tx = hibSession.beginTransaction(); 

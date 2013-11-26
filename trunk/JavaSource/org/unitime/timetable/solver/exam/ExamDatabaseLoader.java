@@ -50,6 +50,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
@@ -123,6 +124,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     public void load() throws Exception {
         iProgress.setStatus("Loading input data ...");
         org.hibernate.Session hibSession = new ExamDAO().getSession();
+        hibSession.setCacheMode(CacheMode.IGNORE);
         Transaction tx = null;
         try {
             tx = hibSession.beginTransaction();
