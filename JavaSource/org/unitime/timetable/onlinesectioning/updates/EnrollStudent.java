@@ -68,6 +68,7 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.onlinesectioning.solver.CheckAssignmentAction;
@@ -483,8 +484,9 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						server.execute(new CheckOfferingAction(oldEnrollment.getOfferingId()), helper.getUser(), offeringChecked);
 					
 					updateSpace(server,
-							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, server.getOffering(newEnrollment.getOfferingId()), newEnrollment).getAssignment(),
-							oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, server.getOffering(oldEnrollment.getOfferingId()), oldEnrollment).getAssignment());
+							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, offering, newEnrollment).getAssignment(),
+							oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment).getAssignment(),
+							offering);
 					server.persistExpectedSpaces(oldEnrollment.getOfferingId());
 				}
 				OnlineSectioningLog.Enrollment.Builder previous = OnlineSectioningLog.Enrollment.newBuilder();
@@ -506,9 +508,10 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							if (oldEnrollment != null && oldEnrollment.getOfferingId().equals(newEnrollment.getOfferingId()))
 								continue requests;
 						}
+					XOffering offering = server.getOffering(newEnrollment.getOfferingId());
 					updateSpace(server,
-							SectioningRequest.convert(newStudent, (XCourseRequest)newRequest, server, server.getOffering(newEnrollment.getOfferingId()), newEnrollment).getAssignment(),
-							null);
+							SectioningRequest.convert(newStudent, (XCourseRequest)newRequest, server, offering, newEnrollment).getAssignment(),
+							null, offering);
 					server.persistExpectedSpaces(newEnrollment.getOfferingId());
 				}
 				OnlineSectioningLog.Enrollment.Builder stored = OnlineSectioningLog.Enrollment.newBuilder();
@@ -537,11 +540,36 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		return server.execute(new GetAssignment(getStudentId()), helper.getUser());
 	}
 	
-    public static void updateSpace(OnlineSectioningServer server, Enrollment newEnrollment, Enrollment oldEnrollment) {
+	public static int getLimit(Enrollment enrollment, Map<Long, XSection> sections) {
+		Integer limit = null;
+		for (Section s: enrollment.getSections()) {
+			XSection section = sections.get(s.getId());
+			if (section != null && section.getLimit() >= 0) {
+				if (limit == null)
+					limit = section.getLimit();
+				else
+					limit = Math.min(limit, section.getLimit());
+			}
+		}
+		return (limit == null ? -1 : limit);
+	}
+	
+	public static void updateSpace(OnlineSectioningServer server, Enrollment newEnrollment, Enrollment oldEnrollment, XOffering offering) {
+		updateSpace(server, newEnrollment, oldEnrollment, offering, offering);
+	}
+	
+    public static void updateSpace(OnlineSectioningServer server, Enrollment newEnrollment, Enrollment oldEnrollment, XOffering newOffering, XOffering oldOffering) {
     	if (newEnrollment == null && oldEnrollment == null) return;
     	XExpectations expectations = server.getExpectations((newEnrollment == null ? oldEnrollment : newEnrollment).getOffering().getId());
     	if (oldEnrollment != null) {
+        	Map<Long, XSection> sections = new HashMap<Long, XSection>();
+        	if (oldOffering != null)
+            	for (XConfig config: oldOffering.getConfigs())
+            		for (XSubpart subpart: config.getSubparts())
+            			for (XSection section: subpart.getSections())
+            				sections.put(section.getSectionId(), section);
             List<Enrollment> feasibleEnrollments = new ArrayList<Enrollment>();
+            int totalLimit = 0;
             for (Enrollment enrl : oldEnrollment.getRequest().values()) {
             	if (!enrl.getCourse().equals(oldEnrollment.getCourse())) continue;
                 boolean overlaps = false;
@@ -556,18 +584,36 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
                         break;
                     }
                 }
-                if (!overlaps)
+                if (!overlaps) {
                     feasibleEnrollments.add(enrl);
+                    if (totalLimit >= 0) {
+                    	int limit = getLimit(enrl, sections);
+                        if (limit < 0) totalLimit = -1;
+                        else totalLimit += limit;
+                    }
+                }
             }
-            double increment = 1.0 / feasibleEnrollments.size();
+            double increment = 1.0 / (totalLimit > 0 ? totalLimit : feasibleEnrollments.size());
             for (Enrollment feasibleEnrollment : feasibleEnrollments)
-                for (Section section : feasibleEnrollment.getSections())
-                	expectations.incExpectedSpace(section.getId(), increment);
+                for (Section section : feasibleEnrollment.getSections()) {
+                	if (totalLimit > 0) {
+                		expectations.incExpectedSpace(section.getId(), increment * getLimit(feasibleEnrollment, sections));
+                    } else {
+                    	expectations.incExpectedSpace(section.getId(), increment);
+                    }
+                }
     	}
     	if (newEnrollment != null) {
+        	Map<Long, XSection> sections = new HashMap<Long, XSection>();
+        	if (newOffering != null)
+            	for (XConfig config: newOffering.getConfigs())
+            		for (XSubpart subpart: config.getSubparts())
+            			for (XSection section: subpart.getSections())
+            				sections.put(section.getSectionId(), section);
             for (Section section : newEnrollment.getSections())
                 section.setSpaceHeld(section.getSpaceHeld() - 1.0);
             List<Enrollment> feasibleEnrollments = new ArrayList<Enrollment>();
+            int totalLimit = 0;
             for (Enrollment enrl : newEnrollment.getRequest().values()) {
             	if (!enrl.getCourse().equals(newEnrollment.getCourse())) continue;
                 boolean overlaps = false;
@@ -582,13 +628,24 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
                         break;
                     }
                 }
-                if (!overlaps)
+                if (!overlaps) {
                     feasibleEnrollments.add(enrl);
+                    if (totalLimit >= 0) {
+                    	int limit = getLimit(enrl, sections);
+                        if (limit < 0) totalLimit = -1;
+                        else totalLimit += limit;
+                    }
+                }
             }
-            double decrement = 1.0 / feasibleEnrollments.size();
+            double decrement = 1.0 / (totalLimit > 0 ? totalLimit : feasibleEnrollments.size());
             for (Enrollment feasibleEnrollment : feasibleEnrollments)
-                for (Section section : feasibleEnrollment.getSections())
-                	expectations.incExpectedSpace(section.getId(), - decrement);
+                for (Section section : feasibleEnrollment.getSections()) {
+                	if (totalLimit > 0) {
+                		expectations.incExpectedSpace(section.getId(), - decrement * getLimit(feasibleEnrollment, sections));
+                    } else {
+                    	expectations.incExpectedSpace(section.getId(), - decrement);
+                    }
+                }
     	}
     	server.update(expectations);
     }

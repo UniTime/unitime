@@ -577,6 +577,7 @@ public class InMemorySectioningTest {
         for (Section section : enrollment.getSections())
             section.setSpaceHeld(section.getSpaceHeld() + (increment ? 1.0 : -1.0));
         List<Enrollment> feasibleEnrollments = new ArrayList<Enrollment>();
+        int totalLimit = 0;
         for (Enrollment enrl : enrollment.getRequest().values()) {
         	if (!enrl.getCourse().equals(enrollment.getCourse())) continue;
             boolean overlaps = false;
@@ -591,13 +592,24 @@ public class InMemorySectioningTest {
                     break;
                 }
             }
-            if (!overlaps)
+            if (!overlaps) {
                 feasibleEnrollments.add(enrl);
+                if (totalLimit >= 0) {
+                    int limit = enrl.getLimit();
+                    if (limit < 0) totalLimit = -1;
+                    else totalLimit += limit;
+                }
+            }
         }
-        double change = 1.0 / feasibleEnrollments.size();
+        double change = enrollment.getRequest().getWeight() / (totalLimit > 0 ? totalLimit : feasibleEnrollments.size());
         for (Enrollment feasibleEnrollment : feasibleEnrollments)
-            for (Section section : feasibleEnrollment.getSections())
-                section.setSpaceExpected(section.getSpaceExpected() + (increment ? +change : -change));
+            for (Section section : feasibleEnrollment.getSections()) {
+            	if (totalLimit > 0) {
+                    section.setSpaceExpected(section.getSpaceExpected() + (increment ? +change : -change) * feasibleEnrollment.getLimit());
+                } else {
+                	section.setSpaceExpected(section.getSpaceExpected() + (increment ? +change : -change));
+                }
+            }
     }
 	
 	public void run() {
@@ -724,16 +736,16 @@ public class InMemorySectioningTest {
         pw.print(model().getProperties().getPropertyBoolean("StudentWeights.PriorityWeighting", true) ? "priority" : "equal");
         pw.print(iSuggestions ? " with suggestions": "");  pw.print(",");
         pw.print(System.getProperty("sort", "shuffle") + ",");
-        pw.print(model().getOverExpectedCriterion() + ",");
+        pw.print("\"" + model().getOverExpectedCriterion() + "\",");
         
-        pw.print(get("[A] Not Assigned").count() + ",");
+        pw.print(get("[A] Not Assigned").sum() + ",");
         pw.print(df.format(getPercDisbalancedSections(0.1)) + ",");
         pw.print(df.format(100.0 * model().getDistanceConflict().getTotalNrConflicts() / model().getStudents().size()) + ",");
         pw.print(df.format(5.0 * model().getTimeOverlaps().getTotalNrConflicts() / model().getStudents().size()) + ",");
         pw.print(df.format(get("[C] CPU Time").avg()) + ",");
         if (iSuggestions) {
         	pw.print(df.format(100.0 * get("[S] Probability that a class has suggestions [%]").avg()) + ",");
-        	pw.print(df.format(get("[S] Avg. # of suggestion").avg()) + ",");
+        	pw.print(df.format(get("[S] Avg. # of suggestions").avg()) + ",");
         	pw.print(df.format(100.0 * get("[S] Suggestion acceptance rate [%]").avg()) + ",");
         	pw.print(df.format(get("[S] Suggestion CPU Time").avg()));
         }
