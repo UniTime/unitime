@@ -123,6 +123,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	iLimit = section.getLimit();
     	iParentId = (section.getParent() == null ? null : section.getParent().getId());
     	iSubpartId = section.getSubpart().getId();
+    	iInstructionalType = section.getSubpart().getInstructionalType();
     	iNote = section.getNote();
     	iTime = section.getTime() == null ? null : new XTime(section.getTime());
     	if (section.getNrRooms() > 0)
