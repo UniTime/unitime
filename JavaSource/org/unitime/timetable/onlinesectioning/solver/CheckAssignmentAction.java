@@ -144,7 +144,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Long, L
 					if (enrollment != null && enrollment.getCourseId().equals(course.getCourseId())) { // course change
 						for (XSection s: sections)
 							if (!enrollment.getSectionIds().contains(s.getSectionId()) && !server.checkDeadline(course.getCourseId(), s.getTime(), OnlineSectioningServer.Deadline.CHANGE))
-								throw new SectioningException(MSG.exceptionEnrollDeadlineChange(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+								throw new SectioningException(MSG.exceptionEnrollDeadlineChange(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), s.getSubpartName(), s.getName(course.getCourseId()))));
 						continue check;
 					}
 				}
@@ -153,7 +153,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Long, L
 			// new course
 			for (XSection section: sections) {
 				if (!server.checkDeadline(course.getOfferingId(), section.getTime(), OnlineSectioningServer.Deadline.NEW))
-					throw new SectioningException(MSG.courseName(course.getSubjectArea(), course.getCourseNumber()));
+					throw new SectioningException(MSG.exceptionEnrollDeadlineNew(MSG.clazz(course.getSubjectArea(), course.getCourseNumber(), section.getSubpartName(), section.getName(course.getCourseId()))));
 			}
 		}
 		
