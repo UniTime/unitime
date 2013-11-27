@@ -51,6 +51,8 @@ import org.hibernate.NonUniqueResultException;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.mapping.Column;
+import org.hibernate.mapping.PersistentClass;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.BinaryType;
 import org.hibernate.type.BooleanType;
@@ -200,6 +202,20 @@ public class SessionRestore {
 	
 	public void create(TableData.Table table) throws InstantiationException, IllegalAccessException, DocumentException {
 		ClassMetadata metadata = iHibSessionFactory.getClassMetadata(table.getName());
+		PersistentClass mapping = _RootDAO.getConfiguration().getClassMapping(table.getName());
+		Map<String, Integer> lengths = new HashMap<String, Integer>();
+		for (String property: metadata.getPropertyNames()) {
+			Type type = metadata.getPropertyType(property);
+			if (type instanceof StringType)
+				for (Iterator<?> i = mapping.getProperty(property).getColumnIterator(); i.hasNext(); ) {
+					Object o = i.next();
+					if (o instanceof Column) {
+						Column column = (Column)o;
+						lengths.put(property, column.getLength());
+					}
+					break;
+				}
+		}
 		iProgress.setPhase(metadata.getEntityName().substring(metadata.getEntityName().lastIndexOf('.') + 1) + " [" + table.getRecordCount() + "]", table.getRecordCount());
 		for (TableData.Record record: table.getRecordList()) {
 			iProgress.incProgress();
@@ -237,6 +253,11 @@ public class SessionRestore {
 					value = new TimestampType().fromStringValue(element.getValue(0));
 				} else if (type instanceof StringType) {
 					value = element.getValue(0);
+					Integer len = lengths.get(property);
+					if (len != null && value.toString().length() > len) {
+						message("Value is  too long, truncated (property " + metadata.getEntityName() + "." + property +", length " + len +")", record.getId());
+						value = value.toString().substring(0, len);
+					}
 				} else if (type instanceof BinaryType) {
 					value = ByteString.copyFromUtf8(element.getValue(0)).toByteArray();
 				} else if (type instanceof CustomType && type.getReturnedClass().equals(Document.class)) {
@@ -244,7 +265,7 @@ public class SessionRestore {
 				} else if (type instanceof EntityType) {
 				} else if (type instanceof CollectionType) {
 				} else {
-					message("Unknown type " + type.getClass().getName() + " (property " + metadata.getEntityName() + "." + property + ", class " + type.getReturnedClass() + ")", "");
+					message("Unknown type " + type.getClass().getName() + " (property " + metadata.getEntityName() + "." + property + ", class " + type.getReturnedClass() + ")", record.getId());
 				}
 				if (value != null)
 					metadata.setPropertyValue(object, property, value);

@@ -72,7 +72,8 @@
             <property
                 name="descr"
                 column="description"
-                type="java.lang.String"/>
+                type="java.lang.String"
+                length="2048"/>
 
             <property
                 name="abbreviation"
