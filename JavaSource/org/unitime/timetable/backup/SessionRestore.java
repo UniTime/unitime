@@ -76,6 +76,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -347,6 +348,11 @@ public class SessionRestore {
 					return false;
 				}
 			}
+		}
+		if (entity.getObject() instanceof Department) {
+			Department department = (Department)entity.getObject();
+			if (department.isInheritInstructorPreferences() == null)
+				department.setInheritInstructorPreferences(!department.isExternalManager());
 		}
 		return true;
 	}

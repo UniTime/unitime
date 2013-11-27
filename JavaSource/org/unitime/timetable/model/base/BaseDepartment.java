@@ -120,7 +120,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	public Boolean getAllowEvents() { return iAllowEvents; }
 	public void setAllowEvents(Boolean allowEvents) { iAllowEvents = allowEvents; }
 	
-	public boolean isInheritInstructorPreferences() { return iInheritInstructorPreferences; }
+	public Boolean isInheritInstructorPreferences() { return iInheritInstructorPreferences; }
 	public Boolean getInheritInstructorPreferences() { return iInheritInstructorPreferences; }
 	public void setInheritInstructorPreferences(boolean inheritInstructorPreferences) { iInheritInstructorPreferences = inheritInstructorPreferences; }
 
