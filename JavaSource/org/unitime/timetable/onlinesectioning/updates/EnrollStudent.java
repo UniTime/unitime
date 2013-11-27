@@ -453,14 +453,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					XOffering offering = server.getOffering(oldEnrollment.getOfferingId());
 					if (!offering.getReservations().isEmpty()) {
 						checkOffering = true;
-						helper.info("Check offering for " + oldEnrollment.getCourseName() + ": there are reservations.");
+						helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": there are reservations.");
 					} else {
 						XEnrollments enrollments = server.getEnrollments(oldEnrollment.getOfferingId());
 						for (Long sectionId: oldSections) {
 							XSection section = offering.getSection(sectionId);
 							if (section != null && section.getLimit() >= 0 && section.getLimit() - enrollments.countEnrollmentsForSection(sectionId) == 1) {
 								checkOffering = true;
-								helper.info("Check offering for " + oldEnrollment.getCourseName() + ": section " + section + " became available.");
+								helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": section " + section + " became available.");
 								break;
 							}
 						}
@@ -468,14 +468,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							XConfig config = offering.getConfig(oldEnrollment.getConfigId());
 							if (config != null && config.getLimit() >= 0 && config.getLimit() - enrollments.countEnrollmentsForConfig(config.getConfigId()) == 1) {
 								checkOffering = true;
-								helper.info("Check offering for " + oldEnrollment.getCourseName() + ": config " + config + " became available.");
+								helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": config " + config + " became available.");
 							}
 						}
 						if (!checkOffering && (newEnrollment == null || !newEnrollment.getCourseId().equals(oldEnrollment.getCourseId()))) {
 							XCourse course = offering.getCourse(oldEnrollment.getCourseId());
 							if (course != null && course.getLimit() >= 0 && course.getLimit() - enrollments.countEnrollmentsForCourse(course.getCourseId()) == 1) {
 								checkOffering = true;
-								helper.info("Check offering for " + oldEnrollment.getCourseName() + ": course " + course + " became available.");
+								helper.debug("Check offering for " + oldEnrollment.getCourseName() + ": course " + course + " became available.");
 							}
 						}
 					}

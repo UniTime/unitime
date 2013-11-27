@@ -266,7 +266,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 								maxOverExpected += model.getOverExpected(section, enrollment.getRequest());
 					}
 					if (maxOverExpected < selectedPenalty) maxOverExpected = selectedPenalty;
-					helper.info("Maximum number of over-expected sections limited to " + maxOverExpected + " (computed in " + (x1 - x0) + " ms).");
+					helper.debug("Maximum number of over-expected sections limited to " + maxOverExpected + " (computed in " + (x1 - x0) + " ms).");
 				}				
 			}
 		}
@@ -285,7 +285,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), maxOverExpected);
 		}
 		
-		helper.info("Using " + (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
+		helper.debug("Using " + (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
 				(server.getConfig().getPropertyBoolean("StudentWeights.PriorityWeighting", true) ? "priority" : "equal") + " weighting model" +
 				" with " + server.getConfig().getPropertyInt("Suggestions.Timeout", 5000) +" ms time limit" +
 				(maxOverExpected < 0 ? "" : ", maximal over-expected of " + maxOverExpected) +
@@ -311,7 +311,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
         }
         
 		long t4 = System.currentTimeMillis();
-		helper.info("Sectioning took "+(t4-t0)+"ms (model "+(t1-t0)+"ms, solver init "+(t2-t1)+"ms, sectioning "+(t3-t2)+"ms, conversion "+(t4-t3)+"ms)");
+		helper.debug("Sectioning took "+(t4-t0)+"ms (model "+(t1-t0)+"ms, solver init "+(t2-t1)+"ms, sectioning "+(t3-t2)+"ms, conversion "+(t4-t3)+"ms)");
 
 		return ret;
 	}

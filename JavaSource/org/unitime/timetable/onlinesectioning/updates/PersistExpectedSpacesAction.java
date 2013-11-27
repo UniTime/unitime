@@ -110,9 +110,9 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
     			
     			int limit = getLimit(info.getClazz());
     			if (limit >= 0 && limit >= info.getNbrExpectedStudents() && limit < expectation)
-        			helper.info(info.getClazz().getClassLabel(helper.getHibSession()) + ": become over-expected");
+        			helper.debug(info.getClazz().getClassLabel(helper.getHibSession()) + ": become over-expected");
         		if (limit >= 0 && limit < info.getNbrExpectedStudents() && limit >= expectation)
-        			helper.info(info.getClazz().getClassLabel(helper.getHibSession()) + ": no longer over-expected");
+        			helper.debug(info.getClazz().getClassLabel(helper.getHibSession()) + ": no longer over-expected");
         		
     			info.setNbrExpectedStudents(expectation);
         		helper.getHibSession().saveOrUpdate(info);
@@ -132,7 +132,7 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
         		
         		int limit = getLimit(clazz);
         		if (limit >= 0 && limit < expectation)
-        			helper.info(clazz.getClassLabel(helper.getHibSession()) + ": become over-expected");
+        			helper.debug(clazz.getClassLabel(helper.getHibSession()) + ": become over-expected");
         		
                 info.setClazz(clazz);
                 info.setNbrExpectedStudents(expectation);
