@@ -724,7 +724,7 @@ public class InMemorySectioningTest {
 	
 	private void stats(File input) throws IOException {
 		File file = new File(input.getParentFile(), "stats.csv");
-		DecimalFormat df = new DecimalFormat("0.00");
+		DecimalFormat df = new DecimalFormat("0.0000");
 		boolean ex = file.exists();
 		PrintWriter pw = new PrintWriter(new FileWriter(file, true));
         if (!ex) {
@@ -740,13 +740,13 @@ public class InMemorySectioningTest {
         
         pw.print(get("[A] Not Assigned").sum() + ",");
         pw.print(df.format(getPercDisbalancedSections(0.1)) + ",");
-        pw.print(df.format(100.0 * model().getDistanceConflict().getTotalNrConflicts() / model().getStudents().size()) + ",");
+        pw.print(df.format(model().getDistanceConflict().getTotalNrConflicts() / model().getStudents().size()) + ",");
         pw.print(df.format(5.0 * model().getTimeOverlaps().getTotalNrConflicts() / model().getStudents().size()) + ",");
         pw.print(df.format(get("[C] CPU Time").avg()) + ",");
         if (iSuggestions) {
-        	pw.print(df.format(100.0 * get("[S] Probability that a class has suggestions [%]").avg()) + ",");
+        	pw.print(df.format(get("[S] Probability that a class has suggestions [%]").avg()) + ",");
         	pw.print(df.format(get("[S] Avg. # of suggestions").avg()) + ",");
-        	pw.print(df.format(100.0 * get("[S] Suggestion acceptance rate [%]").avg()) + ",");
+        	pw.print(df.format(get("[S] Suggestion acceptance rate [%]").avg()) + ",");
         	pw.print(df.format(get("[S] Suggestion CPU Time").avg()));
         }
         pw.println();
