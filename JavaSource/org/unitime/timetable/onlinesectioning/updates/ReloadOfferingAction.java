@@ -323,7 +323,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			TimeOverlapsCounter toc = new TimeOverlapsCounter(null, properties);
 			Date ts = new Date();
 			for (SectioningRequest r: queue) {
-				helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getSectionIds()) + ")");
+				helper.debug("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getSectionIds()) + ")");
 				long c0 = OnlineSectioningHelper.getCpuTime();
 				XEnrollment e = r.resection(server, w, dc, toc);
 				if (e == null && r.getLastEnrollment() == null) { // remained unassigned
@@ -338,7 +338,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						enrollment.addSection(OnlineSectioningHelper.toProto(newOffering.getSection(sectionId), e));
 					r.getAction().addEnrollment(enrollment);
 				}
-				helper.info("New: " + (e == null ? "not assigned" : e.getSectionIds()));
+				helper.debug("New: " + (e == null ? "not assigned" : e.getSectionIds()));
 				
 				org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudentId(), helper.getHibSession());
 				Map<Long, StudentClassEnrollment> enrollmentMap = new HashMap<Long, StudentClassEnrollment>();
@@ -347,7 +347,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					StudentClassEnrollment enrl = i.next();
 					if ((enrl.getCourseRequest() != null && enrl.getCourseRequest().getCourseDemand().getUniqueId().equals(r.getRequest())) ||
 						(enrl.getCourseOffering() != null && enrl.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId))) {
-						helper.info("Deleting " + enrl.getClazz().getClassLabel());
+						helper.debug("Deleting " + enrl.getClazz().getClassLabel());
 						enrollmentMap.put(enrl.getClazz().getUniqueId(), enrl);
 						if (approvedBy == null && enrl.getApprovedBy() != null) {
 							approvedBy = enrl.getApprovedBy();
@@ -401,7 +401,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							cr.getClassEnrollments().add(enrl);
 						}
 						*/
-						helper.info("Adding " + enrl.getClazz().getClassLabel());
+						helper.debug("Adding " + enrl.getClazz().getClassLabel());
 					}
 				} else if (!r.getRequest().isAlternative()) { // wait-list
 					if (cd != null && !cd.isWaitlist()) {

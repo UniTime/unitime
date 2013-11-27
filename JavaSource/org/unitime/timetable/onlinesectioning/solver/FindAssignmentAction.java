@@ -246,12 +246,12 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		BranchBoundNeighbour neighbour = selection.select(student);
 		if (neighbour == null) throw new SectioningException(MSG.exceptionNoSolution());
 
-		helper.info("Using " + (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
+		helper.debug("Using " + (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
 				(server.getConfig().getPropertyBoolean("StudentWeights.PriorityWeighting", true) ? "priority" : "equal") + " weighting model" +
 				" with " + server.getConfig().getPropertyInt("Neighbour.BranchAndBoundTimeout", 1000) +" ms time limit.");
 
         neighbour.assign(0);
-        helper.info("Solution: " + neighbour);
+        helper.debug("Solution: " + neighbour);
 		
     	OnlineSectioningLog.Enrollment.Builder solution = OnlineSectioningLog.Enrollment.newBuilder();
     	solution.setType(OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED);
@@ -268,7 +268,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		ClassAssignmentInterface ret = convert(server, model, student, neighbour, requiredSectionsForCourse, requiredFreeTimes, enrolled);
 		
 		long t3 = System.currentTimeMillis();
-		helper.info("Sectioning took "+(t3-t0)+"ms (model "+(t1-t0)+"ms, sectioning "+(t2-t1)+"ms, conversion "+(t3-t2)+"ms)");
+		helper.debug("Sectioning took "+(t3-t0)+"ms (model "+(t1-t0)+"ms, sectioning "+(t2-t1)+"ms, conversion "+(t3-t2)+"ms)");
 
 		List<ClassAssignmentInterface> rets = new ArrayList<ClassAssignmentInterface>(1);
 		rets.add(ret);

@@ -94,7 +94,7 @@ public class ExpireReservationsAction extends CheckOfferingAction {
 						.setUniqueId(reservation.getReservationId())
 						.setType(OnlineSectioningLog.Entity.EntityType.RESERVATION));
 				
-				helper.info("Expiring reservation " + reservation.getReservationId() + "...");
+				helper.debug("Expiring reservation " + reservation.getReservationId() + "...");
 				assert reservation.isExpired();
 			}
 

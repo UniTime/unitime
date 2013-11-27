@@ -325,13 +325,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						
 						ret = true;
 					} else {
-						helper.info("Email notification failed to generate for student " + student.getName() + ".");
+						helper.debug("Email notification failed to generate for student " + student.getName() + ".");
 					}
 				} else {
-					helper.info("Email notification is disabled for student " + student.getName() + ".");
+					helper.debug("Email notification is disabled for student " + student.getName() + ".");
 				}
 			} else {
-				helper.info("Student " + student.getName() + " has no email address on file.");
+				helper.debug("Student " + student.getName() + " has no email address on file.");
 			}
 			
 			return ret;
