@@ -98,7 +98,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 						message += "\n      " + courseName + " " + section.toString(request.getEnrollment().getCourseId());
 					}
 				}
-				helper.info(message);
+				helper.debug(message);
 				if (server.getAcademicSession().isSectioningEnabled() && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
 					server.execute(new StudentEmail(getStudentId(), iOldOffering, iOldEnrollment), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
@@ -153,7 +153,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 						}
 					}
 				}
-				helper.info(message);
+				helper.debug(message);
 				if (server.getAcademicSession().isSectioningEnabled() && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
 					server.execute(new StudentEmail(getStudentId(), iOldStudent), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override

@@ -204,7 +204,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						StudentClassEnrollment enrl = i.next();
 						if ((enrl.getCourseRequest() != null && enrl.getCourseRequest().getCourseDemand().getUniqueId().equals(r.getRequest().getRequestId())) ||
 							(r.getLastEnrollment() != null && enrl.getCourseOffering() != null && enrl.getCourseOffering().getUniqueId().equals(r.getLastEnrollment().getCourseId()))) {
-							helper.info("Deleting " + enrl.getClazz().getClassLabel());
+							helper.debug("Deleting " + enrl.getClazz().getClassLabel());
 							oldEnrollments.put(enrl.getClazz().getUniqueId(), enrl);
 							if (approvedBy == null && enrl.getApprovedBy() != null) {
 								approvedBy = enrl.getApprovedBy();
@@ -252,7 +252,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							enrl.setApprovedBy(approvedBy);
 							enrl.setApprovedDate(approvedDate);
 							student.getClassEnrollments().add(enrl);
-							helper.info("Adding " + enrl.getClazz().getClassLabel());
+							helper.debug("Adding " + enrl.getClazz().getClassLabel());
 						}
 					} else if (!r.getRequest().isAlternative()) { // wait-list
 						if (cd != null && !cd.isWaitlist()) {
