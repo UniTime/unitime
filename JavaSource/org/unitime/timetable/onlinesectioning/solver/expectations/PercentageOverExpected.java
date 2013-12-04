@@ -19,9 +19,14 @@
 */
 package org.unitime.timetable.onlinesectioning.solver.expectations;
 
+import org.unitime.timetable.onlinesectioning.model.OnlineConfig;
+import org.unitime.timetable.onlinesectioning.model.OnlineSection;
+
 import net.sf.cpsolver.ifs.util.DataProperties;
+import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
+import net.sf.cpsolver.studentsct.model.Subpart;
 
 /**
  * @author Tomas Muller
@@ -43,6 +48,45 @@ public class PercentageOverExpected implements OverExpectedCriterion {
 	
 	public double getPercentage() {
 		return iPercentage == null ? 1.0 : iPercentage;
+	}
+	
+	protected boolean hasExpectations(Subpart subpart) {
+		for (Section section: subpart.getSections())
+			if (section.getSpaceExpected() > 0.0) return true;
+		return false;
+	}
+	
+	protected double getEnrollment(Config config, Request request) {
+		if (config instanceof OnlineConfig) {
+			return ((OnlineConfig)config).getEnrollment();
+		} else {
+			return config.getEnrollmentWeight(request);
+		}
+	}
+	
+	protected double getEnrollment(Section section, Request request) {
+		if (section instanceof OnlineSection) {
+			return ((OnlineSection)section).getEnrollment();
+		} else {
+			return section.getEnrollmentWeight(request);
+		}
+	}
+	
+	protected int getLimit(Section section) {
+		if (section.getLimit() < 0) return section.getLimit();
+		if (section instanceof OnlineSection) {
+			return section.getLimit() + ((OnlineSection)section).getEnrollment();
+		} else {
+			return section.getLimit();
+		}
+	}
+	
+	protected int getLimit(Subpart subpart) {
+		int limit = subpart.getLimit();
+		if (limit < 0) return limit;
+		if (subpart.getConfig() instanceof OnlineConfig)
+			limit += ((OnlineConfig)subpart.getConfig()).getEnrollment();
+		return limit;
 	}
 
 	@Override

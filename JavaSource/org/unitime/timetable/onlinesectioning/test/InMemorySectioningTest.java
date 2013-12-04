@@ -39,6 +39,8 @@ import java.util.TreeSet;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.unitime.timetable.onlinesectioning.model.OnlineConfig;
+import org.unitime.timetable.onlinesectioning.model.OnlineSection;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
 import org.unitime.timetable.onlinesectioning.reports.OnlineSectioningReport.Counter;
@@ -47,6 +49,8 @@ import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningSelection;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 import org.unitime.timetable.onlinesectioning.solver.SuggestionSelection;
 import org.unitime.timetable.onlinesectioning.solver.SuggestionsBranchAndBound;
+import org.unitime.timetable.onlinesectioning.solver.expectations.AvoidUnbalancedWhenNoExpectations;
+import org.unitime.timetable.onlinesectioning.solver.expectations.FractionallyUnbalancedWhenNoExpectations;
 import org.unitime.timetable.onlinesectioning.solver.expectations.FractionallyOverExpected;
 import org.unitime.timetable.onlinesectioning.solver.expectations.PercentageOverExpected;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection;
@@ -100,11 +104,21 @@ public class InMemorySectioningTest {
 		
 		String overexp = System.getProperty("overexp");
 		if (overexp != null) {
+			boolean bal = false;
+			if (overexp.startsWith("b")) {
+				bal = true;
+				overexp = overexp.substring(1);
+			}
 			String[] x = overexp.split("[/\\-]");
 			if (x.length == 1) {
 				iModel.setOverExpectedCriterion(new PercentageOverExpected(Double.valueOf(x[0])));
+			} else if (x.length == 2) {
+				iModel.setOverExpectedCriterion(bal
+						? new AvoidUnbalancedWhenNoExpectations(Double.valueOf(x[0]), Double.valueOf(x[1]) / 100.0)
+						: new FractionallyOverExpected(Double.valueOf(x[0]), Double.valueOf(x[1])));
 			} else {
-				iModel.setOverExpectedCriterion(new FractionallyOverExpected(Double.valueOf(x[0]), Double.valueOf(x[1])));
+				iModel.setOverExpectedCriterion(
+						new FractionallyUnbalancedWhenNoExpectations(Double.valueOf(x[0]), Double.valueOf(x[1]), Double.valueOf(x[2]) / 100.0));
 			}
 		}
 		
@@ -193,15 +207,17 @@ public class InMemorySectioningTest {
 		for (Iterator<Config> e = course.getOffering().getConfigs().iterator(); e.hasNext();) {
 			Config config = e.next();
 			int configLimit = config.getLimit();
+			int configEnrollment = config.getEnrollments().size();
 			if (configLimit >= 0) {
 				configLimit -= config.getEnrollments().size();
 				if (configLimit < 0) configLimit = 0;
 				for (Iterator<Enrollment> i = config.getEnrollments().iterator(); i.hasNext();) {
 					Enrollment enrollment = i.next();
-					if (enrollment.getStudent().getId() == studentId) { configLimit++; break; }
+					if (enrollment.getStudent().getId() == studentId) { configLimit++; configEnrollment--; break; }
 				}
 			}
-			Config clonedConfig = new Config(config.getId(), configLimit, config.getName(), clonedOffering);
+			OnlineConfig clonedConfig = new OnlineConfig(config.getId(), configLimit, config.getName(), clonedOffering);
+			clonedConfig.setEnrollment(configEnrollment);
 			configs.put(config, clonedConfig);
 			for (Iterator<Subpart> f = config.getSubparts().iterator(); f.hasNext();) {
 				Subpart subpart = f.next();
@@ -213,15 +229,16 @@ public class InMemorySectioningTest {
 				for (Iterator<Section> g = subpart.getSections().iterator(); g.hasNext();) {
 					Section section = g.next();
 					int limit = section.getLimit();
+					int enrl = section.getEnrollments().size();
 					if (limit >= 0) {
 						// limited section, deduct enrollments
 						limit -= section.getEnrollments().size();
 						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
 						if (studentId >= 0)
 							for (Enrollment enrollment: section.getEnrollments())
-								if (enrollment.getStudent().getId() == studentId) { limit++; break; }
+								if (enrollment.getStudent().getId() == studentId) { limit++; enrl--; break; }
 					}
-					Section clonedSection = new Section(section.getId(), limit,
+					OnlineSection clonedSection = new OnlineSection(section.getId(), limit,
 							section.getName(course.getId()), clonedSubpart, section.getPlacement(),
 							section.getChoice().getInstructorIds(), section.getChoice().getInstructorNames(),
 							(section.getParent() == null ? null : sections.get(section.getParent())));
@@ -229,6 +246,7 @@ public class InMemorySectioningTest {
 					clonedSection.setNote(section.getNote());
 					clonedSection.setSpaceExpected(section.getSpaceExpected());
 					clonedSection.setSpaceHeld(section.getSpaceHeld());
+					clonedSection.setEnrollment(enrl);
 			        if (section.getIgnoreConflictWithSectionIds() != null)
 			        	for (Long id: section.getIgnoreConflictWithSectionIds())
 			        		clonedSection.addIgnoreConflictWith(id);
@@ -740,7 +758,7 @@ public class InMemorySectioningTest {
         
         pw.print(get("[A] Not Assigned").sum() + ",");
         pw.print(df.format(getPercDisbalancedSections(0.1)) + ",");
-        pw.print(df.format(model().getDistanceConflict().getTotalNrConflicts() / model().getStudents().size()) + ",");
+        pw.print(df.format(((double) model().getDistanceConflict().getTotalNrConflicts()) / model().getStudents().size()) + ",");
         pw.print(df.format(5.0 * model().getTimeOverlaps().getTotalNrConflicts() / model().getStudents().size()) + ",");
         pw.print(df.format(get("[C] CPU Time").avg()) + ",");
         if (iSuggestions) {

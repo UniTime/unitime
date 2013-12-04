@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.solver;
 
 import org.apache.log4j.Logger;
+import org.unitime.timetable.onlinesectioning.solver.expectations.AvoidUnbalancedWhenNoExpectations;
 import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 import org.unitime.timetable.onlinesectioning.solver.expectations.PercentageOverExpected;
 
@@ -38,7 +39,7 @@ public class OnlineSectioningModel extends StudentSectioningModel {
 	public OnlineSectioningModel(DataProperties properties) {
 		super(properties);
 		try {
-            Class<OverExpectedCriterion> overExpectedCriterionClass = (Class<OverExpectedCriterion>)Class.forName(properties.getProperty("OverExpectedCriterion.Class", PercentageOverExpected.class.getName()));
+            Class<OverExpectedCriterion> overExpectedCriterionClass = (Class<OverExpectedCriterion>)Class.forName(properties.getProperty("OverExpectedCriterion.Class", AvoidUnbalancedWhenNoExpectations.class.getName()));
             iOverExpectedCriterion = overExpectedCriterionClass.getConstructor(DataProperties.class).newInstance(properties);
         } catch (Exception e) {
         	sLog.error("Unable to create custom over-expected criterion (" + e.getMessage() + "), using default.", e);

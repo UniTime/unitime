@@ -66,6 +66,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.model.OnlineConfig;
+import org.unitime.timetable.onlinesectioning.model.OnlineSection;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -295,14 +297,16 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		Hashtable<Long, Subpart> subparts = new Hashtable<Long, Subpart>();
 		for (XConfig config: offering.getConfigs()) {
 			int configLimit = config.getLimit();
+			int configEnrl = enrollments.countEnrollmentsForConfig(config.getConfigId());
+			if (studentId >= 0)
+				for (XEnrollment enrollment: enrollments.getEnrollmentsForConfig(config.getConfigId()))
+					if (enrollment.getStudentId().equals(studentId)) { configEnrl--; break; }
 			if (configLimit >= 0) {
-				configLimit -= enrollments.countEnrollmentsForConfig(config.getConfigId());
+				configLimit -= configEnrl;
 				if (configLimit < 0) configLimit = 0;
-				for (XEnrollment enrollment: enrollments.getEnrollmentsForConfig(config.getConfigId())) {
-					if (enrollment.getStudentId().equals(studentId)) { configLimit++; break; }
-				}
 			}
-			Config clonedConfig = new Config(config.getConfigId(), configLimit, config.getName(), clonedOffering);
+			OnlineConfig clonedConfig = new OnlineConfig(config.getConfigId(), configLimit, config.getName(), clonedOffering);
+			clonedConfig.setEnrollment(configEnrl);
 			configs.put(config.getConfigId(), clonedConfig);
 			for (XSubpart subpart: config.getSubparts()) {
 				Subpart clonedSubpart = new Subpart(subpart.getSubpartId(), subpart.getInstructionalType(), subpart.getName(), clonedConfig,
@@ -312,13 +316,14 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				subparts.put(subpart.getSubpartId(), clonedSubpart);
 				for (XSection section: subpart.getSections()) {
 					int limit = section.getLimit();
+					int enrl = enrollments.countEnrollmentsForSection(section.getSectionId());
+					if (studentId >= 0)
+						for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId()))
+							if (enrollment.getStudentId().equals(studentId)) { enrl--; break; }
 					if (limit >= 0) {
 						// limited section, deduct enrollments
-						limit -= enrollments.countEnrollmentsForSection(section.getSectionId());
+						limit -= enrl;
 						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
-						if (studentId >= 0)
-							for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId()))
-								if (enrollment.getStudentId().equals(studentId)) { limit++; break; }
 					}
                     String instructorIds = "";
                     String instructorNames = "";
@@ -338,13 +343,14 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
                     				section.getTime().getDatePatternId(), section.getTime().getDatePatternName(), section.getTime().getWeeks(),
                     				section.getTime().getBreakTime()),
                     		rooms);
-					Section clonedSection = new Section(section.getSectionId(), limit,
+					OnlineSection clonedSection = new OnlineSection(section.getSectionId(), limit,
 							section.getName(course.getCourseId()), clonedSubpart, placement,
 							instructorIds, instructorNames,
 							(section.getParentId() == null ? null : sections.get(section.getParentId())));
 					clonedSection.setName(-1l, section.getName(-1l));
 					clonedSection.setNote(section.getNote());
 					clonedSection.setSpaceExpected(expectations.getExpectedSpace(section.getSectionId()));
+					clonedSection.setEnrollment(enrl);
 					for (XDistribution distribution: offering.getDistributions())
 						if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId()))
 							for (Long id: distribution.getSectionIds())
