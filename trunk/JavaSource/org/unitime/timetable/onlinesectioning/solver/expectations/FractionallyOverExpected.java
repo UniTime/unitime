@@ -47,6 +47,10 @@ public class FractionallyOverExpected extends PercentageOverExpected {
 		this(null, 1.0);
 	}
 	
+	public Double getMaximum() {
+		return iMaximum;
+	}
+	
 	public double getMaximum(Section section) {
 		return iMaximum == null || iMaximum <= 0.0 ? section.getLimit() : iMaximum;
 	}
@@ -66,7 +70,7 @@ public class FractionallyOverExpected extends PercentageOverExpected {
 	
 	@Override
 	public String toString() {
-		return "frac(" + getPercentage() + (iMaximum == null ? "" : "," + iMaximum) + ")";
+		return "frac(" + getPercentage() + "," + getMaximum() + ")";
 	}
 
 }

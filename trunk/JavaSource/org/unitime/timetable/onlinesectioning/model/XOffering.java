@@ -544,14 +544,15 @@ public class XOffering implements Serializable, Externalizable {
 		Hashtable<Long, Section> sections = new Hashtable<Long, Section>();
 		for (XConfig config: getConfigs()) {
 			int configLimit = config.getLimit();
+			int configEnrl = enrollments.countEnrollmentsForConfig(config.getConfigId());
+			for (XEnrollment enrollment: enrollments.getEnrollmentsForConfig(config.getConfigId()))
+				if (enrollment.getStudentId().equals(student.getStudentId())) { configEnrl--; break; }
 			if (configLimit >= 0) {
-				configLimit -= enrollments.countEnrollmentsForConfig(config.getConfigId());
+				configLimit -= configEnrl;
 				if (configLimit < 0) configLimit = 0;
-				for (XEnrollment enrollment: enrollments.getEnrollmentsForConfig(config.getConfigId())) {
-					if (enrollment.getStudentId().equals(student.getStudentId())) { configLimit++; break; }
-				}
 			}
-			Config clonedConfig = new Config(config.getConfigId(), configLimit, config.getName(), clonedOffering);
+			OnlineConfig clonedConfig = new OnlineConfig(config.getConfigId(), configLimit, config.getName(), clonedOffering);
+			clonedConfig.setEnrollment(configEnrl);
 			configs.put(config.getConfigId(), clonedConfig);
 			for (XSubpart subpart: config.getSubparts()) {
 				Subpart clonedSubpart = new Subpart(subpart.getSubpartId(), subpart.getInstructionalType(), subpart.getName(), clonedConfig,
@@ -561,12 +562,13 @@ public class XOffering implements Serializable, Externalizable {
 				subparts.put(subpart.getSubpartId(), clonedSubpart);
 				for (XSection section: subpart.getSections()) {
 					int limit = section.getLimit();
+					int enrl = enrollments.countEnrollmentsForSection(section.getSectionId());
+					for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId()))
+						if (enrollment.getStudentId().equals(student.getStudentId())) { enrl--; break; }
 					if (limit >= 0) {
 						// limited section, deduct enrollments
-						limit -= enrollments.countEnrollmentsForSection(section.getSectionId());
+						limit -= enrl;
 						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
-						for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId()))
-							if (enrollment.getStudentId().equals(student.getStudentId())) { limit++; break; }
 					}
                     String instructorIds = "";
                     String instructorNames = "";
@@ -577,13 +579,14 @@ public class XOffering implements Serializable, Externalizable {
                     	instructorIds += instructor.getIntructorId().toString();
                     	instructorNames += instructor.getName() + "|"  + (instructor.getEmail() == null ? "" : instructor.getEmail());
                     }
-					Section clonedSection = new Section(section.getSectionId(), limit,
+					OnlineSection clonedSection = new OnlineSection(section.getSectionId(), limit,
 							section.getName(), clonedSubpart, section.toPlacement(),
 							instructorIds, instructorNames,
 							(section.getParentId() == null ? null : sections.get(section.getParentId())));
 					clonedSection.setName(-1l, section.getName(-1l));
 					clonedSection.setNote(section.getNote());
 					clonedSection.setSpaceExpected(expectations == null ? 0.0 : expectations.getExpectedSpace(section.getSectionId()));
+					clonedSection.setEnrollment(enrl);
 					if (distributions != null)
 						for (XDistribution distribution: distributions)
 							if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId()))
