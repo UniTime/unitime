@@ -57,6 +57,7 @@ public abstract class OnlineSectioningTestFwk {
 	private double iRunTime = 0.0;
 	private JChannel iChannel = null;
 	private SolverServer iSolverServer = null;
+	private Long iSessionId = null;
     
 	protected void configureLogging() {
         Properties props = new Properties();
@@ -97,6 +98,8 @@ public abstract class OnlineSectioningTestFwk {
             sLog.info("Session: "+session);
         }
         
+        iSessionId = session.getUniqueId();
+        
         OnlineSectioningLogger.getInstance().setEnabled(false);
 
         if (remote) {
@@ -109,9 +112,7 @@ public abstract class OnlineSectioningTestFwk {
         		iChannel.connect("UniTime:rpc");
         		iChannel.getState(null, 0);
         		
-        		iServer = iSolverServer.getOnlineStudentSchedulingContainer().getSolver(session.getUniqueId().toString());
-        		
-                if (iServer == null)
+                if (getServer() == null)
                 	throw new Exception(session.getLabel() + " is not available");
             } catch (Exception e) {
             	sLog.error("Failed to access the solver server: " + e.getMessage(), e);
@@ -162,7 +163,8 @@ public abstract class OnlineSectioningTestFwk {
 	}
 	
 	public OnlineSectioningServer getServer() {
-		return iServer;
+		if (iServer != null) return iServer;
+		return iSolverServer.getOnlineStudentSchedulingContainer().getSolver(iSessionId.toString());
 	}
 	
 	public interface Operation {
