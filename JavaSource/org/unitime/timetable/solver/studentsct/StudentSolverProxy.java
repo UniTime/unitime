@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
+import net.sf.cpsolver.ifs.util.CSVFile;
 import net.sf.cpsolver.ifs.util.DataProperties;
 
 /**
@@ -77,4 +78,6 @@ public interface StudentSolverProxy extends OnlineSectioningServer {
     public void interrupt();
     
     public byte[] exportXml() throws Exception;
+    
+    public CSVFile getReport(DataProperties parameters);
 }

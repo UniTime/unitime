@@ -73,6 +73,7 @@ import org.unitime.timetable.util.MemoryCounter;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.solution.Solution;
 import net.sf.cpsolver.ifs.solver.Solver;
+import net.sf.cpsolver.ifs.util.CSVFile;
 import net.sf.cpsolver.ifs.util.Callback;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
@@ -91,6 +92,8 @@ import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
+import net.sf.cpsolver.studentsct.report.SectionConflictTable;
+import net.sf.cpsolver.studentsct.report.StudentSectioningReport;
 
 /**
  * @author Tomas Muller
@@ -1111,5 +1114,19 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 			iOnlineProperties.remove(name);
 		else
 			iOnlineProperties.put(name, value);
+	}
+	
+	@Override
+	public CSVFile getReport(DataProperties parameters) {
+		try {
+			String name = parameters.getProperty("report", SectionConflictTable.class.getName());
+			Class<StudentSectioningReport> clazz = (Class<StudentSectioningReport>) Class.forName(name);
+			StudentSectioningReport report = clazz.getConstructor(StudentSectioningModel.class).newInstance(currentSolution().getModel());
+			return report.create(parameters);
+		} catch (SectioningException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SectioningException(e.getMessage(), e);
+		}
 	}
 }
