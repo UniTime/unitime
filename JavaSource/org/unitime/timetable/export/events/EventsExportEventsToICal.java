@@ -227,7 +227,7 @@ public class EventsExportEventsToICal extends EventsExporter {
 		public boolean merge(ICalendarMeeting m) {
 			if (m.getStart().equals(getStart()) && m.getEnd().equals(getEnd())) {
 				if (m.getStatus() == ICalendarStatus.TENTATIVE) iStatus = ICalendarStatus.TENTATIVE;
-				iLocation += ", " + m.getLocation();
+				iLocation += "\\, " + m.getLocation();
 				return true;
 			}
 			return false;
