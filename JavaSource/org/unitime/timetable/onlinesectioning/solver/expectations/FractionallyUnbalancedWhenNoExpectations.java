@@ -29,10 +29,12 @@ import net.sf.cpsolver.studentsct.model.Subpart;
  */
 public class FractionallyUnbalancedWhenNoExpectations extends FractionallyOverExpected {
 	private Double iDisbalance = 0.1;
+	private boolean iBalanceUnlimited = false;
 
 	public FractionallyUnbalancedWhenNoExpectations(DataProperties config) {
 		super(config);
 		iDisbalance = config.getPropertyDouble("OverExpected.Disbalance", iDisbalance);
+		iBalanceUnlimited = config.getPropertyBoolean("General.BalanceUnlimited", iBalanceUnlimited);
 	}
 	
 	public FractionallyUnbalancedWhenNoExpectations(Double percentage, Double maximum, Double disbalance) {
@@ -56,6 +58,10 @@ public class FractionallyUnbalancedWhenNoExpectations extends FractionallyOverEx
 		return iDisbalance;
 	}
 	
+	public boolean isBalanceUnlimited() {
+		return iBalanceUnlimited;
+	}
+
 	public double getMaximum(Section section, double defaultValue) {
 		return getMaximum() == null || getMaximum() <= 0.0 ? defaultValue : getMaximum();
 	}
@@ -81,7 +87,7 @@ public class FractionallyUnbalancedWhenNoExpectations extends FractionallyOverEx
             	double max = getMaximum(section, limit);
             	return Math.min(max, enrl - desired) / (max * subparts);
             }
-        } else {
+        } else if (isBalanceUnlimited()) {
             // unlimited sections -> desired size is total enrollment / number of sections
         	double desired = enrlConfig / subpart.getSections().size();
         	if (enrl - desired >= Math.max(1.0, getDisbalance() * desired)) {
