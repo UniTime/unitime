@@ -29,10 +29,12 @@ import net.sf.cpsolver.studentsct.model.Subpart;
  */
 public class AvoidUnbalancedWhenNoExpectations extends PercentageOverExpected {
 	private Double iDisbalance = 0.1;
+	private boolean iBalanceUnlimited = false;
 
 	public AvoidUnbalancedWhenNoExpectations(DataProperties config) {
 		super(config);
 		iDisbalance = config.getPropertyDouble("OverExpected.Disbalance", iDisbalance);
+		iBalanceUnlimited = config.getPropertyBoolean("General.BalanceUnlimited", iBalanceUnlimited);
 	}
 	
 	public AvoidUnbalancedWhenNoExpectations(Double percentage, Double disbalance) {
@@ -50,6 +52,10 @@ public class AvoidUnbalancedWhenNoExpectations extends PercentageOverExpected {
 	
 	public Double getDisbalance() {
 		return iDisbalance;
+	}
+	
+	public boolean isBalanceUnlimited() {
+		return iBalanceUnlimited;
 	}
 	
 	@Override
@@ -71,7 +77,7 @@ public class AvoidUnbalancedWhenNoExpectations extends PercentageOverExpected {
             double desired = (enrlConfig / getLimit(subpart)) * limit;
             if (enrl - desired >= Math.max(1.0, getDisbalance() * limit))
             	return 1.0 / subparts;
-        } else {
+        } else if (isBalanceUnlimited()) {
             // unlimited sections -> desired size is total enrollment / number of sections
         	double desired = enrlConfig / subpart.getSections().size();
         	if (enrl - desired >= Math.max(1.0, getDisbalance() * desired))

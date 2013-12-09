@@ -159,6 +159,7 @@ public class InMemorySectioningTest {
 	}
 	
 	public double getPercDisbalancedSections(double perc) {
+		boolean balanceUnlimited = model().getProperties().getPropertyBoolean("General.BalanceUnlimited", false);
 		double disb10Sections = 0, nrSections = 0;
         for (Offering offering: model().getOfferings()) {
             for (Config config: offering.getConfigs()) {
@@ -174,7 +175,7 @@ public class InMemorySectioningTest {
                             if (Math.abs(desired - section.getEnrollmentWeight(null)) >= Math.max(1.0, perc * section.getLimit()))
                                 disb10Sections++;
                         }
-                    } else {
+                    } else if (balanceUnlimited) {
                         // unlimited sections -> desired size is total enrollment / number of sections
                         for (Section section: subpart.getSections()) {
                             double desired = enrl / subpart.getSections().size();
