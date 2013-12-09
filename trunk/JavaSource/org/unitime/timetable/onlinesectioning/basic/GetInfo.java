@@ -266,6 +266,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
             double disbWeight = 0;
             int disbSections = 0;
             int disb10Sections = 0;
+            boolean balanceUnlimited = server.getConfig().getPropertyBoolean("General.BalanceUnlimited", false);
             for (Offering offering: offerings.values()) {
             	for (Config config: offering.getConfigs()) {
             		double enrl = config.getEnrollments().size();
@@ -281,7 +282,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
                                 if (Math.abs(desired - section.getEnrollments().size()) >= Math.max(1.0, 0.1 * section.getLimit()))
                                     disb10Sections++;
                             }
-                        } else {
+                        } else if (balanceUnlimited) {
                             // unlimited sections -> desired size is total enrollment / number of sections
                             for (Section section: subpart.getSections()) {
                                 double desired = enrl / subpart.getSections().size();
