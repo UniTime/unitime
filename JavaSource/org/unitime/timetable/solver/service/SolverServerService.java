@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.service;
 
 import java.util.List;
-import java.util.Properties;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 
@@ -70,8 +69,7 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 			
 			channel.connect("UniTime:rpc");
 			
-			Properties properties = ApplicationProperties.getProperties();
-			iServer.start(properties);
+			iServer.start();
 			
 			iCourseSolverContainer = new SolverContainerWrapper<SolverProxy>(iServer.getDispatcher(), (RemoteSolverContainer<SolverProxy>) iServer.getCourseSolverContainer(), true);
 			iExamSolverContainer = new SolverContainerWrapper<ExamSolverProxy>(iServer.getDispatcher(), (RemoteSolverContainer<ExamSolverProxy>) iServer.getExamSolverContainer(), true);

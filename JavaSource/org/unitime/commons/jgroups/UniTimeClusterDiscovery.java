@@ -81,7 +81,7 @@ public class UniTimeClusterDiscovery extends Discovery {
 	@Override
 	public Collection<PhysicalAddress> fetchClusterMembers(String cluster_name) {
 		if (!ClusterDiscoveryDAO.isConfigured()) {
-			log.info("Hibernate not configured yet, returning empty set for current cluster members.");
+			log.info("Hibernate not configured yet, returning empty set for " + group_addr + " cluster members.");
 			return Collections.emptyList();
 		}
 		
@@ -167,7 +167,7 @@ public class UniTimeClusterDiscovery extends Discovery {
 	
 	protected void handleView(View view) {
 		if (!ClusterDiscoveryDAO.isConfigured()) {
-			log.info("Hibernate not configured yet, ignoring view change.");
+			log.info("Hibernate not configured yet, ignoring view change for cluster " + group_addr + ".");
 			return;
 		}
 		

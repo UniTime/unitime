@@ -28,7 +28,6 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.ToolBox;
@@ -87,7 +86,6 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	
 	protected int iUsageBase = 0;
 	protected Date iStartTime = new Date();
-	protected Properties iProperties = null;
 	protected boolean iActive = false;
 	protected boolean iLocal = false;
 	
@@ -109,9 +107,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	
 	public RpcDispatcher getDispatcher() { return iDispatcher; }
 	
-	public void start(Properties properties) throws Exception {
-		iProperties = properties;
-		
+	public void start() throws Exception {
 		iCourseSolverContainer.start();
 		iExamSolverContainer.start();
 		iStudentSolverContainer.start();
@@ -130,12 +126,6 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		iStudentSolverContainer.stop();
 		iOnlineStudentSchedulingContainer.stop();
 		iUpdater.stopUpdating();
-	}
-	
-	public Properties getProperties() {
-		if (iProperties == null)
-			iProperties = ApplicationProperties.getProperties();
-		return iProperties;
 	}
 	
 	@Override
@@ -407,18 +397,11 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 
 	@Override
 	public void getState(OutputStream output) throws Exception {
-		getProperties().store(output, "UniTime Application Properties");
 	}
 
 
 	@Override
 	public void setState(InputStream input) throws Exception {
-		if (iProperties == null) {
-			iProperties = new Properties();
-		} else {
-			iProperties.clear();
-		}
-		iProperties.load(input);
 	}
 	
 	public class ServerInvocationHandler implements InvocationHandler {
@@ -558,6 +541,10 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
     		
 			ToolBox.configureLogging();
     		
+			HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
+			
+			ToolBox.configureLogging(System.getProperty("unitime.solver.log", ApplicationProperties.getDataFolder() + File.separator + "logs"), ApplicationProperties.getProperties());
+			
 			final JChannel channel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml")));
 			
 			channel.setUpHandler(new MuxUpHandler());
@@ -568,11 +555,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 			
 			channel.getState(null, 0);
 			
-			HibernateUtil.configureHibernate(sInstance.getProperties());
-			
-			ToolBox.configureLogging(System.getProperty("unitime.solver.log", ApplicationProperties.getDataFolder() + File.separator + "logs"), ApplicationProperties.getProperties());
-			
-			sInstance.start(null);
+			sInstance.start();
 			
     		Runtime.getRuntime().addShutdownHook(new Thread() {
     			public void run() {
