@@ -207,5 +207,6 @@
 	<mapping resource="EventDateMapping.hbm.xml"/>
 	<mapping resource="MessageLog.hbm.xml"/>
 	<mapping resource="Script.hbm.xml"/>
+	<mapping resource="ClusterDiscovery.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>

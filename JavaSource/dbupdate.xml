@@ -8989,4 +8989,22 @@
 		<plsql>alter table %SCHEMA%.department add instructor_pref number(1) default 1</plsql>
 		<sql>update %SCHEMA%.department set instructor_pref = 0 where external_manager = 1</sql>
 	</update>
+	<update version="131" date="16-Dec-2013" comment="Cluster Discovery">
+		<mysql>
+			create table %SCHEMA%.cluster_discovery (
+				own_address varchar(200) not null,
+				cluster_name varchar(200) not null,
+				ping_data longblob null,
+				primary key (own_address, cluster_name)
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.cluster_discovery (
+				own_address varchar2(200 char) constraint nn_cluster_address not null,
+				cluster_name varchar2(200 char) constraint nn_cluster_name not null,
+				ping_data blob
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.cluster_discovery add constraint pk_cluster_discovery primary key (own_address, cluster_name)</plsql>
+	</update>
 </dbupdate>
