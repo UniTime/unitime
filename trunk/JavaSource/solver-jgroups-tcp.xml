@@ -4,7 +4,7 @@
         xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/JGroups-3.3.xsd">
     <TCP
          bind_addr="${jgroups.tcp.address:127.0.0.1}"
-         bind_port="${jgroups.tcp.port:7800}"
+         bind_port="${unitime.solver.port:7800}"
          loopback="false"
          recv_buf_size="${tcp.recv_buf_size:5M}"
          send_buf_size="${tcp.send_buf_size:640K}"
@@ -34,18 +34,21 @@
          oob_thread_pool.queue_enabled="false"
          oob_thread_pool.queue_max_size="100"
          oob_thread_pool.rejection_policy="discard"/>
+   <!--
    <MPING
           bind_addr="${jgroups.bind_addr:127.0.0.1}" break_on_coord_rsp="true"
           mcast_addr="${jgroups.mping.mcast_addr:228.2.4.6}"
           mcast_port="${unitime.solver.mping_port:43377}"
           ip_ttl="${jgroups.udp.ip_ttl:2}"
           num_initial_members="3"/>
+    -->
     <!-- 
     <TCPPING timeout="3000"
-             initial_hosts="${jgroups.tcpping.initial_hosts:localhost[7900],localhost[7901]}"
-             port_range="1"
+             initial_hosts="${unitime.solver.initial_hosts:localhost[7800]}"
+             port_range="3"
              num_initial_members="10"/>
-     -->
+    -->
+	<org.unitime.commons.jgroups.UniTimeClusterDiscovery/>
     <MERGE2  min_interval="10000"
              max_interval="30000"/>
     <FD_SOCK/>
