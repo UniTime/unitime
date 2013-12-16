@@ -21,6 +21,7 @@ package org.unitime.timetable.solver.jgroups;
 
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -57,8 +58,13 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		iGlobalLock.readLock().lock();
 		try {
 			TreeSet<String> ret = new TreeSet<String>();
-			for (OnlineSectioningServer s : iInstances.values())
-				ret.add(s.getAcademicSession().getUniqueId().toString());
+			for (Map.Entry<Long, OnlineSectioningServer> entry: iInstances.entrySet()) {
+				try {
+					ret.add(entry.getValue().getAcademicSession().getUniqueId().toString());
+				} catch (IllegalStateException e) {
+					sLog.error("Server " + entry.getKey() + " appears to be in an inconsistent state: " + e.getMessage(), e);
+				}
+			}
 			return ret;
 		} finally {
 			iGlobalLock.readLock().unlock();
@@ -79,7 +85,14 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 	public OnlineSectioningServer getInstance(Long sessionId) {
 		iGlobalLock.readLock().lock();
 		try {
-			return iInstances.get(sessionId);
+			OnlineSectioningServer instance = iInstances.get(sessionId);
+			try {
+				instance.getAcademicSession();
+			} catch (IllegalStateException e) {
+				sLog.error("Server " + sessionId + " appears to be in an inconsistent state: " + e.getMessage(), e);
+				return null;
+			}
+			return instance;
 		} finally {
 			iGlobalLock.readLock().unlock();
 		}
