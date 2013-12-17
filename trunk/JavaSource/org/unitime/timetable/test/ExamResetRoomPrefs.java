@@ -82,6 +82,7 @@ public class ExamResetRoomPrefs {
             
             doUpdate(session.getUniqueId(), examType.getUniqueId(), override, new _RootDAO().getSession());
 
+            HibernateUtil.closeHibernate();
         } catch (Exception e) {
             e.printStackTrace();
         }
