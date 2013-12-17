@@ -160,6 +160,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		IncludePast,
 		IncludeWeekend,
 		IncludeVacation,
+		IncludeNoClasses,
 		;
 		
 		public int flag() { return 1 << ordinal(); }
@@ -175,10 +176,11 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	}
 	
 	public static enum SelectionMode {
-		FutureWorking(),
-		AllWorking(SelectionFlag.IncludePast),
-		AllWorkingAndWeekend(SelectionFlag.IncludePast, SelectionFlag.IncludeWeekend),
-		All(SelectionFlag.IncludePast, SelectionFlag.IncludeWeekend, SelectionFlag.IncludeVacation),
+		FutureClassDays(),
+		FutureWorking(SelectionFlag.IncludeNoClasses),
+		AllWorking(SelectionFlag.IncludeNoClasses, SelectionFlag.IncludePast),
+		AllWorkingAndWeekend(SelectionFlag.IncludeNoClasses, SelectionFlag.IncludePast, SelectionFlag.IncludeWeekend),
+		All(SelectionFlag.IncludeNoClasses, SelectionFlag.IncludePast, SelectionFlag.IncludeWeekend, SelectionFlag.IncludeVacation),
 		;
 		
 		private int iFlags = 0;
@@ -215,6 +217,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		public boolean hasUnselectedDays(SelectionMode mode) {
 			for (D d: iDays) {
 				if (!d.isEnabled()) continue;
+				if (!mode.hasFlag(SelectionFlag.IncludeNoClasses) && !d.isClassDay()) continue;
 				if (!mode.hasFlag(SelectionFlag.IncludePast) && d.isPast()) continue;
 				if (!mode.hasFlag(SelectionFlag.IncludeWeekend) && d.isWeekend()) continue;
 				if (!mode.hasFlag(SelectionFlag.IncludeVacation) && d.isVacation()) continue;
@@ -226,6 +229,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		public void setAllSelected(boolean selected, SelectionMode mode) {
 			for (D d: iDays) {
 				if (!d.isEnabled()) continue;
+				if (!mode.hasFlag(SelectionFlag.IncludeNoClasses) && !d.isClassDay()) continue;
 				if (!mode.hasFlag(SelectionFlag.IncludePast) && d.isPast()) continue;
 				if (!mode.hasFlag(SelectionFlag.IncludeWeekend) && d.isWeekend()) continue;
 				if (!mode.hasFlag(SelectionFlag.IncludeVacation) && d.isVacation()) continue;
@@ -318,6 +322,10 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		
 		public boolean isPast() {
 			return hasFlag(SessionMonth.Flag.PAST);
+		}
+		
+		public boolean isClassDay() {
+			return hasFlag(SessionMonth.Flag.CLASSES);
 		}
 		
 		public boolean isWeekend() {
@@ -1136,6 +1144,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			SingleMonth m = (SingleMonth)getWidget(1 + iMonth);
 			for (D d: m.getDays())
 				if ((iWeek == -1 || iWeek == d.getWeek()) && (iDow == -1 || iDow == d.getDow()) && d.isEnabled()) {
+					if (!mode.hasFlag(SelectionFlag.IncludeNoClasses) && !d.isClassDay()) continue;
 					if (!mode.hasFlag(SelectionFlag.IncludePast) && d.isPast()) continue;
 					if (!mode.hasFlag(SelectionFlag.IncludeWeekend) && d.isWeekend()) continue;
 					if (!mode.hasFlag(SelectionFlag.IncludeVacation) && d.isVacation()) continue;
@@ -1147,12 +1156,14 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		public void setAllSelected(boolean selected, SelectionMode mode) {
 			if (iMonth < 0) return;
 			SingleMonth m = (SingleMonth)getWidget(1 + iMonth);
+			boolean skipNoClass = false;
 			boolean skipPast = false;
 			boolean skipVacation = false;
 			boolean skipWeekend = false;
 			if (iWeek < 0) {
 				for (D d: m.getDays())
 					if ((iWeek == -1 || iWeek == d.getWeek()) && (iDow == -1 || iDow == d.getDow()) && d.isEnabled()) {
+						if (!mode.hasFlag(SelectionFlag.IncludeNoClasses) && !d.isClassDay()) {skipNoClass = true; continue; }
 						if (!mode.hasFlag(SelectionFlag.IncludePast) && d.isPast()) {skipPast = true; continue; }
 						if (!mode.hasFlag(SelectionFlag.IncludeWeekend) && d.isWeekend()) {skipWeekend = true; continue; }
 						if (!mode.hasFlag(SelectionFlag.IncludeVacation) && d.isVacation()) {skipVacation = true; continue; }
@@ -1161,6 +1172,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			} else {
 				for (D d: m.getWeeks().get(iWeek).getDays()) {
 					if ((iDow == -1 || iDow == d.getDow()) && d.isEnabled()) {
+						if (!mode.hasFlag(SelectionFlag.IncludeNoClasses) && !d.isClassDay()) {skipNoClass = true; continue; }
 						if (!mode.hasFlag(SelectionFlag.IncludePast) && d.isPast()) {skipPast = true; continue; }
 						if (!mode.hasFlag(SelectionFlag.IncludeWeekend) && d.isWeekend()) {skipWeekend = true; continue; }
 						if (!mode.hasFlag(SelectionFlag.IncludeVacation) && d.isVacation()) {skipVacation = true; continue; }
@@ -1171,7 +1183,12 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			String aria = getAriaString(iMonth, iDow, iWeek);
 			if (selected) {
 				if (iDow < 0 || iWeek < 0) {
-					if (mode.hasFlag(SelectionFlag.IncludeWeekend) || !skipWeekend) {
+					if (!mode.hasFlag(SelectionFlag.IncludeNoClasses) && skipNoClass) {
+						if (mode.hasFlag(SelectionFlag.IncludePast) || !skipPast)
+							AriaStatus.getInstance().setHTML(ARIA.datesSelectedAllClassDays(aria));
+						else
+							AriaStatus.getInstance().setHTML(ARIA.datesSelectedAllClassDaysFuture(aria));
+					} else if (mode.hasFlag(SelectionFlag.IncludeWeekend) || !skipWeekend) {
 						if (mode.hasFlag(SelectionFlag.IncludeVacation) || !skipVacation)
 							AriaStatus.getInstance().setHTML(ARIA.datesSelectedAll(aria));
 						else
