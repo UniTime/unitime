@@ -21,12 +21,14 @@ package org.unitime.timetable.solver.curricula.students;
 
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
 
@@ -291,7 +293,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 
     public void saveAsXml(Element root) {
     	List<Long> courses = new ArrayList<Long>();
-    	DecimalFormat df = new DecimalFormat("0.##########");
+    	DecimalFormat df = new DecimalFormat("0.##########", new DecimalFormatSymbols(Locale.US));
     	for (CurCourse course: getCourses()) {
     		Element courseElement = root.addElement("course");
     		courseElement.addAttribute("id", course.getCourseId().toString());
