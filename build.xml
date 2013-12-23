@@ -127,7 +127,7 @@
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="org.unitime.timetable.solver.jgroups.SolverServerImplementation" />
-				<attribute name="Class-Path" value="antlr-2.7.7.jar commons-dbcp-1.4.jar commons-logging-1.0.4.jar commons-pool-1.5.4.jar cpsolver-1.2.133.jar dom4j-1.6.1.jar ehcache-core-2.6.6.jar ehcache-jgroupsreplication-1.7.jar gwt-servlet-2.5.1.jar hibernate-commons-annotations-4.0.2.Final.jar hibernate-core-4.2.5.Final.jar hibernate-ehcache-4.2.5.Final.jar hibernate-infinispan-4.2.5.Final.jar hibernate-jpa-2.0-api-1.0.1.Final.jar infinispan-core-5.3.0.Final.jar javassist-3.18.0-GA.jar jboss-logging-3.1.0.GA.jar jboss-marshalling-1.3.15.GA.jar jboss-marshalling-river-1.3.15.GA.jar jboss-transaction-api_1.1_spec-1.0.1.Final.jar jgroups-3.3.5.Final.jar jsp-api-2.1.jar log4j-1.2.17.jar mail-1.4.7.jar mysql-connector-java-5.1.26.jar ojdbc14-10.2.0.4.0.jar protobuf-java-2.5.0.jar servlet-api-2.5.jar slf4j-api-1.7.5.jar slf4j-log4j12-1.7.5.jar spring-security-core-3.1.4.RELEASE.jar" />
+				<attribute name="Class-Path" value="antlr-2.7.7.jar commons-dbcp-1.4.jar commons-logging-1.0.4.jar commons-pool-1.5.4.jar cpsolver-1.2.134.jar dom4j-1.6.1.jar ehcache-core-2.6.6.jar ehcache-jgroupsreplication-1.7.jar gwt-servlet-2.5.1.jar hibernate-commons-annotations-4.0.2.Final.jar hibernate-core-4.2.5.Final.jar hibernate-ehcache-4.2.5.Final.jar hibernate-infinispan-4.2.5.Final.jar hibernate-jpa-2.0-api-1.0.1.Final.jar infinispan-core-5.3.0.Final.jar javassist-3.18.0-GA.jar jboss-logging-3.1.0.GA.jar jboss-marshalling-1.3.15.GA.jar jboss-marshalling-river-1.3.15.GA.jar jboss-transaction-api_1.1_spec-1.0.1.Final.jar jgroups-3.3.5.Final.jar jsp-api-2.1.jar log4j-1.2.17.jar mail-1.4.7.jar mysql-connector-java-5.1.26.jar ojdbc14-10.2.0.4.0.jar protobuf-java-2.5.0.jar servlet-api-2.5.jar slf4j-api-1.7.5.jar slf4j-log4j12-1.7.5.jar spring-security-core-3.1.4.RELEASE.jar" />
 				<attribute name="Timetabling-Version" value="3.5_bld${build.number}"/>
 			</manifest>
 		</jar>
@@ -297,7 +297,7 @@
 				<include name="commons-dbcp-1.4.jar"/>
 				<include name="commons-logging-1.0.4.jar"/>
 				<include name="commons-pool-1.5.4.jar"/>
-				<include name="cpsolver-1.2.133.jar"/>
+				<include name="cpsolver-1.2.134.jar"/>
 				<include name="dom4j-1.6.1.jar"/>
 				<include name="ehcache-core-2.6.6.jar"/>
 				<include name="ehcache-jgroupsreplication-1.7.jar"/>
@@ -348,7 +348,7 @@
 				<include name="commons-dbcp-1.4.jar"/>
 				<include name="commons-logging-1.0.4.jar"/>
 				<include name="commons-pool-1.5.4.jar"/>
-				<include name="cpsolver-1.2.133.jar"/>
+				<include name="cpsolver-1.2.134.jar"/>
 				<include name="dom4j-1.6.1.jar"/>
 				<include name="ehcache-core-2.6.6.jar"/>
 				<include name="ehcache-jgroupsreplication-1.7.jar"/>
