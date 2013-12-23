@@ -103,8 +103,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			Set<Long> students = new HashSet<Long>();
 			Set<Long> matchingStudents = new HashSet<Long>();
 			
-			int gEnrl = 0, gWait = 0, gRes = 0;
-			int gtEnrl = 0, gtWait = 0, gtRes = 0;
+			int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0;
+			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 			int gConNeed = 0, gtConNeed = 0;
 			
 			for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery))) {
@@ -123,8 +123,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				e.setConsent(course.getConsentAbbv());
 
 				int match = 0;
-				int enrl = 0, wait = 0, res = 0;
-				int tEnrl = 0, tWait = 0, tRes = 0;
+				int enrl = 0, wait = 0, res = 0, unasg = 0;
+				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0;
 				int conNeed = 0, tConNeed = 0;
 				
 				Set<Long> addedStudents = new HashSet<Long>();
@@ -143,8 +143,10 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 							enrl ++;
 							if (m.enrollment().getReservation() != null) res ++;
 							if (course.getConsentLabel() != null && m.enrollment().getApproval() == null) conNeed ++;
-						} else if (m.student().canAssign(m.request())) { // && m.request().isWaitlist()) {
-							wait ++;
+						} else if (m.student().canAssign(m.request())) {
+							unasg ++;
+							if (m.request().isWaitlist())
+								wait ++;
 						}
 					}
 					
@@ -152,8 +154,10 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						tEnrl ++;
 						if (m.enrollment().getReservation() != null) tRes ++;
 						if (course.getConsentLabel() != null && m.enrollment().getApproval() == null) tConNeed ++;
-					} else if (m.student().canAssign(m.request())) {// && m.request().isWaitlist()) {
-						tWait ++;
+					} else if (m.student().canAssign(m.request())) {
+						tUnasg ++;
+						if (m.request().isWaitlist())
+							tWait ++;
 					}
 				}
 				
@@ -164,11 +168,13 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				
 				gEnrl += enrl;
 				gWait += wait;
+				gUnasg += unasg;
 				gRes += res;
 				gConNeed += conNeed;
 				
 				gtEnrl += tEnrl;
 				gtWait += tWait;
+				gtUnasg += tUnasg;
 				gtRes += tRes;
 				gtConNeed += tConNeed;
 				
@@ -208,10 +214,12 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				e.setEnrollment(enrl);
 				e.setReservation(res);
 				e.setWaitlist(wait);
+				e.setUnassigned(unasg);
 				
 				e.setTotalEnrollment(tEnrl);
 				e.setTotalReservation(tRes);
 				e.setTotalWaitlist(tWait);
+				e.setTotalUnassigned(tUnasg);
 				
 				e.setConsentNeeded(conNeed);
 				e.setTotalConsentNeeded(tConNeed);
@@ -231,10 +239,12 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			t.setEnrollment(gEnrl);
 			t.setReservation(gRes);
 			t.setWaitlist(gWait);
+			t.setUnassigned(gUnasg);
 			
 			t.setTotalEnrollment(gtEnrl);
 			t.setTotalReservation(gtRes);
 			t.setTotalWaitlist(gtWait);
+			t.setTotalUnassigned(gtUnasg);
 			
 			t.setConsentNeeded(gConNeed);
 			t.setTotalConsentNeeded(gtConNeed);
@@ -349,8 +359,8 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				}
 				
 				int match = 0;
-				int enrl = 0, wait = 0, res = 0;
-				int tEnrl = 0, tWait = 0, tRes = 0;
+				int enrl = 0, wait = 0, res = 0, unasg = 0;
+				int tEnrl = 0, tWait = 0, tRes = 0, tUnasg = 0;
 				int conNeed = 0, tConNeed = 0;
 				int other = 0;
 
@@ -396,9 +406,13 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					
 					if (query().match(m)) {
 						match++;
-						wait++;
+						unasg++;
+						if (request.isWaitlist())
+							wait++;
 					}
-					tWait ++;
+					tUnasg ++;
+					if (request.isWaitlist())
+						tWait ++;
 				}
 				
 				if (match == 0) continue;
@@ -412,10 +426,12 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				e.setEnrollment(enrl);
 				e.setReservation(res);
 				e.setWaitlist(wait);
+				e.setUnassigned(unasg);
 				
 				e.setTotalEnrollment(tEnrl);
 				e.setTotalReservation(tRes);
 				e.setTotalWaitlist(tWait);
+				e.setTotalUnassigned(tUnasg);
 
 				e.setConsentNeeded(conNeed);
 				e.setTotalConsentNeeded(tConNeed);

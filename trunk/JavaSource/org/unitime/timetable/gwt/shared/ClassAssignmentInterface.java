@@ -706,8 +706,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iArea, iMajor, iClassification;
 		private String iSubject, iCourseNbr, iConfig, iSubpart, iClazz, iTitle, iConsent;
 		private Long iCourseId, iOfferingId, iSubjectId, iConfigId, iSubpartId, iClazzId;
-		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable;
-		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation;
+		private Integer iLimit, iOther, iProjection, iEnrollment, iWaitlist, iReservation, iAvailable, iUnassigned;
+		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private ClassAssignment iAssignment;
 		private int iLevel = 0;
@@ -782,6 +782,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setWaitlist(Integer waitlist) { iWaitlist = waitlist; }
 		public boolean hasWaitlist() { return iWaitlist != null; }
 		
+		public Integer getUnassigned() { return iUnassigned; }
+		public void setUnassigned(Integer unassigned) { iUnassigned = unassigned; }
+		public boolean hasUnassigned() { return iUnassigned != null; }
+
 		public Integer getReservation() { return iReservation; }
 		public void setReservation(Integer reservation) { iReservation = reservation; }
 		public boolean hasReservation() { return iReservation !=null; }
@@ -794,6 +798,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setTotalWaitlist(Integer waitlist) { iTotalWaitlist = waitlist; }
 		public boolean hasTotalWaitlist() { return iTotalWaitlist != null; }
 		
+		public Integer getTotalUnassigned() { return iTotalUnassigned; }
+		public void setTotalUnassigned(Integer unassigned) { iTotalUnassigned = unassigned; }
+		public boolean hasTotalUnassigned() { return iTotalUnassigned != null; }
+
 		public Integer getTotalReservation() { return iTotalReservation; }
 		public void setTotalReservation(Integer reservation) { iTotalReservation = reservation; }
 		public boolean hasTotalReservation() { return iTotalReservation !=null; }
@@ -826,8 +834,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public static class StudentInfo implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Student iStudent;
-		private Integer iEnrollment, iWaitlist, iReservation, iRequested;
-		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation;
+		private Integer iEnrollment, iWaitlist, iReservation, iRequested, iUnassigned;
+		private Integer iTotalEnrollment, iTotalWaitlist, iTotalReservation, iTotalUnassigned;
 		private Integer iConsentNeeded, iTotalConsentNeeded;
 		private Integer iTopWaitingPriority;
 		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null, iEmailDate = null;
@@ -850,6 +858,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setWaitlist(Integer waitlist) { iWaitlist = waitlist; }
 		public boolean hasWaitlist() { return iWaitlist != null; }
 		
+		public Integer getUnassigned() { return iUnassigned; }
+		public void setUnassigned(Integer unassigned) { iUnassigned = unassigned; }
+		public boolean hasUnassigned() { return iUnassigned != null; }
+
 		public Integer getReservation() { return iReservation; }
 		public void setReservation(Integer reservation) { iReservation = reservation; }
 		public boolean hasReservation() { return iReservation !=null; }
@@ -861,6 +873,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public Integer getTotalWaitlist() { return iTotalWaitlist; }
 		public void setTotalWaitlist(Integer waitlist) { iTotalWaitlist = waitlist; }
 		public boolean hasTotalWaitlist() { return iTotalWaitlist != null; }
+		
+		public Integer getTotalUnassigned() { return iTotalUnassigned; }
+		public void setTotalUnassigned(Integer unassigned) { iTotalUnassigned = unassigned; }
+		public boolean hasTotalUnassigned() { return iTotalUnassigned != null; }
 		
 		public Integer getTotalReservation() { return iTotalReservation; }
 		public void setTotalReservation(Integer reservation) { iTotalReservation = reservation; }

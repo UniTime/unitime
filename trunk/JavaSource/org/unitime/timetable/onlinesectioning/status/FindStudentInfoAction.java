@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,9 +85,10 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	public List<StudentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		Map<Long, StudentInfo> students = new HashMap<Long, StudentInfo>();
 		
-		int gEnrl = 0, gWait = 0, gRes = 0;
-		int gtEnrl = 0, gtWait = 0, gtRes = 0;
+		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0;
+		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 		int gConNeed = 0, gtConNeed = 0;
+		Set<Long> unassigned = new HashSet<Long>();
 		for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery))) {
 			XOffering offering = server.getOffering(info.getOfferingId());
 			if (offering == null) continue;
@@ -123,14 +125,17 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						for (String gr: student.getGroups()) {
 							st.addGroup(gr);
 						}
-						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0;
+						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0;
 						for (XRequest r: student.getRequests()) {
 							if (r instanceof XCourseRequest) {
 								XCourseRequest cr = (XCourseRequest)r;
 								if (!r.isAlternative()) tReq ++;
 								if (cr.getEnrollment() == null) {
 									if (student.canAssign(cr)) {
-										tWait ++; gtWait ++;
+										tUnasg ++; gtUnasg ++;
+										if (cr.isWaitlist()) {
+											tWait ++; gtWait ++;
+										}
 									}
 								} else {
 									tEnrl ++; gtEnrl ++;
@@ -149,10 +154,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setTotalEnrollment(tEnrl);
 						s.setTotalReservation(tRes);
 						s.setTotalWaitlist(tWait);
+						s.setTotalUnassigned(tUnasg);
 						s.setTotalConsentNeeded(tConNeed);
 						s.setEnrollment(0);
 						s.setReservation(0);
 						s.setWaitlist(0);
+						s.setUnassigned(0);
 						s.setConsentNeeded(0);
 						s.setRequested(tReq);
 						s.setStatus(student.getStatus() == null ? server.getAcademicSession().getDefaultSectioningStatus() : student.getStatus());
@@ -176,12 +183,15 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							else if (m.enrollment().getApproval().getTimeStamp().after(s.getApprovedDate()))
 								s.setApprovedDate(m.enrollment().getApproval().getTimeStamp());
 						}
-					} else if (m.student().canAssign(m.request()) && m.request().isWaitlist()) {
-						s.setWaitlist(s.getWaitlist() + 1); gWait ++;
-						if (s.getTopWaitingPriority() == null)
-							s.setTopWaitingPriority(1 + m.request().getPriority());
-						else
-							s.setTopWaitingPriority(Math.min(1 + m.request().getPriority(), s.getTopWaitingPriority()));
+					} else if (m.student().canAssign(m.request()) && unassigned.add(m.request().getRequestId())) {
+						if (m.request().isWaitlist()) {
+							s.setWaitlist(s.getWaitlist() + 1); gWait ++;
+							if (s.getTopWaitingPriority() == null)
+								s.setTopWaitingPriority(1 + m.request().getPriority());
+							else
+								s.setTopWaitingPriority(Math.min(1 + m.request().getPriority(), s.getTopWaitingPriority()));
+						}
+						s.setUnassigned(s.getUnassigned() + 1); gUnasg ++;
 					}
 					if (m.request().getTimeStamp() != null) {
 						if (s.getRequestedDate() == null)
@@ -238,10 +248,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		t.setEnrollment(gEnrl);
 		t.setReservation(gRes);
 		t.setWaitlist(gWait);
+		t.setUnassigned(gUnasg);
 		
 		t.setTotalEnrollment(gtEnrl);
 		t.setTotalReservation(gtRes);
 		t.setTotalWaitlist(gtWait);
+		t.setTotalUnassigned(gtUnasg);
 		
 		t.setConsentNeeded(gConNeed);
 		t.setTotalConsentNeeded(gtConNeed);
