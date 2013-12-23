@@ -113,6 +113,8 @@ public class UniTimeClusterDiscovery extends Discovery {
 			for (ClusterDiscovery cluster: (List<ClusterDiscovery>)hibSession.createQuery("from ClusterDiscovery where clusterName = :clusterName").setString("clusterName", group_addr).list()) {
 				members.add(deserialize(cluster.getPingData()));
 			}
+		} catch (IllegalStateException e) {
+			log.info("Failed to read  all members of cluster " + group_addr + ": " + e.getMessage());
 		} finally {
 			hibSession.close();
 		}
@@ -150,6 +152,8 @@ public class UniTimeClusterDiscovery extends Discovery {
 			cluster.setPingData(serializeWithoutView(data));
 			hibSession.saveOrUpdate(cluster);
 			hibSession.flush();
+		} catch (IllegalStateException e) {
+			log.info("Failed to update my data for cluster " + group_addr + ": " + e.getMessage());
 		} finally {
 			hibSession.close();
 		}
