@@ -670,7 +670,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			
 			if ("waitlisted".equals(attr) || "waitlist".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
-					return enrollment() == null;
+					return enrollment() == null && request().isWaitlist();
 				else
 					return enrollment() != null;
 			}

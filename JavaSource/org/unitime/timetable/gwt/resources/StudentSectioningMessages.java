@@ -803,7 +803,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Enrollment")
 	String colEnrollment();
 	
-	@DefaultMessage("Wait-Listed")
+	@DefaultMessage("Not-Enrolled")
 	String colWaitListed();
 	
 	@DefaultMessage("Reservation")
@@ -841,6 +841,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<sup><font color='#2066CE'>r)</font></sup>")
 	String htmlReservationSign();
+	
+	@DefaultMessage("<sup><font color='#2066CE'>w)</font></sup>")
+	String htmlWaitListSign();
 	
 	@DefaultMessage("No results matching filter {0} found.")
 	String exceptionNoMatchingResultsFound(String filter);
@@ -894,7 +897,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<sup><font color='#2066CE'>({0}p)</font></sup>")
 	String firstWaitListedPrioritySign(int priority);
 	
-	@DefaultMessage("r) Space available only with a reservation.")
+	@DefaultMessage("r) Space available only with a reservation.<br>w) Wait-listed requests.")
 	String sectioningStatusReservationHint();
 	
 	@DefaultMessage("(p) denotes priority of the first wait-listed course request.")
