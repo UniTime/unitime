@@ -85,7 +85,7 @@ public class SavedHQLPage extends Composite {
 	private String iFirstField = null;
 	private String iAppearance = null;
 	private int iFirstLine = 0;
-	private int iLastSort = -1;
+	private int iLastSort = 0;
 	private String iLastHistory = null;
 	
 	public SavedHQLPage() {
@@ -114,7 +114,7 @@ public class SavedHQLPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				iFirstLine = 0;
-				iLastSort = -1;
+				iLastSort = 0;
 				execute();
 			}
 		});
@@ -208,13 +208,13 @@ public class SavedHQLPage extends Composite {
 						}
 						if (firstField != null && firstField.startsWith("__"))
 							table.setColumnVisible(0, false);
-						if (iLastSort >= 0 && iLastSort < nrCols) {
-							table.sort(iLastSort, new Comparator<String[]>() {
+						if (iLastSort != 0 && Math.abs(iLastSort) <= nrCols) {
+							table.sort(table.getHeader(Math.abs(iLastSort) - 1), new Comparator<String[]>() {
 								@Override
 								public int compare(String[] o1, String[] o2) {
-									return SavedHQLPage.compare(o1, o2, iLastSort);
+									return SavedHQLPage.compare(o1, o2, Math.abs(iLastSort) - 1);
 								}
-							});
+							}, iLastSort > 0);
 						}
 						table.getElement().getStyle().setWidth(1040, Unit.PX);
 						
@@ -723,7 +723,7 @@ public class SavedHQLPage extends Composite {
 					iFirstField = row[0];
 					for (String x: row) {
 						final String name = x.replace('_', ' ').trim();
-						UniTimeTableHeader h = new UniTimeTableHeader(name, 1);
+						final UniTimeTableHeader h = new UniTimeTableHeader(name, 1);
 						final int col = line.size();
 						h.addOperation(new UniTimeTableHeader.Operation() {
 							@Override
@@ -734,7 +734,7 @@ public class SavedHQLPage extends Composite {
 										return SavedHQLPage.compare(o1, o2, col);
 									}
 								});
-								iLastSort = col;
+								iLastSort = (h.getOrder() != null && h.getOrder() ? (1 + col) : -1 - col);
 								History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort, false);
 								setBack();
 							}
@@ -772,13 +772,13 @@ public class SavedHQLPage extends Composite {
 				iTableHeader.setMessage(MESSAGES.infoShowingAllLines(result.size() - 1));
 			iTableHeader.setEnabled("next", result.size() > 101);
 			iTableHeader.setEnabled("previous", iFirstLine > 0);
-			if (iLastSort >= 0) {
-				iTable.sort(iLastSort, new Comparator<String[]>() {
+			if (iLastSort != 0) {
+				iTable.sort(iTable.getHeader(Math.abs(iLastSort) - 1), new Comparator<String[]>() {
 					@Override
 					public int compare(String[] o1, String[] o2) {
-						return SavedHQLPage.compare(o1, o2, iLastSort);
+						return SavedHQLPage.compare(o1, o2, Math.abs(iLastSort) - 1);
 					}
-				});
+				}, iLastSort > 0);
 			}
 		}
 		setBack();
