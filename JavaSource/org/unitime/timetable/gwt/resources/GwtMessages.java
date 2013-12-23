@@ -1922,6 +1922,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Student Accommodations")
 	String pageStudentAccommodations();
 	
+	@DefaultMessage("Student Sectioning Solver Reports")
+	String pageBatchSectioningReports();
+	
+	@DefaultMessage("Online Student Scheduling Reports")
+	String pageOnlineSectioningReports();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	

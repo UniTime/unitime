@@ -237,6 +237,11 @@
 					<hasPermission name="StudentSectioningSolverDashboard"/>
 				</condition>
 			</item>
+			<item name="Solver Reports" page="sctreport" type="gwt">
+				<condition>
+					<hasPermission name="StudentSectioningSolver"/>
+				</condition>
+			</item>
 		</menu>
 		<separator>
 			<condition>
@@ -254,6 +259,11 @@
 		<item name="Online Scheduling Dashboard" page="onlinesctdash" type="gwt">
 			<condition>
 				<hasPermission name="SchedulingDashboard" authority="any"/>
+			</condition>
+		</item>
+		<item name="Online Scheduling Reports" page="onlinereport" type="gwt">
+			<condition>
+				<hasPermission name="SchedulingDashboard"/>
 			</condition>
 		</item>
 		<item name="Course Requests" page="requests" type="gwt">
