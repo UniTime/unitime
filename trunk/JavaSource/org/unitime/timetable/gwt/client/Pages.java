@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
 import org.unitime.timetable.gwt.client.reservations.ReservationsPage;
 import org.unitime.timetable.gwt.client.rooms.RoomSharingPage;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes;
+import org.unitime.timetable.gwt.client.sectioning.SectioningReports;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusPage;
 import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage;
 import org.unitime.timetable.gwt.client.test.OnlineSectioningTest;
@@ -132,6 +133,14 @@ public enum Pages {
 		public Widget create() { return new PasswordPage(); }
 		public String name(GwtMessages messages) { return messages.pageChangePassword(); }
 		}),
+	sctreport(new PageFactory() {
+		public Widget create() { return new SectioningReports(false); }
+		public String name(GwtMessages messages) { return messages.pageBatchSectioningReports(); }
+		}),
+	onlinereport(new PageFactory() {
+		public Widget create() { return new SectioningReports(true); }
+		public String name(GwtMessages messages) { return messages.pageOnlineSectioningReports(); }
+		});		
 	;
 	
 	private PageFactory iFactory;
