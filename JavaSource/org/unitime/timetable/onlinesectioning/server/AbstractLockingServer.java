@@ -56,6 +56,10 @@ public abstract class AbstractLockingServer extends AbstractServer {
 	
 	@Override
 	public Lock readLock() {
+		if (iLock == null)
+			return new Lock() {
+				public void release() {}
+			};
 		iLock.readLock().lock();
 		return new Lock() {
 			public void release() {
@@ -76,6 +80,10 @@ public abstract class AbstractLockingServer extends AbstractServer {
 
 	@Override
 	public Lock writeLock() {
+		if (iLock == null)
+			return new Lock() {
+				public void release() {}
+			};
 		iLock.writeLock().lock();
 		return new Lock() {
 			public void release() {
@@ -86,6 +94,10 @@ public abstract class AbstractLockingServer extends AbstractServer {
 
 	@Override
 	public Lock lockAll() {
+		if (iLock == null)
+			return new Lock() {
+				public void release() {}
+			};
 		iLock.writeLock().lock();
 		return new Lock() {
 			public void release() {
