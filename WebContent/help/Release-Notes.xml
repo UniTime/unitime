@@ -41,6 +41,13 @@
 				<line>Added confirmation of a change in the event contact information (main contact).</line>
 			</description>
 		</item>
+		<item>
+			<name>HQL Reports</name>
+			<description>
+				<line>Print: print the whole report (not just what is visible on the page, limited to 10,000 lines).</line>
+				<line>Corrected sorting query / browser history when sorting in descendant order.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

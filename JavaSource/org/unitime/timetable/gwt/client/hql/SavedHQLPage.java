@@ -44,12 +44,15 @@ import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -57,6 +60,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
@@ -78,7 +82,7 @@ public class SavedHQLPage extends Composite {
 	private String iFirstField = null;
 	private String iAppearance = null;
 	private int iFirstLine = 0;
-	private int iLastSort = -1;
+	private int iLastSort = 0;
 	private String iLastHistory = null;
 	
 	public SavedHQLPage() {
@@ -107,7 +111,7 @@ public class SavedHQLPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				iFirstLine = 0;
-				iLastSort = -1;
+				iLastSort = 0;
 				execute();
 			}
 		});
@@ -115,7 +119,141 @@ public class SavedHQLPage extends Composite {
 		iHeader.addButton("print", MESSAGES.buttonPrint(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				Window.print();
+				SavedHQLInterface.Query query = null;
+				Long id = Long.valueOf(iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex()));
+				for (SavedHQLInterface.Query q: iQueries) {
+					if (id.equals(q.getId())) {
+						query = q; break;
+					}
+				}
+				if (query == null) {
+					iHeader.setErrorMessage(MESSAGES.errorNoReportSelected());
+					return;
+				}
+				final SimpleForm form = new SimpleForm();
+				form.addHeaderRow(query.getName());
+				if (!query.getDescription().isEmpty())
+					form.addRow(MESSAGES.propDescription(), new HTML(query.getDescription()));
+				
+				List<SavedHQLInterface.IdValue> options = new ArrayList<SavedHQLInterface.IdValue>();
+				for (int i = 0; i < iOptions.size(); i++) {
+					SavedHQLInterface.Option option = iOptions.get(i);
+					if (query.getQuery().contains("%" + option.getType() + "%")) {
+						SavedHQLInterface.IdValue o = new SavedHQLInterface.IdValue();
+						o.setValue(option.getType());
+						ListBox list = ((UniTimeWidget<ListBox>)iForm.getWidget(3 + i, 1)).getWidget();
+						String value = "";
+						String values = "";
+						boolean allSelected = true;
+						if (list.isMultipleSelect()) {
+							for (int j = 0; j < list.getItemCount(); j++)
+								if (list.isItemSelected(j)) {
+									if (!value.isEmpty()) { value += ","; values += ", "; }
+									value += list.getValue(j);
+									values += list.getItemText(j);
+								} else {
+									allSelected = false;
+								}
+							if (allSelected) values = MESSAGES.itemAll();
+						} else if (list.getSelectedIndex() > 0) {
+							value = list.getValue(list.getSelectedIndex());
+							values = list.getItemText(list.getSelectedIndex());
+						}
+						if (value.isEmpty()) {
+							iHeader.setErrorMessage(MESSAGES.errorItemNotSelected(option.getName()));
+							return;
+						}
+						o.setText(value);
+						form.addRow(option.getName() + ":", new Label(values, true));
+						options.add(o);
+					}
+				}
+				LoadingWidget.getInstance().show(MESSAGES.waitExecuting(query.getName()));
+				iService.execute(query, options, 0, 10000, new AsyncCallback<List<String[]>>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						iTableHeader.setErrorMessage(caught.getMessage(), true);
+						LoadingWidget.getInstance().hide();
+					}
+
+					@Override
+					public void onSuccess(List<String[]> result) {
+						LoadingWidget.getInstance().hide();
+						if (result == null || result.size() <= 1) {
+							iTableHeader.setMessage(MESSAGES.errorNoResults());
+							return;
+						} 
+						final UniTimeTable<String[]> table = new UniTimeTable<String[]>();
+						String firstField = null;
+						int nrCols = 0;
+						for (int i = 0; i < result.size(); i++) {
+							String[] row = result.get(i);
+							List<Widget> line = new ArrayList<Widget>();
+							if (i == 0) {
+								firstField = row[0]; nrCols = row.length;
+								for (String x: row) {
+									final String name = x.replace('_', ' ').trim();
+									UniTimeTableHeader h = new UniTimeTableHeader(name, 1);
+									line.add(h);
+								}
+							} else {
+								for (String x: row) {
+									line.add(new HTML(x == null ? "" : x.replace("\\n", "<br>")));
+								}
+							}
+							table.addRow(i == 0 ? null : row, line);
+						}
+						if (firstField != null && firstField.startsWith("__"))
+							table.setColumnVisible(0, false);
+						if (iLastSort != 0 && Math.abs(iLastSort) <= nrCols) {
+							table.sort(table.getHeader(Math.abs(iLastSort) - 1), new Comparator<String[]>() {
+								@Override
+								public int compare(String[] o1, String[] o2) {
+									return SavedHQLPage.compare(o1, o2, Math.abs(iLastSort) - 1);
+								}
+							}, iLastSort > 0);
+						}
+						table.getElement().getStyle().setWidth(1040, Unit.PX);
+						
+						// Move header row to thead
+						Element headerRow = table.getRowFormatter().getElement(0);
+						Element tableElement = table.getElement();
+						Element thead = DOM.createTHead();
+						tableElement.insertFirst(thead);
+						headerRow.getParentElement().removeChild(headerRow);
+						thead.appendChild(headerRow);
+						
+						final Element div = DOM.createDiv();
+						div.appendChild(form.getElement());
+						div.appendChild(table.getElement());
+						
+						String name = MESSAGES.pageCourseReports();
+						if ("courses".equalsIgnoreCase(iAppearance)) {
+							name = MESSAGES.pageCourseReports();
+						} else if ("exams".equalsIgnoreCase(iAppearance)) {
+							name = MESSAGES.pageExaminationReports();
+						} else if ("sectioning".equalsIgnoreCase(iAppearance)) {
+							name = MESSAGES.pageStudentSectioningReports();
+						} else if ("events".equalsIgnoreCase(iAppearance)) {
+							name = MESSAGES.pageEventReports();
+						} else if ("administration".equalsIgnoreCase(iAppearance)) {
+							name = MESSAGES.pageAdministrationReports();
+						}
+						final String pageName = name;
+
+						ToolBox.print(new ToolBox.Page() {
+							@Override
+							public String getName() { return pageName; }
+							@Override
+							public String getUser() { return ""; }
+							@Override
+							public String getSession() { return ""; }
+							@Override
+							public Element getBody() { return div; }
+						});
+						
+					}
+				});	
 			}
 		});
 
@@ -582,7 +720,7 @@ public class SavedHQLPage extends Composite {
 					iFirstField = row[0];
 					for (String x: row) {
 						final String name = x.replace('_', ' ').trim();
-						UniTimeTableHeader h = new UniTimeTableHeader(name, 1);
+						final UniTimeTableHeader h = new UniTimeTableHeader(name, 1);
 						final int col = line.size();
 						h.addOperation(new UniTimeTableHeader.Operation() {
 							@Override
@@ -593,7 +731,7 @@ public class SavedHQLPage extends Composite {
 										return SavedHQLPage.compare(o1, o2, col);
 									}
 								});
-								iLastSort = col;
+								iLastSort = (h.getOrder() != null && h.getOrder() ? (1 + col) : -1 - col);
 								History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort, false);
 								setBack();
 							}
@@ -631,13 +769,13 @@ public class SavedHQLPage extends Composite {
 				iTableHeader.setMessage(MESSAGES.infoShowingAllLines(result.size() - 1));
 			iTableHeader.setEnabled("next", result.size() > 101);
 			iTableHeader.setEnabled("previous", iFirstLine > 0);
-			if (iLastSort >= 0) {
-				iTable.sort(iLastSort, new Comparator<String[]>() {
+			if (iLastSort != 0) {
+				iTable.sort(iTable.getHeader(Math.abs(iLastSort) - 1), new Comparator<String[]>() {
 					@Override
 					public int compare(String[] o1, String[] o2) {
-						return SavedHQLPage.compare(o1, o2, iLastSort);
+						return SavedHQLPage.compare(o1, o2, Math.abs(iLastSort) - 1);
 					}
-				});
+				}, iLastSort > 0);
 			}
 		}
 		setBack();
