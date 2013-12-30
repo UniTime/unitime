@@ -298,12 +298,15 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		for (XConfig config: offering.getConfigs()) {
 			int configLimit = config.getLimit();
 			int configEnrl = enrollments.countEnrollmentsForConfig(config.getConfigId());
+			boolean configStudent = false;
 			if (studentId >= 0)
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForConfig(config.getConfigId()))
-					if (enrollment.getStudentId().equals(studentId)) { configEnrl--; break; }
+					if (enrollment.getStudentId().equals(studentId)) { configEnrl--; configStudent = true; break; }
 			if (configLimit >= 0) {
+				// limited configuration, deduct enrollments
 				configLimit -= configEnrl;
-				if (configLimit < 0) configLimit = 0;
+				if (configLimit < 0) configLimit = 0; // over-enrolled, but not unlimited
+				if (configStudent && configLimit == 0) configLimit = 1; // allow enrolled student in
 			}
 			OnlineConfig clonedConfig = new OnlineConfig(config.getConfigId(), configLimit, config.getName(), clonedOffering);
 			clonedConfig.setEnrollment(configEnrl);
@@ -317,13 +320,15 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				for (XSection section: subpart.getSections()) {
 					int limit = section.getLimit();
 					int enrl = enrollments.countEnrollmentsForSection(section.getSectionId());
+					boolean student = false;
 					if (studentId >= 0)
 						for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId()))
-							if (enrollment.getStudentId().equals(studentId)) { enrl--; break; }
+							if (enrollment.getStudentId().equals(studentId)) { enrl--; student = true; break; }
 					if (limit >= 0) {
 						// limited section, deduct enrollments
 						limit -= enrl;
 						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
+						if (student && limit == 0) limit = 1; // allow enrolled student in
 					}
                     String instructorIds = "";
                     String instructorNames = "";

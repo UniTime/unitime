@@ -545,11 +545,13 @@ public class XOffering implements Serializable, Externalizable {
 		for (XConfig config: getConfigs()) {
 			int configLimit = config.getLimit();
 			int configEnrl = enrollments.countEnrollmentsForConfig(config.getConfigId());
+			boolean configStudent = false;
 			for (XEnrollment enrollment: enrollments.getEnrollmentsForConfig(config.getConfigId()))
-				if (enrollment.getStudentId().equals(student.getStudentId())) { configEnrl--; break; }
+				if (enrollment.getStudentId().equals(student.getStudentId())) { configEnrl--; configStudent = true; break; }
 			if (configLimit >= 0) {
 				configLimit -= configEnrl;
 				if (configLimit < 0) configLimit = 0;
+				if (configStudent && configLimit == 0) configLimit = 1;
 			}
 			OnlineConfig clonedConfig = new OnlineConfig(config.getConfigId(), configLimit, config.getName(), clonedOffering);
 			clonedConfig.setEnrollment(configEnrl);
@@ -563,12 +565,14 @@ public class XOffering implements Serializable, Externalizable {
 				for (XSection section: subpart.getSections()) {
 					int limit = section.getLimit();
 					int enrl = enrollments.countEnrollmentsForSection(section.getSectionId());
+					boolean std = false;
 					for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId()))
-						if (enrollment.getStudentId().equals(student.getStudentId())) { enrl--; break; }
+						if (enrollment.getStudentId().equals(student.getStudentId())) { enrl--; std = true; break; }
 					if (limit >= 0) {
 						// limited section, deduct enrollments
 						limit -= enrl;
 						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
+						if (std && limit == 0) limit = 1; // allow enrolled student in
 					}
                     String instructorIds = "";
                     String instructorNames = "";
