@@ -48,6 +48,15 @@
 				<line>Corrected sorting query / browser history when sorting in descendant order.</line>
 			</description>
 		</item>
+		<item>
+			<name>Events</name>
+			<description>
+				<line>
+					Date Selector (e.g., Add Events): when a row, a column, or a whole month is clicked, try to only select class
+					days first (all work days are on the second click, if different from class days, etc.)
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 

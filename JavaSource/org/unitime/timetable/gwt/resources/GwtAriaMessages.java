@@ -344,6 +344,12 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Selected all days for {0}")
 	String datesSelectedAll(String date);
 	
+	@DefaultMessage("Selected all class days for {0}")
+	String datesSelectedAllClassDays(String date);
+	
+	@DefaultMessage("Selected all class days for {0} starting today")
+	String datesSelectedAllClassDaysFuture(String date);
+	
 	@DefaultMessage("Dates selection")
 	String datesSelection();
 	
