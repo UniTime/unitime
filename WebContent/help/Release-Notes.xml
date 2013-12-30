@@ -55,6 +55,10 @@
 					Date Selector (e.g., Add Events): when a row, a column, or a whole month is clicked, try to only select class
 					days first (all work days are on the second click, if different from class days, etc.)
 				</line>
+				<line>
+					iCalendar Export: if there is a meeting with multiple locations, escape the comma that
+					separates these meetings to avoid calendar software to misinterpret it (e.g., LOCATION:EDUC 101\, EDUC 102).
+				</line>
 			</description>
 		</item>
 	</category>
