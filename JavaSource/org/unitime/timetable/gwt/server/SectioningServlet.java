@@ -967,7 +967,10 @@ public class SectioningServlet implements SectioningService {
 		if (server == null) throw new SectioningException(MSG.exceptionBadStudentId());
 		if (!server.getAcademicSession().isSectioningEnabled())
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
-				
+		
+		setLastSessionId(request.getAcademicSessionId());
+		setLastRequest(request);
+
 		return server.execute(new EnrollStudent(request.getStudentId(), request, currentAssignment), currentUser());
 	}
 
