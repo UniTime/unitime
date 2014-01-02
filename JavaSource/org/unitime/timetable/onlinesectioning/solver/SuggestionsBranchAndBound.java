@@ -254,6 +254,8 @@ public class SuggestionsBranchAndBound {
     
     @SuppressWarnings("unchecked")
 	protected List<Enrollment> values(final Request request) {
+    	if (!request.getStudent().canAssign(request))
+    		return new ArrayList<Enrollment>();
     	List<Enrollment> values = iValues.get(request);
     	if (values != null) return values;
     	if (request instanceof CourseRequest) {
