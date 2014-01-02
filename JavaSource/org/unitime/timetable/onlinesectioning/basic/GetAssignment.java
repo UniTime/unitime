@@ -84,7 +84,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			XStudent student = server.getStudent(iStudentId);
 			if (student == null) return null;
 	        ClassAssignmentInterface ret = new ClassAssignmentInterface();
-			int nrUnassignedCourses = 0;
+			int nrUnassignedCourses = 0, nrAssignedAlt = 0;
 			for (XRequest request: student.getRequests()) {
 				ClassAssignmentInterface.CourseAssignment ca = new ClassAssignmentInterface.CourseAssignment();
 				if (request instanceof XCourseRequest) {
@@ -95,6 +95,9 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					XOffering offering = server.getOffering(courseId.getOfferingId());
 					XExpectations expectations = server.getExpectations(courseId.getOfferingId());
 					XCourse course = offering.getCourse(courseId);
+					
+					if (request.isAlternative() && nrAssignedAlt >= nrUnassignedCourses && enrollment == null) continue;
+					if (request.isAlternative() && enrollment != null) nrAssignedAlt++;
 
 					if (server.isOfferingLocked(course.getOfferingId()))
 						ca.setLocked(true);
@@ -149,7 +152,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							}
 						}
 						if (avEnrls.isEmpty()) ca.setNotAvailable(true);
-						nrUnassignedCourses++;
+						if (!r.isWaitlist()) nrUnassignedCourses++;
 						int alt = nrUnassignedCourses;
 						for (XRequest q: student.getRequests()) {
 							if (q instanceof XCourseRequest && !q.equals(request)) {
