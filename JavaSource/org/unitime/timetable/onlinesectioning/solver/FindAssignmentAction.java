@@ -499,6 +499,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					ca.setSubject(course.getSubjectArea());
 					ca.setCourseNbr(course.getCourseNumber());
 					ca.setWaitListed(r.isWaitlist());
+					if (!r.isWaitlist()) 
+						nrUnassignedCourses++;
 					if (computeOverlaps) {
 						TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
 							public int compare(Enrollment e1, Enrollment e2) {
@@ -542,7 +544,6 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								ca.addOverlap(ov);
 							}
 						}
-						nrUnassignedCourses++;
 						int alt = nrUnassignedCourses;
 						for (Enrollment x: enrollments) {
 							if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
