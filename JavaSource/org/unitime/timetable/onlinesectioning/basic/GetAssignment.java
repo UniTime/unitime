@@ -111,7 +111,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							}
 						});
 						Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
-						Collection<Enrollment> avEnrls = SectioningRequest.convert(r, server).getEnrollmentsSkipSameTime();
+						Collection<Enrollment> avEnrls = SectioningRequest.convert(r, server).getAvaiableEnrollmentsSkipSameTime();
 						for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
 							Enrollment enrl = e.next();
 							for (Request q: enrl.getStudent().getRequests()) {
