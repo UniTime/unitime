@@ -65,6 +65,7 @@
 			<name>Online Student Scheduling</name>
 			<description>
 				<line>Save Requests: Save alternate course requests as well.</line>
+				<line>Get Assignment: Hide alternate course requests that cannot be assigned because all the unassigned course requests are wait-listed.</line>
 			</description>
 		</item>
 	</category>
