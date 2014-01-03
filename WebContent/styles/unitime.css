@@ -494,6 +494,11 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	padding-left: 0px;
 }
 
+.unitime-WebTable .toggle {
+	color: black;
+	font-style: italic;
+}
+
 .gwt-TabPanelBottom {
 	border: 2px solid #9CB0CE;
 	-webkit-border-radius: 5px;

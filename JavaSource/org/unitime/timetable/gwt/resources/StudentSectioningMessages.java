@@ -1086,4 +1086,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<i>Arrange Hours</i>")
 	String arrangeHours();
+	
+	@DefaultMessage("Wait-List")
+	String toggleWaitList();
 }

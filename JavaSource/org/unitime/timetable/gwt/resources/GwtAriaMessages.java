@@ -116,6 +116,9 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Check to wait list priority {0, number} course request, if it is not available.")
 	String titleRequestedWaitList(@PluralCount int priority);
 	
+	@DefaultMessage("Check to wait list for {0} course request.")
+	String titleRequestedWaitListForCourse(String course);
+	
 	@DefaultMessage("Opens Course Finder dialog for priority {0, number} course or free time request.")
 	String altRequestedCourseFinder(@PluralCount int priority);
 
