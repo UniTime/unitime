@@ -493,8 +493,10 @@ public class WebTable extends Composite {
 	public static class CheckboxCell extends Cell implements HasAriaLabel {
 		private AriaCheckBox iCheck = new AriaCheckBox();
 		
-		public CheckboxCell(boolean check, String ariaLabel) {
+		public CheckboxCell(boolean check, String text, String ariaLabel) {
 			super(null);
+			if (text != null)
+				iCheck.setText(text);
 			iCheck.setValue(check);
 			iCheck.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
@@ -502,6 +504,10 @@ public class WebTable extends Composite {
 				}
 			});
 			if (ariaLabel != null) setAriaLabel(ariaLabel);
+		}
+		
+		public CheckboxCell(boolean check, String ariaLabel) {
+			this(check, null, ariaLabel);
 		}
 		
 		public boolean isChecked() { return iCheck.getValue(); }

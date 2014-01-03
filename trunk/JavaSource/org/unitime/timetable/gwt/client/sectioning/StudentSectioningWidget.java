@@ -583,7 +583,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		if (!result.getCourseAssignments().isEmpty()) {
 			ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 			iAssignmentGrid.clear(true);
-			for (ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
+			for (final ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
 				if (course.isAssigned()) {
 					boolean firstClazz = true;
 					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
@@ -693,6 +693,33 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					WebTable.IconsCell icons = new WebTable.IconsCell();
 					if (course.isLocked())
 						icons.add(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));
+					
+					WebTable.CheckboxCell waitList = null;
+					Boolean w = iCourseRequests.getWaitList(course.getCourseName());
+					if (w != null) {
+						waitList = new WebTable.CheckboxCell(w, MESSAGES.toggleWaitList(), ARIA.titleRequestedWaitListForCourse(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
+						waitList.getWidget().setStyleName("toggle");
+						((CheckBox)waitList.getWidget()).addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<Boolean> event) {
+								iCourseRequests.setWaitList(course.getCourseName(), event.getValue());
+								LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+								iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+									public void onFailure(Throwable caught) {
+										iErrorMessage.setHTML(caught.getMessage());
+										iErrorMessage.setVisible(true);
+										LoadingWidget.getInstance().hide();
+										updateHistory();
+										UniTimeNotifications.error(caught);
+									}
+									public void onSuccess(ClassAssignmentInterface result) {
+										fillIn(result);
+										addHistory();
+									}
+								});
+							}
+						});
+					}
 
 					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 						if (clazz.isAssigned()) {
@@ -709,13 +736,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(clazz.getDatePattern()),
 									new WebTable.Cell(unassignedMessage, 3, null),
 									new WebTable.NoteCell(clazz.getNote()),
-									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
 									icons);
 							if (course.isFreeTime())
 								row.setAriaLabel(ARIA.freeTimeUnassignment(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()), unassignedMessage));
 							else
 								row.setAriaLabel(ARIA.courseUnassginment(MESSAGES.course(course.getSubject(), course.getCourseNbr()), unassignedMessage));
-						} else {
+						} else if (clazz.getClassId() != null) {
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
@@ -726,7 +753,23 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(MESSAGES.arrangeHours(), 4, null),
 									new WebTable.Cell(unassignedMessage, 3, null),
 									new WebTable.NoteCell(clazz.getNote()),
-									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
+									icons);
+							if (course.isFreeTime())
+								row.setAriaLabel(ARIA.freeTimeUnassignment("", unassignedMessage));
+							else
+								row.setAriaLabel(ARIA.courseUnassginment(MESSAGES.course(course.getSubject(), course.getCourseNbr()), unassignedMessage));
+						} else {
+							row = new WebTable.Row(
+									new WebTable.Cell(null),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+									new WebTable.Cell(clazz.getSubpart()),
+									new WebTable.Cell(clazz.getSection()),
+									new WebTable.Cell(clazz.getLimitString()),
+									new WebTable.Cell(unassignedMessage, 7, null),
+									new WebTable.NoteCell(clazz.getNote()),
+									(waitList != null ? waitList : new WebTable.AbbvTextCell(clazz.getCredit())),
 									icons);
 							if (course.isFreeTime())
 								row.setAriaLabel(ARIA.freeTimeUnassignment("", unassignedMessage));
@@ -738,12 +781,22 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						break;
 					}
 					if (row == null) {
-						row = new WebTable.Row(
-								new WebTable.Cell(null),
-								new WebTable.Cell(course.getSubject()),
-								new WebTable.Cell(course.getCourseNbr()),
-								new WebTable.Cell(unassignedMessage, 12, null),
-								icons);
+						if (waitList != null) {
+							row = new WebTable.Row(
+									new WebTable.Cell(null),
+									new WebTable.Cell(course.getSubject()),
+									new WebTable.Cell(course.getCourseNbr()),
+									new WebTable.Cell(unassignedMessage, 11, null),
+									waitList,
+									icons);
+						} else {
+							row = new WebTable.Row(
+									new WebTable.Cell(null),
+									new WebTable.Cell(course.getSubject()),
+									new WebTable.Cell(course.getCourseNbr()),
+									new WebTable.Cell(unassignedMessage, 12, null),
+									icons);
+						}
 						row.setId(course.getCourseId().toString());
 						row.setAriaLabel(ARIA.courseUnassginment(MESSAGES.course(course.getSubject(), course.getCourseNbr()), unassignedMessage));
 						iLastResult.add(course.addClassAssignment());
@@ -1061,7 +1114,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									} else {
 										if (iAssignment != null) fillIn(iAssignment);
 									}
-									if (iError != null) {
+									if (iError != null && !iError.isEmpty()) {
 										iErrorMessage.setHTML(iError);
 										iErrorMessage.setVisible(true);
 										UniTimeNotifications.error(iError);

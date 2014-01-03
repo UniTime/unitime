@@ -503,6 +503,21 @@ public class CourseRequestsTable extends Composite {
 		}
 	}
 	
+	public Boolean getWaitList(String course) {
+		if (iSessionProvider != null && iSessionProvider.getAcademicSessionInfo() != null && iSessionProvider.getAcademicSessionInfo().isCanWaitListCourseRequests())
+			for (CourseSelectionBox[] line: iCourses)
+				if (course.equals(line[0].getCourse()) || course.equals(line[1].getCourse()) || course.equals(line[2].getCourse()))
+					return line[0].getWaitList();
+		return null;
+	}
+	
+	public void setWaitList(String course, boolean waitList) {
+		for (CourseSelectionBox[] line: iCourses) {
+			if (course.equals(line[0].getCourse()) || course.equals(line[1].getCourse()) || course.equals(line[2].getCourse()))
+				line[0].setWaitList(waitList);
+		}
+	}
+	
 	public void clear() {
 		iTip.setText(CONSTANTS.tips()[(int)(Math.random() * CONSTANTS.tips().length)]);
 		for (CourseSelectionBox[] c: iCourses) {
