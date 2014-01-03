@@ -61,6 +61,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling</name>
+			<description>
+				<line>Save Requests: Save alternate course requests as well.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
