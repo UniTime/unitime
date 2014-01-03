@@ -261,6 +261,80 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 			priority++;
 		}
 		
+		for (CourseRequestInterface.Request r: request.getAlternatives()) {
+			if (r.hasRequestedCourse() || r.hasFirstAlternative() || r.hasSecondAlternative()) {
+				List<CourseOffering> courses = new ArrayList<CourseOffering>();
+				if (r.hasRequestedCourse()) {
+					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getRequestedCourse()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
+					if (co != null) courses.add(co);
+				}
+				if (r.hasFirstAlternative()) {
+					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getFirstAlternative()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getFirstAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
+					if (co != null) courses.add(co);
+				}
+				if (r.hasSecondAlternative()) {
+					CourseInfo c = (server == null ? null : server.getCourseInfo(r.getSecondAlternative()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getSecondAlternative()) : CourseOfferingDAO.getInstance().get(c.getUniqueId(), helper.getHibSession()));
+					if (co != null) courses.add(co);
+				}
+				if (courses.isEmpty()) continue;
+				
+				CourseDemand cd = null;
+				adepts: for (Iterator<CourseDemand> i = remaining.iterator(); i.hasNext(); ) {
+					CourseDemand adept = i.next();
+					if (adept.getFreeTime() != null) continue;
+					for (CourseRequest cr: adept.getCourseRequests())
+						if (cr.getCourseOffering().getUniqueId().equals(courses.get(0).getUniqueId())) {
+							cd = adept; i.remove();  break adepts;
+						}
+				}
+				if (cd == null) {
+					cd = new CourseDemand();
+					cd.setTimestamp(ts);
+					cd.setChangedBy(helper.getUser() == null ? null : helper.getUser().getExternalId());
+					cd.setCourseRequests(new HashSet<CourseRequest>());
+					cd.setStudent(student);
+					student.getCourseDemands().add(cd);
+				}
+				cd.setAlternative(true);
+				cd.setPriority(priority);
+				cd.setWaitlist(r.isWaitList());
+				Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
+				int order = 0;
+				for (CourseOffering co: courses) {
+					CourseRequest cr = null;
+					if (requests.hasNext()) {
+						cr = requests.next();
+						if (cr.getClassEnrollments() != null)
+							cr.getClassEnrollments().clear();
+						if (cr.getCourseRequestOptions() != null) {
+							for (Iterator<CourseRequestOption> i = cr.getCourseRequestOptions().iterator(); i.hasNext(); )
+								helper.getHibSession().delete(i.next());
+							cr.getCourseRequestOptions().clear();
+						}
+					} else {
+						cr = new CourseRequest();
+						cd.getCourseRequests().add(cr);
+						cr.setCourseDemand(cd);
+						cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
+					}
+					cr.setAllowOverlap(false);
+					cr.setCredit(0);
+					cr.setOrder(order++);
+					cr.setCourseOffering(co);
+					course2request.put(co.getUniqueId(), cr);
+				}
+				while (requests.hasNext()) {
+					unusedRequests.add(requests.next());
+					requests.remove();
+				}
+				helper.getHibSession().saveOrUpdate(cd);
+			}
+			priority++;
+		}
+		
 		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
 			StudentClassEnrollment enrl = i.next();
 			if (keepEnrollments) {
