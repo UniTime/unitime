@@ -660,6 +660,8 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	}
 	
 	public static class CurriculumFilterRpcRequest extends FilterRpcRequest {
+		private static final long serialVersionUID = 1L;
+		
 		public CurriculumFilterRpcRequest() {}
 	}
 }

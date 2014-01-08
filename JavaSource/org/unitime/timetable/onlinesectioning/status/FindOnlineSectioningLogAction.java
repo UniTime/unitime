@@ -85,6 +85,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					(getQuery().hasAttribute("major") ? "left outer join s.posMajors m " : "") + 
 					(getQuery().hasAttribute("minor") ? "left outer join s.posMinors n " : "") + 
 					(getQuery().hasAttribute("group") ? "left outer join s.groups g " : "") + 
+					(getQuery().hasAttribute("accommodation") ? "left outer join s.accomodations a " : "") + 
 					"where l.session.uniqueId = :sessionId and l.session = s.session and l.student = s.externalUniqueId " +
 					"and (" + getQuery().toString(new SectioningLogQueryFormatter()) + ") " +
 					"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering')) order by l.timeStamp desc, l.uniqueId desc");
@@ -314,6 +315,8 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				return "lower(n.code) = '" + body.toLowerCase() + "'";
 			} else if ("group".equalsIgnoreCase(attr)) {
 				return "lower(g.groupAbbreviation) = '" + body.toLowerCase() + "'";
+			} else if ("accommodation".equalsIgnoreCase(attr)) {
+				return "lower(a.abbreviation) = '" + body.toLowerCase() + "'";
 			} else if ("user".equalsIgnoreCase(attr)) {
 				return ("none".equalsIgnoreCase(body) ? "l.user is null" : "l.user = '" + body + "'");				
 			} else if ("result".equalsIgnoreCase(attr)) {
@@ -324,6 +327,11 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					return "l.result is null";
 				else
 					return "1 = 1";
+			} else if ("status".equalsIgnoreCase(attr)) {
+				if ("Not Set".equalsIgnoreCase(body))
+					return "s.sectioningStatus is null";
+				else
+					return "s.sectioningStatus.reference = '" + body.toLowerCase() + "'";
 			} else if (!body.isEmpty()) {
 				return "lower(s.firstName || ' ' || s.middleName || ' ' || s.lastName) like '%" + body.toLowerCase() + "%'";
 			} else {

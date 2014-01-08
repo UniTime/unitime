@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -1300,7 +1301,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 	}
 	
-	public static abstract class FilterRpcRequest extends EventRpcRequest<FilterRpcResponse> {
+	public static abstract class FilterRpcRequest extends EventRpcRequest<FilterRpcResponse> implements Serializable {
+		private static final long serialVersionUID = 1L;
+		
 		public static enum Command implements IsSerializable {
 			LOAD,
 			SUGGESTIONS,
@@ -1400,14 +1403,19 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class EventFilterRpcRequest extends FilterRpcRequest {
+		private static final long serialVersionUID = 1L;
+		
 		public EventFilterRpcRequest() {}
 	}
 	
 	public static class RoomFilterRpcRequest extends FilterRpcRequest {
+		private static final long serialVersionUID = 1L;
+		
 		public RoomFilterRpcRequest() {}
 	}
 	
-	public static class FilterRpcResponse implements GwtRpcResponse {
+	public static class FilterRpcResponse implements GwtRpcResponse, Serializable {
+		private static final long serialVersionUID = 1L;
 		private HashMap<String, ArrayList<Entity>> iEntities = null;
 		
 		public FilterRpcResponse() {}
@@ -1466,7 +1474,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public List<Entity> getSuggestions() { return getEntities("suggestion"); }
 		
-		public static class Entity implements IsSerializable, Comparable<Entity> {
+		public static class Entity implements IsSerializable, Comparable<Entity>, Serializable {
+			private static final long serialVersionUID = 1L;
+			
 			private Long iUniqueId;
 			private String iAbbv, iName;
 			private int iCount = 0;

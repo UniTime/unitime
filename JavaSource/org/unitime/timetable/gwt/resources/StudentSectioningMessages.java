@@ -848,25 +848,6 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("No results matching filter {0} found.")
 	String exceptionNoMatchingResultsFound(String filter);
 	
-	@DefaultMessage("Filter course, enrollments, and wait-listed course requests by any word<br>from the course name or title." +
-			"<br><br>You can also use the following tags:" +
-			"<ul>" +
-			"<li><i>area:</i> academic area abbreviation" + 
-			"<li><i>classification:</i> academic classification code" +
-			"<li><i>consent:</i> offering consent" +
-			"<li><i>course:</i> course offering name" +
-			"<li><i>department:</i> course controlling department code or abbreviation" +
-			"<li><i>group:</i> student group abbreviation" +
-			"<li><i>major:</i> academic major code" +
-			"<li><i>reserved:</i> enrollments with a reservation" +
-			"<li><i>student:</i> student name or external id" +
-			"<li><i>subject:</i> subject area abbreviation" +
-			"<li><i>waitlist:</i> wait-listed course requests" +
-			"<li><i>status:</i> student scheduling status" +
-			"</ul>Use <i>or</i>, <i>and</i>, <i>not</i>, and brackets to build a boolean query." +
-			"<br><br>Example: subject:AAE and (waitlist:true or consent:waiting)")
-	String sectioningStatusFilterHint();
-	
 	@DefaultMessage("Loading enrollments for {0}...")
 	String loadingEnrollments(String classOrCourse);
 	
@@ -1089,4 +1070,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Wait-List")
 	String toggleWaitList();
+	
+	@DefaultMessage("Course:")
+	String propCourse();
+	
+	@DefaultMessage("Student:")
+	String propStudent();
 }
