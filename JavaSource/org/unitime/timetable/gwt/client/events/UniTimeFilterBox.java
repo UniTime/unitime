@@ -291,6 +291,10 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 		iFilter.getWidget().showFilterPopup();
 	}
 	
+	public void hideFilterPopup() {
+		iFilter.getWidget().hideFilterPopup();
+	}
+	
 	protected Long getAcademicSessionId() {
 		return iAcademicSession == null ? null : iAcademicSession.getAcademicSessionId();
 	}

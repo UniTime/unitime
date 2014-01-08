@@ -29,15 +29,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
-import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable.TopCell;
-import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -69,8 +65,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.FocusEvent;
-import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
@@ -94,18 +88,15 @@ import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.SuggestBox;
-import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.SuggestBox.DefaultSuggestionDisplay;
 import com.google.gwt.user.client.ui.SuggestOracle.Callback;
 import com.google.gwt.user.client.ui.SuggestOracle.Request;
 import com.google.gwt.user.client.ui.SuggestOracle.Response;
@@ -124,16 +115,15 @@ public class SectioningStatusPage extends Composite {
 
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 
-	private TextBox iFilter = null;
+	private SectioningStatusFilterBox iFilter;
+
 	private Button iSearch = null;
 	private Image iLoadingImage = null;
-	
-	private SuggestBox iFilterSuggest = null;
 
 	private VerticalPanel iSectioningPanel = null;
 	
 	private VerticalPanel iPanel = null;
-	private HorizontalPanelWithHint iFilterPanel = null;
+	private HorizontalPanel iFilterPanel = null;
 	
 	private UniTimeTable<EnrollmentInfo> iCourseTable = null;
 	private UniTimeTable<StudentInfo> iStudentTable = null;
@@ -155,53 +145,22 @@ public class SectioningStatusPage extends Composite {
 	private TextArea iMessage;
 	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
 	private boolean iOnline; 
-
+	
 	public SectioningStatusPage(boolean online) {
 		iOnline = online;
 
 		iPanel = new VerticalPanel();
 		iSectioningPanel = new VerticalPanel();
 		
-		iFilterPanel = new HorizontalPanelWithHint(new HTML(MESSAGES.sectioningStatusFilterHint(), false));
+		iFilterPanel = new HorizontalPanel();
 		iFilterPanel.setSpacing(3);
-		Client.addGwtPageChangedHandler(new GwtPageChangedHandler() {
-			@Override
-			public void onChange(GwtPageChangeEvent event) {
-				iFilterPanel.hideHint();
-			}
-		});
 		
 		Label filterLabel = new Label(MESSAGES.filter());
 		iFilterPanel.add(filterLabel);
 		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		SuggestOracle courseOfferingOracle = new SuggestOracle() {
-			@Override
-			public void requestDefaultSuggestions(Request request, Callback callback) {
-				requestSuggestions(request, callback);
-			}
-			
-			@Override
-			public void requestSuggestions(Request request, Callback callback) {
-				iSectioningService.querySuggestions(iOnline, request.getQuery(), request.getLimit(), new SuggestCallback(request, callback));
-			}
-			
-			@Override
-			public boolean isDisplayStringHTML() { return true; }			
-		};
-
-		iFilter = new UniTimeTextBox();
-		iFilter.setWidth("400px");
-		iFilterSuggest = new SuggestBox(courseOfferingOracle, iFilter);
-		iFilterPanel.add(iFilterSuggest);
-		
-		iFilter.addFocusHandler(new FocusHandler() {
-			@Override
-			public void onFocus(FocusEvent event) {
-				if (iFilter.getText().isEmpty())
-					iFilterSuggest.showSuggestionList();
-			}
-		});
+		iFilter = new SectioningStatusFilterBox(online);
+		iFilterPanel.add(iFilter);
 		
 		iSearch = new Button(MESSAGES.buttonSearch());
 		iSearch.setAccessKey('s');
@@ -291,10 +250,10 @@ public class SectioningStatusPage extends Composite {
 		iFilter.addKeyUpHandler(new KeyUpHandler() {
 			public void onKeyUp(KeyUpEvent event) {
 				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-					if (iFilter.getText().equals(iLastFilterOnEnter) && !iFilter.getText().equals(iCourseFilter))
+					if (iFilter.getValue().equals(iLastFilterOnEnter) && !iFilter.getValue().equals(iCourseFilter))
 						loadData();
 					else
-						iLastFilterOnEnter = iFilter.getText();
+						iLastFilterOnEnter = iFilter.getValue();
 				}
 			}
 		});
@@ -464,13 +423,13 @@ public class SectioningStatusPage extends Composite {
 				iStudentTable.clearTable();
 				iLogTable.clearTable();
 				if (event.getValue().endsWith("@")) {
-					iFilter.setText(event.getValue().substring(0, event.getValue().length() - 1));
+					iFilter.setValue(event.getValue().substring(0, event.getValue().length() - 1));
 					iTabPanel.selectTab(1);
 				} else if (event.getValue().endsWith("$")) {
-					iFilter.setText(event.getValue().substring(0, event.getValue().length() - 1));
+					iFilter.setValue(event.getValue().substring(0, event.getValue().length() - 1));
 					iTabPanel.selectTab(2);
 				} else {
-					iFilter.setText(event.getValue());
+					iFilter.setValue(event.getValue());
 					if (iTabIndex != 0)
 						iTabPanel.selectTab(0);
 					else
@@ -597,7 +556,7 @@ public class SectioningStatusPage extends Composite {
 	
 	private void checkLastQuery() {
 		if (Window.Location.getParameter("q") != null) {
-			iFilter.setText(Window.Location.getParameter("q"));
+			iFilter.setValue(Window.Location.getParameter("q"), true);
 			if (Window.Location.getParameter("t") != null) {
 				if ("2".equals(Window.Location.getParameter("t"))) {
 					iTabPanel.selectTab(1);
@@ -611,13 +570,13 @@ public class SectioningStatusPage extends Composite {
 			String hash = URL.decode(Window.Location.getHash().substring(1));
 			if (!hash.matches("^[0-9]+\\:?[0-9]*@?$")) {
 				if (hash.endsWith("@")) {
-					iFilter.setText(hash.substring(0, hash.length() - 1));
+					iFilter.setValue(hash.substring(0, hash.length() - 1), true);
 					iTabPanel.selectTab(1);
 				} else if (hash.endsWith("$")) {
-					iFilter.setText(hash.substring(0, hash.length() - 1));
+					iFilter.setValue(hash.substring(0, hash.length() - 1), true);
 					iTabPanel.selectTab(2);
 				} else {
-					iFilter.setText(hash);
+					iFilter.setValue(hash, true);
 					loadData();
 				}
 			}
@@ -633,7 +592,7 @@ public class SectioningStatusPage extends Composite {
 				@Override
 				public void onSuccess(String result) {
 					if (result != null) {
-						iFilter.setText(result);
+						iFilter.setValue(result, true);
 						loadData();
 					}
 				}
@@ -654,11 +613,10 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	private void loadDataIfNeeded() {
-		iCourseFilter = iFilter.getText();
+		iCourseFilter = iFilter.getValue();
 		History.newItem(iCourseFilter + (iTabIndex == 1 ? "@" : iTabIndex == 2 ? "$" : ""), false);
 		
-		if (((DefaultSuggestionDisplay)iFilterSuggest.getSuggestionDisplay()).isSuggestionListShowing())
-			((DefaultSuggestionDisplay)iFilterSuggest.getSuggestionDisplay()).hideSuggestions();
+		if (iFilter.isFilterPopupShowing()) iFilter.hideFilterPopup();
 		
 		if (iTabIndex == 0 && iCourseTable.getRowCount() > 0) return;
 		if (iTabIndex == 1 && iStudentTable.getRowCount() > 0) return;
@@ -1365,7 +1323,7 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hTotal = new UniTimeTableHeader("&nbsp;");
 		header.add(hTotal);
 		
-		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false;
+		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false;
 		for (ClassAssignmentInterface.StudentInfo e: result) {
 			if (e.getStudent() == null) continue;
 			// if (e.getStatus() != null) hasStatus = true;
@@ -1374,6 +1332,7 @@ public class SectioningStatusPage extends Composite {
 			if (e.getStudent().hasArea()) hasArea = true;
 			if (e.getStudent().hasMajor()) hasMajor = true;
 			if (e.getStudent().hasGroup()) hasGroup = true;
+			if (e.getStudent().hasAccommodation()) hasAcmd = true;
 			if (e.getTotalReservation() != null && e.getTotalReservation() > 0) hasReservation = true;
 			if (e.getRequestedDate() != null) hasRequestedDate = true;
 			if (e.getEnrolledDate() != null) hasEnrolledDate = true;
@@ -1525,6 +1484,43 @@ public class SectioningStatusPage extends Composite {
 				@Override
 				public String getName() {
 					return MESSAGES.sortBy(MESSAGES.colGroup());
+				}
+			});
+		}
+		
+		if (hasAcmd) {
+			final UniTimeTableHeader hAcmd = new UniTimeTableHeader(MESSAGES.colAccommodation());
+			//hGroup.setWidth("100px");
+			header.add(hAcmd);
+			hAcmd.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					iStudentTable.sort(hAcmd, new Comparator<ClassAssignmentInterface.StudentInfo>() {
+						@Override
+						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
+							if (e1.getStudent() == null) return 1;
+							if (e2.getStudent() == null) return -1;
+							int cmp = e1.getStudent().getAccommodation("|").compareTo(e2.getStudent().getAccommodation("|"));
+							if (cmp != 0) return cmp;
+							cmp = e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+							if (cmp != 0) return cmp;
+							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+							if (cmp != 0) return cmp;
+							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
+						}
+					});
+				}
+				@Override
+				public boolean isApplicable() {
+					return true;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.sortBy(MESSAGES.colAccommodation());
 				}
 			});
 		}
@@ -1863,6 +1859,8 @@ public class SectioningStatusPage extends Composite {
 					line.add(new HTML(info.getStudent().getMajor("<br>"), false));
 				if (hasGroup)
 					line.add(new HTML(info.getStudent().getGroup("<br>"), false));
+				if (hasAcmd)
+					line.add(new HTML(info.getStudent().getAccommodation("<br>"), false));
 				line.add(new HTML(info.getStatus(), false));
 			} else {
 				if (isAdmin && iOnline) line.add(new HTML("&nbsp;", false));
@@ -1875,6 +1873,8 @@ public class SectioningStatusPage extends Composite {
 				if (hasMajor)
 					line.add(new HTML("&nbsp;", false));
 				if (hasGroup)
+					line.add(new HTML("&nbsp;", false));
+				if (hasAcmd)
 					line.add(new HTML("&nbsp;", false));
 				line.add(new HTML("&nbsp;", false));
 			}

@@ -577,9 +577,9 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				
 			}
 			if ("consent".equals(attr)) {
-				if ("none".equalsIgnoreCase(term))
+				if ("none".equalsIgnoreCase(term) || "No Consent".equalsIgnoreCase(term))
 					return info().getConsentLabel() == null;
-				else if ("todo".equalsIgnoreCase(term))
+				else if ("todo".equalsIgnoreCase(term) || "To Do".equalsIgnoreCase(term))
 					return isConsentToDoCourse();
 				else
 					return info().getConsentLabel() != null;
@@ -661,6 +661,18 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				return has(student().getName(), term) || eq(student().getExternalId(), term) || eq(student().getName(), term);
 			}
 			
+			if ("assignment".equals(attr)) {
+				if (eq("Assigned", term)) {
+					return enrollment() != null;
+				} else if (eq("Reserved", term)) {
+					return enrollment() != null && enrollment().getReservation() != null;
+				} else if (eq("Not Assigned", term)) {
+					return enrollment() == null;
+				} else if (eq("Not Assigned", term)) {
+					return enrollment() == null && request().isWaitlist();
+				}
+			}
+			
 			if ("assigned".equals(attr) || "scheduled".equals(attr)) {
 				if (eq("true", term) || eq("1",term))
 					return enrollment() != null;
@@ -683,23 +695,27 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			}
 			
 			if ("consent".equals(attr)) {
-				if (eq("none", term)) {
+				if (eq("none", term) || eq("No Consent", term)) {
 					return info().getConsentLabel() == null;
-				} else if (eq("required", term)) {
-					return info().getConsentLabel() != null;
-				} else if (eq("approved", term)) {
+				} else if (eq("Required", term) || eq("Consent", term)) {
+					return info().getConsentLabel() != null && enrollment() != null;
+				} else if (eq("Approved", term)) {
 					return info().getConsentLabel() != null && enrollment() != null && enrollment().getApproval() != null;
-				} else if (eq("waiting", term)) {
+				} else if (eq("Waiting", term)) {
 					return info().getConsentLabel() != null && enrollment() != null && enrollment().getApproval() == null;
-				} else if (eq("todo", term)) {
+				} else if (eq("todo", term) || eq("To Do", term)) {
 					return isConsentToDoCourse() && enrollment() != null && enrollment().getApproval() == null;
 				} else {
 					return info().getConsentLabel() != null && ((enrollment() != null && enrollment().getApproval() != null && (has(enrollment().getApproval().getExternalId(), term) || eq(enrollment().getApproval().getName(), term))) || eq(info().getConsentAbbv(), term));
 				}
 			}
 			
+			if ("approver".equals(attr)) {
+				return info().getConsentLabel() != null && ((enrollment() != null && enrollment().getApproval() != null && (has(enrollment().getApproval().getExternalId(), term) || eq(enrollment().getApproval().getName(), term))));
+			}
+			
 			if ("status".equals(attr)) {
-				if ("default".equalsIgnoreCase(term))
+				if ("default".equalsIgnoreCase(term) || "Not Set".equalsIgnoreCase(term))
 					return student().getStatus() == null;
 				return term.equalsIgnoreCase(status());
 			}
@@ -935,7 +951,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				else
 					return true;
 			} else if ("status".equals(attr)) {
-				if ("default".equalsIgnoreCase(term))
+				if ("default".equalsIgnoreCase(term) || "Not Set".equalsIgnoreCase(term))
 					return student().getStatus() == null;
 				return term.equalsIgnoreCase(status());
 			}

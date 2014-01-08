@@ -115,7 +115,6 @@ import org.unitime.timetable.onlinesectioning.updates.MassCancelAction;
 import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
-import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
@@ -1515,7 +1514,7 @@ public class SectioningServlet implements SectioningService {
 						query,
 						courseId,
 						getCoordinatingCourses(sessionId),
-						query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId) : null), currentUser()
+						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null), currentUser()
 				);				
 			} else {
 				OnlineSectioningServer server = getStudentSolver();
@@ -1552,7 +1551,7 @@ public class SectioningServlet implements SectioningService {
 				return server.execute(new FindStudentInfoAction(
 						query,
 						getCoordinatingCourses(sessionId),
-						query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId) : null), currentUser()
+						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null), currentUser()
 				);
 			} else {
 				OnlineSectioningServer server = getStudentSolver();
@@ -1623,7 +1622,7 @@ public class SectioningServlet implements SectioningService {
 				
 				return server.execute(new FindEnrollmentAction(
 						query, courseId, classId, 
-						query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId).contains(courseId): false), currentUser());
+						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId).contains(courseId): false), currentUser());
 			} else {
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
@@ -1650,19 +1649,7 @@ public class SectioningServlet implements SectioningService {
 		if (user == null) throw new PageAccessException(
 				getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 		
-		String q = user.getProperty("SectioningStatus.LastStatusQuery");
-		if (q != null) return q;
-		
-		if (user.getCurrentAuthority() != null && !user.getCurrentAuthority().hasRight(Right.SessionIndependent)) {
-			q = "";
-			for (Qualifiable d: user.getCurrentAuthority().getQualifiers("Department")) {
-				if (!q.isEmpty()) q += " or ";
-				q += "department: " + d.getQualifierReference();
-			}
-			q = "(" + q.trim() + ") and (waitlist: true or consent: todo)";
-		}
-
-		return q;
+		return user.getProperty("SectioningStatus.LastStatusQuery");
 	}
 
 	@Override

@@ -270,6 +270,8 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	}
 	
 	public static class ReservationFilterRpcRequest extends FilterRpcRequest {
+		private static final long serialVersionUID = 1L;
+		
 		public ReservationFilterRpcRequest() {}
 	}
 	

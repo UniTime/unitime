@@ -3140,6 +3140,13 @@ unitime-RoomSharingWidget .legend .blank {
 	background-color: #92c1f0;
 }
 
+.unitime-SuggestBoxPopup .item-hint {
+	padding-left: 5px;
+	color: #909090;
+	vertical-align: top;
+	font-size: xx-small;
+}
+
 .unitime-RoomAvailabilityHeader {
 	width: 100%;
 	padding-top: 10px;
