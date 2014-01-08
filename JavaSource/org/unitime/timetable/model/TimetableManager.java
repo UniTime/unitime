@@ -112,10 +112,23 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return(sessions);
 	}
 	
+	public boolean hasLastName() {
+		return getLastName() != null && !getLastName().isEmpty();
+	}
+	
+	public boolean hasFirstName() {
+		return getFirstName() != null && !getFirstName().isEmpty();
+	}
+	
+	public boolean hasMiddleName() {
+		return getMiddleName() != null && !getMiddleName().isEmpty();
+	}
+	
 	public String getName() {
-		return (getLastName()==null?"":getLastName()+", ")+
-				(getFirstName()==null?"":getFirstName())+
-			   (getMiddleName()==null?"": " " + getMiddleName());
+		return (hasLastName() ? getLastName() : "") +
+				(hasFirstName() || hasMiddleName() ? "," : "") +
+				(hasFirstName() ? " " + getFirstName() : "") +
+				(hasMiddleName() ? " " + getMiddleName() : "");
 	}
 	
     public Collection getClasses(Session session) {
