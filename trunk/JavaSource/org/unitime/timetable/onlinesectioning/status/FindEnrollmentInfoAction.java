@@ -33,6 +33,7 @@ import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 
+import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -249,7 +250,19 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			t.setConsentNeeded(gConNeed);
 			t.setTotalConsentNeeded(gtConNeed);
 
-			ret.add(t);				
+			ret.add(t);
+			
+			final Comparator noc = new NaturalOrderComparator();
+			Collections.sort(ret, new Comparator<EnrollmentInfo>() {
+				@Override
+				public int compare(EnrollmentInfo e1, EnrollmentInfo e2) {
+					int cmp = noc.compare(e1.getSubject(), e2.getSubject());
+					if (cmp != 0) return cmp;
+					cmp = e1.getCourseNbr().compareTo(e2.getCourseNbr());
+					if (cmp != 0) return cmp;
+					return 0;
+				}
+			});
 		} else {
 			XCourse info = server.getCourse(courseId());
 			if (info == null) return ret;

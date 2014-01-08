@@ -109,9 +109,9 @@ public class Query implements Serializable {
 		}
 		splits = split(query, "");
 		if (splits.size() > 1) {
-			CompositeTerm t = new AndTerm();
+			CompositeTerm and = new AndTerm();
 			boolean not = false;
-			for (String q: splits) {
+			splits: for (String q: splits) {
 				if (q.equalsIgnoreCase("not") || q.equals("!")) { not = true; continue; }
 				if (q.startsWith("!(")) {
 					q = q.substring(1); not = true;
@@ -119,13 +119,29 @@ public class Query implements Serializable {
 					q = q.substring(3); not = true;
 				}
 				if (not) {
-					t.add(new NotTerm(parse(q)));
+					and.add(new NotTerm(parse(q)));
 					not = false;
 				} else {
-					t.add(parse(q));
+					Term t = parse(q);
+					if (t instanceof AtomTerm) {
+						AtomTerm a = (AtomTerm)t;
+						for (Term x: and.terms()) {
+							if (x instanceof AtomTerm && ((AtomTerm)x).sameAttribute(a)) {
+								and.remove(x);
+								OrTerm or = new OrTerm();
+								or.add(x); or.add(a);
+								and.add(or);
+								continue splits;
+							} else if (x instanceof OrTerm && ((OrTerm)x).terms().get(0) instanceof AtomTerm && ((AtomTerm)((OrTerm)x).terms().get(0)).sameAttribute(a)) {
+								((OrTerm)x).terms().add(a);
+								continue splits;
+							}
+						}
+					}
+					and.add(t);
 				}
 			}
-			return t;
+			return and;
 		}
 		if (query.startsWith("(") && query.endsWith(")")) return parse(query.substring(1, query.length() - 1).trim());
 		if (query.startsWith("\"") && query.endsWith("\"") && query.length() >= 2) return new AtomTerm(null, query.substring(1, query.length() - 1).trim());
@@ -158,6 +174,8 @@ public class Query implements Serializable {
 		}
 		
 		public void add(Term t) { iTerms.add(t); }
+		
+		public void remove(Term t) { iTerms.remove(t); }
 		
 		protected List<Term> terms() { return iTerms; }
 		
@@ -256,10 +274,14 @@ public class Query implements Serializable {
 		}
 		
 		public boolean hasAttribute(String attribute) {
-			return attribute.equals(iAttr);
+			return attribute != null && attribute.equals(iAttr);
 		}
 		
-		public String toString() { return (iAttr == null ? "" : iAttr + ":") + iBody; }
+		public boolean sameAttribute(AtomTerm t) {
+			return t != null && hasAttribute(t.iAttr);
+		}
+		
+		public String toString() { return (iAttr == null ? "" : iAttr + ":") + (iBody.indexOf(' ') >= 0 ? "\"" + iBody + "\"" : iBody); }
 		
 		public String toString(QueryFormatter f) { return f.format(iAttr, iBody); }
 	}

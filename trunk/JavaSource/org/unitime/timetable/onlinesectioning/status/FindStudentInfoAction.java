@@ -219,6 +219,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			for (XAcademicAreaCode ac: student.getMajors()) {
 				st.addMajor(ac.getCode());
 			}
+			for (String acc: student.getAccomodations()) {
+				st.addAccommodation(acc);
+			}
+			for (String gr: student.getGroups()) {
+				st.addGroup(gr);
+			}
 			s.setStatus(student.getStatus() == null ? server.getAcademicSession().getDefaultSectioningStatus() : student.getStatus());
 			s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
 			ret.add(s);
