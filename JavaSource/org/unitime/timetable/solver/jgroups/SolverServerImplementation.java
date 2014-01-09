@@ -37,6 +37,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.MembershipListener;
+import org.jgroups.MergeView;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
 import org.jgroups.Receiver;
@@ -366,8 +367,19 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
     }
 	
 	@Override
-	public void viewAccepted(View new_view) {
-		sLog.info("viewAccepted(" + new_view + ")");
+	public void viewAccepted(View view) {
+		sLog.info("viewAccepted(" + view + ")");
+		if (view instanceof MergeView) {
+			for (String session: iOnlineStudentSchedulingContainer.getSolvers()) {
+				OnlineSectioningServer server = iOnlineStudentSchedulingContainer.getSolver(session);
+				if (server != null) {
+					sLog.info("  releasing master lock for " + server.getAcademicSession() + " ...");
+					server.releaseMasterLockIfHeld();
+				}
+			}
+			sLog.info("  releasing coordinator lock ...");
+			iUpdater.releaseCoordinatorLockIfHeld();
+		}
 	}
 
 

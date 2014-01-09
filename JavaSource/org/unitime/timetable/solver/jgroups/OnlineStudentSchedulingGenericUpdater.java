@@ -51,9 +51,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 	
 	private RpcDispatcher iDispatcher;
 	private OnlineStudentSchedulingContainerRemote iContainer;
-	private Lock iMasterLock;
-	private AtomicBoolean iMaster = new AtomicBoolean(false);
-	private MasterAcquiringThread iMasterThread;
+	private CoordinatorAcquiringThread iCoordinator;
 
 	public OnlineStudentSchedulingGenericUpdater(RpcDispatcher dispatcher, OnlineStudentSchedulingContainerRemote container) {
 		super();
@@ -67,8 +65,8 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 	
 	@Override
 	public void run() {
-		iMasterThread = new MasterAcquiringThread();
-		iMasterThread.start();
+		iCoordinator = new CoordinatorAcquiringThread();
+		iCoordinator.start();
 
 		try {
 			iLog.info("Generic updater started.");
@@ -83,21 +81,17 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		} catch (Exception e) {
 			iLog.error("Generic updater failed, " + e.getMessage(), e);
 		}
-		
-		iMasterThread.interrupt();
-		if (iMaster.get())
-			iMasterLock.unlock();
+
+		iCoordinator.dispose();
 	}
 	
 	public void stopUpdating() {
 		iRun = false;
-		if (iMaster.get())
-			iMasterLock.unlock();
 		interrupt();
 	}
 	
 	public void checkForNewServers() {
-		if (!iMaster.get()) return;
+		if (!iCoordinator.isCoordinator()) return;
 		Lock lock = iContainer.getLockService().getLock("updater[generic].check");
 		lock.lock();
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
@@ -191,21 +185,66 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 			lock.unlock();
 		}
 	}
-
-	private class MasterAcquiringThread extends Thread {
-		MasterAcquiringThread() {
-			setName("Updater[generic]:AcquiringMasterLock");
+	
+	private class CoordinatorAcquiringThread extends Thread {
+		private java.util.concurrent.locks.Lock iLock;
+		private AtomicBoolean iCoordinator = new AtomicBoolean(false);
+		private boolean iStop = false;
+		
+		private CoordinatorAcquiringThread() {
+			setName("Updater[generic]:AcquiringCoordinatorLock");
 			setDaemon(true);
+		}
+		
+		public boolean isCoordinator() {
+			return iCoordinator.get();
 		}
 		
 		@Override
 		public void run() {
-			iMasterLock = iContainer.getLockService().getLock("updater[generic].master");
-			try {
-				iMasterLock.lockInterruptibly();
-				iMaster.set(true);
-				iLog.info("I am the coordinator!");
-			} catch (InterruptedException e) {}
+			iLock = iContainer.getLockService().getLock("updater[generic].coordinator");
+			if (iLock.tryLock()) {
+				iCoordinator.set(true);
+			}
+			while (!iStop) {
+				try {
+					if (!iCoordinator.get()) {
+						iLog.info("Waiting for a coordinator lock...");
+						iLock.lockInterruptibly();
+					}
+					iLog.info("I am the coordinator.");
+					synchronized (iCoordinator) {
+						iCoordinator.set(true);
+						iCoordinator.wait();
+					}
+					if (!iCoordinator.get()) {
+						iLock.unlock();
+						iLog.info("I am no longer the coordinator.");
+					}
+				} catch (InterruptedException e) {}
+			}
+			iLog.info("No longer looking for a coordinator.");
 		}
+		
+		public boolean release() {
+			if (iCoordinator.compareAndSet(true, false)) {
+				synchronized (iCoordinator) {
+					iCoordinator.notify();
+				}
+				return true;
+			}
+			return false;
+		}
+		
+		public void dispose() {
+			iStop = true;
+			if (!release())
+				interrupt();
+		}
+	}
+	
+	public void releaseCoordinatorLockIfHeld() {
+		if (iCoordinator != null)
+			iCoordinator.release();
 	}
 }
