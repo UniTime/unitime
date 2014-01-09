@@ -55,7 +55,8 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 		try {
 			RspList<Set<String>> ret = iContainer.getDispatcher().callRemoteMethods(null, "getSolvers", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
 			for (Rsp<Set<String>> rsp : ret) {
-				solvers.addAll(rsp.getValue());
+				if (rsp != null && rsp.getValue() != null)
+					solvers.addAll(rsp.getValue());
 			}
 		} catch (Exception e) {
 			sLog.error("Failed to retrieve solvers: " + e.getMessage(), e);

@@ -62,7 +62,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 				try {
 					ret.add(entry.getValue().getAcademicSession().getUniqueId().toString());
 				} catch (IllegalStateException e) {
-					sLog.error("Server " + entry.getKey() + " appears to be in an inconsistent state: " + e.getMessage(), e);
+					sLog.error("Server " + entry.getKey() + " appears to be in an inconsistent state: " + e.getMessage());
 				}
 			}
 			return ret;
@@ -240,23 +240,28 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		}
 		return false;
 	}
-
-	@Override
-	public void stop() {
-		sLog.info("Student Sectioning Service is going down ...");
+	
+	public void unloadAll(boolean remove) {
 		iGlobalLock.writeLock().lock();
 		try {
 			for (OnlineStudentSchedulingUpdater u: iUpdaters.values()) {
 				u.stopUpdating(true);
 				if (u.getAcademicSession() != null) {
 					OnlineSectioningServer s = iInstances.get(u.getAcademicSession().getUniqueId());
-					if (s != null) s.unload(false);
+					if (s != null) s.unload(remove);
 				}
 			}
 			iInstances.clear();
+			iUpdaters.clear();
 		} finally {
 			iGlobalLock.writeLock().unlock();
-		}
+		}		
+	}
+
+	@Override
+	public void stop() {
+		sLog.info("Student Sectioning Service is going down ...");
+		unloadAll(false);
 		OnlineSectioningLogger.stopLogger();
 	}
 

@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -173,6 +175,12 @@ public class ManageSolversAction extends Action {
         	SolverServer server = solverServerService.getServer(request.getParameter("solver"));
         	if (server != null)
         		server.shutdown();
+        }
+        
+        if ("Reset".equals(op)) {
+        	SolverServer server = solverServerService.getServer(request.getParameter("solver"));
+        	if (server != null)
+        		server.reset();
         }
 
         if ("Start Using".equals(op)) {
@@ -447,11 +455,16 @@ public class ManageSolversAction extends Action {
                     } else {
                         op+="<input type=\"button\" value=\"Disable\" onClick=\"if (confirm('Do you really want to disable server "+server.getHost()+" for the new solver instances?')) document.location='manageSolvers.do?op=Stop%20Using&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
                     }
+                	op+="<input type=\"button\" value=\"Reset\" onClick=\"if (confirm('Do you really want to reset server "+server.getHost()+"?')) document.location='manageSolvers.do?op=Reset&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
                     if (!local) {
                     	op+="<input type=\"button\" value=\"Shutdown\" onClick=\"if (confirm('Do you really want to shutdown server "+server.getHost()+"?')) document.location='manageSolvers.do?op=Shutdown&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
                     }
+                    Set<String> flags = new TreeSet<String>();
+                    if (local) flags.add("tomcat");
+                    if (server.isCoordinator()) flags.add("coordinator");
+                    if (!server.isAvailable()) flags.add("unavailable");
                     webTable.addLine(null, new String[] {
-                            server.getHost() + (local ? " (local)" : ""),
+                            server.getHost() + (flags.isEmpty() ? "" : " " + flags.toString()),
                             (version==null||"-1".equals(version)?"<i>N/A</i>":version),
                             (startTime==null?"<i>N/A</i>":sDF.format(startTime)),
                             df.format( ((double)mem)/1024/1024)+" MB",
