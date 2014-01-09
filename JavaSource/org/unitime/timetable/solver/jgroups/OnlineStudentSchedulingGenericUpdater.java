@@ -20,13 +20,13 @@
 package org.unitime.timetable.solver.jgroups;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -47,11 +47,10 @@ import org.unitime.timetable.model.dao.SessionDAO;
 public class OnlineStudentSchedulingGenericUpdater extends Thread {
 	private Logger iLog;
 	private long iSleepTimeInSeconds = 5;
-	private boolean iRun = true;
+	private boolean iRun = true, iPause = false;
 	
 	private RpcDispatcher iDispatcher;
 	private OnlineStudentSchedulingContainerRemote iContainer;
-	private CoordinatorAcquiringThread iCoordinator;
 
 	public OnlineStudentSchedulingGenericUpdater(RpcDispatcher dispatcher, OnlineStudentSchedulingContainerRemote container) {
 		super();
@@ -65,33 +64,43 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 	
 	@Override
 	public void run() {
-		iCoordinator = new CoordinatorAcquiringThread();
-		iCoordinator.start();
-
 		try {
 			iLog.info("Generic updater started.");
 			while (iRun) {
 				try {
 					sleep(iSleepTimeInSeconds * 1000);
 				} catch (InterruptedException e) {}
-				if (iRun)
+				if (iRun && !iPause)
 					checkForNewServers();
 			}
 			iLog.info("Generic updater stopped.");
 		} catch (Exception e) {
 			iLog.error("Generic updater failed, " + e.getMessage(), e);
 		}
-
-		iCoordinator.dispose();
+	}
+	
+	public synchronized void pauseUpading() {
+		iPause = true;
+		iLog.info("Generic updater paused.");
+	}
+	
+	public synchronized void resumeUpading() {
+		interrupt();
+		iPause = false;
+		iLog.info("Generic updater resumed.");
 	}
 	
 	public void stopUpdating() {
 		iRun = false;
+		
 		interrupt();
+		try {
+			this.join();
+		} catch (InterruptedException e) {}
 	}
 	
-	public void checkForNewServers() {
-		if (!iCoordinator.isCoordinator()) return;
+	public synchronized void checkForNewServers() {
+		if (!isCoordinator()) return;
 		Lock lock = iContainer.getLockService().getLock("updater[generic].check");
 		lock.lock();
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
@@ -156,6 +165,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 				
 				if (replicate) {
 					Set<Address> members = solvers.get(session.getUniqueId().toString());
+					Collections.shuffle(available);
 					try {
 						for (Address address: available) {
 							if (members != null && members.contains(address)) continue;
@@ -164,6 +174,8 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 									"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iDispatcher.getChannel().getAddress() },
 									new Class[] { String.class, DataProperties.class, Address.class },
 									SolverServerImplementation.sFirstResponse);
+							// startup only one server first
+							if (members == null) break;
 						}
 					} catch (Exception e) {
 						iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
@@ -186,65 +198,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		}
 	}
 	
-	private class CoordinatorAcquiringThread extends Thread {
-		private java.util.concurrent.locks.Lock iLock;
-		private AtomicBoolean iCoordinator = new AtomicBoolean(false);
-		private boolean iStop = false;
-		
-		private CoordinatorAcquiringThread() {
-			setName("Updater[generic]:AcquiringCoordinatorLock");
-			setDaemon(true);
-		}
-		
-		public boolean isCoordinator() {
-			return iCoordinator.get();
-		}
-		
-		@Override
-		public void run() {
-			iLock = iContainer.getLockService().getLock("updater[generic].coordinator");
-			if (iLock.tryLock()) {
-				iCoordinator.set(true);
-			}
-			while (!iStop) {
-				try {
-					if (!iCoordinator.get()) {
-						iLog.info("Waiting for a coordinator lock...");
-						iLock.lockInterruptibly();
-					}
-					iLog.info("I am the coordinator.");
-					synchronized (iCoordinator) {
-						iCoordinator.set(true);
-						iCoordinator.wait();
-					}
-					if (!iCoordinator.get()) {
-						iLock.unlock();
-						iLog.info("I am no longer the coordinator.");
-					}
-				} catch (InterruptedException e) {}
-			}
-			iLog.info("No longer looking for a coordinator.");
-		}
-		
-		public boolean release() {
-			if (iCoordinator.compareAndSet(true, false)) {
-				synchronized (iCoordinator) {
-					iCoordinator.notify();
-				}
-				return true;
-			}
-			return false;
-		}
-		
-		public void dispose() {
-			iStop = true;
-			if (!release())
-				interrupt();
-		}
-	}
-	
-	public void releaseCoordinatorLockIfHeld() {
-		if (iCoordinator != null)
-			iCoordinator.release();
+	public boolean isCoordinator() {
+		return iDispatcher.getChannel().getView().getMembers().get(0).equals(iDispatcher.getChannel().getAddress());
 	}
 }

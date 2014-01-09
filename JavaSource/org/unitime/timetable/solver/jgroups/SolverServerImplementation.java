@@ -370,15 +370,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	public void viewAccepted(View view) {
 		sLog.info("viewAccepted(" + view + ")");
 		if (view instanceof MergeView) {
-			for (String session: iOnlineStudentSchedulingContainer.getSolvers()) {
-				OnlineSectioningServer server = iOnlineStudentSchedulingContainer.getSolver(session);
-				if (server != null) {
-					sLog.info("  releasing master lock for " + server.getAcademicSession() + " ...");
-					server.releaseMasterLockIfHeld();
-				}
-			}
-			sLog.info("  releasing coordinator lock ...");
-			iUpdater.releaseCoordinatorLockIfHeld();
+			reset();
 		}
 	}
 
@@ -598,4 +590,36 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
     		sLog.error("Failed to start the server: " + e.getMessage(), e);
     	}
     }
+
+	@Override
+	public boolean isCoordinator() {
+		return (iUpdater != null && iUpdater.isCoordinator());
+	}
+
+	@Override
+	public synchronized void reset() {
+		boolean reload = "true".equals(ApplicationProperties.getProperty("unitime.enrollment.server.reloadOnMerge", "true"));
+		if (reload) {
+			// pause updating
+			iUpdater.pauseUpading();
+			
+			// stop -- this will unload all servers
+			iOnlineStudentSchedulingContainer.stop();
+			
+			// start again
+			iOnlineStudentSchedulingContainer.start();
+			
+			// resume updating
+			iUpdater.resumeUpading();
+		} else {
+			// Release and re-acquire coordinator / master locks
+			for (String session: iOnlineStudentSchedulingContainer.getSolvers()) {
+				OnlineSectioningServer server = iOnlineStudentSchedulingContainer.getSolver(session);
+				if (server != null) {
+					sLog.info("  releasing master lock for " + server.getAcademicSession() + " ...");
+					server.releaseMasterLockIfHeld();
+				}
+			}
+		}
+	}
 }

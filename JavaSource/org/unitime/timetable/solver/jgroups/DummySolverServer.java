@@ -464,4 +464,12 @@ public class DummySolverServer implements SolverServer, MessageListener {
 		}
 		iProperties.load(input);
 	}
+
+	@Override
+	public boolean isCoordinator() {
+		return false;
+	}
+
+	@Override
+	public void reset() {}
 }

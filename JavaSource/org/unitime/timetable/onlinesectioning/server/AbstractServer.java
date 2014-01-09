@@ -618,6 +618,9 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			iStop = true;
 			if (!release())
 				interrupt();
+			try {
+				this.join();
+			} catch (InterruptedException e) {}
 		}
 	}
 	
