@@ -101,7 +101,9 @@ public class UniTimeClusterDiscovery extends Discovery {
             }
         }
         
-		getAndSavePhysicalAddress();
+        PhysicalAddress my_addr = getAndSavePhysicalAddress();
+		
+		log.debug("Cluster " + cluster_name + " has members " + retval + " (I am " + my_addr + ")");
 		
         return retval;
 	}
@@ -129,17 +131,20 @@ public class UniTimeClusterDiscovery extends Discovery {
         return address.toString();
     }
 	
-	protected void getAndSavePhysicalAddress() {
-		if (!ClusterDiscoveryDAO.isConfigured()) {
+	protected PhysicalAddress getAndSavePhysicalAddress() {
+        PhysicalAddress physical_addr = (PhysicalAddress)down(new Event(Event.GET_PHYSICAL_ADDRESS, local_addr));
+
+        if (!ClusterDiscoveryDAO.isConfigured()) {
 			log.info("Hibernate not configured yet, skiping save of physical address for cluster " + group_addr + ".");
-			return;
+			return physical_addr;
 		}
 		
-        PhysicalAddress physical_addr = (PhysicalAddress)down(new Event(Event.GET_PHYSICAL_ADDRESS, local_addr));
         List<PhysicalAddress> physical_addrs = Arrays.asList(physical_addr);
 		PingData data = new PingData(local_addr, null, false, UUID.get(local_addr), physical_addrs);
 		
 		updateMyData(data);
+		
+		return physical_addr;
 	}
 	
 	protected synchronized void updateMyData(PingData data) {
@@ -188,6 +193,11 @@ public class UniTimeClusterDiscovery extends Discovery {
 			cluster: for (ClusterDiscovery cluster: (List<ClusterDiscovery>)hibSession.createQuery("from ClusterDiscovery where clusterName = :clusterName").setString("clusterName", group_addr).list()) {
 				for (Address address: members)
 					if (cluster.getOwnAddress().equals(addressAsString(address))) continue cluster;
+				
+				PingData pd = deserialize(cluster.getPingData());
+				if (pd != null)
+					log.debug("Purging " + pd.getPhysicalAddrs() + " from cluster " + group_addr + ".");
+				
 				hibSession.delete(cluster);
 			}
 			hibSession.flush();
@@ -200,7 +210,7 @@ public class UniTimeClusterDiscovery extends Discovery {
         final String ownAddress = addressAsString(local_addr);
         org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
         try {
-        	ClusterDiscovery cluster = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscovery(ownAddress, group_addr));
+        	ClusterDiscovery cluster = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscovery(ownAddress, group_addr), hibSession);
         	if (cluster != null)
         		hibSession.delete(cluster);
         	hibSession.flush();
