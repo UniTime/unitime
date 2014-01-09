@@ -36,6 +36,8 @@ public interface SolverServer {
 
 	public boolean isLocal();
 	
+	public boolean isCoordinator();
+	
 	public Address getAddress();
 	
 	public Address getLocalAddress();
@@ -73,4 +75,6 @@ public interface SolverServer {
 	public void refreshCourseSolution(Long... solutionId);
 	
 	public void refreshExamSolution(Long sessionId, Long examTypeId);
+	
+	public void reset();
 }

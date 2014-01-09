@@ -77,13 +77,21 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 	@Override
 	public void start() {
 		super.start();
+		GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
+				.transport().addProperty("channelLookup", "org.unitime.commons.jgroups.SectioningChannelLookup").clusterName("UniTime:sectioning")
+				.globalJmxStatistics().cacheManagerName("OnlineSchedulingCacheManager").disable()
+				.build();
+		Configuration config = new ConfigurationBuilder()
+				.clustering().cacheMode(CacheMode.REPL_ASYNC)
+				.storeAsBinary().enable().defensive(true)
+				.build();
+		iCacheManager = new DefaultCacheManager(global, config);
 	}
 	
 	@Override
 	public void stop() {
 		super.stop();
-		if (iCacheManager != null) iCacheManager.stop();
-
+		iCacheManager.stop();
 	}
 	
 	@Override
@@ -261,38 +269,6 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 	}
     
 	public EmbeddedCacheManager getCacheManager() {
-		if (iCacheManager == null) {
-			/*
-			GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
-					.transport().addProperty("channelLookup", "org.unitime.commons.jgroups.SectioningChannelLookup").clusterName("UniTime:sectioning")
-					.globalJmxStatistics().cacheManagerName("OnlineSchedulingCacheManager").disable()
-					.build();
-			TransactionManagerLookup txLookup = new JBossStandaloneJTAManagerLookup();
-			Configuration config = new ConfigurationBuilder()
-					.clustering().cacheMode(CacheMode.DIST_SYNC).sync()
-					.hash().numOwners(2)
-					.transaction().transactionManagerLookup(txLookup).transactionMode(TransactionMode.TRANSACTIONAL).lockingMode(LockingMode.OPTIMISTIC).autoCommit(true)
-					.locking().concurrencyLevel(1000).isolationLevel(IsolationLevel.READ_COMMITTED).lockAcquisitionTimeout(5000)
-					// .deadlockDetection()
-					.build();
-			
-			iCacheManager = new DefaultCacheManager(global, config);
-			iCacheManager.defineConfiguration("OfferingLocks", new ConfigurationBuilder().read(config)
-				.transaction().lockingMode(LockingMode.PESSIMISTIC)
-				.locking().lockAcquisitionTimeout(100)
-				.build()
-				);
-				*/
-			GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
-					.transport().addProperty("channelLookup", "org.unitime.commons.jgroups.SectioningChannelLookup").clusterName("UniTime:sectioning")
-					.globalJmxStatistics().cacheManagerName("OnlineSchedulingCacheManager").disable()
-					.build();
-			Configuration config = new ConfigurationBuilder()
-					.clustering().cacheMode(CacheMode.REPL_ASYNC)
-					.storeAsBinary().enable().defensive(true)
-					.build();
-			iCacheManager = new DefaultCacheManager(global, config);
-		}
 		return iCacheManager;
 	}
 }
