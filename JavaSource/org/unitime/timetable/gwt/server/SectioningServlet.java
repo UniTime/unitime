@@ -97,6 +97,7 @@ import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.basic.ListClasses;
 import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.custom.DefaultCourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -142,6 +143,8 @@ public class SectioningServlet implements SectioningService {
 		} catch (Exception e) {
 			sLog.warn("Failed to initialize course detail provider: " + e.getMessage());
 		}
+		if (iCourseDetailsProvider == null)
+			iCourseDetailsProvider = new DefaultCourseDetailsProvider();
 	}
 	
 	private @Autowired AuthenticationManager authenticationManager;
