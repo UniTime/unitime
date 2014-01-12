@@ -217,7 +217,9 @@ try {
 			<html:submit onclick="displayLoading();" property="op" value="Stop"/>
 <% }
    if (solver!=null && !solver.isWorking()) { %>
+		<% if (solver.hasFinalSectioning()) { %>   
 			<html:submit onclick="displayLoading();" property="op" value="Student Sectioning"/>
+		<% } %>
 			<html:submit onclick="displayLoading();" property="op" value="Reload Input Data"/>
 			<html:submit onclick="confirmUnload();displayLoading();" property="op" value="Unload"/>
 			<sec:authorize access="hasPermission(#solverForm.owner, 'SolverGroup', 'SolverSolutionExportCsv')">
