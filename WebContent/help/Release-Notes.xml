@@ -50,6 +50,13 @@
 				<line>If the externally managed department does not allow required time and/or room preferences, the instructor preferences are weakened accordingly.</line>
 			</description>
 		</item>
+		<item>
+			<name>Hierarchical Preference Inheritance</name>
+			<description>
+				<line>If there are two or more scheduling subparts in a parent-child relation with the same instructional type (e.g., Lec - Lec a - Lec b stacked underneath), inherit preferences and the date pattern from the parent subpart whenever possible.</line>
+				<line>This behavior can be enabled by setting application property unitime.preferences.hierarchicalInheritance to true.</line>
+			</description>
+		</item>
 	</category>
 </release>
 </release-history>

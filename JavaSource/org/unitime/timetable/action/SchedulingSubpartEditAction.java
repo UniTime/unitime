@@ -288,7 +288,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         // Generate Time Pattern Grids
 		super.generateTimePatternGrids(request, frm, ss, timePatterns, op, timeVertical, true, null);
 		setupChildren(frm, request, ss); // Date patterns allowed in the DDL for Date pattern preferences
-		LookupTables.setupDatePatterns(request, sessionContext.getUser(), "Default", ss.getSession().getDefaultDatePatternNotNull(), ss.getManagingDept(), ss.effectiveDatePattern());
+		LookupTables.setupDatePatterns(request, sessionContext.getUser(), "Default", (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()), ss.getManagingDept(), ss.effectiveDatePattern());
 
         LookupTables.setupRooms(request, ss);		 // Room Prefs
         LookupTables.setupBldgs(request, ss);		 // Building Prefs
