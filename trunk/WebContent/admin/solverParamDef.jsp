@@ -79,7 +79,7 @@
 		<TR>
 			<TD>Description:</TD>
 			<TD>
-				<html:text property="description" size="50" maxlength="1000"/>
+				<html:text property="description" size="100" maxlength="1000"/>
 				&nbsp;<html:errors property="description"/>
 			</TD>
 		</TR>
@@ -95,7 +95,7 @@
 		<TR>
 			<TD>Default:</TD>
 			<TD>
-				<html:text property="default" size="50" maxlength="2048"/>
+				<html:text property="default" size="100" maxlength="2048"/>
 				&nbsp;<html:errors property="default"/>
 			</TD>
 		</TR>
