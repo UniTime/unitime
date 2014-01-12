@@ -1614,5 +1614,9 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     public String getUser() {
         return getProperties().getProperty("General.OwnerPuid");
     }
-    
+
+	@Override
+	public boolean hasFinalSectioning() {
+		return ((TimetableModel)currentSolution().getModel()).getStudentSectioning().hasFinalSectioning();
+	}
 }

@@ -131,4 +131,6 @@ public interface SolverProxy extends ClassAssignmentProxy {
     
     public boolean backup(File folder, String puid);
     public boolean restore(File folder, String puid);
+    
+    public boolean hasFinalSectioning();
 }
