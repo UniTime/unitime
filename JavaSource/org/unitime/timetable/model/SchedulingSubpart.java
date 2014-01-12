@@ -21,12 +21,14 @@ package org.unitime.timetable.model;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.commons.Debug;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseSchedulingSubpart;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -291,25 +293,160 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	}
     	return prefs;
     }
+    
+    protected Set combinePreferences(Class type, Set subpartPrefs, Set parentPrefs) {
+		if (TimePref.class.equals(type)) {
+			if (parentPrefs == null || parentPrefs.isEmpty() || !getParentSubpart().getMinutesPerWk().equals(getMinutesPerWk())) return subpartPrefs;
+			
+			Set<TimePattern> tp = new HashSet<TimePattern>();
 
+			Set ret = new TreeSet();
+			for (Iterator i = subpartPrefs.iterator(); i.hasNext(); ) {
+				TimePref pref = (TimePref) i.next();
+				for (Iterator j = parentPrefs.iterator(); j.hasNext(); ) {
+					TimePref p = (TimePref) j.next();
+					if (pref.getTimePattern().equals(p.getTimePattern())) {
+						pref = (TimePref)pref.clone();
+						pref.combineWith(p, false);
+					}
+				}
+				ret.add(pref);
+				tp.add(pref.getTimePattern());
+			}
+			
+			for (Iterator j = parentPrefs.iterator(); j.hasNext();) {
+				TimePref p = (TimePref) j.next();
+				if (tp.add(p.getTimePattern())) ret.add(p);
+			}
+
+			return ret;
+		}
+		
+		if (subpartPrefs == null || subpartPrefs.isEmpty()) return parentPrefs;
+		if (parentPrefs == null || parentPrefs.isEmpty()) return subpartPrefs;
+
+		Set ret = new TreeSet(subpartPrefs);
+		prefs: for (Iterator i = parentPrefs.iterator(); i.hasNext(); ) {
+			Preference parentPref = (Preference)i.next();
+			for (Iterator j = ret.iterator(); j.hasNext();) {
+				Preference p = (Preference)j.next();
+				if (p.isSame(parentPref)) continue prefs;
+			}
+			ret.add(parentPref);
+		}
+		return ret;
+    }
+    
+    private Set removeDepartmentalPreferences(Set prefs) {
+    	if (prefs==null) return new TreeSet();
+    	if (prefs.isEmpty()) return prefs;
+    	Set ret = new TreeSet();
+		for (Iterator i=prefs.iterator();i.hasNext();) {
+			Preference pref = (Preference)i.next();
+    		if (pref instanceof RoomPref) {
+    			Location loc = ((RoomPref)pref).getRoom();
+    			for (RoomDept rd: loc.getRoomDepts())
+    				if (rd.getDepartment().equals(getManagingDept())) {
+    					ret.add(pref); break;
+    				}
+    		} else if (pref instanceof BuildingPref) {
+    			Building b = ((BuildingPref)pref).getBuilding();
+    			if (getAvailableBuildings().contains(b))
+    				ret.add(pref);
+    		} else if (pref instanceof RoomFeaturePref) {
+    			RoomFeature rf = ((RoomFeaturePref)pref).getRoomFeature();
+    			if (rf instanceof GlobalRoomFeature)
+    				ret.add(pref);
+    			else if (rf instanceof DepartmentRoomFeature && ((DepartmentRoomFeature)rf).getDepartment().equals(getManagingDept()))
+    				ret.add(pref);
+    		} else if (pref instanceof RoomGroupPref) {
+    			RoomGroup rg = ((RoomGroupPref)pref).getRoomGroup();
+    			if (rg.isGlobal() || getManagingDept().equals(rg.getDepartment()))
+    				ret.add(pref);
+    		} else {
+    			ret.add(pref);
+    		}
+    	}
+    	return ret;
+    }
+
+    private Set weakenHardPreferences(Set prefs) {
+    	if (prefs==null || prefs.isEmpty()) return prefs;
+    	Set ret = new TreeSet();
+		for (Iterator i=prefs.iterator();i.hasNext();) {
+			Preference pref = (Preference)((Preference)i.next()).clone();
+			if (pref.weakenHardPreferences())
+				ret.add(pref);
+		}
+    	return ret;
+    }
+
+    private Set removeNeutralPreferences(Set prefs) {
+    	if (prefs==null) return new TreeSet();
+    	if (prefs.isEmpty()) return prefs;
+    	Set ret = new TreeSet(prefs);
+		for (Iterator i=ret.iterator();i.hasNext();) {
+			Preference pref = (Preference)i.next();
+			if (PreferenceLevel.sNeutral.equals(pref.getPrefLevel().getPrefProlog())) i.remove();
+		}
+		return ret;
+    }
+    
+    public boolean canInheritParentPreferences() {
+    	return getParentSubpart() != null && getParentSubpart().getItype().equals(getItype()) &&
+    			"true".equals(ApplicationProperties.getProperty("unitime.preferences.hierarchicalInheritance", "false"));
+    }
+    
     public Set effectivePreferences(Class type) {
     	if (DistributionPref.class.equals(type)) {
     		return effectiveDistributionPreferences(getManagingDept());
-    		/*
-    		Department mgr = getManagingDept();
-    		if (mgr!=null)
-    			return mgr.getPreferences(type, this);
-    		else
-    			return null;
-    			*/
     	}
     	
-    	return super.effectivePreferences(type);
+    	Set subpartPrefs = getPreferences(type, this);
+    	
+    	if (canInheritParentPreferences()) {
+    		Set parentPrefs = getParentSubpart().effectivePreferences(type);
+    		Department mngDept = getManagingDept();
+
+    		if (parentPrefs != null && !parentPrefs.isEmpty() && !mngDept.equals(getParentSubpart().getManagingDept())) {
+    			// different managers -> weaken preferences, if needed
+    			if (TimePref.class.equals(type)) {
+    				if (mngDept.isExternalManager() && !mngDept.isAllowReqTime())
+    					parentPrefs = weakenHardPreferences(parentPrefs);
+    			} else {
+    				if (mngDept.isExternalManager() && !mngDept.isAllowReqRoom())
+    					parentPrefs = weakenHardPreferences(parentPrefs);
+    			}
+    			// remove departmental preferences
+        		if (mngDept.isExternalManager()) { 
+        			parentPrefs = removeDepartmentalPreferences(parentPrefs);
+        		}
+    		}
+    		
+    		return removeNeutralPreferences(combinePreferences(type, subpartPrefs, parentPrefs));
+    	}
+    	
+    	return subpartPrefs;
+    }
+    
+    public Set effectivePreferences(Class type, PreferenceGroup appliesTo) {
+    	if (appliesTo == null) return effectivePreferences(type);
+    	Set ret = new TreeSet();
+    	for (Iterator i = effectivePreferences(type).iterator(); i.hasNext(); ) {
+    		Preference preference = (Preference)i.next();
+    		if (!preference.appliesTo(appliesTo)) continue;
+    		ret.add(preference);
+    	}
+    	return ret;
     }
     
 	public DatePattern effectiveDatePattern() {
-		if (getDatePattern()!=null) return getDatePattern();
-		return getSession().getDefaultDatePatternNotNull();
+		if (getDatePattern() != null) return getDatePattern();
+		if (canInheritParentPreferences()) {
+			return getParentSubpart().effectiveDatePattern();
+		} else {
+			return getSession().getDefaultDatePatternNotNull();
+		}
 	}
 
 	public Set getAvailableRooms() {
