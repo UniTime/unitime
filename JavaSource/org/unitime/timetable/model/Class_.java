@@ -390,7 +390,7 @@ public class Class_ extends BaseClass_ {
 		}
 		
 		// take subpart preferences
-		Set subpartPrefs = getSchedulingSubpart().getPreferences(type, this);
+		Set subpartPrefs = (getSchedulingSubpart().canInheritParentPreferences() ? getSchedulingSubpart().effectivePreferences(type, this) : getSchedulingSubpart().getPreferences(type, this));
 		if (subpartPrefs != null && !subpartPrefs.isEmpty() && !mngDept.equals(getSchedulingSubpart().getManagingDept())) {
 			// different managers -> weaken preferences, if needed
 			if (TimePref.class.equals(type)) {
@@ -456,7 +456,7 @@ public class Class_ extends BaseClass_ {
 		}
 		
 		// take subpart preferences
-		Set subpartPrefs = (hasExactTimePattern ? null : getSchedulingSubpart().getPreferences(type, this));
+		Set subpartPrefs = (hasExactTimePattern ? null : getSchedulingSubpart().canInheritParentPreferences() ? getSchedulingSubpart().effectivePreferences(type, this) : getSchedulingSubpart().getPreferences(type, this));
 		if (subpartPrefs != null && !subpartPrefs.isEmpty() && !mngDept.equals(getSchedulingSubpart().getManagingDept())) {
 			// different managers -> weaken preferences, if needed
 			if (TimePref.class.equals(type)) {

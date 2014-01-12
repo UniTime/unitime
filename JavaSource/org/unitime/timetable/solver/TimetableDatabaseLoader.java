@@ -2594,6 +2594,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			}
 		}
 		
+		postAutomaticHierarchicalConstraints();
+		
 		assignCommited();
 		
     	iProgress.setPhase("Posting class limit constraints ...", iOfferings.size());
@@ -3470,5 +3472,126 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             }
         }
         return ret;
+    }
+    
+    protected void postAutomaticHierarchicalConstraints() {
+		String automaticHierarchicalConstraints = getModel().getProperties().getProperty("General.AutomaticHierarchicalConstraints");
+		while (automaticHierarchicalConstraints != null && !automaticHierarchicalConstraints.isEmpty()) {
+			while (automaticHierarchicalConstraints.startsWith(" ") || automaticHierarchicalConstraints.startsWith(",") || automaticHierarchicalConstraints.startsWith(";"))
+				automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(1);
+			if (automaticHierarchicalConstraints.isEmpty()) break;
+			PreferenceLevel pref = null;
+			for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList()) {
+				if (automaticHierarchicalConstraints.toLowerCase().startsWith(p.getPrefName().toLowerCase() + " ")) {
+					pref = p;
+					automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(p.getPrefName().length() + 1);
+					break;
+				} else if (automaticHierarchicalConstraints.startsWith(p.getPrefProlog() + " ")) {
+					pref = p;
+					automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(p.getPrefProlog().length() + 1);
+					break;
+				}
+			}
+			if (pref == null) {
+				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint preference " + automaticHierarchicalConstraints);
+				break;
+			}
+			while (automaticHierarchicalConstraints.startsWith(" ") || automaticHierarchicalConstraints.startsWith(":"))
+				automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(1);
+			GroupConstraint.ConstraintType type = null;
+			for (GroupConstraint.ConstraintType t: GroupConstraint.ConstraintType.values()) {
+				if (automaticHierarchicalConstraints.toLowerCase().startsWith(t.getName().toLowerCase() + " ")
+						|| automaticHierarchicalConstraints.toLowerCase().startsWith(t.getName().toLowerCase() + ",")
+						|| automaticHierarchicalConstraints.toLowerCase().startsWith(t.getName().toLowerCase() + ";")) {
+					type = t;
+					automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(t.getName().length() + 1);
+					break;
+				} else 	if (automaticHierarchicalConstraints.toLowerCase().startsWith(t.name().toLowerCase() + " ")
+						|| automaticHierarchicalConstraints.toLowerCase().startsWith(t.name().toLowerCase() + ",")
+						|| automaticHierarchicalConstraints.toLowerCase().startsWith(t.name().toLowerCase() + ";")) {
+					type = t;
+					automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(t.getName().length() + 1);
+					break;
+				} else if (automaticHierarchicalConstraints.equalsIgnoreCase(t.getName()) || automaticHierarchicalConstraints.equalsIgnoreCase(t.name())) {
+					type = t;
+					automaticHierarchicalConstraints = "";
+					break;
+				}
+			}
+			if (type == null) {
+				iProgress.message(msglevel("automaticHierarchicalConstraints", Progress.MSGLEVEL_WARN), "Failed to parse automatic hierarchical constraint type " + automaticHierarchicalConstraints);
+				break;
+			}
+			
+			DatePattern pattern = null;
+			for (DatePattern p: (Set<DatePattern>)DatePattern.findAllUsed(iSessionId)) {
+				if (automaticHierarchicalConstraints.startsWith(p.getName().toLowerCase() + " ")
+					|| automaticHierarchicalConstraints.startsWith(p.getName().toLowerCase() + ",")
+					|| automaticHierarchicalConstraints.startsWith(p.getName().toLowerCase() + ";")) {
+					automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(p.getName().length() + 1);
+					pattern = p;
+					break;
+				} else if (automaticHierarchicalConstraints.equalsIgnoreCase(p.getName())) {
+					automaticHierarchicalConstraints = "";
+					pattern = p;
+					break;
+				}
+			}
+			
+			iProgress.setPhase("Posting automatic " + pref.getPrefName() + " " + type.getName() + " constraints" +
+					(pattern == null ? "" : " between classes of pattern " + pattern.getName()) + "...",iAllClasses.size());
+			for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
+    			Class_ clazz = (Class_)i1.next();
+    			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
+    			if (lecture==null) continue;
+    			
+    			if (!lecture.hasAnyChildren())
+    				postAutomaticHierarchicalConstraint(clazz, type, pref.getPrefProlog(), pattern);
+    			
+    			iProgress.incProgress();
+    		}
+		}
+    }
+    
+    protected boolean postAutomaticHierarchicalConstraint(Class_ clazz, GroupConstraint.ConstraintType type, String preference, DatePattern pattern) {
+    	boolean posted = false;
+    	if (!clazz.getChildClasses().isEmpty()) {
+    		for (Iterator i=clazz.getChildClasses().iterator();i.hasNext();) {
+    			Class_ c = (Class_)i.next();
+    			if (postAutomaticHierarchicalConstraint(c, type, preference, pattern))
+    				posted = true;
+    		}
+    	}
+    	
+    	if (posted) return true;
+    	
+		if (getLecture(clazz) == null) return false;
+		if (pattern != null && !pattern.equals(clazz.effectiveDatePattern())) return false;
+		
+		List<Lecture> variables = new ArrayList<Lecture>();
+
+		Class_ parent = clazz;
+		while (parent != null) {
+			if (pattern == null || pattern.equals(parent.effectiveDatePattern())) {
+				Lecture lecture = getLecture(parent);
+				if (lecture != null)
+					variables.add(0, lecture);
+			}
+			parent = parent.getParentClass();
+		}
+
+    	if (variables.size() <= 1) return false;
+
+    	GroupConstraint gc = new GroupConstraint(null, type, preference);
+    	String info = "";
+		for (Lecture var: variables) {
+			gc.addVariable(var);
+			if (!info.isEmpty()) info += ", ";
+			info += getClassLabel(var);
+		}
+		iProgress.info("Posted " + gc.getName() + " constraint between " + info + " (" + PreferenceLevel.prolog2string(preference) + ")");
+    	addGroupConstraint(gc);
+    	
+		return true;
     }
 }
