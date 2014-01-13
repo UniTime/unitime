@@ -70,6 +70,12 @@
 				<line>Find Assignment: Hide alternate course requests that cannot be assigned because all the unassigned course requests are wait-listed.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Finder</name>
+			<description>
+				<line>Added a default course detail provider (only showing course title, schedule note, credits, content, and coordinators) to prevent the "course detail interface not provided" warning.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

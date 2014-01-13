@@ -90,6 +90,7 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.custom.DefaultCourseDetailsProvider;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -115,6 +116,8 @@ public class CurriculaServlet implements CurriculaService {
 		} catch (Exception e) {
 			sLog.warn("Failed to initialize course detail provider: " + e.getMessage());
 		}
+		if (iCourseDetailsProvider == null)
+			iCourseDetailsProvider = new DefaultCourseDetailsProvider();
 	}
 	
 	private @Autowired SessionContext sessionContext;

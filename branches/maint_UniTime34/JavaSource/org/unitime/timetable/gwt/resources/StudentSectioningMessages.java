@@ -667,6 +667,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course detail interface not provided.")
 	String exceptionNoCustomCourseDetails();
 	
+	@DefaultMessage("No details are available for course {0} {1}.")
+	String infoCourseDetailsNotAvailable(String subject, String courseNbr);
+	
+	@DefaultMessage("Failed to load course details: {0}")
+	String failedLoadCourseDetails(String error);
+	
 	@DefaultMessage("Last academic session failed ({0}).")
 	String exceptionLastAcademicSessionFailed(String message);
 	
@@ -799,6 +805,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Consent")
 	String colConsent();
+	
+	@DefaultMessage("Coordinator")
+	String colCoordinator();
 
 	@DefaultMessage("Enrollments of {0}")
 	String titleEnrollments(String courseOrClass);
