@@ -221,9 +221,11 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 
 	public void stopUpdating(boolean interrupt) {
 		iRun = false;
-		if (interrupt) interrupt();
-		try {
-			this.join();
-		} catch (InterruptedException e) {}
+		if (interrupt) {
+			interrupt();
+			try {
+				this.join();
+			} catch (InterruptedException e) {}
+		}
 	}
 }

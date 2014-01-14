@@ -24,6 +24,7 @@ import java.lang.reflect.Modifier;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,6 +73,7 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
+import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.MemoryCounter;
@@ -126,6 +128,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		
 	protected void loadOnMaster(OnlineSectioningServerContext context) throws SectioningException {
 		try {
+			setProperty("ReloadIsNeeded", Boolean.FALSE);
 			final OnlineSectioningLog.Entity user = OnlineSectioningLog.Entity.newBuilder()
 					.setExternalId(StudentClassEnrollment.SystemChange.SYSTEM.name())
 					.setName(StudentClassEnrollment.SystemChange.SYSTEM.getName())
@@ -185,7 +188,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		Runtime rt = Runtime.getRuntime();
 		MemoryCounter mc = new MemoryCounter();
 		DecimalFormat df = new DecimalFormat("#,##0.00");
-		long total = mc.estimate(this);
+		long total = 0; // mc.estimate(this);
 		Map<String, String> info = new HashMap<String, String>();
 		Class clazz = getClass();
 		while (clazz != null) {
@@ -197,11 +200,14 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 						try {
 							Object obj = fields[i].get(this);
 							if (obj != null) {
-								long est = mc.estimate(obj);
+								long est = estimate(mc, obj);
 								if (est > 1024)
 									info.put(clazz.getSimpleName() + "." + fields[i].getName(), df.format(est / 1024.0) + " kB" + (obj instanceof Map ? " (" + ((Map)obj).size() + " records)" : obj instanceof Collection ? "(" + ((Collection)obj).size() + " records)" : ""));
+								total += est;
 							}
-						} catch (IllegalAccessException ex) {}
+						} catch (IllegalAccessException ex) {
+						} catch (ConcurrentModificationException ex) {
+						}
 					}
 				}
 			}
@@ -209,6 +215,32 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		}
 		iLog.info("Total Allocated " + df.format(total / 1024.0) + " kB (of " + df.format((rt.totalMemory() - rt.freeMemory()) / 1048576.0) + " MB), details: " + ToolBox.dict2string(info, 2));
 		return total;
+	}
+	
+	private long estimate(MemoryCounter mc, Object obj) {
+		if (obj instanceof Map) {
+			Map map = (Map)obj;
+			if (map.size() <= 1000) return mc.estimate(obj);
+			long total = 0;
+			int limit = map.size() / 5; Iterator it = map.entrySet().iterator();
+			for (int i = 0; i < limit; i++) {
+				Map.Entry e = (Map.Entry)it.next();
+				total += mc.estimate(e.getKey()) + mc.estimate(e.getValue());
+			}
+			return map.size() * total / limit;
+		} else if (obj instanceof Collection) {
+			Collection col = (Collection)obj;
+			if (col.size() <= 1000) return mc.estimate(obj);
+			long total = 0;
+			int limit = col.size() / 5; Iterator it = col.iterator();
+			for (int i = 0; i < limit; i++) {
+				Object val = it.next();
+				total += mc.estimate(val);
+			}
+			return col.size() * total / limit;
+		} else {
+			return mc.estimate(obj);
+		}
 	}
 	
 	@Override
@@ -264,6 +296,13 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		h.poll();
 		if (h.isEmpty())
 			sHelper.remove();
+	}
+	
+	protected OnlineSectioningLog.Entity getSystemUser() {
+		return OnlineSectioningLog.Entity.newBuilder()
+				.setExternalId(StudentClassEnrollment.SystemChange.SYSTEM.name())
+				.setName(StudentClassEnrollment.SystemChange.SYSTEM.getName())
+				.setType(OnlineSectioningLog.Entity.EntityType.OTHER).build();
 	}
 
 	@Override
@@ -576,11 +615,29 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			return iMaster.get();
 		}
 		
+		private void executeLoadOnMaster() {
+			synchronized (iExecutorQueue) {
+				iExecutorQueue.offer(new Runnable() {
+					@Override
+					public void run() {
+						loadOnMaster(iContext);
+					}
+					
+					@Override
+					public String toString() {
+						return "load-on-master";
+					}
+				});
+				iExecutorQueue.notify();
+			};
+		}
+		
 		@Override
 		public void run() {
 			if (iLock.tryLock()) {
 				iMaster.set(true);
-				loadOnMaster(iContext);
+				iLog.info("Loading server...");
+				executeLoadOnMaster();
 			}
 			while (!iStop) {
 				try {
@@ -588,30 +645,38 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 						iLog.info("Waiting for a master lock...");
 						iLock.lockInterruptibly();
 					}
-					iLog.info("I am the master.");
 					synchronized (iMaster) {
+						iLog.info("I am the master.");
 						iMaster.set(true);
+						if (Boolean.TRUE.equals(getProperty("ReloadIsNeeded", Boolean.FALSE))) {
+							iLog.info("Reloading server...");
+							executeLoadOnMaster();
+						}
 						iMaster.wait();
-					}
-					if (!iMaster.get()) {
+						iMaster.set(false);
 						iLock.unlock();
 						iLog.info("I am no longer the master.");
 					}
 				} catch (InterruptedException e) {
-					
 				}
 			}
 			iLog.info("No longer looking for a master.");
 		}
 		
 		public boolean release() {
-			if (iMaster.compareAndSet(true, false)) {
-				synchronized (iMaster) {
+			synchronized (iMaster) {
+				if (iMaster.get()) {
+					iLog.info("Releasing master lock...");
+					List<Long> offeringIds = getOfferingsToPersistExpectedSpaces(0);
+					if (!offeringIds.isEmpty()) {
+						iLog.info("There are " + offeringIds.size() + " offerings that need expected spaces persisted.");
+						execute(new PersistExpectedSpacesAction(offeringIds), getSystemUser());
+					}
 					iMaster.notify();
+					return true;
 				}
-				return true;
+				return false;
 			}
-			return false;
 		}
 		
 		public void dispose() {
