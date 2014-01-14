@@ -31,17 +31,15 @@ import org.infinispan.marshall.SerializeWith;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XTreeSet.XTreeSetSerializer.class)
-public class XTreeSet<T extends Externalizable> extends TreeSet<T> implements Externalizable {
+@SerializeWith(XCourseIdSet.XCourseIdSetSerializer.class)
+public class XCourseIdSet extends TreeSet<XCourseId> implements Externalizable {
 	private static final long serialVersionUID = 1L;
-	private Externalizer<T> iExternalizer;
 	
-	public XTreeSet(Externalizer<T> externalizer) {
+	public XCourseIdSet() {
 		super();
-		iExternalizer = externalizer;
 	}
 	
-	public XTreeSet(ObjectInput in) throws IOException, ClassNotFoundException {
+	public XCourseIdSet(ObjectInput in) throws IOException, ClassNotFoundException {
 		super();
 		readExternal(in);
 	}
@@ -49,31 +47,29 @@ public class XTreeSet<T extends Externalizable> extends TreeSet<T> implements Ex
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		int count = in.readInt();
-		iExternalizer = (Externalizer<T>)in.readObject();
-		clear();
+		if (!isEmpty()) clear();
 		for (int i = 0; i < count; i++)
-			add(iExternalizer.readObject(in));
+			add(new XCourseId(in));
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt(size());
-		out.writeObject(iExternalizer);
-		for (T t: this)
-			t.writeExternal(out);
+		for (XCourseId courseId: this)
+			courseId.writeExternal(out);
 	}
 
-	public static class XTreeSetSerializer implements Externalizer<XTreeSet<?>> {
+	public static class XCourseIdSetSerializer implements Externalizer<XCourseIdSet> {
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public void writeObject(ObjectOutput output, XTreeSet<?> object) throws IOException {
+		public void writeObject(ObjectOutput output, XCourseIdSet object) throws IOException {
 			object.writeExternal(output);
 		}
 
 		@Override
-		public XTreeSet<?> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XTreeSet(input);
+		public XCourseIdSet readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XCourseIdSet(input);
 		}		
 	}
 }
