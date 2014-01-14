@@ -56,11 +56,11 @@ import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
-import org.unitime.timetable.onlinesectioning.model.XHashSet;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequestSet;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
-import org.unitime.timetable.onlinesectioning.model.XTreeSet;
+import org.unitime.timetable.onlinesectioning.model.XCourseIdSet;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
 /**
@@ -69,10 +69,10 @@ import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 public class ReplicatedServerWithMaster extends AbstractLockingServer {
 	private EmbeddedCacheManager iCacheManager;
 	private Map<Long, XCourseId> iCourseForId;
-	private Map<String, XTreeSet<XCourseId>> iCourseForName;
+	private Map<String, XCourseIdSet> iCourseForName;
 	private Cache<Long, XStudent> iStudentTable;
 	private Cache<Long, XOffering> iOfferingTable;
-	private Map<Long, XHashSet<XCourseRequest>> iOfferingRequests;
+	private Map<Long, XCourseRequestSet> iOfferingRequests;
 	private Cache<Long, XExpectations> iExpectations;
 	private Cache<Long, Boolean> iOfferingLocks;
 
@@ -97,10 +97,10 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 	protected void load(OnlineSectioningServerContext context) throws SectioningException {
 		iCacheManager = context.getCacheManager();
 		iCourseForId = new Hashtable<Long, XCourseId>();
-		iCourseForName = new Hashtable<String, XTreeSet<XCourseId>>();
+		iCourseForName = new Hashtable<String, XCourseIdSet>();
 		iStudentTable = getCache("StudentTable");
 		iOfferingTable = getCache("OfferingTable");
-		iOfferingRequests = new HashMap<Long, XHashSet<XCourseRequest>>();
+		iOfferingRequests = new HashMap<Long, XCourseRequestSet>();
 		iExpectations = getCache("Expectations");
 		iOfferingLocks = getCache("OfferingLocks");
 		
@@ -553,7 +553,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 			try {
 				for (XCourse course: offering.getCourses()) {
 					iCourseForId.remove(course.getCourseId());
-					XTreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
+					XCourseIdSet courses = iCourseForName.get(course.getCourseNameInLowerCase());
 					if (courses != null) {
 						courses.remove(course);
 						if (courses.size() == 1) 
@@ -572,9 +572,9 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 			try {
 				for (XCourse course: offering.getCourses()) {
 					iCourseForId.put(course.getCourseId(), new XCourseId(course));
-					XTreeSet<XCourseId> courses = iCourseForName.get(course.getCourseNameInLowerCase());
+					XCourseIdSet courses = iCourseForName.get(course.getCourseNameInLowerCase());
 					if (courses == null) {
-						courses = new XTreeSet<XCourseId>(new XCourseId.XCourseIdSerializer());
+						courses = new XCourseIdSet();
 						iCourseForName.put(course.getCourseNameInLowerCase(), courses);
 					}
 					courses.add(new XCourseId(course));
@@ -619,7 +619,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 				for (XRequest request: oldStudent.getRequests())
 					if (request instanceof XCourseRequest)
 						for (XCourseId course: ((XCourseRequest)request).getCourseIds()) {
-							XHashSet<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+							XCourseRequestSet requests = iOfferingRequests.get(course.getOfferingId());
 							if (requests != null) {
 								if (!requests.remove(request))
 									iLog.warn("UPDATE[1]: Request " + oldStudent + " " + request + " was not present in the offering requests table for " + course);
@@ -639,9 +639,9 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 				for (XRequest request: student.getRequests())
 					if (request instanceof XCourseRequest)
 						for (XCourseId course: ((XCourseRequest)request).getCourseIds()) {
-							XHashSet<XCourseRequest> requests = iOfferingRequests.get(course.getOfferingId());
+							XCourseRequestSet requests = iOfferingRequests.get(course.getOfferingId());
 							if (requests == null)
-								requests = new XHashSet<XCourseRequest>(new XCourseRequest.XCourseRequestSerializer());
+								requests = new XCourseRequestSet();
 							requests.add((XCourseRequest)request);
 							iOfferingRequests.put(course.getOfferingId(), requests);
 						}
