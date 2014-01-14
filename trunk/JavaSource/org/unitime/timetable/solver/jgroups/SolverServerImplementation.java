@@ -598,27 +598,21 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 
 	@Override
 	public synchronized void reset() {
-		boolean reload = "true".equals(ApplicationProperties.getProperty("unitime.enrollment.server.reloadOnMerge", "true"));
-		if (reload) {
-			// pause updating
-			iUpdater.pauseUpading();
+		sLog.info(iOnlineStudentSchedulingContainer.getLockService().printLocks());
+		
+		// For each of my online student sectioning solvers
+		for (String session: iOnlineStudentSchedulingContainer.getSolvers()) {
+			OnlineSectioningServer server = iOnlineStudentSchedulingContainer.getSolver(session);
+			if (server == null) continue;
 			
-			// stop -- this will unload all servers
-			iOnlineStudentSchedulingContainer.stop();
-			
-			// start again
-			iOnlineStudentSchedulingContainer.start();
-			
-			// resume updating
-			iUpdater.resumeUpading();
-		} else {
-			// Release and re-acquire coordinator / master locks
-			for (String session: iOnlineStudentSchedulingContainer.getSolvers()) {
-				OnlineSectioningServer server = iOnlineStudentSchedulingContainer.getSolver(session);
-				if (server != null) {
-					sLog.info("  releasing master lock for " + server.getAcademicSession() + " ...");
-					server.releaseMasterLockIfHeld();
-				}
+			// mark server for reload and release the lock
+			if (server.isMaster()) {
+				sLog.info("Marking " + server.getAcademicSession() + " for reload");
+				server.setProperty("ReadyToServe", Boolean.FALSE);
+				server.setProperty("ReloadIsNeeded", Boolean.TRUE);
+
+				sLog.info("Releasing master lock for " + server.getAcademicSession() + " ...");
+				server.releaseMasterLockIfHeld();
 			}
 		}
 	}

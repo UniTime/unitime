@@ -114,6 +114,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 	}
 	
 	public OnlineSectioningServer createInstance(final Long academicSessionId, DataProperties config) {
+		unload(academicSessionId, true);
 		iGlobalLock.writeLock().lock();
 		try {
 			ApplicationProperties.setSessionId(academicSessionId);
@@ -175,8 +176,10 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 			if (u != null)
 				u.stopUpdating(interrupt);
 			OnlineSectioningServer s = iInstances.get(academicSessionId);
-			if (s != null)
+			if (s != null) {
+				sLog.info("Unloading " + u.getAcademicSession() + "...");
 				s.unload(true);
+			}
 			iInstances.remove(academicSessionId);
 			iUpdaters.remove(academicSessionId);
 		} finally {
