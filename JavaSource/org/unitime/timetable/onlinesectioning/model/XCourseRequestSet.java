@@ -31,17 +31,15 @@ import org.infinispan.marshall.SerializeWith;
 /**
  * @author Tomas Muller
  */
-@SerializeWith(XHashSet.HashSetSerializer.class)
-public class XHashSet<T extends Externalizable> extends HashSet<T> implements Externalizable {
+@SerializeWith(XCourseRequestSet.XCourseRequestSetSerializer.class)
+public class XCourseRequestSet extends HashSet<XCourseRequest> implements Externalizable {
 	private static final long serialVersionUID = 1L;
-	private Externalizer<T> iExternalizer;
 	
-	public XHashSet(Externalizer<T> externalizer) {
+	public XCourseRequestSet() {
 		super();
-		iExternalizer = externalizer;
 	}
 	
-	public XHashSet(ObjectInput in) throws IOException, ClassNotFoundException {
+	public XCourseRequestSet(ObjectInput in) throws IOException, ClassNotFoundException {
 		super();
 		readExternal(in);
 	}
@@ -49,31 +47,29 @@ public class XHashSet<T extends Externalizable> extends HashSet<T> implements Ex
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		int count = in.readInt();
-		iExternalizer = (Externalizer<T>)in.readObject();
-		clear();
+		if (!isEmpty()) clear();
 		for (int i = 0; i < count; i++)
-			add(iExternalizer.readObject(in));
+			add(new XCourseRequest(in));
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt(size());
-		out.writeObject(iExternalizer);
-		for (T t: this)
-			t.writeExternal(out);
+		for (XCourseRequest request: this)
+			request.writeExternal(out);
 	}
 
-	public static class HashSetSerializer implements Externalizer<XHashSet<?>> {
+	public static class XCourseRequestSetSerializer implements Externalizer<XCourseRequestSet> {
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public void writeObject(ObjectOutput output, XHashSet<?> object) throws IOException {
+		public void writeObject(ObjectOutput output, XCourseRequestSet object) throws IOException {
 			object.writeExternal(output);
 		}
 
 		@Override
-		public XHashSet<?> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-			return new XHashSet(input);
+		public XCourseRequestSet readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+			return new XCourseRequestSet(input);
 		}		
 	}
 }
