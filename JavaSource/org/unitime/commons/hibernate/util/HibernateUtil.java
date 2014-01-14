@@ -194,7 +194,6 @@ public class HibernateUtil {
             if (password!=null)
                 setProperty(document, "connection.password", password);
             setProperty(document, "hibernate.jdbc.batch_size", "100");
-            setProperty(document, "hibernate.cache.use_second_level_cache", "false");
             String dialect = getProperty(properties, "dialect");
             if (dialect!=null)
                 setProperty(document, "dialect", dialect);
@@ -225,6 +224,12 @@ public class HibernateUtil {
             setProperty(document, "hibernate.dbcp.testOnReturn", "false");
             setProperty(document, "hibernate.dbcp.validationQuery", "select 1 from dual");
         }
+        
+        // Remove second level cache
+        setProperty(document, "hibernate.cache.use_second_level_cache", "false");
+        setProperty(document, "hibernate.cache.use_query_cache", "false");
+        removeProperty(document, "hibernate.cache.region.factory_class");
+
         
         String default_schema = getProperty(properties, "default_schema");
         if (default_schema!=null)
