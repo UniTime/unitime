@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.infinispan.marshall.Externalizer;
-import org.infinispan.marshall.SerializeWith;
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * @author Tomas Muller

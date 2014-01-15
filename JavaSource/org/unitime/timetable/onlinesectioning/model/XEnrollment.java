@@ -31,8 +31,8 @@ import java.util.Set;
 import net.sf.cpsolver.studentsct.model.Enrollment;
 import net.sf.cpsolver.studentsct.model.Section;
 
-import org.infinispan.marshall.Externalizer;
-import org.infinispan.marshall.SerializeWith;
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;

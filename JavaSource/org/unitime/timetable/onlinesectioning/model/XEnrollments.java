@@ -30,11 +30,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.infinispan.marshall.Externalizer;
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * @author Tomas Muller
  */
+@SerializeWith(XEnrollments.XEnrollmentsSerializer.class)
 public class XEnrollments implements Serializable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	
