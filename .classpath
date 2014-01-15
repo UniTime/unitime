@@ -27,12 +27,13 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/xml-apis-1.0.b2.jar" sourcepath="3rd_party/sources/xml-apis-1.0.b2-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/aopalliance-1.0.jar" sourcepath="3rd_party/sources/aopalliance-1.0-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-io-1.3.2.jar" sourcepath="3rd_party/sources/commons-io-1.3.2-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jgroups-3.3.5.Final.jar" sourcepath="3rd_party/sources/jgroups-3.3.5.Final-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/infinispan-core-5.3.0.Final.jar" sourcepath="3rd_party/sources/infinispan-core-5.3.0.Final-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/infinispan-spring-5.3.0.Final.jar" sourcepath="3rd_party/sources/infinispan-spring-5.3.0.Final-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jgroups-3.4.1.Final.jar" sourcepath="3rd_party/sources/jgroups-3.4.1.Final-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/infinispan-core-6.0.1.Final.jar" sourcepath="3rd_party/sources/infinispan-core-6.0.1.Final-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/infinispan-spring-6.0.1.Final.jar" sourcepath="3rd_party/sources/infinispan-spring-6.0.1.Final-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/infinispan-commons-6.0.1.Final.jar" sourcepath="3rd_party/sources/infinispan-commons-6.0.1.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/staxmapper-1.1.0.Final.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-marshalling-1.3.15.GA.jar" sourcepath="3rd_party/sources/jboss-marshalling-1.3.15.GA-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-marshalling-river-1.3.15.GA.jar" sourcepath="3rd_party/sources/jboss-marshalling-river-1.3.15.GA-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-marshalling-1.3.18.GA.jar" sourcepath="3rd_party/sources/jboss-marshalling-1.3.18.GA-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-marshalling-river-1.3.18.GA.jar" sourcepath="3rd_party/sources/jboss-marshalling-river-1.3.18.GA-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jbossjta-4.16.6.Final.jar" sourcepath="3rd_party/sources/jbossjta-4.16.6.Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/org.osgi.core-4.0.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-ldap-core-1.3.1.RELEASE.jar"/>

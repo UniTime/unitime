@@ -32,8 +32,8 @@ import java.util.Locale;
 
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
-import org.infinispan.marshall.Externalizer;
-import org.infinispan.marshall.SerializeWith;
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.FreeTime;

@@ -43,13 +43,17 @@ public class SectioningChannelLookup implements JGroupsChannelLookup {
 	}
 
 	@Override
-	public boolean shouldStartAndConnect() {
+	public boolean shouldConnect() {
 		return true;
 	}
 
 	@Override
-	public boolean shouldStopAndDisconnect() {
+	public boolean shouldDisconnect() {
 		return true;
 	}
 
+	@Override
+	public boolean shouldClose() {
+		return true;
+	}
 }

@@ -86,7 +86,7 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 				.build();
 		Configuration config = new ConfigurationBuilder()
 				.clustering().cacheMode(CacheMode.REPL_ASYNC)
-				.storeAsBinary().enable().defensive(true)
+				.storeAsBinary().enable()
 				.build();
 		iCacheManager = new DefaultCacheManager(global, config);
 	}
