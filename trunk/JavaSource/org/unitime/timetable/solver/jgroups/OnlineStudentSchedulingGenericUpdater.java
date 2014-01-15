@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.log4j.Logger;
 import org.jgroups.Address;
@@ -105,10 +104,6 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		lock.lock();
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		try {
-			String year = ApplicationProperties.getProperty("unitime.enrollment.year");
-			String term = ApplicationProperties.getProperty("unitime.enrollment.term");
-			String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
-			
 			boolean replicate = "true".equals(ApplicationProperties.getProperty("unitime.enrollment.server.replicated", "true"));
 			Map<String, Set<Address>> solvers = new HashMap<String, Set<Address>>();
 			try {
@@ -134,11 +129,6 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 				Session session = i.next();
 				
 				if (!replicate && solvers.containsKey(session.getUniqueId().toString())) continue;
-				
-				if (year != null && !year.equals(session.getAcademicYear())) continue;
-				if (term != null && !term.equals(session.getAcademicTerm())) continue;
-				if (campus != null && !campus.equals(session.getAcademicInitiative())) continue;
-				
 				if (session.getStatusType().isTestSession()) continue;
 				if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
 				
@@ -163,30 +153,33 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 					continue;
 				}
 				
+				Collections.shuffle(available);
 				if (replicate) {
 					Set<Address> members = solvers.get(session.getUniqueId().toString());
-					Collections.shuffle(available);
 					try {
 						for (Address address: available) {
 							if (members != null && members.contains(address)) continue;
-							iContainer.getDispatcher().callRemoteMethod(
+							Boolean created = iContainer.getDispatcher().callRemoteMethod(
 									address,
 									"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iDispatcher.getChannel().getAddress() },
 									new Class[] { String.class, DataProperties.class, Address.class },
 									SolverServerImplementation.sFirstResponse);
 							// startup only one server first
-							if (members == null) break;
+							if (members == null && created) break;
 						}
 					} catch (Exception e) {
 						iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
 					}
 				} else {
 					try {
-						iContainer.getDispatcher().callRemoteMethod(
-								ToolBox.random(available),
-								"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iDispatcher.getChannel().getAddress() },
-								new Class[] { String.class, DataProperties.class, Address.class },
-								SolverServerImplementation.sFirstResponse);
+						for (Address address: available) {
+							Boolean created = iContainer.getDispatcher().callRemoteMethod(
+									address,
+									"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iDispatcher.getChannel().getAddress() },
+									new Class[] { String.class, DataProperties.class, Address.class },
+									SolverServerImplementation.sFirstResponse);
+							if (created) break;
+						}
 					} catch (Exception e) {
 						iLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
 					}
