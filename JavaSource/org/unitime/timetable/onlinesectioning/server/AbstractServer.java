@@ -430,7 +430,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	}
 	
 	@Override
-	public void unload(boolean remove) {
+	public void unload() {
 		if (iExecutor != null) {
 			iExecutor.iStop = true;
 			synchronized (iExecutorQueue) {

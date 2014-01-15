@@ -955,7 +955,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	}
 
 	@Override
-	public void unload(boolean remove) {
+	public void unload() {
 	}
 	
 	public static class NoLock implements Lock {

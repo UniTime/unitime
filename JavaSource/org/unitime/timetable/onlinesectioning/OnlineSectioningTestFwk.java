@@ -150,7 +150,7 @@ public abstract class OnlineSectioningTestFwk {
 			List<Long> offeringIds = iServer.getOfferingsToPersistExpectedSpaces(0);
 			if (!offeringIds.isEmpty())
 				iServer.execute(new PersistExpectedSpacesAction(offeringIds), user());
-			iServer.unload(true);
+			iServer.unload();
 		}
 		iServer = null;
 	}
