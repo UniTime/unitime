@@ -224,9 +224,9 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		for (Iterator<Session> i = SessionDAO.getInstance().findAll().iterator(); i.hasNext(); ) {
 			final Session session = i.next();
 			
-			if (year != null && !year.equals(session.getAcademicYear())) continue;
-			if (term != null && !term.equals(session.getAcademicTerm())) continue;
-			if (campus != null && !campus.equals(session.getAcademicInitiative())) continue;
+			if (year != null && !session.getAcademicYear().matches(year)) continue;
+			if (term != null && !session.getAcademicTerm().matches(term)) continue;
+			if (campus != null && !session.getAcademicInitiative().matches(campus)) continue;
 			if (session.getStatusType().isTestSession()) continue;
 
 			if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
