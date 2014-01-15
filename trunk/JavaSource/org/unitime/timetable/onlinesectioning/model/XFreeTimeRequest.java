@@ -26,8 +26,8 @@ import java.util.BitSet;
 
 import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
 
-import org.infinispan.marshall.Externalizer;
-import org.infinispan.marshall.SerializeWith;
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseDemand;
 
 /**

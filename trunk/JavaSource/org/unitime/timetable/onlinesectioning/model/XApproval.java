@@ -26,8 +26,8 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.infinispan.marshall.Externalizer;
-import org.infinispan.marshall.SerializeWith;
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.SerializeWith;
 
 /**
  * @author Tomas Muller

@@ -28,8 +28,8 @@ import java.util.Set;
 
 import net.sf.cpsolver.studentsct.model.Course;
 
-import org.infinispan.marshall.Externalizer;
-import org.infinispan.marshall.SerializeWith;
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.timetable.model.CourseOffering;
 

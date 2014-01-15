@@ -25,8 +25,8 @@ import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.infinispan.marshall.Externalizer;
-import org.infinispan.marshall.SerializeWith;
+import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.PosMajor;
