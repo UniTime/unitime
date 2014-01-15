@@ -42,6 +42,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedCallable;
 import org.infinispan.distexec.DistributedExecutorService;
+import org.infinispan.jmx.CacheJmxRegistration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.LockingMode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -119,22 +120,25 @@ public class ReplicatedServer extends AbstractServer {
 		return iOfferingLocks.getAdvancedCache().getCacheConfiguration().transaction().lockingMode() == LockingMode.OPTIMISTIC;
 	}
 	
+	protected void removeCache(Cache<?,?> cache) {
+		iCacheManager.getGlobalComponentRegistry().removeCache(cache.getName());
+		CacheJmxRegistration jmx = cache.getAdvancedCache().getComponentRegistry().getComponent(CacheJmxRegistration.class);
+		cache.stop();
+		if (jmx != null)
+			jmx.unregisterCacheMBean();
+	}
+	
 	@Override
-	public void unload(boolean remove) {
-		boolean master = isMaster();
-		super.unload(remove);
-		if (master && remove) {
-			iLog.info("Removing cache.");
-			iCacheManager.removeCache(cacheName("CourseForId"));
-			iCacheManager.removeCache(cacheName("CourseForName"));
-			iCacheManager.removeCache(cacheName("StudentTable"));
-			iCacheManager.removeCache(cacheName("OfferingTable"));
-			iCacheManager.removeCache(cacheName("Distributions"));
-			iCacheManager.removeCache(cacheName("OfferingRequests"));
-			iCacheManager.removeCache(cacheName("Expectations"));
-			iCacheManager.removeCache(cacheName("OfferingLocks"));
-			iCacheManager.removeCache(cacheName("Config"));
-		}
+	public void unload() {
+		super.unload();
+		removeCache(iCourseForId);
+		removeCache(iCourseForName);
+		removeCache(iStudentTable);
+		removeCache(iOfferingTable);
+		removeCache(iOfferingRequests);
+		removeCache(iExpectations);
+		removeCache(iOfferingLocks);
+		removeCache((Cache<String, Object>)iProperties);
 	}
 	
 	private TransactionManager getTransactionManager() {

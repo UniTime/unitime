@@ -178,7 +178,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 			OnlineSectioningServer s = iInstances.get(academicSessionId);
 			if (s != null) {
 				sLog.info("Unloading " + u.getAcademicSession() + "...");
-				s.unload(true);
+				s.unload();
 			}
 			iInstances.remove(academicSessionId);
 			iUpdaters.remove(academicSessionId);
@@ -244,14 +244,14 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		return false;
 	}
 	
-	public void unloadAll(boolean remove) {
+	public void unloadAll() {
 		iGlobalLock.writeLock().lock();
 		try {
 			for (OnlineStudentSchedulingUpdater u: iUpdaters.values()) {
 				u.stopUpdating(true);
 				if (u.getAcademicSession() != null) {
 					OnlineSectioningServer s = iInstances.get(u.getAcademicSession().getUniqueId());
-					if (s != null) s.unload(remove);
+					if (s != null) s.unload();
 				}
 			}
 			iInstances.clear();
@@ -264,7 +264,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 	@Override
 	public void stop() {
 		sLog.info("Student Sectioning Service is going down ...");
-		unloadAll(false);
+		unloadAll();
 		OnlineSectioningLogger.stopLogger();
 	}
 

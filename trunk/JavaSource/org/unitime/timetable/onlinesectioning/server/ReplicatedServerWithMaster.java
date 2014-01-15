@@ -38,6 +38,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedCallable;
 import org.infinispan.distexec.DistributedExecutorService;
+import org.infinispan.jmx.CacheJmxRegistration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
@@ -106,30 +107,33 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 		
 		Map<String, Object> original = new HashMap<String, Object>(iProperties);
 		iProperties = getCache("Config");
-		if (iProperties.isEmpty()) iProperties.putAll(original);
+		iProperties.putAll(original);
 		
 		iOfferingTable.addListener(new OfferingTableListener(iOfferingTable.values()));
 		iStudentTable.addListener(new StudentTableListener(iStudentTable.values()));
 		super.load(context);
 	}
 	
+	protected void removeCache(Cache<?,?> cache) {
+		iCacheManager.getGlobalComponentRegistry().removeCache(cache.getName());
+		CacheJmxRegistration jmx = cache.getAdvancedCache().getComponentRegistry().getComponent(CacheJmxRegistration.class);
+		cache.stop();
+		if (jmx != null)
+			jmx.unregisterCacheMBean();
+	}
+	
 	@Override
-	public void unload(boolean remove) {
-		boolean master = isMaster();
-		super.unload(remove);
-		if (master && remove) {
-			iLog.info("Removing cache.");
-			iCacheManager.removeCache(cacheName("StudentTable"));
-			iCacheManager.removeCache(cacheName("OfferingTable"));
-			iCacheManager.removeCache(cacheName("Expectations"));
-			iCacheManager.removeCache(cacheName("OfferingLocks"));
-			iCacheManager.removeCache(cacheName("Config"));
-		}
+	public void unload() {
+		super.unload();
+		removeCache(iStudentTable);
+		removeCache(iExpectations);
+		removeCache(iOfferingTable);
+		removeCache(iOfferingLocks);
+		removeCache((Cache<String, Object>)iProperties);
 	}
 	
 	@Override
 	protected void loadOnMaster(OnlineSectioningServerContext context) throws SectioningException {
-		clearAll();
 		releaseAllOfferingLocks();
 		super.loadOnMaster(context);
 	}
@@ -339,6 +343,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 			iStudentTable.clear();
 			iOfferingTable.clear();
 			iExpectations.clear();
+			iOfferingLocks.clear();
 		} finally {
 			lock.release();
 		}
