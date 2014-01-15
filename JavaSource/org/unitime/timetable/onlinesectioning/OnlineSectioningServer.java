@@ -147,7 +147,7 @@ public interface OnlineSectioningServer {
 	
 	public boolean checkDeadline(Long courseId, XTime sectionTime, Deadline type);
 	
-	public void unload(boolean remove);
+	public void unload();
 	
 	public long getMemUsage();
 	
