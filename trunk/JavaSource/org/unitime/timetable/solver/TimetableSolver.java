@@ -783,7 +783,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 				if (p!=null) {
 					Placement ini = (Placement)initialAssignments.get(p.variable());
 					record.add(ini,p);
-					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+(ini==null?"not assigned":ini.getName())+" &rarr; "+p.getName());
+					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+(ini==null?"not assigned":ini.getLongName())+" &rarr; "+p.getLongName());
                     if (ini!=null) p.variable().unassign(0);
 				}
 			}
@@ -796,7 +796,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 				Placement p = (Placement)initialAssignments.get(lec);
 				if (p!=null) { 
 					record.add(p,null);
-					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+p.getName()+" &rarr; not assigned");
+					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+p.getLongName()+" &rarr; not assigned");
 				}
 			}
 			record.done();
