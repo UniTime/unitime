@@ -39,6 +39,7 @@ import org.jgroups.util.RspList;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
 /**
  * @author Tomas Muller
@@ -156,6 +157,14 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 				Collections.shuffle(available);
 				if (replicate) {
 					Set<Address> members = solvers.get(session.getUniqueId().toString());
+					if (members != null) {
+						boolean ready = false;
+						for (Address address: members) {
+							OnlineSectioningServer server = iContainer.createProxy(address, session.getUniqueId().toString());
+							if (server.isReady()) { ready = true; break; }
+						}
+						if (!ready) continue;
+					}
 					try {
 						for (Address address: available) {
 							if (members != null && members.contains(address)) continue;
