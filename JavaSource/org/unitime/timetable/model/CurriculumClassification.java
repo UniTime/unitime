@@ -44,6 +44,10 @@ public class CurriculumClassification extends BaseCurriculumClassification imple
 /*[CONSTRUCTOR MARKER END]*/
 
 	public int compareTo(CurriculumClassification cc) {
+		if (getAcademicClassification() != null && cc.getAcademicClassification() != null) {
+			int cmp = getAcademicClassification().getCode().compareTo(cc.getAcademicClassification().getCode());
+			if (cmp != 0) return cmp;
+		}
 	    if (getOrd()!=null && cc.getOrd()!=null && !getOrd().equals(cc.getOrd()))
 	        return getOrd().compareTo(cc.getOrd());
 	    int cmp = getName().compareToIgnoreCase(cc.getName());
