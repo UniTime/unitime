@@ -1951,7 +1951,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 			if (iMeeting != null) {
 				if (filter == null || !filter.filter(iParent == null ? iEvent : iParent.iEvent, iMeeting)) meetings.add(iMeeting);
-			} else if (iEvent != null) {
+			} else if (iEvent != null && iEvent.hasMeetings()) {
 				for (MeetingInterface meeting: iEvent.getMeetings())
 					if (filter == null || !filter.filter(iParent == null ? iEvent : iParent.iEvent, meeting)) meetings.add(meeting);
 			}
