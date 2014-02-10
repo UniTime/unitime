@@ -716,7 +716,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				unavailability.setName(MESSAGES.unavailableEventDefaultName());
 				unavailability.setType(EventInterface.EventType.Unavailabile);
 				for (MeetingInterface m: unavailabilities)
-					if (event.inConflict(unavailability))
+					if (event.inConflict(m))
 						unavailability.addMeeting(m);
 				event.addConflict(unavailability);
 			}

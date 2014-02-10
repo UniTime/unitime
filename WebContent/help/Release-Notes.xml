@@ -28,6 +28,15 @@
 	<version>3.4.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Add / Edit Event</name>
+			<description>
+				<line>Fixed an issue with room availability that was causing a JavaScript exception while updating an event meeting in a room during unavailable time.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other Improvements</title>
 		<item>
 			<name>Curriculum Timetabling</name>
