@@ -84,12 +84,14 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					locations += (locations.isEmpty() ? "" : ",") + ":l" + i;
 				
 				Query query = EventDAO.getInstance().getSession().createQuery(
-						"select m from Meeting m " +
+						"select m from Meeting m, Location l " +
 						"where m.startPeriod<:stopTime and m.stopPeriod>:startTime and m.approvalStatus <= 1 and " +
-						"m.locationPermanentId in (" + locations + ") and m.meetingDate in ("+dates+")");
+						"l.session.uniqueId = :sessionId and l.permanentId in (" + locations + ") and l.ignoreRoomCheck = false and " +
+						"m.locationPermanentId = l.permanentId and m.meetingDate in ("+dates+")");
 				
 				query.setInteger("startTime", request.getStartSlot());
 				query.setInteger("stopTime", request.getEndSlot());
+				query.setLong("sessionId", request.getSessionId());
 				for (int i = 0; i < request.getDates().size(); i++) {
 					Date date = CalendarUtils.dateOfYear2date(session.getSessionStartYear(), request.getDates().get(i));
 					query.setDate("d" + i, date);
@@ -274,37 +276,38 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					available = false;
 				}
 				
-				for (Meeting m: (List<Meeting>)EventDAO.getInstance().getSession().createQuery(
-						"select m from Meeting m, Location l "+
-						"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and m.approvalStatus <= 1 and " +
-						"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId")
-						.setInteger("startTime", meeting.getStartSlot())
-						.setInteger("stopTime", meeting.getEndSlot())
-						.setDate("meetingDate", meeting.getMeetingDate())
-						.setLong("locationdId", meeting.getLocation().getId())
-						.setLong("meetingId", meeting.getId() == null ? -1 : meeting.getId())
-						.list()) {
-					
-					MeetingConflictInterface conflict = new MeetingConflictInterface();
-					
-					if (request.hasEventId() && m.getEvent().getUniqueId().equals(request.getEventId())) continue;
+				if (!location.isIgnoreRoomCheck())
+					for (Meeting m: (List<Meeting>)EventDAO.getInstance().getSession().createQuery(
+							"select m from Meeting m, Location l "+
+							"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and m.approvalStatus <= 1 and " +
+							"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId")
+							.setInteger("startTime", meeting.getStartSlot())
+							.setInteger("stopTime", meeting.getEndSlot())
+							.setDate("meetingDate", meeting.getMeetingDate())
+							.setLong("locationdId", meeting.getLocation().getId())
+							.setLong("meetingId", meeting.getId() == null ? -1 : meeting.getId())
+							.list()) {
+						
+						MeetingConflictInterface conflict = new MeetingConflictInterface();
+						
+						if (request.hasEventId() && m.getEvent().getUniqueId().equals(request.getEventId())) continue;
 
-					conflict.setEventId(m.getEvent().getUniqueId());
-					conflict.setName(m.getEvent().getEventName());
-					conflict.setType(EventInterface.EventType.values()[m.getEvent().getEventType()]);
-					
-					conflict.setId(m.getUniqueId());
-					conflict.setMeetingDate(m.getMeetingDate());
-					conflict.setDayOfYear(meeting.getDayOfYear());
-					conflict.setStartSlot(m.getStartPeriod());
-					conflict.setEndSlot(m.getStopPeriod());
-					conflict.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
-					conflict.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-					conflict.setApprovalDate(m.getApprovalDate());
-					conflict.setApprovalStatus(m.getApprovalStatus());
-					
-					meeting.addConflict(conflict);
-				}
+						conflict.setEventId(m.getEvent().getUniqueId());
+						conflict.setName(m.getEvent().getEventName());
+						conflict.setType(EventInterface.EventType.values()[m.getEvent().getEventType()]);
+						
+						conflict.setId(m.getUniqueId());
+						conflict.setMeetingDate(m.getMeetingDate());
+						conflict.setDayOfYear(meeting.getDayOfYear());
+						conflict.setStartSlot(m.getStartPeriod());
+						conflict.setEndSlot(m.getStopPeriod());
+						conflict.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
+						conflict.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
+						conflict.setApprovalDate(m.getApprovalDate());
+						conflict.setApprovalStatus(m.getApprovalStatus());
+						
+						meeting.addConflict(conflict);
+					}
 				
 				if (location != null && location.getEventAvailability() != null && location.getEventAvailability().length() == Constants.SLOTS_PER_DAY * Constants.DAY_CODES.length) {
 					check: for (int slot = meeting.getStartSlot(); slot < meeting.getEndSlot(); slot++) {
@@ -377,6 +380,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		resource.setRoomType(location.getRoomTypeLabel());
 		resource.setBreakTime(location.getEffectiveBreakTime());
 		resource.setMessage(location.getEventMessage());
+		resource.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
 		
 		Calendar calendar = Calendar.getInstance();
         for (int day = 0; day < Constants.DAY_CODES.length; day++)
@@ -435,6 +439,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		resource.setRoomType(location.getRoomTypeLabel());
 		resource.setBreakTime(location.getEffectiveBreakTime());
 		resource.setMessage(location.getEventMessage());
+		resource.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
 		
 		int day = meeting.getDayOfWeek();
 		for (int startTime = 0; startTime < Constants.SLOTS_PER_DAY; ) {

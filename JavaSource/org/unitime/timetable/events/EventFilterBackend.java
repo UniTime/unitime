@@ -134,8 +134,8 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				Entity notApproved = new Entity(3l, "Unapproved", "Not Approved Events"); notApproved.setCount(notApprovedCnt);
 				response.add("mode", notApproved);
 
-				int conflictingCnt = ((Number)query.select("count(distinct e)").from("Meeting mx")
-						.where("mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId and m.approvalStatus <= 1 and mx.approvalStatus <= 1")
+				int conflictingCnt = ((Number)query.select("count(distinct e)").from("Meeting mx").joinWithLocation()
+						.where("mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId and m.approvalStatus <= 1 and mx.approvalStatus <= 1 and l.ignoreRoomCheck = false")
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 				Entity conflicting = new Entity(5l, "Conflicting", "Conflicting Events"); conflicting.setCount(conflictingCnt);
 				response.add("mode", conflicting);
@@ -358,8 +358,9 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				query.addParameter("mode", "Xuser", context.getUser().getExternalUserId());
 				query.addParameter("mode", "Xtoday", today);
 			} else if ("Conflicting Events".equals(mode)) {
-				query.addFrom("mode", "Meeting Xm");
-				query.addWhere("mode", "Xm.uniqueId != m.uniqueId and m.meetingDate = Xm.meetingDate and m.startPeriod < Xm.stopPeriod and m.stopPeriod > Xm.startPeriod and m.locationPermanentId = Xm.locationPermanentId and m.approvalStatus <= 1 and Xm.approvalStatus <= 1");
+				query.addFrom("mode", "Meeting Xm, Location Xl");
+				query.addWhere("mode", "Xm.uniqueId != m.uniqueId and m.meetingDate = Xm.meetingDate and m.startPeriod < Xm.stopPeriod and m.stopPeriod > Xm.startPeriod and m.locationPermanentId = Xm.locationPermanentId and m.approvalStatus <= 1 and Xm.approvalStatus <= 1" +
+						" and Xl.permanentId = m.locationPermanentId and Xl.session.uniqueId = :sessionId and Xl.ignoreRoomCheck = false");
 			} else if ("Cancelled / Rejected".equals(mode)) {
 				query.addWhere("mode", "m.approvalStatus >= 2");
 			} else if ("Expiring Events".equals(mode)) {
