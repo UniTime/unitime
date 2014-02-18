@@ -2390,6 +2390,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No Event Department")
 	String noEventDepartment();
 	
+	@DefaultMessage("No Room Check")
+	String ignoreRoomCheck();
+	
 	@DefaultMessage("{0} m")
 	String roomDistance(String distanceInMeters);
 	

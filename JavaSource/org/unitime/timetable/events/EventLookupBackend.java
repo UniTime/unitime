@@ -995,6 +995,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						location.setRoomType(m.getLocation().getRoomTypeLabel());
 						location.setBreakTime(m.getLocation().getEffectiveBreakTime());
 						location.setMessage(m.getLocation().getEventMessage());
+						location.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
 						meeting.setLocation(location);
 					}
 					if (request.getEventFilter().hasOptions("flag") && request.getEventFilter().getOptions("flag").contains("Conflicts")) {
@@ -1499,6 +1500,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								location.setRoomType(m.getLocation().getRoomTypeLabel());
 								location.setBreakTime(m.getLocation().getEffectiveBreakTime());
 								location.setMessage(m.getLocation().getEventMessage());
+								location.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
 								meeting.setLocation(location);
 							}
 							event.addMeeting(meeting);	
@@ -1623,6 +1625,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									location.setRoomType(rp.getRoom().getRoomTypeLabel());
 									location.setBreakTime(rp.getRoom().getEffectiveBreakTime());
 									location.setMessage(rp.getRoom().getEventMessage());
+									location.setIgnoreRoomCheck(rp.getRoom().isIgnoreRoomCheck());
 									meeting.setLocation(location);
 									event.addMeeting(meeting);
 				    			}
@@ -1706,6 +1709,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 		resource.setRoomType(location.getRoomTypeLabel());
 		resource.setBreakTime(location.getEffectiveBreakTime());
 		resource.setMessage(location.getEventMessage());
+		resource.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
 		
 		Calendar calendar = Calendar.getInstance();
         for (int day = 0; day < Constants.DAY_CODES.length; day++)

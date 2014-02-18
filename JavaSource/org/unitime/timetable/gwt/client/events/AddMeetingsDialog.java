@@ -56,7 +56,6 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 
 import com.google.gwt.aria.client.Roles;
@@ -350,13 +349,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 							meeting.setStartOffset(0);
 							meeting.setEndOffset(-Integer.parseInt(room.getProperty("breakTime", "0")));
 
-							
-							ResourceInterface location = new ResourceInterface();
-							location.setId(room.getUniqueId());
-							location.setType(ResourceType.ROOM);
-							location.setName(room.getName());
-							location.setSize(Integer.valueOf(room.getProperty("capacity", null)));
-							meeting.setLocation(location);
+							meeting.setLocation(new ResourceInterface(room));
 							
 							meeting.setConflicts(getConflicts(date, room));
 
@@ -867,6 +860,8 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			final Entity room = getRooms().get(i);
 			final P p = new P("room");
 			p.setHTML(MESSAGES.singleRoomSelection(room.getName(), room.getProperty("type", null), room.getProperty("capacity", null)));
+			if ("1".equals(room.getProperty("ignoreRoomCheck", "0")))
+				p.addStyleName("unitime-IgnoreRoomCheck");
 			p.addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
@@ -1092,6 +1087,8 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			final Entity room = getRooms().get(ri);
 			final P prm = new P("date");
 			prm.setHTML(MESSAGES.singleRoomSelection(room.getName(), room.getProperty("type", null), room.getProperty("capacity", null)));
+			if ("1".equals(room.getProperty("ignoreRoomCheck", "0")))
+				prm.addStyleName("unitime-IgnoreRoomCheck");
 			prm.addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
