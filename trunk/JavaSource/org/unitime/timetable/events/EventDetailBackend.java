@@ -215,6 +215,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     				location.setRoomType(r.getRoomTypeLabel());
     				location.setBreakTime(r.getEffectiveBreakTime());
     				location.setMessage(r.getEventMessage());
+    				location.setIgnoreRoomCheck(r.isIgnoreRoomCheck());
     				related.addLocation(location);
     			}
     		}
@@ -281,6 +282,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setRoomType(r.getRoomTypeLabel());
 				location.setBreakTime(r.getEffectiveBreakTime());
 				location.setMessage(r.getEventMessage());
+				location.setIgnoreRoomCheck(r.isIgnoreRoomCheck());
 				related.addLocation(location);
     		}
     		for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
@@ -334,6 +336,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				location.setRoomType(r.getRoomTypeLabel());
 		    				location.setBreakTime(r.getEffectiveBreakTime());
 		    				location.setMessage(r.getEventMessage());
+		    				location.setIgnoreRoomCheck(r.isIgnoreRoomCheck());
 		    				related.addLocation(location);
 		    			}
 		    		}
@@ -425,6 +428,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				location.setRoomType(r.getRoomTypeLabel());
 		    				location.setBreakTime(r.getEffectiveBreakTime());
 		    				location.setMessage(r.getEventMessage());
+		    				location.setIgnoreRoomCheck(r.isIgnoreRoomCheck());
 		    				related.addLocation(location);
 		    			}
 		    		}
@@ -534,6 +538,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setRoomType(m.getLocation().getRoomTypeLabel());
 				location.setBreakTime(m.getLocation().getEffectiveBreakTime());
 				location.setMessage(m.getLocation().getEventMessage());
+				location.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
 				meeting.setLocation(location);
 				if ((e instanceof SpecialEvent || e instanceof CourseEvent) && (meeting.getApprovalStatus() == ApprovalStatus.Approved || meeting.getApprovalStatus() == ApprovalStatus.Pending)) {
 					if (m.getLocation().getEventDepartment() != null && m.getLocation().getEventDepartment().isAllowEvents()) {
@@ -565,7 +570,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				}
 			}
 			Set<Meeting> overlapsThisMeeting = overlaps.get(m.getUniqueId());
-			if (overlapsThisMeeting != null) {
+			if (overlapsThisMeeting != null && m.getLocation() != null && !m.getLocation().isIgnoreRoomCheck()) {
 				for (Meeting overlap: overlapsThisMeeting) {
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
 

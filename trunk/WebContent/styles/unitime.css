@@ -3194,3 +3194,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-TextChanged {
 	color: blue;
 }
+
+.unitime-IgnoreRoomCheck {
+	font-style: italic;
+}

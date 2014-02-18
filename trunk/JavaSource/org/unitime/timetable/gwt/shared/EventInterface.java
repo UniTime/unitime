@@ -419,6 +419,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private String iRoomType = null;
 		private int iBreakTime = 0;
 		private String iMessage = null;
+		private boolean iIgnoreRoomCheck = false;
 
 		public ResourceInterface() {}
 		public ResourceInterface(FilterRpcResponse.Entity room) {
@@ -433,6 +434,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			setRoomType(room.getProperty("type", null));
 			setBreakTime(Integer.parseInt(room.getProperty("breakTime" ,"0")));
 			setMessage(room.getProperty("message", null));
+			setIgnoreRoomCheck("1".equals(room.getProperty("ignoreRoomCheck", "0")));
 		}
 		
 		public ResourceType getType() { return iResourceType; }
@@ -464,15 +466,21 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setMessage(String message) { iMessage = message; }
 		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
 		public String getMessage() { return iMessage; }
+		public boolean isIgnoreRoomCheck() { return iIgnoreRoomCheck; }
+		public void setIgnoreRoomCheck(boolean ignoreRoomCheck) { iIgnoreRoomCheck = ignoreRoomCheck; }
 		
 		public String getNameWithHint() {
 			if (iResourceName == null || iResourceName.isEmpty()) return "";
-			return "<span onmouseover=\"showGwtRoomHint(this, '" + iResourceId + "', '', '" + (iDistance != null ? Math.round(iDistance) : "") + "');\" onmouseout=\"hideGwtRoomHint();\">" + iResourceName + "</span>";
+			return "<span onmouseover=\"showGwtRoomHint(this, '" + iResourceId + "', '', '" + (iDistance != null ? Math.round(iDistance) : "") + "');\" " +
+					(isIgnoreRoomCheck() ? "class='unitime-IgnoreRoomCheck' " : "") +
+					"onmouseout=\"hideGwtRoomHint();\">" + iResourceName + "</span>";
 		}
 		
 		public String getNameWithSizeAndHint() {
 			if (iResourceName == null || iResourceName.isEmpty()) return "";
-			return "<span onmouseover=\"showGwtRoomHint(this, '" + iResourceId + "', '', '" + (iDistance != null ? Math.round(iDistance) : "") + "');\" onmouseout=\"hideGwtRoomHint();\">" + iResourceName + (iSize != null && iSize > 0 ? " (" + iSize + ")" : "")+ "</span>";
+			return "<span onmouseover=\"showGwtRoomHint(this, '" + iResourceId + "', '', '" + (iDistance != null ? Math.round(iDistance) : "") + "');\" " +
+					(isIgnoreRoomCheck() ? "class='unitime-IgnoreRoomCheck' " : "") +
+					"onmouseout=\"hideGwtRoomHint();\">" + iResourceName + (iSize != null && iSize > 0 ? " (" + iSize + ")" : "")+ "</span>";
 		}
 		
 		public String toString() {
@@ -714,7 +722,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean inConflict(MeetingInterface meeting) {
 			return getDayOfYear() == meeting.getDayOfYear() && 
 					getStartSlot() < meeting.getEndSlot() && meeting.getStartSlot() < getEndSlot() &&
-					getLocation() != null &&  getLocation().equals(meeting.getLocation());
+					getLocation() != null &&  getLocation().equals(meeting.getLocation()) && !getLocation().isIgnoreRoomCheck();
 		}
 	}
 	
@@ -1111,7 +1119,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			} else if (!getType().equals(note.getType())) {
 				return getType().compareTo(note.getType());
 			}
-			return getId().compareTo(note.getId());
+			return (getId() == null ? new Long(-1l) : getId()).compareTo(note.getId() == null ? -1l : note.getId());
 		}
     }
     

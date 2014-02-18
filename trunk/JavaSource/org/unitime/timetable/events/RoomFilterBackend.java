@@ -494,7 +494,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					"distance", String.valueOf(dist == null ? 0l : Math.round(dist)),
 					"overbook", context.hasPermission(location, Right.EventLocationOverbook) ? "1" : "0",
 					"breakTime", String.valueOf(location.getEffectiveBreakTime()),
-					"message", location.getEventMessage()
+					"message", location.getEventMessage(),
+					"ignoreRoomCheck", location.isIgnoreRoomCheck() ? "1" : "0"
 					));
 		}
 	}

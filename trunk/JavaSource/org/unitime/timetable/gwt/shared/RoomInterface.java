@@ -323,6 +323,7 @@ public class RoomInterface implements IsSerializable {
 		private String iEventStatus = null;
 		private String iEventDepartment = null;
 		private String iNote = null;
+		private boolean iIgnoreRoomCheck = false;
 		
 		private Map<String, String> iFeatures = null;
 		
@@ -397,6 +398,9 @@ public class RoomInterface implements IsSerializable {
 		public Integer getBreakTime() { return iBreakTime; }
 		public void setBreakTime(Integer breakTime) { iBreakTime = breakTime; }
 		public boolean hasBreakTime() { return iBreakTime != null && iBreakTime != 0; }
+		
+		public boolean isIgnoreRoomCheck() { return iIgnoreRoomCheck; }
+		public void setIgnoreRoomCheck(boolean ignoreRoomCheck) { iIgnoreRoomCheck = ignoreRoomCheck; }
 	}
 	
 	public static class RoomHintRequest implements GwtRpcRequest<RoomHintResponse> {

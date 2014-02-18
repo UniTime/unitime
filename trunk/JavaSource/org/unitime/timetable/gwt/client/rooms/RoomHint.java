@@ -88,6 +88,9 @@ public class RoomHint {
 		if (room.hasNote())
 			form.addRow(new HTML(room.getNote()));
 		
+		if (room.isIgnoreRoomCheck())
+			form.addRow(new HTML(MESSAGES.ignoreRoomCheck()));
+		
 		if (distance != null && !distance.isEmpty() && !"0".equals(distance))
 			form.addRow(MESSAGES.propRoomDistance(), new Label(MESSAGES.roomDistance(distance), false));
 		
