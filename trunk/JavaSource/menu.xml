@@ -296,6 +296,9 @@
 			</or>
 		</condition>
 		<menu name="Input Data">
+			<condition>
+				<hasPermission name="Examinations"/>
+			</condition>
 			<item name="Instructors" page="instructorSearch.do">
 				<condition>
 					<hasPermission name="Instructors"/>
@@ -323,11 +326,7 @@
 				</item>
 			</menu>
 			<separator/>
-			<item name="Examinations" page="examList.do">
-				<condition>
-					<hasPermission name="Examinations"/>
-				</condition>
-			</item>
+			<item name="Examinations" page="examList.do"/>
 			<item name="Distribution Preferences" page="examDistributionPrefs.do">
 				<condition>
 					<hasPermission name="ExaminationDistributionPreferences"/>
