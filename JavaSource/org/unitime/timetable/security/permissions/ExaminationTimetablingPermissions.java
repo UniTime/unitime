@@ -22,7 +22,9 @@ package org.unitime.timetable.security.permissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -79,7 +81,11 @@ public class ExaminationTimetablingPermissions {
 
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return permissionSession.check(user, source);// && Exam.hasTimetable(source.getUniqueId());
+			if (SubjectArea.getUserSubjectAreas(user, false).isEmpty()) return false;
+			
+			if (ExamType.findAllUsed(source.getUniqueId()).isEmpty()) return false;
+
+			return permissionSession.check(user, source);
 		}
 
 		@Override
