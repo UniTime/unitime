@@ -26,8 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.cpsolver.coursett.criteria.additional.InstructorLunchBreak;
 import net.sf.cpsolver.coursett.criteria.additional.InstructorStudentConflict;
 import net.sf.cpsolver.coursett.criteria.additional.InstructorStudentHardConflict;
+import net.sf.cpsolver.coursett.criteria.additional.RoomSizePenalty;
+import net.sf.cpsolver.coursett.custom.DeterministicStudentSectioning;
+import net.sf.cpsolver.ifs.algorithms.SimpleSearch;
 import net.sf.cpsolver.ifs.extension.ConflictStatistics;
 import net.sf.cpsolver.ifs.extension.SearchIntensification;
 import net.sf.cpsolver.ifs.extension.ViolatedInitials;
@@ -158,6 +162,13 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 		}
 		properties.setProperty("General.SettingsId", settings.getUniqueId().toString());
 		
+        if ("Experimental".equalsIgnoreCase(properties.getProperty("General.SearchAlgorithm", "Default"))) {
+        	properties.setProperty("Neighbour.Class", SimpleSearch.class.getName());
+        	properties.setProperty("General.SearchIntensification", "false");
+        	properties.setProperty("General.CompleteSolutionFixInterval", "-1");
+        	properties.setProperty("General.IncompleteSolutionFixInterval", "-1");
+        }
+        
 		// Generate extensions
 		String ext = properties.getProperty("Extensions.Classes", "");
 		if (properties.getPropertyBoolean("General.SearchIntensification", true)) {
@@ -213,7 +224,16 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
         
         if (properties.getPropertyBoolean("Global.LoadStudentInstructorConflicts", false))
         	properties.setProperty("General.AdditionalCriteria", properties.getProperty("General.AdditionalCriteria") + ";" + InstructorStudentConflict.class.getName() + ";" + InstructorStudentHardConflict.class.getName());
-
+        
+        if (properties.getPropertyBoolean("InstructorLunch.Enabled", false))
+        	properties.setProperty("General.AdditionalCriteria", properties.getProperty("General.AdditionalCriteria") + ";" + InstructorLunchBreak.class.getName());
+        
+        if (properties.getPropertyDouble("Comparator.RoomSizeWeight", 0.0) != 0.0)
+        	properties.setProperty("General.AdditionalCriteria", properties.getProperty("General.AdditionalCriteria") + ";" + RoomSizePenalty.class.getName());
+        
+        if (properties.getPropertyBoolean("General.DeterministicStudentSectioning", false))
+        	properties.setProperty("StudentSectioning.Class", DeterministicStudentSectioning.class.getName());
+        
         properties.expand();
         
         return properties;
