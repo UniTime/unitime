@@ -534,7 +534,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 		List<MeetingConflictInterface> conflicts = new ArrayList<EventInterface.MeetingConflictInterface>();
 		for (Meeting m: (List<Meeting>)hibSession.createQuery(
 				"select m from Meeting m, Location l "+
-				"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and " +
+				"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and l.ignoreRoomCheck = false and " +
 				"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and m.event.uniqueId != :eventId and m.approvalStatus <= 1")
 				.setInteger("startTime", meeting.getStartSlot())
 				.setInteger("stopTime", meeting.getEndSlot())
