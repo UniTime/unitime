@@ -138,4 +138,10 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
         if (cmp!=0) return cmp;
         return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(p.getUniqueId() == null ? -1 : p.getUniqueId());
     }
+    
+    @Override
+    public String getDefault() {
+    	String ret = super.getDefault();
+    	return ret == null ? "" : ret;
+    }
 }
