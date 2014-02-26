@@ -119,6 +119,8 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.solver.course.weights.ClassWeightProvider;
+import org.unitime.timetable.solver.course.weights.DefaultClassWeights;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedCourseOffering;
@@ -192,6 +194,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private StudentCourseDemands iStudentCourseDemands = null;
     
+    private ClassWeightProvider iClassWeightProvider = null;
+
     public static enum CommittedStudentConflictsMode {
     		Ignore,
     		Load,
@@ -270,6 +274,17 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         if (iLoadStudentInstructorConflicts && iStudentCourseDemands.isMakingUpStudents()) {
         	iLoadStudentInstructorConflicts = false;
         	getModel().getProperties().setProperty("Global.LoadStudentInstructorConflicts", "false");
+        }
+        
+        try {
+        	String classWeightProviderClassName = getModel().getProperties().getProperty("ClassWeightProvider.Class", DefaultClassWeights.class.getName());
+        	if (classWeightProviderClassName.indexOf(' ') >= 0) classWeightProviderClassName = classWeightProviderClassName.replace(" ", "");
+        	if (classWeightProviderClassName.indexOf('.') < 0) classWeightProviderClassName = "org.unitime.timetable.solver.course.weights." + classWeightProviderClassName;
+            Class classWeightProviderClass = Class.forName(classWeightProviderClassName);
+            iClassWeightProvider = (ClassWeightProvider)classWeightProviderClass.getConstructor(DataProperties.class).newInstance(getModel().getProperties());
+        } catch (Exception e) {
+        	iProgress.message(msglevel("badClassWeightProvider", Progress.MSGLEVEL_WARN), "Failed to load custom class weight provider, using the default one instead.",e);
+        	iClassWeightProvider = new DefaultClassWeights(getModel().getProperties());
         }
     }
     
@@ -1092,6 +1107,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	} else
         		iProgress.message(msglevel("noPlacement", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(lecture)+" has no available placement.");
         }
+        if (iClassWeightProvider != null)
+        	lecture.setWeight(iClassWeightProvider.getWeight(lecture));
     	iLectures.put(clazz.getUniqueId(),lecture);
         getModel().addVariable(lecture);
 
