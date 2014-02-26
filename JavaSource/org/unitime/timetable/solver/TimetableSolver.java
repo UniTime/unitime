@@ -1486,19 +1486,6 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 		return new Date(iLastTimeStamp);
 	}
     
-    protected void onAssigned(double startTime) {
-        // Check if the solution is the best ever found one
-        if (iCurrentSolution.getModel().unassignedVariables().isEmpty() && getSolutionComparator().isBetterThanBestSolution(iCurrentSolution) && iCurrentSolution.getIteration() - iCurrentSolution.getBestIteration() > 5000) {
-            fixCompleteSolution(startTime);
-        } else {
-            // If the solver is not able to improve solution in the last 5000 iterations, take the best one and try to fix it
-            if (iCurrentSolution.getBestInfo() != null && iCurrentSolution.getModel().getBestUnassignedVariables() > 0 && iCurrentSolution.getIteration() == iCurrentSolution.getBestIteration() + 5000) {
-                iCurrentSolution.restoreBest();
-                fixCompleteSolution(startTime);
-            }
-        }
-    }
-    
     public byte[] exportXml() throws Exception {
         synchronized (currentSolution()) {
         	File temp = File.createTempFile("course-" + getProperties().getProperty("General.SolverGroupId","").replace(',', '-'), ".xml");
