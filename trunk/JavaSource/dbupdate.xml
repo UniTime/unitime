@@ -8726,7 +8726,7 @@
 			(%ID% + 5, 'General.AdditionalCriteria', 'net.sf.cpsolver.coursett.criteria.additional.ImportantStudentConflict;net.sf.cpsolver.coursett.criteria.additional.ImportantStudentHardConflict', 'Additional Criteria (semicolon separated list of class names)', 'text', %OGEN% + 3, 0, %GGEN%),
 			(%ID% + 6, 'General.PurgeInvalidPlacements', 'true', 'Purge invalid placements during the data load', 'boolean', %OGEN% + 4, 0, %GGEN%),
 			(%ID% + 7, 'CurriculumEnrollmentPriority.GroupMatch', '.*', 'Important Curriculum Groups (regexp matching the group name -- all courses of a matching group are marked as important)', 'text', %OGEN% + 5, 0, %GGEN%),
-			(%ID% + 8, 'Precedence.ConsiderDatePatterns', 'true', 'Precedence Constraint: consider date patterns', 'text', %OGEN% + 6, 1, %GGEN%),
+			(%ID% + 8, 'Precedence.ConsiderDatePatterns', 'true', 'Precedence Constraint: consider date patterns', 'boolean', %OGEN% + 6, 1, %GGEN%),
 			(%ID% + 9, 'General.JenrlMaxConflicts', '1.0', 'Joint Enrollment Constraint: conflict limit (% limit of the smaller class)', 'double', %OGEN% + 7, 1, %GGEN%),
 			(%ID% +10, 'General.JenrlMaxConflictsWeaken', '0.001', 'Joint Enrollment Constraint: limit weakening', 'double', %OGEN% + 8, 1, %GGEN%),
 			(%ID% +11, 'Comparator.ImportantStudentConflictWeight', '0.0', 'Weight of important student conflict', 'double', %OCMP%, 1, %GCMP%),
@@ -9006,5 +9006,651 @@
 			)
 		</plsql>
 		<plsql>alter table %SCHEMA%.cluster_discovery add constraint pk_cluster_discovery primary key (own_address, cluster_name)</plsql>
+	</update>
+	<update version="132" date="26-Fev-2014" comment="New Solver Parameters">
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group
+				(uniqueid, name, description, condition, ord, param_type) values 
+				(%SCHEMA%.solver_parameter_group_seq.nextval, 'InstructorLunch', 'Instructor Lunch Breaks', '', -1, 0)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+				where g.name='InstructorLunch'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group
+				(uniqueid, name, description, condition, ord, param_type) values 
+				(%SCHEMA%.solver_parameter_group_seq.nextval, 'Curriculum', 'Curriculum Conversion', '', -1, 0)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x )
+				where g.name='Curriculum'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'InstructorLunch.Enabled' as name,
+				'false' as default_value,
+				'Enable Instructor Lunch Breaks' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'InstructorLunch') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstructorLunch')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'InstructorLunch.Weight' as name,
+				'0.18' as default_value,
+				'Weight' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'InstructorLunch') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstructorLunch')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'InstructorLunch.StartSlot' as name,
+				'132' as default_value,
+				'Start slot' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'InstructorLunch') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstructorLunch')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'InstructorLunch.EndSlot' as name,
+				'162' as default_value,
+				'End slot' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'InstructorLunch') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstructorLunch')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'InstructorLunch.Length' as name,
+				'6' as default_value,
+				'Minum break length (in slots)' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'InstructorLunch') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstructorLunch')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'InstructorLunch.Multiplier' as name,
+				'1.15' as default_value,
+				'Violations multiplication factor' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'InstructorLunch') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstructorLunch')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'InstructorLunch.InfoShowViolations' as name,
+				'false' as default_value,
+				'Show violations in the solution info' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'InstructorLunch') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'InstructorLunch')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Curriculum.Phases' as name,
+				'HC,Deluge' as default_value,
+				'Search Phases' as description,
+				'text' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Curriculum') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Curriculum')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Curriculum.HC.MaxIdle' as name,
+				'1000' as default_value,
+				'Hill Climber: max idle iterations' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Curriculum') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Curriculum')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Curriculum.Deluge.Factor' as name,
+				'0.999999' as default_value,
+				'Great Deluge: cooling rate' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Curriculum') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Curriculum')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Curriculum.Deluge.UpperBound' as name,
+				'1.25' as default_value,
+				'Great Deluge: upper bound' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Curriculum') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Curriculum')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Curriculum.Deluge.LowerBound' as name,
+				'0.75' as default_value,
+				'Great Deluge: lower bound' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Curriculum') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Curriculum')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Global.LoadStudentInstructorConflicts' as name,
+				'false' as default_value,
+				'Load student instructor conflicts' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'General.AutomaticHierarchicalConstraints' as name,
+				'' as default_value,
+				'Automatic hierarchical constraints (comma separated list of a preference, a constraint name and optional date pattern)' as description,
+				'text' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'General.CompleteSolutionFixInterval' as name,
+				'1' as default_value,
+				'Fix complete solution interval (min number of iteration from the previous best solution)' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'General.IncompleteSolutionFixInterval' as name,
+				'5000' as default_value,
+				'Fix incomplete solution interval (min number of non improving iterations, -1 to disable' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'General.SearchAlgorithm' as name,
+				'Default' as default_value,
+				'Search Algorithm' as description,
+				'enum(Default,Experimental)' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'General.DeterministicStudentSectioning' as name,
+				'false' as default_value,
+				'Deterministic student sectioning' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Comparator.RoomSizeWeight' as name,
+				'0.001' as default_value,
+				'Excessive room size weight' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Comparator') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Comparator')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Comparator.RoomSizeFactor' as name,
+				'1.05' as default_value,
+				'Excessive room size factor' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Comparator') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Comparator')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'FlexibleConstraint.Weight' as name,
+				'%Comparator.ContrPreferenceWeight%' as default_value,
+				'Flexible constraint weight' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Comparator') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Comparator')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Construction.Class' as name,
+				'net.sf.cpsolver.coursett.heuristics.NeighbourSelectionWithSuggestions' as default_value,
+				'Construction: heuristics' as description,
+				'text' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Construction.UntilComplete' as name,
+				'false' as default_value,
+				'Construction: use construction heuristic untill a complete solution is found' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Search.GreatDeluge' as name,
+				'true' as default_value,
+				'Use great deluge (instead of simulated annealing)' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'HillClimber.MaxIdle' as name,
+				'10000' as default_value,
+				'Hill Climber: max idle iterations' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'HillClimber.AdditionalNeighbours' as name,
+				'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.01;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.01' as default_value,
+				'Hill Climber: Additional neighbourhoods' as description,
+				'text' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'GreatDeluge.CoolRate' as name,
+				'0.9999999' as default_value,
+				'Great Deluge: cooling rate' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'GreatDeluge.UpperBoundRate' as name,
+				'1.05' as default_value,
+				'Great Deluge: upper bound' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'GreatDeluge.LowerBoundRate' as name,
+				'0.95' as default_value,
+				'Great Deluge: lower bound' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'GreatDeluge.AdditionalNeighbours' as name,
+				'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1' as default_value,
+				'Great Deluge: Additional neighbourhoods' as description,
+				'text' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'SimulatedAnnealing.InitialTemperature' as name,
+				'1.5' as default_value,
+				'Simulated Annealing: initial temperature' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'SimulatedAnnealing.TemperatureLength' as name,
+				'2500' as default_value,
+				'Simulated Annealing: temperature length (number of iterations between temperature decrements)' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'SimulatedAnnealing.CoolingRate' as name,
+				'0.95' as default_value,
+				'Simulated Annealing: cooling rate' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'SimulatedAnnealing.ReheatLengthCoef' as name,
+				'5.0' as default_value,
+				'Simulated Annealing: temperature re-heat length coefficient' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'SimulatedAnnealing.ReheatRate' as name,
+				'-1' as default_value,
+				'Simulated Annealing: temperature re-heating rate (default (1/coolingRate)^(reheatLengthCoef*1.7))' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'SimulatedAnnealing.RestoreBestLengthCoef' as name,
+				'-1' as default_value,
+				'Simulated Annealing: restore best length coefficient (default reheatLengthCoef^2)' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'SimulatedAnnealing.StochasticHC' as name,
+				'false' as default_value,
+				'Simulated Annealing: stochastic search acceptance' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'SimulatedAnnealing.RelativeAcceptance' as name,
+				'true' as default_value,
+				'Simulated Annealing: relative acceptance (compare with current solution, not the best one)' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'SimulatedAnnealing.AdditionalNeighbours' as name,
+				'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1' as default_value,
+				'Simulated Annealing: Additional neighbourhoods' as description,
+				'text' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Neighbour')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Reservation.CanAssignOverTheLimit' as name,
+				'true' as default_value,
+				'Allow over limit for individual reservations' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Placement.FlexibleConstrPreferenceWeight1' as name,
+				'%Placement.ConstrPreferenceWeight1%' as default_value,
+				'Flexible constraint preference weight (level 1)' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Value') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Value')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Placement.FlexibleConstrPreferenceWeight2' as name,
+				'%FlexibleConstraint.Weight%' as default_value,
+				'Flexible constraint preference weight (level 1)' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Value') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Value')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'Placement.FlexibleConstrPreferenceWeight3' as name,
+				'%Placement.ConstrPreferenceWeight3%' as default_value,
+				'Flexible constraint preference weight (level 1)' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Value') as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'Value')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(select
+				 solver_parameter_def_seq.nextval as uniqueid,
+				'ClassWeightProvider.Class' as name,
+				'Default Class Weights' as default_value,
+				'Class Weights' as description,
+				'enum(Default Class Weights,Average Hours A Week Class Weights)' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<mysql into="GGEN">select uniqueid from %SCHEMA%.solver_parameter_group where name='General'</mysql>
+		<mysql into="OGEN">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GGEN%</mysql>
+		<mysql into="GCMP">select uniqueid from %SCHEMA%.solver_parameter_group where name='Comparator'</mysql>
+		<mysql into="OCMP">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GCMP%</mysql>
+		<mysql into="GN">select uniqueid from %SCHEMA%.solver_parameter_group where name='Neighbour'</mysql>
+		<mysql into="ON">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GN%</mysql>
+		<mysql into="GSCT">select uniqueid from %SCHEMA%.solver_parameter_group where name='StudentSct'</mysql>
+		<mysql into="OSCT">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GSCT%</mysql>
+		<mysql into="GVAL">select uniqueid from %SCHEMA%.solver_parameter_group where name='Value'</mysql>
+		<mysql into="OVAL">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GVAL%</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="ORD">select max(ord)+1 from %SCHEMA%.solver_parameter_group</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, ord, param_type) values
+			(%ID% + 0, 'InstructorLunch', 'Instructor Lunch Breaks', %ORD%, 0),
+			(%ID% + 1, 'Curriculum', 'Curriculum Conversion', %ORD% + 1, 0)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID% + 02, 'InstructorLunch.Enabled', 'false', 'Enable Instructor Lunch Breaks', 'boolean', 0, 1, %ID%),
+			(%ID% + 03, 'InstructorLunch.Weight', '0.18', 'Weight', 'double', 1, 1, %ID%),
+			(%ID% + 04, 'InstructorLunch.StartSlot', '132', 'Start slot', 'integer', 2, 1, %ID%),
+			(%ID% + 05, 'InstructorLunch.EndSlot', '162', 'End slot', 'integer', 3, 1, %ID%),
+			(%ID% + 06, 'InstructorLunch.Length', '6', 'Minum break length (in slots)', 'integer', 4, 1, %ID%),
+			(%ID% + 07, 'InstructorLunch.Multiplier', '1.15', 'Violations multiplication factor', 'double', 5, 1, %ID%),
+			(%ID% + 08, 'InstructorLunch.InfoShowViolations', 'false', 'Show violations in the solution info', 'boolean', 6, 1, %ID%),
+			
+			(%ID% + 09, 'Curriculum.Phases', 'HC,Deluge', 'Search Phases', 'text', 0, 0, %ID% + 1),
+			(%ID% + 10, 'Curriculum.HC.MaxIdle', '1000', 'Hill Climber: max idle iterations', 'integer', 1, 1, %ID% + 1),
+			(%ID% + 11, 'Curriculum.Deluge.Factor', '0.999999', 'Great Deluge: cooling rate', 'double', 2, 1, %ID% + 1),
+			(%ID% + 12, 'Curriculum.Deluge.UpperBound', '1.25', 'Great Deluge: upper bound', 'double', 3, 1, %ID% + 1),
+			(%ID% + 13, 'Curriculum.Deluge.LowerBound', '0.75', 'Great Deluge: lower bound', 'double', 4, 1, %ID% + 1),
+
+			(%ID% + 14, 'Global.LoadStudentInstructorConflicts', 'false', 'Load student instructor conflicts', 'boolean', %OGEN%, 1, %GGEN%),
+			(%ID% + 15, 'General.AutomaticHierarchicalConstraints', '', 'Automatic hierarchical constraints (comma separated list of a preference, a constraint name and optional date pattern)', 'text', %OGEN% + 1, 1, %GGEN%),
+			(%ID% + 16, 'General.CompleteSolutionFixInterval', '1', 'Fix complete solution interval (min number of iteration from the previous best solution)', 'integer', %OGEN% + 2, 0, %GGEN%),
+			(%ID% + 17, 'General.IncompleteSolutionFixInterval', '5000', 'Fix incomplete solution interval (min number of non improving iterations, -1 to disable)', 'integer', %OGEN% + 3, 0, %GGEN%),
+			(%ID% + 18, 'General.SearchAlgorithm', 'Default', 'Search Algorithm', 'enum(Default,Experimental)', %OGEN% + 4, 1, %GGEN%),
+			(%ID% + 19, 'General.DeterministicStudentSectioning', 'false', 'Deterministic student sectioning', 'boolean', %OGEN% + 5, 1, %GGEN%),
+			
+			(%ID% + 20, 'Comparator.RoomSizeWeight', '0.001', 'Excessive room size weight', 'double', %OCMP%, 1, %GCMP%),
+			(%ID% + 21, 'Comparator.RoomSizeFactor', '1.05', 'Excessive room size factor', 'double', %OCMP% + 1, 1, %GCMP%),
+			(%ID% + 22, 'FlexibleConstraint.Weight', '%Comparator.ContrPreferenceWeight%', 'Flexible constraint weight', 'double', %OCMP% + 2, 0, %GCMP%),
+			
+			(%ID% + 23, 'Construction.Class', 'net.sf.cpsolver.coursett.heuristics.NeighbourSelectionWithSuggestions', 'Construction: heuristics', 'text', %ON%, 0, %GN%),
+			(%ID% + 24, 'Construction.UntilComplete', 'false', 'Construction: use construction heuristic untill a complete solution is found', 'boolean', %ON% + 1, 0, %GN%),
+			(%ID% + 25, 'Search.GreatDeluge', 'true', 'Use great deluge (instead of simulated annealing)', 'boolean', %ON% + 2, 1, %GN%),
+			(%ID% + 26, 'HillClimber.MaxIdle', '10000', 'Hill Climber: max idle iterations', 'integer', %ON% + 3, 1, %GN%),
+			(%ID% + 27, 'HillClimber.AdditionalNeighbours', 'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.01;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.01',
+				'Hill Climber: Additional neighbourhoods', 'text', %ON% + 4, 0, %GN%),
+			(%ID% + 28, 'GreatDeluge.CoolRate', '0.9999999', 'Great Deluge: cooling rate', 'double', %ON% + 5, 1, %GN%),
+			(%ID% + 29, 'GreatDeluge.UpperBoundRate', '1.05', 'Great Deluge: upper bound', 'double', %ON% + 6, 1, %GN%),
+			(%ID% + 30, 'GreatDeluge.LowerBoundRate', '0.95', 'Great Deluge: lower bound', 'double', %ON% + 7, 1, %GN%),
+			(%ID% + 31, 'GreatDeluge.AdditionalNeighbours', 'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1',
+				'Great Deluge: Additional neighbourhoods', 'text', %ON% + 8, 0, %GN%),
+			(%ID% + 32, 'SimulatedAnnealing.InitialTemperature', '1.5', 'Simulated Annealing: initial temperature', 'double', %ON% + 9, 1, %GN%),
+			(%ID% + 33, 'SimulatedAnnealing.TemperatureLength', '2500', 'Simulated Annealing: temperature length (number of iterations between temperature decrements)', 'integer', %ON% + 10, 1, %GN%),
+			(%ID% + 34, 'SimulatedAnnealing.CoolingRate', '0.95', 'Simulated Annealing: cooling rate', 'double', %ON% + 11, 1, %GN%),
+			(%ID% + 35, 'SimulatedAnnealing.ReheatLengthCoef', '5.0', 'Simulated Annealing: temperature re-heat length coefficient', 'double', %ON% + 12, 1, %GN%),
+			(%ID% + 36, 'SimulatedAnnealing.ReheatRate', '-1', 'Simulated Annealing: temperature re-heating rate (default (1/coolingRate)^(reheatLengthCoef*1.7))', 'double', %ON% + 13, 0, %GN%),
+			(%ID% + 37, 'SimulatedAnnealing.RestoreBestLengthCoef', '-1', 'Simulated Annealing: restore best length coefficient (default reheatLengthCoef^2)', 'double', %ON% + 14, 0, %GN%),
+			(%ID% + 38, 'SimulatedAnnealing.StochasticHC', 'false', 'Simulated Annealing: stochastic search acceptance', 'boolean', %ON% + 15, 0, %GN%),
+			(%ID% + 39, 'SimulatedAnnealing.RelativeAcceptance', 'true', 'Simulated Annealing: relative acceptance (compare with current solution, not the best one)', 'boolean', %ON% + 16, 0, %GN%),
+			(%ID% + 40, 'SimulatedAnnealing.AdditionalNeighbours', 'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1',
+				'Simulated Annealing: Additional neighbourhoods', 'text', %ON% + 17, 0, %GN%),
+				
+			(%ID% + 41, 'Reservation.CanAssignOverTheLimit', 'true', 'Allow over limit for individual reservations', 'boolean', %OSCT%, 1, %GSCT%),
+			
+			(%ID% + 42, 'Placement.FlexibleConstrPreferenceWeight1', '%Placement.ConstrPreferenceWeight1%', 'Flexible constraint preference weight (level 1)', 'double', %OVAL%, 0, %GVAL%),
+			(%ID% + 43, 'Placement.FlexibleConstrPreferenceWeight2', '%FlexibleConstraint.Weight%', 'Flexible constraint preference weight (level 1)', 'double', %OVAL% + 1, 0, %GVAL%),
+			(%ID% + 44, 'Placement.FlexibleConstrPreferenceWeight3', '%Placement.ConstrPreferenceWeight3%', 'Flexible constraint preference weight (level 1)', 'double', %OVAL% + 2, 0, %GVAL%),
+			(%ID% + 45, 'ClassWeightProvider.Class', 'Default Class Weights', 'Class Weights', 'enum(Default Class Weights,Average Hours A Week Class Weights)', %OGEN% + 6, 1, %GGEN%)
+		</mysql>
+		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, default_value = 'false', description = 'Load last-like course demands (deprecated)' where name = 'Load.IncludeLastLikeStudents'</sql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<sql><![CDATA[
+			create table %SCHEMA%.param_dupl as
+			select d.uniqueid from %SCHEMA%.solver_parameter_def d where
+				(select count(*) from %SCHEMA%.solver_parameter_def x where x.name = d.name and x.solver_param_group_id = d.solver_param_group_id and x.uniqueid < d.uniqueId) > 0
+		]]></sql>
+		<sql>
+			delete from %SCHEMA%.solver_parameter_def where uniqueid in (select x.uniqueid from param_dupl x)
+		</sql>
+		<sql>
+			drop table %SCHEMA%.param_dupl
+		</sql>
+		<sql><![CDATA[
+			create table %SCHEMA%.param_ord_fix as 
+			select d.uniqueid as param_id, (select count(*) from %SCHEMA%.solver_parameter_def x where x.solver_param_group_id = d.solver_param_group_id and (x.ord < d.ord or (x.ord = d.ord and x.uniqueid < d.uniqueid))) as new_ord
+			from %SCHEMA%.solver_parameter_def d order by d.solver_param_group_id, d.ord, d.uniqueid
+		]]></sql>
+		<sql>
+			update %SCHEMA%.solver_parameter_def set ord = (select new_ord from %SCHEMA%.param_ord_fix where param_id = uniqueid)
+		</sql>
+		<sql>
+			drop table %SCHEMA%.param_ord_fix
+		</sql>
 	</update>
 </dbupdate>

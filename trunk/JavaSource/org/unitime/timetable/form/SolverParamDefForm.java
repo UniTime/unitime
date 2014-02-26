@@ -64,9 +64,6 @@ public class SolverParamDefForm extends ActionForm {
         if(type==null || type.trim().length()==0)
             errors.add("type", new ActionMessage("errors.required", ""));
 
-        if(defaultValue==null || defaultValue.trim().length()==0)
-            errors.add("default", new ActionMessage("errors.required", ""));
-
         if(description==null || description.trim().length()==0)
             errors.add("description", new ActionMessage("errors.required", ""));
         
