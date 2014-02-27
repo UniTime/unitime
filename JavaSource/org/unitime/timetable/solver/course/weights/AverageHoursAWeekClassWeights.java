@@ -91,11 +91,9 @@ public class AverageHoursAWeekClassWeights implements ClassWeightProvider {
 	}
 	
 	public int intersection(BitSet a, BitSet b) {
-		long[] x = a.toLongArray(), y = b.toLongArray();
-		int count = 0;
-		for (int i = 0; i < Math.min(x.length, y.length); i++)
-			count += Long.bitCount(x[i] & y[i]);
-		return count;
+		BitSet c = (BitSet)a.clone();
+		c.and(b);
+		return c.cardinality();
 	}
 
 	@Override
