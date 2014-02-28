@@ -303,6 +303,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 			Set ret = new TreeSet();
 			for (Iterator i = subpartPrefs.iterator(); i.hasNext(); ) {
 				TimePref pref = (TimePref) i.next();
+				/*
 				for (Iterator j = parentPrefs.iterator(); j.hasNext(); ) {
 					TimePref p = (TimePref) j.next();
 					if (pref.getTimePattern().equals(p.getTimePattern())) {
@@ -310,6 +311,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 						pref.combineWith(p, false);
 					}
 				}
+				*/
 				ret.add(pref);
 				tp.add(pref.getTimePattern());
 			}
