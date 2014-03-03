@@ -70,7 +70,7 @@ insert into solver_parameter_def
 	(@id + 28, 'GreatDeluge.CoolRate', '0.9999999', 'Great Deluge: cooling rate', 'double', @onei + 5, 1, @gnei),
 	(@id + 29, 'GreatDeluge.UpperBoundRate', '1.05', 'Great Deluge: upper bound', 'double', @onei + 6, 1, @gnei),
 	(@id + 30, 'GreatDeluge.LowerBoundRate', '0.95', 'Great Deluge: lower bound', 'double', @onei + 7, 1, @gnei),
-	(@id + 31, 'GreatDeluge.AdditionalNeighbours', 'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1',
+	(@id + 31, 'GreatDeluge.AdditionalNeighbours', 'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.01;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.01',
 				'Great Deluge: Additional neighbourhoods', 'text', @onei + 8, 0, @gnei),
 	(@id + 32, 'SimulatedAnnealing.InitialTemperature', '1.5', 'Simulated Annealing: initial temperature', 'double', @onei + 9, 1, @gnei),
 	(@id + 33, 'SimulatedAnnealing.TemperatureLength', '2500', 'Simulated Annealing: temperature length (number of iterations between temperature decrements)', 'integer', @onei + 10, 1, @gnei),
@@ -80,7 +80,7 @@ insert into solver_parameter_def
 	(@id + 37, 'SimulatedAnnealing.RestoreBestLengthCoef', '-1', 'Simulated Annealing: restore best length coefficient (default reheatLengthCoef^2)', 'double', @onei + 14, 0, @gnei),
 	(@id + 38, 'SimulatedAnnealing.StochasticHC', 'false', 'Simulated Annealing: stochastic search acceptance', 'boolean', @onei + 15, 0, @gnei),
 	(@id + 39, 'SimulatedAnnealing.RelativeAcceptance', 'true', 'Simulated Annealing: relative acceptance (compare with current solution, not the best one)', 'boolean', @onei + 16, 0, @gnei),
-	(@id + 40, 'SimulatedAnnealing.AdditionalNeighbours', 'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1',
+	(@id + 40, 'SimulatedAnnealing.AdditionalNeighbours', 'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.01;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.01',
 				'Simulated Annealing: Additional neighbourhoods', 'text', @onei + 17, 0, @gnei),
 				
 	(@id + 41, 'Reservation.CanAssignOverTheLimit', 'true', 'Allow over limit for individual reservations', 'boolean', @osct, 1, @gsct),

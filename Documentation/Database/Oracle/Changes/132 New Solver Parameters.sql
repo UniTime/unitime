@@ -319,7 +319,7 @@ insert into solver_parameter_def
 	(select
 		solver_parameter_def_seq.nextval as uniqueid,
 		'GreatDeluge.AdditionalNeighbours' as name,
-		'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1' as default_value,
+		'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.01;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.01' as default_value,
 		'Great Deluge: Additional neighbourhoods' as description,
 		'text' as type,
 		(select count(*) from solver_parameter_def d, solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
@@ -409,7 +409,7 @@ insert into solver_parameter_def
 	(select
 		solver_parameter_def_seq.nextval as uniqueid,
 		'SimulatedAnnealing.AdditionalNeighbours' as name,
-		'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1' as default_value,
+		'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.01;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.01' as default_value,
 		'Simulated Annealing: Additional neighbourhoods' as description,
 		'text' as type,
 		(select count(*) from solver_parameter_def d, solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
