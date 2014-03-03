@@ -9379,7 +9379,7 @@
 			(select
 				 solver_parameter_def_seq.nextval as uniqueid,
 				'GreatDeluge.AdditionalNeighbours' as name,
-				'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1' as default_value,
+				'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.01;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.01' as default_value,
 				'Great Deluge: Additional neighbourhoods' as description,
 				'text' as type,
 				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
@@ -9487,7 +9487,7 @@
 			(select
 				 solver_parameter_def_seq.nextval as uniqueid,
 				'SimulatedAnnealing.AdditionalNeighbours' as name,
-				'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1' as default_value,
+				'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.01;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.01' as default_value,
 				'Simulated Annealing: Additional neighbourhoods' as description,
 				'text' as type,
 				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Neighbour') as ord,
@@ -9608,7 +9608,7 @@
 			(%ID% + 28, 'GreatDeluge.CoolRate', '0.9999999', 'Great Deluge: cooling rate', 'double', %ON% + 5, 1, %GN%),
 			(%ID% + 29, 'GreatDeluge.UpperBoundRate', '1.05', 'Great Deluge: upper bound', 'double', %ON% + 6, 1, %GN%),
 			(%ID% + 30, 'GreatDeluge.LowerBoundRate', '0.95', 'Great Deluge: lower bound', 'double', %ON% + 7, 1, %GN%),
-			(%ID% + 31, 'GreatDeluge.AdditionalNeighbours', 'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1',
+			(%ID% + 31, 'GreatDeluge.AdditionalNeighbours', 'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.01;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.01',
 				'Great Deluge: Additional neighbourhoods', 'text', %ON% + 8, 0, %GN%),
 			(%ID% + 32, 'SimulatedAnnealing.InitialTemperature', '1.5', 'Simulated Annealing: initial temperature', 'double', %ON% + 9, 1, %GN%),
 			(%ID% + 33, 'SimulatedAnnealing.TemperatureLength', '2500', 'Simulated Annealing: temperature length (number of iterations between temperature decrements)', 'integer', %ON% + 10, 1, %GN%),
@@ -9618,7 +9618,7 @@
 			(%ID% + 37, 'SimulatedAnnealing.RestoreBestLengthCoef', '-1', 'Simulated Annealing: restore best length coefficient (default reheatLengthCoef^2)', 'double', %ON% + 14, 0, %GN%),
 			(%ID% + 38, 'SimulatedAnnealing.StochasticHC', 'false', 'Simulated Annealing: stochastic search acceptance', 'boolean', %ON% + 15, 0, %GN%),
 			(%ID% + 39, 'SimulatedAnnealing.RelativeAcceptance', 'true', 'Simulated Annealing: relative acceptance (compare with current solution, not the best one)', 'boolean', %ON% + 16, 0, %GN%),
-			(%ID% + 40, 'SimulatedAnnealing.AdditionalNeighbours', 'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.1;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.1',
+			(%ID% + 40, 'SimulatedAnnealing.AdditionalNeighbours', 'net.sf.cpsolver.coursett.neighbourhoods.TimeChange;net.sf.cpsolver.coursett.neighbourhoods.RoomChange;net.sf.cpsolver.coursett.neighbourhoods.TimeSwap@0.01;net.sf.cpsolver.coursett.neighbourhoods.RoomSwap@0.01',
 				'Simulated Annealing: Additional neighbourhoods', 'text', %ON% + 17, 0, %GN%),
 				
 			(%ID% + 41, 'Reservation.CanAssignOverTheLimit', 'true', 'Allow over limit for individual reservations', 'boolean', %OSCT%, 1, %GSCT%),
