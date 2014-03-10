@@ -85,6 +85,14 @@
 				<line>Added a default course detail provider (only showing course title, schedule note, credits, content, and coordinators) to prevent the "course detail interface not provided" warning.</line>
 			</description>
 		</item>
+		<item>
+			<name>Export Servlet</name>
+			<description>
+				<line>Do not set character encoding with the content type text/calendar.</line>
+				<line>Added a few header parameters to avoid (browser) caching of the exported document.</line>
+				<line>This should fix the issues that the Google Calendar has when subscribing to a UniTime's calendar URL</line>
+			</description>
+		</item>
 	</category>
 </release>
 
