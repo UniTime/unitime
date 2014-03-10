@@ -52,7 +52,7 @@ public class SolverParamDefForm extends ActionForm {
             errors.add("name", new ActionMessage("errors.required", ""));
         else {
         	if ("Save".equals(op)) {
-        		SolverParameterDef def = SolverParameterDef.findByName(name);
+        		SolverParameterDef def = SolverParameterDef.findByNameGroup(name, group);
         		if (def!=null)
         			errors.add("name", new ActionMessage("errors.exists", name));
         	}
