@@ -48,6 +48,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SolverParameterDef;
+import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -1512,11 +1513,11 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public Parameters(Long sessionId, Long examTypeId) {
             iPeriods = ExamPeriod.findAll(sessionId, examTypeId); 
             
-            SolverParameterDef btbDistDef = SolverParameterDef.findByName("Exams.BackToBackDistance");
+            SolverParameterDef btbDistDef = SolverParameterDef.findByNameType("Exams.BackToBackDistance", SolverParameterGroup.sTypeExam);
             if (btbDistDef!=null && btbDistDef.getDefault()!=null)
                 iBtbDistance = Integer.parseInt(btbDistDef.getDefault());
         
-            SolverParameterDef btbDayBreakDef = SolverParameterDef.findByName("Exams.IsDayBreakBackToBack");
+            SolverParameterDef btbDayBreakDef = SolverParameterDef.findByNameType("Exams.IsDayBreakBackToBack", SolverParameterGroup.sTypeExam);
             if (btbDayBreakDef!=null && btbDayBreakDef.getDefault()!=null)
                 iBtbDayBreak = "true".equals(btbDayBreakDef.getDefault());
         }

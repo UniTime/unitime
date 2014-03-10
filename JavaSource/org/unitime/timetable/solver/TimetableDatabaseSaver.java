@@ -50,6 +50,7 @@ import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverInfoDef;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
+import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.StudentEnrollment;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -325,7 +326,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			Map.Entry entry = (Map.Entry)i1.next();
         			String name = (String)entry.getKey();
         			String value = (String)entry.getValue();
-        			SolverParameterDef def = SolverParameterDef.findByName(hibSession,name);
+        			SolverParameterDef def = SolverParameterDef.findByNameType(hibSession, name, SolverParameterGroup.sTypeCourse);
         			if (def!=null) {
         				iProgress.trace("save "+name+"="+value);
         				SolverParameter param = new SolverParameter();

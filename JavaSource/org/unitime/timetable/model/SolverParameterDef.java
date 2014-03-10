@@ -87,17 +87,14 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	public void saveOrUpdate() throws HibernateException {
 		(new SolverParameterDefDAO()).saveOrUpdate(this);
 	}
-
-	/**
-	 * Get the default value for a given key
-	 * @param key Setting key
-	 * @return Default value if found, null otherwise
-	 */
-	public static SolverParameterDef findByName(org.hibernate.Session hibSession, String name) {
+	
+	@Deprecated
+	public static SolverParameterDef findByNameGroup(String name) {
 		SolverParameterDef def = null;
 		
         try {
-			List list = hibSession.createCriteria(SolverParameterDef.class).add(Restrictions.eq("name", name)).setCacheable(true).list();
+			List list = SolverParameterDefDAO.getInstance().getSession().
+					createCriteria(SolverParameterDef.class).add(Restrictions.eq("name", name)).setCacheable(true).list();
 
 			if (!list.isEmpty())
 				def = (SolverParameterDef)list.get(0);
@@ -109,13 +106,30 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
 	    return def;
 	}
 	
-	/**
-	 * Get the default value for a given key
-	 * @param key Setting key
-	 * @return Default value if found, null otherwise
-	 */
-	public static SolverParameterDef findByName(String name) {
-		return findByName((new SolverParameterDefDAO()).getSession(),name);
+	public static SolverParameterDef findByNameGroup(String name, String group) {
+		return findByNameGroup(SolverParameterDefDAO.getInstance().getSession(), name, group);
+	}
+
+	public static SolverParameterDef findByNameGroup(org.hibernate.Session hibSession, String name, String group) {
+		List<SolverParameterDef> list = (List<SolverParameterDef>)hibSession.createQuery(
+				"from SolverParameterDef where name = :name and group.name = :group")
+				.setString("name", name)
+				.setString("group", group)
+				.setCacheable(true).list();
+		return list.isEmpty() ? null : list.get(0);
+	}
+	
+	public static SolverParameterDef findByNameType(String name, int type) {
+		return findByNameType(SolverParameterDefDAO.getInstance().getSession(), name, type);
+	}
+	
+	public static SolverParameterDef findByNameType(org.hibernate.Session hibSession, String name, int type) {
+		List<SolverParameterDef> list = (List<SolverParameterDef>)hibSession.createQuery(
+				"from SolverParameterDef where name = :name and group.type = :type")
+				.setString("name", name)
+				.setInteger("type", type)
+				.setCacheable(true).list();
+		return list.isEmpty() ? null : list.get(0);
 	}	
 
 	/**
