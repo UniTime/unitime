@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,9 +59,17 @@ public class ExportServletHelper implements ExportHelper {
 	
 	@Override
 	public void setup(String content, String fileName, boolean binary) {
-		iResponse.setContentType(content + "; charset=UTF-8");
+		iResponse.setContentType("text/calendar".equalsIgnoreCase(content) ? content : content + "; charset=UTF-8");
 		iResponse.setCharacterEncoding("UTF-8");
-		iResponse.setHeader( "Content-Disposition", "attachment; filename=\"" + fileName + "\"" );
+		
+		iResponse.setHeader("Pragma", "no-cache" );
+		iResponse.addHeader("Cache-Control", "must-revalidate" );
+		iResponse.addHeader("Cache-Control", "no-cache" );
+		iResponse.addHeader("Cache-Control", "no-store" );
+		iResponse.setDateHeader("Date", new Date().getTime());
+		iResponse.setDateHeader("Expires", 0);
+		
+		iResponse.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"" );
 	}
 	
 	@Override
