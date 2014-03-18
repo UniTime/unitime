@@ -182,6 +182,11 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	}
 	
 	@Override
+	public int getAvailableProcessors() {
+		return Runtime.getRuntime().availableProcessors();
+	}
+	
+	@Override
 	public long getMemoryLimit() {
 		return 1024l * 1024l * Long.parseLong(ApplicationProperties.getProperty(ApplicationProperty.SolverMemoryLimit));
 	}

@@ -157,6 +157,11 @@ public class DummySolverServer implements SolverServer, MessageListener {
 	public long getAvailableMemory() {
 		return 0;
 	}
+	
+	@Override
+	public int getAvailableProcessors() {
+		return Runtime.getRuntime().availableProcessors();
+	}
 
 	@Override
 	public long getMemoryLimit() {

@@ -54,6 +54,8 @@ public interface SolverServer {
 	
 	public long getAvailableMemory();
 	
+	public int getAvailableProcessors();
+	
 	public long getMemoryLimit();
 	
 	public boolean isActive();
