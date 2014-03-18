@@ -3351,6 +3351,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				getAssignment().assign(0, placement);
     		}
 		}
+		
+		getModel().createAssignmentContexts(getAssignment(), true);
 
 		if (getModel().getProperties().getPropertyBoolean("General.EnrollmentCheck", true))
 			new EnrollmentCheck(getModel(), getAssignment(), msglevel("enrollmentCheck", Progress.MSGLEVEL_WARN)).checkStudentEnrollments(iProgress);

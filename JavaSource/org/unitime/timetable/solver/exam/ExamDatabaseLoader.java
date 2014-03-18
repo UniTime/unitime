@@ -147,6 +147,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+type.getReference(),"true"))) loadAvailabilitiesFromEvents();
             if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.sameRoom."+type.getReference(),"false"))) makeupSameRoomConstraints();
             getModel().init();
+            getModel().clearAssignmentContexts(getAssignment());
             checkConsistency();
             assignInitial();
             tx.commit();
