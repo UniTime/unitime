@@ -377,8 +377,8 @@ public class ManageSolversAction extends Action {
 			
 			WebTable webTable = new WebTable( 11,
 					"Available Servers", "manageSolvers.do?ord2=%%",
-					new String[] {"Host", "Version", "Started", "Available Memory", "Ping", "Usage", "NrInstances", "Active", "Working", "Passivated", "Operation(s)"},
-					new String[] {"left", "left", "left", "left", "left", "left", "left", "left","left","left","left"},
+					new String[] {"Host", "Version", "Started", "Available Memory", "NrCores", "Ping", "Usage", "NrInstances", "Active", "Working", "Passivated", "Operation(s)"},
+					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left","left","left","left"},
 					null );
 			webTable.setRowStyle("white-space:nowrap");
 			
@@ -400,6 +400,7 @@ public class ManageSolversAction extends Action {
                                 "",
                                 "",
                                 "",
+                                "",
                                 ""
                                 },
                             new Comparable[] {
@@ -407,6 +408,7 @@ public class ManageSolversAction extends Action {
                                 "",
                                 null,
                                 new Long(-1),
+                                new Integer(-1),
                                 new Long(-1),
                                 new Long(-1),
                                 new Integer(-1),
@@ -449,6 +451,7 @@ public class ManageSolversAction extends Action {
                     String version = server.getVersion();
                     Date startTime = server.getStartTime();
                     boolean local = server.isLocal();
+                    int cores = server.getAvailableProcessors();
                     String op = "";
                     if (usage >= 1000) {
                         op+="<input type=\"button\" value=\"Enable\" onClick=\"if (confirm('Do you really want to enable server "+server.getHost()+" for the new solver instances?')) document.location='manageSolvers.do?op=Start%20Using&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
@@ -468,6 +471,7 @@ public class ManageSolversAction extends Action {
                             (version==null||"-1".equals(version)?"<i>N/A</i>":version),
                             (startTime==null?"<i>N/A</i>":sDF.format(startTime)),
                             df.format( ((double)mem)/1024/1024)+" MB",
+                            String.valueOf(cores),
                             (t1-t0)+" ms",
                             String.valueOf(usage),
                             String.valueOf(nrActive+nrPassivated),
@@ -481,6 +485,7 @@ public class ManageSolversAction extends Action {
                             version,
                             startTime,
                             new Long(t1-t0),
+                            new Integer(cores),
                             new Long(mem),
                             new Long(usage),
                             new Integer(nrActive+nrPassivated),
