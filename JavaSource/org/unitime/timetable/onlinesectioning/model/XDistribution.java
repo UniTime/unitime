@@ -28,11 +28,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.cpsolver.studentsct.constraint.LinkedSections;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
+import org.cpsolver.studentsct.constraint.LinkedSections;
+import org.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Subpart;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Class_;

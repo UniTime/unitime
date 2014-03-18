@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;

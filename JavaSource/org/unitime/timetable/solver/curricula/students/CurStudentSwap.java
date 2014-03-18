@@ -19,12 +19,13 @@
 */
 package org.unitime.timetable.solver.curricula.students;
 
-import net.sf.cpsolver.ifs.heuristics.NeighbourSelection;
-import net.sf.cpsolver.ifs.model.Neighbour;
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.heuristics.NeighbourSelection;
+import org.cpsolver.ifs.model.Neighbour;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -39,9 +40,9 @@ public class CurStudentSwap implements NeighbourSelection<CurVariable, CurValue>
 	}
 
 	@Override
-	public Neighbour<CurVariable, CurValue> selectNeighbour(
-			Solution<CurVariable, CurValue> solution) {
+	public Neighbour<CurVariable, CurValue> selectNeighbour(Solution<CurVariable, CurValue> solution) {
 		CurModel model = (CurModel)solution.getModel();
+		Assignment<CurVariable, CurValue> assignment = solution.getAssignment();
 		CurCourse course = ToolBox.random(model.getSwapCourses());
 		if (course == null) return null;
 		CurStudent student = null;
@@ -49,28 +50,28 @@ public class CurStudentSwap implements NeighbourSelection<CurVariable, CurValue>
 		int idx = ToolBox.random(model.getStudents().size());
 		for (int i = 0; i < model.getStudents().size(); i++) {
 			student = model.getStudents().get((i + idx) % model.getStudents().size());
-			oldValue = course.getValue(student);
-			if (oldValue == null && student.getCourses().size() < model.getStudentLimit().getMaxLimit()) break;
-			if (oldValue != null && student.getCourses().size() > model.getStudentLimit().getMinLimit()) break;
+			oldValue = course.getValue(assignment, student);
+			if (oldValue == null && student.getCourses(assignment).size() < model.getStudentLimit().getMaxLimit()) break;
+			if (oldValue != null && student.getCourses(assignment).size() > model.getStudentLimit().getMinLimit()) break;
 		}
-		if (oldValue == null && student.getCourses().size() >= model.getStudentLimit().getMaxLimit()) return null;
-		if (oldValue != null && student.getCourses().size() <= model.getStudentLimit().getMinLimit()) return null;
+		if (oldValue == null && student.getCourses(assignment).size() >= model.getStudentLimit().getMaxLimit()) return null;
+		if (oldValue != null && student.getCourses(assignment).size() <= model.getStudentLimit().getMinLimit()) return null;
 		
 		idx = ToolBox.random(model.getStudents().size());
 		for (int i = 0; i < model.getStudents().size(); i++) {
 			CurStudent newStudent = model.getStudents().get((i + idx) % model.getStudents().size());
 			if (oldValue != null) {
-				if (course.getStudents().contains(newStudent)) continue;
-				if (newStudent.getCourses().size() >= model.getStudentLimit().getMaxLimit()) continue;
-				if (course.getSize() + newStudent.getWeight() - student.getWeight() > course.getMaxSize()) continue;
-				if (course.getSize() + newStudent.getWeight() - student.getWeight() < course.getMaxSize() - model.getMinStudentWidth()) continue;
+				if (course.getStudents(assignment).contains(newStudent)) continue;
+				if (newStudent.getCourses(assignment).size() >= model.getStudentLimit().getMaxLimit()) continue;
+				if (course.getSize(assignment) + newStudent.getWeight() - student.getWeight() > course.getMaxSize()) continue;
+				if (course.getSize(assignment) + newStudent.getWeight() - student.getWeight() < course.getMaxSize() - model.getMinStudentWidth()) continue;
 				newValue = new CurValue(oldValue.variable(), newStudent);
 				break;
 			} else {
-				if (newStudent.getCourses().size() <= model.getStudentLimit().getMinLimit()) continue;
-				if (course.getSize() + student.getWeight() - newStudent.getWeight() > course.getMaxSize()) continue;
-				if (course.getSize() + student.getWeight() - newStudent.getWeight() < course.getMaxSize() - model.getMinStudentWidth()) continue;
-				oldValue = course.getValue(newStudent);
+				if (newStudent.getCourses(assignment).size() <= model.getStudentLimit().getMinLimit()) continue;
+				if (course.getSize(assignment) + student.getWeight() - newStudent.getWeight() > course.getMaxSize()) continue;
+				if (course.getSize(assignment) + student.getWeight() - newStudent.getWeight() < course.getMaxSize() - model.getMinStudentWidth()) continue;
+				oldValue = course.getValue(assignment, newStudent);
 				if (oldValue != null) {
 					newValue = new CurValue(oldValue.variable(), student);
 					break;

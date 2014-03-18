@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import net.sf.cpsolver.studentsct.model.Course;
 
+import org.cpsolver.studentsct.model.Course;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.shared.SectioningException;

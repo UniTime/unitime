@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Vector;
 
+import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo;
@@ -33,7 +34,6 @@ import org.unitime.timetable.solver.exam.ui.ExamProposedChange;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamSuggestionsInfo;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 /**
  * @author Tomas Muller

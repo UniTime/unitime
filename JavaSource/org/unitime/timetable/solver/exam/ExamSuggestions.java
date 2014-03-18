@@ -31,14 +31,15 @@ import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import net.sf.cpsolver.exam.model.Exam;
-import net.sf.cpsolver.exam.model.ExamModel;
-import net.sf.cpsolver.exam.model.ExamPeriodPlacement;
-import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoomPlacement;
-import net.sf.cpsolver.exam.model.ExamRoomSharing;
-import net.sf.cpsolver.exam.model.ExamStudent;
 
+import org.cpsolver.exam.model.Exam;
+import org.cpsolver.exam.model.ExamModel;
+import org.cpsolver.exam.model.ExamPeriodPlacement;
+import org.cpsolver.exam.model.ExamPlacement;
+import org.cpsolver.exam.model.ExamRoomPlacement;
+import org.cpsolver.exam.model.ExamRoomSharing;
+import org.cpsolver.exam.model.ExamStudent;
+import org.cpsolver.ifs.assignment.Assignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamProposedChange;
@@ -49,6 +50,7 @@ import org.unitime.timetable.solver.exam.ui.ExamProposedChange;
 public class ExamSuggestions {
     private ExamSolver iSolver;
     private ExamModel iModel;
+    private Assignment<Exam, ExamPlacement> iAssignment;
     private Hashtable<Exam,ExamPlacement> iInitialAssignment;
     private Hashtable<Exam,ExamAssignment> iInitialInfo;
     private Vector<Exam> iInitialUnassignment;
@@ -69,16 +71,17 @@ public class ExamSuggestions {
     public ExamSuggestions(ExamSolver solver) {
         iSolver = solver;
         iModel = (ExamModel)solver.currentSolution().getModel();
+        iAssignment = solver.currentSolution().getAssignment();
         iInitialAssignment = new Hashtable();
         iInitialUnassignment = new Vector();
         iInitialInfo = new Hashtable();
         for (Exam exam: iModel.variables()) {
-            ExamPlacement placement = exam.getAssignment();
+            ExamPlacement placement = iAssignment.getValue(exam);
             if (placement==null) {
                 iInitialUnassignment.add(exam);
             } else {
                 iInitialAssignment.put(exam, placement);
-                iInitialInfo.put(exam, new ExamAssignment(exam, placement));
+                iInitialInfo.put(exam, new ExamAssignment(exam, placement, iAssignment));
             }
         }
     }
@@ -133,15 +136,15 @@ public class ExamSuggestions {
                 ExamPlacement placement = iSolver.getPlacement(assignment);
                 if (placement==null) continue;
                 if (placement.variable().equals(exam)) continue;
-                Set conflicts = iModel.conflictValues(placement);
+                Set conflicts = iModel.conflictValues(iAssignment, placement);
                 for (Iterator i=conflicts.iterator();i.hasNext();) {
                     ExamPlacement conflictPlacement = (ExamPlacement)i.next();
                     iConflictsToResolve.put((Exam)conflictPlacement.variable(),conflictPlacement);
-                    conflictPlacement.variable().unassign(0);
+                    iAssignment.unassign(0, conflictPlacement.variable());
                 }
                 iResolvedExams.add((Exam)placement.variable());
                 iConflictsToResolve.remove((Exam)placement.variable());
-                placement.variable().assign(0,placement);
+                iAssignment.assign(0,placement);
             }
         }
         
@@ -149,9 +152,9 @@ public class ExamSuggestions {
         backtrack(iDepth);
         
         for (Exam x : iInitialUnassignment)
-            if (x.getAssignment()!=null) x.unassign(0);
+            if (iAssignment.getValue(x)!=null) iAssignment.unassign(0, x);
         for (Map.Entry<Exam, ExamPlacement> x : iInitialAssignment.entrySet())
-            if (!x.getValue().equals(x.getKey().getAssignment())) x.getKey().assign(0, x.getValue());
+            if (!x.getValue().equals(iAssignment.getValue(x.getKey()))) iAssignment.assign(0, x.getValue());
         
         return iSuggestions;
     }
@@ -168,15 +171,15 @@ public class ExamSuggestions {
                     if (!room.isAvailable(period.getPeriod())) continue;
                     if (checkConstraints) {
                         if (nrRooms == 1 && sharing != null) {
-                            if (sharing.inConflict(exam, room.getRoom().getPlacements(period.getPeriod()), room.getRoom()))
+                            if (sharing.inConflict(exam, room.getRoom().getPlacements(iAssignment, period.getPeriod()), room.getRoom()))
                                 continue;
                         } else {
-                            if (!room.getRoom().getPlacements(period.getPeriod()).isEmpty())
+                            if (!room.getRoom().getPlacements(iAssignment, period.getPeriod()).isEmpty())
                                 continue;
                         }
                     }
                     if (rooms.contains(room)) continue;
-                    if (checkConstraints && !exam.checkDistributionConstraints(room)) continue;
+                    if (checkConstraints && !exam.checkDistributionConstraints(iAssignment, room)) continue;
                     int s = room.getSize(exam.hasAltSeating());
                     if (s<minSize) break;
                     int p = room.getPenalty(period.getPeriod());
@@ -195,17 +198,17 @@ public class ExamSuggestions {
     }
     
     private void tryPlacement(ExamPlacement placement, int depth) {
-        if (placement.equals(placement.variable().getAssignment())) return;
+        if (placement.equals(iAssignment.getValue(placement.variable()))) return;
         if (placement.variable().equals(iExam) && !match(placement.getPeriod().toString()+" "+placement.getRoomName(", "))) return;
-        Set conflicts = iModel.conflictValues(placement);
+        Set conflicts = iModel.conflictValues(iAssignment, placement);
         tryPlacement(placement, depth, conflicts);
         if (iConflictsToResolve.size()+conflicts.size()<depth) {
             Exam exam = (Exam)placement.variable();
             HashSet adepts = new HashSet();
             for (ExamStudent s: exam.getStudents()) {
-                Set exams = s.getExams(placement.getPeriod());
+                Set exams = s.getExams(iAssignment, placement.getPeriod());
                 for (Iterator i=exams.iterator();i.hasNext();) {
-                    ExamPlacement conf = (ExamPlacement)((Exam)i.next()).getAssignment();
+                    ExamPlacement conf = iAssignment.getValue((Exam)i.next());
                     if (conf==null || conflicts.contains(conf)) continue;
                     if (iResolvedExams.contains((Exam)conf.variable())) continue;
                     adepts.add(conf);
@@ -242,14 +245,14 @@ public class ExamSuggestions {
             if (iResolvedExams.contains((Exam)c.variable())) return;
         }
         Exam exam = (Exam)placement.variable();
-        ExamPlacement cur = (ExamPlacement)exam.getAssignment();
+        ExamPlacement cur = iAssignment.getValue(exam);
         if (conflicts!=null) {
             for (Iterator i=conflicts.iterator(); i.hasNext();) {
                 ExamPlacement c = (ExamPlacement)i.next();
-                c.variable().unassign(0);
+                iAssignment.unassign(0, c.variable());
             }
         }
-        exam.assign(0, placement);
+        iAssignment.assign(0, placement);
         for (Iterator i=conflicts.iterator();i.hasNext();) {
             ExamPlacement c = (ExamPlacement)i.next();
             iConflictsToResolve.put((Exam)c.variable(),c);
@@ -257,12 +260,12 @@ public class ExamSuggestions {
         ExamPlacement resolvedConf = iConflictsToResolve.remove(exam);
         backtrack(depth-1);
         if (cur==null)
-            exam.unassign(0);
+        	iAssignment.unassign(0, exam);
         else
-            exam.assign(0, cur);
+        	iAssignment.assign(0, cur);
         for (Iterator i=conflicts.iterator();i.hasNext();) {
             ExamPlacement p = (ExamPlacement)i.next();
-            p.variable().assign(0, p);
+            iAssignment.assign(0, p);
             iConflictsToResolve.remove((Exam)p.variable());
         }
         if (resolvedConf!=null)
@@ -271,8 +274,8 @@ public class ExamSuggestions {
     
     private void backtrack(int depth) {
         if (iDepth>depth && iConflictsToResolve.isEmpty()) {
-            if (iSuggestions.size()==iLimit && iSuggestions.last().isBetter(iModel)) return;
-            iSuggestions.add(new ExamProposedChange(iModel, iInitialAssignment, iInitialInfo, iConflictsToResolve.values(), iResolvedExams));
+            if (iSuggestions.size()==iLimit && iSuggestions.last().isBetter(iModel, iAssignment)) return;
+            iSuggestions.add(new ExamProposedChange(iModel, iAssignment, iInitialAssignment, iInitialInfo, iConflictsToResolve.values(), iResolvedExams));
             iNrSolutions++;
             if (iSuggestions.size()>iLimit) iSuggestions.remove(iSuggestions.last());
             return;

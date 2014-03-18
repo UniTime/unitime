@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.solver.course.weights;
 
-import net.sf.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Lecture;
 
 public interface ClassWeightProvider {
 	

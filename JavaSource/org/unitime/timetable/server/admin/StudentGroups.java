@@ -24,8 +24,8 @@ import java.util.Hashtable;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;

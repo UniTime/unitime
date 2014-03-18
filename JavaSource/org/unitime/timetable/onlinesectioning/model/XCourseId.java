@@ -26,8 +26,8 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Set;
 
-import net.sf.cpsolver.studentsct.model.Course;
 
+import org.cpsolver.studentsct.model.Course;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.commons.NaturalOrderComparator;

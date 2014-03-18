@@ -30,14 +30,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.cpsolver.coursett.Constants;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
-import net.sf.cpsolver.studentsct.model.Section;
 
+import org.cpsolver.coursett.Constants;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.model.Section;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Assignment;
@@ -181,7 +181,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 
     /**
      * Room placement -- list of
-     * {@link net.sf.cpsolver.coursett.model.RoomLocation}
+     * {@link org.cpsolver.coursett.model.RoomLocation}
      */
     public List<XRoom> getRooms() {
     	return iRooms;

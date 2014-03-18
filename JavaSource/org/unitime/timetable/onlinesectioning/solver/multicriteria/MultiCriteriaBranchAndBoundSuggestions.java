@@ -23,13 +23,15 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Set;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
 import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
 import org.unitime.timetable.onlinesectioning.solver.SuggestionsBranchAndBound;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection.SelectionCriterion;
@@ -39,22 +41,22 @@ import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteria
  */
 public class MultiCriteriaBranchAndBoundSuggestions extends SuggestionsBranchAndBound {
 	
-	public MultiCriteriaBranchAndBoundSuggestions(DataProperties properties, Student student,
+	public MultiCriteriaBranchAndBoundSuggestions(DataProperties properties, Student student, Assignment<Request, Enrollment> assignment,
 			Hashtable<CourseRequest, Set<Section>> requiredSections,
 			Set<FreeTimeRequest> requiredFreeTimes,
 			Hashtable<CourseRequest, Set<Section>> preferredSections,
 			Request selectedRequest, Section selectedSection, String filter, Date firstDate, double maxSectionsWithPenalty,
 			boolean priorityWeighting) {
-		super(properties, student, requiredSections, requiredFreeTimes, preferredSections, selectedRequest, selectedSection, filter, firstDate, maxSectionsWithPenalty);
+		super(properties, student, assignment, requiredSections, requiredFreeTimes, preferredSections, selectedRequest, selectedSection, filter, firstDate, maxSectionsWithPenalty);
 		if (priorityWeighting)
-			iComparator = new OnlineSectioningCriterion(student, (OnlineSectioningModel)selectedRequest.getModel(), preferredSections);
+			iComparator = new OnlineSectioningCriterion(student, (OnlineSectioningModel)selectedRequest.getModel(), assignment, preferredSections);
 		else
-			iComparator = new EqualWeightCriterion(student, (OnlineSectioningModel)selectedRequest.getModel(), preferredSections);
+			iComparator = new EqualWeightCriterion(student, (OnlineSectioningModel)selectedRequest.getModel(), assignment, preferredSections);
 	}
 	
 	@Override
-	protected int compare(Suggestion s1, Suggestion s2) {
-		return ((SelectionCriterion)iComparator).compare(s1.getEnrollments(), s2.getEnrollments());
+	protected int compare(Assignment<Request, Enrollment> assignment, Suggestion s1, Suggestion s2) {
+		return ((SelectionCriterion)iComparator).compare(assignment, s1.getEnrollments(), s2.getEnrollments());
 	}
 
 }

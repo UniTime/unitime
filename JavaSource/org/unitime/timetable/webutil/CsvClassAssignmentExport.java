@@ -23,6 +23,10 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Assignment;
@@ -33,10 +37,6 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
 
 /**
  * @author Tomas Muller

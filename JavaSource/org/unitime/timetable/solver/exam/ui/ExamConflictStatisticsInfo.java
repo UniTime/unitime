@@ -35,17 +35,17 @@ import java.util.Vector;
 
 import javax.servlet.jsp.JspWriter;
 
-import net.sf.cpsolver.exam.model.Exam;
-import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
-import net.sf.cpsolver.exam.model.ExamInstructor;
-import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoom;
-import net.sf.cpsolver.exam.model.ExamRoomPlacement;
-import net.sf.cpsolver.exam.model.ExamStudent;
-import net.sf.cpsolver.ifs.extension.Assignment;
-import net.sf.cpsolver.ifs.extension.ConflictStatistics;
-import net.sf.cpsolver.ifs.model.Constraint;
 
+import org.cpsolver.exam.model.Exam;
+import org.cpsolver.exam.model.ExamDistributionConstraint;
+import org.cpsolver.exam.model.ExamInstructor;
+import org.cpsolver.exam.model.ExamPlacement;
+import org.cpsolver.exam.model.ExamRoom;
+import org.cpsolver.exam.model.ExamRoomPlacement;
+import org.cpsolver.exam.model.ExamStudent;
+import org.cpsolver.ifs.extension.AssignedValue;
+import org.cpsolver.ifs.extension.ConflictStatistics;
+import org.cpsolver.ifs.model.Constraint;
 import org.dom4j.Element;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.solver.ui.TimetableInfo;
@@ -90,7 +90,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 		
 		for (Iterator i1=cbs.getNoGoods().entrySet().iterator();i1.hasNext();) {
 			Map.Entry entry = (Map.Entry)i1.next();
-			Assignment assignment = (Assignment)entry.getKey();
+			AssignedValue assignment = (AssignedValue)entry.getKey();
 			ExamPlacement placement = (ExamPlacement)assignment.getValue(); 
 			Exam exam = (Exam)placement.variable();
 			if (examId!=null && !examId.equals(exam.getId())) continue;
@@ -122,7 +122,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 			
 			Hashtable constr2assignments = new Hashtable();
 			for (Iterator e2=noGoods.iterator();e2.hasNext();) {
-				Assignment noGood = (Assignment)e2.next();
+				AssignedValue noGood = (AssignedValue)e2.next();
 				if (noGood.getConstraint()==null) continue;
 				Vector aaa = (Vector)constr2assignments.get(noGood.getConstraint());
 				if (aaa == null) {
@@ -152,7 +152,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 				val.constraints().add(con);
 				
 				for (Enumeration e3=noGoodsThisConstraint.elements();e3.hasMoreElements();) {
-					Assignment ass = (Assignment)e3.nextElement();
+					AssignedValue ass = (AssignedValue)e3.nextElement();
 					ExamPlacement p = (ExamPlacement)ass.getValue();
 					Exam x = (Exam)p.variable();
 					String pr = PreferenceLevel.sNeutral;//SolverGridModel.hardConflicts2pref(x,p);

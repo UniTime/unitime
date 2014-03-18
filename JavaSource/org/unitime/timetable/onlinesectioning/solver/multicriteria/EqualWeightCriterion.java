@@ -22,26 +22,28 @@ package org.unitime.timetable.onlinesectioning.solver.multicriteria;
 import java.util.Hashtable;
 import java.util.Set;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
 import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
 
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
 /**
  * @author Tomas Muller
  */
 public class EqualWeightCriterion extends OnlineSectioningCriterion {
 	
-	public EqualWeightCriterion(Student student, OnlineSectioningModel model, Hashtable<CourseRequest, Set<Section>> preferredSections) {
-		super(student, model, preferredSections);
+	public EqualWeightCriterion(Student student, OnlineSectioningModel model, Assignment<Request, Enrollment> assignment, Hashtable<CourseRequest, Set<Section>> preferredSections) {
+		super(student, model, assignment, preferredSections);
 	}
 	
     	@Override
-	public int compare(Enrollment[] current, Enrollment[] best) {
+	public int compare(Assignment<Request, Enrollment> assignment, Enrollment[] current, Enrollment[] best) {
 		if (best == null) return -1;
 		
 		// 0. best number of assigned course requests (including alternativity & priority)
@@ -77,11 +79,11 @@ public class EqualWeightCriterion extends OnlineSectioningCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
 				for (Section section: best[idx].getSections())
-					bestPenalties += getModel().getOverExpected(section, best[idx].getRequest());
+					bestPenalties += getModel().getOverExpected(assignment, section, best[idx].getRequest());
 			}
 			if (current[idx] != null && current[idx].getAssignments() != null && current[idx].isCourseRequest()) {
 				for (Section section: current[idx].getSections())
-					currentPenalties += getModel().getOverExpected(section, current[idx].getRequest());
+					currentPenalties += getModel().getOverExpected(assignment, section, current[idx].getRequest());
 			}
 		}
 		if (currentPenalties < bestPenalties) return -1;
@@ -225,7 +227,7 @@ public class EqualWeightCriterion extends OnlineSectioningCriterion {
 	}
 
 	@Override
-	public boolean canImprove(int maxIdx, Enrollment[] current, Enrollment[] best) {
+	public boolean canImprove(Assignment<Request, Enrollment> assignment, int maxIdx, Enrollment[] current, Enrollment[] best) {
 		// 0. best number of assigned course requests (including alternativity & priority)
 		int currentAssignedCourseReq = 0, bestAssignedCourseReq = 0;
 		int currentAssignedRequests = 0, bestAssignedRequests = 0;
@@ -274,11 +276,11 @@ public class EqualWeightCriterion extends OnlineSectioningCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null) {
 				for (Section section: best[idx].getSections())
-					bestPenalties += getModel().getOverExpected(section, best[idx].getRequest());
+					bestPenalties += getModel().getOverExpected(assignment, section, best[idx].getRequest());
 			}
 			if (current[idx] != null && idx < maxIdx) {
 				for (Section section: current[idx].getSections())
-					currentPenalties += getModel().getOverExpected(section, current[idx].getRequest());
+					currentPenalties += getModel().getOverExpected(assignment, section, current[idx].getRequest());
 			}
 		}
 		if (currentPenalties < bestPenalties) return true;

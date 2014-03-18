@@ -31,9 +31,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.server.Query;

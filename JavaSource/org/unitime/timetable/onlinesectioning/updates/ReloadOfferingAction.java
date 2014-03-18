@@ -29,12 +29,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -415,8 +415,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				helper.getHibSession().save(student);
 			
 				EnrollStudent.updateSpace(server,
-						r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(server.getStudent(r.getRequest().getStudentId()), r.getRequest(), server, newOffering, r.getRequest().getEnrollment()).getAssignment(),
-						r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getRequest(), server, oldOffering, r.getLastEnrollment()).getAssignment(),
+						r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(server.getStudent(r.getRequest().getStudentId()), r.getRequest(), server, newOffering, r.getRequest().getEnrollment()),
+						r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getRequest(), server, oldOffering, r.getLastEnrollment()),
 						newOffering, oldOffering);
 				server.persistExpectedSpaces(offeringId);
 

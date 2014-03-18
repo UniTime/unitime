@@ -21,8 +21,8 @@ package org.unitime.timetable.onlinesectioning.custom;
 
 import java.net.URL;
 
-import net.sf.cpsolver.studentsct.model.Section;
 
+import org.cpsolver.studentsct.model.Section;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 
 /**

@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning.solver.expectations;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.DataProperties;
 
 /**
  * @author Tomas Muller

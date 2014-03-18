@@ -22,12 +22,14 @@ package org.unitime.timetable.solver.curricula.students;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.cpsolver.ifs.heuristics.NeighbourSelection;
-import net.sf.cpsolver.ifs.model.Neighbour;
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.heuristics.NeighbourSelection;
+import org.cpsolver.ifs.model.Neighbour;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.ToolBox;
+
 
 /**
  * @author Tomas Muller
@@ -42,26 +44,27 @@ public class CurHillClimber implements NeighbourSelection<CurVariable, CurValue>
 	}
 
 	@Override
-	public Neighbour<CurVariable, CurValue> selectNeighbour(
-			Solution<CurVariable, CurValue> solution) {
+	public Neighbour<CurVariable, CurValue> selectNeighbour(Solution<CurVariable, CurValue> solution) {
 		CurModel model = (CurModel)solution.getModel();
+		Assignment<CurVariable, CurValue> assignment = solution.getAssignment();
 		List<CurValue> best = new ArrayList<CurValue>();
 		double bestValue = 0;
 		int ix = ToolBox.random(model.variables().size());
 		for (int i = 0; i < model.variables().size(); i++) {
 			CurVariable course = model.variables().get((ix + i) % model.variables().size());
-			if (!course.getCourse().isComplete() && course.getAssignment() != null) continue;
+			CurValue current = assignment.getValue(course);
+			if (!course.getCourse().isComplete(assignment) && current != null) continue;
 			int jx = ToolBox.random(course.values().size());
-			if (course.getAssignment() != null && course.getAssignment().getStudent().getCourses().size() <= model.getStudentLimit().getMinLimit()) continue;
+			if (current != null && current.getStudent().getCourses(assignment).size() <= model.getStudentLimit().getMinLimit()) continue;
 			for (int j = 0; j < course.values().size(); j++) {
 				CurValue student = course.values().get((j + jx) % course.values().size());
-				if (course.getCourse().getStudents().contains(student.getStudent())) continue;
-				if (student.getStudent().getCourses().size() >= model.getStudentLimit().getMaxLimit()) continue;
-				if (course.getCourse().getSize() + student.getStudent().getWeight() - (course.getAssignment() == null ? 0.0 : course.getAssignment().getStudent().getWeight())
+				if (course.getCourse().getStudents(assignment).contains(student.getStudent())) continue;
+				if (student.getStudent().getCourses(assignment).size() >= model.getStudentLimit().getMaxLimit()) continue;
+				if (course.getCourse().getSize(assignment) + student.getStudent().getWeight() - (current == null ? 0.0 : current.getStudent().getWeight())
 						> course.getCourse().getMaxSize()) continue;
-				if (course.getAssignment() != null && course.getCourse().getSize() + student.getStudent().getWeight() - course.getAssignment().getStudent().getWeight()
+				if (current != null && course.getCourse().getSize(assignment) + student.getStudent().getWeight() - current.getStudent().getWeight()
 						< course.getCourse().getMaxSize() - model.getMinStudentWidth()) continue;
-				double value = student.toDouble();
+				double value = student.toDouble(assignment);
 				if (best.isEmpty() || value < bestValue) {
 					if (value < 0.0) return new CurSimpleAssignment(student);
 					best.clear();
@@ -73,7 +76,7 @@ public class CurHillClimber implements NeighbourSelection<CurVariable, CurValue>
 			}
 		}
 		CurValue student = ToolBox.random(best);
-		if (bestValue > 0.0 && !student.variable().getCourse().isComplete()) return null;
+		if (bestValue > 0.0 && !student.variable().getCourse().isComplete(assignment)) return null;
 		return (student == null ? null : new CurSimpleAssignment(student));
 	}
 }

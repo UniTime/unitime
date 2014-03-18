@@ -61,7 +61,7 @@ public class XCurriculumReservation extends XReservation {
     		iMajors.add(major.getCode());
     }
     
-    public XCurriculumReservation(net.sf.cpsolver.studentsct.reservation.CurriculumReservation reservation) {
+    public XCurriculumReservation(org.cpsolver.studentsct.reservation.CurriculumReservation reservation) {
     	super(XReservationType.Curriculum, reservation);
     	iLimit = (int)Math.round(reservation.getReservationLimit());
     	iAcadArea = reservation.getAcademicArea();

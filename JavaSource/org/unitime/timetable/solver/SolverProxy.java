@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.Hint;
 import org.unitime.timetable.solver.interactive.Suggestions;
@@ -44,8 +46,6 @@ import org.unitime.timetable.solver.ui.SolverUnassignedClassesModel;
 import org.unitime.timetable.solver.ui.StudentConflictsReport;
 import org.unitime.timetable.solver.ui.ViolatedDistrPreferencesReport;
 
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 /**
  * @author Tomas Muller

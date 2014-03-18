@@ -37,9 +37,6 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
-import net.sf.cpsolver.ifs.util.CSVFile.CSVLine;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -47,6 +44,9 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.CSVFile.CSVField;
+import org.cpsolver.ifs.util.CSVFile.CSVLine;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.criterion.Order;

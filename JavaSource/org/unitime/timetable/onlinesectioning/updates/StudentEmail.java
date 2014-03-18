@@ -43,6 +43,7 @@ import java.util.StringTokenizer;
 import javax.activation.DataSource;
 import javax.imageio.ImageIO;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -78,7 +79,6 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller

@@ -19,14 +19,17 @@
 */
 package org.unitime.timetable.onlinesectioning.solver.expectations;
 
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+
 
 /**
  * @author Tomas Muller
  */
 public interface OverExpectedCriterion {
 
-	public double getOverExpected(Section section, Request request);
+	public double getOverExpected(Assignment<Request, Enrollment> assignment, Section section, Request request);
 
 }

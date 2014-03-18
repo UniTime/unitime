@@ -25,17 +25,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.solver.Solver;
 import org.dom4j.Element;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.solver.Solver;
 
 /**
  * @author Tomas Muller
@@ -125,7 +125,7 @@ public class Hint implements Serializable {
 		Placement p = getPlacement((TimetableModel)solver.currentSolution().getModel(), false);
 		if (p==null) return "Selected placement is not valid (room or instructor not avaiable).";
 		if (p.isValid()) return "Selected placement is valid.";
-		String reason = p.getNotValidReason();
+		String reason = p.getNotValidReason(solver.currentSolution().getAssignment());
 		return (reason==null?"Selected placement is not valid (room or instructor not avaiable).":"Selected placement is not valid ("+reason+")");
 	}
 	public Long getClassId() { return iClassId; }

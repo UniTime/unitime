@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -39,9 +42,6 @@ import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTableModel;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
 
 /**

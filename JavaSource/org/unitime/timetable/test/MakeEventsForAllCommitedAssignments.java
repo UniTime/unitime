@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -31,7 +32,6 @@ import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao._RootDAO;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller

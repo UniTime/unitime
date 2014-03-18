@@ -43,6 +43,33 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.TimetableXMLLoader;
+import org.cpsolver.coursett.TimetableXMLSaver;
+import org.cpsolver.coursett.constraint.ClassLimitConstraint;
+import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.InstructorConstraint;
+import org.cpsolver.coursett.constraint.RoomConstraint;
+import org.cpsolver.coursett.constraint.SpreadConstraint;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.Student;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.extension.ConflictStatistics;
+import org.cpsolver.ifs.extension.Extension;
+import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.model.Value;
+import org.cpsolver.ifs.solver.ParallelSolver;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.Callback;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.ifs.util.ProgressWriter;
+import org.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -89,37 +116,11 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 import org.unitime.timetable.webutil.timegrid.TimetableGridModel;
 
-import net.sf.cpsolver.coursett.TimetableXMLLoader;
-import net.sf.cpsolver.coursett.TimetableXMLSaver;
-import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
-import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
-import net.sf.cpsolver.coursett.constraint.RoomConstraint;
-import net.sf.cpsolver.coursett.constraint.SpreadConstraint;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.Student;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.extension.ConflictStatistics;
-import net.sf.cpsolver.ifs.extension.Extension;
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.model.Value;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.Callback;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.ifs.util.ProgressWriter;
-import net.sf.cpsolver.ifs.util.ToolBox;
-import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
 
 /**
  * @author Tomas Muller
  */
-public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver implements SolverProxy {
+public class TimetableSolver extends ParallelSolver<Lecture, Placement> implements SolverProxy {
 	private static Log sLog = LogFactory.getLog(TimetableSolver.class);
 	private boolean iWorking = false;
 	private Date iLoadedDate = null;
@@ -158,7 +159,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 		return iLoadedDate;
 	}
 	
-	public net.sf.cpsolver.ifs.solution.Solution<Lecture, Placement> currentSolution() {
+	public org.cpsolver.ifs.solution.Solution<Lecture, Placement> currentSolution() {
 		activateIfNeeded();
 		return super.currentSolution();
 	}
@@ -229,7 +230,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     		setName("FinalSectioning");
     		iWorking = true;
     		try {
-    			((TimetableModel)currentSolution().getModel()).switchStudents();
+    			((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment());
    	    		//new EnrollmentCheck((TimetableModel)currentSolution().getModel()).checkStudentEnrollments(Progress.getInstance(currentSolution().getModel()));
     		} finally {
     			iWorking = false;
@@ -248,7 +249,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
    		iAssignmentRecords.clear(); iBestAssignmentRecords.clear(); iCbsInfo = null;
     	if (currentSolution()!=null && currentSolution().getModel()!=null)
     		Progress.removeInstance(currentSolution().getModel());
-    	setInitalSolution((net.sf.cpsolver.ifs.solution.Solution)null);
+    	setInitalSolution((org.cpsolver.ifs.solution.Solution)null);
     	if (unregister && iSolverDisposeListener != null) iSolverDisposeListener.onDispose(); 
     }
     
@@ -259,7 +260,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 			if (currentSolution().getBestInfo()!=null)
 				currentSolution().restoreBest();
 			if (getProperties().getPropertyBoolean("General.SwitchStudents",true)) {
-				((TimetableModel)currentSolution().getModel()).switchStudents();
+				((TimetableModel)currentSolution().getModel()).switchStudents(currentSolution().getAssignment());
 				currentSolution().saveBest();
 			}
 			if (currentSolution().getBestInfo()!=null && getProperties().getPropertyBoolean("General.Save",false)) {
@@ -315,7 +316,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 		setInitalSolution(model);
 		initSolver();
 		
-		TimetableDatabaseLoader loader = new TimetableDatabaseLoader(model);
+		TimetableDatabaseLoader loader = new TimetableDatabaseLoader(model, currentSolution().getAssignment());
 		loader.setCallback(getLoadingDoneCallback());
 		iWorkThread = new Thread(loader);
 		iWorkThread.setPriority(THREAD_PRIORITY);
@@ -337,7 +338,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 		setInitalSolution(model);
 		initSolver();
 		
-		TimetableDatabaseLoader loader = new TimetableDatabaseLoader(model);
+		TimetableDatabaseLoader loader = new TimetableDatabaseLoader(model, currentSolution().getAssignment());
 		loader.setCallback(callBack);
 		iWorkThread = new Thread(loader);
 		iWorkThread.start();
@@ -373,8 +374,9 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     	public ReloadingDoneCallback() {
     		iSolutionId = getProperties().getProperty("General.SolutionId");
     		for (Lecture lecture: currentSolution().getModel().variables()) {
-    			if (lecture.getAssignment()!=null)
-    				iCurrentAssignmentTable.put(lecture.getClassId(),lecture.getAssignment());
+    			Placement current = currentSolution().getAssignment().getValue(lecture); 
+    			if (current!=null)
+    				iCurrentAssignmentTable.put(lecture.getClassId(),current);
     			if (lecture.getBestAssignment()!=null)
     				iBestAssignmentTable.put(lecture.getClassId(),lecture.getBestAssignment());
     			if (lecture.getInitialAssignment()!=null)
@@ -415,11 +417,11 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     		return new Placement(lecture,time,rooms);
     	}
     	private void assign(Placement placement) {
-    		((TimetableModel)currentSolution().getModel()).weaken(placement);
+    		((TimetableModel)currentSolution().getModel()).weaken(currentSolution().getAssignment(), placement);
     		if (placement.isValid()) {
-                Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = currentSolution().getModel().conflictConstraints(placement);
+                Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = currentSolution().getModel().conflictConstraints(currentSolution().getAssignment(), placement);
                 if (conflictConstraints.isEmpty()) {
-                	placement.variable().assign(0,placement);
+                	currentSolution().getAssignment().assign(0, placement);
                 } else {
                     iProgress.warn("Unable to assign "+placement.variable().getName()+" &larr; "+placement.getName());
                     iProgress.warn("&nbsp;&nbsp;Reason:");
@@ -450,7 +452,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     						reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+placement.getRoomLocation().getName()+" not available";
     	    		}
     	    	}
-    	    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = currentSolution().getModel().conflictConstraints(placement);
+    	    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = currentSolution().getModel().conflictConstraints(currentSolution().getAssignment(), placement);
                 if (!conflictConstraints.isEmpty()) {
                     for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                     	Set<Placement> vals = conflictConstraints.get(c);
@@ -467,10 +469,8 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     		}
     	}
     	private void unassignAll() {
-    		for (Lecture lecture: currentSolution().getModel().variables()) {
-    			if (lecture.getAssignment()!=null)
-    				lecture.unassign(0);
-    		}
+    		for (Lecture lecture: currentSolution().getModel().variables())
+    			currentSolution().getAssignment().unassign(0, lecture);
     	}
     	public void execute() {
     		iProgress = Progress.getInstance(currentSolution().getModel());
@@ -576,7 +576,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     	}
     	ConflictStatisticsInfo info = new ConflictStatisticsInfo();
     	synchronized (currentSolution()) {
-    		info.load(cbs);
+    		info.load(this, cbs);
     	}
     	return info; 
     }
@@ -595,7 +595,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     	}
     	ConflictStatisticsInfo info = new ConflictStatisticsInfo();
     	synchronized (currentSolution()) {
-    		info.load(cbs, classId);
+    		info.load(this, cbs, classId);
     	}
     	return info; 
     }    
@@ -773,8 +773,8 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     public void assign(Collection hints) {
 		synchronized (currentSolution()) {
 			Hashtable initialAssignments = new Hashtable();
-			for (Lecture lec: currentSolution().getModel().assignedVariables()) {
-				initialAssignments.put(lec,lec.getAssignment());
+			for (Placement placement: currentSolution().getAssignment().assignedValues()) {
+				initialAssignments.put(placement.variable(), placement);
 			}
 			AssignmentRecord record = new AssignmentRecord(this);
 			for (Iterator i=hints.iterator();i.hasNext();) {
@@ -784,15 +784,15 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 					Placement ini = (Placement)initialAssignments.get(p.variable());
 					record.add(ini,p);
 					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+(ini==null?"not assigned":ini.getLongName())+" &rarr; "+p.getLongName());
-                    if (ini!=null) p.variable().unassign(0);
+                    if (ini!=null) currentSolution().getAssignment().unassign(0, p.variable());
 				}
 			}
             for (Iterator i=hints.iterator();i.hasNext();) {
                 Hint hint = (Hint)i.next();
                 Placement p = hint.getPlacement((TimetableModel)currentSolution().getModel());
-                if (p!=null) p.variable().assign(0,p);
+                if (p!=null) currentSolution().getAssignment().assign(0,p);
             }
-			for (Lecture lec: currentSolution().getModel().unassignedVariables()) {
+			for (Lecture lec: currentSolution().getModel().unassignedVariables(currentSolution().getAssignment())) {
 				Placement p = (Placement)initialAssignments.get(lec);
 				if (p!=null) { 
 					record.add(p,null);
@@ -814,7 +814,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 				if (p==null) continue;
 		        for (Constraint constraint: p.variable().hardConstraints()) {
 		            HashSet conflicts = new HashSet();
-		            constraint.computeConflicts(p, conflicts);
+		            constraint.computeConflicts(currentSolution().getAssignment(), p, conflicts);
 		            if (conflicts!=null && !conflicts.isEmpty()) {
 		            	for (Iterator j=conflicts.iterator();j.hasNext();) {
 		            		Placement conflict = (Placement)j.next();
@@ -922,7 +922,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 	    	setInitalSolution(model);
 	    	initSolver();
 			
-			TimetableXMLLoader loader = new TimetableXMLLoader(model);
+			TimetableXMLLoader loader = new TimetableXMLLoader(model, currentSolution().getAssignment());
 			loader.setSolver(this);
 			loader.setInputFile(inXmlFile);
 			loader.load(currentSolution());
@@ -978,7 +978,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     			}
     		}
     		if (lecture==null) return null;
-    		Placement placement = (Placement)lecture.getAssignment();
+    		Placement placement = (Placement)currentSolution().getAssignment().getValue(lecture);
     		if (placement==null) return null;
         	Assignment assignment = new Assignment();
         	assignment.setClassName(lecture.getName());
@@ -1032,7 +1032,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     			}
     		}
     		if (lecture==null) return null;
-    		Placement placement = (Placement)lecture.getAssignment();
+    		Placement placement = (Placement)currentSolution().getAssignment().getValue(lecture);
     		if (placement==null) return null;
     		return new AssignmentPreferenceInfo(this,placement);
     	}
@@ -1076,12 +1076,12 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 		Vector ret = new Vector();
 		synchronized (currentSolution()) {
 			for (Lecture lecture: currentSolution().getModel().variables()) {
-				if (!ToolBox.equals(lecture.getInitialAssignment(),lecture.getAssignment())) {
-					RecordedAssignment a = new RecordedAssignment(this,(Placement)lecture.getInitialAssignment(),(Placement)lecture.getAssignment()); 
+				if (!ToolBox.equals(lecture.getInitialAssignment(),currentSolution().getAssignment().getValue(lecture))) {
+					RecordedAssignment a = new RecordedAssignment(this,(Placement)lecture.getInitialAssignment(),currentSolution().getAssignment().getValue(lecture)); 
 					if (lecture.getInitialAssignment()!=null) {
 						a.getBefore().setDetails(new ClassAssignmentDetails(this,lecture,(Placement)lecture.getInitialAssignment(),false));
 					}
-					if (lecture.getAssignment()!=null) {
+					if (currentSolution().getAssignment().getValue(lecture)!=null) {
 						a.getAfter().setDetails(new ClassAssignmentDetails(this,lecture,false));
 					}
 					ret.addElement(a);
@@ -1094,7 +1094,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 	public Vector getAssignedClasses() {
 		Vector ret = new Vector();
 		synchronized (currentSolution()) {
-			for (Lecture lecture: currentSolution().getModel().assignedVariables()) {
+			for (Lecture lecture: currentSolution().getAssignment().assignedVariables()) {
 				ret.addElement(new ClassAssignmentDetails(this,lecture,false));
 			}
 		}
@@ -1104,7 +1104,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 	public Vector getAssignedClasses(String prefix) {
 		Vector ret = new Vector();
 		synchronized (currentSolution()) {
-			for (Lecture lecture: currentSolution().getModel().assignedVariables()) {
+			for (Lecture lecture: currentSolution().getAssignment().assignedVariables()) {
 				if (prefix == null || lecture.getName().startsWith(prefix))
 					ret.addElement(new ClassAssignmentDetails(this,lecture,false));
 			}
@@ -1116,12 +1116,13 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 		Vector ret = new Vector();
 		synchronized (currentSolution()) {
 			for (Lecture lecture: currentSolution().getModel().variables()) {
-				if (!ToolBox.equals(lecture.getBestAssignment(),lecture.getAssignment())) {
-					RecordedAssignment a = new RecordedAssignment(this,(Placement)lecture.getBestAssignment(),(Placement)lecture.getAssignment());
+				Placement placement = currentSolution().getAssignment().getValue(lecture);
+				if (!ToolBox.equals(lecture.getBestAssignment(), placement)) {
+					RecordedAssignment a = new RecordedAssignment(this,(Placement)lecture.getBestAssignment(),placement);
 					if (lecture.getBestAssignment()!=null) {
 						a.getBefore().setDetails(new ClassAssignmentDetails(this,lecture,(Placement)lecture.getBestAssignment(),false));
 					}
-					if (lecture.getAssignment()!=null) {
+					if (placement!=null) {
 						a.getAfter().setDetails(new ClassAssignmentDetails(this,lecture,false));
 					}
 					ret.addElement(a);
@@ -1162,12 +1163,12 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 						}
 					}
 					ids.add(assignment.getClassId());
-					if (lecture==null || lecture.getAssignment()==null) {
+					Placement placement = (lecture == null ? null : currentSolution().getAssignment().getValue(lecture));
+					if (lecture==null || placement==null) {
 						RecordedAssignment a = new RecordedAssignment(this, assignment.getPlacement(), null);
 						a.getBefore().setDetails(new ClassAssignmentDetails(solution, assignment, false, hibSession, null));
 						ret.addElement(a);
 					} else {
-						Placement placement = (Placement)lecture.getAssignment();
 						if (placement.equals(assignment.getPlacement())) continue;
 						RecordedAssignment a = new RecordedAssignment(this, assignment.getPlacement(), placement);
 						a.getBefore().setDetails(new ClassAssignmentDetails(solution, assignment, false, hibSession, null));
@@ -1176,9 +1177,9 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 					}
 				}
 				for (Lecture lecture: currentSolution().getModel().variables()) {
-					if (ids.contains(lecture.getClassId()) || lecture.getAssignment()==null) continue;
+					Placement placement = currentSolution().getAssignment().getValue(lecture);
+					if (ids.contains(lecture.getClassId()) || placement==null) continue;
 					if (!ownerId.equals(lecture.getSolverGroupId())) continue;
-					Placement placement = (Placement)lecture.getAssignment();
 					RecordedAssignment a = new RecordedAssignment(this, null, placement);
 					a.getAfter().setDetails(new ClassAssignmentDetails(this,lecture,false));
 					ret.addElement(a);
@@ -1286,7 +1287,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 	
 	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType) {
 		synchronized (currentSolution()) {
-			return new RoomReport((TimetableModel)currentSolution().getModel(), sessionDays, startDayDayOfWeek, roomType);
+			return new RoomReport(this, sessionDays, startDayDayOfWeek, roomType);
 		}
 	}
 	public DeptBalancingReport getDeptBalancingReport() {
@@ -1390,7 +1391,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 			Collections.sort(lectures);
 			for (Iterator i=lectures.iterator();i.hasNext();) {
 				Lecture lecture = (Lecture)i.next();
-				Placement placement = (Placement)lecture.getAssignment();
+				Placement placement = currentSolution().getAssignment().getValue(lecture);
 				String name = lecture.getName();
 				String itype = ""; String section = "";
 				if (name.indexOf(' ')>=0) {
@@ -1495,10 +1496,6 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
             boolean idconv = "true".equals(ApplicationProperties.getProperty("unitime.solution.export.id-conv", "false"));
             if (anonymize) {
                 getProperties().setProperty("Xml.ConvertIds", idconv ? "true" : "false");
-                getProperties().setProperty("Xml.SaveBest", "false");
-                getProperties().setProperty("Xml.SaveInitial", "false");
-                getProperties().setProperty("Xml.SaveCurrent", "true");
-                getProperties().setProperty("Xml.ExportStudentSectioning", "true");
                 getProperties().setProperty("Xml.ShowNames", "false");
                 
                 if (idconv) {
@@ -1531,10 +1528,6 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
             
             if (anonymize) {
                 getProperties().setProperty("Xml.ConvertIds", "false");
-                getProperties().remove("Xml.SaveBest");
-                getProperties().remove("Xml.SaveInitial");
-                getProperties().remove("Xml.SaveCurrent");
-                getProperties().setProperty("Xml.ExportStudentSectioning", "true");
                 getProperties().setProperty("Xml.ShowNames", "true");
                 getProperties().remove("Xml.IdConv");
             }
@@ -1564,8 +1557,9 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     	synchronized (super.currentSolution()) {
     		Map<String,String> info = super.currentSolution().getBestInfo();
     		try {
-    			if (info == null || getSolutionComparator().isBetterThanBestSolution(super.currentSolution()))
-    				info = super.currentSolution().getModel().getInfo();
+    			org.cpsolver.ifs.solution.Solution<Lecture, Placement> solution = getWorkingSolution();
+    			if (info == null || getSolutionComparator().isBetterThanBestSolution(solution))
+    				info = solution.getModel().getInfo(solution.getAssignment());
     		} catch (ConcurrentModificationException e) {}
     		return info;
     	}

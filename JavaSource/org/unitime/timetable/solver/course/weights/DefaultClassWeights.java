@@ -19,8 +19,9 @@
 */
 package org.unitime.timetable.solver.course.weights;
 
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.ifs.util.DataProperties;
+
 
 public class DefaultClassWeights implements ClassWeightProvider {
 	

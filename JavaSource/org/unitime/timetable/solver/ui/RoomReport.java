@@ -26,17 +26,19 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.RoomConstraint;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.Constants;
 
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.RoomConstraint;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 
 /**
@@ -51,7 +53,9 @@ public class RoomReport implements Serializable {
     private int iStartDayDayOfWeek = 0;
     private double iNrWeeks = 0.0;
 
-	public RoomReport(TimetableModel model, BitSet sessionDays, int startDayDayOfWeek, Long roomType) {
+	public RoomReport(Solver<Lecture, Placement> solver, BitSet sessionDays, int startDayDayOfWeek, Long roomType) {
+		TimetableModel model = (TimetableModel) solver.currentSolution().getModel();
+		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		iSessionDays = sessionDays;
 		iStartDayDayOfWeek = startDayDayOfWeek;
         iRoomType = roomType;
@@ -84,7 +88,7 @@ public class RoomReport implements Serializable {
 		for (Lecture lecture: model.variables()) {
 			for (Iterator i=iGroups.iterator();i.hasNext();) {
 				RoomAllocationGroup g = (RoomAllocationGroup)i.next();
-				g.add(lecture);
+				g.add(lecture, assignment.getValue(lecture));
 			}
 		}
 	}
@@ -147,7 +151,7 @@ public class RoomReport implements Serializable {
 			if (iMinRoomSize<=rc.getCapacity())
 				iNrRoomsThisSizeOrBigger++;
 		}
-		public void add(Lecture lecture) {
+		public void add(Lecture lecture, Placement placement) {
 			if (lecture.getNrRooms()==0) return;
 			boolean skip = false;
 			if (lecture.canShareRoom()) {
@@ -200,8 +204,7 @@ public class RoomReport implements Serializable {
 			}
 
 			int use = 0;
-			if (lecture.getAssignment()!=null) {
-				Placement placement = (Placement)lecture.getAssignment();
+			if (placement!=null) {
 				if (placement.isMultiRoom()) {
 					for (RoomLocation r: placement.getRoomLocations()) {
                         if (r.getRoomConstraint()==null) continue;

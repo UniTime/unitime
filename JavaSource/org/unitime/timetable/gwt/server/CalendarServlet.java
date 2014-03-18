@@ -44,6 +44,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.cpsolver.coursett.model.TimeLocation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import org.unitime.localization.impl.Localization;
@@ -89,7 +90,6 @@ import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
 
 /**
  * @author Tomas Muller

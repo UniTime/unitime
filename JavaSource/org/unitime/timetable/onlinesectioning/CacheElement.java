@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
-import net.sf.cpsolver.ifs.util.JProf;
+import org.cpsolver.ifs.util.JProf;
 
 /**
  * @author Tomas Muller

@@ -26,19 +26,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.cpsolver.coursett.criteria.additional.InstructorLunchBreak;
-import net.sf.cpsolver.coursett.criteria.additional.InstructorStudentConflict;
-import net.sf.cpsolver.coursett.criteria.additional.InstructorStudentHardConflict;
-import net.sf.cpsolver.coursett.criteria.additional.RoomSizePenalty;
-import net.sf.cpsolver.coursett.custom.DeterministicStudentSectioning;
-import net.sf.cpsolver.ifs.algorithms.SimpleSearch;
-import net.sf.cpsolver.ifs.extension.ConflictStatistics;
-import net.sf.cpsolver.ifs.extension.SearchIntensification;
-import net.sf.cpsolver.ifs.extension.ViolatedInitials;
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.criteria.additional.InstructorLunchBreak;
+import org.cpsolver.coursett.criteria.additional.InstructorStudentConflict;
+import org.cpsolver.coursett.criteria.additional.InstructorStudentHardConflict;
+import org.cpsolver.coursett.criteria.additional.RoomSizePenalty;
+import org.cpsolver.coursett.custom.DeterministicStudentSectioning;
+import org.cpsolver.coursett.heuristics.FixCompleteSolutionNeighbourSelection;
+import org.cpsolver.ifs.algorithms.SimpleSearch;
+import org.cpsolver.ifs.extension.ConflictStatistics;
+import org.cpsolver.ifs.extension.SearchIntensification;
+import org.cpsolver.ifs.extension.ViolatedInitials;
+import org.cpsolver.ifs.util.DataProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
@@ -162,11 +163,14 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 		}
 		properties.setProperty("General.SettingsId", settings.getUniqueId().toString());
 		
-        if ("Experimental".equalsIgnoreCase(properties.getProperty("General.SearchAlgorithm", "Default"))) {
+		String algorithm = properties.getProperty("General.SearchAlgorithm", "Default");
+        if ("Experimental".equalsIgnoreCase(algorithm)) {
         	properties.setProperty("Neighbour.Class", SimpleSearch.class.getName());
         	properties.setProperty("General.SearchIntensification", "false");
         	properties.setProperty("General.CompleteSolutionFixInterval", "-1");
         	properties.setProperty("General.IncompleteSolutionFixInterval", "-1");
+        } else if ("Default".equals(algorithm)) {
+        	properties.setProperty("Neighbour.Class", FixCompleteSolutionNeighbourSelection.class.getName());
         }
         
 		// Generate extensions

@@ -21,11 +21,11 @@ package org.unitime.timetable.model;
 
 import java.util.Date;
 
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseTimePref;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller

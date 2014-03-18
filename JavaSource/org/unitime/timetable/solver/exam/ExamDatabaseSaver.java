@@ -25,6 +25,12 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import org.cpsolver.exam.model.Exam;
+import org.cpsolver.exam.model.ExamPlacement;
+import org.cpsolver.exam.model.ExamRoomPlacement;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.CacheMode;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.ChangeLog;
@@ -48,12 +54,6 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 
-import net.sf.cpsolver.exam.model.Exam;
-import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoomPlacement;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -157,7 +157,7 @@ public class ExamDatabaseSaver extends ExamSaver {
                 continue;
             }
             examTable.put(examVar.getId(), exam);
-            ExamPlacement placement = (ExamPlacement)examVar.getAssignment();
+            ExamPlacement placement = getAssignment().getValue(examVar);
             if (placement==null) {
                 iProgress.warn("Exam "+getExamLabel(exam)+" has no assignment.");
                 if (oldAssignment.getPeriodId()!=null) {
@@ -215,7 +215,7 @@ public class ExamDatabaseSaver extends ExamSaver {
                 }
                 exam.getAssignedRooms().add(location);
             }
-            exam.setAssignedPreference(new ExamAssignment(placement).getAssignedPreferenceString());
+            exam.setAssignedPreference(new ExamAssignment(placement, getAssignment()).getAssignedPreferenceString());
             
             hibSession.saveOrUpdate(exam);
             ExamAssignment newAssignment = new ExamAssignment(exam);
@@ -241,13 +241,13 @@ public class ExamDatabaseSaver extends ExamSaver {
                         dept);
             }
         }
-        iProgress.setPhase("Saving conflicts...", getModel().assignedVariables().size());
-        for (Exam examVar: getModel().assignedVariables()) {
+        iProgress.setPhase("Saving conflicts...", getAssignment().nrAssignedVariables());
+        for (Exam examVar: getAssignment().assignedVariables()) {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)examTable.get(examVar.getId());
             if (exam==null) continue;
-            ExamPlacement placement = (ExamPlacement)examVar.getAssignment();
-            ExamAssignmentInfo info = new ExamAssignmentInfo(placement);
+            ExamPlacement placement = (ExamPlacement)getAssignment().getValue(examVar);
+            ExamAssignmentInfo info = new ExamAssignmentInfo(placement, getAssignment());
             for (Iterator i=info.getDirectConflicts().iterator();i.hasNext();) {
                 ExamAssignmentInfo.DirectConflict dc = (ExamAssignmentInfo.DirectConflict)i.next();
                 if (dc.getOtherExam()==null) continue;
@@ -376,7 +376,7 @@ public class ExamDatabaseSaver extends ExamSaver {
                 }
             }
         }
-        iProgress.setPhase("Saving events...", getModel().assignedVariables().size());
+        iProgress.setPhase("Saving events...", getAssignment().nrAssignedVariables());
         String ownerPuid = getModel().getProperties().getProperty("General.OwnerPuid");
         EventContact contact = EventContact.findByExternalUniqueId(ownerPuid);
         if (contact==null) {
@@ -389,7 +389,7 @@ public class ExamDatabaseSaver extends ExamSaver {
             contact.setEmailAddress(manager.getEmailAddress());
             hibSession.save(contact);
         }
-        for (Exam examVar: getModel().assignedVariables()) {
+        for (Exam examVar: getAssignment().assignedVariables()) {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)examTable.get(examVar.getId());
             if (exam==null) continue;

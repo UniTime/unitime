@@ -28,10 +28,10 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.cpsolver.ifs.util.JProf;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base._BaseRootDAO;
 
-import net.sf.cpsolver.ifs.util.JProf;
 
 /**
  * This filter is used to close Hibernate Session when response 

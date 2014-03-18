@@ -31,10 +31,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Subpart;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Reservation;
@@ -99,7 +99,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
         iRestrictivity = computeRestrictivity(offering);
     }
     
-    public XReservation(XReservationType type, net.sf.cpsolver.studentsct.reservation.Reservation reservation) {
+    public XReservation(XReservationType type, org.cpsolver.studentsct.reservation.Reservation reservation) {
     	super(type, reservation.getOffering().getId(), reservation.getId());
     	iLimitCap = (int)Math.round(reservation.getLimitCap());
     	iRestrictivity = reservation.getRestrictivity();

@@ -19,9 +19,10 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Subpart;
+
 
 /**
  * @author Tomas Muller

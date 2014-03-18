@@ -27,13 +27,13 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Subpart;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
 /**
  * @author Tomas Muller

@@ -28,22 +28,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.model.GlobalConstraint;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.JProf;
+import org.cpsolver.studentsct.constraint.LinkedSections;
+import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
 import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
 import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningSelection;
 
-import net.sf.cpsolver.ifs.model.GlobalConstraint;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.JProf;
-import net.sf.cpsolver.studentsct.constraint.LinkedSections;
-import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
 /**
  * @author Tomas Muller
@@ -51,6 +52,7 @@ import net.sf.cpsolver.studentsct.model.Subpart;
 public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSelection {
     protected int iTimeout = 1000;
     protected OnlineSectioningModel iModel = null;
+    protected Assignment<Request, Enrollment> iAssignment = null;
     protected SelectionCriterion iComparator = null;
     private boolean iPriorityWeighting = true;
     
@@ -63,7 +65,7 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
     /** Was timeout reached */
     protected boolean iTimeoutReached;
     /** Current assignment */
-    protected Enrollment[] iAssignment;
+    protected Enrollment[] iCurrentAssignment;
     /** Best assignment */
     protected Enrollment[] iBestAssignment;
     /** Value cache */
@@ -113,20 +115,21 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
     	iRequiredFreeTimes = requiredFreeTimes;
 	}
 
-	public BranchBoundNeighbour select(Student student, SelectionCriterion comparator) {
+	public BranchBoundNeighbour select(Assignment<Request, Enrollment> assignment, Student student, SelectionCriterion comparator) {
         iStudent = student;
 		iComparator = comparator;
+		iAssignment = assignment;
         return select();
 	}
 	
 	@Override
-	public BranchBoundNeighbour select(Student student) {
+	public BranchBoundNeighbour select(Assignment<Request, Enrollment> assignment, Student student) {
 		SelectionCriterion comparator = null;
 		if (iPriorityWeighting)
-			comparator = new OnlineSectioningCriterion(student, iModel, iPreferredSections);
+			comparator = new OnlineSectioningCriterion(student, iModel, assignment, iPreferredSections);
 		else
-			comparator = new EqualWeightCriterion(student, iModel, iPreferredSections);
-		return select(student, comparator);
+			comparator = new EqualWeightCriterion(student, iModel, assignment, iPreferredSections);
+		return select(assignment, student, comparator);
 	}
 
     /**
@@ -136,15 +139,15 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
     public BranchBoundNeighbour select() {
         iT0 = JProf.currentTimeMillis();
         iTimeoutReached = false;
-        iAssignment = new Enrollment[iStudent.getRequests().size()];
+        iCurrentAssignment = new Enrollment[iStudent.getRequests().size()];
         iBestAssignment = null;
         
         int i = 0;
         for (Request r: iStudent.getRequests())
-            iAssignment[i++] = r.getAssignment();
+            iCurrentAssignment[i++] = iAssignment.getValue(r);
         saveBest();
-        for (int j = 0; j < iAssignment.length; j++)
-            iAssignment[j] = null;
+        for (int j = 0; j < iCurrentAssignment.length; j++)
+            iCurrentAssignment[j] = null;
         
         iValues = new HashMap<CourseRequest, List<Enrollment>>();
         backTrack(0);
@@ -152,7 +155,7 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
         if (iBestAssignment == null)
             return null;
         
-        return new BranchBoundNeighbour(iStudent, iComparator.getTotalWeight(iBestAssignment), iBestAssignment);
+        return new BranchBoundNeighbour(iStudent, iComparator.getTotalWeight(iAssignment, iBestAssignment), iBestAssignment);
     }
 
     /** Was timeout reached */
@@ -168,33 +171,33 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
     /** Save the current schedule as the best */
     public void saveBest() {
         if (iBestAssignment == null)
-            iBestAssignment = new Enrollment[iAssignment.length];
-        for (int i = 0; i < iAssignment.length; i++)
-            iBestAssignment[i] = iAssignment[i];
+            iBestAssignment = new Enrollment[iCurrentAssignment.length];
+        for (int i = 0; i < iCurrentAssignment.length; i++)
+            iBestAssignment[i] = iCurrentAssignment[i];
     }
     
     /** True if the enrollment is conflicting */
     public boolean inConflict(final int idx, final Enrollment enrollment) {
         for (GlobalConstraint<Request, Enrollment> constraint : enrollment.variable().getModel().globalConstraints())
-            if (constraint.inConflict(enrollment))
+            if (constraint.inConflict(iAssignment, enrollment))
                 return true;
         for (LinkedSections linkedSections: iStudent.getLinkedSections()) {
-            if (linkedSections.inConflict(enrollment, new LinkedSections.Assignment() {
+            if (linkedSections.inConflict(enrollment, new LinkedSections.EnrollmentAssignment() {
                 @Override
                 public Enrollment getEnrollment(Request request, int index) {
-                    return (index == idx ? enrollment : iAssignment[index]);
+                    return (index == idx ? enrollment : iCurrentAssignment[index]);
                 }
             }) != null) return true;
         }
-        for (int i = 0; i < iAssignment.length; i++)
-            if (iAssignment[i] != null && i != idx && iAssignment[i].isOverlapping(enrollment))
+        for (int i = 0; i < iCurrentAssignment.length; i++)
+            if (iCurrentAssignment[i] != null && i != idx && iCurrentAssignment[i].isOverlapping(enrollment))
                 return true;
         return !isAllowed(idx, enrollment);
     }
 
     /** True if the given request can be assigned */
     public boolean canAssign(Request request, int idx) {
-        if (!request.isAlternative() || iAssignment[idx] != null)
+        if (!request.isAlternative() || iCurrentAssignment[idx] != null)
             return true;
         int alt = 0;
         int i = 0;
@@ -203,10 +206,10 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
             if (r.equals(request))
                 continue;
             if (r.isAlternative()) {
-                if (iAssignment[i] != null || (r instanceof CourseRequest && ((CourseRequest) r).isWaitlist()))
+                if (iCurrentAssignment[i] != null || (r instanceof CourseRequest && ((CourseRequest) r).isWaitlist()))
                     alt--;
             } else {
-                if (r instanceof CourseRequest && !((CourseRequest) r).isWaitlist() && iAssignment[i] == null)
+                if (r instanceof CourseRequest && !((CourseRequest) r).isWaitlist() && iCurrentAssignment[i] == null)
                     alt++;
             }
         }
@@ -242,8 +245,13 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
 
     /** Returns list of available enrollments for a course request */
     protected List<Enrollment> values(final CourseRequest request) {
-        List<Enrollment> values = request.getAvaiableEnrollments();
-        Collections.sort(values, iComparator);
+        List<Enrollment> values = request.getAvaiableEnrollments(iAssignment);
+        Collections.sort(values, new Comparator<Enrollment>() {
+			@Override
+			public int compare(Enrollment o1, Enrollment o2) {
+				return iComparator.compare(iAssignment, o1, o2);
+			}
+		});
         return values;
     }
 
@@ -253,11 +261,11 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
             iTimeoutReached = true;
             return;
         }
-        if (idx == iAssignment.length) {
-            if (iBestAssignment == null || iComparator.compare(iAssignment, iBestAssignment) < 0)
+        if (idx == iCurrentAssignment.length) {
+            if (iBestAssignment == null || iComparator.compare(iAssignment, iCurrentAssignment, iBestAssignment) < 0)
                 saveBest();
             return;
-        } else if (iBestAssignment != null && !iComparator.canImprove(idx, iAssignment, iBestAssignment)) {
+        } else if (iBestAssignment != null && !iComparator.canImprove(iAssignment, idx, iCurrentAssignment, iBestAssignment)) {
             return;
         }
 
@@ -271,16 +279,16 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
         if (request instanceof CourseRequest) {
             CourseRequest courseRequest = (CourseRequest) request;
             if (!courseRequest.getSelectedChoices().isEmpty()) {
-                values = courseRequest.getSelectedEnrollments(true);
+                values = courseRequest.getSelectedEnrollments(iAssignment, true);
                 if (values != null && !values.isEmpty()) {
                     boolean hasNoConflictValue = false;
                     for (Enrollment enrollment : values) {
                         if (inConflict(idx, enrollment))
                             continue;
                         hasNoConflictValue = true;
-                        iAssignment[idx] = enrollment;
+                        iCurrentAssignment[idx] = enrollment;
                         backTrack(idx + 1);
-                        iAssignment[idx] = null;
+                        iCurrentAssignment[idx] = null;
                     }
                     if (hasNoConflictValue)
                         return;
@@ -292,23 +300,27 @@ public class MultiCriteriaBranchAndBoundSelection implements OnlineSectioningSel
                 iValues.put(courseRequest, values);
             }
         } else {
-            values = request.computeEnrollments();
+            values = request.computeEnrollments(iAssignment);
         }
         
         for (Enrollment enrollment : values) {
             if (inConflict(idx, enrollment)) continue;
-            iAssignment[idx] = enrollment;
+            iCurrentAssignment[idx] = enrollment;
             backTrack(idx + 1);
-            iAssignment[idx] = null;
+            iCurrentAssignment[idx] = null;
         }
         
         if (canLeaveUnassigned(request))
             backTrack(idx + 1);
     }
     
-    public interface SelectionCriterion extends Comparator<Enrollment> {
-    	public int compare(Enrollment[] current, Enrollment[] best);
-    	public boolean canImprove(int idx, Enrollment[] current, Enrollment[] best);
-    	public double getTotalWeight(Enrollment[] assignment);
+    public interface SelectionComparator {
+    	public int compare(Assignment<Request, Enrollment> assignment, Enrollment e1, Enrollment e2);
+    }
+    
+    public interface SelectionCriterion extends SelectionComparator {
+    	public int compare(Assignment<Request, Enrollment> assignment, Enrollment[] current, Enrollment[] best);
+    	public boolean canImprove(Assignment<Request, Enrollment> assignment, int idx, Enrollment[] current, Enrollment[] best);
+    	public double getTotalWeight(Assignment<Request, Enrollment> assignment, Enrollment[] enrollments);
     }
 }

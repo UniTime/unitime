@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.solver.curricula;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
 
+import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumCourseGroup;
 

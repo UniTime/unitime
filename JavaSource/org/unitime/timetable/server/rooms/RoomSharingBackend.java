@@ -129,11 +129,11 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
             int idx = 0;
             for (int d = 0; d < Constants.NR_DAYS; d++)
                 for (int t = 0; t < Constants.SLOTS_PER_DAY; t++) {
-                    pref = (location.getPattern() != null && idx < location.getPattern().length() ? location.getPattern().charAt(idx) : net.sf.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
+                    pref = (location.getPattern() != null && idx < location.getPattern().length() ? location.getPattern().charAt(idx) : org.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
                     idx++;
-                    if (pref == net.sf.cpsolver.coursett.model.RoomSharingModel.sNotAvailablePrefChar) {
+                    if (pref == org.cpsolver.coursett.model.RoomSharingModel.sNotAvailablePrefChar) {
                     	model.setOption(d, t, -2l);
-                    } else if (pref == net.sf.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar) {
+                    } else if (pref == org.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar) {
                     	model.setOption(d, t, -1l);
                     } else {
                     	Long deptId = (char2dept == null ? null : char2dept.get(pref));
@@ -175,8 +175,8 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		context.checkPermission(request.getLocationId(), "Location", Right.RoomEditAvailability);
 		
 		Map<Long, Character> dept2char = new HashMap<Long, Character>();
-		dept2char.put(-1l, net.sf.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
-		dept2char.put(-2l, net.sf.cpsolver.coursett.model.RoomSharingModel.sNotAvailablePrefChar);
+		dept2char.put(-1l, org.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
+		dept2char.put(-2l, org.cpsolver.coursett.model.RoomSharingModel.sNotAvailablePrefChar);
 		String managerIds = ""; char pref = '0';
 		Set<Long> add = new HashSet<Long>();
 		for (RoomSharingOption option: request.getModel().getOptions()) {

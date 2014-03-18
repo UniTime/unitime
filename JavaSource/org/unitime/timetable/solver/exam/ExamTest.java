@@ -24,19 +24,23 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
 
-import net.sf.cpsolver.exam.Test;
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.solution.SolutionListener;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.ifs.util.ProgressWriter;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.cpsolver.exam.Test;
+import org.cpsolver.exam.model.Exam;
+import org.cpsolver.exam.model.ExamPlacement;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.solution.SolutionListener;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.ifs.util.ProgressWriter;
+import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -64,18 +68,18 @@ public class ExamTest {
                 sLog.info("Best solution:"+ToolBox.dict2string(solution.getExtendedInfo(),1));
                 
                 sLog.info("Best solution found after "+solution.getBestTime()+" seconds ("+solution.getBestIteration()+" iterations).");
-                sLog.info("Number of assigned variables is "+solution.getModel().nrAssignedVariables());
-                sLog.info("Total value of the solution is "+solution.getModel().getTotalValue());
+                sLog.info("Number of assigned variables is "+solution.getModel().nrAssignedVariables(solution.getAssignment()));
+                sLog.info("Total value of the solution is "+solution.getModel().getTotalValue(solution.getAssignment()));
                 
                 if (iSolver.getProperties().getPropertyBoolean("General.Save", false))
                     new ExamDatabaseSaver(iSolver).save();
                 
                 File outFile = new File(iSolver.getProperties().getProperty("General.OutputFile",iSolver.getProperties().getProperty("General.Output")+File.separator+"solution.xml"));
                 FileOutputStream fos = new FileOutputStream(outFile);
-                (new XMLWriter(fos,OutputFormat.createPrettyPrint())).write(((ExamModel)solution.getModel()).save());
+                (new XMLWriter(fos,OutputFormat.createPrettyPrint())).write(((ExamModel)solution.getModel()).save(solution.getAssignment()));
                 fos.flush();fos.close();
                 
-                Test.createReports((ExamModel)solution.getModel(),outFile.getParentFile(), outFile.getName().substring(0,outFile.getName().lastIndexOf('.')));
+                Test.createReports((ExamModel)solution.getModel(), solution.getAssignment(), outFile.getParentFile(), outFile.getName().substring(0,outFile.getName().lastIndexOf('.')));
                 
                 Progress.removeInstance(solution.getModel());
             } catch (Exception e) {
@@ -105,16 +109,17 @@ public class ExamTest {
             HibernateUtil.configureHibernate(cfg);
             
             ExamModel model = new ExamModel(cfg);
+            Assignment<Exam, ExamPlacement> assignment = new DefaultSingleAssignment<Exam, ExamPlacement>();
             Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
             try {
-                new ExamDatabaseLoader(model).load();
+                new ExamDatabaseLoader(model, assignment).load();
             } catch (Exception e) {
                 sLog.error("Unable to load problem, reason: "+e.getMessage(),e);
                 return;
             }
             
             Solver solver = new Solver(cfg);
-            solver.setInitalSolution(new Solution(model));
+            solver.setInitalSolution(new Solution(model, assignment));
             
             solver.currentSolution().addSolutionListener(new SolutionListener() {
                 public void solutionUpdated(Solution solution) {}
@@ -123,11 +128,11 @@ public class ExamTest {
                 public void bestCleared(Solution solution) {}
                 public void bestSaved(Solution solution) {
                     ExamModel m = (ExamModel)solution.getModel();
+                    Assignment<Exam, ExamPlacement> a = solution.getAssignment();
                     if (sLog.isInfoEnabled()) {
                         sLog.info("**BEST["+solution.getIteration()+"]** "+
-                                (m.nrUnassignedVariables()>0?"V:"+m.nrAssignedVariables()+"/"+m.variables().size()+" - ":"")+
-                                "T:"+new DecimalFormat("0.00").format(m.getTotalValue())+
-                                " ("+m+")");
+                                (m.nrUnassignedVariables(a)>0?"V:"+m.nrAssignedVariables(a)+"/"+m.variables().size()+" - ":"")+
+                                "T:"+new DecimalFormat("0.00").format(m.getTotalValue(a))+" ("+m+")");
                     }
                 }
                 public void bestRestored(Solution solution) {}

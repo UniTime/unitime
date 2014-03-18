@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client;
 
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -42,12 +43,16 @@ public class TimeHint {
 	
 	public static Widget content(TimeHintResponse response) {
 		SimplePanel panel = null;
+		try {
 		if (response.getContent().startsWith("$")) {
 			HTML content = new HTML(ToolBox.eval(response.getContent()), false);
 			panel = new SimplePanel(content);
 		} else {
 			panel = new SimplePanel();
 			panel.getElement().setInnerHTML(response.getContent());
+		}
+		} catch (Exception e) {
+			UniTimeNotifications.error("Failed to display: " + response.getContent(), e);
 		}
 		panel.setStyleName("unitime-TimeHint");
 		return panel;

@@ -29,10 +29,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -265,8 +265,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 					helper.getHibSession().save(student);
 		
 					EnrollStudent.updateSpace(server,
-							r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(server.getStudent(r.getRequest().getStudentId()), r.getRequest(), server, offering, r.getRequest().getEnrollment()).getAssignment(),
-							r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getRequest(), server, offering, r.getLastEnrollment()).getAssignment(),
+							r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(server.getStudent(r.getRequest().getStudentId()), r.getRequest(), server, offering, r.getRequest().getEnrollment()),
+							r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getRequest(), server, offering, r.getLastEnrollment()),
 							offering);
 					server.persistExpectedSpaces(offering.getOfferingId());
 

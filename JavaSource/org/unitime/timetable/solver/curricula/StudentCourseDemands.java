@@ -22,8 +22,8 @@ package org.unitime.timetable.solver.curricula;
 import java.util.Collection;
 import java.util.Set;
 
-import net.sf.cpsolver.ifs.util.Progress;
 
+import org.cpsolver.ifs.util.Progress;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.InstructionalOffering;

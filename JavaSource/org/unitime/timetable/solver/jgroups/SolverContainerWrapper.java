@@ -26,13 +26,13 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.ToolBox;
 import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller

@@ -19,10 +19,10 @@
 */
 package org.unitime.timetable.solver.curricula.students;
 
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.termination.GeneralTerminationCondition;
-import net.sf.cpsolver.ifs.termination.TerminationCondition;
-import net.sf.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.termination.GeneralTerminationCondition;
+import org.cpsolver.ifs.termination.TerminationCondition;
+import org.cpsolver.ifs.util.DataProperties;
 
 /**
  * @author Tomas Muller
@@ -51,7 +51,7 @@ public class CurTermination implements TerminationCondition<CurVariable, CurValu
             return false;
         }
         if (iStopWhenComplete || (iMaxIter < 0 && iTimeOut < 0)) {
-            boolean ret = (currentSolution.getModel().nrUnassignedVariables() != 0);
+            boolean ret = (currentSolution.getModel().nrUnassignedVariables(currentSolution.getAssignment()) != 0);
             if (!ret)
                 sLogger.info("Complete solution found.");
             return ret;

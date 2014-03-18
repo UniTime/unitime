@@ -24,10 +24,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.SuspectedException;

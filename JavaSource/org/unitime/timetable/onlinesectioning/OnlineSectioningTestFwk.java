@@ -73,7 +73,7 @@ public abstract class OnlineSectioningTestFwk {
         props.setProperty("log4j.logger.org.unitime.timetable.onlinesectioning","WARN");
         props.setProperty("log4j.logger.org.unitime.timetable.onlinesectioning.test","INFO");
         props.setProperty("log4j.logger." + OnlineSectioningTestFwk.class.getName(), "INFO");
-        props.setProperty("log4j.logger.net.sf.cpsolver.ifs.util.JProf", "INFO");
+        props.setProperty("log4j.logger.org.cpsolver.ifs.util.JProf", "INFO");
         props.setProperty("log4j.logger.org.jgroups", "INFO");
         props.setProperty("log4j.logger.net.sf.ehcache.distribution.jgroups", "WARN");
         props.setProperty("log4j.logger.org.hibernate.cache.ehcache.AbstractEhcacheRegionFactory", "ERROR");

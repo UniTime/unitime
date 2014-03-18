@@ -30,18 +30,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
-import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
-import net.sf.cpsolver.studentsct.model.Assignment;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.reservation.Reservation;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.SctAssignment;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -88,6 +90,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
 		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig());
+		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
 
@@ -125,10 +128,10 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			Map<Long, Section> classTable = new HashMap<Long, Section>();
 			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, student, original, c, false, true, classTable, distributions);
+				addRequest(server, model, assignment, student, original, c, false, true, classTable, distributions);
 			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, student, original, c, true, true, classTable, distributions);
+				addRequest(server, model, assignment, student, original, c, true, true, classTable, distributions);
 			model.addStudent(student);
 			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
@@ -158,9 +161,9 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
         
 		OnlineSectioningLog.Enrollment.Builder requested = OnlineSectioningLog.Enrollment.newBuilder();
 		requested.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
-		for (ClassAssignmentInterface.ClassAssignment assignment: getAssignment())
-			if (assignment != null)
-				requested.addSection(OnlineSectioningHelper.toProto(assignment));
+		for (ClassAssignmentInterface.ClassAssignment a: getAssignment())
+			if (a != null)
+				requested.addSection(OnlineSectioningHelper.toProto(a));
 		action.addEnrollment(requested);
 
 		Request selectedRequest = null;
@@ -197,7 +200,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 							messages.addMessage((a.isSaved() ? "Enrolled class" : a.isPinned() ? "Required class " : "Previously selected class ") + a.getSubject() + " " + a.getCourseNbr() + " " + a.getSubpart() + " " + a.getSection() + " is no longer available.");
 							continue a;
 						}
-						selectedPenalty += model.getOverExpected(section, cr);
+						selectedPenalty += model.getOverExpected(assignment, section, cr);
 						if (a.isPinned() && !getSelection().equals(a)) 
 							requiredSections.add(section);
 						preferredSections.add(section);
@@ -256,14 +259,14 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				selection.setRequiredSections(requiredSectionsForCourse);
 				selection.setRequiredFreeTimes(requiredFreeTimes);
 				selection.setTimeout(100);
-				BranchBoundNeighbour neighbour = selection.select(student, new BestPenaltyCriterion(student, model));
+				BranchBoundNeighbour neighbour = selection.select(assignment, student, new BestPenaltyCriterion(student, model));
 				long x1 = System.currentTimeMillis();
 				if (neighbour != null) {
 					maxOverExpected = 0;
 					for (Enrollment enrollment: neighbour.getAssignment()) {
 						if (enrollment != null && enrollment.isCourseRequest())
 							for (Section section: enrollment.getSections())
-								maxOverExpected += model.getOverExpected(section, enrollment.getRequest());
+								maxOverExpected += model.getOverExpected(assignment, section, enrollment.getRequest());
 					}
 					if (maxOverExpected < selectedPenalty) maxOverExpected = selectedPenalty;
 					helper.debug("Maximum number of over-expected sections limited to " + maxOverExpected + " (computed in " + (x1 - x0) + " ms).");
@@ -273,13 +276,13 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		
 		if (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true)) {
 			suggestionBaB = new MultiCriteriaBranchAndBoundSuggestions(
-					model.getProperties(), student,
+					model.getProperties(), student, assignment,
 					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
 					selectedRequest, selectedSection,
 					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), maxOverExpected,
 					server.getConfig().getPropertyBoolean("StudentWeights.PriorityWeighting", true));
 		} else {
-			suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student,
+			suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student, assignment,
 					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
 					selectedRequest, selectedSection,
 					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), maxOverExpected);
@@ -298,13 +301,13 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		helper.debug("  -- suggestion B&B took "+suggestionBaB.getTime()+"ms"+(suggestionBaB.isTimeoutReached()?", timeout reached":""));
 
 		for (SuggestionsBranchAndBound.Suggestion suggestion : suggestions) {
-        	ret.add(convert(server, suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, true, model.getDistanceConflict(), enrolled));
+        	ret.add(convert(server, assignment, suggestion.getEnrollments(), requiredSectionsForCourse, requiredFreeTimes, true, model.getDistanceConflict(), enrolled));
         	OnlineSectioningLog.Enrollment.Builder solution = OnlineSectioningLog.Enrollment.newBuilder();
         	solution.setType(OnlineSectioningLog.Enrollment.EnrollmentType.COMPUTED);
         	solution.setValue(- suggestion.getValue());
     		for (Enrollment e: suggestion.getEnrollments()) {
     			if (e != null && e.getAssignments() != null)
-    				for (Assignment section: e.getAssignments())
+    				for (SctAssignment section: e.getAssignments())
     					solution.addSection(OnlineSectioningHelper.toProto(section, e));
     		}
 			action.addEnrollment(solution);

@@ -25,18 +25,21 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
+import org.cpsolver.exam.model.Exam;
+import org.cpsolver.exam.model.ExamPeriod;
+import org.cpsolver.exam.model.ExamPlacement;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.util.Callback;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.Progress;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
-import net.sf.cpsolver.exam.model.ExamPeriod;
-import net.sf.cpsolver.ifs.util.Callback;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.Progress;
 
 /**
  * @author Tomas Muller
  */
-public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
+public class ExamModel extends org.cpsolver.exam.model.ExamModel {
     private Hashtable<ExamPeriod, Vector<ExamResourceUnavailability>>  iUnavailabilitites = null;
     
     public ExamModel(DataProperties properties) {
@@ -58,12 +61,12 @@ public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
         unavailabilities.add(unavailability);
     }
     
-    public boolean load(Document document) {
-        return load(document, null);
+    public boolean load(Document document, Assignment<Exam, ExamPlacement> assignment) {
+        return load(document, assignment, null);
     }
     
-    public boolean load(Document document, Callback saveBest) {
-        if (!super.load(document, saveBest)) return false;
+    public boolean load(Document document, Assignment<Exam, ExamPlacement> assignment, Callback saveBest) {
+        if (!super.load(document, assignment, saveBest)) return false;
         if (iUnavailabilitites!=null) iUnavailabilitites.clear();
         Element elements = document.getRootElement().element("notavailable");
         if (elements!=null) {
@@ -100,8 +103,8 @@ public class ExamModel extends net.sf.cpsolver.exam.model.ExamModel {
         return true;
     }
     
-    public Document save() {
-        Document document = super.save();
+    public Document save(Assignment<Exam, ExamPlacement> assignment) {
+        Document document = super.save(assignment);
         if (document==null) return null;
         if (iUnavailabilitites!=null) {
             Element elements = document.getRootElement().addElement("notavailable");

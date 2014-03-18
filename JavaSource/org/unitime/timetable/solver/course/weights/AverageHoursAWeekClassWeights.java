@@ -24,14 +24,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 public class AverageHoursAWeekClassWeights implements ClassWeightProvider {
 	private BitSet[] iDaysOfWeek = null;

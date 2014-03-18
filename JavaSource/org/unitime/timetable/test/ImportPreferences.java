@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -73,7 +74,6 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SessionDAO;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller

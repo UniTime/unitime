@@ -35,20 +35,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.coursett.Constants;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
-import net.sf.cpsolver.studentsct.constraint.LinkedSections;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
-import net.sf.cpsolver.studentsct.reservation.DummyReservation;
-import net.sf.cpsolver.studentsct.reservation.GroupReservation;
 
+import org.cpsolver.coursett.Constants;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.constraint.LinkedSections;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.reservation.DummyReservation;
+import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseOffering;
@@ -114,15 +114,15 @@ public class XOffering implements Serializable, Externalizable {
     		iCourses.add(new XCourse(course));
     	for (Config config: offering.getConfigs())
     		iConfigs.add(new XConfig(config));
-    	for (net.sf.cpsolver.studentsct.reservation.Reservation reservation: offering.getReservations()) {
-    		if (reservation instanceof net.sf.cpsolver.studentsct.reservation.IndividualReservation) {
-        		iReservations.add(new XIndividualReservation((net.sf.cpsolver.studentsct.reservation.IndividualReservation)reservation));
+    	for (org.cpsolver.studentsct.reservation.Reservation reservation: offering.getReservations()) {
+    		if (reservation instanceof org.cpsolver.studentsct.reservation.IndividualReservation) {
+        		iReservations.add(new XIndividualReservation((org.cpsolver.studentsct.reservation.IndividualReservation)reservation));
         	} else if (reservation instanceof GroupReservation) {
         		iReservations.add(new XIndividualReservation((GroupReservation)reservation));
-        	} else if (reservation instanceof net.sf.cpsolver.studentsct.reservation.CurriculumReservation) {
-        		iReservations.add(new XCurriculumReservation((net.sf.cpsolver.studentsct.reservation.CurriculumReservation)reservation));
-        	} else if (reservation instanceof net.sf.cpsolver.studentsct.reservation.CourseReservation) {
-        		iReservations.add(new XCourseReservation((net.sf.cpsolver.studentsct.reservation.CourseReservation)reservation));
+        	} else if (reservation instanceof org.cpsolver.studentsct.reservation.CurriculumReservation) {
+        		iReservations.add(new XCurriculumReservation((org.cpsolver.studentsct.reservation.CurriculumReservation)reservation));
+        	} else if (reservation instanceof org.cpsolver.studentsct.reservation.CourseReservation) {
+        		iReservations.add(new XCourseReservation((org.cpsolver.studentsct.reservation.CourseReservation)reservation));
         	}  else if (reservation instanceof DummyReservation) {
         		iReservations.add(new XDummyReservation(this));
         	}
@@ -432,7 +432,7 @@ public class XOffering implements Serializable, Externalizable {
     	return null;
     }
     
-	public static class SimpleReservation extends net.sf.cpsolver.studentsct.reservation.Reservation {
+	public static class SimpleReservation extends org.cpsolver.studentsct.reservation.Reservation {
 		private XReservationType iType;
 		private int iPriority;
 		private boolean iOver;
@@ -623,7 +623,7 @@ public class XOffering implements Serializable, Externalizable {
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 					if (enrollment.getStudentId().equals(student.getStudentId())) { applicable = true; break; }
 			}
-			net.sf.cpsolver.studentsct.reservation.Reservation clonedReservation = new SimpleReservation(reservation.getType(), reservation.getReservationId(), clonedOffering,
+			org.cpsolver.studentsct.reservation.Reservation clonedReservation = new SimpleReservation(reservation.getType(), reservation.getReservationId(), clonedOffering,
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
 					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());
 			for (Long configId: reservation.getConfigsIds())

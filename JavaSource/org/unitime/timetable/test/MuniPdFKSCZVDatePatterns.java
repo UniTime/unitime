@@ -27,6 +27,13 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.cpsolver.coursett.TimetableXMLLoader.DatePattern;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.extension.Extension;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Class_;
@@ -36,13 +43,6 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 
-import net.sf.cpsolver.coursett.TimetableXMLLoader.DatePattern;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.extension.Extension;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 /**
  * @author Tomas Muller

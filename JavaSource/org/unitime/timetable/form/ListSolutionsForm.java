@@ -31,12 +31,12 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.cpsolver.ifs.util.Progress;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.cpsolver.ifs.util.Progress;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolutionDAO;

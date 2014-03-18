@@ -22,6 +22,8 @@ package org.unitime.timetable.onlinesectioning;
 import java.util.Collection;
 import java.util.List;
 
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
@@ -40,8 +42,6 @@ import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 /**
  * @author Tomas Muller

@@ -23,6 +23,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
 
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -32,9 +35,6 @@ import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
 
 /**
  * 

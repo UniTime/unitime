@@ -26,7 +26,7 @@
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
 <%@ page import="org.apache.struts.util.LabelValueBean" %>
-<%@page import="net.sf.cpsolver.ifs.util.DistanceMetric"%>
+<%@page import="org.cpsolver.ifs.util.DistanceMetric"%>
 <%@page import="org.unitime.timetable.ApplicationProperties"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>

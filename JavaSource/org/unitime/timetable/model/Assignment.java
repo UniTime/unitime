@@ -29,11 +29,11 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.Vector;
 
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
 
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
 import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
@@ -258,7 +258,7 @@ public class Assignment extends BaseAssignment {
 		iPlacement = (Placement)lecture.getInitialAssignment();
 		iPlacement.setVariable(lecture);
 		iPlacement.setAssignmentId(getUniqueId());
-		lecture.setBestAssignment(iPlacement);
+		lecture.setBestAssignment(iPlacement, 0);
 		if (getSolution()!=null && getSolution().isCommited()!=null)
 			lecture.setCommitted(getSolution().isCommited().booleanValue());
         iPlacement.setAssignment(this);

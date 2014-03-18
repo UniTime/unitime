@@ -27,10 +27,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.HibernateException;
 
 /**

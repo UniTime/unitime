@@ -38,6 +38,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.DataProperties;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,8 +71,6 @@ import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.Formats;
 
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 /** 
  * @author Tomas Muller, Stephanie Schluttenhofer

@@ -21,7 +21,8 @@ package org.unitime.timetable.solver.exam;
 
 import java.util.Set;
 
-import net.sf.cpsolver.exam.model.ExamPeriod;
+import org.cpsolver.exam.model.ExamPeriod;
+
 
 /**
  * @author Tomas Muller

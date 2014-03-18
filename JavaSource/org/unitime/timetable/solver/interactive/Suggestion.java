@@ -32,6 +32,30 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.InstructorConstraint;
+import org.cpsolver.coursett.constraint.JenrlConstraint;
+import org.cpsolver.coursett.criteria.BackToBackInstructorPreferences;
+import org.cpsolver.coursett.criteria.BrokenTimePatterns;
+import org.cpsolver.coursett.criteria.DepartmentBalancingPenalty;
+import org.cpsolver.coursett.criteria.DistributionPreferences;
+import org.cpsolver.coursett.criteria.Perturbations;
+import org.cpsolver.coursett.criteria.RoomPreferences;
+import org.cpsolver.coursett.criteria.SameSubpartBalancingPenalty;
+import org.cpsolver.coursett.criteria.StudentCommittedConflict;
+import org.cpsolver.coursett.criteria.StudentConflict;
+import org.cpsolver.coursett.criteria.StudentDistanceConflict;
+import org.cpsolver.coursett.criteria.StudentHardConflict;
+import org.cpsolver.coursett.criteria.TimePreferences;
+import org.cpsolver.coursett.criteria.TooBigRooms;
+import org.cpsolver.coursett.criteria.UselessHalfHours;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.Student;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.solver.Solver;
 import org.dom4j.Element;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -41,29 +65,6 @@ import org.unitime.timetable.solver.interactive.Hint.HintComparator;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.solver.ui.JenrlInfo;
 
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.criteria.BackToBackInstructorPreferences;
-import net.sf.cpsolver.coursett.criteria.BrokenTimePatterns;
-import net.sf.cpsolver.coursett.criteria.DepartmentBalancingPenalty;
-import net.sf.cpsolver.coursett.criteria.DistributionPreferences;
-import net.sf.cpsolver.coursett.criteria.Perturbations;
-import net.sf.cpsolver.coursett.criteria.RoomPreferences;
-import net.sf.cpsolver.coursett.criteria.SameSubpartBalancingPenalty;
-import net.sf.cpsolver.coursett.criteria.StudentCommittedConflict;
-import net.sf.cpsolver.coursett.criteria.StudentConflict;
-import net.sf.cpsolver.coursett.criteria.StudentDistanceConflict;
-import net.sf.cpsolver.coursett.criteria.StudentHardConflict;
-import net.sf.cpsolver.coursett.criteria.TimePreferences;
-import net.sf.cpsolver.coursett.criteria.TooBigRooms;
-import net.sf.cpsolver.coursett.criteria.UselessHalfHours;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.Student;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.solver.Solver;
 
 /**
  * @author Tomas Muller
@@ -102,6 +103,7 @@ public class Suggestion implements Serializable, Comparable {
     }
     
     public Suggestion(Solver<Lecture, Placement> solver, Hashtable<Lecture, Placement> initialAssignments, Vector order, Collection unresolvedConflicts) {
+    	Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
     	if (unresolvedConflicts!=null) {
     		iUnresolvedConflicts = new HashSet();
     		for (Iterator i=unresolvedConflicts.iterator();i.hasNext();)
@@ -113,12 +115,12 @@ public class Suggestion implements Serializable, Comparable {
         	HashSet jenrls = new HashSet();
         	HashSet gcs = new HashSet();
         	Hashtable committed = new Hashtable();
-        	for (Lecture lecture: solver.currentSolution().getModel().assignedVariables()) {
-        		Placement p = lecture.getAssignment();
+        	for (Lecture lecture: assignment.assignedVariables()) {
+        		Placement p = assignment.getValue(lecture);
         		Placement ini = (Placement)initialAssignments.get(p.variable());
         		if (ini==null || !ini.equals(p)) {
         			iDifferentAssignments.add(new Hint(solver, p));  
-        			jenrls.addAll(lecture.activeJenrls());
+        			jenrls.addAll(lecture.activeJenrls(assignment));
         			if (p.getCommitedConflicts()>0) {
         				Hashtable x = new Hashtable();
         				for (Iterator i=lecture.students().iterator();i.hasNext();) {
@@ -136,11 +138,12 @@ public class Suggestion implements Serializable, Comparable {
         			gcs.addAll(lecture.groupConstraints());
         			for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
         			    for (Lecture other: ic.variables()) {
-        			        if (other.equals(lecture) || other.getAssignment()==null) continue;
-        			        int pref = ic.getDistancePreference(p, (Placement)other.getAssignment());
+        			    	Placement otherPlacement = assignment.getValue(other);
+        			        if (other.equals(lecture) || otherPlacement==null) continue;
+        			        int pref = ic.getDistancePreference(p, (Placement)otherPlacement);
         			        if (pref==PreferenceLevel.sIntLevelNeutral) continue;
         	            	Hint h1 = new Hint(solver, p);
-        	            	Hint h2 = new Hint(solver, (Placement)other.getAssignment());
+        	            	Hint h2 = new Hint(solver, (Placement)otherPlacement);
         			        iBtbInstructorInfos.add(new BtbInstructorInfo(h1,h2,lecture.getInstructorName(),pref));
         			    }
         			}
@@ -151,14 +154,14 @@ public class Suggestion implements Serializable, Comparable {
             iStudentConflictInfos = new Vector(jenrls.size());
             for (Iterator i=jenrls.iterator();i.hasNext();) {
             	JenrlConstraint jenrl = (JenrlConstraint)i.next();
-            	Hint h1 = new Hint(solver, (Placement)jenrl.first().getAssignment());
-            	Hint h2 = new Hint(solver, (Placement)jenrl.second().getAssignment());
+            	Hint h1 = new Hint(solver, assignment.getValue(jenrl.first()));
+            	Hint h2 = new Hint(solver, assignment.getValue(jenrl.second()));
             	int i1 = iDifferentAssignments.indexOf(h1);
             	int i2 = iDifferentAssignments.indexOf(h2);
             	if (i2<0 || (i1>=0 && i1<i2))
-            		iStudentConflictInfos.add(new StudentConflictInfo(h1,h2,new JenrlInfo(jenrl)));
+            		iStudentConflictInfos.add(new StudentConflictInfo(h1,h2,new JenrlInfo(solver, jenrl)));
             	else
-            		iStudentConflictInfos.add(new StudentConflictInfo(h2,h1,new JenrlInfo(jenrl)));
+            		iStudentConflictInfos.add(new StudentConflictInfo(h2,h1,new JenrlInfo(solver, jenrl)));
             }
             for (Iterator i=committed.entrySet().iterator();i.hasNext();) {
             	Map.Entry x = (Map.Entry)i.next();
@@ -182,36 +185,38 @@ public class Suggestion implements Serializable, Comparable {
             iGroupConstraintInfos = new Vector();
             for (Iterator i=gcs.iterator();i.hasNext();) {
             	GroupConstraint gc = (GroupConstraint)i.next();
-            	if (gc.isSatisfied()) continue;
-				DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(gc));
+            	if (gc.isSatisfied(assignment)) continue;
+				DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(assignment, gc));
 				for (Lecture another: gc.variables()) {
-					if (another.getAssignment()!=null)
-						dist.addHint(new Hint(solver, (Placement)another.getAssignment()));
+					Placement anotherPlacement = assignment.getValue(another);
+					if (anotherPlacement!=null)
+						dist.addHint(new Hint(solver, anotherPlacement));
 				}
 				iGroupConstraintInfos.addElement(dist);
             }
         }
-        iValue = solver.currentSolution().getModel().getTotalValue();
+        iValue = solver.currentSolution().getModel().getTotalValue(assignment);
         TimetableModel m = (TimetableModel)solver.currentSolution().getModel();
-        iTooBigRooms = (int)Math.round(m.getCriterion(TooBigRooms.class).getValue());
-        iUselessSlots = Math.round(m.getCriterion(UselessHalfHours.class).getValue() + m.getCriterion(BrokenTimePatterns.class).getValue());
-        iGlobalTimePreference = m.getCriterion(TimePreferences.class).getValue();
-        iGlobalRoomPreference = Math.round(m.getCriterion(RoomPreferences.class).getValue());
-        iGlobalGroupConstraintPreference = Math.round(m.getCriterion(DistributionPreferences.class).getValue());
-        iViolatedStudentConflicts = Math.round(m.getCriterion(StudentConflict.class).getValue() + m.getCriterion(StudentCommittedConflict.class).getValue());
-        iHardStudentConflicts = Math.round(m.getCriterion(StudentHardConflict.class).getValue());
-        iDistanceStudentConflicts = Math.round(m.getCriterion(StudentDistanceConflict.class).getValue());
-        iCommitedStudentConflicts = Math.round(m.getCriterion(StudentCommittedConflict.class).getValue());
-        iInstructorDistancePreference = Math.round(m.getCriterion(BackToBackInstructorPreferences.class).getValue());
-        iDepartmentSpreadPenalty = (int)Math.round(m.getCriterion(DepartmentBalancingPenalty.class).getValue());
-        iSpreadPenalty = (int)Math.round(m.getCriterion(SameSubpartBalancingPenalty.class).getValue());
-        iUnassignedVariables = m.unassignedVariables().size();
-        iPerturbationPenalty = m.getCriterion(Perturbations.class).getValue();
+        iTooBigRooms = (int)Math.round(m.getCriterion(TooBigRooms.class).getValue(assignment));
+        iUselessSlots = Math.round(m.getCriterion(UselessHalfHours.class).getValue(assignment) + m.getCriterion(BrokenTimePatterns.class).getValue(assignment));
+        iGlobalTimePreference = m.getCriterion(TimePreferences.class).getValue(assignment);
+        iGlobalRoomPreference = Math.round(m.getCriterion(RoomPreferences.class).getValue(assignment));
+        iGlobalGroupConstraintPreference = Math.round(m.getCriterion(DistributionPreferences.class).getValue(assignment));
+        iViolatedStudentConflicts = Math.round(m.getCriterion(StudentConflict.class).getValue(assignment) + m.getCriterion(StudentCommittedConflict.class).getValue(assignment));
+        iHardStudentConflicts = Math.round(m.getCriterion(StudentHardConflict.class).getValue(assignment));
+        iDistanceStudentConflicts = Math.round(m.getCriterion(StudentDistanceConflict.class).getValue(assignment));
+        iCommitedStudentConflicts = Math.round(m.getCriterion(StudentCommittedConflict.class).getValue(assignment));
+        iInstructorDistancePreference = Math.round(m.getCriterion(BackToBackInstructorPreferences.class).getValue(assignment));
+        iDepartmentSpreadPenalty = (int)Math.round(m.getCriterion(DepartmentBalancingPenalty.class).getValue(assignment));
+        iSpreadPenalty = (int)Math.round(m.getCriterion(SameSubpartBalancingPenalty.class).getValue(assignment));
+        iUnassignedVariables = m.nrUnassignedVariables(assignment);
+        iPerturbationPenalty = m.getCriterion(Perturbations.class).getValue(assignment);
     }
     
     public Suggestion(Solver solver, Lecture lecture, TimeLocation time) {
+    	Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
     	iStudentConflictInfos = new Vector();
-    	Placement currentPlacement = (Placement)lecture.getAssignment();
+    	Placement currentPlacement = assignment.getValue(lecture);
     	if (currentPlacement==null)
     		currentPlacement = (lecture.values().isEmpty()?null:lecture.values().get(0));
     	
@@ -240,10 +245,10 @@ public class Suggestion implements Serializable, Comparable {
 			}
 
 			for (JenrlConstraint jenrl: lecture.jenrlConstraints()) {
-        		long j = jenrl.jenrl(lecture, dummyPlacement);
+        		long j = jenrl.jenrl(assignment, lecture, dummyPlacement);
         		if (j>0 && !jenrl.isToBeIgnored()) {
         			//if (lecture.getAssignment()==null && jenrl.areStudentConflictsDistance(dummyPlacement)) continue;
-        			if (jenrl.areStudentConflictsDistance(dummyPlacement)) continue;
+        			if (jenrl.areStudentConflictsDistance(assignment, dummyPlacement)) continue;
         			JenrlInfo jInfo = new JenrlInfo();
         			jInfo.setJenrl(j);
         			iViolatedStudentConflicts += j;
@@ -251,15 +256,15 @@ public class Suggestion implements Serializable, Comparable {
         				iHardStudentConflicts += j;
         				jInfo.setIsHard(true);
         			}
-        			if (jenrl.areStudentConflictsDistance(dummyPlacement)) {
+        			if (jenrl.areStudentConflictsDistance(assignment, dummyPlacement)) {
         				iDistanceStudentConflicts += j;
         				jInfo.setIsDistance(true);
         			}
         			if (jenrl.first().equals(lecture)) {
-        				Hint h = new Hint(solver, (Placement)jenrl.second().getAssignment());
+        				Hint h = new Hint(solver, assignment.getValue(jenrl.second()));
                     	iStudentConflictInfos.add(new StudentConflictInfo(h,null,jInfo));
         			} else {
-        				Hint h = new Hint(solver, (Placement)jenrl.first().getAssignment());
+        				Hint h = new Hint(solver, assignment.getValue(jenrl.first()));
                     	iStudentConflictInfos.add(new StudentConflictInfo(h,null,jInfo));
         			}
         		}
@@ -283,26 +288,26 @@ public class Suggestion implements Serializable, Comparable {
         	for (Iterator i=lecture.groupConstraints().iterator();i.hasNext();) {
         		GroupConstraint gc = (GroupConstraint)i.next();
         		if (gc.getType() == GroupConstraint.ConstraintType.SAME_ROOM) continue;
-        		int curPref = gc.getCurrentPreference(dummyPlacement);
+        		int curPref = gc.getCurrentPreference(assignment, dummyPlacement);
         		if (gc.getType() == GroupConstraint.ConstraintType.BTB) {
         			gc.setType(GroupConstraint.ConstraintType.BTB_TIME);
-        			curPref = gc.getCurrentPreference(dummyPlacement);
+        			curPref = gc.getCurrentPreference(assignment, dummyPlacement);
         			gc.setType(GroupConstraint.ConstraintType.BTB);
         		}
         		if (gc.getType() == GroupConstraint.ConstraintType.SAME_STUDENTS) {
         			gc.setType(GroupConstraint.ConstraintType.DIFF_TIME);
-        			curPref = gc.getCurrentPreference(dummyPlacement);
+        			curPref = gc.getCurrentPreference(assignment, dummyPlacement);
         			gc.setType(GroupConstraint.ConstraintType.SAME_STUDENTS);
         		}
         		boolean sat = (gc.getPreference()<0 && curPref<0) || gc.getPreference()==0 || (gc.getPreference()>0 && curPref==0);
         		if (sat) continue;
         		iGlobalGroupConstraintPreference += Math.abs(curPref==0?gc.getPreference():curPref);
-    			DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(gc));
+    			DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(assignment, gc));
     			for (Lecture another: gc.variables()) {
     				if (another.equals(lecture)) {
     					//dist.addHint(new Hint(solver, dummyPlacement));
-    				} else if (another.getAssignment()!=null)
-    					dist.addHint(new Hint(solver, another.getAssignment()));
+    				} else if (assignment.getValue(another)!=null)
+    					dist.addHint(new Hint(solver, assignment.getValue(another)));
     			}
     			iGroupConstraintInfos.addElement(dist);
         	}
@@ -326,7 +331,7 @@ public class Suggestion implements Serializable, Comparable {
         return iDifferentAssignments.toString().compareTo(((Suggestion)o).iDifferentAssignments.toString());
     }
     public boolean isBetter(Solver solver) {
-    	return (iValue < solver.currentSolution().getModel().getTotalValue());
+    	return (iValue < solver.currentSolution().getModel().getTotalValue(solver.currentSolution().getAssignment()));
     }
     
     public double getValue() { return iValue; }

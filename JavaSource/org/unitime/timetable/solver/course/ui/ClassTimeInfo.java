@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Vector;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -36,7 +37,6 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.util.Constants;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller

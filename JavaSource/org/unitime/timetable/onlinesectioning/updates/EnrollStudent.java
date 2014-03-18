@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
 
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -614,8 +614,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						server.execute(new CheckOfferingAction(oldEnrollment.getOfferingId()), helper.getUser(), offeringChecked);
 					
 					updateSpace(server,
-							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, offering, newEnrollment).getAssignment(),
-							oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment).getAssignment(),
+							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, offering, newEnrollment),
+							oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment),
 							offering);
 					server.persistExpectedSpaces(oldEnrollment.getOfferingId());
 				}
@@ -640,7 +640,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						}
 					XOffering offering = server.getOffering(newEnrollment.getOfferingId());
 					updateSpace(server,
-							SectioningRequest.convert(newStudent, (XCourseRequest)newRequest, server, offering, newEnrollment).getAssignment(),
+							SectioningRequest.convert(newStudent, (XCourseRequest)newRequest, server, offering, newEnrollment),
 							null, offering);
 					server.persistExpectedSpaces(newEnrollment.getOfferingId());
 				}
@@ -704,7 +704,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
             	if (!enrl.getCourse().equals(oldEnrollment.getCourse())) continue;
                 boolean overlaps = false;
                 for (Request otherRequest : oldEnrollment.getRequest().getStudent().getRequests()) {
-                    if (otherRequest.equals(oldEnrollment.getRequest()) || !(otherRequest instanceof net.sf.cpsolver.studentsct.model.CourseRequest))
+                    if (otherRequest.equals(oldEnrollment.getRequest()) || !(otherRequest instanceof org.cpsolver.studentsct.model.CourseRequest))
                         continue;
                     Enrollment otherErollment = otherRequest.getInitialAssignment();
                     if (otherErollment == null)
@@ -748,9 +748,10 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
             	if (!enrl.getCourse().equals(newEnrollment.getCourse())) continue;
                 boolean overlaps = false;
                 for (Request otherRequest : newEnrollment.getRequest().getStudent().getRequests()) {
-                    if (otherRequest.equals(newEnrollment.getRequest()) || !(otherRequest instanceof net.sf.cpsolver.studentsct.model.CourseRequest))
+                    if (otherRequest.equals(newEnrollment.getRequest()) || !(otherRequest instanceof org.cpsolver.studentsct.model.CourseRequest))
                         continue;
-                    Enrollment otherErollment = otherRequest.getAssignment();
+                    @SuppressWarnings("deprecation")
+					Enrollment otherErollment = otherRequest.getAssignment();
                     if (otherErollment == null)
                         continue;
                     if (enrl.isOverlapping(otherErollment)) {

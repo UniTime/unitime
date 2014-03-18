@@ -33,9 +33,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
+import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;

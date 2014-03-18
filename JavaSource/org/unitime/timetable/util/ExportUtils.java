@@ -25,10 +25,10 @@ import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.cpsolver.ifs.util.CSVFile;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.webutil.PdfWebTable;
 
-import net.sf.cpsolver.ifs.util.CSVFile;
 
 /**
  * @author Tomas Muller

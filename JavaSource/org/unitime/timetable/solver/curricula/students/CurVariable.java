@@ -22,7 +22,8 @@ package org.unitime.timetable.solver.curricula.students;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.cpsolver.ifs.model.Variable;
+import org.cpsolver.ifs.model.Variable;
+
 
 /**
  * @author Tomas Muller

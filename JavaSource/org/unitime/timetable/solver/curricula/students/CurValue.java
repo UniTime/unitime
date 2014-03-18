@@ -19,7 +19,8 @@
 */
 package org.unitime.timetable.solver.curricula.students;
 
-import net.sf.cpsolver.ifs.model.Value;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.model.Value;
 
 /**
  * @author Tomas Muller
@@ -36,10 +37,11 @@ public class CurValue extends Value<CurVariable, CurValue> {
 		return iStudent;
 	}
 	
-	public double toDouble() {
-		if (variable().getAssignment() == null)
-			return variable().getCourse().penalty(iStudent);
-		return variable().getCourse().penalty(iStudent, variable().getAssignment().getStudent());
+	public double toDouble(Assignment<CurVariable, CurValue> assignment) {
+		CurValue current = assignment.getValue(variable());
+		if (current == null)
+			return variable().getCourse().penalty(assignment, iStudent);
+		return variable().getCourse().penalty(assignment, iStudent, current.getStudent());
 	}
 
 }

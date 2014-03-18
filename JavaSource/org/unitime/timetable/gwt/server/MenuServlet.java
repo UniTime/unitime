@@ -33,9 +33,9 @@ import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.log4j.Logger;
+import org.cpsolver.ifs.util.DataProperties;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;

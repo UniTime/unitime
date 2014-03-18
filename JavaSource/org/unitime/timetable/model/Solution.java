@@ -34,13 +34,13 @@ import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;

@@ -34,11 +34,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.studentsct.model.AcademicAreaCode;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.AcademicAreaClassification;
@@ -190,7 +192,7 @@ public class XStudent extends XStudentId implements Externalizable {
         return requests;
     }
     
-    public XStudent(net.sf.cpsolver.studentsct.model.Student student) {
+    public XStudent(org.cpsolver.studentsct.model.Student student, Assignment<Request, Enrollment> assignment) {
     	super(student);
     	iStatus = student.getStatus();
     	iEmailTimeStamp = (student.getEmailTimeStamp() == null ? null : new Date(student.getEmailTimeStamp()));
@@ -208,7 +210,7 @@ public class XStudent extends XStudentId implements Externalizable {
     		if (request instanceof FreeTimeRequest) {
     			iRequests.add(new XFreeTimeRequest((FreeTimeRequest)request));
     		} else if (request instanceof CourseRequest) {
-    			iRequests.add(new XCourseRequest((CourseRequest)request));
+    			iRequests.add(new XCourseRequest((CourseRequest)request, assignment == null ? null : assignment.getValue(request)));
     		}
     	}
     }

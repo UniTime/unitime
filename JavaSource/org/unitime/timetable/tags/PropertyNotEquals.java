@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.tags;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.ifs.util.ToolBox;
 
 
 /**

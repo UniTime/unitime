@@ -19,11 +19,14 @@
 */
 package org.unitime.timetable.solver.exam;
 
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.Callback;
 
 import org.apache.log4j.Logger;
+import org.cpsolver.exam.model.Exam;
+import org.cpsolver.exam.model.ExamPlacement;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.Callback;
 import org.unitime.timetable.ApplicationProperties;
 
 /**
@@ -43,6 +46,8 @@ public abstract class ExamSaver implements Runnable {
     protected Solution getSolution() { return iSolver.currentSolution(); }
     /** Model of the solution */
     protected ExamModel getModel() { return (ExamModel)iSolver.currentSolution().getModel(); }
+    /** Assignment of the solutioon */
+    protected Assignment<Exam, ExamPlacement> getAssignment() { return iSolver.currentSolution().getAssignment(); }
     /** Save the solution*/
     public abstract void save() throws Exception;
     /** Sets callback class
