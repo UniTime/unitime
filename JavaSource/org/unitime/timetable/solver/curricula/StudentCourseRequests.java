@@ -25,9 +25,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.Progress;
 
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.Progress;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;

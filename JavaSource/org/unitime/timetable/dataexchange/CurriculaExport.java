@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.unitime.commons.hibernate.util.HibernateUtil;

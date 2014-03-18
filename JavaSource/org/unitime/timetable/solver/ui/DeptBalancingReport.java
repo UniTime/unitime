@@ -25,14 +25,16 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 
+import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
+import org.cpsolver.coursett.constraint.SpreadConstraint;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.solver.Solver;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.util.Constants;
 
-import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.solver.Solver;
 
 /**
  * @author Tomas Muller
@@ -62,18 +64,20 @@ public class DeptBalancingReport implements Serializable {
 		private HashSet[][] iCourses;
 		
 		public DeptBalancingGroup(Solver solver, DepartmentSpreadConstraint deptSpread) {
+			Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 			iDeptId = deptSpread.getDepartmentId();
 			iDeptName = deptSpread.getName();
 			iLimit = new int[Constants.SLOTS_PER_DAY_NO_EVENINGS][Constants.NR_DAYS_WEEK];
 			iUsage = new int[Constants.SLOTS_PER_DAY_NO_EVENINGS][Constants.NR_DAYS_WEEK];
 			iCourses = new HashSet[Constants.SLOTS_PER_DAY_NO_EVENINGS][Constants.NR_DAYS_WEEK];
 			Hashtable detailCache = new Hashtable();
+			SpreadConstraint.SpreadConstraintContext context = deptSpread.getContext(assignment);
 			for (int i=0;i<Constants.SLOTS_PER_DAY_NO_EVENINGS;i++) {
 				for (int j=0;j<Constants.NR_DAYS_WEEK;j++) {
-					iLimit[i][j]=deptSpread.getMaxCourses()[i][j];
-					iUsage[i][j]=deptSpread.getNrCourses()[i][j];
-					iCourses[i][j]=new HashSet(deptSpread.getCourses()[i][j].size());
-					for (Placement placement: deptSpread.getCourses()[i][j]) {
+					iLimit[i][j]=context.getMaxCourses()[i][j];
+					iUsage[i][j]=context.getNrCourses()[i][j];
+					iCourses[i][j]=new HashSet(context.getCourses()[i][j].size());
+					for (Placement placement: context.getCourses()[i][j]) {
 						Lecture lecture = (Lecture)placement.variable();
 						ClassAssignmentDetails ca = (ClassAssignmentDetails)detailCache.get(lecture.getClassId());
 						if (ca==null) {

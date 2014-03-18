@@ -19,7 +19,7 @@
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
-<%@page import="net.sf.cpsolver.ifs.util.JProf"%>
+<%@page import="org.cpsolver.ifs.util.JProf"%>
 <%@page import="java.text.NumberFormat"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>

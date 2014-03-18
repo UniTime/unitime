@@ -43,13 +43,13 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.cpsolver.coursett.Constants;
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
-import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.Constants;
+import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import org.cpsolver.coursett.preference.PreferenceCombination;
+import org.cpsolver.coursett.preference.SumPreferenceCombination;
 import org.hibernate.LazyInitializationException;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassInfoForm;

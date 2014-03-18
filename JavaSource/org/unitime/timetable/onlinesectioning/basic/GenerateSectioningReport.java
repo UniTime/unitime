@@ -28,30 +28,33 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
-import net.sf.cpsolver.studentsct.report.SectionConflictTable;
-import net.sf.cpsolver.studentsct.report.StudentSectioningReport;
-import net.sf.cpsolver.studentsct.reservation.CourseReservation;
-import net.sf.cpsolver.studentsct.reservation.CurriculumReservation;
-import net.sf.cpsolver.studentsct.reservation.DummyReservation;
-import net.sf.cpsolver.studentsct.reservation.GroupReservation;
-import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
-import net.sf.cpsolver.studentsct.reservation.Reservation;
 
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.report.SectionConflictTable;
+import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.cpsolver.studentsct.reservation.CourseReservation;
+import org.cpsolver.studentsct.reservation.CurriculumReservation;
+import org.cpsolver.studentsct.reservation.DummyReservation;
+import org.cpsolver.studentsct.reservation.GroupReservation;
+import org.cpsolver.studentsct.reservation.IndividualReservation;
+import org.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -116,6 +119,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 	        	XOffering offering = server.getOffering(ci.getOfferingId());
 	        	if (offering == null || offerings.containsKey(offering.getOfferingId())) continue;
         		Offering clonedOffering = new Offering(offering.getOfferingId(), offering.getName());
+        		clonedOffering.setModel(model);
         		for (XCourse course: offering.getCourses()) {
         			Course clonedCourse = new Course(course.getCourseId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, course.getLimit(), course.getProjected());
 	        		clonedCourse.setNote(course.getNote());
@@ -194,6 +198,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
         	}
 	        
 	        Map<Long, Student> students = new HashMap<Long, Student>();
+	        Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 			for (XStudentId id: server.findStudents(new AnyStudentMatcher())) {
 				XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
 				if (student == null) return null;
@@ -210,7 +215,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 						FreeTimeRequest ftr = new FreeTimeRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent,
 								new TimeLocation(ft.getTime().getDays(), ft.getTime().getSlot(), ft.getTime().getLength(), 0, 0.0,
 										-1l, "Free Time", server.getAcademicSession().getFreeTimePattern(), 0));
-						ftr.assign(0, ftr.createEnrollment());
+						assignment.assign(0, ftr.createEnrollment());
 					} else {
 						XCourseRequest cr = (XCourseRequest)r;
 						List<Course> req = new ArrayList<Course>();
@@ -230,7 +235,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 								}
 								Reservation reservation = (enrollment.getReservation() == null ? null : reservations.get(enrollment.getReservation().getReservationId()));
 								if (config != null && !sections.isEmpty())
-									clonnedRequest.assign(0, new Enrollment(clonnedRequest, 0, courses.get(enrollment.getCourseId()), config, assignments, reservation));
+									assignment.assign(0, new Enrollment(clonnedRequest, 0, courses.get(enrollment.getCourseId()), config, assignments, reservation));
 							}
 						}
 					}
@@ -254,7 +259,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 			Class<StudentSectioningReport> clazz = (Class<StudentSectioningReport>) Class.forName(name);
 			StudentSectioningReport report = clazz.getConstructor(StudentSectioningModel.class).newInstance(model);
 			
-			return report.create(iParameters);
+			return report.create(assignment, iParameters);
 		} catch (SectioningException e) {
 			throw e;
 		} catch (Exception e) {

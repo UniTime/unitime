@@ -25,8 +25,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-import net.sf.cpsolver.studentsct.model.Request;
 
+import org.cpsolver.studentsct.model.Request;
 import org.unitime.timetable.model.CourseDemand;
 
 /**

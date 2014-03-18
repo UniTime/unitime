@@ -23,12 +23,17 @@ import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.context.AbstractClassWithContext;
+import org.cpsolver.ifs.assignment.context.AssignmentContext;
+import org.cpsolver.ifs.model.Model;
+
+
 /**
  * @author Tomas Muller
  */
-public class CurStudent {
+public class CurStudent extends AbstractClassWithContext<CurVariable, CurValue, CurStudent.CurStudentContext> {
 	private static DecimalFormat sDF = new DecimalFormat("0.###");
-	private Set<CurCourse> iCourses = new HashSet<CurCourse>();
 	private Long iStudentId;
 	private double iWeight;
 	
@@ -49,13 +54,36 @@ public class CurStudent {
 		return iStudentId;
 	}
 	
-	public Set<CurCourse> getCourses() {
-		return iCourses;
+	public Set<CurCourse> getCourses(Assignment<CurVariable, CurValue> assignment) {
+		return getContext(assignment).getCourses();
 	}
 	
 	public String toString() {
 		return getStudentId() + (getWeight() != 1.f ? "@" + sDF.format(getWeight()): "" );
 	}
 	
+	public class CurStudentContext implements AssignmentContext {
+		private Set<CurCourse> iCourses = new HashSet<CurCourse>();
+		
+		public CurStudentContext(Assignment<CurVariable, CurValue> assignment) {
+		}
+		
+		public Set<CurCourse> getCourses() {
+			return iCourses;
+		}
+	}
+
+	@Override
+	public CurStudentContext createAssignmentContext(Assignment<CurVariable, CurValue> assignment) {
+		return new CurStudentContext(assignment);
+	}
 	
+	public void setModel(CurModel model) {
+		setAssignmentContextReference(model.createReference(this));
+	}
+
+	@Override
+	public Model<CurVariable, CurValue> getModel() {
+		return null;
+	}
 }

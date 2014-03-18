@@ -31,9 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;

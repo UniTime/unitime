@@ -41,10 +41,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.commons.Email;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;

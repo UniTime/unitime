@@ -51,7 +51,7 @@ public class XStudentId implements Serializable, Comparable<XStudentId>, Externa
     	iName = student.getName(helper.getStudentNameFormat());
     }
     
-    public XStudentId(net.sf.cpsolver.studentsct.model.Student student) {
+    public XStudentId(org.cpsolver.studentsct.model.Student student) {
     	iStudentId = student.getId();
     	iExternalId = student.getExternalId();
     	iName = student.getName();

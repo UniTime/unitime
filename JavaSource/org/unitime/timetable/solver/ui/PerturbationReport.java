@@ -24,15 +24,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.cpsolver.coursett.constraint.InstructorConstraint;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 
-import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 /**
  * @author Tomas Muller
@@ -42,9 +43,10 @@ public class PerturbationReport implements Serializable {
 	private HashSet iGroups = new HashSet();
 	
 	public PerturbationReport(Solver solver) {
+		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
-		for (Lecture lecture: model.perturbVariables()) {
-			Placement placement = lecture.getAssignment();
+		for (Lecture lecture: model.perturbVariables(assignment)) {
+			Placement placement = assignment.getValue(lecture);
 			Placement initial = lecture.getInitialAssignment();
 			if (placement==null || initial==null || placement.equals(initial)) continue;
 			iGroups.add(new PerturbationGroup(solver,lecture));
@@ -82,30 +84,31 @@ public class PerturbationReport implements Serializable {
         public double distance = 0;
         
 		public PerturbationGroup(Solver solver, Lecture lecture) {
-			Placement assignedPlacement = (Placement)lecture.getAssignment();
+			Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
+			Placement assignedPlacement = (Placement)assignment.getValue(lecture);
 			Placement initialPlacement = (Placement)lecture.getInitialAssignment();
 			iDetail = new ClassAssignmentDetails(solver, lecture, initialPlacement, false);
 			iDetail.setAssigned(new AssignmentPreferenceInfo(solver, assignedPlacement, false), assignedPlacement.getRoomIds(),assignedPlacement.getTimeLocation().getDayCode(), assignedPlacement.getTimeLocation().getStartSlot(), assignedPlacement.getTimeLocation().getTimePatternId(), assignedPlacement.getTimeLocation().getDatePatternId());
 			
-	        affectedStudents = lecture.classLimit();
+	        affectedStudents = lecture.classLimit(assignment);
 	        affectedInstructors= lecture.getInstructorConstraints().size();
-	        affectedStudentsByTime=(initialPlacement.getTimeLocation().equals(assignedPlacement.getTimeLocation())?0:lecture.classLimit());
+	        affectedStudentsByTime=(initialPlacement.getTimeLocation().equals(assignedPlacement.getTimeLocation())?0:lecture.classLimit(assignment));
 	        affectedInstructorsByTime=(initialPlacement.getTimeLocation().equals(assignedPlacement.getTimeLocation())?0:lecture.getInstructorConstraints().size());
 	        
 	    	differentRoom = initialPlacement.nrDifferentRooms(assignedPlacement);
 	        affectedInstructorsByRoom = differentRoom*lecture.getInstructorConstraints().size();
-	        affectedStudentsByRoom = differentRoom*lecture.classLimit();
+	        affectedStudentsByRoom = differentRoom*lecture.classLimit(assignment);
 	        
 	        differentBuilding = initialPlacement.nrDifferentBuildings(assignedPlacement);
 	        affectedInstructorsByBldg = differentBuilding*lecture.getInstructorConstraints().size();
-	        affectedStudentsByBldg = differentBuilding*lecture.classLimit();
+	        affectedStudentsByBldg = differentBuilding*lecture.classLimit(assignment);
 	        
 	        deltaRoomPreferences = assignedPlacement.sumRoomPreference() - initialPlacement.sumRoomPreference();
 
 	        differentTime=(initialPlacement.getTimeLocation().equals(assignedPlacement.getTimeLocation())?0:1);
 	        differentDay=(initialPlacement.getTimeLocation().getDayCode()!=assignedPlacement.getTimeLocation().getDayCode()?1:0);
 	        differentHour=(initialPlacement.getTimeLocation().getStartSlot()!=assignedPlacement.getTimeLocation().getStartSlot()?1:0);
-	        deltaStudentConflicts=lecture.countStudentConflicts(assignedPlacement)-lecture.countInitialStudentConflicts();
+	        deltaStudentConflicts=lecture.countStudentConflicts(assignment, assignedPlacement)-lecture.countInitialStudentConflicts();
 	        deltaTimePreferences=(assignedPlacement.getTimeLocation().getNormalizedPreference() - initialPlacement.getTimeLocation().getNormalizedPreference());
 	        
 	        DistanceMetric m = ((TimetableModel)lecture.getModel()).getDistanceMetric();
@@ -120,9 +123,9 @@ public class PerturbationReport implements Serializable {
 	            }
 	        }
 	        if (distance > m.minutes2meters(10))
-	        	tooFarForStudents = (int)lecture.classLimit();
+	        	tooFarForStudents = (int)lecture.classLimit(assignment);
 	        
-	        Set newStudentConflictsVect = lecture.conflictStudents(assignedPlacement);
+	        Set newStudentConflictsVect = lecture.conflictStudents(assignment, assignedPlacement);
 	        Set initialStudentConflicts = lecture.initialStudentConflicts();
 	        for (Iterator e=newStudentConflictsVect.iterator();e.hasNext();)
 	            if (!initialStudentConflicts.contains(e.next())) newStudentConflicts++;
@@ -132,7 +135,7 @@ public class PerturbationReport implements Serializable {
 	       		for (Lecture lect: ic.variables()) {
 	       			if (lect.equals(lecture)) continue;
 	       			int initialPreference = (lect.getInitialAssignment()==null?PreferenceLevel.sIntLevelNeutral:ic.getDistancePreference(initialPlacement,(Placement)lect.getInitialAssignment()));
-	       			int assignedPreference = (lect.getAssignment()==null?PreferenceLevel.sIntLevelNeutral:ic.getDistancePreference(assignedPlacement,(Placement)lect.getAssignment()));
+	       			int assignedPreference = (assignment.getValue(lect)==null?PreferenceLevel.sIntLevelNeutral:ic.getDistancePreference(assignedPlacement,(Placement)assignment.getValue(lect)));
 	       			deltaInstructorDistancePreferences += (assignedPreference - initialPreference);
 	       		}
 	        }

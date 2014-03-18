@@ -22,12 +22,14 @@ package org.unitime.timetable.solver.curricula.students;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.cpsolver.ifs.heuristics.RouletteWheelSelection;
-import net.sf.cpsolver.ifs.heuristics.VariableSelection;
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
+import org.cpsolver.ifs.heuristics.VariableSelection;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.ToolBox;
+
 
 /**
  * @author Tomas Muller
@@ -44,12 +46,13 @@ public class CurVariableSelection implements VariableSelection<CurVariable, CurV
 	@Override
 	public CurVariable selectVariable(Solution<CurVariable, CurValue> solution) {
 		CurModel m = (CurModel)solution.getModel();
-		if (!m.unassignedVariables().isEmpty()) {
+		Assignment<CurVariable, CurValue> assignment = solution.getAssignment();
+		if (m.nrUnassignedVariables(assignment) > 0) {
 			List<CurVariable> best = new ArrayList<CurVariable>();
 			double bestValue = 0.0;
-			for (CurVariable course: m.unassignedVariables()) {
-				if (course.getCourse().isComplete()) continue;
-				double value = course.getCourse().getMaxSize() - course.getCourse().getSize();
+			for (CurVariable course: m.unassignedVariables(assignment)) {
+				if (course.getCourse().isComplete(assignment)) continue;
+				double value = course.getCourse().getMaxSize() - course.getCourse().getSize(assignment);
 				if (best.isEmpty() || bestValue < value) {
 					best.clear();
 					best.add(course);
@@ -62,9 +65,9 @@ public class CurVariableSelection implements VariableSelection<CurVariable, CurV
 		}
 		if (iWheel == null || !iWheel.hasMoreElements())  {
 			iWheel = new RouletteWheelSelection<CurVariable>();
-			for (CurVariable course: m.assignedVariables()) {
-				double penalty = course.getAssignment().toDouble();
-				if (course.getCourse().getStudents().size() == m.getStudents().size()) continue;
+			for (CurVariable course: m.assignedVariables(assignment)) {
+				double penalty = assignment.getValue(course).toDouble(assignment);
+				if (course.getCourse().getStudents(assignment).size() == m.getStudents().size()) continue;
 				if (penalty != 0) iWheel.add(course, penalty);
 			}
 		}

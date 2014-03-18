@@ -23,24 +23,24 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.cpsolver.coursett.Constants;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.studentsct.model.Assignment;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.reservation.CourseReservation;
-import net.sf.cpsolver.studentsct.reservation.CurriculumReservation;
-import net.sf.cpsolver.studentsct.reservation.GroupReservation;
-import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
-import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.Constants;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.SctAssignment;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.reservation.CourseReservation;
+import org.cpsolver.studentsct.reservation.CurriculumReservation;
+import org.cpsolver.studentsct.reservation.GroupReservation;
+import org.cpsolver.studentsct.reservation.IndividualReservation;
+import org.cpsolver.studentsct.reservation.Reservation;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -438,22 +438,22 @@ public class OnlineSectioningHelper {
 		return section.build();
     }
     
-    public static OnlineSectioningLog.Section.Builder toProto(Assignment a) {
+    public static OnlineSectioningLog.Section.Builder toProto(SctAssignment a) {
     	return toProto(a, null, null);
     }
 
-    public static OnlineSectioningLog.Section.Builder toProto(Assignment a, Enrollment e) {
+    public static OnlineSectioningLog.Section.Builder toProto(SctAssignment a, Enrollment e) {
     	OnlineSectioningLog.Section.Builder section = toProto(a, e == null ? null: e.getCourse(), e == null ? null : e.getReservation());
     	if (e.getTimeStamp() != null)
     		section.setTimeStamp(e.getTimeStamp());
     	return section;
     }
 
-    public static OnlineSectioningLog.Section.Builder toProto(Assignment a, Course c) {
+    public static OnlineSectioningLog.Section.Builder toProto(SctAssignment a, Course c) {
     	return toProto(a, c, null);
     }
 
-    public static OnlineSectioningLog.Section.Builder toProto(Assignment a, Course c, Reservation r) {
+    public static OnlineSectioningLog.Section.Builder toProto(SctAssignment a, Course c, Reservation r) {
 		OnlineSectioningLog.Section.Builder section = OnlineSectioningLog.Section.newBuilder();
 		if (a instanceof Section) {
 			Section s = (Section)a;

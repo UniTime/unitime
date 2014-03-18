@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseEventDateMapping;
 import org.unitime.timetable.model.dao.EventDateMappingDAO;
 

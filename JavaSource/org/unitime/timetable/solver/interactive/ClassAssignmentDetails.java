@@ -35,6 +35,16 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.InstructorConstraint;
+import org.cpsolver.coursett.constraint.JenrlConstraint;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.coursett.preference.PreferenceCombination;
+import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.solver.Solver;
 import org.hibernate.Session;
 import org.unitime.commons.Debug;
 import org.unitime.commons.NaturalOrderComparator;
@@ -64,16 +74,6 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.timegrid.SolutionGridModel;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.solver.Solver;
 
 /**
  * @author Tomas Muller
@@ -153,11 +153,12 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	}
 	
 	public ClassAssignmentDetails(Solver solver, Lecture lecture, boolean includeConstraints) {
-		this(solver, lecture, (Placement)lecture.getAssignment(),includeConstraints);
+		this(solver, lecture, (Placement)solver.currentSolution().getAssignment().getValue(lecture), includeConstraints);
 	}
 	
 	public ClassAssignmentDetails(Solver solver, Lecture lecture, Placement placement, boolean includeConstraints) {
-		iClass = new ClassInfo(lecture.getName(),lecture.getClassId(),lecture.getNrRooms(),SolverGridModel.hardConflicts2pref(lecture,placement),lecture.minRoomSize(),lecture.getOrd(),lecture.getNote());
+		org.cpsolver.ifs.assignment.Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
+		iClass = new ClassInfo(lecture.getName(),lecture.getClassId(),lecture.getNrRooms(),SolverGridModel.hardConflicts2pref(solver.currentSolution().getAssignment(),lecture,placement),lecture.minRoomSize(),lecture.getOrd(),lecture.getNote());
 		if (placement!=null) {
 			if (placement.isMultiRoom()) {
 				iRoom = new RoomInfo[placement.getRoomLocations().size()];
@@ -207,14 +208,14 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			iRooms.add(new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference())));
 		}
 		if (includeConstraints) {
-			for (Iterator e=lecture.activeJenrls().iterator();e.hasNext();) {
+			for (Iterator e=lecture.activeJenrls(assignment).iterator();e.hasNext();) {
 				JenrlConstraint jenrl = (JenrlConstraint)e.next();
 				Lecture another = (Lecture)jenrl.another(lecture);
 				if (!jenrl.isToBeIgnored())
-					iStudentConflicts.add(new StudentConflictInfo(another.getClassId(),new JenrlInfo(jenrl), StudentConflictInfo.CLASS_CONFLICT_TYPE));
+					iStudentConflicts.add(new StudentConflictInfo(another.getClassId(),new JenrlInfo(solver, jenrl), StudentConflictInfo.CLASS_CONFLICT_TYPE));
 			}
 			if (placement!=null) {
-				Hashtable infos = JenrlInfo.getCommitedJenrlInfos(lecture);
+				Hashtable infos = JenrlInfo.getCommitedJenrlInfos(solver, lecture);
     			for (Iterator i2=infos.entrySet().iterator();i2.hasNext();) {
     				Map.Entry entry = (Map.Entry)i2.next();
     				Long assignmentId = (Long)entry.getKey();
@@ -225,7 +226,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			for (Constraint c: lecture.constraints()) {
 				if (c instanceof GroupConstraint) {
 					GroupConstraint gc = (GroupConstraint)c;
-					DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(gc));
+					DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(assignment, gc));
 					for (Lecture another: gc.variables()) {
 						if (another.equals(lecture)) continue;
 						dist.addClass(another.getClassId());
@@ -236,8 +237,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			if (!lecture.getInstructorConstraints().isEmpty() && placement!=null) {
 				for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
 				    for (Lecture other: ic.variables()) {
-				        if (other.equals(lecture) || other.getAssignment()==null) continue;
-				        int pref = ic.getDistancePreference(placement, (Placement)other.getAssignment());
+				        if (other.equals(lecture) || assignment.getValue(other)==null) continue;
+				        int pref = ic.getDistancePreference(placement, assignment.getValue(other));
 				        if (pref==PreferenceLevel.sIntLevelNeutral) continue;
 				        iBtbInstructorInfos.add(new BtbInstructorInfo(other.getClassId(),pref));
 				    }

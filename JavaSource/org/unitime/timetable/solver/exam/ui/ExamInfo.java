@@ -28,11 +28,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import net.sf.cpsolver.exam.model.ExamInstructor;
-import net.sf.cpsolver.exam.model.ExamModel;
-import net.sf.cpsolver.exam.model.ExamStudent;
-import net.sf.cpsolver.ifs.model.Constraint;
 
+import org.cpsolver.exam.model.ExamInstructor;
+import org.cpsolver.exam.model.ExamModel;
+import org.cpsolver.exam.model.ExamStudent;
+import org.cpsolver.ifs.model.Constraint;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
@@ -66,7 +66,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     private ExamInfo() {
     }
     
-    public ExamInfo(net.sf.cpsolver.exam.model.Exam exam) {
+    public ExamInfo(org.cpsolver.exam.model.Exam exam) {
     	iExamTypeId = ((ExamModel)exam.getModel()).getProperties().getPropertyLong("Exam.Type", null);
         iExamId = exam.getId();
         iExamLabel = exam.getName();
@@ -76,7 +76,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         iSeatingType = (exam.hasAltSeating()?Exam.sSeatingTypeExam:Exam.sSeatingTypeNormal);
         if (!exam.getOwners().isEmpty()) {
             iSections = new Vector();
-            for (net.sf.cpsolver.exam.model.ExamOwner ecs: exam.getOwners()) {
+            for (org.cpsolver.exam.model.ExamOwner ecs: exam.getOwners()) {
                 HashSet<Long> studentIds = new HashSet<Long>();
                 for (Iterator i=ecs.getStudents().iterator();i.hasNext();) 
                     studentIds.add(((ExamStudent)i.next()).getId());

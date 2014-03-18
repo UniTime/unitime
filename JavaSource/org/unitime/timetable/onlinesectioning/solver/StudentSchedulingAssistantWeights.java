@@ -22,22 +22,23 @@ package org.unitime.timetable.onlinesectioning.solver;
 import java.util.Hashtable;
 import java.util.Set;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.weights.EqualStudentWeights;
+import org.cpsolver.studentsct.weights.PriorityStudentWeights;
+import org.cpsolver.studentsct.weights.StudentWeights;
 import org.unitime.timetable.onlinesectioning.solver.expectations.MoreSpaceThanExpected;
 
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Subpart;
-import net.sf.cpsolver.studentsct.weights.EqualStudentWeights;
-import net.sf.cpsolver.studentsct.weights.PriorityStudentWeights;
-import net.sf.cpsolver.studentsct.weights.StudentWeights;
 
 /**
  * @author Tomas Muller
@@ -77,13 +78,13 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 		iCache.clear();
 	}
 	
-	private double getOverExpected(Section section, Request request) {
+	private double getOverExpected(Assignment<Request, Enrollment> assignment, Section section, Request request) {
 		if (request.getModel() == null || !(request.getModel() instanceof OnlineSectioningModel))
-			return new MoreSpaceThanExpected().getOverExpected(section, request);
-		return ((OnlineSectioningModel)request.getModel()).getOverExpected(section, request);
+			return new MoreSpaceThanExpected().getOverExpected(assignment, section, request);
+		return ((OnlineSectioningModel)request.getModel()).getOverExpected(assignment, section, request);
 	}
 	
-	private double[] best(CourseRequest cr) {
+	private double[] best(Assignment<Request, Enrollment> assignment, CourseRequest cr) {
 		double[] cached = iCache.get(cr);
 		if (cached != null) return cached;
 		double bestTime = 0;
@@ -107,7 +108,7 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 						if (section.getTime() != null) hasTime = true;
 						if (!cr.getSelectedChoices().isEmpty() && cr.getSelectedChoices().contains(section.getChoice())) hasSelection = true;
 						if (sectionPenalty == null || sectionPenalty > section.getPenalty()) sectionPenalty = section.getPenalty();
-						double oexp = getOverExpected(section, cr);
+						double oexp = getOverExpected(assignment, section, cr);
 						if (sectionOverExpected == null || sectionOverExpected > oexp) sectionOverExpected = oexp;
 					}
 					if (hasTime) sectionsWithTime ++;
@@ -126,29 +127,29 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 		return cached;
 	}
 	
-	public double getBaseWeight(Enrollment enrollment) {
-		return iParent.getWeight(enrollment);
+	public double getBaseWeight(Assignment<Request, Enrollment> assignment, Enrollment enrollment) {
+		return iParent.getWeight(assignment, enrollment);
 	}
 	
 	@Override
-	public double getWeight(Enrollment enrollment) {
-		if (!enrollment.isCourseRequest()) return getBaseWeight(enrollment);
+	public double getWeight(Assignment<Request, Enrollment> assignment, Enrollment enrollment) {
+		if (!enrollment.isCourseRequest()) return getBaseWeight(assignment, enrollment);
 		if (enrollment.getAssignments().isEmpty()) return 0;
 		
-		double base = getBaseWeight(enrollment);
+		double base = getBaseWeight(assignment, enrollment);
 		double weight = base;
 		
 		int size = enrollment.getAssignments().size();
 		
 		CourseRequest cr = (CourseRequest)enrollment.getRequest();
-		double[] best = best(cr);
+		double[] best = best(assignment, cr);
 		
 		double hasTime = 0;
 		double oexp = 0;
 		double penalty = 0.0;
 		for (Section section: enrollment.getSections()) {
     		if (section.getTime() != null) hasTime++;
-    		oexp += getOverExpected(section, cr);
+    		oexp += getOverExpected(assignment, section, cr);
     		penalty += section.getPenalty();
     	}
     	double noTime = best[0] - (hasTime / size);
@@ -191,21 +192,21 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 	}
 	
 	@Override
-	public double getWeight(Enrollment enrollment, Set<DistanceConflict.Conflict> distanceConflicts, Set<TimeOverlapsCounter.Conflict> timeOverlappingConflicts) {
+	public double getWeight(Assignment<Request, Enrollment> assignment, Enrollment enrollment, Set<DistanceConflict.Conflict> distanceConflicts, Set<TimeOverlapsCounter.Conflict> timeOverlappingConflicts) {
 		if (enrollment.getAssignments().isEmpty()) return 0;
 		
-		double weight = getWeight(enrollment);
+		double weight = getWeight(assignment, enrollment);
 		
         if (distanceConflicts != null)
             for (DistanceConflict.Conflict c: distanceConflicts) {
                 Enrollment other = (c.getE1().equals(enrollment) ? c.getE2() : c.getE1());
                 if (other.getRequest().getPriority() <= enrollment.getRequest().getPriority())
-                	weight -= getDistanceConflictWeight(c);
+                	weight -= getDistanceConflictWeight(assignment, c);
             }
         
         if (timeOverlappingConflicts != null)
             for (TimeOverlapsCounter.Conflict c: timeOverlappingConflicts) {
-            	weight -= getTimeOverlapConflictWeight(enrollment, c);
+            	weight -= getTimeOverlapConflictWeight(assignment, enrollment, c);
             }
 		
 		return weight;
@@ -227,13 +228,13 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 	}
 
 	@Override
-	public double getDistanceConflictWeight(DistanceConflict.Conflict distanceConflict) {
-		return iParent.getDistanceConflictWeight(distanceConflict);
+	public double getDistanceConflictWeight(Assignment<Request, Enrollment> assignment, DistanceConflict.Conflict distanceConflict) {
+		return iParent.getDistanceConflictWeight(assignment, distanceConflict);
 	}
 
 	@Override
-	public double getTimeOverlapConflictWeight(Enrollment enrollment, TimeOverlapsCounter.Conflict timeOverlap) {
-		return iParent.getTimeOverlapConflictWeight(enrollment, timeOverlap);
+	public double getTimeOverlapConflictWeight(Assignment<Request, Enrollment> assignment, Enrollment enrollment, TimeOverlapsCounter.Conflict timeOverlap) {
+		return iParent.getTimeOverlapConflictWeight(assignment, enrollment, timeOverlap);
 	}
 
 	@Override

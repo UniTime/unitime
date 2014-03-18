@@ -24,6 +24,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
+import org.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -38,20 +55,6 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.solver.ResectioningWeights.LastSectionProvider;
 
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.ToolBox;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
 /**
  * @author Tomas Muller
@@ -153,7 +156,8 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		List<Enrollment> enrollments = new ArrayList<Enrollment>();
 		double bestValue = 0.0;
 		
-		CourseRequest request = convert(getRequest(), server);
+		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+		CourseRequest request = convert(assignment, getRequest(), server);
 		if (request == null) return null;
 		
 		if (getLastEnrollment() != null)
@@ -164,12 +168,12 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 				}
 			}
 		
-		enrollments: for (Enrollment e: request.getAvaiableEnrollments()) {
+		enrollments: for (Enrollment e: request.getAvaiableEnrollments(assignment)) {
 			// only consider enrollments of the offering that is being checked
 			if (e.getOffering().getId() != getOffering().getOfferingId()) continue;
 			
 			for (Request other: request.getStudent().getRequests())
-				if (other.getAssignment() != null && !other.equals(getRequest()) && other.getAssignment().isOverlapping(e))
+				if (assignment.getValue(other) != null && !other.equals(getRequest()) && assignment.getValue(other).isOverlapping(e))
 					continue enrollments;
 			
 			for (Section s: e.getSections()) {
@@ -181,7 +185,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 				}
 			}
 			
-			double value = w.getWeight(e, dc.allConflicts(e), toc.allConflicts(e));
+			double value = w.getWeight(assignment, e, dc.allConflicts(assignment, e), toc.allConflicts(assignment, e));
 			if (enrollments.isEmpty() || value > bestValue) {
 				enrollments.clear();
 				enrollments.add(e); bestValue = value;
@@ -345,11 +349,17 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		return false;
 	}
 	
-	public static CourseRequest convert(XCourseRequest request, OnlineSectioningServer server) {
-		return convert(server.getStudent(request.getStudentId()), request, server, null, null);
+	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XCourseRequest request, OnlineSectioningServer server) {
+		return convert(assignment, server.getStudent(request.getStudentId()), request, server, null, null);
 	}
 	
-	public static CourseRequest convert(XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment) {
+	public static Enrollment convert(XCourseRequest request, OnlineSectioningServer server) {
+		Assignment<Request, Enrollment> assignment = new DefaultSingleAssignment<Request, Enrollment>();
+		CourseRequest cr = convert(assignment, server.getStudent(request.getStudentId()), request, server, null, null);
+		return assignment.getValue(cr);
+	}
+	
+	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment) {
 		Student clonnedStudent = new Student(request.getStudentId());
 		CourseRequest ret = null;
 		for (XRequest r: student.getRequests()) {
@@ -358,7 +368,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 				FreeTimeRequest ftr = new FreeTimeRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent,
 						new TimeLocation(ft.getTime().getDays(), ft.getTime().getSlot(), ft.getTime().getLength(), 0, 0.0,
 								-1l, "Free Time", server.getAcademicSession().getFreeTimePattern(), 0));
-				ftr.assign(0, ftr.createEnrollment());
+				assignment.assign(0, ftr.createEnrollment());
 			} else {
 				XCourseRequest cr = (XCourseRequest)r;
 				List<Course> courses = new ArrayList<Course>();
@@ -389,12 +399,18 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 							}
 					}
 					if (config != null)
-						clonnedRequest.assign(0, new Enrollment(clonnedRequest, 0, config, assignments));
+						assignment.assign(0, new Enrollment(clonnedRequest, 0, config, assignments, assignment));
 				}
 					
 				if (request.equals(r)) ret = clonnedRequest;
 			}
 		}
 		return ret;
+	}
+	
+	public static Enrollment convert(XStudent student, XCourseRequest request, OnlineSectioningServer server, XOffering oldOffering, XEnrollment oldEnrollment) {
+		Assignment<Request, Enrollment> assignment = new DefaultSingleAssignment<Request, Enrollment>();
+		CourseRequest cr = convert(assignment, student, request, server, oldOffering, oldEnrollment);
+		return assignment.getValue(cr);
 	}
 }

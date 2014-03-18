@@ -19,9 +19,12 @@
 */
 package org.unitime.timetable.solver.exam;
 
-import net.sf.cpsolver.ifs.util.Callback;
 
 import org.apache.log4j.Logger;
+import org.cpsolver.exam.model.Exam;
+import org.cpsolver.exam.model.ExamPlacement;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.util.Callback;
 import org.unitime.timetable.ApplicationProperties;
 
 /**
@@ -29,19 +32,26 @@ import org.unitime.timetable.ApplicationProperties;
  */
 public abstract class ExamLoader implements Runnable {
     private ExamModel iModel = null;
+    private Assignment<Exam, ExamPlacement> iAssignment = null;
     private Callback iCallback = null;
     
     /** Constructor 
      * @param model an empty instance of timetable model 
      */
-    public ExamLoader(ExamModel model) {
+    public ExamLoader(ExamModel model, Assignment<Exam, ExamPlacement> assignment) {
         iModel = model;
+        iAssignment = assignment;
     }
     
     /** Returns provided model.
      * @return provided model
      */
     protected ExamModel getModel() { return iModel; }
+    
+    /**
+     * Returns provided assignment
+     */
+    protected Assignment<Exam, ExamPlacement> getAssignment() { return iAssignment; }
     
     /** Load the model.
      */

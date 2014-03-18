@@ -30,6 +30,12 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.IdGenerator;
+import org.cpsolver.ifs.util.Progress;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -44,10 +50,9 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.solver.curricula.students.CurCourse;
 import org.unitime.timetable.solver.curricula.students.CurModel;
 import org.unitime.timetable.solver.curricula.students.CurStudent;
+import org.unitime.timetable.solver.curricula.students.CurValue;
+import org.unitime.timetable.solver.curricula.students.CurVariable;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.IdGenerator;
-import net.sf.cpsolver.ifs.util.Progress;
 
 /**
  * @author Tomas Muller
@@ -176,26 +181,28 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 			m.setStudentLimits();
 
 		// Load model from cache (if exists)
-		CurModel cachedModel = null;
+		Solution<CurVariable, CurValue> cachedSolution = null;
+		Assignment<CurVariable, CurValue> assignment = new DefaultSingleAssignment<CurVariable, CurValue>();
 		Element cache = (clasf.getStudents() == null ? null : clasf.getStudents().getRootElement());
 		if (cache != null && cache.getName().equals(getCacheName())) {
-			cachedModel = CurModel.loadFromXml(cache);
+			cachedSolution = CurModel.loadFromXml(cache);
 			if (iSetStudentCourseLimits)
-				cachedModel.setStudentLimits();
+				((CurModel)cachedSolution.getModel()).setStudentLimits();
 		}
 
 		// Check the cached model
-		if (cachedModel != null && cachedModel.isSameModel(m)) {
+		if (cachedSolution != null && ((CurModel)cachedSolution.getModel()).isSameModel(m)) {
 			// Reuse
 			sLog.debug("  using cached model...");
-			m = cachedModel;
+			m = ((CurModel)cachedSolution.getModel());
+			assignment = cachedSolution.getAssignment();
 		} else {
 			// Solve model
-			m.solve(iProperties);
+			m.solve(iProperties, assignment);
 			
 			// Save into the cache
 			Document doc = DocumentHelper.createDocument();
-			m.saveAsXml(doc.addElement(getCacheName()));
+			m.saveAsXml(doc.addElement(getCacheName()), assignment);
 			// sLog.debug("Model:\n" + doc.asXML());
 			clasf.setStudents(doc);
 			hibSession.update(clasf);
@@ -214,7 +221,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 			Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
 			iStudentRequests.put(student.getStudentId(), studentCourses);
 			Hashtable<Long, Double> priorities = new Hashtable<Long, Double>(); iEnrollmentPriorities.put(student.getStudentId(), priorities);
-			for (CurCourse course: s.getCourses()) {
+			for (CurCourse course: s.getCourses(assignment)) {
 				CourseOffering co = courses.get(course.getCourseId());
 				if (course.getPriority() != null) priorities.put(co.getUniqueId(), course.getPriority());
 				Set<WeightedStudentId> courseStudents = iDemands.get(co.getUniqueId());

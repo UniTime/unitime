@@ -27,15 +27,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.DistanceMetric;
-import net.sf.cpsolver.studentsct.model.Assignment;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentComparator;
+import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.SctAssignment;
+import org.cpsolver.studentsct.model.Section;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -114,21 +117,22 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							}
 						});
 						Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
-						Collection<Enrollment> avEnrls = SectioningRequest.convert(r, server).getAvaiableEnrollmentsSkipSameTime();
+						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+						Collection<Enrollment> avEnrls = SectioningRequest.convert(assignment, r, server).getAvaiableEnrollmentsSkipSameTime(assignment);
 						for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
 							Enrollment enrl = e.next();
 							for (Request q: enrl.getStudent().getRequests()) {
 								if (q.equals(request)) continue;
-								Enrollment x = q.getAssignment();
+								Enrollment x = assignment.getValue(q);
 								if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
-						        for (Iterator<Assignment> i = x.getAssignments().iterator(); i.hasNext();) {
-						        	Assignment a = i.next();
+						        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
+						        	SctAssignment a = i.next();
 									if (a.isOverlapping(enrl.getAssignments())) {
 										overlap.add(x);
 										if (x.getRequest() instanceof CourseRequest) {
 											CourseRequest cr = (CourseRequest)x.getRequest();
 											TreeSet<Section> ss = overlapingSections.get(cr);
-											if (ss == null) { ss = new TreeSet<Section>(); overlapingSections.put(cr, ss); }
+											if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
 											ss.add((Section)a);
 										}
 									}

@@ -30,28 +30,30 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.heuristics.BacktrackNeighbourSelection;
-import net.sf.cpsolver.ifs.model.Neighbour;
-import net.sf.cpsolver.ifs.model.Value;
-import net.sf.cpsolver.ifs.model.Variable;
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.solution.SolutionListener;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.solver.SolverListener;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.ToolBox;
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.StudentSectioningXMLSaver;
-import net.sf.cpsolver.studentsct.check.InevitableStudentConflicts;
-import net.sf.cpsolver.studentsct.check.OverlapCheck;
-import net.sf.cpsolver.studentsct.check.SectionLimitCheck;
-import net.sf.cpsolver.studentsct.report.CourseConflictTable;
-import net.sf.cpsolver.studentsct.report.DistanceConflictTable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
+import org.cpsolver.ifs.heuristics.BacktrackNeighbourSelection;
+import org.cpsolver.ifs.model.Neighbour;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.solution.SolutionListener;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.solver.SolverListener;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.StudentSectioningXMLSaver;
+import org.cpsolver.studentsct.check.InevitableStudentConflicts;
+import org.cpsolver.studentsct.check.OverlapCheck;
+import org.cpsolver.studentsct.check.SectionLimitCheck;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.report.CourseConflictTable;
+import org.cpsolver.studentsct.report.DistanceConflictTable;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 
 
@@ -67,27 +69,30 @@ public class BatchStudentSectioningTest {
     
     public static void batchSectioning(DataProperties cfg) {
         StudentSectioningModel model = new StudentSectioningModel(cfg);
+        DefaultSingleAssignment<Request, Enrollment> assignment = new DefaultSingleAssignment<Request, Enrollment>();
         try {
-            new BatchStudentSectioningLoader(model).load();
+            new BatchStudentSectioningLoader(model, assignment).load();
         } catch (Exception e) {
             sLog.error("Unable to load problem, reason: "+e.getMessage(),e);
             return;
         }
         
         Solver solver = new Solver(cfg);
-        Solution solution = new Solution(model,0,0);
+        Solution solution = new Solution(model, assignment, 0, 0);
         solver.setInitalSolution(solution);
-        solver.addSolverListener(new SolverListener() {
-            public boolean variableSelected(long iteration, Variable variable) {
+        solver.addSolverListener(new SolverListener<Request, Enrollment>() {
+            public boolean variableSelected(Assignment<Request, Enrollment> assignment, long iteration, Request variable) {
                 return true;
             }
-            public boolean valueSelected(long iteration, Variable variable, Value value) {
+            public boolean valueSelected(Assignment<Request, Enrollment> assignment, long iteration, Request variable, Enrollment value) {
                 return true;
             }
-            public boolean neighbourSelected(long iteration, Neighbour neighbour) {
+            public boolean neighbourSelected(Assignment<Request, Enrollment> assignment, long iteration, Neighbour<Request, Enrollment> neighbour) {
                 sLog.debug("Select["+iteration+"]: "+neighbour);
                 return true;
             }
+			public void neighbourFailed(Assignment<Request, Enrollment> assignment, long iteration, Neighbour<Request, Enrollment> neighbour) {
+			}
         });
         solution.addSolutionListener(new SolutionListener() {
             public void solutionUpdated(Solution solution) {}
@@ -96,7 +101,8 @@ public class BatchStudentSectioningTest {
             public void bestCleared(Solution solution) {}
             public void bestSaved(Solution solution) {
                 StudentSectioningModel m = (StudentSectioningModel)solution.getModel();
-                sLog.debug("**BEST** V:"+m.assignedVariables().size()+"/"+m.variables().size()+" - S:"+m.nrComplete()+"/"+m.getStudents().size()+" - TV:"+sDF.format(m.getTotalValue()));
+                Assignment<Request, Enrollment> a = solution.getAssignment();
+                sLog.debug("**BEST** V:"+m.nrAssignedVariables(a)+"/"+m.variables().size()+" - S:"+m.getContext(a).nrComplete()+"/"+m.getStudents().size()+" - TV:"+sDF.format(m.getTotalValue(a)));
             }
             public void bestRestored(Solution solution) {}
         });
@@ -122,16 +128,16 @@ public class BatchStudentSectioningTest {
             outDir.mkdirs();
 
             CourseConflictTable cct = new CourseConflictTable((StudentSectioningModel)solution.getModel());
-            cct.createTable(true, false).save(new File(outDir, "conflicts-lastlike.csv"));
-            cct.createTable(false, true).save(new File(outDir, "conflicts-real.csv"));
+            cct.createTable(assignment, true, false).save(new File(outDir, "conflicts-lastlike.csv"));
+            cct.createTable(assignment, false, true).save(new File(outDir, "conflicts-real.csv"));
             
             DistanceConflictTable dct = new DistanceConflictTable((StudentSectioningModel)solution.getModel());
-            dct.createTable(true, false).save(new File(outDir, "distances-lastlike.csv"));
-            dct.createTable(false, true).save(new File(outDir, "distances-real.csv"));
+            dct.createTable(assignment, true, false).save(new File(outDir, "distances-lastlike.csv"));
+            dct.createTable(assignment, false, true).save(new File(outDir, "distances-real.csv"));
             
             if (cfg.getPropertyBoolean("Test.InevitableStudentConflictsCheck", false)) {
                 InevitableStudentConflicts ch = new InevitableStudentConflicts(model);
-                if (!ch.check()) ch.getCSVFile().save(new File(outDir, "inevitable-conflicts.csv"));
+                if (!ch.check(assignment)) ch.getCSVFile().save(new File(outDir, "inevitable-conflicts.csv"));
             }
         } catch (IOException e) {
             sLog.error(e.getMessage(),e);
@@ -139,20 +145,20 @@ public class BatchStudentSectioningTest {
         
         solution.saveBest();
 
-        model.computeOnlineSectioningInfos();
+        model.computeOnlineSectioningInfos(assignment);
         
-        new OverlapCheck((StudentSectioningModel)solution.getModel()).check();
+        new OverlapCheck((StudentSectioningModel)solution.getModel()).check(assignment);
         
-        new SectionLimitCheck((StudentSectioningModel)solution.getModel()).check();
+        new SectionLimitCheck((StudentSectioningModel)solution.getModel()).check(assignment);
         
         
         sLog.info("Best solution found after "+solution.getBestTime()+" seconds ("+solution.getBestIteration()+" iterations).");
-        sLog.info("Number of assigned variables is "+solution.getModel().assignedVariables().size());
-        sLog.info("Number of students with complete schedule is "+model.nrComplete());
-        sLog.info("Total value of the solution is "+solution.getModel().getTotalValue());
-        sLog.info("Average unassigned priority "+sDF.format(model.avgUnassignPriority()));
+        sLog.info("Number of assigned variables is "+solution.getModel().nrAssignedVariables(assignment));
+        sLog.info("Number of students with complete schedule is "+model.getContext(assignment).nrComplete());
+        sLog.info("Total value of the solution is "+solution.getModel().getTotalValue(assignment));
+        sLog.info("Average unassigned priority "+sDF.format(model.avgUnassignPriority(assignment)));
         sLog.info("Average number of requests "+sDF.format(model.avgNrRequests()));
-        sLog.info("Unassigned request weight "+sDF.format(model.getUnassignedRequestWeight())+" / "+sDF.format(model.getTotalRequestWeight()));
+        sLog.info("Unassigned request weight "+sDF.format(model.getUnassignedRequestWeight(assignment))+" / "+sDF.format(model.getTotalRequestWeight()));
         sLog.info("Info: "+ToolBox.dict2string(solution.getExtendedInfo(),2));
 
         PrintWriter pw = null;
@@ -195,17 +201,17 @@ public class BatchStudentSectioningTest {
     public static void main(String[] args) {
         try {
             DataProperties cfg = new DataProperties();
-            cfg.setProperty("Termination.Class","net.sf.cpsolver.ifs.termination.GeneralTerminationCondition");
+            cfg.setProperty("Termination.Class","org.cpsolver.ifs.termination.GeneralTerminationCondition");
             cfg.setProperty("Termination.StopWhenComplete","true");
             cfg.setProperty("Termination.TimeOut","600");
-            cfg.setProperty("Comparator.Class","net.sf.cpsolver.ifs.solution.GeneralSolutionComparator");
-            cfg.setProperty("Value.Class","net.sf.cpsolver.ifs.heuristics.GeneralValueSelection");
+            cfg.setProperty("Comparator.Class","org.cpsolver.ifs.solution.GeneralSolutionComparator");
+            cfg.setProperty("Value.Class","org.cpsolver.ifs.heuristics.GeneralValueSelection");
             cfg.setProperty("Value.WeightConflicts", "1.0");
             cfg.setProperty("Value.WeightNrAssignments", "0.0");
-            cfg.setProperty("Variable.Class","net.sf.cpsolver.ifs.heuristics.GeneralVariableSelection");
-            cfg.setProperty("Neighbour.Class","net.sf.cpsolver.studentsct.heuristics.StudentSctNeighbourSelection");
+            cfg.setProperty("Variable.Class","org.cpsolver.ifs.heuristics.GeneralVariableSelection");
+            cfg.setProperty("Neighbour.Class","org.cpsolver.studentsct.heuristics.StudentSctNeighbourSelection");
             cfg.setProperty("General.SaveBestUnassigned", "-1");
-            cfg.setProperty("Extensions.Classes","net.sf.cpsolver.ifs.extension.ConflictStatistics;net.sf.cpsolver.studentsct.extension.DistanceConflict");
+            cfg.setProperty("Extensions.Classes","org.cpsolver.ifs.extension.ConflictStatistics;org.cpsolver.studentsct.extension.DistanceConflict");
             cfg.setProperty("Data.Initiative","woebegon");
             cfg.setProperty("Data.Term","Fal");
             cfg.setProperty("Data.Year","2007");

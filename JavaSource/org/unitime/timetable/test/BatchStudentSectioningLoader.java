@@ -31,6 +31,24 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.studentsct.StudentSectioningLoader;
+import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.Test;
+import org.cpsolver.studentsct.model.AcademicAreaCode;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.Assignment;
@@ -59,24 +77,6 @@ import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Formats;
 
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.studentsct.StudentSectioningLoader;
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.Test;
-import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
 /**
  * @author Tomas Muller
@@ -93,8 +93,8 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
     private String iYear = null;
     private long iMakeupAssignmentId = 0;
 
-    public BatchStudentSectioningLoader(StudentSectioningModel model) {
-        super(model);
+    public BatchStudentSectioningLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
+        super(model, assignment);
         iIncludeCourseDemands = model.getProperties().getPropertyBoolean("Load.IncludeCourseDemands", iIncludeCourseDemands);
         iIncludeLastLikeStudents = model.getProperties().getPropertyBoolean("Load.IncludeLastLikeStudents", iIncludeLastLikeStudents);
         iIncludeUseCommittedAssignments = model.getProperties().getPropertyBoolean("Load.IncludeUseCommittedAssignments", iIncludeUseCommittedAssignments);
@@ -218,7 +218,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         lecture.setNote(c.getNotes());
         Placement p = (Placement)lecture.getInitialAssignment();
         p.setAssignmentId(new Long(iMakeupAssignmentId++));
-        lecture.setBestAssignment(p);
+        lecture.setBestAssignment(p, 0l);
         sLog.debug("        -- makup placement for "+c.getClassLabel()+": "+p.getLongName());
         return p;
     }
@@ -380,7 +380,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                 request.getSelectedChoices().addAll(selChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
                 if (assignedConfig!=null && assignedSections.size()==assignedConfig.getSubparts().size()) {
-                    Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
+                    Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections, getAssignment());
                     request.setInitialAssignment(enrollment);
                 }
                 sLog.debug("  -- added request "+request);
@@ -610,9 +610,9 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                 if (classAssignments!=null && !classAssignments.isEmpty()) {
                     for (Request request: getModel().variables()) {
                         if (request.getInitialAssignment()==null) continue;
-                        Set conflicts = getModel().conflictValues(request.getInitialAssignment());
+                        Set conflicts = getModel().conflictValues(getAssignment(), request.getInitialAssignment());
                         if (conflicts.isEmpty())
-                            request.assign(0, request.getInitialAssignment());
+                        	getAssignment().assign(0, request.getInitialAssignment());
                         else
                             sLog.debug("Unable to assign "+request.getInitialAssignment()+", conflicts: "+conflicts);
                     }

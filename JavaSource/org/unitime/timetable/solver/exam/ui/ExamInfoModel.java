@@ -36,12 +36,12 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
-import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import org.cpsolver.coursett.preference.PreferenceCombination;
+import org.cpsolver.coursett.preference.SumPreferenceCombination;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamInfoForm;
@@ -162,7 +162,7 @@ public class ExamInfoModel implements Serializable {
     
     public String assign() {
         if (iChange==null) return "Nothing to assign.";
-        System.out.println("About to be assigned: "+iChange);
+        sLog.info("About to be assigned: "+iChange);
         if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
             String message = null;
             for (ExamAssignment assignment : iChange.getConflicts()) {

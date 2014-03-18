@@ -25,9 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;

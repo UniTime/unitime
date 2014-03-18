@@ -25,20 +25,20 @@ import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Locale;
 
+import org.cpsolver.coursett.TimetableLoader;
+import org.cpsolver.coursett.TimetableXMLLoader;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.ifs.util.ProgressWriter;
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.solver.interactive.Suggestion;
 import org.unitime.timetable.solver.interactive.Suggestions;
 import org.unitime.timetable.solver.interactive.SuggestionsModel;
 
-import net.sf.cpsolver.coursett.TimetableLoader;
-import net.sf.cpsolver.coursett.TimetableSolver;
-import net.sf.cpsolver.coursett.TimetableXMLLoader;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.ifs.util.ProgressWriter;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -63,17 +63,17 @@ public class InteractiveTimetablingTest {
             File outDir = new File(properties.getProperty("General.Output","."));
             outDir.mkdirs();
             
-            Solver solver = new TimetableSolver(properties);
+            Solver solver = new Solver<Lecture, Placement>(properties);
             TimetableModel model = new TimetableModel(properties);
+            solver.setInitalSolution(model);
             Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
             
-            TimetableLoader loader = new TimetableXMLLoader(model);
+            TimetableLoader loader = new TimetableXMLLoader(model, solver.currentSolution().getAssignment());
             loader.load();
             
-            solver.setInitalSolution(model);
             solver.initSolver();
             
-            sLogger.info("Starting from: "+ToolBox.dict2string(model.getExtendedInfo(),2));
+            sLogger.info("Starting from: "+ToolBox.dict2string(model.getExtendedInfo(solver.currentSolution().getAssignment()),2));
             
             PrintWriter csv = new PrintWriter(new FileWriter(outDir.toString()+File.separator+"stat.csv"));
             csv.println("class,timeout,#sol,#comb,time,best,timeout,#sol,#comb,time,best");

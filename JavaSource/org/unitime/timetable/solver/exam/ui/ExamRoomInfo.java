@@ -21,14 +21,14 @@ package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
 
+import org.cpsolver.exam.model.ExamRoom;
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.LocationDAO;
 
-import net.sf.cpsolver.exam.model.ExamRoom;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 /**
  * @author Tomas Muller

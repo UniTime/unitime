@@ -25,15 +25,15 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
+import org.cpsolver.studentsct.reservation.CourseReservation;
+import org.cpsolver.studentsct.reservation.CurriculumReservation;
+import org.cpsolver.studentsct.reservation.GroupReservation;
+import org.cpsolver.studentsct.reservation.IndividualReservation;
+import org.cpsolver.studentsct.reservation.Reservation;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.onlinesectioning.model.XOffering.SimpleReservation;
 
-import net.sf.cpsolver.studentsct.reservation.CourseReservation;
-import net.sf.cpsolver.studentsct.reservation.CurriculumReservation;
-import net.sf.cpsolver.studentsct.reservation.GroupReservation;
-import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
-import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 /**
  * @author Tomas Muller

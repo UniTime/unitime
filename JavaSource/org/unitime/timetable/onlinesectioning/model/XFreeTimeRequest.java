@@ -24,8 +24,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.BitSet;
 
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
 
+import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseDemand;

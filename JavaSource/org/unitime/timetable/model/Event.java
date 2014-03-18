@@ -30,8 +30,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseEvent;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.util.Constants;

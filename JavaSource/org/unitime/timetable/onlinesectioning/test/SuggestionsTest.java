@@ -22,8 +22,8 @@ package org.unitime.timetable.onlinesectioning.test;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.model.dao._RootDAO;

@@ -23,10 +23,10 @@ import java.io.File;
 import java.util.Date;
 import java.util.Map;
 
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 /**
  * @author Tomas Muller

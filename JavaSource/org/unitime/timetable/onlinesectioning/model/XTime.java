@@ -30,8 +30,8 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Locale;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
 
+import org.cpsolver.coursett.model.TimeLocation;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.server.DayCode;

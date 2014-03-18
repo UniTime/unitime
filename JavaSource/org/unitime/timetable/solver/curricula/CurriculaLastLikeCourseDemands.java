@@ -29,13 +29,16 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.IdGenerator;
-import net.sf.cpsolver.ifs.util.Progress;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
+import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.IdGenerator;
+import org.cpsolver.ifs.util.Progress;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -253,19 +256,21 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 			m.setStudentLimits();
 		
 		// Load model from cache (if exists)
-		CurModel cachedModel = null;
+		Solution<CurVariable, CurValue> cachedSolution = null;
+		Assignment<CurVariable, CurValue> assignment = new DefaultSingleAssignment<CurVariable, CurValue>();
 		Element cache = (clasf.getStudents() == null ? null : clasf.getStudents().getRootElement());
 		if (cache != null && cache.getName().equals(getCacheName())) {
-			cachedModel = CurModel.loadFromXml(cache);
+			cachedSolution = CurModel.loadFromXml(cache);
 			if (iSetStudentCourseLimits)
-				cachedModel.setStudentLimits();
+				((CurModel)cachedSolution.getModel()).setStudentLimits();
 		}
 
 		// Check the cached model
-		if (cachedModel != null && cachedModel.isSameModel(m)) {
+		if (cachedSolution != null && ((CurModel)cachedSolution.getModel()).isSameModel(m)) {
 			// Reuse
 			sLog.debug("  using cached model...");
-			m = cachedModel;
+			m = ((CurModel)cachedSolution.getModel());
+			assignment = cachedSolution.getAssignment();
 		} else {
 			// initial assignment
 			for (CurStudent student: curStudents) { 
@@ -274,14 +279,14 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 					if (curCourse == null) continue;
 					CurVariable var = null;
 					for (CurVariable v: curCourse.variables())
-						if (v.getAssignment() == null) { var = v; break; }
+						if (assignment.getValue(v) == null) { var = v; break; }
 					if (var != null) {
 						CurValue val = new CurValue(var, student);
-						if (!m.inConflict(val))
-							var.assign(0, val);
+						if (!m.inConflict(assignment, val))
+							assignment.assign(0, val);
 						else {
 							sLog.debug("Unable to assign " + student + " to " + var);
-							Map<Constraint<CurVariable, CurValue>, Set<CurValue>> conf = m.conflictConstraints(val);
+							Map<Constraint<CurVariable, CurValue>, Set<CurValue>> conf = m.conflictConstraints(assignment, val);
 							for (Map.Entry<Constraint<CurVariable, CurValue>, Set<CurValue>> entry: conf.entrySet()) {
 								sLog.debug(entry.getKey() + ": " + entry.getValue());
 							}
@@ -293,13 +298,13 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 			}
 			
 			// Solve model
-			sLog.debug("Initial: " + m.getInfo());
-			m.solve(iProperties);
-			sLog.debug("Final: " + m.getInfo());
+			sLog.debug("Initial: " + m.getInfo(assignment));
+			m.solve(iProperties, assignment);
+			sLog.debug("Final: " + m.getInfo(assignment));
 			
 			// Save into the cache
 			Document doc = DocumentHelper.createDocument();
-			m.saveAsXml(doc.addElement(getCacheName()));
+			m.saveAsXml(doc.addElement(getCacheName()), assignment);
 			// sLog.debug("Model:\n" + doc.asXML());
 			clasf.setStudents(doc);
 			hibSession.update(clasf);
@@ -317,7 +322,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 			Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
 			iStudentRequests.put(student.getStudentId(), studentCourses);
 			Hashtable<Long, Double> priorities = new Hashtable<Long, Double>(); iEnrollmentPriorities.put(student.getStudentId(), priorities);
-			for (CurCourse course: s.getCourses()) {
+			for (CurCourse course: s.getCourses(assignment)) {
 				CourseOffering co = courses.get(course.getCourseId());
 				if (course.getPriority() != null) priorities.put(co.getUniqueId(), course.getPriority());
 				Set<WeightedStudentId> courseStudents = iDemands.get(co.getUniqueId());

@@ -25,21 +25,22 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
+import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.InstructorConstraint;
+import org.cpsolver.coursett.criteria.BrokenTimePatterns;
+import org.cpsolver.coursett.criteria.TooBigRooms;
+import org.cpsolver.coursett.criteria.UselessHalfHours;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.preference.PreferenceCombination;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.solver.Solver;
 import org.dom4j.Element;
 import org.unitime.timetable.model.PreferenceLevel;
 
-import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
-import net.sf.cpsolver.coursett.criteria.BrokenTimePatterns;
-import net.sf.cpsolver.coursett.criteria.TooBigRooms;
-import net.sf.cpsolver.coursett.criteria.UselessHalfHours;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.solver.Solver;
 
 /**
  * @author Tomas Muller
@@ -91,20 +92,21 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 	
 	public AssignmentPreferenceInfo(Solver solver, Placement placement, boolean includeConflictInfo, boolean ofTheSameProblem) {
 		super();
+		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		Lecture lecture=(Lecture)placement.variable();
 		setBestNormalizedTimePreference(lecture.getBestTimePreference());
 		setNormalizedTimePreference(placement.getTimeLocation().getNormalizedPreference());
 		setBestRoomPreference(lecture.getBestRoomPreference());
 		if (ofTheSameProblem) {
-			setNrStudentConflicts(lecture.countStudentConflictsOfTheSameProblem(placement));
-			setNrHardStudentConflicts(lecture.countHardStudentConflictsOfTheSameProblem(placement));
-			setNrCommitedStudentConflicts(lecture.countCommittedStudentConflictsOfTheSameProblem(placement));
-			setNrDistanceStudentConflicts(lecture.countDistanceStudentConflictsOfTheSameProblem(placement));
+			setNrStudentConflicts(lecture.countStudentConflictsOfTheSameProblem(assignment, placement));
+			setNrHardStudentConflicts(lecture.countHardStudentConflictsOfTheSameProblem(assignment, placement));
+			setNrCommitedStudentConflicts(lecture.countCommittedStudentConflictsOfTheSameProblem(assignment, placement));
+			setNrDistanceStudentConflicts(lecture.countDistanceStudentConflictsOfTheSameProblem(assignment, placement));
 		} else {
-			setNrStudentConflicts(lecture.countStudentConflicts(placement)+lecture.getCommitedConflicts(placement));
-			setNrHardStudentConflicts(lecture.countHardStudentConflicts(placement));
-			setNrCommitedStudentConflicts(lecture.getCommitedConflicts(placement) + lecture.countCommittedStudentConflicts(placement));
-			setNrDistanceStudentConflicts(lecture.countDistanceStudentConflicts(placement));
+			setNrStudentConflicts(lecture.countStudentConflicts(assignment, placement)+lecture.getCommitedConflicts(placement));
+			setNrHardStudentConflicts(lecture.countHardStudentConflicts(assignment, placement));
+			setNrCommitedStudentConflicts(lecture.getCommitedConflicts(placement) + lecture.countCommittedStudentConflicts(assignment, placement));
+			setNrDistanceStudentConflicts(lecture.countDistanceStudentConflicts(assignment, placement));
 		}
 		setNrRoomLocations(lecture.nrRoomLocations());
 		setNrTimeLocations(lecture.nrTimeLocations());
@@ -130,9 +132,9 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			int nrSameTimePlacementsNoConf = 0;
 			int nrPlacementsNoConf = 0;
 			for (Placement p: lecture.values()) {
-				if (p.isHard()) continue;
+				if (p.isHard(assignment)) continue;
 				if (p.equals(placement)) continue;
-				if (!lecture.getModel().conflictValues(p).isEmpty()) continue;
+				if (!lecture.getModel().conflictValues(assignment, p).isEmpty()) continue;
 				if (p.getTimeLocation().equals(placement.getTimeLocation())) {
 					nrSameTimePlacementsNoConf++;
 				}
@@ -146,7 +148,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		}
 		int btbInstructorPref = 0;
        	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
-       		btbInstructorPref += ic.getPreferenceCombination(placement);
+       		btbInstructorPref += ic.getPreferenceCombination(assignment, placement);
        	}
        	setBtbInstructorPreference(btbInstructorPref);
 		if (lecture.getInitialAssignment()!=null) {
@@ -158,23 +160,23 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		iTooBigRoomPreference = TooBigRooms.getTooBigRoomPreference(placement);
 		iMinRoomSize = lecture.minRoomSize();
 		iUselessHalfHours = placement.variable().getModel() == null ? 0 : (int)Math.round(
-				placement.variable().getModel().getCriterion(UselessHalfHours.class).getValue(placement, null) + 
-				placement.variable().getModel().getCriterion(BrokenTimePatterns.class).getValue(placement, null));
+				placement.variable().getModel().getCriterion(UselessHalfHours.class).getValue(assignment, placement, null) + 
+				placement.variable().getModel().getCriterion(BrokenTimePatterns.class).getValue(assignment, placement, null));
 		DepartmentSpreadConstraint deptConstraint = null;
 		for (Constraint c: lecture.constraints()) {
 			if (c instanceof DepartmentSpreadConstraint)
 				deptConstraint = (DepartmentSpreadConstraint)c;
 			if (c instanceof GroupConstraint)
-				iGroupConstraintPref += ((GroupConstraint)c).getCurrentPreference(placement);
+				iGroupConstraintPref += ((GroupConstraint)c).getCurrentPreference(assignment, placement);
 		}
 		if (deptConstraint!=null) {
-			iDeptBalancPenalty = ((double)deptConstraint.getPenalty(placement))/12.0;
-			iMaxDeptBalancPenalty = deptConstraint.getMaxPenalty(placement);
+			iDeptBalancPenalty = ((double)deptConstraint.getPenalty(assignment, placement))/12.0;
+			iMaxDeptBalancPenalty = deptConstraint.getMaxPenalty(assignment, placement);
 		}
-		iSpreadPenalty = ((double)placement.getSpreadPenalty())/12.0;
-		iMaxSpreadPenalty = ((double)placement.getMaxSpreadPenalty())/12.0;
+		iSpreadPenalty = ((double)placement.getSpreadPenalty(assignment))/12.0;
+		iMaxSpreadPenalty = ((double)placement.getMaxSpreadPenalty(assignment))/12.0;
 		if (solver!=null && solver.getPerturbationsCounter()!=null)
-			setPerturbationPenalty(solver.getPerturbationsCounter().getPerturbationPenalty(lecture.getModel(), placement, new Vector(0)));
+			setPerturbationPenalty(solver.getPerturbationsCounter().getPerturbationPenalty(assignment, lecture.getModel(), placement, new Vector(0)));
 		setDatePatternPref(placement.getTimeLocation().getDatePatternPreference());
 	}
 	

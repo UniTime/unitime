@@ -25,8 +25,8 @@ import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.cpsolver.studentsct.reservation.GroupReservation;
 
+import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.IndividualReservation;
@@ -56,7 +56,7 @@ public class XIndividualReservation extends XReservation {
         	iStudentIds.add(student.getUniqueId());
     }
     
-    public XIndividualReservation(net.sf.cpsolver.studentsct.reservation.IndividualReservation reservation) {
+    public XIndividualReservation(org.cpsolver.studentsct.reservation.IndividualReservation reservation) {
         super(XReservationType.Individual, reservation);
         iStudentIds.addAll(reservation.getStudentIds());
     }

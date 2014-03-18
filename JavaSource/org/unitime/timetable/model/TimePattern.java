@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
 
+import org.cpsolver.coursett.model.TimeLocation;
 import org.hibernate.Query;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseTimePattern;

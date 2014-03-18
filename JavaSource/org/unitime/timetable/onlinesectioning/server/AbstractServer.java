@@ -35,15 +35,15 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
-import net.sf.cpsolver.ifs.util.JProf;
-import net.sf.cpsolver.ifs.util.ToolBox;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.ifs.util.JProf;
+import org.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;

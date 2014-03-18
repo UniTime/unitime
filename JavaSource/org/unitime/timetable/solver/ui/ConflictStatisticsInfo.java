@@ -34,21 +34,22 @@ import java.util.Set;
 
 import javax.servlet.jsp.JspWriter;
 
-import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
-import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedGroupsOfTime;
-import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedRoomsConstraint;
-import net.sf.cpsolver.coursett.constraint.RoomConstraint;
-import net.sf.cpsolver.coursett.constraint.SpreadConstraint;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.ifs.extension.Assignment;
-import net.sf.cpsolver.ifs.extension.ConflictStatistics;
-import net.sf.cpsolver.ifs.model.Constraint;
 
+import org.cpsolver.coursett.constraint.ClassLimitConstraint;
+import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.InstructorConstraint;
+import org.cpsolver.coursett.constraint.JenrlConstraint;
+import org.cpsolver.coursett.constraint.MinimizeNumberOfUsedGroupsOfTime;
+import org.cpsolver.coursett.constraint.MinimizeNumberOfUsedRoomsConstraint;
+import org.cpsolver.coursett.constraint.RoomConstraint;
+import org.cpsolver.coursett.constraint.SpreadConstraint;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.ifs.extension.AssignedValue;
+import org.cpsolver.ifs.extension.ConflictStatistics;
+import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.solver.Solver;
 import org.dom4j.Element;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.Constants;
@@ -74,8 +75,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 	public Collection getCBS() { return iVariables.values(); } 
 	public CBSVariable getCBS(Long classId) { return (CBSVariable)iVariables.get(classId); }
 	
-	public void load(ConflictStatistics cbs) {
-		load(cbs, null);
+	public void load(Solver<Lecture, Placement> solver, ConflictStatistics cbs) {
+		load(solver, cbs, null);
 	}
 	
 	public ConflictStatisticsInfo getConflictStatisticsSubInfo(List variables) {
@@ -93,18 +94,18 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		if (info!=null) iVariables.putAll(info.iVariables);
 	}
 	
-	public void load(ConflictStatistics cbs, Long classId) {
+	public void load(Solver<Lecture, Placement> solver, ConflictStatistics cbs, Long classId) {
 		iVariables.clear();
 		for (Iterator i1=cbs.getNoGoods().entrySet().iterator();i1.hasNext();) {
 			Map.Entry entry = (Map.Entry)i1.next();
-			Assignment assignment = (Assignment)entry.getKey();
+			AssignedValue assignment = (AssignedValue)entry.getKey();
 			Placement placement = (Placement)assignment.getValue(); 
 			Lecture lecture = (Lecture)placement.variable();
 			if (classId!=null && !classId.equals(lecture.getClassId())) continue;
 			
 			CBSVariable var = (CBSVariable)iVariables.get(lecture.getClassId());
 			if (var==null) {
-				String pref = SolverGridModel.hardConflicts2pref(lecture,null);
+				String pref = SolverGridModel.hardConflicts2pref(solver.currentSolution().getAssignment(), lecture,null);
 				var = new CBSVariable(lecture.getClassId().longValue(),lecture.getName(),pref);
 				iVariables.put(lecture.getClassId(),var);
 			}
@@ -128,7 +129,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			
 			Hashtable constr2assignments = new Hashtable();
 			for (Iterator e2=noGoods.iterator();e2.hasNext();) {
-				Assignment noGood = (Assignment)e2.next();
+				AssignedValue noGood = (AssignedValue)e2.next();
 				if (noGood.getConstraint()==null) continue;
 				List aaa = (List)constr2assignments.get(noGood.getConstraint());
 				if (aaa == null) {
@@ -168,10 +169,10 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 				val.constraints().add(con);
 				
 				for (Iterator e3=noGoodsThisConstraint.iterator();e3.hasNext();) {
-					Assignment ass = (Assignment)e3.next();
+					AssignedValue ass = (AssignedValue)e3.next();
 					Placement p = (Placement)ass.getValue();
 					Lecture l = (Lecture)p.variable();
-					String pr = SolverGridModel.hardConflicts2pref(l,p);
+					String pr = SolverGridModel.hardConflicts2pref(solver.currentSolution().getAssignment(), l,p);
 					CBSAssignment a = new CBSAssignment(con,
 							l.getClassId().longValue(),
 							l.getName(),

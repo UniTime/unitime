@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
 
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.commons.ToolBox;
 import org.unitime.timetable.defaults.SessionAttribute;

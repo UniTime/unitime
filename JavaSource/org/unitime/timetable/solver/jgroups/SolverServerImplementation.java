@@ -29,11 +29,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.ToolBox;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.MembershipListener;

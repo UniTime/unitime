@@ -25,13 +25,14 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.cpsolver.exam.model.Exam;
+import org.cpsolver.exam.model.ExamModel;
+import org.cpsolver.exam.model.ExamPlacement;
+import org.cpsolver.ifs.assignment.Assignment;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 
-import net.sf.cpsolver.exam.model.Exam;
-import net.sf.cpsolver.exam.model.ExamModel;
-import net.sf.cpsolver.exam.model.ExamPlacement;
 
 /**
  * @author Tomas Muller
@@ -50,8 +51,8 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
         iAssignments = new Vector(); iConflicts = new Vector(); iInitials = new Hashtable();
     }
 
-    public ExamProposedChange(ExamModel model, Hashtable<Exam,ExamPlacement> initialAssignment, Hashtable<Exam,ExamAssignment> initialInfo, Collection<ExamPlacement> conflicts, Vector<Exam> resolvedExams) {
-        iValue = model.getTotalValue(); iNrAssigned = model.nrAssignedVariables();
+    public ExamProposedChange(ExamModel model, Assignment<Exam, ExamPlacement> assignment, Hashtable<Exam,ExamPlacement> initialAssignment, Hashtable<Exam,ExamAssignment> initialInfo, Collection<ExamPlacement> conflicts, Vector<Exam> resolvedExams) {
+        iValue = model.getTotalValue(assignment); iNrAssigned = model.nrAssignedVariables(assignment);
         if (conflicts!=null) {
             iConflicts = new Vector();
             for (ExamPlacement conflict : conflicts) iConflicts.add(initialInfo.get((Exam)conflict.variable()));
@@ -59,23 +60,23 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
         iAssignments = new Vector();
         iInitials = new Hashtable();
         for (Exam exam : resolvedExams) {
-            ExamPlacement current = (ExamPlacement)exam.getAssignment();
+            ExamPlacement current = assignment.getValue(exam);
             ExamPlacement initial = initialAssignment.get(exam);
             if (initial==null) {
-                iAssignments.add(new ExamAssignmentInfo(exam,current));
+                iAssignments.add(new ExamAssignmentInfo(exam,current,assignment));
             } else if (!initial.equals(current)) {
-                iAssignments.add(new ExamAssignmentInfo(exam,current));
+                iAssignments.add(new ExamAssignmentInfo(exam,current,assignment));
                 iInitials.put(exam.getId(),initialInfo.get(exam));
             }
         }
-        for (Exam exam: model.assignedVariables()) {
+        for (Exam exam: model.assignedVariables(assignment)) {
             if (resolvedExams.contains(exam)) continue;
-            ExamPlacement current = (ExamPlacement)exam.getAssignment();
+            ExamPlacement current = (ExamPlacement)assignment.getValue(exam);
             ExamPlacement initial = initialAssignment.get(exam);
             if (initial==null) {
-                iAssignments.add(new ExamAssignmentInfo(exam,current));
+                iAssignments.add(new ExamAssignmentInfo(exam,current,assignment));
             } else if (!initial.equals(current)) {
-                iAssignments.add(new ExamAssignmentInfo(exam,current));
+                iAssignments.add(new ExamAssignmentInfo(exam,current,assignment));
                 iInitials.put(exam.getId(),initialInfo.get(exam));
             }
         }
@@ -106,9 +107,9 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
         return iConflicts.isEmpty() && iAssignments.isEmpty();
     }
     
-    public boolean isBetter(ExamModel model) {
-        if (iNrAssigned>model.nrAssignedVariables()) return true;
-        if (iNrAssigned==model.nrAssignedVariables() && iValue<model.getTotalValue()) return true;
+    public boolean isBetter(ExamModel model, Assignment<Exam, ExamPlacement> assignment) {
+        if (iNrAssigned>model.nrAssignedVariables(assignment)) return true;
+        if (iNrAssigned==model.nrAssignedVariables(assignment) && iValue<model.getTotalValue(assignment)) return true;
         return false;
     }
     

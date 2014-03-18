@@ -23,7 +23,7 @@
 <%@ page import="org.unitime.timetable.solver.studentsct.StudentSolverProxy" %>
 <%@ page import="org.hibernate.Transaction" %>
 <%@ page import="org.unitime.timetable.solver.ui.PropertiesInfo" %>
-<%@ page import="net.sf.cpsolver.ifs.util.Progress" %>
+<%@ page import="org.cpsolver.ifs.util.Progress" %>
 <%@ page import="org.unitime.timetable.solver.ui.LogInfo" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@page import="org.unitime.timetable.model.Session"%>

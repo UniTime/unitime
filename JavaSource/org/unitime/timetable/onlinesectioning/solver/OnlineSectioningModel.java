@@ -20,14 +20,16 @@
 package org.unitime.timetable.onlinesectioning.solver;
 
 import org.apache.log4j.Logger;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
 import org.unitime.timetable.onlinesectioning.solver.expectations.AvoidUnbalancedWhenNoExpectations;
 import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 import org.unitime.timetable.onlinesectioning.solver.expectations.PercentageOverExpected;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
 
 /**
  * @author Tomas Muller
@@ -51,8 +53,8 @@ public class OnlineSectioningModel extends StudentSectioningModel {
 	
 	public void setOverExpectedCriterion(OverExpectedCriterion overExpectedCriterion) { iOverExpectedCriterion = overExpectedCriterion; }
 	
-	public double getOverExpected(Section section, Request request) {
-		return getOverExpectedCriterion().getOverExpected(section, request);
+	public double getOverExpected(Assignment<Request, Enrollment> assignment, Section section, Request request) {
+		return getOverExpectedCriterion().getOverExpected(assignment, section, request);
 	}
 
 }

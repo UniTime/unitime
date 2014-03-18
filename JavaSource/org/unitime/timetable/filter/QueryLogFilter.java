@@ -42,10 +42,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.cpsolver.ifs.util.JProf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.util.JProf;
 import org.hibernate.CacheMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;

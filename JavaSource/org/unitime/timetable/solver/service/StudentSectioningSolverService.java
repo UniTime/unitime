@@ -24,14 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.StudentConflictStatistics;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
-import net.sf.cpsolver.studentsct.weights.StudentWeights;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.StudentConflictStatistics;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.weights.StudentWeights;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;

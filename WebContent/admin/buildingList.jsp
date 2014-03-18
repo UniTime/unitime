@@ -18,7 +18,7 @@
  --%>
 <%@ page import="org.unitime.commons.web.*" %>
 <%@ page import="java.text.DecimalFormat" %>
-<%@page import="net.sf.cpsolver.ifs.util.DistanceMetric"%>
+<%@page import="org.cpsolver.ifs.util.DistanceMetric"%>
 <%@page import="org.unitime.timetable.ApplicationProperties"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>

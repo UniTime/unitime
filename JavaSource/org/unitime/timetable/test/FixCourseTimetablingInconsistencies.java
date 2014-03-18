@@ -28,13 +28,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import net.sf.cpsolver.coursett.Constants;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.cpsolver.coursett.Constants;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;

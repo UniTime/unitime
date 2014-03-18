@@ -29,9 +29,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.log4j.Logger;
+import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Rsp;

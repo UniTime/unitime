@@ -24,9 +24,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import net.sf.cpsolver.coursett.Constants;
-import net.sf.cpsolver.ifs.heuristics.RouletteWheelSelection;
 
+
+import org.cpsolver.coursett.Constants;
+import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;

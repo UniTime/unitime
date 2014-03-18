@@ -29,10 +29,10 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.SuspectedException;

@@ -28,11 +28,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -404,12 +406,14 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					
 					//TODO: Do we need this?
 					boolean hasEnrollment = false;
-					CourseRequest r = SectioningRequest.convert(request, server);
+					Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
+					CourseRequest r = SectioningRequest.convert(assignment, request, server);
 					Section s = r.getSection(section.getSectionId());
 					values: for (Enrollment en: r.values()) {
 						if (!en.getSections().contains(s)) continue;
 						for (Request x: r.getStudent().getRequests()) {
-							if (!x.equals(r) && x.getAssignment() != null && x.getAssignment().isOverlapping(en)) {
+							Enrollment xe = assignment.getValue(x);
+							if (!x.equals(r) && xe != null && xe.isOverlapping(en)) {
 								continue values;
 							}
 						}

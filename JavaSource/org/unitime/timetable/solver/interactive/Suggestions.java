@@ -30,12 +30,13 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.solver.Solver;
 
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.solver.Solver;
 import org.unitime.timetable.model.PreferenceLevel;
 
 /**
@@ -44,6 +45,7 @@ import org.unitime.timetable.model.PreferenceLevel;
 public class Suggestions implements Serializable {
 	private static final long serialVersionUID = 1L;
     private transient Solver iSolver = null;
+    private transient Assignment<Lecture, Placement> iAssignment = null;
     private transient TimetableModel iModel = null;
     private transient Lecture iLecture = null;
 
@@ -78,6 +80,7 @@ public class Suggestions implements Serializable {
     public Suggestions(Solver solver, SuggestionsModel model) {
         iSolver = solver;
         iModel = (TimetableModel)iSolver.currentSolution().getModel();
+        iAssignment = iSolver.currentSolution().getAssignment();
         iDepth = model.getDepth();
         iTimeOut = model.getTimeout();
         iAllTheSame = model.isAllTheSame();
@@ -137,8 +140,8 @@ public class Suggestions implements Serializable {
     		computeConfTable();
         iCurrentSuggestion = tryAssignment((Placement)null);
         Hashtable initialAssignments = new Hashtable();
-        for (Lecture lec: iModel.assignedVariables()) {
-            initialAssignments.put(lec,lec.getAssignment());
+        for (Lecture lec: iAssignment.assignedVariables()) {
+            initialAssignments.put(lec, iAssignment.getValue(lec));
         }
         iEmptySuggestion = new Suggestion(iSolver, initialAssignments, new Vector(), new Vector());
         computeNrTries();
@@ -153,10 +156,10 @@ public class Suggestions implements Serializable {
         iTimeoutReached = false;
         iNrCombinationsConsidered = 0; iNrSolutions = 0;
         synchronized (iSolver.currentSolution()) {
-            Vector unAssignedVariables = new Vector(iModel.unassignedVariables());
+            Vector unAssignedVariables = new Vector(iModel.nrUnassignedVariables(iAssignment));
             Hashtable initialAssignments = new Hashtable();
-            for (Lecture lec: iModel.assignedVariables()) {
-                initialAssignments.put(lec,lec.getAssignment());
+            for (Lecture lec: iAssignment.assignedVariables()) {
+                initialAssignments.put(lec, iAssignment.getValue(lec));
             }
             Hashtable conflictsToResolve = new Hashtable();
             Vector resolvedLectures = new Vector();
@@ -164,15 +167,15 @@ public class Suggestions implements Serializable {
                 for (Enumeration e=iHints.elements();e.hasMoreElements();) {
                     Placement plac = (Placement)e.nextElement();
                     Lecture lect = (Lecture)plac.variable();
-                    Set conflicts = iModel.conflictValues(plac);
+                    Set conflicts = iModel.conflictValues(iAssignment, plac);
                     for (Iterator i=conflicts.iterator();i.hasNext();) {
                         Placement conflictPlacement = (Placement)i.next();
                         conflictsToResolve.put(conflictPlacement.variable(),conflictPlacement);
-                        conflictPlacement.variable().unassign(0);
+                        iAssignment.unassign(0, conflictPlacement.variable());
                     }
                     resolvedLectures.add(lect.getClassId());
                     conflictsToResolve.remove(lect);
-                    lect.assign(0,plac);
+                    iAssignment.assign(0,plac);
                 }
             }
             Vector initialLectures = new Vector(1); 
@@ -180,13 +183,13 @@ public class Suggestions implements Serializable {
             backtrack(System.currentTimeMillis(), initialLectures, resolvedLectures, conflictsToResolve, initialAssignments, iDepth);
             for (Enumeration e=unAssignedVariables.elements();e.hasMoreElements();) {
                 Lecture lect = (Lecture)e.nextElement();
-                if (lect.getAssignment()!=null)
-                    lect.unassign(0);
+                if (iAssignment.getValue(lect)!=null)
+                	iAssignment.unassign(0, lect);
             }
             for (Iterator i=initialAssignments.values().iterator();i.hasNext();) {
                 Placement plac = (Placement)i.next();
                 Lecture lect = (Lecture)plac.variable();
-                if (!plac.equals(lect.getAssignment())) lect.assign(0,plac);
+                if (!plac.equals(iAssignment.getValue(lect))) iAssignment.assign(0,plac);
             }
         }
     }
@@ -198,10 +201,10 @@ public class Suggestions implements Serializable {
     public Suggestion tryAssignment(Placement placement) {
         Suggestion ret = null;
         synchronized (iSolver.currentSolution()) {
-            Vector unAssignedVariables = new Vector(iModel.unassignedVariables());
+            Vector unAssignedVariables = new Vector(iModel.nrUnassignedVariables(iAssignment));
             Hashtable initialAssignments = new Hashtable();
-            for (Lecture lec: iModel.assignedVariables()) {
-                initialAssignments.put(lec,lec.getAssignment());
+            for (Lecture lec: iAssignment.assignedVariables()) {
+                initialAssignments.put(lec,iAssignment.getValue(lec));
             }
             Hashtable conflictsToResolve = new Hashtable();
             Vector resolvedLectures = new Vector();
@@ -210,30 +213,30 @@ public class Suggestions implements Serializable {
                     Placement plac = (Placement)e.nextElement();
                     Lecture lect = (Lecture)plac.variable();
                     if (placement!=null && placement.variable().equals(lect)) continue;
-                    Set conflicts = iModel.conflictValues(plac);
+                    Set conflicts = iModel.conflictValues(iAssignment, plac);
                     if (conflicts.contains(plac)) return null;
                     for (Iterator i=conflicts.iterator();i.hasNext();) {
                         Placement conflictPlacement = (Placement)i.next();
                         conflictsToResolve.put(conflictPlacement.variable(),conflictPlacement);
-                        conflictPlacement.variable().unassign(0);
+                        iAssignment.unassign(0, conflictPlacement.variable());
                     }
                     resolvedLectures.add(lect.getClassId());
                     conflictsToResolve.remove(lect);
-                    lect.assign(0,plac);
+                    iAssignment.assign(0,plac);
                 }
             }
             if (placement!=null) {
                 Lecture lect = (Lecture)placement.variable();
-                Set conflicts = iModel.conflictValues(placement);
+                Set conflicts = iModel.conflictValues(iAssignment, placement);
                 if (conflicts.contains(placement)) return null;
                 for (Iterator i=conflicts.iterator();i.hasNext();) {
                     Placement conflictPlacement = (Placement)i.next();
                     conflictsToResolve.put(conflictPlacement.variable(),conflictPlacement);
-                    conflictPlacement.variable().unassign(0);
+                    iAssignment.unassign(0, conflictPlacement.variable());
                 }
                 resolvedLectures.add(lect.getClassId());
                 conflictsToResolve.remove(lect);
-                lect.assign(0,placement);
+                iAssignment.assign(0,placement);
             }
             ret = new Suggestion(iSolver, initialAssignments, resolvedLectures, conflictsToResolve.values());
             if (placement!=null) ret.setHint(new Hint(iSolver, placement));
@@ -241,19 +244,19 @@ public class Suggestions implements Serializable {
                 for (Enumeration e=iHints.elements();e.hasMoreElements();) {
                     Placement plac = (Placement)e.nextElement();
                     Lecture lect = (Lecture)plac.variable();
-                    if (lect.getAssignment()!=null) lect.unassign(0);
+                    if (iAssignment.getValue(lect)!=null) iAssignment.unassign(0, lect);
                 }
             }
             for (Enumeration e=unAssignedVariables.elements();e.hasMoreElements();) {
                 Lecture lect = (Lecture)e.nextElement();
-                if (lect.getAssignment()!=null)
-                    lect.unassign(0);
+                if (iAssignment.getValue(lect)!=null)
+                	iAssignment.unassign(0, lect);
             }
-            if (placement!=null) placement.variable().unassign(0);
+            if (placement!=null) iAssignment.unassign(0, placement.variable());
             for (Iterator i=initialAssignments.values().iterator();i.hasNext();) {
                 Placement plac = (Placement)i.next();
                 Lecture lect = (Lecture)plac.variable();
-                if (!plac.equals(lect.getAssignment())) lect.assign(0,plac);
+                if (!plac.equals(iAssignment.getValue(lect))) iAssignment.assign(0,plac);
             }
         }
         return ret;
@@ -327,19 +330,20 @@ public class Suggestions implements Serializable {
                 PlacementValue placementValue = (PlacementValue)e2.next();
                 if (iTimeoutReached) break;
                 Placement placement = placementValue.getPlacement();
-                if (placement.equals(lecture.getAssignment())) continue;
-                if (!iAllowBreakHard && placement.isHard()) continue;
-                if (iSameTime && lecture.getAssignment()!=null && !placement.getTimeLocation().equals(((Placement)lecture.getAssignment()).getTimeLocation())) continue;
-                if (iSameRoom && lecture.getAssignment()!=null && !placement.sameRooms((Placement)lecture.getAssignment())) continue;
-                if (iAllTheSame && iSameTime && lecture.getAssignment()==null) {
+                Placement current = iAssignment.getValue(lecture);
+                if (placement.equals(current)) continue;
+                if (!iAllowBreakHard && placement.isHard(iAssignment)) continue;
+                if (iSameTime && current!=null && !placement.getTimeLocation().equals(((Placement)current).getTimeLocation())) continue;
+                if (iSameRoom && current!=null && !placement.sameRooms((Placement)current)) continue;
+                if (iAllTheSame && iSameTime && current==null) {
                     Placement ini = (Placement)initialAssignments.get(lecture);
                     if (ini!=null && !placement.sameTime(ini)) continue;
                 }
-                if (iAllTheSame && iSameRoom && lecture.getAssignment()==null) {
+                if (iAllTheSame && iSameRoom && current==null) {
                     Placement ini = (Placement)initialAssignments.get(lecture);
                     if (ini!=null && !placement.sameRooms(ini)) continue;
                 }
-                Set conflicts = iModel.conflictValues(placement);
+                Set conflicts = iModel.conflictValues(iAssignment, placement);
                 if (conflicts!=null && (nrUnassigned+conflicts.size()>depth)) continue;
                 if (containsCommited(iModel, conflicts)) continue;
                 if (conflicts.contains(placement)) continue;
@@ -351,28 +355,27 @@ public class Suggestions implements Serializable {
                     }
                 }
                 if (containException) continue;
-                Placement cur = (Placement)lecture.getAssignment();
                 if (conflicts!=null) {
                     for (Iterator i=conflicts.iterator();!containException && i.hasNext();) {
                         Placement c = (Placement)i.next();
-                        c.variable().unassign(0);
+                        iAssignment.unassign(0, c.variable());
                     }
                 }
-                lecture.assign(0, placement);
+                iAssignment.assign(0, placement);
                 for (Iterator i=conflicts.iterator();!containException && i.hasNext();) {
                     Placement c = (Placement)i.next();
                     conflictsToResolve.put(c.variable(),c);
                 }
                 Placement resolvedConf = (Placement)conflictsToResolve.remove(lecture);
                 backtrack(startTime, null, resolvedLectures, conflictsToResolve, initialAssignments, depth-1);
-                if (cur==null)
-                    lecture.unassign(0);
+                if (current==null)
+                	iAssignment.unassign(0, lecture);
                 else
-                    lecture.assign(0, cur);
+                	iAssignment.assign(0, current);
                 if (conflicts!=null) {
                     for (Iterator i=conflicts.iterator();i.hasNext();) {
                         Placement p = (Placement)i.next();
-                        p.variable().assign(0, p);
+                        iAssignment.assign(0, p);
                         conflictsToResolve.remove(p.variable());
                     }
                 }
@@ -399,12 +402,13 @@ public class Suggestions implements Serializable {
     
     public void computeTryAllAssignments() {
     	iAllAssignments = new TreeSet();
+    	Placement current = iAssignment.getValue(iLecture);
     	for (Placement p: iLecture.values()) {
-    		if (p.equals(iLecture.getAssignment())) continue;
-    		if (p.isHard() && !iAllowBreakHard) continue;
+    		if (p.equals(current)) continue;
+    		if (p.isHard(iAssignment) && !iAllowBreakHard) continue;
     		if (!match(p)) continue;
-            if (iSameTime && iLecture.getAssignment()!=null && !p.getTimeLocation().equals(((Placement)iLecture.getAssignment()).getTimeLocation())) continue;
-            if (iSameRoom && iLecture.getAssignment()!=null && !p.sameRooms((Placement)iLecture.getAssignment())) continue;
+            if (iSameTime && current!=null && !p.getTimeLocation().equals(((Placement)current).getTimeLocation())) continue;
+            if (iSameRoom && current!=null && !p.sameRooms((Placement)current)) continue;
         	if (iAllAssignments.size()==iLimit && ((Suggestion)iAllAssignments.last()).isBetter(iSolver)) continue;
         	Suggestion s = tryAssignment(p);
         	if (s != null)
@@ -426,7 +430,7 @@ public class Suggestions implements Serializable {
     }
     
     public void computeNrTries() {
-    	Placement placement = (Placement)iLecture.getAssignment();
+    	Placement placement = iAssignment.getValue(iLecture);
     	if (iSameTime && placement!=null)
     		iNrTries = iLecture.nrValues(placement.getTimeLocation())-1;
     	else if (iSameRoom && placement!=null) {
@@ -455,7 +459,7 @@ public class Suggestions implements Serializable {
     }
     
     public double getBound(Hashtable conflictsToResolve) {
-    	double value = iSolver.currentSolution().getModel().getTotalValue();
+    	double value = iSolver.currentSolution().getModel().getTotalValue(iAssignment);
     	for (Enumeration e=conflictsToResolve.keys();e.hasMoreElements();) {
     		Lecture lect = (Lecture)e.nextElement();
     		PlacementValue val = values(lect).first();
@@ -469,7 +473,7 @@ public class Suggestions implements Serializable {
     	private double iValue;
     	public PlacementValue(Placement placement) {
     		iPlacement = placement;
-    		iValue = placement.toDouble();
+    		iValue = placement.toDouble(iAssignment);
     	}
     	public Placement getPlacement() { return iPlacement; }
     	public double getValue() { return iValue; }

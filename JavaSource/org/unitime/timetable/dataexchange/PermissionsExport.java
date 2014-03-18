@@ -22,8 +22,8 @@ package org.unitime.timetable.dataexchange;
 import java.util.Date;
 import java.util.Properties;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.hibernate.criterion.Order;

@@ -22,9 +22,9 @@ package org.unitime.timetable.server.rooms;
 import java.util.List;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes;

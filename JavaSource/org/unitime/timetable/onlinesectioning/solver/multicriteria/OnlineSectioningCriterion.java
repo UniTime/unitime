@@ -25,20 +25,21 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.weights.StudentWeights;
 import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection.SelectionCriterion;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
-import net.sf.cpsolver.studentsct.weights.StudentWeights;
 
 /**
  * @author Tomas Muller
@@ -49,15 +50,15 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 	private OnlineSectioningModel iModel;
 	private Student iStudent;
 	
-	public OnlineSectioningCriterion(Student student, OnlineSectioningModel model, Hashtable<CourseRequest, Set<Section>> preferredSections) {
+	public OnlineSectioningCriterion(Student student, OnlineSectioningModel model, Assignment<Request, Enrollment> assignment, Hashtable<CourseRequest, Set<Section>> preferredSections) {
 		iStudent = student;
 		iModel = model;
-    	iPreferredSections = preferredSections;
+		iPreferredSections = preferredSections;
     	if (model.getProperties().getPropertyBoolean("OnlineStudentSectioning.TimesToAvoidHeuristics", true)) {
         	iTimesToAvoid = new ArrayList<TimeToAvoid>();
         	for (Request r: iStudent.getRequests()) {
         		if (r instanceof CourseRequest) {
-        			List<Enrollment> enrollments = ((CourseRequest)r).getAvaiableEnrollmentsSkipSameTime();
+        			List<Enrollment> enrollments = ((CourseRequest)r).getAvaiableEnrollmentsSkipSameTime(assignment);
         			if (enrollments.size() <= 5) {
         				int penalty = (7 - enrollments.size()) * (r.isAlternative() ? 1 : 7 - enrollments.size());
         				for (Enrollment enrollment: enrollments)
@@ -121,17 +122,17 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
     /**
      * Weight of an assignment. Unlike {@link StudentWeights#getWeight(Enrollment, Set, Set)}, only count this side of distance conflicts and time overlaps.
      **/
-    protected double getWeight(Enrollment enrollment, Set<DistanceConflict.Conflict> distanceConflicts, Set<TimeOverlapsCounter.Conflict> timeOverlappingConflicts) {
-        double weight = - getModel().getStudentWeights().getWeight(enrollment);
+    protected double getWeight(Assignment<Request, Enrollment> assignment, Enrollment enrollment, Set<DistanceConflict.Conflict> distanceConflicts, Set<TimeOverlapsCounter.Conflict> timeOverlappingConflicts) {
+        double weight = - getModel().getStudentWeights().getWeight(assignment, enrollment);
         if (distanceConflicts != null)
             for (DistanceConflict.Conflict c: distanceConflicts) {
                 Enrollment other = (c.getE1().equals(enrollment) ? c.getE2() : c.getE1());
                 if (other.getRequest().getPriority() <= enrollment.getRequest().getPriority())
-                    weight += getModel().getStudentWeights().getDistanceConflictWeight(c);
+                    weight += getModel().getStudentWeights().getDistanceConflictWeight(assignment, c);
             }
         if (timeOverlappingConflicts != null)
             for (TimeOverlapsCounter.Conflict c: timeOverlappingConflicts) {
-                weight += getModel().getStudentWeights().getTimeOverlapConflictWeight(enrollment, c);
+                weight += getModel().getStudentWeights().getTimeOverlapConflictWeight(assignment, enrollment, c);
             }
         return enrollment.getRequest().getWeight() * weight;
     }
@@ -146,7 +147,7 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
     }
     
 	@Override
-	public int compare(Enrollment[] current, Enrollment[] best) {
+	public int compare(Assignment<Request, Enrollment> assignment, Enrollment[] current, Enrollment[] best) {
 		if (best == null) return -1;
 		
 		// 0. best priority & alternativity ignoring free time requests
@@ -166,9 +167,9 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
 				for (Section section: best[idx].getSections())
-					bestPenalties += getModel().getOverExpected(section, best[idx].getRequest());
+					bestPenalties += getModel().getOverExpected(assignment, section, best[idx].getRequest());
 				for (Section section: current[idx].getSections())
-					currentPenalties += getModel().getOverExpected(section, current[idx].getRequest());
+					currentPenalties += getModel().getOverExpected(assignment, section, current[idx].getRequest());
 			}
 		}
 		if (currentPenalties < bestPenalties) return -1;
@@ -308,7 +309,7 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 	}
 
 	@Override
-	public boolean canImprove(int maxIdx, Enrollment[] current, Enrollment[] best) {
+	public boolean canImprove(Assignment<Request, Enrollment> assignment, int maxIdx, Enrollment[] current, Enrollment[] best) {
 		// 0. best priority & alternativity ignoring free time requests
 		int alt = 0;
 		boolean ft = false;
@@ -338,11 +339,11 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null) {
 				for (Section section: best[idx].getSections())
-					bestPenalties += getModel().getOverExpected(section, best[idx].getRequest());
+					bestPenalties += getModel().getOverExpected(assignment, section, best[idx].getRequest());
 			}
 			if (current[idx] != null && idx < maxIdx) {
 				for (Section section: current[idx].getSections())
-					currentPenalties += getModel().getOverExpected(section, current[idx].getRequest());
+					currentPenalties += getModel().getOverExpected(assignment, section, current[idx].getRequest());
 			}
 		}
 		if (currentPenalties < bestPenalties) return true;
@@ -513,17 +514,17 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 	}
 
 	@Override
-	public double getTotalWeight(Enrollment[] assignment) {
-		if (assignment == null) return 0.0;
+	public double getTotalWeight(Assignment<Request, Enrollment> assignment, Enrollment[] enrollemnts) {
+		if (enrollemnts == null) return 0.0;
 		double value = 0.0;
-		for (int idx = 0; idx < assignment.length; idx++) {
-			if (assignment[idx] != null)
-				value += getWeight(assignment[idx], getDistanceConflicts(assignment, idx), getTimeOverlappingConflicts(assignment, idx));
+		for (int idx = 0; idx < enrollemnts.length; idx++) {
+			if (enrollemnts[idx] != null)
+				value += getWeight(assignment, enrollemnts[idx], getDistanceConflicts(enrollemnts, idx), getTimeOverlappingConflicts(enrollemnts, idx));
 		}
 		return value;
 	}
 	
-	public int compare(Enrollment e1, Enrollment e2) {
+	public int compare(Assignment<Request, Enrollment> assignment, Enrollment e1, Enrollment e2) {
 		// 1. alternativity
 		if (e1.getPriority() < e2.getPriority()) return -1;
 		if (e1.getPriority() > e2.getPriority()) return 1;
@@ -531,9 +532,9 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		// 2. maximize number of penalties
 		double p1 = 0, p2 = 0;
 		for (Section section: e1.getSections())
-			p1 += getModel().getOverExpected(section, e1.getRequest());
+			p1 += getModel().getOverExpected(assignment, section, e1.getRequest());
 		for (Section section: e2.getSections())
-			p2 += getModel().getOverExpected(section, e2.getRequest());
+			p2 += getModel().getOverExpected(assignment, section, e2.getRequest());
 		if (p1 < p2) return -1;
 		if (p2 < p1) return 1;
 

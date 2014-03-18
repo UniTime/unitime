@@ -39,6 +39,35 @@ import java.util.TreeSet;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.ifs.util.JProf;
+import org.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.studentsct.StudentPreferencePenalties;
+import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.StudentSectioningXMLLoader;
+import org.cpsolver.studentsct.StudentSectioningXMLSaver;
+import org.cpsolver.studentsct.constraint.LinkedSections;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
+import org.cpsolver.studentsct.heuristics.studentord.StudentChoiceOrder;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.reservation.CourseReservation;
+import org.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.timetable.onlinesectioning.model.OnlineConfig;
 import org.unitime.timetable.onlinesectioning.model.OnlineSection;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
@@ -56,31 +85,6 @@ import org.unitime.timetable.onlinesectioning.solver.expectations.PercentageOver
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSuggestions;
 
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
-import net.sf.cpsolver.ifs.util.JProf;
-import net.sf.cpsolver.ifs.util.ToolBox;
-import net.sf.cpsolver.studentsct.StudentPreferencePenalties;
-import net.sf.cpsolver.studentsct.StudentSectioningXMLLoader;
-import net.sf.cpsolver.studentsct.StudentSectioningXMLSaver;
-import net.sf.cpsolver.studentsct.constraint.LinkedSections;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
-import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
-import net.sf.cpsolver.studentsct.heuristics.studentord.StudentChoiceOrder;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
-import net.sf.cpsolver.studentsct.reservation.CourseReservation;
-import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 /**
  * @author Tomas Muller
@@ -89,6 +93,7 @@ public class InMemorySectioningTest {
 	public static Logger sLog = Logger.getLogger(InMemorySectioningTest.class);
 	
 	private OnlineSectioningModel iModel;
+	private Assignment<Request, Enrollment> iAssignment;
 	private boolean iSuggestions = false;
 	
 	private Map<String, Counter> iCounters = new HashMap<String, Counter>();
@@ -100,6 +105,7 @@ public class InMemorySectioningTest {
 		iModel.setTimeOverlaps(new TimeOverlapsCounter(null, iModel.getProperties()));
 		iModel.addModelListener(iModel.getTimeOverlaps());
 		iModel.setStudentWeights(new StudentSchedulingAssistantWeights(iModel.getProperties()));
+		iAssignment = new DefaultSingleAssignment<Request, Enrollment>();
 		iSuggestions = "true".equals(System.getProperty("suggestions", iSuggestions ? "true" : "false"));
 		
 		String overexp = System.getProperty("overexp");
@@ -132,6 +138,8 @@ public class InMemorySectioningTest {
 	
 	public OnlineSectioningModel model() { return iModel; }
 	
+	public Assignment<Request, Enrollment> assignment() { return iAssignment; }
+	
 	public void inc(String name, double value) {
 		synchronized (iCounters) {
 			Counter c = iCounters.get(name);
@@ -158,12 +166,12 @@ public class InMemorySectioningTest {
 		}
 	}
 	
-	public double getPercDisbalancedSections(double perc) {
+	public double getPercDisbalancedSections(Assignment<Request, Enrollment> assignment, double perc) {
 		boolean balanceUnlimited = model().getProperties().getPropertyBoolean("General.BalanceUnlimited", false);
 		double disb10Sections = 0, nrSections = 0;
         for (Offering offering: model().getOfferings()) {
             for (Config config: offering.getConfigs()) {
-                double enrl = config.getEnrollmentWeight(null);
+                double enrl = config.getEnrollmentWeight(assignment, null);
                 for (Subpart subpart: config.getSubparts()) {
                     if (subpart.getSections().size() <= 1) continue;
                 	nrSections += subpart.getSections().size();
@@ -172,14 +180,14 @@ public class InMemorySectioningTest {
                         double ratio = enrl / subpart.getLimit();
                         for (Section section: subpart.getSections()) {
                             double desired = ratio * section.getLimit();
-                            if (Math.abs(desired - section.getEnrollmentWeight(null)) >= Math.max(1.0, perc * section.getLimit()))
+                            if (Math.abs(desired - section.getEnrollmentWeight(assignment, null)) >= Math.max(1.0, perc * section.getLimit()))
                                 disb10Sections++;
                         }
                     } else if (balanceUnlimited) {
                         // unlimited sections -> desired size is total enrollment / number of sections
                         for (Section section: subpart.getSections()) {
                             double desired = enrl / subpart.getSections().size();
-                            if (Math.abs(desired - section.getEnrollmentWeight(null)) >= Math.max(1.0, perc * desired))
+                            if (Math.abs(desired - section.getEnrollmentWeight(assignment, null)) >= Math.max(1.0, perc * desired))
                                 disb10Sections++;
                         }
                     }
@@ -189,13 +197,14 @@ public class InMemorySectioningTest {
         return 100.0 * disb10Sections / nrSections;
 	}
 	
-	protected Course clone(Course course, long studentId, Student originalStudent, Map<Long, Section> classTable) {
+	protected Course clone(Course course, long studentId, Student originalStudent, Map<Long, Section> classTable, StudentSectioningModel model) {
 		Offering clonedOffering = new Offering(course.getOffering().getId(), course.getOffering().getName());
+		clonedOffering.setModel(model);
 		int courseLimit = course.getLimit();
 		if (courseLimit >= 0) {
-			courseLimit -= course.getEnrollments().size();
+			courseLimit -= course.getEnrollments(assignment()).size();
 			if (courseLimit < 0) courseLimit = 0;
-			for (Iterator<Enrollment> i = course.getEnrollments().iterator(); i.hasNext();) {
+			for (Iterator<Enrollment> i = course.getEnrollments(assignment()).iterator(); i.hasNext();) {
 				Enrollment enrollment = i.next();
 				if (enrollment.getStudent().getId() == studentId) { courseLimit++; break; }
 			}
@@ -208,11 +217,11 @@ public class InMemorySectioningTest {
 		for (Iterator<Config> e = course.getOffering().getConfigs().iterator(); e.hasNext();) {
 			Config config = e.next();
 			int configLimit = config.getLimit();
-			int configEnrollment = config.getEnrollments().size();
+			int configEnrollment = config.getEnrollments(assignment()).size();
 			if (configLimit >= 0) {
-				configLimit -= config.getEnrollments().size();
+				configLimit -= config.getEnrollments(assignment()).size();
 				if (configLimit < 0) configLimit = 0;
-				for (Iterator<Enrollment> i = config.getEnrollments().iterator(); i.hasNext();) {
+				for (Iterator<Enrollment> i = config.getEnrollments(assignment()).iterator(); i.hasNext();) {
 					Enrollment enrollment = i.next();
 					if (enrollment.getStudent().getId() == studentId) { configLimit++; configEnrollment--; break; }
 				}
@@ -230,13 +239,13 @@ public class InMemorySectioningTest {
 				for (Iterator<Section> g = subpart.getSections().iterator(); g.hasNext();) {
 					Section section = g.next();
 					int limit = section.getLimit();
-					int enrl = section.getEnrollments().size();
+					int enrl = section.getEnrollments(assignment()).size();
 					if (limit >= 0) {
 						// limited section, deduct enrollments
-						limit -= section.getEnrollments().size();
+						limit -= section.getEnrollments(assignment()).size();
 						if (limit < 0) limit = 0; // over-enrolled, but not unlimited
 						if (studentId >= 0)
-							for (Enrollment enrollment: section.getEnrollments())
+							for (Enrollment enrollment: section.getEnrollments(assignment()))
 								if (enrollment.getStudent().getId() == studentId) { limit++; enrl--; break; }
 					}
 					OnlineSection clonedSection = new OnlineSection(section.getId(), limit,
@@ -264,9 +273,9 @@ public class InMemorySectioningTest {
 			for (Reservation reservation: course.getOffering().getReservations()) {
 				int reservationLimit = (int)Math.round(reservation.getLimit());
 				if (reservationLimit >= 0) {
-					reservationLimit -= reservation.getEnrollments().size();
+					reservationLimit -= reservation.getEnrollments(assignment()).size();
 					if (reservationLimit < 0) reservationLimit = 0;
-					for (Iterator<Enrollment> i = reservation.getEnrollments().iterator(); i.hasNext();) {
+					for (Iterator<Enrollment> i = reservation.getEnrollments(assignment()).iterator(); i.hasNext();) {
 						Enrollment enrollment = i.next();
 						if (enrollment.getStudent().getId() == studentId) { reservationLimit++; break; }
 					}
@@ -275,9 +284,9 @@ public class InMemorySectioningTest {
 				boolean applicable = originalStudent != null && reservation.isApplicable(originalStudent);
 				if (reservation instanceof CourseReservation)
 					applicable = (course.getId() == ((CourseReservation)reservation).getCourse().getId());
-				if (reservation instanceof net.sf.cpsolver.studentsct.reservation.DummyReservation) {
+				if (reservation instanceof org.cpsolver.studentsct.reservation.DummyReservation) {
 					// Ignore by reservation only flag (dummy reservation) when the student is already enrolled in the course
-					for (Enrollment enrollment: course.getEnrollments())
+					for (Enrollment enrollment: course.getEnrollments(assignment()))
 						if (enrollment.getStudent().getId() == studentId) { applicable = true; break; }
 				}
 				Reservation clonedReservation = new XOffering.SimpleReservation(XReservationType.Dummy, reservation.getId(), clonedOffering,
@@ -298,26 +307,26 @@ public class InMemorySectioningTest {
 		return clonedCourse;
 	}
 	
-	protected Request addRequest(Student student, Student original, Request request, Map<Long, Section> classTable) {
+	protected Request addRequest(Student student, Student original, Request request, Map<Long, Section> classTable, StudentSectioningModel model) {
 		if (request instanceof FreeTimeRequest) {
 			return new FreeTimeRequest(student.getRequests().size() + 1, student.getRequests().size(), request.isAlternative(), student, ((FreeTimeRequest) request).getTime());
 		} else if (request instanceof CourseRequest) {
 			List<Course> courses = new ArrayList<Course>();
 			for (Course course: ((CourseRequest) request).getCourses())
-				courses.add(clone(course, student.getId(), original, classTable));
+				courses.add(clone(course, student.getId(), original, classTable, model));
 			CourseRequest clonnedRequest = new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), request.isAlternative(), student, courses, ((CourseRequest) request).isWaitlist(), null);
 			for (Request originalRequest: original.getRequests()) {
-				Enrollment originalEnrollment = originalRequest.getAssignment();
+				Enrollment originalEnrollment = assignment().getValue(originalRequest);
 				for (Course clonnedCourse: clonnedRequest.getCourses()) {
 					if (!clonnedCourse.getOffering().hasReservations()) continue;
 					if (originalEnrollment != null && clonnedCourse.equals(originalEnrollment.getCourse())) {
-						boolean needReservation = clonnedCourse.getOffering().getUnreservedSpace(clonnedRequest) < 1.0;
+						boolean needReservation = clonnedCourse.getOffering().getUnreservedSpace(assignment(), clonnedRequest) < 1.0;
 						if (!needReservation) {
 							boolean configChecked = false;
 							for (Section originalSection: originalEnrollment.getSections()) {
 								Section clonnedSection = classTable.get(originalSection.getId()); 
-								if (clonnedSection.getUnreservedSpace(clonnedRequest) < 1.0) { needReservation = true; break; }
-								if (!configChecked && clonnedSection.getSubpart().getConfig().getUnreservedSpace(clonnedRequest) < 1.0) { needReservation = true; break; }
+								if (clonnedSection.getUnreservedSpace(assignment(), clonnedRequest) < 1.0) { needReservation = true; break; }
+								if (!configChecked && clonnedSection.getSubpart().getConfig().getUnreservedSpace(assignment(), clonnedRequest) < 1.0) { needReservation = true; break; }
 								configChecked = true;
 							}
 						}
@@ -345,10 +354,11 @@ public class InMemorySectioningTest {
 		
 		synchronized (iModel) {
 			for (Request request: original.getRequests()) {
-				Request clonnedRequest = addRequest(student, original, request, classTable);
-				if (request.getAssignment() != null && request.getAssignment().isCourseRequest()) {
+				Request clonnedRequest = addRequest(student, original, request, classTable, model);
+				Enrollment enrollment = assignment().getValue(request);
+				if (enrollment != null && enrollment.isCourseRequest()) {
 					Set<Section> sections = new HashSet<Section>();
-					for (Section section: request.getAssignment().getSections())
+					for (Section section: enrollment.getSections())
 						sections.add(classTable.get(section.getId()));
 					preferredSectionsForCourse.put((CourseRequest)clonnedRequest, sections);
 				}
@@ -382,7 +392,8 @@ public class InMemorySectioningTest {
 		selection.setRequiredFreeTimes(new HashSet<FreeTimeRequest>());
 		
 		long t0 = JProf.currentTimeMillis();
-		BranchBoundNeighbour neighbour = selection.select(student);
+		Assignment<Request, Enrollment> newAssignment = new AssignmentMap<Request, Enrollment>();
+		BranchBoundNeighbour neighbour = selection.select(newAssignment, student);
 		long time = JProf.currentTimeMillis() - t0;
 		inc("[C] CPU Time", time);
 		if (neighbour == null) {
@@ -401,7 +412,7 @@ public class InMemorySectioningTest {
 					if (enrl != null && enrl.isCourseRequest() && enrl.getAssignments() != null) {
 						assigned ++;
 						for (Section section: enrl.getSections()) {
-							maxOverExpected += model.getOverExpected(section, enrl.getRequest());
+							maxOverExpected += model.getOverExpected(newAssignment, section, enrl.getRequest());
 							pairs.add(new RequestSectionPair(enrl.variable(), section));
 						}
 						enrollments.put((CourseRequest) enrl.variable(), enrl.getSections());
@@ -416,13 +427,13 @@ public class InMemorySectioningTest {
 					SuggestionsBranchAndBound suggestionBaB = null;
 					if (model.getProperties().getPropertyBoolean("StudentWeights.MultiCriteria", true)) {
 						suggestionBaB = new MultiCriteriaBranchAndBoundSuggestions(
-								model.getProperties(), student,
+								model.getProperties(), student, newAssignment,
 								new Hashtable<CourseRequest, Set<Section>>(), new HashSet<FreeTimeRequest>(), enrollments,
 								pair.getRequest(), pair.getSection(),
 								null, null, maxOverExpected,
 								iModel.getProperties().getPropertyBoolean("StudentWeights.PriorityWeighting", true));
 					} else {
-						suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student,
+						suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student, newAssignment,
 								new Hashtable<CourseRequest, Set<Section>>(), new HashSet<FreeTimeRequest>(), enrollments,
 								pair.getRequest(), pair.getSection(),
 								null, null, maxOverExpected);
@@ -517,47 +528,49 @@ public class InMemorySectioningTest {
 			}
 			synchronized (iModel) {
 				for (Request r: original.getRequests()) {
-                	r.setInitialAssignment(r.getAssignment());
-                	if (r.getAssignment() != null) updateSpace(r.getAssignment(), true);
+					Enrollment e = assignment().getValue(r);
+                	r.setInitialAssignment(e);
+                	if (e != null) updateSpace(assignment(), e, true);
 				}
 				for (Request r: original.getRequests())
-					if (r.getAssignment() != null) r.unassign(0);
+					if (assignment().getValue(r) != null) assignment().unassign(0, r);
 				boolean fail = false;
 				for (Enrollment enrl: enrollments) {
-					if (iModel.conflictValues(enrl).isEmpty()) {
-						enrl.variable().assign(0, enrl);
+					if (iModel.conflictValues(assignment(), enrl).isEmpty()) {
+						assignment().assign(0, enrl);
 					} else {
 						fail = true; break;
 					}
 				}
 				if (fail) {
 					for (Request r: original.getRequests())
-						if (r.getAssignment() != null) r.unassign(0);
+						if (assignment().getValue(r) != null) assignment().unassign(0, r);
 					for (Request r: original.getRequests())
-						if (r.getInitialAssignment() != null) r.assign(0, r.getInitialAssignment());
+						if (r.getInitialAssignment() != null) assignment().assign(0, r.getInitialAssignment());
 					for (Request r: original.getRequests())
-						if (r.getAssignment() != null) updateSpace(r.getAssignment(), false);
+						if (assignment().getValue(r) != null) updateSpace(assignment(), assignment().getValue(r), false);
 				} else {
 					for (Enrollment enrl: enrollments)
-						updateSpace(enrl, false);
+						updateSpace(assignment(), enrl, false);
 				}
 				if (fail) return false;
 			}
-			neighbour.assign(0);
+			neighbour.assign(newAssignment, 0);
 			int a = 0, u = 0, np = 0, zp = 0, pp = 0, cp = 0;
 			double over = 0;
 			double p = 0.0;
 			for (Request r: student.getRequests()) {
 				if (r instanceof CourseRequest) {
-					if (r.getAssignment() != null) {
-						for (Section s: r.getAssignment().getSections()) {
+					Enrollment e = newAssignment.getValue(r);
+					if (e != null) {
+						for (Section s: e.getSections()) {
 							if (s.getPenalty() < 0.0) np ++;
 							if (s.getPenalty() == 0.0) zp ++;
 							if (s.getPenalty() > 0.0) pp++;
 							if (s.getLimit() > 0) {
 								p += s.getPenalty(); cp ++;
 							}
-							over += model.getOverExpected(s, r);
+							over += model.getOverExpected(newAssignment, s, r);
 						}
 						a++;
 					} else {
@@ -572,7 +585,7 @@ public class InMemorySectioningTest {
 				inc("[A] Assigned", a);
 			if (u > 0)
 				inc("[A] Not Assigned", u);
-			inc("[V] Value", neighbour.value());
+			inc("[V] Value", neighbour.value(newAssignment));
 			if (zp > 0)
 				inc("[P] Zero penalty", zp);
 			if (np > 0)
@@ -591,7 +604,7 @@ public class InMemorySectioningTest {
 		return true;
 	}
 	
-	public static void updateSpace(Enrollment enrollment, boolean increment) {
+	public static void updateSpace(Assignment<Request, Enrollment> assignment, Enrollment enrollment, boolean increment) {
     	if (enrollment == null || !enrollment.isCourseRequest()) return;
         for (Section section : enrollment.getSections())
             section.setSpaceHeld(section.getSpaceHeld() + (increment ? 1.0 : -1.0));
@@ -603,7 +616,7 @@ public class InMemorySectioningTest {
             for (Request otherRequest : enrollment.getRequest().getStudent().getRequests()) {
                 if (otherRequest.equals(enrollment.getRequest()) || !(otherRequest instanceof CourseRequest))
                     continue;
-                Enrollment otherErollment = otherRequest.getAssignment();
+                Enrollment otherErollment = assignment.getValue(otherRequest);
                 if (otherErollment == null)
                     continue;
                 if (enrl.isOverlapping(otherErollment)) {
@@ -632,7 +645,7 @@ public class InMemorySectioningTest {
     }
 	
 	public void run() {
-        sLog.info("Input: " + ToolBox.dict2string(model().getExtendedInfo(), 2));
+        sLog.info("Input: " + ToolBox.dict2string(model().getExtendedInfo(assignment()), 2));
 
         List<Student> students = new ArrayList<Student>(model().getStudents());
         String sort = System.getProperty("sort", "shuffle");
@@ -662,7 +675,7 @@ public class InMemorySectioningTest {
         	} catch (InterruptedException e) {}
         	long time = System.currentTimeMillis() - t0;
         	synchronized (iModel) {
-        		sLog.info("Progress [" + (time / 60000) + "m]: " + ToolBox.dict2string(iModel.getExtendedInfo(), 2));	
+        		sLog.info("Progress [" + (time / 60000) + "m]: " + ToolBox.dict2string(model().getExtendedInfo(assignment()), 2));	
 			}
         }
         
@@ -672,7 +685,7 @@ public class InMemorySectioningTest {
         	} catch (InterruptedException e) {}
         }
         
-        sLog.info("Output: " + ToolBox.dict2string(model().getExtendedInfo(), 2));
+        sLog.info("Output: " + ToolBox.dict2string(model().getExtendedInfo(assignment()), 2));
         long time = System.currentTimeMillis() - t0;
         inc("[T] Run Time [m]", time / 60000.0);
 
@@ -716,8 +729,8 @@ public class InMemorySectioningTest {
 		}
 
 		@Override
-		public Map<String,String> getExtendedInfo() {
-			Map<String, String> ret = super.getExtendedInfo();
+		public Map<String,String> getExtendedInfo(Assignment<Request, Enrollment> assignment) {
+			Map<String, String> ret = super.getExtendedInfo(assignment);
 			for (Map.Entry<String, Counter> e: iCounters.entrySet())
 				ret.put(e.getKey(), e.getValue().toString());
 			ret.put("Weighting model",
@@ -758,9 +771,9 @@ public class InMemorySectioningTest {
         pw.print("\"" + model().getOverExpectedCriterion() + "\",");
         
         pw.print(get("[A] Not Assigned").sum() + ",");
-        pw.print(df.format(getPercDisbalancedSections(0.1)) + ",");
-        pw.print(df.format(((double) model().getDistanceConflict().getTotalNrConflicts()) / model().getStudents().size()) + ",");
-        pw.print(df.format(5.0 * model().getTimeOverlaps().getTotalNrConflicts() / model().getStudents().size()) + ",");
+        pw.print(df.format(getPercDisbalancedSections(assignment(), 0.1)) + ",");
+        pw.print(df.format(((double) model().getDistanceConflict().getTotalNrConflicts(assignment())) / model().getStudents().size()) + ",");
+        pw.print(df.format(5.0 * model().getTimeOverlaps().getTotalNrConflicts(assignment()) / model().getStudents().size()) + ",");
         pw.print(df.format(get("[C] CPU Time").avg()) + ",");
         if (iSuggestions) {
         	pw.print(df.format(get("[S] Probability that a class has suggestions [%]").avg()) + ",");
@@ -809,7 +822,7 @@ public class InMemorySectioningTest {
             final InMemorySectioningTest test = new InMemorySectioningTest(cfg);
             
             final File input = new File(args[0]);
-            StudentSectioningXMLLoader loader = new StudentSectioningXMLLoader(test.model());
+            StudentSectioningXMLLoader loader = new StudentSectioningXMLLoader(test.model(), test.assignment());
             loader.setInputFile(input);
             loader.load();
             

@@ -30,11 +30,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;

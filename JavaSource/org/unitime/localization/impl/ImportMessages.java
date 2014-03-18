@@ -22,8 +22,9 @@ package org.unitime.localization.impl;
 import java.io.File;
 import java.io.PrintStream;
 
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.CSVFile.CSVLine;
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.CSVFile.CSVLine;
+
 
 /**
  * @author Tomas Muller, Zuzana Mullerova

@@ -21,8 +21,8 @@ package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
 
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;

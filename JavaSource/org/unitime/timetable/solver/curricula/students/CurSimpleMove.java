@@ -19,11 +19,11 @@
 */
 package org.unitime.timetable.solver.curricula.students;
 
-import net.sf.cpsolver.ifs.heuristics.NeighbourSelection;
-import net.sf.cpsolver.ifs.model.Neighbour;
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.heuristics.NeighbourSelection;
+import org.cpsolver.ifs.model.Neighbour;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.DataProperties;
 
 /**
  * @author Tomas Muller

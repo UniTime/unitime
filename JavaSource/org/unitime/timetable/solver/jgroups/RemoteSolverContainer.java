@@ -21,8 +21,8 @@ package org.unitime.timetable.solver.jgroups;
 
 import java.lang.reflect.Method;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
 
+import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
 

@@ -19,14 +19,16 @@
 */
 package org.unitime.timetable.onlinesectioning.solver.expectations;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Subpart;
 import org.unitime.timetable.onlinesectioning.model.OnlineConfig;
 import org.unitime.timetable.onlinesectioning.model.OnlineSection;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
 /**
  * @author Tomas Muller
@@ -56,19 +58,19 @@ public class PercentageOverExpected implements OverExpectedCriterion {
 		return false;
 	}
 	
-	protected double getEnrollment(Config config, Request request) {
+	protected double getEnrollment(Assignment<Request, Enrollment> assignment, Config config, Request request) {
 		if (config instanceof OnlineConfig) {
 			return ((OnlineConfig)config).getEnrollment();
 		} else {
-			return config.getEnrollmentWeight(request);
+			return config.getEnrollmentWeight(assignment, request);
 		}
 	}
 	
-	protected double getEnrollment(Section section, Request request) {
+	protected double getEnrollment(Assignment<Request, Enrollment> assignment, Section section, Request request) {
 		if (section instanceof OnlineSection) {
 			return ((OnlineSection)section).getEnrollment();
 		} else {
-			return section.getEnrollmentWeight(request);
+			return section.getEnrollmentWeight(assignment, request);
 		}
 	}
 	
@@ -90,11 +92,11 @@ public class PercentageOverExpected implements OverExpectedCriterion {
 	}
 
 	@Override
-	public double getOverExpected(Section section, Request request) {
+	public double getOverExpected(Assignment<Request, Enrollment> assignment, Section section, Request request) {
 		if (section.getLimit() <= 0) return 0.0; // ignore unlimited & not available
 		
 		double expected = getPercentage() * section.getSpaceExpected();
-		double enrolled = section.getEnrollmentWeight(request) + request.getWeight();
+		double enrolled = section.getEnrollmentWeight(assignment, request) + request.getWeight();
 		double limit = section.getLimit();
 		int subparts = section.getSubpart().getConfig().getSubparts().size();
 		

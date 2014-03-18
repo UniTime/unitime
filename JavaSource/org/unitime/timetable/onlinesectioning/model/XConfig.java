@@ -30,9 +30,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Subpart;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseCreditUnitConfig;

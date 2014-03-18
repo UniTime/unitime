@@ -24,18 +24,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
-import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
+
 
 /**
  * @author Tomas Muller
@@ -81,8 +83,8 @@ public class SuggestionSelection extends BranchBoundSelection implements OnlineS
 	}
 
 	@Override
-	public BranchBoundNeighbour select(Student student) {
-		return getSelection(student).select();
+	public BranchBoundNeighbour select(Assignment<Request, Enrollment> assignment, Student student) {
+		return getSelection(student, assignment).select();
 	}
 	
 	@Override
@@ -90,13 +92,13 @@ public class SuggestionSelection extends BranchBoundSelection implements OnlineS
 		super.setModel(model);
 	}
     
-    public Selection getSelection(Student student) {
-        return new Selection(student);
+    public Selection getSelection(Student student, Assignment<Request, Enrollment> assignment) {
+        return new Selection(student, assignment);
     }
 
     public class Selection extends BranchBoundSelection.Selection {
-        public Selection(Student student) {
-        	super(student);
+        public Selection(Student student, Assignment<Request, Enrollment> assignment) {
+        	super(student, assignment);
         }
         
         public boolean isAllowed(int idx, Enrollment enrollment) {

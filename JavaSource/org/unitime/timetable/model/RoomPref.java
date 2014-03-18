@@ -19,9 +19,9 @@
 */
 package org.unitime.timetable.model;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseRoomPref;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 
 /**

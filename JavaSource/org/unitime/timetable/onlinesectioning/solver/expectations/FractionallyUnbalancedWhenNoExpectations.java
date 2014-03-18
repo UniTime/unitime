@@ -19,10 +19,13 @@
 */
 package org.unitime.timetable.onlinesectioning.solver.expectations;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Subpart;
+
 
 /**
  * @author Tomas Muller
@@ -67,18 +70,18 @@ public class FractionallyUnbalancedWhenNoExpectations extends FractionallyOverEx
 	}
 	
 	@Override
-	public double getOverExpected(Section section, Request request) {
+	public double getOverExpected(Assignment<Request, Enrollment> assignment, Section section, Request request) {
 		Subpart subpart = section.getSubpart();
 
 		if (hasExpectations(subpart) && section.getLimit() > 0)
-			return super.getOverExpected(section, request);
+			return super.getOverExpected(assignment, section, request);
 		
 		if (getDisbalance() == null || getDisbalance() < 0.0) return 0.0;
 		
-		double enrlConfig = request.getWeight() + getEnrollment(subpart.getConfig(), request);
+		double enrlConfig = request.getWeight() + getEnrollment(assignment, subpart.getConfig(), request);
 		int subparts = section.getSubpart().getConfig().getSubparts().size();
 		int limit = getLimit(section);
-    	double enrl = request.getWeight() + getEnrollment(section, request);
+    	double enrl = request.getWeight() + getEnrollment(assignment, section, request);
 
 		if (limit > 0) {
             // sections have limits -> desired size is section limit x (total enrollment / total limit)
