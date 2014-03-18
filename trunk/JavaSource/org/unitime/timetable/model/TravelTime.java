@@ -21,8 +21,8 @@ package org.unitime.timetable.model;
 
 import java.util.List;
 
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.model.base.BaseTravelTime;
 import org.unitime.timetable.model.dao.TravelTimeDAO;
 

@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.onlinesectioning.model;
 
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Offering;
 
 /**
  * @author Tomas Muller

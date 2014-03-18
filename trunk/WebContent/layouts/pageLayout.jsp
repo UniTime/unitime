@@ -19,7 +19,7 @@
  --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="java.text.NumberFormat" %>
-<%@ page import="net.sf.cpsolver.ifs.util.JProf" %>
+<%@ page import="org.cpsolver.ifs.util.JProf" %>
 <%@ page import="java.util.Date" %>
 <%@ page import="org.unitime.timetable.util.Constants"%>
 <%@ page import="org.unitime.localization.impl.Localization"%>

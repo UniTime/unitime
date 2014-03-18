@@ -19,10 +19,10 @@
 */
 package org.unitime.timetable.server.sectioning;
 
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.CSVFile.CSVLine;
 
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.CSVFile.CSVLine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports.SectioningReportRpcRequest;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports.SectioningReportRpcResponse;

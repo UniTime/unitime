@@ -19,12 +19,17 @@
 */
 package org.unitime.timetable.solver.curricula.students;
 
-import net.sf.cpsolver.ifs.model.Neighbour;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.model.Neighbour;
+
 
 /**
  * @author Tomas Muller
  */
-public class CurSimpleAssignment extends Neighbour<CurVariable, CurValue> {
+public class CurSimpleAssignment implements Neighbour<CurVariable, CurValue> {
 	private CurValue iNewValue;
 	
 	public CurSimpleAssignment(CurValue newValue) {
@@ -32,20 +37,24 @@ public class CurSimpleAssignment extends Neighbour<CurVariable, CurValue> {
 	}
 
 	@Override
-	public void assign(long iteration) {
-		iNewValue.variable().assign(iteration, iNewValue);
+	public void assign(Assignment<CurVariable, CurValue> assignment, long iteration) {
+		assignment.assign(iteration, iNewValue);
 	}
 
 	@Override
-	public double value() {
-		return iNewValue.variable().getCourse().penalty(iNewValue.getStudent(),
-				iNewValue.variable().getAssignment() == null ? null : iNewValue.variable().getAssignment().getStudent());
+	public double value(Assignment<CurVariable, CurValue> assignment) {
+		CurValue old = assignment.getValue(iNewValue.variable());
+		return iNewValue.variable().getCourse().penalty(assignment, iNewValue.getStudent(), old == null ? null : old.getStudent());
 	}
 	
 	public String toString() {
-		return iNewValue.variable().getCourse().getCourseName() + " " +
-			(iNewValue.variable().getAssignment() == null ? "N/A" : iNewValue.variable().getAssignment().getStudent().getStudentId()) +
-			" -> " + iNewValue.getStudent().getStudentId() + " (" + value() + ")";
+		return iNewValue.variable().getCourse().getCourseName() + " = " + iNewValue.getStudent().getStudentId();
 	}
-	
+
+	@Override
+	public Map<CurVariable, CurValue> assignments() {
+		Map<CurVariable, CurValue> ret = new HashMap<CurVariable, CurValue>();
+		ret.put(iNewValue.variable(), iNewValue);
+		return ret;
+	}
 }

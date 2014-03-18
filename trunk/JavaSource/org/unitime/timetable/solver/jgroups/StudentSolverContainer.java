@@ -25,10 +25,10 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.solver.remote.BackupFileFilter;

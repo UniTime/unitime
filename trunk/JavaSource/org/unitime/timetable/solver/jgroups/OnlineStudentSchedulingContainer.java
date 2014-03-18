@@ -26,10 +26,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.util.DataProperties;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jgroups.blocks.locking.LockService;
 import org.unitime.timetable.ApplicationProperties;

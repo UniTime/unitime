@@ -32,9 +32,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.cpsolver.studentsct.model.Section;
 
 import org.apache.log4j.Logger;
+import org.cpsolver.studentsct.model.Section;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;

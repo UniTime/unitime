@@ -21,8 +21,8 @@ package org.unitime.timetable.server;
 
 import java.util.Set;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
 
+import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.timetable.gwt.client.TimeHint.TimeHintRequest;
 import org.unitime.timetable.gwt.client.TimeHint.TimeHintResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;

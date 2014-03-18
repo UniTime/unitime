@@ -25,12 +25,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.solver.Solver;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.solver.Solver;
 
 /**
  * @author Tomas Muller
@@ -42,8 +44,9 @@ public class ViolatedDistrPreferencesReport implements Serializable {
 
 	public ViolatedDistrPreferencesReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
+		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		for (GroupConstraint gc: model.getGroupConstraints()) {
-			if (!gc.isSatisfied())
+			if (!gc.isSatisfied(assignment))
 				iGroups.add(new ViolatedDistrPreference(solver, gc));
 		}
 	}
@@ -60,11 +63,12 @@ public class ViolatedDistrPreferencesReport implements Serializable {
 		String iName = null;
 		
 		public ViolatedDistrPreference(Solver solver, GroupConstraint gc) {
+			Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 			iPreference = gc.getPreference();
 			iType = gc.getType().reference();
 			iName = gc.getName();
 			for (Lecture lecture: gc.variables()) {
-				if (lecture.getAssignment()==null) continue;
+				if (assignment.getValue(lecture)==null) continue;
 				iClasses.add(new ClassAssignmentDetails(solver,lecture,false));
 			}
 			Collections.sort(iClasses);

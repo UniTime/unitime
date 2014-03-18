@@ -26,20 +26,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
 
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.criteria.StudentCommittedConflict;
-import net.sf.cpsolver.coursett.criteria.StudentConflict;
-import net.sf.cpsolver.coursett.criteria.StudentDistanceConflict;
-import net.sf.cpsolver.coursett.criteria.StudentHardConflict;
-import net.sf.cpsolver.coursett.model.Configuration;
-import net.sf.cpsolver.coursett.model.FinalSectioning;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.Student;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.criteria.Criterion;
-import net.sf.cpsolver.ifs.util.Progress;
 
+import org.cpsolver.coursett.constraint.JenrlConstraint;
+import org.cpsolver.coursett.criteria.StudentCommittedConflict;
+import org.cpsolver.coursett.criteria.StudentConflict;
+import org.cpsolver.coursett.criteria.StudentDistanceConflict;
+import org.cpsolver.coursett.criteria.StudentHardConflict;
+import org.cpsolver.coursett.model.Configuration;
+import org.cpsolver.coursett.model.FinalSectioning;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.Student;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.criteria.Criterion;
+import org.cpsolver.ifs.util.Progress;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -54,11 +55,13 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 public class EnrollmentCheck {
     private static java.text.DecimalFormat sDoubleFormat = new java.text.DecimalFormat("0.##",new java.text.DecimalFormatSymbols(Locale.US));
     private TimetableModel iModel = null;
+    private Assignment<Lecture, Placement> iAssignment = null;
     private int iMessageLevel = Progress.MSGLEVEL_WARN;
     private int iMessageLowerLevel = Progress.MSGLEVEL_INFO;
     
-    public EnrollmentCheck(TimetableModel model, int msgLevel) {
+    public EnrollmentCheck(TimetableModel model, Assignment<Lecture, Placement> assignment, int msgLevel) {
         iModel = model;
+        iAssignment = assignment;
         setMessageLevel(msgLevel);
     }
     
@@ -211,38 +214,38 @@ public class EnrollmentCheck {
         p.setStatus("Student Enrollments Check");
         
         Criterion<Lecture, Placement> sc = iModel.getCriterion(StudentConflict.class);
-        if (sc.getValue() != sc.getValue(iModel.variables())) {
-            p.message(iMessageLevel, "Inconsistent number of student conflits (counter="+sc.getValue()+", actual="+sc.getValue(iModel.variables())+").");
+        if (sc.getValue(iAssignment) != sc.getValue(iAssignment, iModel.variables())) {
+            p.message(iMessageLevel, "Inconsistent number of student conflits (counter="+sc.getValue(iAssignment)+", actual="+sc.getValue(iAssignment, iModel.variables())+").");
         }
         
         Criterion<Lecture, Placement> shc = iModel.getCriterion(StudentHardConflict.class);
-        if (shc.getValue() != shc.getValue(iModel.variables())) {
-            p.message(iMessageLevel, "Inconsistent number of hard student conflits (counter="+shc.getValue()+", actual="+shc.getValue(iModel.variables())+").");
+        if (shc.getValue(iAssignment) != shc.getValue(iAssignment, iModel.variables())) {
+            p.message(iMessageLevel, "Inconsistent number of hard student conflits (counter="+shc.getValue(iAssignment)+", actual="+shc.getValue(iAssignment, iModel.variables())+").");
         }
         
         Criterion<Lecture, Placement> sdc = iModel.getCriterion(StudentDistanceConflict.class);
-        if (sdc.getValue() != sdc.getValue(iModel.variables())) {
-            p.message(iMessageLevel, "Inconsistent number of distance student conflits (counter="+sdc.getValue()+", actual="+sdc.getValue(iModel.variables())+").");
+        if (sdc.getValue(iAssignment) != sdc.getValue(iAssignment, iModel.variables())) {
+            p.message(iMessageLevel, "Inconsistent number of distance student conflits (counter="+sdc.getValue(iAssignment)+", actual="+sdc.getValue(iAssignment, iModel.variables())+").");
         }
         
         Criterion<Lecture, Placement> scc = iModel.getCriterion(StudentCommittedConflict.class);
-        if (scc.getValue() != scc.getValue(iModel.variables())) {
-            p.message(iMessageLevel, "Inconsistent number of committed student conflits (counter="+scc.getValue()+", actual="+scc.getValue(iModel.variables())+").");
+        if (scc.getValue(iAssignment) != scc.getValue(iAssignment, iModel.variables())) {
+            p.message(iMessageLevel, "Inconsistent number of committed student conflits (counter="+scc.getValue(iAssignment)+", actual="+scc.getValue(iAssignment, iModel.variables())+").");
         }
         
         p.setPhase("Checking class limits...", iModel.variables().size());
         for (Lecture lecture: iModel.variables()) {
             p.incProgress();
-            p.debug("Checking "+getClassLabel(lecture)+" ... students="+lecture.students().size()+", weighted="+lecture.nrWeightedStudents()+", limit="+lecture.classLimit()+" ("+lecture.minClassLimit()+".."+lecture.maxClassLimit()+")");
+            p.debug("Checking "+getClassLabel(lecture)+" ... students="+lecture.students().size()+", weighted="+lecture.nrWeightedStudents()+", limit="+lecture.classLimit(iAssignment)+" ("+lecture.minClassLimit()+".."+lecture.maxClassLimit()+")");
             if (lecture.students().isEmpty()) continue;
             double w = 0;
             for (Iterator i = lecture.students().iterator(); i.hasNext();)
                 w = Math.max(w, ((Student)i.next()).getOfferingWeight(lecture.getConfiguration().getOfferingId()));
-            if (lecture.nrWeightedStudents() - w + FinalSectioning.sEps > lecture.classLimit()) {
+            if (lecture.nrWeightedStudents() - w + FinalSectioning.sEps > lecture.classLimit(iAssignment)) {
                 if (hasSubpartMixedOwnership(lecture))
-                    p.message(iMessageLowerLevel, "Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit()+").");
+                    p.message(iMessageLowerLevel, "Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit(iAssignment)+").");
                 else
-                    p.message(iMessageLevel, "Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit()+").");
+                    p.message(iMessageLevel, "Class limit exceeded for class "+getClassLabel(lecture)+" ("+sDoubleFormat.format(lecture.nrWeightedStudents())+">"+lecture.classLimit(iAssignment)+").");
             }
         }
         // checkJenrl(p);

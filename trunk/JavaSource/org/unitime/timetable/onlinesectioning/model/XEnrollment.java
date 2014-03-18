@@ -28,9 +28,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Section;
 
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Section;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseOffering;

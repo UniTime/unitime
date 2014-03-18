@@ -22,11 +22,15 @@ package org.unitime.timetable.onlinesectioning.solver;
 import java.util.Hashtable;
 import java.util.Set;
 
-import net.sf.cpsolver.studentsct.heuristics.selection.BranchBoundSelection;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+
 
 /**
  * @author Tomas Muller
@@ -36,5 +40,5 @@ public interface OnlineSectioningSelection {
 	public void setPreferredSections(Hashtable<CourseRequest, Set<Section>> preferredSections);
 	public void setRequiredSections(Hashtable<CourseRequest, Set<Section>> requiredSections);
 	public void setRequiredFreeTimes(Set<FreeTimeRequest> requiredFreeTimes);
-	public BranchBoundSelection.BranchBoundNeighbour select(Student student);
+	public BranchBoundSelection.BranchBoundNeighbour select(Assignment<Request, Enrollment> assignment, Student student);
 }

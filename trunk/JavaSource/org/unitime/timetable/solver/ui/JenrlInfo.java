@@ -27,17 +27,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.cpsolver.coursett.constraint.JenrlConstraint;
+import org.cpsolver.coursett.criteria.StudentConflict;
+import org.cpsolver.coursett.criteria.additional.ImportantStudentConflict;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.Student;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.solver.Solver;
 import org.dom4j.Element;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.criteria.StudentConflict;
-import net.sf.cpsolver.coursett.criteria.additional.ImportantStudentConflict;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.Student;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.solver.Solver;
 
 /**
  * @author Tomas Muller
@@ -68,10 +69,12 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	
 	public JenrlInfo(Solver solver, JenrlConstraint jc) {
 		super();
+		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
+		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
 		Lecture first = (Lecture)jc.first();
-		Placement firstPl = (Placement)first.getAssignment();
+		Placement firstPl = (Placement)assignment.getValue(first);
 		Lecture second = (Lecture)jc.second();
-		Placement secondPl = (Placement)second.getAssignment();
+		Placement secondPl = (Placement)assignment.getValue(second);
 		if (solver!=null) {
 			if (firstPl!=null)
 				iFirst = new ClassAssignmentDetails(solver,first,firstPl,false);
@@ -80,16 +83,16 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		}
 		if (firstPl==null || secondPl==null) return;
 		setJenrl(jc.getJenrl());
-		setIsSatisfied(jc.isInConflict());
-		if (jc.isInConflict()) {
+		setIsSatisfied(jc.isInConflict(assignment));
+		if (jc.isInConflict(assignment)) {
 			setIsHard(first.areStudentConflictsHard(second));
 			setIsFixed(first.nrTimeLocations()==1 && second.nrTimeLocations()==1);
 			setIsDistance(!firstPl.getTimeLocation().hasIntersection(secondPl.getTimeLocation()));
 			setIsCommited(jc.areStudentConflictsCommitted());
 			if (isDistance())
-				setDistance(Placement.getDistanceInMeters(((TimetableModel)jc.getModel()).getDistanceMetric(),firstPl,secondPl));
-			StudentConflict imp = (StudentConflict)jc.getModel().getCriterion(ImportantStudentConflict.class);
-			setIsImportant(imp != null && imp.inConflict(jc.first().getAssignment(), jc.second().getAssignment()));
+				setDistance(Placement.getDistanceInMeters(model.getDistanceMetric(),firstPl,secondPl));
+			StudentConflict imp = (StudentConflict)model.getCriterion(ImportantStudentConflict.class);
+			setIsImportant(imp != null && imp.inConflict(firstPl, secondPl));
 			setIsInstructor(jc.getNrInstructors() > 0);
 		}
 		Hashtable<String, Double> curriculum2nrStudents = new Hashtable<String, Double>();
@@ -114,9 +117,10 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	}
 	
 	public static Hashtable<Long, JenrlInfo> getCommitedJenrlInfos(Solver solver, Lecture lecture) {
+		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		Hashtable<Long, JenrlInfo> ret = new Hashtable<Long, JenrlInfo>();
 		Hashtable<Long, Hashtable<String, Double>> assignment2curriculum2nrStudents = new Hashtable<Long, Hashtable<String,Double>>();
-		Placement placement = (Placement)lecture.getAssignment();
+		Placement placement = (Placement)assignment.getValue(lecture);
 		if (placement==null) return ret;
 		for (Iterator i2=lecture.students().iterator();i2.hasNext();) {
 			Student student = (Student)i2.next();

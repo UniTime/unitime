@@ -21,7 +21,8 @@ package org.unitime.timetable.solver.service;
 
 import java.util.Map;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.DataProperties;
+
 
 /**
  * @author Tomas Muller

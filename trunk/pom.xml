@@ -602,7 +602,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<cpsolver.version>1.2.146</cpsolver.version>
+		<cpsolver.version>1.3-SNAPSHOT</cpsolver.version>
 		<hibernate.version>4.2.5.Final</hibernate.version>
 		<itext.version>2.1.7</itext.version>
 		<struts.version>1.3.10</struts.version>
@@ -651,6 +651,11 @@
 			<id>maven-restlet</id>
 			<name>Public online Restlet repository</name>
 			<url>http://maven.restlet.org</url>
+		</repository>
+		<repository>
+			<id>cpsolver.org</id>
+			<name>CPSolver repository</name>
+			<url>http://maven.cpsolver.org</url>
 		</repository>
 	</repositories>
 </project>

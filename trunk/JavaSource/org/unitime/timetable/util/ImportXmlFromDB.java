@@ -24,8 +24,8 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.util.Properties;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.io.SAXReader;
 import org.hibernate.engine.spi.SessionImplementor;

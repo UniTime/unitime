@@ -704,7 +704,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							public void onValueChange(ValueChangeEvent<Boolean> event) {
 								iCourseRequests.setWaitList(course.getCourseName(), event.getValue());
 								LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-								iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+								CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
+								iSectioningService.section(iOnline, r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 									public void onFailure(Throwable caught) {
 										iErrorMessage.setHTML(caught.getMessage());
 										iErrorMessage.setVisible(true);

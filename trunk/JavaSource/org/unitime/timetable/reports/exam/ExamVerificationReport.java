@@ -29,9 +29,9 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.log4j.Logger;
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassEvent;

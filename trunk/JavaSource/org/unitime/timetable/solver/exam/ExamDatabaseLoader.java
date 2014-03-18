@@ -30,26 +30,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
-import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
-import net.sf.cpsolver.exam.model.Exam;
-import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
-import net.sf.cpsolver.exam.model.ExamInstructor;
-import net.sf.cpsolver.exam.model.ExamOwner;
-import net.sf.cpsolver.exam.model.ExamPeriod;
-import net.sf.cpsolver.exam.model.ExamPeriodPlacement;
-import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoom;
-import net.sf.cpsolver.exam.model.ExamRoomPlacement;
-import net.sf.cpsolver.exam.model.ExamStudent;
-import net.sf.cpsolver.exam.model.PredefinedExamRoomSharing;
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import org.cpsolver.coursett.preference.PreferenceCombination;
+import org.cpsolver.coursett.preference.SumPreferenceCombination;
+import org.cpsolver.exam.model.Exam;
+import org.cpsolver.exam.model.ExamDistributionConstraint;
+import org.cpsolver.exam.model.ExamInstructor;
+import org.cpsolver.exam.model.ExamOwner;
+import org.cpsolver.exam.model.ExamPeriod;
+import org.cpsolver.exam.model.ExamPeriodPlacement;
+import org.cpsolver.exam.model.ExamPlacement;
+import org.cpsolver.exam.model.ExamRoom;
+import org.cpsolver.exam.model.ExamRoomPlacement;
+import org.cpsolver.exam.model.ExamStudent;
+import org.cpsolver.exam.model.PredefinedExamRoomSharing;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.CacheMode;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -104,8 +105,8 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     private boolean iRoomAvailabilityTimeStampIsSet = false;
     
-    public ExamDatabaseLoader(ExamModel model) {
-        super(model);
+    public ExamDatabaseLoader(ExamModel model, Assignment<Exam, ExamPlacement> assignment) {
+        super(model, assignment);
         iProgress = Progress.getInstance(model);
         iSessionId = model.getProperties().getPropertyLong("General.SessionId",(Long)null);
         iExamTypeId = model.getProperties().getPropertyLong("Exam.Type", null);
@@ -293,7 +294,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 boolean hasAssignment = false;
                 for (Iterator<ExamPeriodPlacement> ep=x.getPeriodPlacements().iterator();!hasAssignment && ep.hasNext();) {
                     ExamPeriodPlacement period = ep.next();
-                    if (x.findRoomsRandom(period)!=null) hasAssignment = true;
+                    if (x.findRoomsRandom(getAssignment(), period)!=null) hasAssignment = true;
                 }
                 if (!hasAssignment) {
                     iProgress.warn("Exam "+getExamLabel(exam)+" has no available assignment, it is not loaded.");
@@ -884,9 +885,9 @@ public class ExamDatabaseLoader extends ExamLoader {
                 iProgress.incProgress();
                 ExamPlacement placement = (ExamPlacement)exam.getInitialAssignment();
                 if (placement==null) continue;
-                Set conf = getModel().conflictValues(placement);
+                Set conf = getModel().conflictValues(getAssignment(), placement);
                 if (!conf.isEmpty()) {
-                    for (Iterator i=getModel().conflictConstraints(placement).entrySet().iterator();i.hasNext();) {
+                    for (Iterator i=getModel().conflictConstraints(getAssignment(), placement).entrySet().iterator();i.hasNext();) {
                         Map.Entry entry = (Map.Entry)i.next();
                         Constraint constraint = (Constraint)entry.getKey();
                         Set values = (Set)entry.getValue();
@@ -897,13 +898,13 @@ public class ExamDatabaseLoader extends ExamLoader {
                                 ((Exam)((ExamPlacement)j.next()).variable()).setAllowDirectConflicts(true);
                         }
                     }
-                    conf = getModel().conflictValues(placement);
+                    conf = getModel().conflictValues(getAssignment(), placement);
                 }
                 if (conf.isEmpty()) {
-                    exam.assign(0, placement);
+                	getAssignment().assign(0, placement);
                 } else {
                     iProgress.warn("Unable to assign "+exam.getInitialAssignment().getName()+" to exam "+exam.getName());
-                    iProgress.info("Conflicts:"+ToolBox.dict2string(getModel().conflictConstraints(exam.getInitialAssignment()), 2));
+                    iProgress.info("Conflicts:"+ToolBox.dict2string(getModel().conflictConstraints(getAssignment(), exam.getInitialAssignment()), 2));
                 }
             }
         }
@@ -930,7 +931,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 boolean hasValue = false;
                 for (Iterator<ExamPeriodPlacement> f=exam.getPeriodPlacements().iterator();!hasValue && f.hasNext();) {
                     ExamPeriodPlacement period = f.next();
-                    if (exam.findBestAvailableRooms(period)!=null) hasValue = true;
+                    if (exam.findBestAvailableRooms(getAssignment(), period)!=null) hasValue = true;
                 }
                 if (!hasValue) {
                     iProgress.error("Exam "+getExamLabel(exam)+" has no assignment available.");

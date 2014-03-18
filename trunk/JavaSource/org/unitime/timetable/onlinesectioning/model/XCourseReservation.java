@@ -53,7 +53,7 @@ public class XCourseReservation extends XReservation {
     			iLimit = course.getLimit();
     }
     
-    public XCourseReservation(net.sf.cpsolver.studentsct.reservation.CourseReservation reservation) {
+    public XCourseReservation(org.cpsolver.studentsct.reservation.CourseReservation reservation) {
     	super(XReservationType.Course, reservation);
     	iCourseId = new XCourseId(reservation.getCourse());
     	iLimit = reservation.getCourse().getLimit();

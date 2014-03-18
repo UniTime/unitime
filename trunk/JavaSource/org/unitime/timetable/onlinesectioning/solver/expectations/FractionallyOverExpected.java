@@ -19,9 +19,12 @@
 */
 package org.unitime.timetable.onlinesectioning.solver.expectations;
 
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+
 
 /**
  * @author Tomas Muller
@@ -56,11 +59,11 @@ public class FractionallyOverExpected extends PercentageOverExpected {
 	}
 
 	@Override
-	public double getOverExpected(Section section, Request request) {
+	public double getOverExpected(Assignment<Request, Enrollment> assignment, Section section, Request request) {
 		if (section.getLimit() <= 0) return 0.0; // ignore unlimited & not available
 		
 		double expected = getPercentage() * section.getSpaceExpected();
-		double enrolled = section.getEnrollmentWeight(request) + request.getWeight();
+		double enrolled = section.getEnrollmentWeight(assignment, request) + request.getWeight();
 		double limit = section.getLimit();
 		int subparts = section.getSubpart().getConfig().getSubparts().size();
 		double max = getMaximum(section);

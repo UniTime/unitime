@@ -23,8 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.springframework.security.access.prepost.PreAuthorize;

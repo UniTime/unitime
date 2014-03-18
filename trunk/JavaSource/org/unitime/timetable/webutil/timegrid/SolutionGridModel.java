@@ -32,9 +32,9 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;

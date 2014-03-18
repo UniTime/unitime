@@ -9653,4 +9653,12 @@
 			drop table %SCHEMA%.param_ord_fix
 		</sql>
 	</update>
+	<update version="133" date="18-Mar-2014" comment="CPSolver 1.3">
+		<sql>
+			update %SCHEMA%.solver_parameter_def set default_value=replace(default_value,'net.sf.cpsolver','org.cpsolver') where default_value like 'net.sf.cpsolver%'
+		</sql>
+		<sql>
+			update %SCHEMA%.solver_parameter set value=replace(value,'net.sf.cpsolver','org.cpsolver') where value like 'net.sf.cpsolver%'
+		</sql>
+	</update>
 </dbupdate>

@@ -32,9 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.studentsct.model.Choice;
-import net.sf.cpsolver.studentsct.model.Course;
 
+import org.cpsolver.studentsct.model.Choice;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.Enrollment;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.ClassWaitList;
@@ -124,13 +125,13 @@ public class XCourseRequest extends XRequest {
         	iTimeStamp = new Date();
     }
     
-    public XCourseRequest(net.sf.cpsolver.studentsct.model.CourseRequest request) {
+    public XCourseRequest(org.cpsolver.studentsct.model.CourseRequest request, Enrollment enrollment) {
     	super(request);
     	for (Course course: request.getCourses())
     		iCourseIds.add(new XCourseId(course));
     	iWaitlist = request.isWaitlist();
     	iTimeStamp = request.getTimeStamp() == null ? null : new Date(request.getTimeStamp());
-    	iEnrollment = request.getAssignment() == null ? null : new XEnrollment(request.getAssignment());
+    	iEnrollment = enrollment == null ? null : new XEnrollment(enrollment);
     }
 
     /**
@@ -197,7 +198,7 @@ public class XCourseRequest extends XRequest {
     	return null;
     }
     
-    public void fillChoicesIn(net.sf.cpsolver.studentsct.model.CourseRequest request) {
+    public void fillChoicesIn(org.cpsolver.studentsct.model.CourseRequest request) {
     	if (iSectionWaitlist != null)
     		for (Map.Entry<XCourseId, List<XWaitListedSection>> entry: iSectionWaitlist.entrySet()) {
     			Course course = request.getCourse(entry.getKey().getCourseId());

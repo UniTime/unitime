@@ -30,26 +30,28 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.studentsct.extension.DistanceConflict;
-import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
-import net.sf.cpsolver.studentsct.reservation.CourseReservation;
-import net.sf.cpsolver.studentsct.reservation.CurriculumReservation;
-import net.sf.cpsolver.studentsct.reservation.DummyReservation;
-import net.sf.cpsolver.studentsct.reservation.GroupReservation;
-import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
-import net.sf.cpsolver.studentsct.reservation.Reservation;
 
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.studentsct.extension.DistanceConflict;
+import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.reservation.CourseReservation;
+import org.cpsolver.studentsct.reservation.CurriculumReservation;
+import org.cpsolver.studentsct.reservation.DummyReservation;
+import org.cpsolver.studentsct.reservation.GroupReservation;
+import org.cpsolver.studentsct.reservation.IndividualReservation;
+import org.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -175,6 +177,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
         	}
 	        
 	        Map<Long, Student> students = new HashMap<Long, Student>();
+	        Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 			for (XStudentId id: server.findStudents(new AnyStudentMatcher())) {
 				XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
 				if (student == null) return null;
@@ -191,7 +194,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 						FreeTimeRequest ftr = new FreeTimeRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent,
 								new TimeLocation(ft.getTime().getDays(), ft.getTime().getSlot(), ft.getTime().getLength(), 0, 0.0,
 										-1l, "Free Time", server.getAcademicSession().getFreeTimePattern(), 0));
-						ftr.assign(0, ftr.createEnrollment());
+						assignment.assign(0, ftr.createEnrollment());
 					} else {
 						XCourseRequest cr = (XCourseRequest)r;
 						List<Course> req = new ArrayList<Course>();
@@ -211,7 +214,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 								}
 								Reservation reservation = (enrollment.getReservation() == null ? null : reservations.get(enrollment.getReservation().getReservationId()));
 								if (config != null && !sections.isEmpty())
-									clonnedRequest.assign(0, new Enrollment(clonnedRequest, 0, courses.get(enrollment.getCourseId()), config, assignments, reservation));
+									assignment.assign(0, new Enrollment(clonnedRequest, 0, courses.get(enrollment.getCourseId()), config, assignments, reservation));
 							}
 						}
 					}
@@ -231,24 +234,25 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
             	boolean complete = true;
                 for (Request request: student.getRequests()) {
                 	if (request instanceof FreeTimeRequest) continue;
-                	if (request.getAssignment() != null) {
+                	Enrollment enrollment = assignment.getValue(request);
+                	if (enrollment != null) {
                 		assgnVars ++; nrVars ++;
-                		value += w.getWeight(request.getAssignment());
-                	} else if (student.canAssign(request)) {
+                		value += w.getWeight(assignment, enrollment);
+                	} else if (student.canAssign(assignment, request)) {
                 		nrVars ++; complete = false;
                 	}
                 }
                 nrStud ++;
                 if (complete) compStud ++;
                 for (int i = 0; i < student.getRequests().size() - 1; i++) {
-                	Enrollment e1 = student.getRequests().get(i).getAssignment();
+                	Enrollment e1 = assignment.getValue(student.getRequests().get(i));
                     if (e1 == null || !e1.isCourseRequest()) continue;
                     dist += dc.nrConflicts(e1);
                     free += toc.nrFreeTimeConflicts(e1);
                     for (int j = i + 1; j < student.getRequests().size(); j++) {
                     	Request r2 = student.getRequests().get(j);
                         if (r2 instanceof FreeTimeRequest) continue;
-                        Enrollment e2 = r2.getAssignment();
+                        Enrollment e2 = assignment.getValue(r2);
                         if (e2 == null) continue;
                         dist += dc.nrConflicts(e1, e2);
                         overlap += toc.nrConflicts(e1, e2);
@@ -269,7 +273,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
             boolean balanceUnlimited = server.getConfig().getPropertyBoolean("General.BalanceUnlimited", false);
             for (Offering offering: offerings.values()) {
             	for (Config config: offering.getConfigs()) {
-            		double enrl = config.getEnrollments().size();
+            		double enrl = config.getEnrollments(assignment).size();
             		for (Subpart subpart: config.getSubparts()) {
                         if (subpart.getSections().size() <= 1) continue;
                         if (subpart.getLimit() > 0) {
@@ -277,18 +281,18 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
                             double ratio = enrl / subpart.getLimit();
                             for (Section section: subpart.getSections()) {
                                 double desired = ratio * section.getLimit();
-                                disbWeight += Math.abs(section.getEnrollments().size() - desired);
+                                disbWeight += Math.abs(section.getEnrollments(assignment).size() - desired);
                                 disbSections ++;
-                                if (Math.abs(desired - section.getEnrollments().size()) >= Math.max(1.0, 0.1 * section.getLimit()))
+                                if (Math.abs(desired - section.getEnrollments(assignment).size()) >= Math.max(1.0, 0.1 * section.getLimit()))
                                     disb10Sections++;
                             }
                         } else if (balanceUnlimited) {
                             // unlimited sections -> desired size is total enrollment / number of sections
                             for (Section section: subpart.getSections()) {
                                 double desired = enrl / subpart.getSections().size();
-                                disbWeight += Math.abs(section.getEnrollments().size() - desired);
+                                disbWeight += Math.abs(section.getEnrollments(assignment).size() - desired);
                                 disbSections ++;
-                                if (Math.abs(desired - section.getEnrollments().size()) >= Math.max(1.0, 0.1 * desired))
+                                if (Math.abs(desired - section.getEnrollments(assignment).size()) >= Math.max(1.0, 0.1 * desired))
                                     disb10Sections++;
                             }
                         }

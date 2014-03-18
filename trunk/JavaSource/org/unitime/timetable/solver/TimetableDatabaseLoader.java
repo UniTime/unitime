@@ -36,35 +36,35 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.coursett.TimetableLoader;
-import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
-import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
-import net.sf.cpsolver.coursett.constraint.DiscouragedRoomConstraint;
-import net.sf.cpsolver.coursett.constraint.FlexibleConstraint.FlexibleConstraintType;
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
-import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedGroupsOfTime;
-import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedRoomsConstraint;
-import net.sf.cpsolver.coursett.constraint.RoomConstraint;
-import net.sf.cpsolver.coursett.constraint.SpreadConstraint;
-import net.sf.cpsolver.coursett.model.Configuration;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.Student;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.coursett.preference.PreferenceCombination;
-import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.Progress;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.TimetableLoader;
+import org.cpsolver.coursett.constraint.ClassLimitConstraint;
+import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
+import org.cpsolver.coursett.constraint.DiscouragedRoomConstraint;
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
+import org.cpsolver.coursett.constraint.InstructorConstraint;
+import org.cpsolver.coursett.constraint.JenrlConstraint;
+import org.cpsolver.coursett.constraint.MinimizeNumberOfUsedGroupsOfTime;
+import org.cpsolver.coursett.constraint.MinimizeNumberOfUsedRoomsConstraint;
+import org.cpsolver.coursett.constraint.RoomConstraint;
+import org.cpsolver.coursett.constraint.SpreadConstraint;
+import org.cpsolver.coursett.constraint.FlexibleConstraint.FlexibleConstraintType;
+import org.cpsolver.coursett.model.Configuration;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.Student;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import org.cpsolver.coursett.preference.PreferenceCombination;
+import org.cpsolver.coursett.preference.SumPreferenceCombination;
+import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.Progress;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Hibernate;
@@ -201,8 +201,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		Load,
     		Compute};
     		
-    public TimetableDatabaseLoader(TimetableModel model) {
-        super(model);
+    public TimetableDatabaseLoader(TimetableModel model, org.cpsolver.ifs.assignment.Assignment<Lecture, Placement> assignment) {
+        super(model, assignment);
         Progress.sTraceEnabled=false;
         iProgress = Progress.getInstance(model);
         
@@ -1124,12 +1124,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	iProgress.setPhase("Assigning committed classes ...", getModel().constantVariables().size());
     	for (Lecture lecture: getModel().constantVariables()) {
     		iProgress.incProgress();
-    		if (lecture.getAssignment()!=null) continue;
+    		if (getAssignment().getValue(lecture)!=null) continue;
     		Placement placement = (Placement)lecture.getInitialAssignment();
-    		getModel().weaken(placement);
-    		Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(placement);
+    		getModel().weaken(getAssignment(), placement);
+    		Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(getAssignment(), placement);
             if (conflictConstraints.isEmpty()) {
-                lecture.assign(0,placement);
+                getAssignment().assign(0,placement);
             } else {
                 String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+placement.getLongName();
             	warn+="<br>&nbsp;&nbsp;Reason:";
@@ -1153,7 +1153,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		if (lecture.values().isEmpty()) {
 	            String warn = "Class "+getClassLabel(lecture)+" has no available placement (after enforcing consistency between the problem and committed solutions"+(iInteractiveMode?"":", class not loaded")+")."; 
     			for (Placement p: oldValues) {
-                    warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+p.getNotValidReason();
+                    warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+p.getNotValidReason(getAssignment());
     			}
                 iProgress.message(msglevel("noPlacementAfterCommit", Progress.MSGLEVEL_WARN), warn);
     			if (!iInteractiveMode) {
@@ -1252,7 +1252,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 						reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+initialPlacement.getRoomLocation().getName()+" not available";
 	    		}
 	    	}
-	    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(initialPlacement);
+	    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(getAssignment(), initialPlacement);
             if (!conflictConstraints.isEmpty()) {
                 for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                 	Set<Placement> vals = conflictConstraints.get(c);
@@ -1268,10 +1268,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	    	iProgress.message(msglevel("cannotAssign", Progress.MSGLEVEL_WARN), "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName()+(reason.length()==0?".":":"+reason));
 		} else {
 			if (iMppAssignment) lecture.setInitialAssignment(initialPlacement);
-			getModel().weaken(initialPlacement);
-			Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(initialPlacement);
+			getModel().weaken(getAssignment(), initialPlacement);
+			Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(getAssignment(), initialPlacement);
         	if (conflictConstraints.isEmpty()) {
-    	        lecture.assign(0,initialPlacement);
+        		getAssignment().assign(0,initialPlacement);
 	        } else {
                 String warn = "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName();
                 warn += "<br>&nbsp;&nbsp;Reason:";
@@ -1415,7 +1415,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 				s.setInstructor(ic);
 				for (Lecture lecture: ic.variables()) {
 					s.addLecture(lecture);
-					lecture.addStudent(s);
+					lecture.addStudent(getAssignment(), s);
 				}
 			}
 		}
@@ -2243,10 +2243,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	    			getModel().addVariable(lecture);
     	    			
     	    			if (assignCommitted) {
-    	    				getModel().weaken(committedPlacement);
-        	        		Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(committedPlacement);
+    	    				getModel().weaken(getAssignment(), committedPlacement);
+        	        		Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(getAssignment(), committedPlacement);
         	                if (conflictConstraints.isEmpty()) {
-        	                    lecture.assign(0,committedPlacement);
+        	                	getAssignment().assign(0,committedPlacement);
         	                } else {
         	                    String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+committedPlacement.getLongName();
         	                	warn+="<br>&nbsp;&nbsp;Reason:";
@@ -2980,7 +2980,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 		
                 		if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
                     		student.addLecture(lecture);
-                    		lecture.addStudent(student);
+                    		lecture.addStudent(getAssignment(), student);
                     		totalEnrollments ++;
                     	}
                     }
@@ -3024,7 +3024,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
                         	if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
                         		student.addLecture(lecture);
-                        		lecture.addStudent(student);
+                        		lecture.addStudent(getAssignment(), student);
                         	}
                         }
                         
@@ -3061,7 +3061,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     		                    		
                     		if (student.hasOffering(lecture.getConfiguration().getOfferingId()) && student.canEnroll(lecture)) {
                         		student.addLecture(lecture);
-                        		lecture.addStudent(student);
+                        		lecture.addStudent(getAssignment(), student);
                         	}
                         }
 
@@ -3094,7 +3094,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			}
     		if (students.isEmpty()) continue;
     		
-    		getModel().getStudentSectioning().initialSectioning(offering.getUniqueId(), offering.getCourseName(), students, iAltConfigurations.get(offering));
+    		getModel().getStudentSectioning().initialSectioning(getAssignment(), offering.getUniqueId(), offering.getCourseName(), students, iAltConfigurations.get(offering));
     		
     		iProgress.incProgress();
     	}
@@ -3156,7 +3156,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         jenrl.addVariable(l2);
                         x.put(l2, jenrl);
                     }
-                    jenrl.incJenrl(st);
+                    jenrl.incJenrl(getAssignment(), st);
                 }
             }
             iProgress.incProgress();
@@ -3256,6 +3256,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		if (getModel().getProperties().getPropertyBoolean("General.PurgeInvalidPlacements", true))
 			purgeInvalidValues();
 		
+		/*
 		for (Constraint c: getModel().constraints()) {
 			if (c instanceof SpreadConstraint)
 				((SpreadConstraint)c).init();
@@ -3266,6 +3267,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			if (c instanceof MinimizeNumberOfUsedGroupsOfTime)
 				((MinimizeNumberOfUsedGroupsOfTime)c).setEnabled(true);
 		}
+		*/
 		
 		iProgress.setPhase("Checking for inconsistencies...", getModel().variables().size());
 		for (Lecture lecture: getModel().variables()) {
@@ -3312,7 +3314,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     						"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName());
     			}
     		}
-    		if (lecture.getAssignment()==null) {
+    		if (getAssignment().getValue(lecture)==null) {
     			Placement placement = lecture.values().get(0);
     			if (!placement.isValid()) {
     				String reason = "";
@@ -3331,7 +3333,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     							reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;room "+placement.getRoomLocation().getName()+" not available";
     		    		}
     		    	}
-    		    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(placement);
+    		    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(getAssignment(), placement);
     	            if (!conflictConstraints.isEmpty()) {
     	                for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
     	                	Set<Placement> vals = conflictConstraints.get(c);
@@ -3345,16 +3347,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	                }
     	            }
     		    	iProgress.message(msglevel("reqInvalidPlacement", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(lecture)+" requires an invalid placement "+placement.getLongName()+(reason.length()==0?".":":"+reason));
-    			} else if (iAssignSingleton && getModel().conflictValues(placement).isEmpty())
-    				lecture.assign(0, placement);
+    			} else if (iAssignSingleton && getModel().conflictValues(getAssignment(), placement).isEmpty())
+    				getAssignment().assign(0, placement);
     		}
 		}
 
 		if (getModel().getProperties().getPropertyBoolean("General.EnrollmentCheck", true))
-			new EnrollmentCheck(getModel(), msglevel("enrollmentCheck", Progress.MSGLEVEL_WARN)).checkStudentEnrollments(iProgress);
+			new EnrollmentCheck(getModel(), getAssignment(), msglevel("enrollmentCheck", Progress.MSGLEVEL_WARN)).checkStudentEnrollments(iProgress);
 		
-		if (getModel().getProperties().getPropertyBoolean("General.SwitchStudents",true) && !getModel().assignedVariables().isEmpty() && !iLoadStudentEnrlsFromSolution)
-			getModel().switchStudents();
+		if (getModel().getProperties().getPropertyBoolean("General.SwitchStudents",true) && getAssignment().nrAssignedVariables() != 0 && !iLoadStudentEnrlsFromSolution)
+			getModel().switchStudents(getAssignment());
 		
  		iProgress.setPhase("Done",1);iProgress.incProgress();            
 		iProgress.message(msglevel("allDone", Progress.MSGLEVEL_INFO), "Model successfully loaded.");
@@ -3459,7 +3461,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         new Placement(null,timeLocation,roomLocations), 0, 0, 1.0);
                 lecture.setNote(time.getEventType());
                 Placement p = (Placement)lecture.getInitialAssignment();
-                lecture.setBestAssignment(p);
+                lecture.setBestAssignment(p, 0);
                 lecture.setCommitted(true);
                 room.setNotAvailable(p);
                 getModel().addVariable(p.variable());

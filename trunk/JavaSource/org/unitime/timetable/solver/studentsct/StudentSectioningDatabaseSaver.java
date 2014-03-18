@@ -26,6 +26,17 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.studentsct.StudentSectioningSaver;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
@@ -40,17 +51,6 @@ import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
 
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.studentsct.StudentSectioningSaver;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
 /**
  * @author Tomas Muller
@@ -155,11 +155,11 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         
         for (Iterator e=student.getRequests().iterator();e.hasNext();) {
             Request request = (Request)e.next();
-            Enrollment enrollment = (Enrollment)request.getAssignment();
+            Enrollment enrollment = (Enrollment)getAssignment().getValue(request);
             if (request instanceof CourseRequest) {
                 CourseRequest courseRequest = (CourseRequest)request;
                 if (enrollment==null) {
-                    if (courseRequest.isWaitlist() && student.canAssign(courseRequest)) {
+                    if (courseRequest.isWaitlist() && student.canAssign(getAssignment(), courseRequest)) {
                         CourseOffering co = iCourses.get(courseRequest.getCourses().get(0).getId());
                         if (co == null) {
                         	iProgress.warn("Course offering " + courseRequest.getCourses().get(0).getId() + " not found.");
@@ -282,7 +282,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         
         if (getModel().getNrLastLikeRequests(false) > 0 || iProjections) {
             iProgress.setPhase("Computing expected/held space for online sectioning...", 0);
-            getModel().computeOnlineSectioningInfos();
+            getModel().computeOnlineSectioningInfos(getAssignment());
             iProgress.incProgress();
             
         	Hashtable<Long, SectioningInfo> infoTable = new Hashtable<Long, SectioningInfo>();

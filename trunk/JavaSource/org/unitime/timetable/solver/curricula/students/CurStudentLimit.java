@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.cpsolver.ifs.model.GlobalConstraint;
-import net.sf.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.model.GlobalConstraint;
+import org.cpsolver.ifs.util.ToolBox;
+
 
 /**
  * @author Tomas Muller
@@ -46,22 +48,24 @@ public class CurStudentLimit extends GlobalConstraint<CurVariable, CurValue> {
 	}
 
 	@Override
-	public void computeConflicts(CurValue value, Set<CurValue> conflicts) {
-		int courses = value.getStudent().getCourses().size();
-		if (!value.getStudent().getCourses().contains(value.variable().getCourse())) courses++;
+	public void computeConflicts(Assignment<CurVariable, CurValue> assignment, CurValue value, Set<CurValue> conflicts) {
+		Set<CurCourse> courses = value.getStudent().getCourses(assignment);
+		int nrCourses = courses.size();
+		if (!courses.contains(value.variable().getCourse())) nrCourses++;
 		for (CurValue conflict: conflicts) {
-			if (conflict.getStudent().equals(value.getStudent()) && value.getStudent().getCourses().contains(conflict.variable().getCourse()))
-				courses--;
+			if (conflict.getStudent().equals(value.getStudent()) && courses.contains(conflict.variable().getCourse()))
+				nrCourses--;
 		}
-		if (courses > iMaxLimit) {
+		if (nrCourses > iMaxLimit) {
 			List<CurValue> adepts = new ArrayList<CurValue>();
-			for (CurCourse course: value.getStudent().getCourses()) {
+			for (CurCourse course: courses) {
 				if (course.equals(value.variable().getCourse())) continue;
-				CurValue adept = course.getValue(value.getStudent());
+				CurValue adept = course.getValue(assignment, value.getStudent());
 				if (conflicts.contains(adept)) continue;
 				adepts.add(adept);
 			}
 			conflicts.add(ToolBox.random(adepts));
+			nrCourses --;
 		}
 	}
 	

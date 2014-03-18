@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseBuilding;

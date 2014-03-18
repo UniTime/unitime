@@ -38,6 +38,31 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
+import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.solver.ParallelSolver;
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.Callback;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.ifs.util.ProgressWriter;
+import org.cpsolver.studentsct.StudentSectioningLoader;
+import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.StudentSectioningSaver;
+import org.cpsolver.studentsct.StudentSectioningXMLLoader;
+import org.cpsolver.studentsct.StudentSectioningXMLSaver;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.report.SectionConflictTable;
+import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -70,35 +95,11 @@ import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.MemoryCounter;
 
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.CSVFile;
-import net.sf.cpsolver.ifs.util.Callback;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.ifs.util.ProgressWriter;
-import net.sf.cpsolver.studentsct.StudentSectioningLoader;
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.StudentSectioningSaver;
-import net.sf.cpsolver.studentsct.StudentSectioningXMLLoader;
-import net.sf.cpsolver.studentsct.StudentSectioningXMLSaver;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.report.SectionConflictTable;
-import net.sf.cpsolver.studentsct.report.StudentSectioningReport;
 
 /**
  * @author Tomas Muller
  */
-public class StudentSolver extends Solver implements StudentSolverProxy {
+public class StudentSolver extends ParallelSolver<Request, Enrollment> implements StudentSolverProxy {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 
 	private static Log sLog = LogFactory.getLog(StudentSolver.class);
@@ -158,7 +159,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     public void saveBest() {
         currentSolution().saveBest();
         if (currentSolution().getBestInfo() != null)
-        	currentSolution().getBestInfo().putAll(currentSolution().getModel().getExtendedInfo());
+        	currentSolution().getBestInfo().putAll(currentSolution().getModel().getExtendedInfo(currentSolution().getAssignment()));
     }
     
     public Map getProgress() {
@@ -191,7 +192,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         super.dispose();
         if (currentSolution()!=null && currentSolution().getModel()!=null)
             Progress.removeInstance(currentSolution().getModel());
-        setInitalSolution((net.sf.cpsolver.ifs.solution.Solution)null);
+        setInitalSolution((org.cpsolver.ifs.solution.Solution)null);
         if (unregister && iDisposeListener!=null) iDisposeListener.onDispose();
         clearCourseInfoTable();
     }
@@ -276,10 +277,10 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
         
         iWorking = true;
-        setInitalSolution(model);
+        setInitalSolution(new Solution(model, new DefaultSingleAssignment<Request, Enrollment>()));
         initSolver();
         
-        StudentSectioningLoader loader = new StudentSectioningDatabaseLoader(model);
+        StudentSectioningLoader loader = new StudentSectioningDatabaseLoader(model, currentSolution().getAssignment());
         loader.setCallback(getLoadingDoneCallback());
         iWorkThread = new Thread(loader);
         iWorkThread.setPriority(THREAD_PRIORITY);
@@ -298,10 +299,10 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         
         iWorking = true;
         Progress.changeInstance(currentSolution().getModel(),model);
-        setInitalSolution(model);
+        setInitalSolution(new Solution(model, new DefaultSingleAssignment<Request, Enrollment>()));
         initSolver();
         
-        StudentSectioningLoader loader = new StudentSectioningDatabaseLoader(model);
+        StudentSectioningLoader loader = new StudentSectioningDatabaseLoader(model, currentSolution().getAssignment());
         loader.setCallback(callBack);
         iWorkThread = new Thread(loader);
         iWorkThread.start();
@@ -338,13 +339,14 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         public ReloadingDoneCallback() {
             iSolutionId = getProperties().getProperty("General.SolutionId");
             for (Request request: currentSolution().getModel().variables()) {
-            	if (request.getAssignment() != null) {
+            	Enrollment enrollment = currentSolution().getAssignment().getValue(request);
+            	if (enrollment != null) {
                 	Map<Long, Enrollment> assignments = iCurrentAssignmentTable.get(request.getStudent().getId());
                 	if (assignments == null) {
                 		assignments = new Hashtable<Long, Enrollment>();
                 		iCurrentAssignmentTable.put(request.getStudent().getId(), assignments);
                 	}
-                	assignments.put(request.getId(), request.getAssignment());
+                	assignments.put(request.getId(), enrollment);
             	}
             	if (request.getBestAssignment() != null) {
                 	Map<Long, Enrollment> assignments = iBestAssignmentTable.get(request.getStudent().getId());
@@ -379,14 +381,14 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
                     }
                     sections.add(section);
                 }
-                return cr.createEnrollment(sections);
+                return cr.createEnrollment(currentSolution().getAssignment(), sections);
             }
         }
         
         private void assign(Enrollment enrollment) {
-        	Map<Constraint<Request, Enrollment>, Set<Enrollment>> conflictConstraints = currentSolution().getModel().conflictConstraints(enrollment);
+        	Map<Constraint<Request, Enrollment>, Set<Enrollment>> conflictConstraints = currentSolution().getModel().conflictConstraints(currentSolution().getAssignment(), enrollment);
             if (conflictConstraints.isEmpty()) {
-                enrollment.variable().assign(0, enrollment);
+            	currentSolution().getAssignment().assign(0, enrollment);
             } else {
                 iProgress.warn("Unable to assign "+enrollment.variable().getName()+" := "+enrollment.getName());
                 iProgress.warn("&nbsp;&nbsp;Reason:");
@@ -402,7 +404,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         
         private void unassignAll() {
             for (Request request: currentSolution().getModel().variables()) {
-                if (request.getAssignment()!=null) request.unassign(0);
+            	currentSolution().getAssignment().unassign(0l, request);
             }
         }
         
@@ -573,7 +575,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
             getProperties().setProperty("Xml.LoadInitial", "true");
             getProperties().setProperty("Xml.LoadCurrent", "true");
 
-            StudentSectioningXMLLoader loader = new StudentSectioningXMLLoader(model);
+            StudentSectioningXMLLoader loader = new StudentSectioningXMLLoader(model, currentSolution().getAssignment());
             loader.setInputFile(inXmlFile);
             loader.setCallback(new Callback() {
                 public void execute() {
@@ -601,7 +603,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     public void clear() {
         synchronized (currentSolution()) {
             for (Request request: currentSolution().getModel().variables()) {
-                if (request.getAssignment()!=null) request.unassign(0);
+                currentSolution().getAssignment().unassign(0, request);
             }
             currentSolution().clearBest();
         }    
@@ -701,7 +703,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
     		Map<String,String> info = super.currentSolution().getBestInfo();
     		try {
     			if (info == null || getSolutionComparator().isBetterThanBestSolution(super.currentSolution()))
-    				info = super.currentSolution().getModel().getInfo();
+    				info = super.currentSolution().getModel().getInfo(super.currentSolution().getAssignment());
     		} catch (ConcurrentModificationException e) {}
     		return info;
     	}
@@ -816,7 +818,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	public XStudent getStudent(Long studentId) {
 		for (Student student: ((StudentSectioningModel)currentSolution().getModel()).getStudents())
 			if (!student.isDummy() && student.getId() == studentId)
-				return new XStudent(student);
+				return new XStudent(student, currentSolution().getAssignment());
 		return null;
 	}
 
@@ -1031,7 +1033,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 			if (offering.getId() == offeringId) {
 				for (Course course: offering.getCourses())
 					for (CourseRequest req: course.getRequests()) {
-						ret.add(new XCourseRequest(req));
+						ret.add(new XCourseRequest(req, currentSolution().getAssignment().getValue(req)));
 					}
 				break;
 			}
@@ -1122,7 +1124,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 			String name = parameters.getProperty("report", SectionConflictTable.class.getName());
 			Class<StudentSectioningReport> clazz = (Class<StudentSectioningReport>) Class.forName(name);
 			StudentSectioningReport report = clazz.getConstructor(StudentSectioningModel.class).newInstance(currentSolution().getModel());
-			return report.create(parameters);
+			return report.create(currentSolution().getAssignment(), parameters);
 		} catch (SectioningException e) {
 			throw e;
 		} catch (Exception e) {

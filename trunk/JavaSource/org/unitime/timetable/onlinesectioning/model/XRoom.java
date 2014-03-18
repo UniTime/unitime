@@ -25,9 +25,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Location;

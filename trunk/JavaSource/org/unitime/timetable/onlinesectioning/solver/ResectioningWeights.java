@@ -21,19 +21,21 @@ package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.List;
 
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.studentsct.model.Choice;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.ToolBox;
-import net.sf.cpsolver.studentsct.model.Choice;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Section;
 
 /**
  * @author Tomas Muller
@@ -56,8 +58,8 @@ public class ResectioningWeights extends StudentSchedulingAssistantWeights {
 	public void setLastSectionProvider(LastSectionProvider lastSectionProvider) { iLastSectionProvider = lastSectionProvider; }
 	
 	@Override
-	public double getWeight(Enrollment enrollment) {
-		double weight = super.getWeight(enrollment);
+	public double getWeight(Assignment<Request, Enrollment> assignment, Enrollment enrollment) {
+		double weight = super.getWeight(assignment, enrollment);
 		
 		if (enrollment.isCourseRequest() && enrollment.getAssignments() != null && iLastSectionProvider != null) {
 			int sameChoice = 0;
@@ -83,7 +85,7 @@ public class ResectioningWeights extends StudentSchedulingAssistantWeights {
     		double sameTimeFraction = (size - sameTime) / size;
     		double sameRoomsFraction = (size - sameRooms) / size;
     		double sameNameFraction = (size - sameName) / size;
-			double base = getBaseWeight(enrollment);
+			double base = getBaseWeight(assignment, enrollment);
 			weight -= sameChoiceFraction * base * iSameChoiceFactor;
 			weight -= sameTimeFraction * base * iSameTimeFactor;
 			weight -= sameRoomsFraction * base * iSameRoomsFactor;

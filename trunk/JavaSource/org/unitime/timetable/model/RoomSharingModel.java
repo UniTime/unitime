@@ -43,7 +43,7 @@ import org.unitime.timetable.webutil.RequiredTimeTableModel;
 /**
  * @author Tomas Muller
  */
-public class RoomSharingModel extends net.sf.cpsolver.coursett.model.RoomSharingModel implements RequiredTimeTableModel {
+public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingModel implements RequiredTimeTableModel {
 	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	private boolean[][] iEditable = null;
 	private int iDefaultSelection = 0;

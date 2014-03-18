@@ -19,12 +19,13 @@
 */
 package org.unitime.timetable.onlinesectioning.solver.multicriteria;
 
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
 import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection.SelectionCriterion;
 
@@ -50,7 +51,7 @@ public class BestPenaltyCriterion implements SelectionCriterion {
     }
 	
 	@Override
-	public int compare(Enrollment[] current, Enrollment[] best) {
+	public int compare(Assignment<Request, Enrollment> assignment, Enrollment[] current, Enrollment[] best) {
 		if (best == null) return -1;
 		
 		// 0. best priority & alternativity ignoring free time requests
@@ -69,9 +70,9 @@ public class BestPenaltyCriterion implements SelectionCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null && best[idx].getAssignments() != null && best[idx].isCourseRequest()) {
 				for (Section section: best[idx].getSections())
-					bestPenalties += iModel.getOverExpected(section, best[idx].getRequest());
+					bestPenalties += iModel.getOverExpected(assignment, section, best[idx].getRequest());
 				for (Section section: current[idx].getSections())
-					currentPenalties += iModel.getOverExpected(section, current[idx].getRequest());
+					currentPenalties += iModel.getOverExpected(assignment, section, current[idx].getRequest());
 			}
 		}
 		if (currentPenalties < bestPenalties) return -1;
@@ -81,7 +82,7 @@ public class BestPenaltyCriterion implements SelectionCriterion {
 	}
 
 	@Override
-	public boolean canImprove(int maxIdx, Enrollment[] current, Enrollment[] best) {
+	public boolean canImprove(Assignment<Request, Enrollment> assignment, int maxIdx, Enrollment[] current, Enrollment[] best) {
 		// 0. best priority & alternativity ignoring free time requests
 		int alt = 0;
 		for (int idx = 0; idx < current.length; idx++) {
@@ -110,11 +111,11 @@ public class BestPenaltyCriterion implements SelectionCriterion {
 		for (int idx = 0; idx < current.length; idx++) {
 			if (best[idx] != null) {
 				for (Section section: best[idx].getSections())
-					bestPenalties += iModel.getOverExpected(section, best[idx].getRequest());
+					bestPenalties += iModel.getOverExpected(assignment, section, best[idx].getRequest());
 			}
 			if (current[idx] != null && idx < maxIdx) {
 				for (Section section: current[idx].getSections())
-					currentPenalties += iModel.getOverExpected(section, current[idx].getRequest());
+					currentPenalties += iModel.getOverExpected(assignment, section, current[idx].getRequest());
 			}
 		}
 		if (currentPenalties < bestPenalties) return true;
@@ -124,11 +125,11 @@ public class BestPenaltyCriterion implements SelectionCriterion {
 	}
 
 	@Override
-	public double getTotalWeight(Enrollment[] assignment) {
+	public double getTotalWeight(Assignment<Request, Enrollment> assignment, Enrollment[] enrollments) {
 		return 0.0;
 	}
 	
-	public int compare(Enrollment e1, Enrollment e2) {
+	public int compare(Assignment<Request, Enrollment> assignment, Enrollment e1, Enrollment e2) {
 		// 1. alternativity
 		if (e1.getPriority() < e2.getPriority()) return -1;
 		if (e1.getPriority() > e2.getPriority()) return 1;
@@ -136,9 +137,9 @@ public class BestPenaltyCriterion implements SelectionCriterion {
 		// 2. maximize number of penalties
 		double p1 = 0, p2 = 0;
 		for (Section section: e1.getSections())
-    		p1 += iModel.getOverExpected(section, e1.getRequest());
+    		p1 += iModel.getOverExpected(assignment, section, e1.getRequest());
 		for (Section section: e2.getSections())
-    		p2 += iModel.getOverExpected(section, e2.getRequest());
+    		p2 += iModel.getOverExpected(assignment, section, e2.getRequest());
 		if (p1 < p2) return -1;
 		if (p2 < p1) return 1;
 

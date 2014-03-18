@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.coursett.model.TimeLocation;
 
+import org.cpsolver.coursett.model.TimeLocation;
 import org.dom4j.Element;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.AcademicArea;

@@ -29,6 +29,26 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
+import org.cpsolver.exam.criteria.ExamRotationPenalty;
+import org.cpsolver.exam.criteria.InstructorBackToBackConflicts;
+import org.cpsolver.exam.criteria.InstructorDirectConflicts;
+import org.cpsolver.exam.criteria.InstructorDistanceBackToBackConflicts;
+import org.cpsolver.exam.criteria.InstructorMoreThan2ADayConflicts;
+import org.cpsolver.exam.criteria.InstructorNotAvailableConflicts;
+import org.cpsolver.exam.criteria.PeriodPenalty;
+import org.cpsolver.exam.criteria.RoomPenalty;
+import org.cpsolver.exam.criteria.RoomSizePenalty;
+import org.cpsolver.exam.criteria.RoomSplitPenalty;
+import org.cpsolver.exam.criteria.StudentBackToBackConflicts;
+import org.cpsolver.exam.criteria.StudentDistanceBackToBackConflicts;
+import org.cpsolver.exam.criteria.StudentMoreThan2ADayConflicts;
+import org.cpsolver.exam.criteria.StudentNotAvailableConflicts;
+import org.cpsolver.exam.model.ExamDistributionConstraint;
+import org.cpsolver.exam.model.ExamPlacement;
+import org.cpsolver.exam.model.ExamRoomPlacement;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Exam;
@@ -42,25 +62,6 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
 
-import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
-import net.sf.cpsolver.exam.criteria.ExamRotationPenalty;
-import net.sf.cpsolver.exam.criteria.InstructorBackToBackConflicts;
-import net.sf.cpsolver.exam.criteria.InstructorDirectConflicts;
-import net.sf.cpsolver.exam.criteria.InstructorDistanceBackToBackConflicts;
-import net.sf.cpsolver.exam.criteria.InstructorMoreThan2ADayConflicts;
-import net.sf.cpsolver.exam.criteria.InstructorNotAvailableConflicts;
-import net.sf.cpsolver.exam.criteria.PeriodPenalty;
-import net.sf.cpsolver.exam.criteria.RoomPenalty;
-import net.sf.cpsolver.exam.criteria.RoomSizePenalty;
-import net.sf.cpsolver.exam.criteria.RoomSplitPenalty;
-import net.sf.cpsolver.exam.criteria.StudentBackToBackConflicts;
-import net.sf.cpsolver.exam.criteria.StudentDistanceBackToBackConflicts;
-import net.sf.cpsolver.exam.criteria.StudentMoreThan2ADayConflicts;
-import net.sf.cpsolver.exam.criteria.StudentNotAvailableConflicts;
-import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
-import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoomPlacement;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -93,29 +94,29 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     protected int iNrInstructorDistanceBackToBackConflicts = 0;
     protected double iValue = 0;
     
-    public ExamAssignment(ExamPlacement placement) {
-        this((net.sf.cpsolver.exam.model.Exam)placement.variable(), placement);
+    public ExamAssignment(ExamPlacement placement, Assignment<org.cpsolver.exam.model.Exam, ExamPlacement> assignment) {
+        this((org.cpsolver.exam.model.Exam)placement.variable(), placement, assignment);
     }
     
-    public ExamAssignment(net.sf.cpsolver.exam.model.Exam exam, ExamPlacement placement) {
+    public ExamAssignment(org.cpsolver.exam.model.Exam exam, ExamPlacement placement, Assignment<org.cpsolver.exam.model.Exam, ExamPlacement> assignment) {
         super(exam);
         if (placement!=null) {
-            iNrDirectConflicts = (int)exam.getModel().getCriterion(StudentDistanceBackToBackConflicts.class).getValue(placement, null) +
-            					 (int)exam.getModel().getCriterion(StudentNotAvailableConflicts.class).getValue(placement, null);
-            iNrMoreThanTwoADayConflicts = (int)exam.getModel().getCriterion(StudentMoreThan2ADayConflicts.class).getValue(placement, null);
-            iNrBackToBackConflicts = (int)exam.getModel().getCriterion(StudentBackToBackConflicts.class).getValue(placement, null);
-            iNrDistanceBackToBackConflicts = (int)exam.getModel().getCriterion(StudentDistanceBackToBackConflicts.class).getValue(placement, null);
-            iPeriodPenalty = (int)exam.getModel().getCriterion(PeriodPenalty.class).getValue(placement, null);
-            iRoomSizePenalty = (int)exam.getModel().getCriterion(RoomSizePenalty.class).getValue(placement, null);
-            iRoomSplitPenalty = (int)exam.getModel().getCriterion(RoomSplitPenalty.class).getValue(placement, null);
-            iRotationPenalty = (int)exam.getModel().getCriterion(ExamRotationPenalty.class).getValue(placement, null);
-            iRoomPenalty = (int)exam.getModel().getCriterion(RoomPenalty.class).getValue(placement, null);
-            iNrInstructorDirectConflicts = (int)exam.getModel().getCriterion(InstructorDirectConflicts.class).getValue(placement, null) +
-            		(int)exam.getModel().getCriterion(InstructorNotAvailableConflicts.class).getValue(placement, null);
-            iNrInstructorMoreThanTwoADayConflicts = (int)exam.getModel().getCriterion(InstructorMoreThan2ADayConflicts.class).getValue(placement, null);
-            iNrInstructorBackToBackConflicts = (int)exam.getModel().getCriterion(InstructorBackToBackConflicts.class).getValue(placement, null);
-            iNrInstructorDistanceBackToBackConflicts = (int)exam.getModel().getCriterion(InstructorDistanceBackToBackConflicts.class).getValue(placement, null);
-            iValue = placement.toDouble();
+            iNrDirectConflicts = (int)exam.getModel().getCriterion(StudentDistanceBackToBackConflicts.class).getValue(assignment, placement, null) +
+            					 (int)exam.getModel().getCriterion(StudentNotAvailableConflicts.class).getValue(assignment, placement, null);
+            iNrMoreThanTwoADayConflicts = (int)exam.getModel().getCriterion(StudentMoreThan2ADayConflicts.class).getValue(assignment, placement, null);
+            iNrBackToBackConflicts = (int)exam.getModel().getCriterion(StudentBackToBackConflicts.class).getValue(assignment, placement, null);
+            iNrDistanceBackToBackConflicts = (int)exam.getModel().getCriterion(StudentDistanceBackToBackConflicts.class).getValue(assignment, placement, null);
+            iPeriodPenalty = (int)exam.getModel().getCriterion(PeriodPenalty.class).getValue(assignment, placement, null);
+            iRoomSizePenalty = (int)exam.getModel().getCriterion(RoomSizePenalty.class).getValue(assignment, placement, null);
+            iRoomSplitPenalty = (int)exam.getModel().getCriterion(RoomSplitPenalty.class).getValue(assignment, placement, null);
+            iRotationPenalty = (int)exam.getModel().getCriterion(ExamRotationPenalty.class).getValue(assignment, placement, null);
+            iRoomPenalty = (int)exam.getModel().getCriterion(RoomPenalty.class).getValue(assignment, placement, null);
+            iNrInstructorDirectConflicts = (int)exam.getModel().getCriterion(InstructorDirectConflicts.class).getValue(assignment, placement, null) +
+            		(int)exam.getModel().getCriterion(InstructorNotAvailableConflicts.class).getValue(assignment, placement, null);
+            iNrInstructorMoreThanTwoADayConflicts = (int)exam.getModel().getCriterion(InstructorMoreThan2ADayConflicts.class).getValue(assignment, placement, null);
+            iNrInstructorBackToBackConflicts = (int)exam.getModel().getCriterion(InstructorBackToBackConflicts.class).getValue(assignment, placement, null);
+            iNrInstructorDistanceBackToBackConflicts = (int)exam.getModel().getCriterion(InstructorDistanceBackToBackConflicts.class).getValue(assignment, placement, null);
+            iValue = placement.toDouble(assignment);
             iPeriodId = placement.getPeriod().getId();
             iPeriodIdx = placement.getPeriod().getIndex();
             iRooms = new TreeSet<ExamRoomInfo>();
@@ -129,7 +130,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
             }
             MinMaxPreferenceCombination pc = new MinMaxPreferenceCombination();
             for (ExamDistributionConstraint dc: placement.variable().getDistributionConstraints()) {
-                if (dc.isHard() || dc.isSatisfied()) continue;
+                if (dc.isHard() || dc.isSatisfied(assignment)) continue;
                 pc.addPreferenceInt(dc.getWeight());
             }
             iDistPref = pc.getPreferenceProlog(); 

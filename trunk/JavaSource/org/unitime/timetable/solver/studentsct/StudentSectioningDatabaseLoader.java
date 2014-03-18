@@ -40,6 +40,34 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.studentsct.StudentSectioningLoader;
+import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.model.AcademicAreaCode;
+import org.cpsolver.studentsct.model.Choice;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
+import org.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.reservation.CourseReservation;
+import org.cpsolver.studentsct.reservation.CurriculumReservation;
+import org.cpsolver.studentsct.reservation.DummyReservation;
+import org.cpsolver.studentsct.reservation.GroupReservation;
+import org.cpsolver.studentsct.reservation.IndividualReservation;
+import org.cpsolver.studentsct.reservation.Reservation;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
@@ -89,34 +117,6 @@ import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStude
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.TimeLocation;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.studentsct.StudentSectioningLoader;
-import net.sf.cpsolver.studentsct.StudentSectioningModel;
-import net.sf.cpsolver.studentsct.model.AcademicAreaCode;
-import net.sf.cpsolver.studentsct.model.Choice;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.FreeTimeRequest;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
-import net.sf.cpsolver.studentsct.reservation.CourseReservation;
-import net.sf.cpsolver.studentsct.reservation.CurriculumReservation;
-import net.sf.cpsolver.studentsct.reservation.DummyReservation;
-import net.sf.cpsolver.studentsct.reservation.GroupReservation;
-import net.sf.cpsolver.studentsct.reservation.IndividualReservation;
-import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 /**
  * @author Tomas Muller
@@ -144,8 +144,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     
     private StudentCourseDemands iStudentCourseDemands = null;
     
-    public StudentSectioningDatabaseLoader(StudentSectioningModel model) {
-        super(model);
+    public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
+        super(model, assignment);
         iIncludeCourseDemands = model.getProperties().getPropertyBoolean("Load.IncludeCourseDemands", iIncludeCourseDemands);
         iIncludeUseCommittedAssignments = model.getProperties().getPropertyBoolean("Load.IncludeUseCommittedAssignments", iIncludeUseCommittedAssignments);
         iLoadStudentInfo = model.getProperties().getPropertyBoolean("Load.LoadStudentInfo", iLoadStudentInfo);
@@ -332,7 +332,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         lecture.setNote(c.getNotes());
         Placement p = (Placement)lecture.getInitialAssignment();
         p.setAssignmentId(new Long(iMakeupAssignmentId++));
-        lecture.setBestAssignment(p);
+        lecture.setBestAssignment(p, 0l);
         iProgress.trace("makup placement for "+c.getClassLabel()+": "+p.getLongName());
         return p;
     }
@@ -563,7 +563,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     				if (!included) continue;
 				}
 				
-				if (reservation == null || r.compareTo(reservation) < 0)
+				if (reservation == null || r.compareTo(getAssignment(), reservation) < 0)
 					reservation = r;
     		}
     		
@@ -689,7 +689,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 request.getSelectedChoices().addAll(selChoices);
                 request.getWaitlistedChoices().addAll(wlChoices);
                 if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
-                    Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
+                    Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections, getAssignment());
                     request.setInitialAssignment(enrollment);
                 }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
@@ -730,7 +730,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		Vector<Course> cx = new Vector<Course>(); cx.add(course);
         		CourseRequest request = null;
         		for (Request r: student.getRequests()) {
-        			if (r instanceof CourseRequest && r.getAssignment() == null && ((CourseRequest)r).getCourses().contains(course)) {
+        			if (r instanceof CourseRequest && getAssignment().getValue(r) == null && ((CourseRequest)r).getCourses().contains(course)) {
         				request = (CourseRequest)r;
         				break;
         			}
@@ -774,7 +774,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     }
                 }
                 if (assignedConfig!=null && assignedSections.size() == assignedConfig.getSubparts().size()) {
-                    Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections);
+                    Enrollment enrollment = new Enrollment(request, 0, assignedConfig, assignedSections, getAssignment());
                     request.setInitialAssignment(enrollment);
                 }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
@@ -789,16 +789,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     
     public void assignStudent(Student student) {
 		for (Request r: student.getRequests()) {
-			if (r.getInitialAssignment() != null && r.getModel().conflictValues(r.getInitialAssignment()).isEmpty())
-				r.assign(0, r.getInitialAssignment());
+			if (r.getInitialAssignment() != null && r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty())
+				getAssignment().assign(0, r.getInitialAssignment());
 		}
 		for (Request r: student.getRequests()) {
 			if (r instanceof FreeTimeRequest) {
 				FreeTimeRequest ft = (FreeTimeRequest)r;
 				Enrollment enrollment = ft.createEnrollment();
-				if (r.getModel().conflictValues(enrollment).isEmpty()) {
+				if (r.getModel().conflictValues(getAssignment(), enrollment).isEmpty()) {
 					ft.setInitialAssignment(enrollment);
-					ft.assign(0, enrollment);
+					getAssignment().assign(0, enrollment);
 				}
 			}
 		}
@@ -806,9 +806,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     
     public void checkForConflicts(Student student) {
     	for (Request r: student.getRequests()) {
-    		if (r.getAssignment() != null || r.getInitialAssignment() == null || !(r instanceof CourseRequest)) continue;
-    		if (r.getModel().conflictValues(r.getInitialAssignment()).isEmpty()) {
-    			r.assign(0, r.getInitialAssignment());
+    		if (getAssignment().getValue(r) != null || r.getInitialAssignment() == null || !(r instanceof CourseRequest)) continue;
+    		if (r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty()) {
+    			getAssignment().assign(0, r.getInitialAssignment());
     			continue;
     		}
            	CourseRequest cr = (CourseRequest)r;
@@ -820,8 +820,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
            		Section section = i.next();
            		if (section.getTime() != null) {
                		for (Request q: student.getRequests()) {
-               			if (q.getAssignment() == null || !(q instanceof CourseRequest)) continue;
-               			Enrollment enrlx = (Enrollment)q.getAssignment();
+               			Enrollment enrlx = getAssignment().getValue(q);
+               			if (enrlx == null || !(q instanceof CourseRequest)) continue;
                			for (Iterator<Section> j = enrlx.getSections().iterator(); j.hasNext();) {
                				Section sectionx = j.next();
                				if (sectionx.getTime() == null) continue;
@@ -834,11 +834,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                			}
                		}
            		}
-           		if (section.getLimit() >= 0 && section.getLimit() < 1 + section.getEnrollments().size()) {
+           		if (section.getLimit() >= 0 && section.getLimit() < 1 + section.getEnrollments(getAssignment()).size()) {
     					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName()) +
     							" has no space available (limit is "+ section.getLimit() + ")");
     					if (iTweakLimits) {
-    						section.setLimit(section.getEnrollments().size() + 1);
+    						section.setLimit(section.getEnrollments(getAssignment()).size() + 1);
     						section.clearReservationCache();
     						iProgress.info("    limit increased to "+section.getLimit());
     					}
@@ -846,25 +846,25 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
            		}
     				iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName()));
            	}
-           	if (enrl.getConfig().getLimit() >= 0 && enrl.getConfig().getLimit() < 1 + enrl.getConfig().getEnrollments().size()) {
+           	if (enrl.getConfig().getLimit() >= 0 && enrl.getConfig().getLimit() < 1 + enrl.getConfig().getEnrollments(getAssignment()).size()) {
     				iProgress.info("  config " + enrl.getConfig().getName() + " has no space available (limit is "+ enrl.getConfig().getLimit() + ")");
     				if (iTweakLimits) {
-    					enrl.getConfig().setLimit(enrl.getConfig().getEnrollments().size() + 1);
+    					enrl.getConfig().setLimit(enrl.getConfig().getEnrollments(getAssignment()).size() + 1);
     					enrl.getConfig().clearReservationCache();
     					iProgress.info("    limit increased to "+enrl.getConfig().getLimit());
     				}
        			hasLimit = true;
            	}
-           	if (enrl.getCourse() != null && enrl.getCourse().getLimit() >= 0 && enrl.getCourse().getLimit() < 1 + enrl.getCourse().getEnrollments().size()) {
+           	if (enrl.getCourse() != null && enrl.getCourse().getLimit() >= 0 && enrl.getCourse().getLimit() < 1 + enrl.getCourse().getEnrollments(getAssignment()).size()) {
     				iProgress.info("  course " + enrl.getCourse().getName() + " has no space available (limit is "+ enrl.getCourse().getLimit() + ")");
     				if (iTweakLimits) {
-    					enrl.getCourse().setLimit(enrl.getCourse().getEnrollments().size() + 1);
+    					enrl.getCourse().setLimit(enrl.getCourse().getEnrollments(getAssignment()).size() + 1);
     					iProgress.info("    limit increased to "+enrl.getCourse().getLimit());
     				}
        			hasLimit = true;
            	}
            	if (!hasLimit && !hasOverlap) {
-           		for (Iterator<Enrollment> i = r.getModel().conflictValues(r.getInitialAssignment()).iterator(); i.hasNext();) {
+           		for (Iterator<Enrollment> i = r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).iterator(); i.hasNext();) {
            			Enrollment enrlx = i.next();
            			for (Iterator<Section> j = enrlx.getSections().iterator(); j.hasNext();) {
            				Section sectionx = j.next();
@@ -875,8 +875,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
        					iProgress.info("    of a different student");
            		}
            	}
-           	if (hasLimit && !hasOverlap && iTweakLimits && r.getModel().conflictValues(r.getInitialAssignment()).isEmpty()) {
-               	r.assign(0, r.getInitialAssignment());
+           	if (hasLimit && !hasOverlap && iTweakLimits && r.getModel().conflictValues(getAssignment(), r.getInitialAssignment()).isEmpty()) {
+           		getAssignment().assign(0, r.getInitialAssignment());
            	}
     	}
     }
@@ -1068,7 +1068,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	        if (left <= 0)
 	        	iProgress.info("No projected course demands needed for course " + course.getName());
     	}
-    	getModel().requestWeightsChanged();
+    	getModel().requestWeightsChanged(getAssignment());
     }
     
     
@@ -1543,9 +1543,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		if (section != null) {
         			section.setSpaceExpected(info.getNbrExpectedStudents());
         			section.setSpaceHeld(info.getNbrHoldingStudents());
-        			if (section.getLimit() >= 0 && (section.getLimit() - section.getEnrollments().size()) <= section.getSpaceExpected())
+        			if (section.getLimit() >= 0 && (section.getLimit() - section.getEnrollments(getAssignment()).size()) <= section.getSpaceExpected())
         				iProgress.info("Section " + section.getSubpart().getConfig().getOffering().getName() + " " + section.getSubpart().getName() + " " +
-        						section.getName() + " has high demand (limit: " + section.getLimit() + ", enrollment: " + section.getEnrollments().size() +
+        						section.getName() + " has high demand (limit: " + section.getLimit() + ", enrollment: " + section.getEnrollments(getAssignment()).size() +
         						", expected: " + section.getSpaceExpected() + ")");
         		}
         	}	

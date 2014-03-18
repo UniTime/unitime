@@ -31,6 +31,18 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.Test;
+import org.cpsolver.coursett.TimetableSaver;
+import org.cpsolver.coursett.constraint.GroupConstraint;
+import org.cpsolver.coursett.constraint.InstructorConstraint;
+import org.cpsolver.coursett.constraint.JenrlConstraint;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.Student;
+import org.cpsolver.ifs.extension.ConflictStatistics;
+import org.cpsolver.ifs.extension.Extension;
+import org.cpsolver.ifs.util.Progress;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
@@ -73,18 +85,6 @@ import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.solver.ui.TimetableInfoFileProxy;
 import org.unitime.timetable.solver.ui.TimetableInfoUtil;
 
-import net.sf.cpsolver.coursett.Test;
-import net.sf.cpsolver.coursett.TimetableSaver;
-import net.sf.cpsolver.coursett.constraint.GroupConstraint;
-import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
-import net.sf.cpsolver.coursett.model.Student;
-import net.sf.cpsolver.ifs.extension.ConflictStatistics;
-import net.sf.cpsolver.ifs.extension.Extension;
-import net.sf.cpsolver.ifs.util.Progress;
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
@@ -105,7 +105,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
 	
     private static int BATCH_SIZE = 100;
     
-	public TimetableDatabaseSaver(net.sf.cpsolver.ifs.solver.Solver solver) {
+	public TimetableDatabaseSaver(org.cpsolver.ifs.solver.Solver solver) {
         super(solver);
         iProgress = Progress.getInstance(getModel());
         iSessionId = new Long(getModel().getProperties().getPropertyLong("General.SessionId",-1));
@@ -245,7 +245,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     
     private Long[] save(org.hibernate.Session hibSession) throws Exception {
             
-            if (iStudentSectioning) getModel().switchStudents();
+            if (iStudentSectioning) getModel().switchStudents(getAssignment());
         
     		iProgress.setStatus("Saving solution ...");
     		
@@ -346,7 +346,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		iProgress.setPhase("Saving assignments ...", getModel().variables().size());
     		for (Lecture lecture: getModel().variables()) {
-    			Placement placement = lecture.getAssignment();
+    			Placement placement = getAssignment().getValue(lecture);
     			if (placement!=null) {
     				iProgress.trace("save "+lecture.getName()+" "+placement.getName());
     				Class_ clazz = (new Class_DAO()).get(lecture.getClassId(),hibSession);
@@ -528,7 +528,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		}
     		if (cbs!=null && cbs.getNoGoods()!=null) {
     			ConflictStatisticsInfo cbsInfo = new ConflictStatisticsInfo();
-    			cbsInfo.load(cbs);
+    			cbsInfo.load(getSolver(), cbs);
     			iProgress.setPhase("Saving conflict-based statistics ...", 1);
     			for (Enumeration e=iSolutions.elements();e.hasMoreElements();) {
     				Solution solution = (Solution)e.nextElement();
@@ -551,7 +551,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		iProgress.setPhase("Saving variable infos ...", getModel().variables().size());
     		for (Lecture lecture: getModel().variables()) {
-    			Placement placement = lecture.getAssignment();
+    			Placement placement = getAssignment().getValue(lecture);
     			if (placement!=null) {
     				Assignment assignment = (Assignment)iAssignments.get(lecture.getClassId()); 
     				AssignmentInfo assignmentInfo = new AssignmentInfo();
@@ -570,13 +570,14 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
     		iProgress.setPhase("Saving btb instructor infos ...", getModel().variables().size());
-    		for (Lecture lecture1: getModel().assignedVariables()) {
-    			Placement placement1 = (Placement)lecture1.getAssignment();
+    		for (Lecture lecture1: getModel().variables()) {
+    			Placement placement1 = (Placement)getAssignment().getValue(lecture1);
     			iProgress.incProgress();
+    			if (placement1 == null) continue;
     			for (InstructorConstraint ic: lecture1.getInstructorConstraints()) {
-    				for (Lecture lecture2: ic.assignedVariables()) {
-    					Placement placement2 = (Placement)lecture2.getAssignment();
-    					if (lecture2.getClassId().compareTo(lecture1.getClassId())<=0) continue;
+    				for (Lecture lecture2: ic.variables()) {
+    					Placement placement2 = (Placement)getAssignment().getValue(lecture2);
+    					if (placement2 == null || lecture2.getClassId().compareTo(lecture1.getClassId()) <= 0) continue;
     					int pref = ic.getDistancePreference(placement1, placement2);
     					if (pref==PreferenceLevel.sIntLevelNeutral) continue;
     					iProgress.trace("Back-to-back instructor constraint ("+pref+") between "+placement1+" and "+placement2);
@@ -611,7 +612,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		iProgress.setPhase("Saving group constraint infos ...", getModel().getGroupConstraints().size());
     		for (GroupConstraint gc: getModel().getGroupConstraints()) {
-    			GroupConstraintInfo gcInfo = new GroupConstraintInfo(gc);
+    			GroupConstraintInfo gcInfo = new GroupConstraintInfo(getAssignment(), gc);
     			ConstraintInfo constraintInfo = new ConstraintInfo();
     			constraintInfo.setDefinition(defDistributionInfo);
     			constraintInfo.setOpt(gcInfo.isSatisfied()?"1":"0");
@@ -619,7 +620,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			HashSet gcAssignments = new HashSet();
     			for (Lecture lecture: gc.variables()) {
     				Assignment assignment = (Assignment)iAssignments.get(lecture.getClassId());
-    				iProgress.trace("  "+lecture.getAssignment());
+    				iProgress.trace("  "+getAssignment().getValue(lecture));
     				if (assignment!=null)
     					gcAssignments.add(assignment);
     			}
@@ -642,11 +643,11 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		iProgress.setPhase("Saving student enrollment infos ...", getModel().getJenrlConstraints().size());
     		for (JenrlConstraint jc: getModel().getJenrlConstraints()) {
-    			if (!jc.isInConflict() || !jc.isOfTheSameProblem()) {
+    			if (!jc.isInConflict(getAssignment()) || !jc.isOfTheSameProblem()) {
     				iProgress.incProgress();
     				continue;
     			}
-    			JenrlInfo jInfo = new JenrlInfo(jc);
+    			JenrlInfo jInfo = new JenrlInfo(getSolver(), jc);
     			ConstraintInfo constraintInfo = new ConstraintInfo();
     			constraintInfo.setDefinition(defJenrlInfo);
     			constraintInfo.setOpt((jInfo.isSatisfied()?"S":"")+(jInfo.isHard()?"H":"")+(jInfo.isDistance()?"D":"")+(jInfo.isFixed()?"F":"")+(jInfo.isImportant()?"I":"")+(jInfo.isInstructor()?"X":""));

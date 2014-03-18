@@ -25,14 +25,15 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 
+import org.cpsolver.coursett.constraint.SpreadConstraint;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.solver.Solver;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.util.Constants;
 
-import net.sf.cpsolver.coursett.constraint.SpreadConstraint;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.solver.Solver;
 
 /**
  * @author Tomas Muller
@@ -43,8 +44,9 @@ public class SameSubpartBalancingReport implements Serializable {
 	
 	public SameSubpartBalancingReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
+		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		for (SpreadConstraint spread: model.getSpreadConstraints()) {
-			if (spread.getPenalty()==0) continue;
+			if (spread.getPenalty(assignment)==0) continue;
 			iGroups.add(new SameSubpartBalancingGroup(solver,spread));
 		}
 		
@@ -62,6 +64,8 @@ public class SameSubpartBalancingReport implements Serializable {
 		private HashSet[][] iCourses;
 		
 		public SameSubpartBalancingGroup(Solver solver, SpreadConstraint spread) {
+			Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
+			SpreadConstraint.SpreadConstraintContext context = spread.getContext(assignment);
 			iName = spread.getName();
 			iLimit = new int[Constants.SLOTS_PER_DAY_NO_EVENINGS][Constants.NR_DAYS_WEEK];
 			iUsage = new int[Constants.SLOTS_PER_DAY_NO_EVENINGS][Constants.NR_DAYS_WEEK];
@@ -69,10 +73,10 @@ public class SameSubpartBalancingReport implements Serializable {
 			Hashtable detailCache = new Hashtable();
 			for (int i=0;i<Constants.SLOTS_PER_DAY_NO_EVENINGS;i++) {
 				for (int j=0;j<Constants.NR_DAYS_WEEK;j++) {
-					iLimit[i][j]=spread.getMaxCourses()[i][j];
-					iUsage[i][j]=spread.getNrCourses()[i][j];
-					iCourses[i][j]=new HashSet(spread.getCourses()[i][j].size());
-					for (Placement placement: spread.getCourses()[i][j]) {
+					iLimit[i][j]=context.getMaxCourses()[i][j];
+					iUsage[i][j]=context.getNrCourses()[i][j];
+					iCourses[i][j]=new HashSet(context.getCourses()[i][j].size());
+					for (Placement placement: context.getCourses()[i][j]) {
 						Lecture lecture = (Lecture)placement.variable();
 						ClassAssignmentDetails ca = (ClassAssignmentDetails)detailCache.get(lecture.getClassId());
 						if (ca==null) {

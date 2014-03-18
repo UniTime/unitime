@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.model;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseDatePatternPref;
 
 /**

@@ -83,12 +83,12 @@ public class SectioningReports extends Composite {
 	private boolean iOnline = false;
 	
 	public static enum ReportType {
-		TIME_CONFLICTS("Time Conflicts", "net.sf.cpsolver.studentsct.report.SectionConflictTable", "type", "OVERLAPS", "overlapsIncludeAll", "true"),
-		AVAILABLE_CONFLICTS("Availability Conflicts", "net.sf.cpsolver.studentsct.report.SectionConflictTable", "type", "UNAVAILABILITIES", "overlapsIncludeAll", "true"),
-		SECTION_CONFLICTS("Time & Availability Conflicts", "net.sf.cpsolver.studentsct.report.SectionConflictTable", "type", "OVERLAPS_AND_UNAVAILABILITIES", "overlapsIncludeAll", "true"),
-		UNBALANCED_SECTIONS("Unbalanced Classes", "net.sf.cpsolver.studentsct.report.UnbalancedSectionsTable"),
-		DISTANCE_CONFLICTS("Distance Conflicts", "net.sf.cpsolver.studentsct.report.DistanceConflictTable"),
-		TIME_OVERLAPS("Time Overlaps", "net.sf.cpsolver.studentsct.report.TimeOverlapConflictTable"),
+		TIME_CONFLICTS("Time Conflicts", "org.cpsolver.studentsct.report.SectionConflictTable", "type", "OVERLAPS", "overlapsIncludeAll", "true"),
+		AVAILABLE_CONFLICTS("Availability Conflicts", "org.cpsolver.studentsct.report.SectionConflictTable", "type", "UNAVAILABILITIES", "overlapsIncludeAll", "true"),
+		SECTION_CONFLICTS("Time & Availability Conflicts", "org.cpsolver.studentsct.report.SectionConflictTable", "type", "OVERLAPS_AND_UNAVAILABILITIES", "overlapsIncludeAll", "true"),
+		UNBALANCED_SECTIONS("Unbalanced Classes", "org.cpsolver.studentsct.report.UnbalancedSectionsTable"),
+		DISTANCE_CONFLICTS("Distance Conflicts", "org.cpsolver.studentsct.report.DistanceConflictTable"),
+		TIME_OVERLAPS("Time Overlaps", "org.cpsolver.studentsct.report.TimeOverlapConflictTable"),
 		;
 		
 		String iName, iImplementation;

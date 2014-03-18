@@ -38,6 +38,26 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.exam.heuristics.ExamNeighbourSelection;
+import org.cpsolver.exam.model.Exam;
+import org.cpsolver.exam.model.ExamInstructor;
+import org.cpsolver.exam.model.ExamOwner;
+import org.cpsolver.exam.model.ExamPeriod;
+import org.cpsolver.exam.model.ExamPeriodPlacement;
+import org.cpsolver.exam.model.ExamPlacement;
+import org.cpsolver.exam.model.ExamRoom;
+import org.cpsolver.exam.model.ExamRoomPlacement;
+import org.cpsolver.exam.model.ExamRoomSharing;
+import org.cpsolver.ifs.extension.ConflictStatistics;
+import org.cpsolver.ifs.extension.Extension;
+import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.solution.Solution;
+import org.cpsolver.ifs.solver.ParallelSolver;
+import org.cpsolver.ifs.util.Callback;
+import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.Progress;
+import org.cpsolver.ifs.util.ProgressWriter;
+import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
@@ -56,31 +76,11 @@ import org.unitime.timetable.solver.exam.ui.ExamSuggestionsInfo;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 
-import net.sf.cpsolver.exam.heuristics.ExamNeighbourSelection;
-import net.sf.cpsolver.exam.model.Exam;
-import net.sf.cpsolver.exam.model.ExamInstructor;
-import net.sf.cpsolver.exam.model.ExamOwner;
-import net.sf.cpsolver.exam.model.ExamPeriod;
-import net.sf.cpsolver.exam.model.ExamPeriodPlacement;
-import net.sf.cpsolver.exam.model.ExamPlacement;
-import net.sf.cpsolver.exam.model.ExamRoom;
-import net.sf.cpsolver.exam.model.ExamRoomPlacement;
-import net.sf.cpsolver.exam.model.ExamRoomSharing;
-import net.sf.cpsolver.ifs.extension.ConflictStatistics;
-import net.sf.cpsolver.ifs.extension.Extension;
-import net.sf.cpsolver.ifs.model.Constraint;
-import net.sf.cpsolver.ifs.solution.Solution;
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.ifs.util.Callback;
-import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.Progress;
-import net.sf.cpsolver.ifs.util.ProgressWriter;
-import net.sf.cpsolver.ifs.util.ToolBox;
 
 /**
  * @author Tomas Muller
  */
-public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolverProxy {
+public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements ExamSolverProxy {
     private static Log sLog = LogFactory.getLog(ExamSolver.class);
     private int iDebugLevel = Progress.MSGLEVEL_INFO;
     private boolean iWorking = false;
@@ -168,7 +168,7 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         super.dispose();
         if (currentSolution()!=null && currentSolution().getModel()!=null)
             Progress.removeInstance(currentSolution().getModel());
-        setInitalSolution((net.sf.cpsolver.ifs.solution.Solution)null);
+        setInitalSolution((org.cpsolver.ifs.solution.Solution)null);
         if (unregister && iDisposeListener!=null) iDisposeListener.onDispose();
         iCbsInfo = null;
     }
@@ -211,14 +211,16 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
     public ExamAssignment getAssignment(long examId) {
         synchronized (currentSolution()) {
             Exam exam = getExam(examId);
-            return (exam==null || exam.getAssignment()==null?null:new ExamAssignment((ExamPlacement)exam.getAssignment()));
+            ExamPlacement placement = (exam == null ? null : currentSolution().getAssignment().getValue(exam));
+            return placement == null ? null : new ExamAssignment(placement, currentSolution().getAssignment());
         }
     }
     
     public ExamAssignmentInfo getAssignmentInfo(long examId) {
         synchronized (currentSolution()) {
             Exam exam = getExam(examId);
-            return (exam==null?null:new ExamAssignmentInfo(exam,(ExamPlacement)exam.getAssignment()));
+            ExamPlacement placement = (exam == null ? null : currentSolution().getAssignment().getValue(exam));
+            return placement == null ? null : new ExamAssignmentInfo(placement, currentSolution().getAssignment());
         }
     }
     
@@ -262,7 +264,7 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                 }
                 if (room!=null) rooms.add(room);
             }
-            return new ExamAssignmentInfo(exam, new ExamPlacement(exam, period, rooms));
+            return new ExamAssignmentInfo(exam, new ExamPlacement(exam, period, rooms), currentSolution().getAssignment());
         }
     }
     
@@ -287,9 +289,11 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                 rooms.add(room);
             }
             ExamPlacement p = new ExamPlacement(exam, period, rooms);
-            Set conflicts = currentSolution().getModel().conflictValues(p);
+            Set conflicts = currentSolution().getModel().conflictValues(currentSolution().getAssignment(), p);
             if (conflicts.isEmpty()) {
-                exam.assign(0, p);
+            	ExamPlacement old = currentSolution().getAssignment().getValue(exam);
+            	currentSolution().getAssignment().assign(0, p);
+            	Progress.getInstance(currentSolution().getModel()).info(exam.getName() + ": " + (old == null ? "not assigned" : old.getName()) + " &rarr; " + p.getName());
                 return null;
             } else {
                 ExamPlacement other = (ExamPlacement)conflicts.iterator().next();
@@ -302,8 +306,10 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         synchronized (currentSolution()) {
             Exam exam = getExam(examInfo.getExamId());
             if (exam==null) return "Examination "+examInfo.getExamName()+" not found.";
-            if (exam.getAssignment()==null) return "Examination "+examInfo.getExamName()+" is not assigned.";
-            exam.unassign(0);
+            ExamPlacement placement = currentSolution().getAssignment().getValue(exam);
+            if (placement == null) return "Examination "+examInfo.getExamName()+" is not assigned.";
+            Progress.getInstance(currentSolution().getModel()).info(exam.getName() + ": " + placement.getName() + " &rarr; not assigned");
+            currentSolution().getAssignment().unassign(0, exam);
             return null;
         }
     }
@@ -370,7 +376,7 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         setInitalSolution(model);
         initSolver();
         
-        ExamDatabaseLoader loader = new ExamDatabaseLoader(model);
+        ExamDatabaseLoader loader = new ExamDatabaseLoader(model, currentSolution().getAssignment());
         loader.setCallback(getLoadingDoneCallback());
         iWorkThread = new Thread(loader);
         iWorkThread.setPriority(THREAD_PRIORITY);
@@ -392,7 +398,7 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         setInitalSolution(model);
         initSolver();
         
-        ExamDatabaseLoader loader = new ExamDatabaseLoader(model);
+        ExamDatabaseLoader loader = new ExamDatabaseLoader(model, currentSolution().getAssignment());
         loader.setCallback(callBack);
         iWorkThread = new Thread(loader);
         iWorkThread.start();
@@ -428,8 +434,9 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         public ReloadingDoneCallback() {
             iSolutionId = getProperties().getProperty("General.SolutionId");
             for (Exam exam: currentSolution().getModel().variables()) {
-                if (exam.getAssignment()!=null)
-                    iCurrentAssignmentTable.put(exam.getId(),exam.getAssignment());
+            	ExamPlacement placement = currentSolution().getAssignment().getValue(exam);
+                if (placement!=null)
+                    iCurrentAssignmentTable.put(exam.getId(),placement);
                 if (exam.getBestAssignment()!=null)
                     iBestAssignmentTable.put(exam.getId(),exam.getBestAssignment());
                 if (exam.getInitialAssignment()!=null)
@@ -467,9 +474,9 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             return new ExamPlacement(exam,period,rooms);
         }
         private void assign(ExamPlacement placement) {
-            Map<Constraint<Exam,ExamPlacement>, Set<ExamPlacement>> conflictConstraints = currentSolution().getModel().conflictConstraints(placement);
+            Map<Constraint<Exam,ExamPlacement>, Set<ExamPlacement>> conflictConstraints = currentSolution().getModel().conflictConstraints(currentSolution().getAssignment(), placement);
             if (conflictConstraints.isEmpty()) {
-                placement.variable().assign(0,placement);
+            	currentSolution().getAssignment().assign(0,placement);
             } else {
                 iProgress.warn("Unable to assign "+placement.variable().getName()+" := "+placement.getName());
                 iProgress.warn("&nbsp;&nbsp;Reason:");
@@ -484,7 +491,7 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         }
         private void unassignAll() {
             for (Exam exam: currentSolution().getModel().variables()) {
-                if (exam.getAssignment()!=null) exam.unassign(0);
+            	currentSolution().getAssignment().unassign(0, exam);
             }
         }
         public void execute() {
@@ -574,7 +581,7 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                 FileOutputStream fos = null;
                 try {
                     fos = new FileOutputStream(outXmlFile);
-                    Document document = ((ExamModel)currentSolution().getModel()).save();
+                    Document document = ((ExamModel)currentSolution().getModel()).save(currentSolution().getAssignment());
                     ExamConflictStatisticsInfo cbsInfo = getCbsInfo();
                     if (cbsInfo!=null)
                         cbsInfo.save(document.getRootElement().addElement("cbsInfo"));
@@ -642,7 +649,7 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             initSolver();
 
             Document document = (new SAXReader()).read(inXmlFile); 
-            model.load(document, new Callback() {
+            model.load(document, currentSolution().getAssignment(), new Callback() {
                 public void execute() {
                     saveBest();
                 }
@@ -671,7 +678,7 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
     public void clear() {
         synchronized (currentSolution()) {
             for (Exam exam: currentSolution().getModel().variables()) {
-                if (exam.getAssignment()!=null) exam.unassign(0);
+            	currentSolution().getAssignment().unassign(0, exam);
             }
             currentSolution().clearBest();
         }    
@@ -681,8 +688,9 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         synchronized (currentSolution()) {
             Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
             for (Exam exam: currentSolution().getModel().variables()) {
-                if (exam.getAssignment()!=null)
-                    ret.add(new ExamAssignmentInfo((ExamPlacement)exam.getAssignment()));
+            	ExamPlacement placement = currentSolution().getAssignment().getValue(exam);
+            	if (placement != null)
+                    ret.add(new ExamAssignmentInfo(placement, currentSolution().getAssignment()));
             }
             return ret;
         }
@@ -691,7 +699,8 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         synchronized (currentSolution()) {
             Vector<ExamInfo> ret = new Vector<ExamInfo>();
             for (Exam exam: currentSolution().getModel().variables()) {
-                if (exam.getAssignment()==null)
+            	ExamPlacement placement = currentSolution().getAssignment().getValue(exam);
+            	if (placement == null)
                     ret.add(new ExamInfo(exam));
             }
             return ret;
@@ -709,8 +718,11 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                     ExamOwner ecs = (ExamOwner)f.next();
                     hasSubjectArea = ecs.getName().startsWith(sa);
                 }
-                if (hasSubjectArea && exam.getAssignment()!=null)
-                    ret.add(new ExamAssignmentInfo((ExamPlacement)exam.getAssignment()));
+                if (hasSubjectArea) {
+                	ExamPlacement placement = currentSolution().getAssignment().getValue(exam);
+                	if (placement!=null)
+                		ret.add(new ExamAssignmentInfo(placement, currentSolution().getAssignment()));
+                }
             }
             return ret;
         }
@@ -726,8 +738,11 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                     ExamOwner ecs = f.next();
                     hasSubjectArea = ecs.getName().startsWith(sa);
                 }
-                if (hasSubjectArea && exam.getAssignment()==null)
-                    ret.add(new ExamInfo(exam));
+                if (hasSubjectArea) {
+                	ExamPlacement placement = currentSolution().getAssignment().getValue(exam);
+                	if (placement==null)
+                		ret.add(new ExamInfo(exam));
+                }
             }
             return ret;
         }
@@ -744,8 +759,8 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             if (room==null) return null;
             Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
             for (ExamPeriod period: ((ExamModel)currentSolution().getModel()).getPeriods()) {
-                for (ExamPlacement placement: room.getPlacements(period)) {
-                	ret.add(new ExamAssignmentInfo(placement));
+                for (ExamPlacement placement: room.getPlacements(currentSolution().getAssignment(), period)) {
+                	ret.add(new ExamAssignmentInfo(placement, currentSolution().getAssignment()));
                 }
             }
             return ret;
@@ -763,11 +778,11 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             if (instructor==null) return null;
             Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
             for (ExamPeriod period: ((ExamModel)currentSolution().getModel()).getPeriods()) {
-                Set exams = instructor.getExams(period);
+                Set exams = instructor.getExams(currentSolution().getAssignment(), period);
                 if (exams!=null)
                     for (Iterator i=exams.iterator();i.hasNext();) {
                         Exam exam = (Exam)i.next();
-                        ret.add(new ExamAssignmentInfo((ExamPlacement)exam.getAssignment()));                        
+                        ret.add(new ExamAssignmentInfo(currentSolution().getAssignment().getValue(exam), currentSolution().getAssignment()));                        
                     }
             }
             return ret;
@@ -791,10 +806,10 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                     }
                     if (!hasSubjectArea) continue;
                 }
-                if (!ToolBox.equals(exam.getInitialAssignment(),exam.getAssignment())) {
+                if (!ToolBox.equals(exam.getInitialAssignment(),currentSolution().getAssignment().getValue(exam))) {
                     changes.add(new ExamAssignmentInfo[] {
-                            new ExamAssignmentInfo(exam,(ExamPlacement)exam.getInitialAssignment()),
-                            new ExamAssignmentInfo(exam,(ExamPlacement)exam.getAssignment())});
+                            new ExamAssignmentInfo(exam,exam.getInitialAssignment(), currentSolution().getAssignment()),
+                            new ExamAssignmentInfo(exam,currentSolution().getAssignment().getValue(exam), currentSolution().getAssignment())});
                 }
             }
         }
@@ -814,10 +829,10 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                     }
                     if (!hasSubjectArea) continue;
                 }
-                if (!ToolBox.equals(exam.getBestAssignment(),exam.getAssignment())) {
+                if (!ToolBox.equals(exam.getBestAssignment(),currentSolution().getAssignment().getValue(exam))) {
                     changes.add(new ExamAssignmentInfo[] {
-                            new ExamAssignmentInfo(exam,(ExamPlacement)exam.getBestAssignment()),
-                            new ExamAssignmentInfo(exam,(ExamPlacement)exam.getAssignment())});
+                            new ExamAssignmentInfo(exam,exam.getBestAssignment(),currentSolution().getAssignment()),
+                            new ExamAssignmentInfo(exam,currentSolution().getAssignment().getValue(exam),currentSolution().getAssignment())});
                 }
             }
         }
@@ -884,39 +899,39 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             for (ExamAssignment assignment: change.getAssignments()) {
                 ExamPlacement placement = getPlacement(assignment);
                 if (placement==null) return null;
-                if (placement.variable().getAssignment()!=null)
-                    undoAssign.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                if (currentSolution().getAssignment().getValue(placement.variable())!=null)
+                    undoAssign.put((Exam)placement.variable(), currentSolution().getAssignment().getValue(placement.variable()));
                 else
                     undoUnassing.add((Exam)placement.variable());
                 assign.add(placement);
                 unassign.add((Exam)placement.variable());
             }
-            for (Exam exam : unassign) exam.unassign(0);
+            for (Exam exam : unassign) currentSolution().getAssignment().unassign(0, exam);
             for (ExamPlacement placement : assign) {
-                for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
+                for (Iterator i=placement.variable().getModel().conflictValues(currentSolution().getAssignment(), placement).iterator();i.hasNext();) {
                     ExamPlacement conflict = (ExamPlacement)i.next();
                     Exam conflictingExam = (Exam)conflict.variable();
                     if (!undoAssign.containsKey(conflictingExam) && !undoUnassing.contains(conflictingExam)) 
                         undoAssign.put(conflictingExam,conflict);
                     conflicts.add(conflict);
-                    conflict.variable().unassign(0);
+                    currentSolution().getAssignment().unassign(0, conflict.variable());
                 }
-                placement.variable().assign(0, placement);
+                currentSolution().getAssignment().assign(0, placement);
             }
             change.getAssignments().clear();
             change.getConflicts().clear();
             for (ExamPlacement assignment : assign)
                 if (!conflicts.contains(assignment)) 
-                    change.getAssignments().add(new ExamAssignmentInfo(assignment));
+                    change.getAssignments().add(new ExamAssignmentInfo(assignment, currentSolution().getAssignment()));
             for (Exam exam: undoUnassing)
-                if (exam.getAssignment()!=null) exam.unassign(0);
+                if (currentSolution().getAssignment().getValue(exam)!=null) currentSolution().getAssignment().unassign(0, exam);
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                entry.getKey().unassign(0);
+            	currentSolution().getAssignment().unassign(0, entry.getKey());
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                entry.getKey().assign(0, entry.getValue());
+            	currentSolution().getAssignment().assign(0, entry.getValue());
             for (ExamPlacement conflict : conflicts) {
                 ExamPlacement original = undoAssign.get((Exam)conflict.variable());
-                change.getConflicts().add(new ExamAssignment(original==null?conflict:original));
+                change.getConflicts().add(new ExamAssignment(original==null?conflict:original, currentSolution().getAssignment()));
             }
             return change;            
         }
@@ -943,24 +958,24 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                     ExamPlacement placement = getPlacement(assignment);
                     if (placement==null) continue;
                     undoAssign.put((Exam)placement.variable(),placement);
-                    placement.variable().unassign(0);
+                    currentSolution().getAssignment().unassign(0, placement.variable());
                 }
                 for (ExamAssignment assignment: change.getAssignments()) {
                     ExamPlacement placement = getPlacement(assignment);
                     if (placement==null) continue;
-                    for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
+                    for (Iterator i=placement.variable().getModel().conflictValues(currentSolution().getAssignment(), placement).iterator();i.hasNext();) {
                         ExamPlacement conflict = (ExamPlacement)i.next();
                         if (conflict.variable().equals(placement.variable())) continue;
                         Exam conflictingExam = (Exam)conflict.variable();
                         if (!undoAssign.containsKey(conflictingExam) && !undoUnassing.contains(conflictingExam)) 
                             undoAssign.put(conflictingExam,conflict);
-                        conflict.variable().unassign(0);
+                        currentSolution().getAssignment().unassign(0, conflict.variable());
                     }
-                    if (placement.variable().getAssignment()!=null)
-                        undoAssign.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                    if (currentSolution().getAssignment().getValue(placement.variable())!=null)
+                        undoAssign.put((Exam)placement.variable(), currentSolution().getAssignment().getValue(placement.variable()));
                     else
                         undoUnassing.add((Exam)placement.variable());
-                    placement.variable().assign(0, placement);
+                    currentSolution().getAssignment().assign(0, placement);
                 }
             }
             
@@ -975,12 +990,12 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                 if (!ExamInfoModel.match(room.getName(), filter)) continue;
                 if (!room.isAvailable(period.getPeriod())) continue;
                 
-                boolean conf = !exam.checkDistributionConstraints(room);
+                boolean conf = !exam.checkDistributionConstraints(currentSolution().getAssignment(), room);
                 if (sharing == null) {
-                	for (ExamPlacement p: room.getRoom().getPlacements(period.getPeriod()))
+                	for (ExamPlacement p: room.getRoom().getPlacements(currentSolution().getAssignment(), period.getPeriod()))
                 		if (!p.variable().equals(exam)) conf = true;
                 } else {
-                	if (sharing.inConflict(exam, room.getRoom().getPlacements(period.getPeriod()), room.getRoom()))
+                	if (sharing.inConflict(exam, room.getRoom().getPlacements(currentSolution().getAssignment(), period.getPeriod()), room.getRoom()))
                 		conf = true;
                 }
 
@@ -991,11 +1006,11 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             
             //undo change
             for (Exam undoExam: undoUnassing)
-                if (undoExam.getAssignment()!=null) undoExam.unassign(0);
+                if (currentSolution().getAssignment().getValue(undoExam)!=null) currentSolution().getAssignment().unassign(0, undoExam);
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                entry.getKey().unassign(0);
+            	currentSolution().getAssignment().unassign(0, entry.getKey());
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                entry.getKey().assign(0, entry.getValue());
+            	currentSolution().getAssignment().assign(0, entry.getValue());
 
             return rooms;
         }        
@@ -1015,44 +1030,44 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                     ExamPlacement placement = getPlacement(assignment);
                     if (placement==null) continue;
                     undoAssign.put((Exam)placement.variable(),placement);
-                    placement.variable().unassign(0);
+                    currentSolution().getAssignment().unassign(0, placement.variable());
                 }
                 for (ExamAssignment assignment: change.getAssignments()) {
                     ExamPlacement placement = getPlacement(assignment);
                     if (placement==null) continue;
-                    for (Iterator i=placement.variable().getModel().conflictValues(placement).iterator();i.hasNext();) {
+                    for (Iterator i=placement.variable().getModel().conflictValues(currentSolution().getAssignment(), placement).iterator();i.hasNext();) {
                         ExamPlacement conflict = (ExamPlacement)i.next();
                         if (conflict.variable().equals(placement.variable())) continue;
                         Exam conflictingExam = (Exam)conflict.variable();
                         if (!undoAssign.containsKey(conflictingExam) && !undoUnassing.contains(conflictingExam)) 
                             undoAssign.put(conflictingExam,conflict);
-                        conflict.variable().unassign(0);
+                        currentSolution().getAssignment().unassign(0, conflict.variable());
                     }
-                    if (placement.variable().getAssignment()!=null)
-                        undoAssign.put((Exam)placement.variable(),(ExamPlacement)placement.variable().getAssignment());
+                    if (currentSolution().getAssignment().getValue(placement.variable())!=null)
+                        undoAssign.put((Exam)placement.variable(),currentSolution().getAssignment().getValue(placement.variable()));
                     else
                         undoUnassing.add((Exam)placement.variable());
-                    placement.variable().assign(0, placement);
+                    currentSolution().getAssignment().assign(0, placement);
                 }
             }
 
             Vector<ExamAssignmentInfo> periods = new Vector<ExamAssignmentInfo>();
             for (ExamPeriodPlacement period: exam.getPeriodPlacements()) {
-                Set rooms = exam.findBestAvailableRooms(period);
+                Set rooms = exam.findBestAvailableRooms(currentSolution().getAssignment(), period);
                 if (rooms==null) rooms = new HashSet();
-                boolean conf = !exam.checkDistributionConstraints(period);
-                ExamAssignmentInfo assignment = new ExamAssignmentInfo(new ExamPlacement(exam, period, rooms));
+                boolean conf = !exam.checkDistributionConstraints(currentSolution().getAssignment(), period);
+                ExamAssignmentInfo assignment = new ExamAssignmentInfo(new ExamPlacement(exam, period, rooms), currentSolution().getAssignment());
                 if (conf) assignment.setPeriodPref("P");
                 periods.add(assignment);
             }
             
             //undo change
             for (Exam undoExam: undoUnassing)
-                if (undoExam.getAssignment()!=null) undoExam.unassign(0);
+                if (currentSolution().getAssignment().getValue(undoExam)!=null) currentSolution().getAssignment().unassign(0, undoExam);
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                entry.getKey().unassign(0);
+            	currentSolution().getAssignment().unassign(0, entry.getKey());
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
-                entry.getKey().assign(0, entry.getValue());
+            	currentSolution().getAssignment().assign(0, entry.getValue());
             
             return periods;
         }
@@ -1100,8 +1115,8 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             if (room==null) return null;
             TreeSet<ExamAssignment> ret = new TreeSet();
             for (ExamPeriod period: model.getPeriods()) {
-                for (ExamPlacement placement: room.getPlacements(period))
-                	ret.add(new ExamAssignment(placement));
+                for (ExamPlacement placement: room.getPlacements(currentSolution().getAssignment(), period))
+                	ret.add(new ExamAssignment(placement, currentSolution().getAssignment()));
             }
             return ret;
         }
@@ -1211,8 +1226,9 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
     	synchronized (super.currentSolution()) {
     		Map<String,String> info = super.currentSolution().getBestInfo();
     		try {
-    			if (info == null || getSolutionComparator().isBetterThanBestSolution(super.currentSolution()))
-    				info = super.currentSolution().getModel().getInfo();
+    			Solution<Exam, ExamPlacement> solution = getWorkingSolution();
+    			if (info == null || getSolutionComparator().isBetterThanBestSolution(solution))
+    				info = solution.getModel().getInfo(solution.getAssignment());
     		} catch (ConcurrentModificationException e) {}
     		return info;
     	}
@@ -1235,7 +1251,7 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
 
             ByteArrayOutputStream ret = new ByteArrayOutputStream();
             
-            Document document = ((ExamModel)currentSolution().getModel()).save();
+            Document document = ((ExamModel)currentSolution().getModel()).save(currentSolution().getAssignment());
             
             if (anonymize) {
             	Element log = document.getRootElement().element("log");

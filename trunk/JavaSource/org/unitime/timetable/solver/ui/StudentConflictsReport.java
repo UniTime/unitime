@@ -23,10 +23,13 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
-import net.sf.cpsolver.coursett.model.Lecture;
-import net.sf.cpsolver.coursett.model.TimetableModel;
-import net.sf.cpsolver.ifs.solver.Solver;
+import org.cpsolver.coursett.constraint.JenrlConstraint;
+import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.coursett.model.Placement;
+import org.cpsolver.coursett.model.TimetableModel;
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.solver.Solver;
+
 
 /**
  * @author Tomas Muller
@@ -38,16 +41,17 @@ public class StudentConflictsReport implements Serializable {
 
 	public StudentConflictsReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
+		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		for (JenrlConstraint jenrl: model.getJenrlConstraints()) {
-			if (jenrl.isInConflict() && !jenrl.isToBeIgnored())
+			if (jenrl.isInConflict(assignment) && !jenrl.isToBeIgnored())
 				iGroups.add(new JenrlInfo(solver, jenrl));
 		}
-		for (Lecture lecture: model.assignedVariables()) {
+		for (Lecture lecture: assignment.assignedVariables()) {
 			iGroups.addAll(JenrlInfo.getCommitedJenrlInfos(solver, lecture).values());
 		}
 		if (model.constantVariables() != null)
 			for (Lecture lecture: model.constantVariables()) {
-				if (lecture.getAssignment() != null)
+				if (assignment.getValue(lecture) != null)
 					iGroups.addAll(JenrlInfo.getCommitedJenrlInfos(solver, lecture).values());
 			}
 	}

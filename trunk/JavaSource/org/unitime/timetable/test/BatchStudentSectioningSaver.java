@@ -26,6 +26,17 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.ifs.solver.Solver;
+import org.cpsolver.studentsct.StudentSectioningSaver;
+import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
+import org.cpsolver.studentsct.model.CourseRequest;
+import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.Offering;
+import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.model.Subpart;
 import org.hibernate.Transaction;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -37,17 +48,6 @@ import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
 
-import net.sf.cpsolver.ifs.solver.Solver;
-import net.sf.cpsolver.studentsct.StudentSectioningSaver;
-import net.sf.cpsolver.studentsct.model.Config;
-import net.sf.cpsolver.studentsct.model.Course;
-import net.sf.cpsolver.studentsct.model.CourseRequest;
-import net.sf.cpsolver.studentsct.model.Enrollment;
-import net.sf.cpsolver.studentsct.model.Offering;
-import net.sf.cpsolver.studentsct.model.Request;
-import net.sf.cpsolver.studentsct.model.Section;
-import net.sf.cpsolver.studentsct.model.Student;
-import net.sf.cpsolver.studentsct.model.Subpart;
 
 /**
  * @author Tomas Muller
@@ -112,11 +112,11 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
         }
         for (Iterator e=student.getRequests().iterator();e.hasNext();) {
             Request request = (Request)e.next();
-            Enrollment enrollment = (Enrollment)request.getAssignment();
+            Enrollment enrollment = (Enrollment)getAssignment().getValue(request);
             if (request instanceof CourseRequest) {
                 CourseRequest courseRequest = (CourseRequest)request;
                 if (enrollment==null) {
-                    if (courseRequest.isWaitlist() && student.canAssign(courseRequest)) {
+                    if (courseRequest.isWaitlist() && student.canAssign(getAssignment(), courseRequest)) {
                         WaitList wl = new WaitList();
                         wl.setStudent(s);
                         wl.setCourseOffering(iCourses.get(((Course)courseRequest.getCourses().get(0)).getId()));
@@ -174,7 +174,7 @@ public class BatchStudentSectioningSaver extends StudentSectioningSaver {
             }
             
             if (iIncludeLastLikeStudents) {
-                getModel().computeOnlineSectioningInfos();
+                getModel().computeOnlineSectioningInfos(getAssignment());
                 
             	Hashtable<Long, SectioningInfo> infoTable = new Hashtable<Long, SectioningInfo>();
             	List<SectioningInfo> infos = hibSession.createQuery(

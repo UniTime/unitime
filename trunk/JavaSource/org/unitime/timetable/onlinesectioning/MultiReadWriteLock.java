@@ -32,7 +32,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.ifs.util.ToolBox;
+
 
 /**
  * @author Tomas Muller
