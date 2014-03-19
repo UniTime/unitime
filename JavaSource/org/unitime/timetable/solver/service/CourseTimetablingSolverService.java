@@ -241,6 +241,9 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
         if (properties.getProperty("Parallel.NrSolvers") == null) {
         	properties.setProperty("Parallel.NrSolvers", String.valueOf(Math.max(1, Runtime.getRuntime().availableProcessors() / 2)));
         }
+        if (properties.getPropertyBoolean("OnFlySectioning.Enabled", false)) {
+        	properties.setProperty("Parallel.NrSolvers", "1");
+        }
 
         properties.expand();
                 
