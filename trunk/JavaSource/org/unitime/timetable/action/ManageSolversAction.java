@@ -218,10 +218,10 @@ public class ManageSolversAction extends Action {
 		try {
 			WebTable.setOrder(sessionContext,"manageSolvers.ord",request.getParameter("ord"),1);
 			
-			WebTable webTable = new WebTable( 20,
+			WebTable webTable = new WebTable( 21,
 					"Manage Course Solvers", "manageSolvers.do?ord=%%",
-					new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Assign", "Total", "Time", "Stud", "Room", "Distr", "Instr", "TooBig", "Useless", "Pert", "Note", "Operation(s)"},
-					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+					new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Cores", "Assign", "Total", "Time", "Stud", "Room", "Distr", "Instr", "TooBig", "Useless", "Pert", "Note", "Operation(s)"},
+					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
 					null );
 			webTable.setRowStyle("white-space:nowrap");
 			
@@ -318,6 +318,8 @@ public class ManageSolversAction extends Action {
                 	"document.location='manageSolvers.do?op=Unload&puid=" + properties.getProperty("General.OwnerPuid")+ "';" +
                 	" event.cancelBubble=true;\">";
                 
+                int nrCores = Math.abs(properties.getPropertyInt("Parallel.NrSolvers", 4));
+                
 				webTable.addLine(onClick, new String[] {
 							(loaded==null?"N/A":sDF.format(loaded)),
 							(lastUsed==null?"N/A":sDF.format(lastUsed)),
@@ -327,6 +329,7 @@ public class ManageSolversAction extends Action {
 							status,
 							ownerName,
 							"<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>C" + solver.getUser() + "</span>",
+							String.valueOf(nrCores),
 							assigned,
 							totVal,
 							timePr,
@@ -348,6 +351,7 @@ public class ManageSolversAction extends Action {
 							status,
 							ownerName,
 							null,
+							nrCores,
 							assigned,
 							totVal,
 							timePr,
@@ -375,7 +379,7 @@ public class ManageSolversAction extends Action {
 		try {
 			WebTable.setOrder(sessionContext,"manageSolvers.ord2",request.getParameter("ord2"),1);
 			
-			WebTable webTable = new WebTable( 11,
+			WebTable webTable = new WebTable( 12,
 					"Available Servers", "manageSolvers.do?ord2=%%",
 					new String[] {"Host", "Version", "Started", "Available Memory", "NrCores", "Ping", "Usage", "NrInstances", "Active", "Working", "Passivated", "Operation(s)"},
 					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left","left","left","left"},
@@ -512,10 +516,10 @@ public class ManageSolversAction extends Action {
 	        try {
 	            WebTable.setOrder(sessionContext,"manageSolvers.ord3",request.getParameter("ord3"),1);
 	            
-	            WebTable webTable = new WebTable( 21,
+	            WebTable webTable = new WebTable( 22,
 	                    "Manage Examination Solvers", "manageSolvers.do?ord3=%%",
-	                    new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Type", "Assign", "Total", "StudConf", "InstConf", "Period", "Room", "RoomSplit", "RoomSize", "Distr", "Rot", "Pert", "Operation(s)"},
-	                    new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+	                    new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Cores", "Type", "Assign", "Total", "StudConf", "InstConf", "Period", "Room", "RoomSplit", "RoomSize", "Distr", "Rot", "Pert", "Operation(s)"},
+	                    new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
 	                    null );
 	            webTable.setRowStyle("white-space:nowrap");
 	            
@@ -583,6 +587,7 @@ public class ManageSolversAction extends Action {
                     	" event.cancelBubble=true;\">";
                     
                     ExamType examType = (examTypeId == null ? null : ExamTypeDAO.getInstance().get(examTypeId));
+                    int nrCores = Math.abs(properties.getPropertyInt("Parallel.NrSolvers", 4));
                     
 	                webTable.addLine(onClick, new String[] {
 	                            (loaded==null?"N/A":sDF.format(loaded)),
@@ -593,6 +598,7 @@ public class ManageSolversAction extends Action {
 	                            status,
 	                            runnerName, 
 	                            "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>X" + solver.getUser() + "</span>",
+	                            String.valueOf(nrCores),
 	                            (examType==null?"N/A?":examType.getLabel()),
 	                            (assigned==null?"N/A":assigned.indexOf(' ')>=0?assigned.substring(0,assigned.indexOf(' ')):assigned),
 	                            (totVal==null?"N/A":totVal),
@@ -615,6 +621,7 @@ public class ManageSolversAction extends Action {
 	                            status,
 	                            runnerName,
 	                            null,
+	                            nrCores,
 	                            examTypeId,
 	                            (assigned==null?"":assigned),
                                 (totVal==null?"":totVal),
@@ -643,10 +650,10 @@ public class ManageSolversAction extends Action {
            try {
                WebTable.setOrder(sessionContext,"manageSolvers.ord4",request.getParameter("ord4"),1);
                
-               WebTable webTable = new WebTable( 14,
+               WebTable webTable = new WebTable( 15,
                        "Manage Student Sectioning Solvers", "manageSolvers.do?ord4=%%",
-                       new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Assign", "Total", "CompSched", "DistConf", "Pert", "Operation(s)"},
-                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+                       new String[] {"Created", "Last Used", "Session", "Host", "Config", "Status", "Owner", "Mem", "Cores", "Assign", "Total", "CompSched", "DistConf", "Pert", "Operation(s)"},
+                       new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
                        null );
                webTable.setRowStyle("white-space:nowrap");
                
@@ -698,6 +705,8 @@ public class ManageSolversAction extends Action {
                    	"document.location='manageSolvers.do?op=Unload&sectionPuid=" + properties.getProperty("General.OwnerPuid")+ "';" +
                    	" event.cancelBubble=true;\">";
                    
+                   int nrCores = Math.abs(properties.getPropertyInt("Parallel.NrSolvers", 4));
+                   
                    webTable.addLine(onClick, new String[] {
                                (loaded==null?"N/A":sDF.format(loaded)),
                                (lastUsed==null?"N/A":sDF.format(lastUsed)),
@@ -707,6 +716,7 @@ public class ManageSolversAction extends Action {
                                status,
                                runnerName, 
                                "<span name='UniTimeGWT:SolverAllocatedMem' style='display: none;'>S" + solver.getUser() + "</span>",
+                               String.valueOf(nrCores),
                                (assigned==null?"N/A":assigned.indexOf(' ')>=0?assigned.substring(0,assigned.indexOf(' ')):assigned),
                                (totVal==null?"N/A":totVal),
                                (compSch==null?"N/A":compSch), 
@@ -722,6 +732,7 @@ public class ManageSolversAction extends Action {
                                status,
                                runnerName,
                                null,
+                               nrCores,
                                (assigned==null?"":assigned),
                                (totVal==null?"":totVal),
                                (compSch==null?"":compSch), 
@@ -743,7 +754,7 @@ public class ManageSolversAction extends Action {
            try {
                WebTable.setOrder(sessionContext,"manageSolvers.ord5",request.getParameter("ord5"),1);
                
-               WebTable webTable = new WebTable( 14,
+               WebTable webTable = new WebTable( 15,
                        "Manage Online Scheduling Servers", "manageSolvers.do?ord5=%%",
                        new String[] {"Created", "Session", "Host", "Mode", "Mem", "Assign", "Total", "CompSched", "DistConf", "TimeConf", "FreeConf", "AvgDisb", "Disb[>=10%]", "Operation(s)"},
                        new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
