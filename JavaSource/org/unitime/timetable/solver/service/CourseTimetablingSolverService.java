@@ -238,8 +238,12 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
         if (properties.getPropertyBoolean("General.DeterministicStudentSectioning", false))
         	properties.setProperty("StudentSectioning.Class", DeterministicStudentSectioning.class.getName());
         
+        if (properties.getProperty("Parallel.NrSolvers") == null) {
+        	properties.setProperty("Parallel.NrSolvers", String.valueOf(Math.max(1, Runtime.getRuntime().availableProcessors() / 2)));
+        }
+
         properties.expand();
-        
+                
         return properties;
 	}
 	

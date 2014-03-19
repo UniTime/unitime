@@ -137,6 +137,10 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
         if (properties.getProperty("Distances.Ellipsoid") == null || properties.getProperty("Distances.Ellipsoid").equals("DEFAULT"))
             properties.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty(ApplicationProperty.DistanceEllipsoid));
         
+        if (properties.getProperty("Parallel.NrSolvers") == null) {
+        	properties.setProperty("Parallel.NrSolvers", String.valueOf(Math.max(1, Runtime.getRuntime().availableProcessors() / 2)));
+        }
+
         properties.expand();
         
         return properties;
