@@ -598,6 +598,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Output")
 	String colOutput();
+	
+	@DefaultMessage("Conflict")
+	String colConflict();
 
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
