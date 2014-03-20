@@ -215,7 +215,7 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
 		return ret;
 	}
 	
-	private static String where(int type, int idx) {
+	static String where(int type, int idx) {
 		switch (type) {
 		case ExamOwner.sOwnerTypeClass:
 			return " and o" + idx + ".ownerType = " + type + " and o" + idx + ".ownerId = s" + idx + ".clazz.uniqueId";

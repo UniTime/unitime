@@ -60,7 +60,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class ExaminationEnrollmentTable extends EnrollmentTable {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-
+	
 	public ExaminationEnrollmentTable(boolean showHeader, boolean online) {
 		super(showHeader, online);
 		getTable().setStyleName("unitime-Enrollments");
@@ -108,6 +108,12 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 				ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colTime()));
 				ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colLocation()));
 				ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colInstructor()));
+				boolean hasConflicts = false;
+				for (RelatedObjectInterface obj: result.getExams())
+					if (obj.hasConflicts()) {
+						ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colConflict()));
+						hasConflicts = true; break;
+					}
 				table.addRow(null, ownersHeader);
 				table.addMouseClickListener(new UniTimeTable.MouseClickListener<EventInterface.RelatedObjectInterface>() {
 					@Override
@@ -199,6 +205,16 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 						row.add(new HTML());
 					}
 					
+					if (hasConflicts) {
+						if (obj.hasConflicts()) {
+							HTML html = new HTML(obj.getConflicts());
+							html.addStyleName("conflict");
+							row.add(html);
+						} else {
+							row.add(new HTML("&nbsp;", false));
+						}
+					}
+
 					int rowNumber = table.addRow(obj, row);
 					table.getRowFormatter().addStyleName(rowNumber, "owner-row");
 					for (int i = 0; i < table.getCellCount(rowNumber); i++)
@@ -408,7 +424,7 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 			case 7:
 				return (o1.hasInstructors() ? o1.getInstructorNames(",", MESSAGES) : "").compareToIgnoreCase(o2.hasInstructors() ? o2.getInstructorNames(",", MESSAGES) : "");
 			case 8:
-				return (o1.hasNote() ? o1.getNote() : "").compareToIgnoreCase(o2.hasNote() ? o2.getNote() : "");
+				return (o1.hasConflicts() ? o1.getConflicts() : "").compareToIgnoreCase(o2.hasConflicts() ? o2.getConflicts() : "");
 			default:
 				return 0;
 			}
