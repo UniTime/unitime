@@ -119,7 +119,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			}
 	}
 	
-	public SolverGridModel(Solver solver, InstructorConstraint instructor, int firstDay, int bgMode) {
+	public SolverGridModel(Solver solver, InstructorConstraint instructor, int firstDay, int bgMode, boolean showEvents) {
 		super(sResourceTypeInstructor, instructor.getResourceId());
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		setName(instructor.getName());
@@ -138,7 +138,8 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		}
 		if (instructor.getUnavailabilities()!=null) {
 			for (Placement p: instructor.getUnavailabilities()) {
-				init(solver, p, sBgModeNotAvailable, firstDay);
+				if (showEvents || p.getAssignmentId() != null)
+					init(solver, p, sBgModeNotAvailable, firstDay);
 			}
 		}
 		for (Student student: ((TimetableModel)solver.currentSolution().getModel()).getAllStudents()) {
@@ -501,7 +502,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				slot,
 				placement.getId(), 
 				(iRoomId==null?0:iRoomId),
-				placement.getRoomName(","),
+				(placement.getNrRooms() == 0 ? null : placement.getRoomName(",")),
 				name, 
 				shortComment,
 				shortCommentNoColor,

@@ -113,6 +113,7 @@ import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -143,6 +144,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	private String iDepartmentIds = null;
 	private SolverGroup[] iSolverGroup;
 	private Long[] iSolutionId;
+	private long iFakeLectureId = 0;
 	
 	private Hashtable<Long, RoomConstraint> iRooms = new Hashtable<Long, RoomConstraint>();
 	private Hashtable<Object, InstructorConstraint> iInstructors = new Hashtable<Object, InstructorConstraint>();
@@ -3079,7 +3081,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		availability = SolverServerImplementation.getInstance().getRoomAvailability();
     	else
     		availability = RoomAvailability.getInstance();
-        if (availability != null) loadRoomAvailability(availability);
+        if (availability != null) {
+        	Date[] startEnd = initializeRoomAvailability(availability);
+        	if (startEnd != null) {
+        		loadRoomAvailability(availability, startEnd);
+        		loadInstructorAvailability(availability, startEnd);
+        	}
+        }
 
         if (!hibSession.isOpen())
             iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
@@ -3388,8 +3396,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         } 
     }
     
-    public void loadRoomAvailability(RoomAvailabilityInterface availability) {
-        Date startDate = null, endDate = null;
+    public Date[] initializeRoomAvailability(RoomAvailabilityInterface availability) {
+    	Date startDate = null, endDate = null;
         for (Iterator i=iAllUsedDatePatterns.iterator();i.hasNext();) {
             DatePattern dp = (DatePattern)i.next();
             if (startDate == null || startDate.compareTo(dp.getStartDate())>0)
@@ -3399,7 +3407,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         }
         if (startDate == null || endDate == null) {
         	iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), "Unable to load room availability, reason: no dates");
-        	return;
+        	return null;
         }
         Calendar startDateCal = Calendar.getInstance(Locale.US);
         startDateCal.setTime(startDate);
@@ -3412,18 +3420,21 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         endDateCal.set(Calendar.MINUTE, 59);
         endDateCal.set(Calendar.SECOND, 59);
         roomAvailabilityActivate(availability, startDateCal.getTime(),endDateCal.getTime());
+        return new Date[] {startDateCal.getTime(), endDateCal.getTime()};
+    }
+    
+    public void loadRoomAvailability(RoomAvailabilityInterface availability, Date[] startEnd) {
         iProgress.setPhase("Loading room availability...", iRooms.size());
         int firstDOY = iSession.getDayOfYear(1,iSession.getPatternStartMonth());
         int lastDOY = iSession.getDayOfYear(0,iSession.getPatternEndMonth()+1);
         int size = lastDOY - firstDOY;
         Calendar c = Calendar.getInstance(Locale.US);
         Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
-        long id = 0;
         int sessionYear = iSession.getSessionStartYear();
         for (Enumeration e=iRooms.elements();e.hasMoreElements();) {
             RoomConstraint room = (RoomConstraint)e.nextElement();
             iProgress.incProgress();
-            Collection<TimeBlock> times = getRoomAvailability(availability, room, startDateCal.getTime(),endDateCal.getTime());
+            Collection<TimeBlock> times = getRoomAvailability(availability, room, startEnd[0], startEnd[1]);
             if (times==null) continue;
             for (TimeBlock time : times) {
                 iProgress.debug(room.getName()+" not available due to "+time);
@@ -3458,7 +3469,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         room.getIgnoreTooFar(), room);
                 List<RoomLocation> roomLocations = new ArrayList<RoomLocation>(1); roomLocations.add(roomLocation);
                 Lecture lecture = new Lecture(
-                        new Long(--id), null, null, time.getEventName(), 
+                        new Long(--iFakeLectureId), null, null, time.getEventName(), 
                         timeLocations, roomLocations, 1, 
                         new Placement(null,timeLocation,roomLocations), 0, 0, 1.0);
                 lecture.setNote(time.getEventType());
@@ -3478,6 +3489,85 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             ret = availability.getRoomAvailability(
             		LocationDAO.getInstance().get(room.getResourceId()), startTime, endTime,
                     RoomAvailabilityInterface.sClassType);
+            if (!iRoomAvailabilityTimeStampIsSet) ts = availability.getTimeStamp(startTime, endTime, RoomAvailabilityInterface.sClassType);
+        } catch (Exception e) {
+            sLog.error(e.getMessage(),e);
+            iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), "Unable to access room availability service, reason:"+e.getMessage());
+        } 
+        if (!iRoomAvailabilityTimeStampIsSet) {
+            iRoomAvailabilityTimeStampIsSet = true;
+            if (ts!=null) {
+                getModel().getProperties().setProperty("RoomAvailability.TimeStamp", ts);
+                iProgress.message(msglevel("roomAvailabilityUpdated", Progress.MSGLEVEL_INFO), "Using room availability that was updated on "+ts+".");
+            } else {
+                iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_ERROR), "Room availability is not available.");
+            }
+        }
+        return ret;
+    }
+    
+    public void loadInstructorAvailability(RoomAvailabilityInterface availability, Date[] startEnd) {
+        iProgress.setPhase("Loading instructor availability...", getModel().getInstructorConstraints().size());
+        int firstDOY = iSession.getDayOfYear(1,iSession.getPatternStartMonth());
+        int lastDOY = iSession.getDayOfYear(0,iSession.getPatternEndMonth()+1);
+        int size = lastDOY - firstDOY;
+        Calendar c = Calendar.getInstance(Locale.US);
+        Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
+        int sessionYear = iSession.getSessionStartYear();
+        for (InstructorConstraint instructor: getModel().getInstructorConstraints()) {
+            iProgress.incProgress();
+            Collection<TimeBlock> times = getInstructorAvailability(availability, instructor, startEnd[0], startEnd[1]);
+            if (times==null) continue;
+            for (TimeBlock time : times) {
+                iProgress.debug(instructor.getName() + " not available due to " + time);
+                int dayCode = 0;
+                c.setTime(time.getStartTime());
+                int m = c.get(Calendar.MONTH);
+                int d = c.get(Calendar.DAY_OF_MONTH);
+                if (c.get(Calendar.YEAR)<sessionYear) m-=(12 * (sessionYear - c.get(Calendar.YEAR)));
+                if (c.get(Calendar.YEAR)>sessionYear) m+=(12 * (c.get(Calendar.YEAR) - sessionYear));
+                BitSet weekCode = new BitSet(size);
+                int offset = iSession.getDayOfYear(d,m) - firstDOY;
+                if (offset < 0 || offset >= size) continue;
+                weekCode.set(offset);
+                switch (c.get(Calendar.DAY_OF_WEEK)) {
+                    case Calendar.MONDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_MON]; break;
+                    case Calendar.TUESDAY   : dayCode = Constants.DAY_CODES[Constants.DAY_TUE]; break;
+                    case Calendar.WEDNESDAY : dayCode = Constants.DAY_CODES[Constants.DAY_WED]; break;
+                    case Calendar.THURSDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_THU]; break;
+                    case Calendar.FRIDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_FRI]; break;
+                    case Calendar.SATURDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_SAT]; break;
+                    case Calendar.SUNDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_SUN]; break;
+                }
+                int startSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+                c.setTime(time.getEndTime());
+                int endSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+                if (endSlot == 0 && c.get(Calendar.DAY_OF_MONTH) != d) endSlot = 288; // next day midnight
+                int length = endSlot - startSlot;
+                if (length<=0) continue;
+                TimeLocation timeLocation = new TimeLocation(dayCode, startSlot, length, 0, 0, null, df.format(time.getStartTime()), weekCode, 0);
+                List<TimeLocation> timeLocations = new ArrayList<TimeLocation>(1); timeLocations.add(timeLocation);
+                Lecture lecture = new Lecture(
+                        new Long(--iFakeLectureId), null, null, time.getEventName(), 
+                        timeLocations, new ArrayList<RoomLocation>(), 0, 
+                        new Placement(null,timeLocation,(RoomLocation)null), 0, 0, 1.0);
+                lecture.setNote(time.getEventType());
+                Placement p = (Placement)lecture.getInitialAssignment();
+                lecture.setBestAssignment(p, 0);
+                lecture.setCommitted(true);
+                instructor.setNotAvailable(p);
+                getModel().addVariable(p.variable());
+            }
+        }
+    }
+    
+    public Collection<TimeBlock> getInstructorAvailability(RoomAvailabilityInterface availability, InstructorConstraint instructor, Date startTime, Date endTime) {
+        Collection<TimeBlock> ret = null;
+        String ts = null;
+        try {
+            ret = availability.getInstructorAvailability(
+            		DepartmentalInstructorDAO.getInstance().get(instructor.getResourceId()),
+            		startTime, endTime, RoomAvailabilityInterface.sClassType);
             if (!iRoomAvailabilityTimeStampIsSet) ts = availability.getTimeStamp(startTime, endTime, RoomAvailabilityInterface.sClassType);
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
