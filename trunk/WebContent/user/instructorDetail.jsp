@@ -156,6 +156,17 @@
 			</tt:exams>
 		</TD>
 	</TR>
+	
+	<logic:notEmpty scope="request" name="eventTable">
+		<TR>
+			<TD colspan="2">
+				<br>
+				<table width="100%" border="0" cellspacing="0" cellpadding="3">
+					<bean:write name="eventTable" scope="request" filter="false"/>
+				</table>
+			</TD>
+		</TR>
+	</logic:notEmpty>
 		
 <!-- Preferences -->		
 	<% if (frm.isDisplayPrefs()) { %>

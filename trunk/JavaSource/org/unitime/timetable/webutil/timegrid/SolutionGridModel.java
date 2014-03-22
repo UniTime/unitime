@@ -47,6 +47,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomSharingModel;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.SolutionDAO;
@@ -207,7 +208,7 @@ public class SolutionGridModel extends TimetableGridModel {
         setType(room instanceof Room ? ((Room)room).getRoomType().getUniqueId(): null);
 	}
 	
-	public SolutionGridModel(String solutionIdsStr, DepartmentalInstructor instructor, org.hibernate.Session hibSession, int firstDay, int bgMode) {
+	public SolutionGridModel(String solutionIdsStr, DepartmentalInstructor instructor, org.hibernate.Session hibSession, int firstDay, int bgMode, boolean showEvents) {
 		super(sResourceTypeInstructor, instructor.getUniqueId().intValue());
 		setName(instructor.getLastName()+", "+instructor.getFirstName()+(instructor.getMiddleName()==null?"":" "+instructor.getMiddleName()));
 		setFirstDay(firstDay);
@@ -263,6 +264,85 @@ public class SolutionGridModel extends TimetableGridModel {
 					setAvailable(i,j,false);
 			}
 			*/
+		}
+		if (showEvents && RoomAvailability.getInstance() != null) {
+	        Calendar startDateCal = Calendar.getInstance(Locale.US);
+	        // Range can be limited to classes time using
+	        // startDateCal.setTime(room.getSession().getSessionBeginDateTime());
+	        // endDateCal.setTime(room.getSession().getClassesEndDateTime());
+	        Session session = instructor.getDepartment().getSession();
+	        startDateCal.setTime(DateUtils.getDate(1, session.getStartMonth(), session.getSessionStartYear()));
+	        startDateCal.set(Calendar.HOUR_OF_DAY, 0);
+	        startDateCal.set(Calendar.MINUTE, 0);
+	        startDateCal.set(Calendar.SECOND, 0);
+	        Calendar endDateCal = Calendar.getInstance(Locale.US);
+	        endDateCal.setTime(DateUtils.getDate(0, session.getEndMonth() + 1, session.getSessionStartYear()));
+	        endDateCal.set(Calendar.HOUR_OF_DAY, 23);
+	        endDateCal.set(Calendar.MINUTE, 59);
+	        endDateCal.set(Calendar.SECOND, 59);
+			Collection<TimeBlock> times = RoomAvailability.getInstance().getInstructorAvailability(instructor, startDateCal.getTime(), endDateCal.getTime(), RoomAvailabilityInterface.sClassType);
+			if (times != null) {
+				int sessionYear = session.getSessionStartYear();
+		        int firstDOY = session.getDayOfYear(1, session.getPatternStartMonth());
+		        int lastDOY = session.getDayOfYear(0, session.getPatternEndMonth()+1);
+		        Calendar c = Calendar.getInstance(Locale.US);
+		        Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
+				for (TimeBlock time: times) {
+					if (time.getEndTime().before(startDateCal.getTime()) || time.getStartTime().after(endDateCal.getTime())) continue;
+	                int dayCode = 0;
+	                c.setTime(time.getStartTime());
+	                int m = c.get(Calendar.MONTH);
+	                int d = c.get(Calendar.DAY_OF_MONTH);
+	                if (c.get(Calendar.YEAR)<sessionYear) m-=(12 * (sessionYear - c.get(Calendar.YEAR)));
+	                if (c.get(Calendar.YEAR)>sessionYear) m+=(12 * (c.get(Calendar.YEAR) - sessionYear));
+	                BitSet weekCode = new BitSet(lastDOY - firstDOY);
+	                int offset = session.getDayOfYear(d,m) - firstDOY;
+	                weekCode.set(offset);
+	                switch (c.get(Calendar.DAY_OF_WEEK)) {
+	                    case Calendar.MONDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_MON]; break;
+	                    case Calendar.TUESDAY   : dayCode = Constants.DAY_CODES[Constants.DAY_TUE]; break;
+	                    case Calendar.WEDNESDAY : dayCode = Constants.DAY_CODES[Constants.DAY_WED]; break;
+	                    case Calendar.THURSDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_THU]; break;
+	                    case Calendar.FRIDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_FRI]; break;
+	                    case Calendar.SATURDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_SAT]; break;
+	                    case Calendar.SUNDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_SUN]; break;
+	                }
+	                int startSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+	                c.setTime(time.getEndTime());
+	                int endSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+	                int length = endSlot - startSlot;
+	                if (length<=0) continue;
+	                TimeLocation timeLocation = new TimeLocation(dayCode, startSlot, length, 0, 0, null, df.format(time.getStartTime()), weekCode, 0);
+	        		TimetableGridCell cell = null;
+	        		for (Enumeration<Integer> f=timeLocation.getStartSlots();f.hasMoreElements();) {
+	        			int slot = f.nextElement();
+	        			if (firstDay>=0 && !timeLocation.getWeekCode().get(firstDay+(slot/Constants.SLOTS_PER_DAY))) continue;
+	        			if (cell==null) {
+	        				cell =  new TimetableGridCell(
+	        						slot/Constants.SLOTS_PER_DAY,
+	        						slot%Constants.SLOTS_PER_DAY,
+	        						-1, 
+	        						-1,
+	        						null,
+	        						time.getEventName(), 
+	        						null,
+	        						null,
+	        						null, 
+	        						time.getEventName() + " (" + time.getEventType() + ")", 
+	        						TimetableGridCell.sBgColorNotAvailable, 
+	        						length,
+	        						0, 
+	        						1,
+	        						df.format(time.getStartTime()),
+	        						weekCode,
+	        						null);
+	        			} else {
+	        				cell = cell.copyCell(slot/Constants.SLOTS_PER_DAY,cell.getMeetingNumber()+1);
+	        			}
+	        			addCell(slot,cell);
+	        		}
+				}
+			}
 		}
         if (instructor.getPositionType()!=null)
             setType(new Long(instructor.getPositionType().getSortOrder()));

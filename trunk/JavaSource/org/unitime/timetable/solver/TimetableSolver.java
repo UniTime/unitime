@@ -692,7 +692,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     		case TimetableGridModel.sResourceTypeInstructor:
     			for (InstructorConstraint ic: model.getInstructorConstraints()) {
     				if (!match(q, ic.getName())) continue;
-    				models.add(new SolverGridModel(this,ic,startDay,bgMode));
+    				models.add(new SolverGridModel(this,ic,startDay,bgMode,showEvents));
     			}
     			break;
     		case TimetableGridModel.sResourceTypeDepartment:
