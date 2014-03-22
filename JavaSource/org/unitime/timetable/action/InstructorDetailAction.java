@@ -19,8 +19,12 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -37,21 +41,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructorEditForm;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
+import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassInstructorComparator;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
@@ -60,7 +71,10 @@ import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DefaultRoomAvailabilityService;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
+import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
 
@@ -76,6 +90,7 @@ import org.unitime.timetable.webutil.Navigation;
  */
 @Service("/instructorDetail")
 public class InstructorDetailAction extends PreferencesAction {
+	public static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Autowired SessionContext sessionContext;
 	
@@ -322,6 +337,58 @@ public class InstructorDetailAction extends PreferencesAction {
 
 				String tblData = classTable.printTable();
 				request.setAttribute("classTable", tblData);
+			}
+			
+			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("unitime.events.instructorUnavailability", "false")) && inst.getExternalUniqueId() != null && !inst.getExternalUniqueId().isEmpty() &&
+				RoomAvailability.getInstance() != null && RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService) {
+				WebTable.setOrder(sessionContext, "instructorUnavailability.ord", request.getParameter("iuord"), 1);
+				WebTable eventTable = new WebTable(5, "Instructor Unavailability", "instructorDetail.do?instructorId=" + frm.getInstructorId() + "&iuord=%%", new String[] {"Event", "Type", "Date", "Time", "Room"}, new String[] {"left", "left", "left", "left", "left"}, null);
+				
+				Formats.Format<Date> dfShort = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
+				Formats.Format<Date> dfLong = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG);
+						
+				org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
+				Map<Event, Set<Meeting>> unavailabilities = new HashMap<Event, Set<Meeting>>();
+				for (Meeting meeting: (List<Meeting>)hibSession.createQuery(
+						"select distinct m from Event e inner join e.meetings m left outer join e.additionalContacts c, Session s " +
+						"where e.class in (CourseEvent, SpecialEvent, UnavailableEvent) and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate " +
+						"and s.uniqueId = :sessionId and (e.mainContact.externalUniqueId = :user or c.externalUniqueId = :user) and m.approvalStatus = 1"
+						)
+						.setLong("sessionId", sessionContext.getUser().getCurrentAcademicSessionId())
+						.setString("user", inst.getExternalUniqueId())
+						.setCacheable(true).list()) {
+					Set<Meeting> meetings = unavailabilities.get(meeting.getEvent());
+					if (meetings == null) {
+						meetings = new HashSet<Meeting>();
+						unavailabilities.put(meeting.getEvent(), meetings);
+					}
+					meetings.add(meeting);
+				}
+				for (Event event: new TreeSet<Event>(unavailabilities.keySet())) {
+					for (MultiMeeting m: Event.getMultiMeetings(unavailabilities.get(event))) {
+                        String date = m.getDays() + " " + (m.getMeetings().size() == 1 ? dfLong.format(m.getMeetings().first().getMeetingDate()) : dfShort.format(m.getMeetings().first().getMeetingDate()) + " - " + dfLong.format(m.getMeetings().last().getMeetingDate()));
+                        String time = m.getMeetings().first().startTime() + " - " + m.getMeetings().first().stopTime();
+                        String room = (m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().getLabelWithHint());
+                        eventTable.addLine(
+                        		sessionContext.hasPermission(event, Right.EventDetail) ? "onClick=\"showGwtDialog('Event Detail', 'gwt.jsp?page=events&menu=hide#event=" + event.getUniqueId() + "','900','85%');\"" : null,
+                        		new String[] {
+                        			event.getEventName(),
+                        			event.getEventTypeAbbv(),
+                        			date, time, room},
+                        		new Comparable[] {
+                        			event.getEventName(),
+                        			event.getEventType(),
+                        			m.getMeetings().first().getMeetingDate(),
+                        			m.getMeetings().first().getStartPeriod(),
+                        			room
+                        		});
+								
+					}
+				}
+				
+				if (!eventTable.getLines().isEmpty())
+					request.setAttribute("eventTable", eventTable.printTable(WebTable.getOrder(sessionContext, "instructorUnavailability.ord")));
+						
 			}
 			
 			//// Set display distribution to Not Applicable

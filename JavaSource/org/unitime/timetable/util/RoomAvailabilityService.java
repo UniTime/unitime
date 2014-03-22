@@ -46,6 +46,7 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 
@@ -471,4 +472,9 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
             return getEventName().hashCode() ^ getEventType().hashCode() ^ getStartTime().hashCode();
         }
     }
+
+	@Override
+	public Collection<TimeBlock> getInstructorAvailability(DepartmentalInstructor instructor, Date startTime, Date endTime, String excludeType) {
+		return null;
+	}
 }

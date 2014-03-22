@@ -444,7 +444,7 @@ public class TimetableGridTable {
 									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
 	                    			">");
 							out.print(cell.getName());
-							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
+							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom && cell.getRoomName() != null)
 								out.print("<BR>"+cell.getRoomName());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors)
 								out.print("<BR>"+cell.getInstructor());
@@ -513,7 +513,7 @@ public class TimetableGridTable {
 									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
 	                    			">");
 							out.print(cell.getName());
-							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
+							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom && cell.getRoomName() != null)
 								out.print("<BR>"+cell.getRoomName());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors)
 								out.print("<BR>"+cell.getInstructor());
@@ -823,6 +823,20 @@ public class TimetableGridTable {
 					iModels.add(new SolutionGridModel(solutionIdsStr, room, hibSession, startDay, getBgMode(), getShowEvents()));
 				}
 			} else if (getResourceType()==TimetableGridModel.sResourceTypeInstructor) {
+				if (RoomAvailability.getInstance() != null && getShowEvents()) {
+			        Calendar startDateCal = Calendar.getInstance(Locale.US);
+			        startDateCal.setTime(DateUtils.getDate(1, acadSession.getStartMonth(), acadSession.getSessionStartYear()));
+			        startDateCal.set(Calendar.HOUR_OF_DAY, 0);
+			        startDateCal.set(Calendar.MINUTE, 0);
+			        startDateCal.set(Calendar.SECOND, 0);
+			        Calendar endDateCal = Calendar.getInstance(Locale.US);
+			        endDateCal.setTime(DateUtils.getDate(0, acadSession.getEndMonth() + 1, acadSession.getSessionStartYear()));
+			        endDateCal.set(Calendar.HOUR_OF_DAY, 23);
+			        endDateCal.set(Calendar.MINUTE, 59);
+			        endDateCal.set(Calendar.SECOND, 59);
+			        RoomAvailability.getInstance().activate(acadSession, startDateCal.getTime(), endDateCal.getTime(), RoomAvailabilityInterface.sClassType, false);
+		            RoomAvailability.setAvailabilityWarning(request, acadSession, true, true);
+				}
                 String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
 				Query q = hibSession.createQuery(
 						"select distinct i from "+
@@ -835,7 +849,7 @@ public class TimetableGridTable {
 					String name = (instructor.getLastName()+", "+instructor.getFirstName()+" "+instructor.getMiddleName()).trim();
 					if (!match(name)) continue;
 					if (instructor.getExternalUniqueId()==null || instructor.getExternalUniqueId().length()<=0 || puids.add(instructor.getExternalUniqueId())) {
-                        SolutionGridModel m = new SolutionGridModel(solutionIdsStr, instructor, hibSession,startDay,getBgMode());
+                        SolutionGridModel m = new SolutionGridModel(solutionIdsStr, instructor, hibSession,startDay,getBgMode(), getShowEvents());
                         m.setName(instructor.getName(instructorNameFormat));
 						iModels.add(m);
                     }
