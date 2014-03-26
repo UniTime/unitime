@@ -40,13 +40,13 @@
           ip_ttl="${jgroups.udp.ip_ttl:2}"
           num_initial_members="3"/>
    -->
+   <!--
    <TCPPING timeout="3000"
             initial_hosts="${unitime.hibernate.initial_hosts:localhost[7833]}"
             port_range="3"
             num_initial_members="10"/>
-   <!--
-   <org.unitime.commons.jgroups.UniTimeClusterDiscovery/>
    -->
+   <org.unitime.commons.jgroups.UniTimeClusterDiscovery/>
    <MERGE2 max_interval="30000" min_interval="10000"/>
    <FD_SOCK/>
    <FD timeout="3000" max_tries="3"/>
