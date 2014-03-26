@@ -62,6 +62,7 @@ import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.cpsolver.coursett.preference.SumPreferenceCombination;
+import org.cpsolver.ifs.model.BinaryConstraint;
 import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.Progress;
@@ -1162,7 +1163,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				getModel().removeVariable(lecture);
     				for (Constraint c: new ArrayList<Constraint>(lecture.constraints())) {
     					c.removeVariable(lecture);
-    					if (c.variables().isEmpty())
+    					if (c.variables().isEmpty() || c instanceof BinaryConstraint)
     						getModel().removeConstraint(c);
     				}
                     for (Iterator i=lecture.students().iterator();i.hasNext();) {
