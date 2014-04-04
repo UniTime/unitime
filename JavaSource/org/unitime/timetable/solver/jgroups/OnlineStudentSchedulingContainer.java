@@ -86,6 +86,10 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		iGlobalLock.readLock().lock();
 		try {
 			OnlineSectioningServer instance = iInstances.get(sessionId);
+			if (sessionId == null) {
+				sLog.error("Server " + sessionId + " does not exist.");
+				return null;
+			}
 			try {
 				instance.getAcademicSession();
 			} catch (IllegalStateException e) {

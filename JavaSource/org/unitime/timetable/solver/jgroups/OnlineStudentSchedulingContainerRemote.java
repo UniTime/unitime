@@ -26,6 +26,7 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 import org.apache.commons.logging.Log;
@@ -86,6 +87,8 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 				.build();
 		Configuration config = new ConfigurationBuilder()
 				.clustering().cacheMode(CacheMode.REPL_ASYNC)
+				.async().useReplQueue(true).replQueueInterval(500, TimeUnit.MILLISECONDS).replQueueMaxElements(1000)
+				.invocationBatching().enable()
 				.storeAsBinary().enable()
 				.build();
 		iCacheManager = new DefaultCacheManager(global, config);
