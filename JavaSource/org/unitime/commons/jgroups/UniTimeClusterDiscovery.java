@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,12 +32,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.jgroups.Address;
 import org.jgroups.Event;
+import org.jgroups.Global;
 import org.jgroups.PhysicalAddress;
 import org.jgroups.View;
 import org.jgroups.annotations.Property;
 import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.conf.PropertyConverters;
 import org.jgroups.protocols.Discovery;
 import org.jgroups.protocols.PingData;
+import org.jgroups.stack.IpAddress;
 import org.jgroups.util.UUID;
 import org.unitime.timetable.model.ClusterDiscovery;
 import org.unitime.timetable.model.dao.ClusterDiscoveryDAO;
@@ -45,13 +49,24 @@ import org.unitime.timetable.model.dao.ClusterDiscoveryDAO;
  * @author Tomas Muller
  */
 public class UniTimeClusterDiscovery extends Discovery {
-	
 	static {
 		ClassConfigurator.addProtocol((short) 666, UniTimeClusterDiscovery.class);
 	}
 	
+    @Property(description="Number of additional ports to be probed for membership. A port_range of 0 does not " +
+    	      "probe additional ports. Example: initial_hosts=A[7800] port_range=0 probes A:7800, port_range=1 probes " +
+    	      "A:7800 and A:7801")
+    protected int port_range=1;
+
+    @Property(name="initial_hosts", description="Comma delimited list of hosts to be contacted for initial membership",
+    		converter=PropertyConverters.InitialHosts.class, dependsUpon="port_range", systemProperty=Global.TCPPING_INITIAL_HOSTS)
+    protected List<IpAddress> initial_hosts=Collections.EMPTY_LIST;
+
 	@Property(description="Interval (in milliseconds) at which the own Address is written. 0 disables it.")
 	protected long interval = 60000;
+	
+	@Property(description="Interval (in milliseconds) after which an old record is deleted from the cluster discovery table.")
+	protected long time_to_live = 600000;
 	
 	private Future<?> writer_future;
 	
@@ -80,17 +95,17 @@ public class UniTimeClusterDiscovery extends Discovery {
 
 	@Override
 	public Collection<PhysicalAddress> fetchClusterMembers(String cluster_name) {
+        Set<PhysicalAddress> retval = new HashSet<PhysicalAddress>(initial_hosts);
+        
 		if (!ClusterDiscoveryDAO.isConfigured()) {
-			log.info("Hibernate not configured yet, returning empty set for " + group_addr + " cluster members.");
-			return Collections.emptyList();
+			log.info("Hibernate not configured yet, returning initial hosts for " + group_addr + " cluster members.");
+			return retval;
 		}
 		
 		List<PingData> members = readAllMembers();
 
 		if (members.isEmpty())
-            return Collections.emptyList();
-
-        Set<PhysicalAddress> retval = new HashSet<PhysicalAddress>();
+            return retval;
 
         for(PingData tmp: members) {
             Collection<PhysicalAddress> dests = (tmp != null ? tmp.getPhysicalAddrs() : null);
@@ -112,8 +127,10 @@ public class UniTimeClusterDiscovery extends Discovery {
 		List<PingData> members = new ArrayList<PingData>();
 		org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
 		try {
+			long deadline = new Date().getTime() - time_to_live;
 			for (ClusterDiscovery cluster: (List<ClusterDiscovery>)hibSession.createQuery("from ClusterDiscovery where clusterName = :clusterName").setString("clusterName", group_addr).list()) {
-				members.add(deserialize(cluster.getPingData()));
+				if (cluster.getTimeStamp().getTime() >= deadline)
+					members.add(deserialize(cluster.getPingData()));
 			}
 		} catch (IllegalStateException e) {
 			log.info("Failed to read  all members of cluster " + group_addr + ": " + e.getMessage());
@@ -155,6 +172,7 @@ public class UniTimeClusterDiscovery extends Discovery {
 			if (cluster == null)
 				cluster = new ClusterDiscovery(own_address, group_addr);
 			cluster.setPingData(serializeWithoutView(data));
+			cluster.setTimeStamp(new Date());
 			hibSession.saveOrUpdate(cluster);
 			hibSession.flush();
 		} catch (IllegalStateException e) {
@@ -190,12 +208,13 @@ public class UniTimeClusterDiscovery extends Discovery {
 	protected synchronized void purgeOtherAddresses(Collection<Address> members) { 
 		org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
 		try {
+			long deadline = new Date().getTime() - time_to_live;
 			cluster: for (ClusterDiscovery cluster: (List<ClusterDiscovery>)hibSession.createQuery("from ClusterDiscovery where clusterName = :clusterName").setString("clusterName", group_addr).list()) {
 				for (Address address: members)
 					if (cluster.getOwnAddress().equals(addressAsString(address))) continue cluster;
 				
 				PingData pd = deserialize(cluster.getPingData());
-				if (pd != null)
+				if (pd != null && cluster.getTimeStamp().getTime() < deadline)
 					log.debug("Purging " + pd.getPhysicalAddrs() + " from cluster " + group_addr + ".");
 				
 				hibSession.delete(cluster);
@@ -218,7 +237,7 @@ public class UniTimeClusterDiscovery extends Discovery {
 			hibSession.close();
 		}
     }
-
+	
 	@Override
 	public boolean sendDiscoveryRequestsInParallel() {
 		return true;

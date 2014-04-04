@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import org.unitime.timetable.model.ClusterDiscovery;
 
@@ -32,9 +33,11 @@ public abstract class BaseClusterDiscovery implements Serializable {
 	private String iOwnAddress;
 	private String iClusterName;
 	private byte[] iPingData;
+	private Date iTimeStamp;
 
 
 	public static String PROP_PING_DATA = "pingData";
+	public static String PROP_TIME_STAMP = "timeStamp";
 
 	public BaseClusterDiscovery() {
 		initialize();
@@ -50,6 +53,9 @@ public abstract class BaseClusterDiscovery implements Serializable {
 
 	public byte[] getPingData() { return iPingData; }
 	public void setPingData(byte[] pingData) { iPingData = pingData; }
+
+	public Date getTimeStamp() { return iTimeStamp; }
+	public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ClusterDiscovery)) return false;

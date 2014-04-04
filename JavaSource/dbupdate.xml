@@ -9661,4 +9661,10 @@
 			update %SCHEMA%.solver_parameter set value=replace(value,'net.sf.cpsolver','org.cpsolver') where value like 'net.sf.cpsolver%'
 		</sql>
 	</update>
+	<update version="134" date="4-Apr-2013" comment="Cluster Discovery Time Stamp">
+		<mysql>alter table %SCHEMA%.cluster_discovery add time_stamp datetime</mysql>
+		<mysql>update %SCHEMA%.cluster_discovery set time_stamp = now()</mysql>
+		<plsql>alter table %SCHEMA%.cluster_discovery add time_stamp date</plsql>
+		<plsql>update %SCHEMA%.cluster_discovery set time_stamp = CURRENT_TIMESTAMP</plsql>
+	</update>
 </dbupdate>
