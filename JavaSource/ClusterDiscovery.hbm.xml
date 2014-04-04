@@ -44,5 +44,11 @@
             not-null="false"
             length="5000"/>
 
+        <property
+            name="timeStamp"
+            column="time_stamp"
+            type="java.util.Date"
+            not-null="true"/>
+
     </class>
 </hibernate-mapping>
