@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.hibernate.Transaction;
 import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.Global;
@@ -126,14 +127,20 @@ public class UniTimeClusterDiscovery extends Discovery {
 	protected synchronized List<PingData> readAllMembers() {
 		List<PingData> members = new ArrayList<PingData>();
 		org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
-		try {
+        Transaction tx = null;
+        try {
+        	tx = hibSession.beginTransaction();
 			long deadline = new Date().getTime() - time_to_live;
 			for (ClusterDiscovery cluster: (List<ClusterDiscovery>)hibSession.createQuery("from ClusterDiscovery where clusterName = :clusterName").setString("clusterName", group_addr).list()) {
 				if (cluster.getTimeStamp().getTime() >= deadline)
 					members.add(deserialize(cluster.getPingData()));
 			}
+            if (tx != null && tx.isActive()) tx.commit();
 		} catch (IllegalStateException e) {
 			log.info("Failed to read  all members of cluster " + group_addr + ": " + e.getMessage());
+			if (tx!=null && tx.isActive()) tx.rollback();
+		} catch (Exception e) {
+			if (tx!=null && tx.isActive()) tx.rollback();
 		} finally {
 			hibSession.close();
 		}
@@ -167,7 +174,9 @@ public class UniTimeClusterDiscovery extends Discovery {
 	protected synchronized void updateMyData(PingData data) {
 		org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
 		String own_address = addressAsString(data.getAddress());
-		try {
+        Transaction tx = null;
+        try {
+        	tx = hibSession.beginTransaction();
 			ClusterDiscovery cluster = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscovery(own_address, group_addr), hibSession);
 			if (cluster == null)
 				cluster = new ClusterDiscovery(own_address, group_addr);
@@ -175,8 +184,12 @@ public class UniTimeClusterDiscovery extends Discovery {
 			cluster.setTimeStamp(new Date());
 			hibSession.saveOrUpdate(cluster);
 			hibSession.flush();
+            if (tx != null && tx.isActive()) tx.commit();
 		} catch (IllegalStateException e) {
+			if (tx!=null && tx.isActive()) tx.rollback();
 			log.info("Failed to update my data for cluster " + group_addr + ": " + e.getMessage());
+		} catch (Exception e) {
+			if (tx!=null && tx.isActive()) tx.rollback();
 		} finally {
 			hibSession.close();
 		}
@@ -207,7 +220,9 @@ public class UniTimeClusterDiscovery extends Discovery {
 	
 	protected synchronized void purgeOtherAddresses(Collection<Address> members) { 
 		org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
+		Transaction tx = null;
 		try {
+			tx = hibSession.beginTransaction();
 			long deadline = new Date().getTime() - time_to_live;
 			cluster: for (ClusterDiscovery cluster: (List<ClusterDiscovery>)hibSession.createQuery("from ClusterDiscovery where clusterName = :clusterName").setString("clusterName", group_addr).list()) {
 				for (Address address: members)
@@ -220,6 +235,9 @@ public class UniTimeClusterDiscovery extends Discovery {
 				hibSession.delete(cluster);
 			}
 			hibSession.flush();
+            if (tx != null && tx.isActive()) tx.commit();
+		} catch (Exception e) {
+			if (tx!=null && tx.isActive()) tx.rollback();
 		} finally {
 			hibSession.close();
 		}
@@ -228,11 +246,16 @@ public class UniTimeClusterDiscovery extends Discovery {
 	protected synchronized void deleteSelf() {
         final String ownAddress = addressAsString(local_addr);
         org.hibernate.Session hibSession = ClusterDiscoveryDAO.getInstance().createNewSession();
+        Transaction tx = null;
         try {
+        	tx = hibSession.beginTransaction();
         	ClusterDiscovery cluster = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscovery(ownAddress, group_addr), hibSession);
         	if (cluster != null)
         		hibSession.delete(cluster);
         	hibSession.flush();
+            if (tx != null && tx.isActive()) tx.commit();
+		} catch (Exception e) {
+			if (tx!=null && tx.isActive()) tx.rollback();
 		} finally {
 			hibSession.close();
 		}
