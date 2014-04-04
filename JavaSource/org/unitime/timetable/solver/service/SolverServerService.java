@@ -27,12 +27,10 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
-import org.jgroups.blocks.mux.MuxUpHandler;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.jgroups.JGroupsUtils;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.commons.jgroups.UniTimeChannelLookup;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -61,9 +59,7 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		try {
-			JChannel channel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml")));
-		
-			channel.setUpHandler(new MuxUpHandler());
+			JChannel channel = (JChannel) new UniTimeChannelLookup().getJGroupsChannel(null);
 			
 			iServer = new SolverServerImplementation(true, channel);
 			
