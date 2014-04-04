@@ -45,6 +45,7 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
+import org.infinispan.remoting.ReplicationQueue;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -436,7 +437,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 			iLog.warn("Failed to lock a student " + studentId + ": not executed on master.");
 			return new NoLock();
 		}
-		return super.lockStudent(studentId, offeringIds, excludeLockedOfferings);
+		return new FlushLock(super.lockStudent(studentId, offeringIds, excludeLockedOfferings));
 	}
 
 	@Override
@@ -445,7 +446,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 			iLog.warn("Failed to lock an offering " + offeringId + ": not executed on master.");
 			return new NoLock();
 		}
-		return super.lockOffering(offeringId, studentIds, excludeLockedOffering);
+		return new FlushLock(super.lockOffering(offeringId, studentIds, excludeLockedOffering));
 	}
 	
 	@Override
@@ -454,7 +455,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 			iLog.warn("Failed to lock a request for student " + request.getStudentId() + ": not executed on master.");
 			return new NoLock();
 		}
-		return super.lockRequest(request);
+		return new FlushLock(super.lockRequest(request));
 	}
 	
 	@Override
@@ -464,7 +465,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 
 	@Override
 	public void lockOffering(Long offeringId) {
-		iOfferingLocks.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(offeringId, Boolean.TRUE);
+		iOfferingLocks.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FORCE_SYNCHRONOUS).put(offeringId, Boolean.TRUE);
 	}
 
 	@Override
@@ -518,14 +519,20 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 	public Lock writeLock() {
 		if (!isMaster())
 			iLog.warn("Asking for a WRITE lock on a slave node. That is suspicious.");
-		return super.writeLock();
+		return new BatchLock(super.writeLock());
+	}
+	
+	@Override
+	public Lock writeLockIfNotHeld() {
+		Lock lock = super.writeLockIfNotHeld();
+		return lock == null ? null : new BatchLock(lock);
 	}
 	
 	@Override
 	public Lock lockAll() {
 		if (!isMaster())
 			iLog.warn("Asking for an ALL lock on a slave node. That is suspicious.");
-		return super.lockAll();
+		return new FlushLock(super.lockAll());
 	}
 	
 	@Listener(sync=true)
@@ -654,5 +661,73 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 				if (lock != null) lock.release();
 			}
 		}
+	}
+	
+	class BatchLock implements Lock {
+		private Lock iLock = null;
+		private boolean iStudentBatch = false, iOfferingBatch = false;
+		
+		BatchLock(Lock lock) {
+			iLock = lock;
+			try {
+				iStudentBatch = iStudentTable.startBatch();
+			} catch (Throwable t) {
+				iLog.warn("Failed to start batch for StudentTable: " + t.getMessage(), t);
+			}
+			try {
+				iOfferingBatch = iOfferingTable.startBatch();
+			} catch (Throwable t) {
+				iLog.warn("Failed to start batch for OfferingTable: " + t.getMessage(), t);
+			}
+		}
+
+		@Override
+		public void release() {
+			try {
+				if (iStudentBatch) iStudentTable.endBatch(true);
+				if (iOfferingBatch) iOfferingTable.endBatch(true);
+			} finally {
+				iLock.release();
+			}
+		}
+		
+	}
+	
+	class FlushLock implements Lock {
+		private Lock iLock = null;
+		FlushLock(Lock lock) {
+			iLock = lock;
+		}
+		
+		private void flush(Cache cache) {
+			ReplicationQueue queue = cache.getAdvancedCache().getComponentRegistry().getComponent(ReplicationQueue.class);
+			if (queue != null)
+				queue.flush();
+		}
+		
+		@Override
+		public void release() {
+			try {
+				flush(iStudentTable);
+				flush(iOfferingTable);
+				flush(iExpectations);
+			} finally {
+				iLock.release();
+			}
+		}
+	}
+	
+	@Override
+	public <E> E getProperty(String name, E defaultValue) {
+		E ret = (E)iProperties.get(name);
+		return (ret == null ? defaultValue : ret);
+	}
+
+	@Override
+	public <E> void setProperty(String name, E value) {
+		if (value == null)
+			((Cache<String, Object>)iProperties).getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).remove(name);
+		else
+			((Cache<String, Object>)iProperties).getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).put(name,  value);
 	}
 }
