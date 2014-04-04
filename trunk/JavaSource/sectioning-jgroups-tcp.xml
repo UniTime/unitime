@@ -47,7 +47,7 @@
             port_range="3"
             num_initial_members="10"/>
     -->
-   <org.unitime.commons.jgroups.UniTimeClusterDiscovery/>
+   <org.unitime.commons.jgroups.UniTimeClusterDiscovery initial_hosts="${unitime.enrollment.initial_hosts:127.0.0.1[7866]}" port_range="3" />
    <MERGE2 max_interval="30000" min_interval="10000"/>
    <FD_SOCK/>
    <FD timeout="3000" max_tries="3"/>
