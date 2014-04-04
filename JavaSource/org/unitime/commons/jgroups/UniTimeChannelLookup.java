@@ -21,33 +21,42 @@ package org.unitime.commons.jgroups;
 
 import java.util.Properties;
 
+import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
-import org.jgroups.fork.ForkChannel;
-import org.jgroups.protocols.FRAG2;
-import org.jgroups.protocols.RSVP;
-import org.jgroups.stack.ProtocolStack;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 
 /**
  * @author Tomas Muller
  */
-public class SectioningChannelLookup extends UniTimeChannelLookup {
-	
+public class UniTimeChannelLookup implements JGroupsChannelLookup {
+	private static JChannel sChannel = null;
+
 	@Override
 	public Channel getJGroupsChannel(Properties p) {
 		try {
-			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.jgroups.fork_channel", "false"))) {
-				return new ForkChannel(super.getJGroupsChannel(p), "forked-stack", "sectioning-channel",
-						true, ProtocolStack.ABOVE, FRAG2.class,
-						new RSVP().setValue("timeout", 60000).setValue("resend_interval", 500).setValue("ack_on_delivery", false));
-			} else {
-				return new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.enrollment.jgroups.config", "sectioning-jgroups-tcp.xml")));
-			}
+			if (sChannel == null)
+				sChannel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml")));
+			return sChannel;
 		} catch (Exception e) {
 			Debug.error(e.getMessage(), e);
 			return null;
 		}
+	}
+
+	@Override
+	public boolean shouldConnect() {
+		return true;
+	}
+
+	@Override
+	public boolean shouldDisconnect() {
+		return true;
+	}
+
+	@Override
+	public boolean shouldClose() {
+		return true;
 	}
 }
