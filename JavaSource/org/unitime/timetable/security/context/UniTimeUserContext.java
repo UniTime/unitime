@@ -340,7 +340,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 				else
 					hibSession.saveOrUpdate(managerData);
 			} else {
-				UserData userData = UserDataDAO.getInstance().get(new UserData(getExternalUserId(), key));
+				UserData userData = UserDataDAO.getInstance().get(new UserData(getExternalUserId(), key), hibSession);
 				if (userData == null && value == null) return;
 				if (userData != null && value != null && value.equals(userData.getValue())) return;
 				
