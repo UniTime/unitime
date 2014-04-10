@@ -1,6 +1,6 @@
 /*
  * UniTime 3.2 - 3.5 (University Timetabling Application)
- * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors
+ * Copyright (C) 2010 - 2014, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,8 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.CourseCreditUnitConfigDAO;
 
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
 public abstract class BaseCourseCreditUnitConfigDAO extends _RootDAO<CourseCreditUnitConfig,Long> {
 
@@ -39,6 +40,11 @@ public abstract class BaseCourseCreditUnitConfigDAO extends _RootDAO<CourseCredi
 
 	public Class<CourseCreditUnitConfig> getReferenceClass() {
 		return CourseCreditUnitConfig.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseCreditUnitConfig> findByCourseCreditFormat(org.hibernate.Session hibSession, Long courseCreditFormatId) {
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.courseCreditFormat.uniqueId = :courseCreditFormatId").setLong("courseCreditFormatId", courseCreditFormatId).list();
 	}
 
 	@SuppressWarnings("unchecked")

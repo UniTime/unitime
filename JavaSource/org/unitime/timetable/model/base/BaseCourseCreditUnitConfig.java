@@ -1,6 +1,6 @@
 /*
  * UniTime 3.2 - 3.5 (University Timetabling Application)
- * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors
+ * Copyright (C) 2010 - 2014, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,8 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
 
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
 public abstract class BaseCourseCreditUnitConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -44,7 +45,6 @@ public abstract class BaseCourseCreditUnitConfig implements Serializable {
 	private InstructionalOffering iInstructionalOfferingOwner;
 
 	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_CREDIT_FORMAT = "creditFormat";
 	public static String PROP_DEFINES_CREDIT_AT_COURSE_LEVEL = "definesCreditAtCourseLevel";
 
 	public BaseCourseCreditUnitConfig() {
