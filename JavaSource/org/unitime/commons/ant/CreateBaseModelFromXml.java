@@ -232,7 +232,7 @@ public class CreateBaseModelFromXml extends Task {
 	private void license(PrintWriter pw) {
 		pw.println("/*");
 		pw.println(" * UniTime 3.2 - 3.5 (University Timetabling Application)");
-		pw.println(" * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors");
+		pw.println(" * Copyright (C) 2010 - 2014, UniTime LLC, and individual contributors");
 		pw.println(" * as indicated by the @authors tag.");
 		pw.println(" *");
 		pw.println(" * This program is free software; you can redistribute it and/or modify");
@@ -481,6 +481,10 @@ public class CreateBaseModelFromXml extends Task {
 			last = top;
 		}
 		pw.println();
+		pw.println("/**");
+		pw.println(" * Do not change this class. It has been automatically generated using ant create-model.");
+		pw.println(" * @see org.unitime.commons.ant.CreateBaseModelFromXml");
+		pw.println(" */");
 		pw.println("public abstract class Base"+className+(ext==null?"":" extends "+ext)+" implements Serializable {");
 		pw.println("	private static final long serialVersionUID = 1L;");
 		pw.println();
@@ -616,6 +620,10 @@ public class CreateBaseModelFromXml extends Task {
 		pw.println("import "+pkg+".dao._RootDAO;");
 		pw.println("import "+pkg+".dao."+className+"DAO;");
 		pw.println();
+		pw.println("/**");
+		pw.println(" * Do not change this class. It has been automatically generated using ant create-model.");
+		pw.println(" * @see org.unitime.commons.ant.CreateBaseModelFromXml");
+		pw.println(" */");
 		pw.println("public abstract class Base"+className+"DAO"+" extends _RootDAO<"+className+","+(idType==null?"Serializable":idType)+"> {");
 		pw.println();
 		pw.println("	private static "+className+"DAO sInstance;");
