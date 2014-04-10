@@ -1,6 +1,6 @@
 /*
  * UniTime 3.2 - 3.5 (University Timetabling Application)
- * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors
+ * Copyright (C) 2010 - 2014, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,8 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimetableManager;
 
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
 public abstract class BaseDepartment extends PreferenceGroup implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -119,10 +120,10 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	public Boolean isAllowEvents() { return iAllowEvents; }
 	public Boolean getAllowEvents() { return iAllowEvents; }
 	public void setAllowEvents(Boolean allowEvents) { iAllowEvents = allowEvents; }
-	
+
 	public Boolean isInheritInstructorPreferences() { return iInheritInstructorPreferences; }
 	public Boolean getInheritInstructorPreferences() { return iInheritInstructorPreferences; }
-	public void setInheritInstructorPreferences(boolean inheritInstructorPreferences) { iInheritInstructorPreferences = inheritInstructorPreferences; }
+	public void setInheritInstructorPreferences(Boolean inheritInstructorPreferences) { iInheritInstructorPreferences = inheritInstructorPreferences; }
 
 	public String getRoomSharingColor() { return iRoomSharingColor; }
 	public void setRoomSharingColor(String roomSharingColor) { iRoomSharingColor = roomSharingColor; }
@@ -219,7 +220,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 			"\n	ExternalMgrAbbv: " + getExternalMgrAbbv() +
 			"\n	ExternalMgrLabel: " + getExternalMgrLabel() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
-			"\n InheritInstructorPreferences: " + getInheritInstructorPreferences() +
+			"\n	InheritInstructorPreferences: " + getInheritInstructorPreferences() +
 			"\n	Name: " + getName() +
 			"\n	RoomSharingColor: " + getRoomSharingColor() +
 			"\n	Session: " + getSession() +
