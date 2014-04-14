@@ -170,7 +170,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(getRequest()))
 					action.addRequest(r);
 
-				new CheckAssignmentAction().forStudent(getStudentId()).withAssignment(getAssignment()).check(server, helper);
+				server.createAction(CheckAssignmentAction.class).forStudent(getStudentId()).withAssignment(getAssignment()).check(server, helper);
 				
 				Student student = (Student)helper.getHibSession().createQuery(
 						"select s from Student s " +

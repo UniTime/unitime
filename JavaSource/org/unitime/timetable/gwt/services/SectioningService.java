@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -49,6 +50,7 @@ public interface SectioningService extends RemoteService {
 	String logIn(String userName, String password) throws SectioningException, PageAccessException;
 	Boolean logOut() throws SectioningException, PageAccessException;
 	String whoAmI() throws SectioningException, PageAccessException;
+	OnlineSectioningInterface.EligibilityCheck checkEligibility(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
 	AcademicSessionProvider.AcademicSessionInfo lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException;
 	CourseRequestInterface lastRequest(boolean online, Long sessionId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface lastResult(boolean online, Long sessionId) throws SectioningException, PageAccessException;
