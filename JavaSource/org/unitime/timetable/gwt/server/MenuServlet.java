@@ -321,6 +321,9 @@ public class MenuServlet implements MenuService {
 			if ("session".equals(authority)) {
 				Long sessionId = (sessionContext.isAuthenticated() ? sessionContext.getUser().getCurrentAcademicSessionId() : null);
 				return (sessionId == null ? false : sessionContext.hasPermissionAnyAuthority(right, new SimpleQualifier("Session", sessionId)));
+			} else if ("role".equals(authority)) {
+				String role = (sessionContext.isAuthenticated() ? sessionContext.getUser().getCurrentAuthority().getRole() : null);
+				return (role == null ? false : sessionContext.hasPermissionAnyAuthority(right, new SimpleQualifier("Role", role)));
 			} else if ("any".equals(authority)) {
 				return sessionContext.hasPermissionAnyAuthority(right);
 			} else {
