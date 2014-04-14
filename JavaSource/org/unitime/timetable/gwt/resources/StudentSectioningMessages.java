@@ -153,7 +153,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Saving...")
 	String courseRequestsSaving();
-
+	
 	@DefaultMessage("Loading...")
 	String courseRequestsLoading();
 	

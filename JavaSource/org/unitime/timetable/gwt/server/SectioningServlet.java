@@ -53,6 +53,8 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
@@ -92,6 +94,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.CheckCourses;
+import org.unitime.timetable.onlinesectioning.basic.CheckEligibility;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.basic.ListClasses;
@@ -1670,40 +1673,18 @@ public class SectioningServlet implements SectioningService {
 				return server.getAcademicSession().getUniqueId();
 			}
 			
-			Student student = (studentId == null ? null : StudentDAO.getInstance().get(studentId));
+			EligibilityCheck check = checkEligibility(online, null, studentId);
+			if (check == null || !check.hasFlag(EligibilityFlag.CAN_ENROLL))
+				throw new SectioningException(check.getMessage());
 			
-			if (student == null)
-				throw new SectioningException(MSG.exceptionBadStudentId());
-			
-			StudentSectioningStatus status = student.getSectioningStatus();
-			if (status == null) status = student.getSession().getDefaultSectioningStatus();
-			boolean disabled = (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled));
-			if (disabled && getSessionContext().hasPermission(Right.StudentSchedulingAdmin))
-				disabled = false;
-			if (disabled && status.hasOption(StudentSectioningStatus.Option.advisor) && getSessionContext().hasPermission(Right.StudentSchedulingAdvisor))
-				disabled = false;
-			if (disabled) {
-				if (status.getMessage() == null)
-					throw new SectioningException(MSG.exceptionEnrollmentDisabled());
-				else
-					throw new SectioningException(status.getMessage());
-			}
-			
-			OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId());
-			if (server == null || !server.getAcademicSession().isSectioningEnabled())
-				throw new SectioningException(MSG.exceptionNoServerForSession());
-			
-			if (studentId.equals(getStudentId(student.getSession().getUniqueId()))) return student.getSession().getUniqueId();
-			
-			UserContext user = getSessionContext().getUser();
-			if (user == null)
-				throw new PageAccessException(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+			if (studentId.equals(getStudentId(check.getSessionId())))
+				return check.getSessionId();
 			
 			if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisor))
-				return student.getSession().getUniqueId();
+				return check.getSessionId();
 			
-			if (getStudentId(student.getSession().getUniqueId()) == null)
-				throw new PageAccessException(MSG.exceptionEnrollNotStudent(student.getSession().getLabel()));
+			if (getStudentId(check.getSessionId()) == null)
+				throw new PageAccessException(MSG.exceptionEnrollNotStudent(getServerInstance(check.getSessionId()).getAcademicSession().toString()));
 			
 			throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
 		} catch (PageAccessException e) {
@@ -1876,6 +1857,54 @@ public class SectioningServlet implements SectioningService {
 		@Override
 		public boolean match(XCourseId course) {
 			return course != null && course.matchType(iAllCourseTypes, iNoCourseType, iAllowedCourseTypes);
+		}
+	}
+
+	@Override
+	public EligibilityCheck checkEligibility(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException {
+		try {
+			if (!online) {
+				OnlineSectioningServer server = getStudentSolver();
+				if (server == null) 
+					return new EligibilityCheck(MSG.exceptionNoSolver());
+				
+				return null;
+			}
+			
+			if (sessionId == null && studentId != null) {
+				// guess session from student
+				Student student = StudentDAO.getInstance().get(studentId);
+				if (student != null)
+					sessionId = student.getSession().getUniqueId();
+			}
+			if (sessionId == null) {
+				// use last used session otherwise
+				sessionId = getLastSessionId();
+			}
+			
+			if (sessionId == null) return new EligibilityCheck(MSG.exceptionNoAcademicSession());
+			
+			OnlineSectioningServer server = getServerInstance(sessionId);
+			if (server == null)
+				return new EligibilityCheck(MSG.exceptionNoServerForSession());
+			
+			UserContext user = getSessionContext().getUser();
+			if (user == null)
+				return new EligibilityCheck(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+
+			if (studentId == null)
+				studentId = getStudentId(sessionId);
+			
+			EligibilityCheck check = new EligibilityCheck();
+			check.setFlag(EligibilityFlag.IS_ADMIN, getSessionContext().hasPermission(Right.StudentSchedulingAdmin));
+			check.setFlag(EligibilityFlag.IS_ADVISOR, getSessionContext().hasPermission(Right.StudentSchedulingAdvisor));
+			check.setSessionId(sessionId);
+			check.setStudentIt(studentId);
+			
+			return server.execute(server.createAction(CheckEligibility.class).forStudent(studentId).withCheck(check), currentUser());
+		} catch (Exception e) {
+			sLog.error(e.getMessage(), e);
+			return new EligibilityCheck(MSG.exceptionUnknown(e.getMessage()));
 		}
 	}
 }

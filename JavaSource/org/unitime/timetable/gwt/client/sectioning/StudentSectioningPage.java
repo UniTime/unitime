@@ -112,7 +112,7 @@ public class StudentSectioningPage extends Composite {
 		RootPanel.get("UniTimeGWT:Header").clear();
 		RootPanel.get("UniTimeGWT:Header").add(titlePanel);
 
-		final StudentSectioningWidget widget = new StudentSectioningWidget(true, sessionSelector, userAuthentication, mode, true);
+		final StudentSectioningWidget widget = new StudentSectioningWidget(true, sessionSelector, userAuthentication, mode, true, null);
 		
 		initWidget(widget);
 
@@ -136,7 +136,7 @@ public class StudentSectioningPage extends Composite {
 			public void onAcademicSessionChange(AcademicSessionProvider.AcademicSessionChangeEvent event) {
 				if (event.isChanged())
 					widget.clear();
-				widget.lastRequest(event.getNewAcademicSessionId());
+				widget.checkEligibility(event.getNewAcademicSessionId());
 				userAuthentication.setLookupOptions("mustHaveExternalId,source=students,session=" + event.getNewAcademicSessionId());
 			}
 		});
@@ -149,7 +149,7 @@ public class StudentSectioningPage extends Composite {
 				}
 				public void onSuccess(AcademicSessionProvider.AcademicSessionInfo result) {
 					sessionSelector.selectSession(result, false);
-					widget.lastRequest(sessionSelector.getAcademicSessionId());
+					widget.checkEligibility(sessionSelector.getAcademicSessionId());
 					userAuthentication.setLookupOptions("mustHaveExternalId,source=students,session=" + sessionSelector.getAcademicSessionId());
 				}
 			});

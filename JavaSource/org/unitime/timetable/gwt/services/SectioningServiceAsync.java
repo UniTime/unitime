@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -47,6 +48,7 @@ public interface SectioningServiceAsync {
 	void logIn(String userName, String password, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
 	void logOut(AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void whoAmI(AsyncCallback<String> callback) throws SectioningException, PageAccessException;
+	void checkEligibility(boolean online, Long sessionId, Long studentId, AsyncCallback<OnlineSectioningInterface.EligibilityCheck> callback) throws SectioningException, PageAccessException;
 	void lastAcademicSession(boolean sectioning, AsyncCallback<AcademicSessionProvider.AcademicSessionInfo> callback) throws SectioningException, PageAccessException;
 	void lastRequest(boolean online, Long sessionId, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
 	void lastResult(boolean online, Long sessionId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
