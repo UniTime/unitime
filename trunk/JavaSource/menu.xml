@@ -503,12 +503,15 @@
 	-->
 	<item name="Course Requests" page="requests" type="gwt">
 		<condition>
-			<hasPermission name="CourseRequests"/>	
+			<hasPermission name="CourseRequests" authority="any"/>	
+			<not>
+				<hasPermission name="StudentScheduling"/>
+			</not>
 		</condition>
 	</item>
 	<item name="Scheduling Assistant" page="sectioning" type="gwt">
 		<condition>
-			<hasPermission name="SchedulingAssistant"/>	
+			<hasPermission name="SchedulingAssistant" authority="any"/>	
 			<not>
 				<hasPermission name="StudentScheduling"/>
 			</not>
@@ -516,7 +519,7 @@
 	</item>
 	<item name="Scheduling Dashboard" page="onlinesctdash" type="gwt">
 		<condition>
-			<hasPermission name="SchedulingDashboard"/>
+			<hasPermission name="SchedulingDashboard" authority="role"/>
 			<not>
 				<hasPermission name="StudentScheduling"/>
 			</not>
