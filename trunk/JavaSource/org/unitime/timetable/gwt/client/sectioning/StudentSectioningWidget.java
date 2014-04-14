@@ -41,6 +41,8 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
 import com.google.gwt.core.client.GWT;
@@ -112,8 +114,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private boolean iInRestore = false;
 	private boolean iTrackHistory = true;
 	private boolean iOnline;
+	private StudentSectioningPage.Mode iMode = null;
+	private OnlineSectioningInterface.EligibilityCheck iEligibilityCheck = null;
 
-	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
+	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history, OnlineSectioningInterface.EligibilityCheck check) {
+		iEligibilityCheck = check;
+		iMode = mode;
 		iOnline = online;
 		iSessionSelector = sessionSelector;
 		iUserAuthentication = userAuthentication;
@@ -952,7 +958,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iPanel.insert(iAssignmentPanelWithFocus, 0);
 			iRequests.setVisible(true);
 			iReset.setVisible(true);
-			iEnroll.setVisible(result.isCanEnroll());
+			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			iPrint.setVisible(true);
 			iExport.setVisible(true);
 			iSchedule.setVisible(false);
@@ -1007,8 +1013,43 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 	}
 	
-	public void lastRequest(Long sessionId) {
+	public void checkEligibility(final Long sessionId) {
+		if (!iOnline || !iMode.isSectioning()) {
+			lastRequest(sessionId);
+			return;
+		}
 		LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
+		iSectioningService.checkEligibility(iOnline, sessionId, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
+			@Override
+			public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
+				iEligibilityCheck = result;
+				if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_USE_ASSISTANT)) {
+					if (result.hasMessage())
+						UniTimeNotifications.warn(result.getMessage());
+					iSchedule.setVisible(true);
+					lastRequest(sessionId);
+				} else {
+					LoadingWidget.getInstance().hide();
+					if (result.hasMessage()) {
+						iErrorMessage.setHTML(result.getMessage());
+						iErrorMessage.setVisible(true);
+						UniTimeNotifications.error(result.getMessage());
+						iSchedule.setVisible(false);
+					}
+				}
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				iEligibilityCheck = null;
+			}
+		});
+	}
+	
+	public void lastRequest(Long sessionId) {
+		if (!LoadingWidget.getInstance().isShowing())
+			LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
 		iSectioningService.lastRequest(iOnline, sessionId, new AsyncCallback<CourseRequestInterface>() {
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();

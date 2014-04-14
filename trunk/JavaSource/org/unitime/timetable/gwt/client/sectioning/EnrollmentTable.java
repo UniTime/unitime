@@ -51,7 +51,9 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
@@ -379,14 +381,14 @@ public class EnrollmentTable extends Composite {
 	}
 	
 	public void showStudentAssistant(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
-		iSectioningService.canEnroll(iOnline, student.getId(), new AsyncCallback<Long>() {
+		iSectioningService.checkEligibility(iOnline, null, student.getId(), new AsyncCallback<EligibilityCheck>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				callback.onFailure(caught);
 			}
 			@Override
-			public void onSuccess(final Long sessionId) {
-				if (sessionId == null) {
+			public void onSuccess(final EligibilityCheck check) {
+				if (check == null || !check.hasFlag(EligibilityFlag.CAN_ENROLL)) {
 					callback.onSuccess(false);
 					return;
 				}
@@ -404,7 +406,7 @@ public class EnrollmentTable extends Composite {
 				AcademicSessionProvider session = new AcademicSessionProvider() {
 					@Override
 					public Long getAcademicSessionId() {
-						return sessionId;
+						return check.getSessionId();
 					}
 					@Override
 					public String getAcademicSessionName() {
@@ -422,7 +424,7 @@ public class EnrollmentTable extends Composite {
 					}
 				};
 												
-				final StudentSectioningWidget widget = new StudentSectioningWidget(iOnline, session, user, StudentSectioningPage.Mode.SECTIONING, false);
+				final StudentSectioningWidget widget = new StudentSectioningWidget(iOnline, session, user, StudentSectioningPage.Mode.SECTIONING, false, check);
 				
 				iSectioningService.logIn(iOnline ? "LOOKUP" : "BATCH", iOnline ? student.getExternalId() : String.valueOf(student.getId()), new AsyncCallback<String>() {
 					@Override
