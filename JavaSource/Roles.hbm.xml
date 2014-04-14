@@ -65,7 +65,7 @@
             type="boolean"
             not-null="true"/>
 
-        <set name="rights" table="rights">
+        <set name="rights" table="rights" lazy="false">
         	<key column="role_id"/>
         	<element column="value" type="string"/>
         </set>
