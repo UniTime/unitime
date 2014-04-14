@@ -135,14 +135,14 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 					.setType(OnlineSectioningLog.Entity.EntityType.OTHER).build();
 			if (context.isWaitTillStarted()) {
 				try {
-					execute(new ReloadAllData(), user);
+					execute(createAction(ReloadAllData.class), user);
 				} catch (Throwable exception) {
 					iLog.error("Failed to load server: " + exception.getMessage(), exception);
 					throw exception;
 				}
 				if (getAcademicSession().isSectioningEnabled()) {
 					try {
-						execute(new CheckAllOfferingsAction(), user);
+						execute(createAction(CheckAllOfferingsAction.class), user);
 					} catch (Throwable exception) {
 						iLog.error("Failed to check all offerings: " + exception.getMessage(), exception);
 						throw exception;
@@ -151,11 +151,11 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 				setReady(true);
 				getMemUsage();
 			} else {
-				execute(new ReloadAllData(), user, new ServerCallback<Boolean>() {
+				execute(createAction(ReloadAllData.class), user, new ServerCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
 						if (getAcademicSession().isSectioningEnabled())
-							execute(new CheckAllOfferingsAction(), user, new ServerCallback<Boolean>() {
+							execute(createAction(CheckAllOfferingsAction.class), user, new ServerCallback<Boolean>() {
 								@Override
 								public void onSuccess(Boolean result) {
 									setReady(true);
@@ -303,6 +303,17 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 				.setExternalId(StudentClassEnrollment.SystemChange.SYSTEM.name())
 				.setName(StudentClassEnrollment.SystemChange.SYSTEM.getName())
 				.setType(OnlineSectioningLog.Entity.EntityType.OTHER).build();
+	}
+	
+	@Override
+	public <X extends OnlineSectioningAction> X createAction(Class<X> clazz) {
+		try {
+			return clazz.newInstance();
+		} catch (InstantiationException e) {
+			throw new SectioningException(e.getMessage(), e);
+		} catch (IllegalAccessException e) {
+			throw new SectioningException(e.getMessage(), e);
+		}
 	}
 
 	@Override
@@ -670,7 +681,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 					List<Long> offeringIds = getOfferingsToPersistExpectedSpaces(0);
 					if (!offeringIds.isEmpty()) {
 						iLog.info("There are " + offeringIds.size() + " offerings that need expected spaces persisted.");
-						execute(new PersistExpectedSpacesAction(offeringIds), getSystemUser());
+						execute(createAction(PersistExpectedSpacesAction.class).forOfferings(offeringIds), getSystemUser());
 					}
 					iMaster.notify();
 					return true;

@@ -59,7 +59,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	private Integer iLimit = null;
 	private Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
 	
-	public FindStudentInfoAction(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove) {
+	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove) {
 		iQuery = new Query(query);
 		iCoursesIcanApprove = coursesIcanApprove;
 		iCoursesIcoordinate = coursesIcoordinage;
@@ -67,6 +67,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		if (m.find()) {
 			iLimit = Integer.parseInt(m.group(1));
 		}
+		return this;
 	}
 	
 	public Query query() { return iQuery; }

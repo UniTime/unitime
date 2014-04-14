@@ -47,23 +47,23 @@ public class SuggestionsTest extends OnlineSectioningTestFwk {
 				"select s.uniqueId from Student s where s.session.uniqueId = :sessionId")
 				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
 			
-			CourseRequestInterface request = getServer().execute(new GetRequest(studentId), user());
+			CourseRequestInterface request = getServer().execute(createAction(GetRequest.class).forStudent(studentId), user());
 			if (request == null || request.getCourses().isEmpty()) continue;
-			ClassAssignmentInterface assignment = getServer().execute(new GetAssignment(studentId), user());
+			ClassAssignmentInterface assignment = getServer().execute(createAction(GetAssignment.class).forStudent(studentId), user());
 			if (assignment == null) continue;
 						
 			operations.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {
-					CourseRequestInterface request = s.execute(new GetRequest(studentId), user());
+					CourseRequestInterface request = s.execute(createAction(GetRequest.class).forStudent(studentId), user());
 					if (request == null || request.getCourses().isEmpty()) return 1.0;
-					ClassAssignmentInterface assignment = getServer().execute(new GetAssignment(studentId), user());
+					ClassAssignmentInterface assignment = getServer().execute(createAction(GetAssignment.class).forStudent(studentId), user());
 					if (assignment == null) return 1.0;
 					List<ClassAssignmentInterface.ClassAssignment> classes = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 					for (ClassAssignmentInterface.CourseAssignment course: assignment.getCourseAssignments())
 						classes.addAll(course.getClassAssignments());
 					if (classes.isEmpty()) return 1.0;
-					ComputeSuggestionsAction action = new ComputeSuggestionsAction(request, classes, ToolBox.random(classes), null);
+					ComputeSuggestionsAction action = createAction(ComputeSuggestionsAction.class).forRequest(request).withAssignment(classes).withSelection(ToolBox.random(classes));
 					s.execute(action, user());
 					return action.value();
 				}

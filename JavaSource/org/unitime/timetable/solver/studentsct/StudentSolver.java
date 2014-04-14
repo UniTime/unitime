@@ -831,6 +831,17 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
 	}
 
 	@Override
+	public <X extends OnlineSectioningAction> X createAction(Class<X> clazz) {
+		try {
+			return clazz.newInstance();
+		} catch (InstantiationException e) {
+			throw new SectioningException(e.getMessage(), e);
+		} catch (IllegalAccessException e) {
+			throw new SectioningException(e.getMessage(), e);
+		}
+	}
+
+	@Override
 	public <E> E execute(OnlineSectioningAction<E> action, Entity user) throws SectioningException {
 		long c0 = OnlineSectioningHelper.getCpuTime();
 		OnlineSectioningHelper h = new OnlineSectioningHelper(user);

@@ -355,7 +355,7 @@ public class SectioningServlet implements SectioningService {
 			return results;
 		} else {
 			try {
-				return server.execute(new ListClasses(course, getStudentId(sessionId)), currentUser());
+				return server.execute(server.createAction(ListClasses.class).forCourseAndStudent(course, getStudentId(sessionId)), currentUser());
 			} catch (PageAccessException e) {
 				throw e;
 			} catch (SectioningException e) {
@@ -429,7 +429,7 @@ public class SectioningServlet implements SectioningService {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 				request.setStudentId(getStudentId(request.getAcademicSessionId()));
-				ClassAssignmentInterface ret = server.execute(new FindAssignmentAction(request, currentAssignment), currentUser()).get(0);
+				ClassAssignmentInterface ret = server.execute(server.createAction(FindAssignmentAction.class).forRequest(request).withAssignment(currentAssignment), currentUser()).get(0);
 				if (ret != null)
 					ret.setCanEnroll(false);
 				return ret;
@@ -440,7 +440,7 @@ public class SectioningServlet implements SectioningService {
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
 			OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-			ClassAssignmentInterface ret = server.execute(new FindAssignmentAction(request, currentAssignment), currentUser()).get(0);
+			ClassAssignmentInterface ret = server.execute(server.createAction(FindAssignmentAction.class).forRequest(request).withAssignment(currentAssignment), currentUser()).get(0);
 			if (ret != null) {
 				ret.setCanEnroll(server.getAcademicSession().isSectioningEnabled());
 				if (ret.isCanEnroll()) {
@@ -466,13 +466,14 @@ public class SectioningServlet implements SectioningService {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 				request.setStudentId(getStudentId(request.getAcademicSessionId()));
-				return server.execute(new CheckCourses(request, null), currentUser());
+				return server.execute(server.createAction(CheckCourses.class).forRequest(request), currentUser());
 			}
 			
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			if (getServerInstance(request.getAcademicSessionId()) == null) {
+			OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId());
+			if (server == null) {
 				ArrayList<String> notFound = new ArrayList<String>();
 				CourseMatcher matcher = getCourseMatcher(request.getAcademicSessionId());
 				Long studentId = getStudentId(request.getAcademicSessionId());
@@ -494,8 +495,7 @@ public class SectioningServlet implements SectioningService {
 				}
 				return notFound;
 			} else {
-				request.setStudentId(getStudentId(request.getAcademicSessionId()));
-				return getServerInstance(request.getAcademicSessionId()).execute(new CheckCourses(request, getCourseMatcher(request.getAcademicSessionId())), currentUser());
+				return server.execute(server.createAction(CheckCourses.class).forRequest(request).withMatcher(getCourseMatcher(request.getAcademicSessionId())), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -542,7 +542,7 @@ public class SectioningServlet implements SectioningService {
 				request.setStudentId(getStudentId(request.getAcademicSessionId()));
 				ClassAssignmentInterface.ClassAssignment selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
 				
-				Collection<ClassAssignmentInterface> ret = server.execute(new ComputeSuggestionsAction(request, currentAssignment, selectedAssignment, filter), currentUser());
+				Collection<ClassAssignmentInterface> ret = server.execute(server.createAction(ComputeSuggestionsAction.class).forRequest(request).withAssignment(currentAssignment).withSelection(selectedAssignment).withFilter(filter), currentUser());
 				
 				if (ret != null)
 					for (ClassAssignmentInterface ca: ret)
@@ -557,7 +557,7 @@ public class SectioningServlet implements SectioningService {
 			ClassAssignmentInterface.ClassAssignment selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
 			OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-			Collection<ClassAssignmentInterface> ret = server.execute(new ComputeSuggestionsAction(request, currentAssignment, selectedAssignment, filter), currentUser());
+			Collection<ClassAssignmentInterface> ret = server.execute(server.createAction(ComputeSuggestionsAction.class).forRequest(request).withAssignment(currentAssignment).withSelection(selectedAssignment).withFilter(filter), currentUser());
 			if (ret != null) {
 				boolean canEnroll = server.getAcademicSession().isSectioningEnabled();
 				if (canEnroll) {
@@ -736,12 +736,12 @@ public class SectioningServlet implements SectioningService {
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
-				return server.execute(new GetRequest(studentId), currentUser());
+				return server.execute(server.createAction(GetRequest.class).forStudent(studentId), currentUser());
 			}
 			
 			OnlineSectioningServer server = getServerInstance(sessionId);
 			if (server != null) {
-				CourseRequestInterface lastRequest = server.execute(new GetRequest(studentId), currentUser());
+				CourseRequestInterface lastRequest = server.execute(server.createAction(GetRequest.class).forStudent(studentId), currentUser());
 				if (lastRequest == null)
 					throw new SectioningException(MSG.exceptionBadStudentId());
 				if (!lastRequest.getCourses().isEmpty())
@@ -860,7 +860,7 @@ public class SectioningServlet implements SectioningService {
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
 
-			ClassAssignmentInterface ret = server.execute(new GetAssignment(studentId), currentUser());
+			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
 			ret.setCanEnroll(false);
 			return ret;
 		}
@@ -869,7 +869,7 @@ public class SectioningServlet implements SectioningService {
 		try {
 			OnlineSectioningServer server = getServerInstance(sessionId);
 			if (server == null) throw new SectioningException(MSG.exceptionBadSession());
-			ClassAssignmentInterface ret = server.execute(new GetAssignment(studentId), currentUser());
+			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
 			if (ret == null) throw new SectioningException(MSG.exceptionBadStudentId());
 			ret.setCanEnroll(server.getAcademicSession().isSectioningEnabled());
 			if (ret.isCanEnroll()) {
@@ -929,7 +929,7 @@ public class SectioningServlet implements SectioningService {
 		if (server != null) {
 			if (studentId == null)
 				throw new SectioningException(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
-			server.execute(new SaveStudentRequests(studentId, request, true), currentUser());
+			server.execute(server.createAction(SaveStudentRequests.class).forStudent(studentId).withRequest(request), currentUser());
 			return true;
 		} else {
 			if (studentId == null)
@@ -973,7 +973,7 @@ public class SectioningServlet implements SectioningService {
 		setLastSessionId(request.getAcademicSessionId());
 		setLastRequest(request);
 
-		return server.execute(new EnrollStudent(request.getStudentId(), request, currentAssignment), currentUser());
+		return server.execute(server.createAction(EnrollStudent.class).forStudent(request.getStudentId()).withRequest(request).withAssignment(currentAssignment), currentUser());
 	}
 
 	public Boolean isAdminOrAdvisor() throws SectioningException, PageAccessException {
@@ -1210,7 +1210,7 @@ public class SectioningServlet implements SectioningService {
 						}
 					return new ArrayList<ClassAssignmentInterface.Enrollment>(student2enrollment.values());
 				} else {
-					return server.execute(new ListEnrollments(offeringId, clazz == null ? null : clazz.getUniqueId()), currentUser());
+					return server.execute(server.createAction(ListEnrollments.class).forOffering(offeringId).withSection(clazz == null ? null : clazz.getUniqueId()), currentUser());
 				}
 			} finally {
 				hibSession.close();
@@ -1355,7 +1355,7 @@ public class SectioningServlet implements SectioningService {
 						}
 						return ret;
 					} else {
-						return server.execute(new GetAssignment(studentId), currentUser());
+						return server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
 					}
 				} finally {
 					hibSession.close();
@@ -1365,7 +1365,7 @@ public class SectioningServlet implements SectioningService {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				return server.execute(new GetAssignment(studentId), currentUser());
+				return server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1399,7 +1399,7 @@ public class SectioningServlet implements SectioningService {
 			
 			UserContext user = getSessionContext().getUser();
 			String approval = new Date().getTime() + ":" + user.getExternalUserId() + ":" + user.getName();
-			server.execute(new ApproveEnrollmentsAction(offering.getUniqueId(), studentIds, courseIdsCanApprove, approval), currentUser());
+			server.execute(server.createAction(ApproveEnrollmentsAction.class).withParams(offering.getUniqueId(), studentIds, courseIdsCanApprove, approval), currentUser());
 			
 			return approval;
 		} catch (PageAccessException e) {
@@ -1434,7 +1434,7 @@ public class SectioningServlet implements SectioningService {
 			UserContext user = getSessionContext().getUser();
 			String approval = new Date().getTime() + ":" + user.getExternalUserId() + ":" + user.getName();
 			
-			return server.execute(new RejectEnrollmentsAction(offering.getUniqueId(), studentIds, courseIdsCanApprove, approval), currentUser());
+			return server.execute(server.createAction(RejectEnrollmentsAction.class).withParams(offering.getUniqueId(), studentIds, courseIdsCanApprove, approval), currentUser());
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
@@ -1513,7 +1513,7 @@ public class SectioningServlet implements SectioningService {
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 							
-				return server.execute(new FindEnrollmentInfoAction(
+				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(
 						query,
 						courseId,
 						getCoordinatingCourses(sessionId),
@@ -1527,7 +1527,7 @@ public class SectioningServlet implements SectioningService {
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
-				return server.execute(new FindEnrollmentInfoAction(query, courseId, null, null), currentUser());
+				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(query, courseId, null, null), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1551,7 +1551,7 @@ public class SectioningServlet implements SectioningService {
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 							
-				return server.execute(new FindStudentInfoAction(
+				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(
 						query,
 						getCoordinatingCourses(sessionId),
 						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null), currentUser()
@@ -1564,7 +1564,7 @@ public class SectioningServlet implements SectioningService {
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
-				return server.execute(new FindStudentInfoAction(query, null, null), currentUser());
+				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(query, null, null), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1585,7 +1585,7 @@ public class SectioningServlet implements SectioningService {
 					throw new SectioningException(MSG.exceptionBadSession());
 				
 				UserContext user = getSessionContext().getUser();
-				return server.execute(new StatusPageSuggestionsAction(
+				return server.execute(server.createAction(StatusPageSuggestionsAction.class).withParams(
 						user.getExternalUserId(), user.getName(),
 						query, limit), currentUser());				
 			} else {
@@ -1594,7 +1594,7 @@ public class SectioningServlet implements SectioningService {
 					throw new SectioningException(MSG.exceptionNoSolver());
 
 				UserContext user = getSessionContext().getUser();
-				return server.execute(new StatusPageSuggestionsAction(
+				return server.execute(server.createAction(StatusPageSuggestionsAction.class).withParams(
 						user.getExternalUserId(), user.getName(),
 						query, limit), currentUser());				
 			}
@@ -1623,7 +1623,7 @@ public class SectioningServlet implements SectioningService {
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
-				return server.execute(new FindEnrollmentAction(
+				return server.execute(server.createAction(FindEnrollmentAction.class).withParams(
 						query, courseId, classId, 
 						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId).contains(courseId): false), currentUser());
 			} else {
@@ -1634,7 +1634,7 @@ public class SectioningServlet implements SectioningService {
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
-				return server.execute(new FindEnrollmentAction(query, courseId, classId, false), currentUser());
+				return server.execute(server.createAction(FindEnrollmentAction.class).withParams(query, courseId, classId, false), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1663,7 +1663,7 @@ public class SectioningServlet implements SectioningService {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 				
-				CourseRequestInterface request = server.execute(new GetRequest(studentId), currentUser());
+				CourseRequestInterface request = server.execute(server.createAction(GetRequest.class).forStudent(studentId), currentUser());
 				if (request == null)
 					throw new SectioningException(MSG.exceptionBadStudentId());
 
@@ -1720,13 +1720,13 @@ public class SectioningServlet implements SectioningService {
 	public CourseRequestInterface savedRequest(boolean online, Long studentId) throws SectioningException, PageAccessException {
 		if (online) {
 			OnlineSectioningServer server = getServerInstance(canEnroll(online, studentId));
-			return server.execute(new GetRequest(studentId), currentUser());
+			return server.execute(server.createAction(GetRequest.class).forStudent(studentId), currentUser());
 		} else {
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
 
-			return server.execute(new GetRequest(studentId), currentUser());
+			return server.execute(server.createAction(GetRequest.class).forStudent(studentId), currentUser());
 		}
 	}
 
@@ -1734,13 +1734,13 @@ public class SectioningServlet implements SectioningService {
 	public ClassAssignmentInterface savedResult(boolean online, Long studentId) throws SectioningException, PageAccessException {
 		if (online) {
 			OnlineSectioningServer server = getServerInstance(canEnroll(online, studentId));
-			return server.execute(new GetAssignment(studentId), currentUser());
+			return server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
 		} else {
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
 
-			ClassAssignmentInterface ret = server.execute(new GetAssignment(studentId), currentUser());
+			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
 			if (ret != null)
 				ret.setCanEnroll(false);
 			return ret;
@@ -1774,7 +1774,7 @@ public class SectioningServlet implements SectioningService {
 		try {
 			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-			StudentEmail email = new StudentEmail(studentId);
+			StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId);
 			email.setCC(cc);
 			email.setEmailSubject(subject == null || subject.isEmpty() ? MSG.defaulSubject() : subject);
 			email.setMessage(message);
@@ -1794,7 +1794,7 @@ public class SectioningServlet implements SectioningService {
 		try {
 			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-			return server.execute(new ChangeStudentStatus(studentIds, ref), currentUser());
+			return server.execute(server.createAction(ChangeStudentStatus.class).forStudents(studentIds).withStatus(ref), currentUser());
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
@@ -1830,7 +1830,7 @@ public class SectioningServlet implements SectioningService {
 		Long sessionId = getStatusPageSessionId();
 		OnlineSectioningServer server = getServerInstance(sessionId);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-		return server.execute(new FindOnlineSectioningLogAction(query), currentUser());
+		return server.execute(server.createAction(FindOnlineSectioningLogAction.class).forQuery(query), currentUser());
 	}
 
 	@Override

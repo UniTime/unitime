@@ -46,15 +46,20 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 	private XEnrollment iOldEnrollment;
 	private XStudent iOldStudent;
 	
-	public NotifyStudentAction(Long studentId, XOffering oldOffering, XEnrollment oldEnrollment) {
+	public NotifyStudentAction forStudent(Long studentId) {
 		iStudentId = studentId;
-		iOldOffering = oldOffering;
-		iOldEnrollment = oldEnrollment;
+		return this;
 	}
 	
-	public NotifyStudentAction(Long studentId, XStudent oldStudent) {
-		iStudentId = studentId;
+	public NotifyStudentAction oldEnrollment(XOffering oldOffering, XEnrollment oldEnrollment) {
+		iOldOffering = oldOffering;
+		iOldEnrollment = oldEnrollment;
+		return this;
+	}
+	
+	public NotifyStudentAction oldStudent(XStudent oldStudent) {
 		iOldStudent = oldStudent;
+		return this;
 	}
 	
 	public Long getStudentId() { return iStudentId; }
@@ -100,7 +105,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 				}
 				helper.debug(message);
 				if (server.getAcademicSession().isSectioningEnabled() && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
-					server.execute(new StudentEmail(getStudentId(), iOldOffering, iOldEnrollment), helper.getUser(), new ServerCallback<Boolean>() {
+					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).oldEnrollment(iOldOffering, iOldEnrollment), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
 							helper.error("Failed to notify student: " + exception.getMessage(), exception);
@@ -155,7 +160,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 				}
 				helper.debug(message);
 				if (server.getAcademicSession().isSectioningEnabled() && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
-					server.execute(new StudentEmail(getStudentId(), iOldStudent), helper.getUser(), new ServerCallback<Boolean>() {
+					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).oldStudent(iOldStudent), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
 							helper.error("Failed to notify student: " + exception.getMessage(), exception);

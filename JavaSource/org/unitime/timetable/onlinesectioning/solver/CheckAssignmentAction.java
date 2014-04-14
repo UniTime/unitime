@@ -56,11 +56,16 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Long, L
 	private Long iStudentId;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
 	
-	public CheckAssignmentAction(Long studentId, Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
+	public CheckAssignmentAction forStudent(Long studentId) {
 		iStudentId = studentId;
-		iAssignment = assignment;
+		return this;
 	}
 	
+	public CheckAssignmentAction withAssignment(Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
+		iAssignment = assignment;
+		return this;
+	}
+
 	public Long getStudentId() { return iStudentId; }
 	public Collection<ClassAssignmentInterface.ClassAssignment> getAssignment() { return iAssignment; }
 

@@ -49,14 +49,16 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Collection<Long> iClassIds = null;
 	
-	public ClassAssignmentChanged(Long... classIds) {
+	public ClassAssignmentChanged forClasses(Long... classIds) {
 		iClassIds = new ArrayList<Long>();
 		for (Long classId: classIds)
 			iClassIds.add(classId);
+		return this;
 	}
 	
-	public ClassAssignmentChanged(Collection<Long> classIds) {
+	public ClassAssignmentChanged forClasses(Collection<Long> classIds) {
 		iClassIds = classIds;
+		return this;
 	}
 
 	

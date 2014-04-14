@@ -74,7 +74,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	private Long iCourseId;
 	private Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
 	
-	public FindEnrollmentInfoAction(String query, Long courseId, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove) {
+	public FindEnrollmentInfoAction withParams(String query, Long courseId, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove) {
 		iQuery = new Query(query);
 		iCourseId = courseId;
 		iCoursesIcanApprove = coursesIcanApprove;
@@ -83,6 +83,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		if (m.find()) {
 			iLimit = Integer.parseInt(m.group(1));
 		}
+		return this;
 	}
 	
 	public Query query() { return iQuery; }

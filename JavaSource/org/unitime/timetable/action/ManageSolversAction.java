@@ -773,7 +773,7 @@ public class ManageSolversAction extends Action {
                        if (sessionContext.getUser().getAuthorities(sessionContext.getUser().getCurrentAuthority().getRole(), new SimpleQualifier("Session", Long.valueOf(sessionId))).isEmpty()) continue;
                        String sessionLabel = solver.getAcademicSession().toString();
                        String mode = solver.getAcademicSession().isSectioningEnabled() ? "Online" : "Assistant";
-                       Map<String,String> info = (solver.isReady() ? solver.execute(new GetInfo(), null) : null);
+                       Map<String,String> info = (solver.isReady() ? solver.execute(solver.createAction(GetInfo.class), null) : null);
                        String assigned = (info == null ? null : info.get("Assigned variables"));
                        String totVal = (info == null ? null : info.get("Overall solution value"));
                        String compSch = (info == null ? null : info.get("Students with complete schedule"));

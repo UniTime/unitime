@@ -59,8 +59,9 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 	private String iClassIds;
 	private String iFts;
 	
-	public CalendarExport(String classIds, String fts) {
+	public CalendarExport withParams(String classIds, String fts) {
 		iClassIds = classIds; iFts = fts;
+		return this;
 	}
 
 	@Override

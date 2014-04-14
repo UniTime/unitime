@@ -54,9 +54,10 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 	private String iCourse;
 	private Long iStudentId;
 	
-	public ListClasses(String course, Long studentId) {
+	public ListClasses forCourseAndStudent(String course, Long studentId) {
 		iCourse = course;
 		iStudentId = studentId;
+		return this;
 	}
 	
 	public String getCourse() {

@@ -632,7 +632,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	public void unlockOffering(InstructionalOffering offering, UserContext user) {
 		OnlineSectioningServer server = getInstance();
 		if (server != null) {
-			server.execute(new ReloadOfferingAction(offering.getUniqueId()),
+			server.execute(server.createAction(ReloadOfferingAction.class).forOfferings(offering.getUniqueId()),
 					(user == null ? null :
 					OnlineSectioningLog.Entity.newBuilder().setExternalId(user.getExternalUserId()).setName(user.getName()).setType(OnlineSectioningLog.Entity.EntityType.MANAGER).build()
 					));
