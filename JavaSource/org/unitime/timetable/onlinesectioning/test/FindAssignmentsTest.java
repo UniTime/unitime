@@ -45,15 +45,15 @@ public class FindAssignmentsTest extends OnlineSectioningTestFwk {
 				"select s.uniqueId from Student s where s.session.uniqueId = :sessionId")
 				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
 			
-			CourseRequestInterface request = getServer().execute(new GetRequest(studentId), user());
+			CourseRequestInterface request = getServer().execute(createAction(GetRequest.class).forStudent(studentId), user());
 			if (request == null || request.getCourses().isEmpty()) continue;
 			
 			operations.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {
-					CourseRequestInterface request = s.execute(new GetRequest(studentId), user());
+					CourseRequestInterface request = s.execute(createAction(GetRequest.class).forStudent(studentId), user());
 					if (request != null && !request.getCourses().isEmpty()) {
-						FindAssignmentAction action = new FindAssignmentAction(request, new ArrayList<ClassAssignmentInterface.ClassAssignment>()); 
+						FindAssignmentAction action = s.createAction(FindAssignmentAction.class).forRequest(request).withAssignment(new ArrayList<ClassAssignmentInterface.ClassAssignment>()); 
 						List<ClassAssignmentInterface> ret = s.execute(action, user());
 						return ret == null || ret.isEmpty() ? 0.0 : ret.get(0).getValue();
 					} else {

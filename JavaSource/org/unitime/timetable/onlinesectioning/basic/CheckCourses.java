@@ -40,8 +40,12 @@ public class CheckCourses implements OnlineSectioningAction<Collection<String>> 
 	private CourseRequestInterface iRequest;
 	private CourseMatcher iMatcher;
 	
-	public CheckCourses(CourseRequestInterface request, CourseMatcher matcher) {
-		iRequest = request; iMatcher = matcher;
+	public CheckCourses forRequest(CourseRequestInterface request) {
+		iRequest = request; return this;
+	}
+	
+	public CheckCourses withMatcher(CourseMatcher matcher) {
+		iMatcher = matcher; return this;
 	}
 
 	@Override

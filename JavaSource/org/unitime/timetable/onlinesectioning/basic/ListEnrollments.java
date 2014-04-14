@@ -60,9 +60,14 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 	
 	private Long iOfferingId, iSectionId;
 	
-	public ListEnrollments(Long offeringId, Long sectionId) {
+	public ListEnrollments forOffering(Long offeringId) {
 		iOfferingId = offeringId;
+		return this;
+	}
+	
+	public ListEnrollments withSection(Long sectionId) {
 		iSectionId = sectionId;
+		return this;
 	}
 	
 	@Override

@@ -74,8 +74,9 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	
 	private Long iStudentId;
 	
-	public GetAssignment(Long studentId) {
+	public GetAssignment forStudent(Long studentId) {
 		iStudentId = studentId;
+		return this;
 	}
 
 	@Override

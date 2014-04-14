@@ -82,6 +82,10 @@ public abstract class OnlineSectioningTestFwk {
         PropertyConfigurator.configure(props);
 	}
 	
+	public <X extends OnlineSectioningAction> X createAction(Class<X> clazz) {
+		return getServer().createAction(clazz);
+	}
+	
 	protected void startServer() {
         final Session session = Session.getSessionUsingInitiativeYearTerm(
                 ApplicationProperties.getProperty("initiative", "woebegon"),
@@ -149,7 +153,7 @@ public abstract class OnlineSectioningTestFwk {
 		if (iChannel == null && iServer != null) {
 			List<Long> offeringIds = iServer.getOfferingsToPersistExpectedSpaces(0);
 			if (!offeringIds.isEmpty())
-				iServer.execute(new PersistExpectedSpacesAction(offeringIds), user());
+				iServer.execute(iServer.createAction(PersistExpectedSpacesAction.class).forOfferings(offeringIds), user());
 			iServer.unload();
 		}
 		iServer = null;

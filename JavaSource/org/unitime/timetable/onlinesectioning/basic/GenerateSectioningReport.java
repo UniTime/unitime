@@ -90,13 +90,13 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 	private static final long serialVersionUID = 1L;
 	private DataProperties iParameters = null;
 	
-	public GenerateSectioningReport(Properties parameters) {
+	public GenerateSectioningReport withParameters(Properties parameters) {
 		if (parameters instanceof DataProperties)
 			iParameters = (DataProperties)parameters;
 		else
 			iParameters = new DataProperties(parameters);
+		return this;
 	}
-	
 
 	@Override
 	public CSVFile execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {

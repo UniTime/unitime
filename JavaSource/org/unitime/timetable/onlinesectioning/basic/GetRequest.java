@@ -40,8 +40,9 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	
 	private Long iStudentId;
 	
-	public GetRequest(Long studentId) {
+	public GetRequest forStudent(Long studentId) {
 		iStudentId = studentId;
+		return this;
 	}
 
 	@Override

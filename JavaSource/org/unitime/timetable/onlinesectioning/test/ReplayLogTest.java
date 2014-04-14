@@ -169,7 +169,7 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 		}
 		if (request.getCourses().isEmpty()) return null;
 		sLog.debug("Find assignment for " + request.getCourses() + " (" + assignment + ")");
-		return new FindAssignmentAction(request, assignment);
+		return createAction(FindAssignmentAction.class).forRequest(request).withAssignment(assignment);
 	}
 	
 	private ComputeSuggestionsAction convertSuggestions(OnlineSectioningLog.Action action) {
@@ -199,7 +199,7 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 		
 		if (request.getCourses().isEmpty() || selected == null) return null;
 		sLog.debug("Find suggestions for " + request.getCourses() + " (" + selected + ")");
-		return new ComputeSuggestionsAction(request, assignment, selected, null);
+		return createAction(ComputeSuggestionsAction.class).forRequest(request).withAssignment(assignment).withSelection(selected);
 	}
 	
 	public EnrollStudent convertEnrollFromReload(OnlineSectioningLog.Action action) {
@@ -226,7 +226,7 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 		}
 
 		sLog.debug("Enroll for " + request.getCourses() + " (" + assignment + ")");
-		return new EnrollStudent(request.getStudentId(), request, assignment);
+		return createAction(EnrollStudent.class).forStudent(request.getStudentId()).withRequest(request).withAssignment(assignment);
 	}
 	
 	private OnlineSectioningAction<?> convert(OnlineSectioningLog.Action action) {
@@ -334,13 +334,13 @@ public class ReplayLogTest extends OnlineSectioningTestFwk {
 			XStudent student = iServer.getStudent(iStudentId);
 			EnrollStudent back = null;
 			if (student != null) {
-				CourseRequestInterface request = iServer.execute(new GetRequest(iStudentId), user());
-				ClassAssignmentInterface assignment = iServer.execute(new GetAssignment(iStudentId), user());
+				CourseRequestInterface request = iServer.execute(createAction(GetRequest.class).forStudent(iStudentId), user());
+				ClassAssignmentInterface assignment = iServer.execute(createAction(GetAssignment.class).forStudent(iStudentId), user());
 				List<ClassAssignmentInterface.ClassAssignment> assignments = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 				if (assignment != null)
 					for (ClassAssignmentInterface.CourseAssignment ca: assignment.getCourseAssignments())
 						assignments.addAll(ca.getClassAssignments());
-				back = new EnrollStudent(iStudentId, request, assignments);
+				back = s.createAction(EnrollStudent.class).forStudent(iStudentId).withRequest(request).withAssignment(assignments);
 			}
 
 			

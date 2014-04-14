@@ -46,14 +46,16 @@ public class PersistExpectedSpacesAction implements OnlineSectioningAction<Boole
 	private Collection<Long> iOfferingIds;
 	private static DecimalFormat sDF = new DecimalFormat("+0.000;-0.000");
 
-	public PersistExpectedSpacesAction(Long... offeringIds) {
+	public PersistExpectedSpacesAction forOfferings(Long... offeringIds) {
 		iOfferingIds = new ArrayList<Long>();
 		for (Long offeringId: offeringIds)
 			iOfferingIds.add(offeringId);
+		return this;
 	}
 	
-	public PersistExpectedSpacesAction(Collection<Long> offeringIds) {
+	public PersistExpectedSpacesAction forOfferings(Collection<Long> offeringIds) {
 		iOfferingIds = offeringIds;
+		return this;
 	}
 	
 	public Collection<Long> getOfferingIds() { return iOfferingIds; }

@@ -102,9 +102,14 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
 	
-	public FindAssignmentAction(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
+	public FindAssignmentAction forRequest(CourseRequestInterface request) {
 		iRequest = request;
+		return this;
+	}
+	
+	public FindAssignmentAction withAssignment(Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
 		iAssignment = assignment;
+		return this;
 	}
 	
 	public CourseRequestInterface getRequest() {

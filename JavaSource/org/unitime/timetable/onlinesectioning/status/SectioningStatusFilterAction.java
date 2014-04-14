@@ -54,8 +54,9 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	
 	private FilterRpcRequest iRequest = null;
 	
-	public SectioningStatusFilterAction(FilterRpcRequest request) {
+	public SectioningStatusFilterAction forRequest(FilterRpcRequest request) {
 		iRequest = request;
+		return this;
 	}
 
 	@Override

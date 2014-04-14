@@ -53,11 +53,12 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 	private Collection<Long> iCourseIdsCanApprove;
 	private String iApproval;
 	
-	public RejectEnrollmentsAction(Long offeringId, Collection<Long> studentIds, Collection<Long> courseIdsCanApprove, String approval) {
+	public RejectEnrollmentsAction withParams(Long offeringId, Collection<Long> studentIds, Collection<Long> courseIdsCanApprove, String approval) {
 		iOfferingId = offeringId;
 		iStudentIds = studentIds;
 		iCourseIdsCanApprove = courseIdsCanApprove;
 		iApproval = approval;
+		return this;
 	}
 	
 	public Long getOfferingId() { return iOfferingId; }
@@ -124,7 +125,7 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 						student.getRequests().remove(request);
 						server.update(student, true);
 						
-						server.execute(new NotifyStudentAction(enrollment.getStudentId(), offering, enrollment), helper.getUser());
+						server.execute(server.createAction(NotifyStudentAction.class).forStudent(enrollment.getStudentId()).oldEnrollment(offering, enrollment), helper.getUser());
 					}
 					
 				}
@@ -133,17 +134,6 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 			}
 
 			helper.commitTransaction();
-			
-			/*
-			server.execute(new UpdateEnrollmentCountsAction(getOfferingId()), helper.getUser(), new OnlineSectioningServer.ServerCallback<Boolean>() {
-				@Override
-				public void onFailure(Throwable exception) {
-				}
-				@Override
-				public void onSuccess(Boolean result) {
-				}
-			});
-			*/
 			
 			return true;			
 		} catch (Exception e) {

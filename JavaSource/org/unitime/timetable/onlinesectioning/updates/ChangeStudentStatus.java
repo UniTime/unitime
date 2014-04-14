@@ -47,9 +47,14 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 	private Collection<Long> iStudentIds = null;
 	private String iStatus = null;
 	
-	public ChangeStudentStatus(Collection<Long> studentIds, String status) {
+	public ChangeStudentStatus forStudents(Collection<Long> studentIds) {
 		iStudentIds = studentIds;
+		return this;
+	}
+	
+	public ChangeStudentStatus withStatus(String status) {
 		iStatus = status;
+		return this;
 	}
 	
 	public String getStatus() { return iStatus; }

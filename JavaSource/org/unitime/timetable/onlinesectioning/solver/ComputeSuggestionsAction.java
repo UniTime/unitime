@@ -76,10 +76,24 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 	private double iValue = 0.0;
 	private String iFilter = null;
 	
-	public ComputeSuggestionsAction(CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, ClassAssignmentInterface.ClassAssignment selectedAssignment, String filter) throws SectioningException {
-		super(request, currentAssignment);
+	public ComputeSuggestionsAction forRequest(CourseRequestInterface request) {
+		super.forRequest(request);
+		return this;
+	}
+	
+	public ComputeSuggestionsAction withAssignment(Collection<ClassAssignmentInterface.ClassAssignment> assignment) {
+		super.withAssignment(assignment);
+		return this;
+	}
+	
+	public ComputeSuggestionsAction withSelection(ClassAssignmentInterface.ClassAssignment selectedAssignment) {
 		iSelection = selectedAssignment;
+		return this;
+	}
+	
+	public ComputeSuggestionsAction withFilter(String filter) {
 		iFilter = filter;
+		return this;
 	}
 	
 	public ClassAssignmentInterface.ClassAssignment getSelection() { return iSelection; }
