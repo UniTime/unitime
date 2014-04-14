@@ -166,7 +166,7 @@ public class CalendarServlet extends HttpServlet {
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
             out.println("PRODID:-//UniTime " + Constants.getVersion() + "/Schedule Calendar//NONSGML v1.0//EN");
             if (server != null) {
-            	out.println(server.execute(new CalendarExport(classIds, fts), null));
+            	out.println(server.execute(server.createAction(CalendarExport.class).withParams(classIds, fts), null));
             } else { 
             	if (classIds != null && !classIds.isEmpty()) {
             		for (String classId: classIds.split(",")) {

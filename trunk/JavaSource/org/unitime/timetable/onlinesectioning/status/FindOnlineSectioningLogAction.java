@@ -59,12 +59,13 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 	private Query iQuery;
 	private Integer iLimit = 100;
 	
-	public FindOnlineSectioningLogAction(String query) {
+	public FindOnlineSectioningLogAction forQuery(String query) {
 		iQuery = new Query(query.isEmpty() ? "limit:100" : query);
 		Matcher m = Pattern.compile("limit:[ ]?([0-9]*)", Pattern.CASE_INSENSITIVE).matcher(query);
 		if (m.find()) {
 			iLimit = Integer.parseInt(m.group(1));
 		}
+		return this;
 	}
 	
 	public Query getQuery() { return iQuery; }

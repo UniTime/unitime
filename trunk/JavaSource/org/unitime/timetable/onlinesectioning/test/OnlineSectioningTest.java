@@ -152,27 +152,27 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 				"select s.uniqueId from Student s where s.session.uniqueId = :sessionId")
 				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
 			
-			CourseRequestInterface request = getServer().execute(new GetRequest(studentId), user());
+			CourseRequestInterface request = getServer().execute(createAction(GetRequest.class).forStudent(studentId), user());
 			if (request == null || request.getCourses().isEmpty()) continue;
 			
 			operations.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {
 					StudentPreferencePenalties penalties = new StudentPreferencePenalties(StudentPreferencePenalties.DistType.Preference);
-					CourseRequestInterface request = s.execute(new GetRequest(studentId), user());
+					CourseRequestInterface request = s.execute(createAction(GetRequest.class).forStudent(studentId), user());
 					if (request != null && !request.getCourses().isEmpty()) {
 						FindAssignmentAction action = null;
 						double value = 0.0;
 						for (int i = 1; i <= 5; i++) {
 							try {
-								action = new FindAssignmentAction(request, new ArrayList<ClassAssignmentInterface.ClassAssignment>()); 
+								action = s.createAction(FindAssignmentAction.class).forRequest(request).withAssignment(new ArrayList<ClassAssignmentInterface.ClassAssignment>()); 
 								List<ClassAssignmentInterface> ret = s.execute(action, user());
 								ClassAssignmentInterface assignment = (ret == null || ret.isEmpty() ? null : ret.get(0));
 								List<ClassAssignmentInterface.ClassAssignment> classes = toClassAssignments(assignment);
 								if (assignment != null) value = assignment.getValue();
 								if (suggestions) {
 									for (int x = 0; x < (classes == null ? 0 : classes.size()); x++) {
-										List<ClassAssignmentInterface> suggestions = s.execute(new ComputeSuggestionsAction(request, classes, classes.get(x), null), user());
+										List<ClassAssignmentInterface> suggestions = s.execute(s.createAction(ComputeSuggestionsAction.class).forRequest(request).withAssignment(classes).withSelection(classes.get(x)), user());
 										if (suggestions != null && !suggestions.isEmpty()) {
 											for (ClassAssignmentInterface suggestion: suggestions) {
 												if (isBetter(penalties, request, assignment, suggestion)) {
@@ -184,7 +184,7 @@ public class OnlineSectioningTest extends OnlineSectioningTestFwk {
 									}									
 								}
 								if (classes != null)
-									s.execute(new EnrollStudent(studentId, request, classes), user());
+									s.execute(s.createAction(EnrollStudent.class).forStudent(studentId).withRequest(request).withAssignment(classes), user());
 								break;
 							} catch (SectioningException e) {
 								if (e.getMessage().contains("the class is no longer available")) {

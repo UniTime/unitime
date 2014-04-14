@@ -59,11 +59,12 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	private Long iCourseId, iClassId;
 	private boolean iConsentToDoCourse;
 	
-	public FindEnrollmentAction(String query, Long courseId, Long classId, boolean isConsentToDoCourse) {
+	public FindEnrollmentAction withParams(String query, Long courseId, Long classId, boolean isConsentToDoCourse) {
 		iQuery = new Query(query);
 		iCourseId = courseId;
 		iClassId = classId;
 		iConsentToDoCourse = isConsentToDoCourse;
+		return this;
 	}
 	
 	public Query query() { return iQuery; }

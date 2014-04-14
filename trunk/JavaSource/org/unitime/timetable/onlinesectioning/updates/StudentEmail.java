@@ -103,19 +103,20 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private XStudent iOldStudent;
 	private XStudent iStudent;
 	
-	public StudentEmail(Long studentId, XOffering oldOffering, XEnrollment oldEnrollment) {
+	public StudentEmail forStudent(Long studentId) {
 		iStudentId = studentId;
+		return this;
+	}
+	
+	public StudentEmail oldEnrollment(XOffering oldOffering, XEnrollment oldEnrollment) {
 		iOldOffering = oldOffering;
 		iOldEnrollment = oldEnrollment;
+		return this;
 	}
 	
-	public StudentEmail(Long studentId, XStudent oldStudent) {
-		iStudentId = studentId;
+	public StudentEmail oldStudent(XStudent oldStudent) {
 		iOldStudent = oldStudent;
-	}
-	
-	public StudentEmail(Long studentId) {
-		iStudentId = studentId;
+		return this;
 	}
 	
 	public Long getStudentId() { return iStudentId; }

@@ -74,6 +74,7 @@ public interface OnlineSectioningServer {
 	@CheckMaster(Master.REQUIRED)
 	public void update(XExpectations expectations);
 	
+	public <X extends OnlineSectioningAction> X createAction(Class<X> clazz) throws SectioningException;
 	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException;
 	public <E> void execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user, ServerCallback<E> callback) throws SectioningException;
 	

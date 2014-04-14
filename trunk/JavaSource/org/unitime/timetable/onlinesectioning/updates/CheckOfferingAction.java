@@ -71,14 +71,16 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Collection<Long> iOfferingIds;
 	
-	public CheckOfferingAction(Long... offeringIds) {
+	public CheckOfferingAction forOfferings(Long... offeringIds) {
 		iOfferingIds = new ArrayList<Long>();
 		for (Long offeringId: offeringIds)
 			iOfferingIds.add(offeringId);
+		return this;
 	}
 	
-	public CheckOfferingAction(Collection<Long> offeringIds) {
+	public CheckOfferingAction forOfferings(Collection<Long> offeringIds) {
 		iOfferingIds = offeringIds;
+		return this;
 	}
 	
 	public Collection<Long> getOfferingIds() { return iOfferingIds; }
@@ -270,7 +272,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 							offering);
 					server.persistExpectedSpaces(offering.getOfferingId());
 
-					server.execute(new NotifyStudentAction(r.getRequest().getStudentId(), offering, r.getLastEnrollment()), helper.getUser());
+					server.execute(server.createAction(NotifyStudentAction.class).forStudent(r.getRequest().getStudentId()).oldEnrollment(offering, r.getLastEnrollment()), helper.getUser());
 					
 					if (tx) helper.commitTransaction();
 					r.getAction().setResult(enrollment == null ? OnlineSectioningLog.Action.ResultType.NULL : OnlineSectioningLog.Action.ResultType.SUCCESS);

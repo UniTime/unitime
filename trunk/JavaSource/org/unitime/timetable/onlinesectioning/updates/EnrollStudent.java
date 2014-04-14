@@ -85,12 +85,21 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	private CourseRequestInterface iRequest;
 	private List<ClassAssignmentInterface.ClassAssignment> iAssignment;
 	
-	public EnrollStudent(Long studentId, CourseRequestInterface request, List<ClassAssignmentInterface.ClassAssignment> assignment) {
+	public EnrollStudent forStudent(Long studentId) {
 		iStudentId = studentId;
-		iRequest = request;
-		iAssignment = assignment;
+		return this;
 	}
 	
+	public EnrollStudent withRequest(CourseRequestInterface request) {
+		iRequest = request;
+		return this;
+	}
+
+	public EnrollStudent withAssignment(List<ClassAssignmentInterface.ClassAssignment> assignment) {
+		iAssignment = assignment;
+		return this;
+	}
+
 	public Long getStudentId() { return iStudentId; }
 	public CourseRequestInterface getRequest() { return iRequest; }
 	public List<ClassAssignmentInterface.ClassAssignment> getAssignment() { return iAssignment; }
@@ -161,7 +170,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(getRequest()))
 					action.addRequest(r);
 
-				new CheckAssignmentAction(getStudentId(), getAssignment()).check(server, helper);
+				new CheckAssignmentAction().forStudent(getStudentId()).withAssignment(getAssignment()).check(server, helper);
 				
 				Student student = (Student)helper.getHibSession().createQuery(
 						"select s from Student s " +
@@ -611,7 +620,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					}
 					
 					if (checkOffering)
-						server.execute(new CheckOfferingAction(oldEnrollment.getOfferingId()), helper.getUser(), offeringChecked);
+						server.execute(server.createAction(CheckOfferingAction.class).forOfferings(oldEnrollment.getOfferingId()), helper.getUser(), offeringChecked);
 					
 					updateSpace(server,
 							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, offering, newEnrollment),
@@ -654,7 +663,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				}
 				action.addEnrollment(stored);
 				
-				server.execute(new NotifyStudentAction(getStudentId(), oldStudent), helper.getUser());
+				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).oldStudent(oldStudent), helper.getUser());
 			} finally {
 				lock.release();
 			}
@@ -667,7 +676,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
 		
-		return server.execute(new GetAssignment(getStudentId()), helper.getUser());
+		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()), helper.getUser());
 	}
 	
 	public static int getLimit(Enrollment enrollment, Map<Long, XSection> sections) {

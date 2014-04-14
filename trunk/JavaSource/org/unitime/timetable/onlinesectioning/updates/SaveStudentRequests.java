@@ -66,12 +66,21 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 	private CourseRequestInterface iRequest;
 	private boolean iKeepEnrollments;
 	
-	public SaveStudentRequests(Long studentId, CourseRequestInterface request, boolean keepEnrollments) {
+	public SaveStudentRequests forStudent(Long studentId) {
 		iStudentId = studentId;
-		iRequest = request;
-		iKeepEnrollments = keepEnrollments;
+		return this;
 	}
 	
+	public SaveStudentRequests withRequest(CourseRequestInterface request, boolean keepEnrollments) {
+		iRequest = request;
+		iKeepEnrollments = keepEnrollments;
+		return this;
+	}
+	
+	public SaveStudentRequests withRequest(CourseRequestInterface request) {
+		return withRequest(request, true);
+	}
+
 	public Long getStudentId() { return iStudentId; }
 	public CourseRequestInterface getRequest() { return iRequest; }
 	public boolean getKeepEnrollments() { return iKeepEnrollments; }
@@ -114,7 +123,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 						throw (RuntimeException)e;
 					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 				}
-				server.execute(new NotifyStudentAction(getStudentId(), oldStudent), helper.getUser());
+				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).oldStudent(oldStudent), helper.getUser());
 				
 				helper.commitTransaction();
 				

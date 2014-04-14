@@ -45,10 +45,6 @@ public class CheckAllOfferingsAction extends CheckOfferingAction{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	
-	public CheckAllOfferingsAction() {
-		super();
-	}
-	
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<Long> offeringIds = null;

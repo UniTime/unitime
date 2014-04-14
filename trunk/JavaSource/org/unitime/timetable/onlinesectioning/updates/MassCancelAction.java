@@ -175,7 +175,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 							action.addEnrollment(enrollment);
 						}
 						
-						StudentEmail email = new StudentEmail(studentId, oldStudent);
+						StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId).oldStudent(oldStudent);
 						email.setCC(getCC());
 						email.setEmailSubject(getSubject() == null || getSubject().isEmpty() ? MSG.defaulSubjectMassCancel() : getSubject());
 						email.setMessage(getMessage());
@@ -203,7 +203,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 		
 		for (Long offeringId: offeringsToCheck) {
 			server.persistExpectedSpaces(offeringId);
-			server.execute(new CheckOfferingAction(offeringId), helper.getUser(), offeringChecked);
+			server.execute(server.createAction(CheckOfferingAction.class).forOfferings(offeringId), helper.getUser(), offeringChecked);
 		}
 		
 		if (caughtException != null) {

@@ -50,14 +50,16 @@ public class ReloadStudent extends ReloadAllData {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Collection<Long> iStudentIds = null;
 	
-	public ReloadStudent(Long... studentIds) {
+	public ReloadStudent forStudents(Long... studentIds) {
 		iStudentIds = new ArrayList<Long>();
 		for (Long studentId: studentIds)
 			iStudentIds.add(studentId);
+		return this;
 	}
 	
-	public ReloadStudent(Collection<Long> studentIds) {
+	public ReloadStudent forStudents(Collection<Long> studentIds) {
 		iStudentIds = studentIds;
+		return this;
 	}
 
 	
@@ -127,7 +129,7 @@ public class ReloadStudent extends ReloadAllData {
 						action.getStudentBuilder().setUniqueId(newStudent.getStudentId()).setExternalId(newStudent.getExternalId()).setName(newStudent.getName());
 					}
 					
-					server.execute(new NotifyStudentAction(studentId, oldStudent), helper.getUser());
+					server.execute(server.createAction(NotifyStudentAction.class).forStudent(studentId).oldStudent(oldStudent), helper.getUser());
 
 				} finally {
 					lock.release();

@@ -138,7 +138,7 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 			// first time after midnight (TODO: allow change)
 			server.setProperty("Updater.LastReservationCheck", ts);
 			try {
-				server.execute(new ExpireReservationsAction(), user());
+				server.execute(server.createAction(ExpireReservationsAction.class), user());
 			} catch (Exception e) {
 				iLog.error("Expire reservations failed: " + e.getMessage(), e);
 			}
@@ -156,7 +156,7 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 		try {
 			List<Long> offeringIds = server.getOfferingsToPersistExpectedSpaces(2000 * iSleepTimeInSeconds);
 			if (!offeringIds.isEmpty()) {
-				server.execute(new PersistExpectedSpacesAction(offeringIds), user(), new ServerCallback<Boolean>() {
+				server.execute(server.createAction(PersistExpectedSpacesAction.class).forOfferings(offeringIds), user(), new ServerCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {}
 					@Override
@@ -174,9 +174,9 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 		switch (StudentSectioningQueue.Type.values()[q.getType()]) {
 		case SESSION_RELOAD:
 			iLog.info("Reloading " + server.getAcademicSession());
-			server.execute(new ReloadAllData(), q.getUser());
+			server.execute(server.createAction(ReloadAllData.class), q.getUser());
 			if (server.getAcademicSession().isSectioningEnabled())
-				server.execute(new CheckAllOfferingsAction(), q.getUser());
+				server.execute(server.createAction(CheckAllOfferingsAction.class), q.getUser());
 			break;
 		case SESSION_STATUS_CHANGE:
 			Session session = SessionDAO.getInstance().get(iSession.getUniqueId());
@@ -203,16 +203,16 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 			List<Long> studentIds = q.getIds();
 			if (studentIds == null || studentIds.isEmpty()) {
 				iLog.info("All students changed for " + server.getAcademicSession());
-				server.execute(new ReloadAllStudents(), q.getUser());
+				server.execute(server.createAction(ReloadAllStudents.class), q.getUser());
 			} else {
-				server.execute(new ReloadStudent(studentIds), q.getUser());
+				server.execute(server.createAction(ReloadStudent.class).forStudents(studentIds), q.getUser());
 			}
 			break;
 		case CLASS_ASSIGNMENT_CHANGE:
-			server.execute(new ClassAssignmentChanged(q.getIds()), q.getUser());
+			server.execute(server.createAction(ClassAssignmentChanged.class).forClasses(q.getIds()), q.getUser());
 			break;
 		case OFFERING_CHANGE:
-			server.execute(new ReloadOfferingAction(q.getIds()), q.getUser());
+			server.execute(server.createAction(ReloadOfferingAction.class).forOfferings(q.getIds()), q.getUser());
 			break;
 		default:
 			iLog.error("Student sectioning queue type " + StudentSectioningQueue.Type.values()[q.getType()] + " not known.");

@@ -45,10 +45,9 @@ public class SaveRequestsTest extends OnlineSectioningTestFwk {
 			saveRequests.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {
-					CourseRequestInterface request = s.execute(new GetRequest(studentId), user());
+					CourseRequestInterface request = s.execute(createAction(GetRequest.class).forStudent(studentId), user());
 					if (request != null)
-						s.execute(new SaveStudentRequests(studentId, request, true), 
-								user());
+						s.execute(s.createAction(SaveStudentRequests.class).forStudent(studentId).withRequest(request),  user());
 					return 1.0;
 				}
 			});

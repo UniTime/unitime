@@ -63,7 +63,7 @@ public class SectioningReportsBackend implements GwtRpcImplementation<Sectioning
 					.setName(context.getUser().getName() == null ? context.getUser().getUsername() : context.getUser().getName())
 					.setType(context.hasPermission(Right.StudentSchedulingAdvisor) ? OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT).build();
 			
-			csv = server.execute(new GenerateSectioningReport(parameters), user);
+			csv = server.execute(server.createAction(GenerateSectioningReport.class).withParameters(parameters), user);
 		} else {
 			context.checkPermission(Right.StudentSectioningSolver);
 			

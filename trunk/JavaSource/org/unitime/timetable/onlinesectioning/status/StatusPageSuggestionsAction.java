@@ -86,10 +86,11 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 	private int iLimit;
 	private String iUserId, iUserName;
 	
-	public StatusPageSuggestionsAction(String userId, String userName, String query, int limit) {
+	public StatusPageSuggestionsAction withParams(String userId, String userName, String query, int limit) {
 		iUserId = userId; iUserName = userName;
 		iQuery = (query == null ? "" : query);
 		iLimit = limit;
+		return this;
 	}
 
 	@Override

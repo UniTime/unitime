@@ -51,7 +51,7 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 				@Override
 				public double execute(OnlineSectioningServer s) {
 					sLog.info("Reloading " + studentId + " ...");
-					s.execute(new ReloadStudent(studentId), user());
+					s.execute(s.createAction(ReloadStudent.class).forStudents(studentId), user());
 					sLog.info("  -- " + studentId + " reloaded");
 					return 1.0;
 				}
@@ -102,7 +102,7 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 				@Override
 				public double execute(OnlineSectioningServer s) {
 					sLog.info("Assignment changed for " + classId + " ...");
-					s.execute(new ClassAssignmentChanged(classId), user());
+					s.execute(s.createAction(ClassAssignmentChanged.class).forClasses(classId), user());
 					return 1.0;
 				}
 			});
@@ -111,16 +111,16 @@ public class ReloadTest extends OnlineSectioningTestFwk {
 		for (final Long studentId: (List<Long>)hibSession.createQuery("select s.uniqueId from Student s where s.session.uniqueId = :sessionId")
 				.setLong("sessionId", getServer().getAcademicSession().getUniqueId()).list()) {
 			
-			CourseRequestInterface request = getServer().execute(new GetRequest(studentId), user());
+			CourseRequestInterface request = getServer().execute(createAction(GetRequest.class).forStudent(studentId), user());
 			if (request == null || request.getCourses().isEmpty()) continue;
 			
 			loadRequests.add(new Operation() {
 				@Override
 				public double execute(OnlineSectioningServer s) {
-					CourseRequestInterface request = s.execute(new GetRequest(studentId), user());
+					CourseRequestInterface request = s.execute(createAction(GetRequest.class).forStudent(studentId), user());
 					if (request != null && !request.getCourses().isEmpty()) {
 						sLog.info("Find assignments for " + studentId + " ...");
-						FindAssignmentAction action = new FindAssignmentAction(request, new ArrayList<ClassAssignmentInterface.ClassAssignment>()); 
+						FindAssignmentAction action = s.createAction(FindAssignmentAction.class).forRequest(request).withAssignment(new ArrayList<ClassAssignmentInterface.ClassAssignment>()); 
 						List<ClassAssignmentInterface> ret = s.execute(action, user());
 						return ret == null || ret.isEmpty() ? 0.0 : ret.get(0).getValue();
 					} else {

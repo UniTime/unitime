@@ -54,11 +54,12 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 	private Collection<Long> iCourseIdsCanApprove;
 	private String iApproval;
 	
-	public ApproveEnrollmentsAction(Long offeringId, Collection<Long> studentIds, Collection<Long> courseIdsCanApprove, String approval) {
+	public ApproveEnrollmentsAction withParams(Long offeringId, Collection<Long> studentIds, Collection<Long> courseIdsCanApprove, String approval) {
 		iOfferingId = offeringId;
 		iStudentIds = studentIds;
 		iCourseIdsCanApprove = courseIdsCanApprove;
 		iApproval = approval;
+		return this;
 	}
 	
 	public Long getOfferingId() { return iOfferingId; }
@@ -129,7 +130,7 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 									helper.getHibSession().saveOrUpdate(e);
 								}
 								
-								server.execute(new NotifyStudentAction(enrollment.getStudentId(), offering, oldEnrollment), helper.getUser());
+								server.execute(server.createAction(NotifyStudentAction.class).forStudent(enrollment.getStudentId()).oldEnrollment(offering, oldEnrollment), helper.getUser());
 							}
 						}
 					}
