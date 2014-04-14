@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning.server;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,15 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
-import org.infinispan.distexec.DefaultExecutorService;
-import org.infinispan.distexec.DistributedCallable;
-import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.jmx.CacheJmxRegistration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
@@ -413,6 +407,7 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 		}
 	}
 
+	/*
 	public static class GetKeysCallable<T> implements DistributedCallable<Long, T, Collection<Long>>, Serializable {
 		private static final long serialVersionUID = 1L;
 		private transient Cache<Long, T> iCache;
@@ -430,6 +425,27 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 			return new ArrayList<Long>(iCache.keySet());
 		}
 	}
+	
+	public static class HasKeysCallable<T> implements DistributedCallable<Long, T, Boolean>, Serializable {
+		private static final long serialVersionUID = 1L;
+		private transient Cache<Long, T> iCache;
+		private Long iKey;
+		
+		public HasKeysCallable(Long key) {
+			iKey = key;
+		}
+		
+		@Override
+		public void setEnvironment(Cache<Long, T> cache, Set<Long> inputKeys) {
+			iCache = cache;
+		}
+
+		@Override
+		public Boolean call() throws Exception {
+			return iCache.containsKey(iKey);
+		}
+	}
+	*/
 	
 	@Override
 	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings) {
@@ -466,15 +482,18 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 	@Override
 	public void lockOffering(Long offeringId) {
 		iOfferingLocks.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FORCE_SYNCHRONOUS).put(offeringId, Boolean.TRUE);
+		flushCache(iOfferingLocks);
 	}
 
 	@Override
 	public void unlockOffering(Long offeringId) {
-		iOfferingLocks.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(offeringId);
+		iOfferingLocks.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FORCE_SYNCHRONOUS).remove(offeringId);
+		flushCache(iOfferingLocks);
 	}
 	
 	@Override
 	public Collection<Long> getLockedOfferings() {
+		/*
 		Lock lock = readLock();
 		try {
 			DistributedExecutorService ex = new DefaultExecutorService(iOfferingLocks);
@@ -491,12 +510,14 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 			throw new SectioningException(e.getMessage(), e);
 		} finally {
 			lock.release();
-		}
+		}*/
+		return new HashSet<Long>(iOfferingLocks.keySet());
 	}
 	
 	@Override
 	public void releaseAllOfferingLocks() {
-		iOfferingLocks.clear();
+		iOfferingLocks.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FORCE_SYNCHRONOUS).clear();
+		flushCache(iOfferingLocks);
 	}
 	
 	private static class NoLock implements Lock {
@@ -693,24 +714,24 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 		
 	}
 	
+	protected void flushCache(Cache cache) {
+		ReplicationQueue queue = cache.getAdvancedCache().getComponentRegistry().getComponent(ReplicationQueue.class);
+		if (queue != null)
+			queue.flush();
+	}
+	
 	class FlushLock implements Lock {
 		private Lock iLock = null;
 		FlushLock(Lock lock) {
 			iLock = lock;
 		}
-		
-		private void flush(Cache cache) {
-			ReplicationQueue queue = cache.getAdvancedCache().getComponentRegistry().getComponent(ReplicationQueue.class);
-			if (queue != null)
-				queue.flush();
-		}
-		
+				
 		@Override
 		public void release() {
 			try {
-				flush(iStudentTable);
-				flush(iOfferingTable);
-				flush(iExpectations);
+				flushCache(iStudentTable);
+				flushCache(iOfferingTable);
+				flushCache(iExpectations);
 			} finally {
 				iLock.release();
 			}
@@ -725,9 +746,11 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 
 	@Override
 	public <E> void setProperty(String name, E value) {
+		Cache<String, Object> properties = (Cache<String, Object>)iProperties;
 		if (value == null)
-			((Cache<String, Object>)iProperties).getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).remove(name);
+			properties.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).remove(name);
 		else
-			((Cache<String, Object>)iProperties).getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).put(name,  value);
+			properties.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).put(name,  value);
+		flushCache(properties);
 	}
 }
