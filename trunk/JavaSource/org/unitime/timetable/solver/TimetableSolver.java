@@ -785,6 +785,14 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 					record.add(ini,p);
 					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+(ini==null?"not assigned":ini.getLongName())+" &rarr; "+p.getLongName());
                     if (ini!=null) currentSolution().getAssignment().unassign(0, p.variable());
+				} else if (hint.getDays() == 0) {
+					Lecture lecture = null;
+					for (Lecture l: currentSolution().getModel().variables())
+						if (l.getClassId().equals(hint.getClassId())) {
+							lecture = l;
+						}
+					if (lecture != null && !lecture.isCommitted())
+						currentSolution().getAssignment().unassign(0, lecture);
 				}
 			}
             for (Iterator i=hints.iterator();i.hasNext();) {

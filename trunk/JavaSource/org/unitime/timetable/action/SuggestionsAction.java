@@ -19,12 +19,14 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
@@ -163,6 +165,20 @@ public class SuggestionsAction extends Action {
         	return mapping.findForward("showSuggestions");
         }
         
+        if ("Unassign".equals(op)) {
+        	if (solver != null) {
+            	Hint unassignment = new Hint(model.getClassId(), 0, 0, new ArrayList<Long>(), null, null);
+            	List<Hint> assignments = new ArrayList<Hint>(1); assignments.add(unassignment);
+            	solver.assign(assignments);
+        	} else {
+        		throw new Exception("Solver not loaded.");
+        	}
+        	model.reset(solver);
+        	
+        	myForm.setOp("close");
+        	return mapping.findForward("showSuggestions");        	
+        }
+        
         if ("Suggestion".equals(op)) {
         	String id = (String)request.getParameter("id");
         	if (id==null)
@@ -198,6 +214,8 @@ public class SuggestionsAction extends Action {
         if (model.compute(solver)) {
         	myForm.load(model);
         	
+        	myForm.setCanUnassign(ca.getAssignedTime() != null);
+        	
         	Hashtable confInfo = new Hashtable();
         	if (model.getSelectedSuggestion()!=null)
         		confInfo.putAll(model.getSelectedSuggestion().conflictInfo(solver));
@@ -213,8 +231,10 @@ public class SuggestionsAction extends Action {
             			newAssignment = h;
             	}
             }
-            if (selectedAssignments!=null)
+            if (selectedAssignments!=null) {
             	request.setAttribute("Suggestions.selectedAssignments",selectedAssignments);
+            	myForm.setCanUnassign(false);
+            }
             if (model.getSelectedSuggestion()!=null) {
             	Vector ass = new Vector(model.getSelectedSuggestion().getDifferentAssignments());
             	for (Iterator i=ass.iterator();i.hasNext();) {
@@ -229,8 +249,10 @@ public class SuggestionsAction extends Action {
             		if (contains) i.remove();
             	}
             	String selectedSuggestion =  (model.getSelectedSuggestion()==null?null:getHintTable(model.getSimpleMode(),request, sessionContext, solver, "Selected Suggestion", ass, confInfo));
-            	if (selectedSuggestion!=null)
+            	if (selectedSuggestion!=null) {
             		request.setAttribute("Suggestions.selectedSuggestion",selectedSuggestion);
+            		myForm.setCanUnassign(false);
+            	}
             }
             Suggestion s = (model.getSelectedSuggestion()!=null?model.getSelectedSuggestion():model.getCurrentSuggestion()); 
             Set conf = (s==null?null:s.getUnresolvedConflicts());
