@@ -150,7 +150,14 @@ public class ClassInfoModel implements Serializable {
         for (ClassAssignment assignment : assignments) {
             iChange.getAssignments().add(new ClassAssignmentInfo(assignment.getClazz(),assignment.getTime(),assignment.getDate(),assignment.getRooms(),table));
         }
-        iChange.getConflicts().clear();
+        if (assignments.isEmpty()) {
+        	for (Iterator<ClassAssignment> i = iChange.getConflicts().iterator(); i.hasNext(); ) {
+        		ClassAssignment assignment = i.next();
+        		if (!assignment.getClassId().equals(getClazz().getClassId())) i.remove();
+        	}
+        } else {
+        	iChange.getConflicts().clear();
+        }
         for (ClassAssignment assignment : iChange.getAssignments()) {
         	// Check for room conflicts
         	if (iUnassignConflictingAssignments){
@@ -398,7 +405,12 @@ public class ClassInfoModel implements Serializable {
                 		new ClassAssignmentInfo(getClazz().getClazz(), time.getTime(), time.getDate(), null, iChange.getAssignmentTable()), 
                 		getClassOldAssignment());
             }
-		}        		
+		}       
+		if ("-1".equals(timeId)) {
+			iChange.addChange(
+					new ClassAssignmentInfo(getClazz().getClazz(), null, null, null, iChange.getAssignmentTable()), 
+            		getClassOldAssignment());
+		}
         if (iChange.isEmpty()) iChange = null; 
         update();
     }
@@ -584,6 +596,31 @@ public class ClassInfoModel implements Serializable {
                     ret += "<td nowrap id='t"+time.getTimeId()+"' " +
                             (style.length()>0?"style='"+style+"' ":"")+mouse+">"+
                             time.getTime().getLongNameHtml()+"</td>";
+                }
+                idx ++;
+            }
+            if (classAssignment != null) {
+                if ((idx%step)==0) {
+                    if (idx>0) ret +="</tr>";
+                    ret += "<tr>";
+                }
+                String style = "font-style:italic; color:#c81e14;";
+                String mouse = 
+                    "onMouseOver=\"timeOver(this,'-1');\" "+
+                    "onMouseOut=\"timeOut('-1');\" "+
+                    "onClick=\"timeClick(this,'-1');\"";
+                if (iShowStudentConflicts) {
+                	ret += "<td nowrap id='t-1' " +
+                           (style.length()>0?"style='"+style+"' ":"")+mouse+">not-assigned</td>";
+                    if ((idx%step)<step-1)
+                        style += "border-right: #646464 1px dashed;";
+                    ret += "<td id='c-1' "+
+                            (style.length()>0?"style='"+style+"' ":"")+mouse+"></td>";
+                } else {
+                    if ((idx%step)<step-1)
+                        style += "border-right: #646464 1px dashed;";
+                    ret += "<td nowrap id='t-1' " +
+                            (style.length()>0?"style='"+style+"' ":"")+mouse+">not-assigned</td>";
                 }
                 idx ++;
             }
@@ -1399,7 +1436,7 @@ public class ClassInfoModel implements Serializable {
     }
     
     public ClassProposedChange getChange() {
-        if (iChange==null || iChange.getAssignments().isEmpty()) return null;
+        if (iChange==null || iChange.isEmpty()) return null;
         return iChange; 
     }
     
