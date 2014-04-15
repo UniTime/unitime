@@ -266,7 +266,14 @@ try {
 			<% if (request.getAttribute("Suggestions.currentAssignmentMessage")!=null) {%><%=request.getAttribute("Suggestions.currentAssignmentMessage")%><%}%>
 			<TR>
 				<TD colspan='2'>
-					<tt:displayPrefLevelLegend/>
+					<logic:equal name="suggestionsForm" property="canUnassign" value="true">
+						<tt:section-header/>
+						</TD></TR><TR><TD align='right' colspan='2'>
+						<html:submit onclick="displayLoading();" property="op" value="Unassign"/>
+					</logic:equal>
+					<logic:notEqual name="suggestionsForm" property="canUnassign" value="true">
+						<tt:displayPrefLevelLegend/>
+					</logic:notEqual>
 				</TD>
 			</TR>
 		</TABLE>

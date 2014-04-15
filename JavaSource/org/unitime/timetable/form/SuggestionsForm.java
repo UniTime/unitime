@@ -53,6 +53,7 @@ public class SuggestionsForm extends ActionForm {
     private int iMaxRoomSize = -1;
     private boolean iDisplaySuggestions = false;
     private boolean iDisplayConfTable = false;
+    private boolean iCanUnassign = false;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -64,7 +65,8 @@ public class SuggestionsForm extends ActionForm {
 		iOp = null; iFilter = SuggestionsModel.sFilters[0]; iAllowBreakHard = false; iDisplayCBS = false; iCanAllowBreakHard = false; iShowFilter = false; iId = null;
 		iTimeoutReached=false; iNrCombinationsConsidered=0; iNrSolutions=0; iNrSuggestions = 0;
 		iLimit = 100; iDisplayPlacements = false; iSimpleMode=false; iFilterText = null;
-		iMinRoomSize = -1; iMaxRoomSize = -1; iDisplaySuggestions = false; iDisplayConfTable = false; 
+		iMinRoomSize = -1; iMaxRoomSize = -1; iDisplaySuggestions = false; iDisplayConfTable = false;
+		iCanUnassign = false;
 	}
 	
 	public void load(SuggestionsModel model) {
@@ -164,5 +166,8 @@ public class SuggestionsForm extends ActionForm {
 			iMaxRoomSize = -1;
 		}
 	}
+	
+	public boolean isCanUnassign() { return iCanUnassign; }
+	public void setCanUnassign(boolean canUnassign) { iCanUnassign = canUnassign; }
 }
 
