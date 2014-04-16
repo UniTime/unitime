@@ -192,7 +192,18 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	}
 	
 	public void setApplicationProperty(Long sessionId, String key, String value) {
-		if (iServer != null)
-			iServer.setApplicationProperty(sessionId, key, value);
+		try {
+			iServer.getDispatcher().callRemoteMethods(null, "setApplicationProperty", new Object[] { sessionId, key, value }, new Class[] { Long.class, String.class, String.class }, SolverServerImplementation.sAllResponses);
+		} catch (Exception e) {
+			sLog.error("Failed to update the application property " + key + " along the cluster: " + e.getMessage(), e);
+		}
+	}
+	
+	public void setLoggingLevel(String name, Integer level) {
+		try {
+			iServer.getDispatcher().callRemoteMethods(null, "setLoggingLevel", new Object[] { name, level }, new Class[] { String.class, Integer.class }, SolverServerImplementation.sAllResponses);
+		} catch (Exception e) {
+			sLog.error("Failed to update the logging level for " + name + " along the cluster: " + e.getMessage(), e);
+		}
 	}
 }

@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.solver.jgroups;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationHandler;
@@ -33,8 +32,10 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.cpsolver.ifs.util.DataProperties;
-import org.cpsolver.ifs.util.ToolBox;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.MembershipListener;
@@ -57,6 +58,7 @@ import org.unitime.commons.jgroups.UniTimeChannelLookup;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -542,6 +544,28 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		}
 	}
 	
+	private static void configureLogging(Properties properties) {
+        PropertyConfigurator.configure(properties);
+        
+        Logger log = Logger.getRootLogger();
+        log.info("-----------------------------------------------------------------------");
+        log.info("UniTime Log File");
+        log.info("");
+        log.info("Created: " + new Date());
+        log.info("");
+        log.info("System info:");
+        log.info("System:      " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch"));
+        log.info("CPU:         " + System.getProperty("sun.cpu.isalist") + " endian:" + System.getProperty("sun.cpu.endian") + " encoding:" + System.getProperty("sun.io.unicode.encoding"));
+        log.info("Java:        " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + " " + System.getProperty("java.runtime.version", System.getProperty("java.version")));
+        log.info("User:        " + System.getProperty("user.name"));
+        log.info("Timezone:    " + System.getProperty("user.timezone"));
+        log.info("Working dir: " + System.getProperty("user.dir"));
+        log.info("Classpath:   " + System.getProperty("java.class.path"));
+        log.info("Memory:      " + (Runtime.getRuntime().maxMemory() / 1024 / 1024) + " MB");
+        log.info("Cores:       " + Runtime.getRuntime().availableProcessors());
+        log.info("");
+	}
+	
     public static void main(String[] args) {
     	try {
     		if (ApplicationProperties.getProperty("unitime.data.dir") == null)
@@ -549,12 +573,12 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
     		
     		if (System.getProperty("catalina.base") == null)
     			ApplicationProperties.getDefaultProperties().setProperty("catalina.base", ".");
-    		
-			ToolBox.configureLogging();
+    		    		
+			configureLogging(ApplicationProperties.getDefaultProperties());
     		
 			HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 			
-			ToolBox.configureLogging(System.getProperty("unitime.solver.log", ApplicationProperties.getDataFolder() + File.separator + "logs"), ApplicationProperties.getProperties());
+			ApplicationConfig.configureLogging();
 			
 			final JChannel channel = (JChannel) new UniTimeChannelLookup().getJGroupsChannel(null);
 			
@@ -622,7 +646,8 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		}
 	}
 
-	public void setApplicationPropertyLocal(Long sessionId, String key, String value) {
+	@Override
+	public void setApplicationProperty(Long sessionId, String key, String value) {
 		sLog.info("Set " + key + " to " + value + (sessionId == null ? "" : " (for session " + sessionId + ")"));
 		Properties properties = (sessionId == null ? ApplicationProperties.getConfigProperties() : ApplicationProperties.getSessionProperties(sessionId));
 		if (properties == null) return;
@@ -631,13 +656,14 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		else
 			properties.setProperty(key, value);
 	}
-	
+
 	@Override
-	public void setApplicationProperty(Long sessionId, String key, String value) {
-		try {
-			iDispatcher.callRemoteMethods(null, "setApplicationPropertyLocal", new Object[] { sessionId, key, value }, new Class[] { Long.class, String.class, String.class }, sAllResponses);
-		} catch (Exception e) {
-			sLog.error("Failed to update the application property " + key + " along the cluster: " + e.getMessage(), e);
-		}
+	public void setLoggingLevel(String name, Integer level) {
+		sLog.info("Set logging level for " + (name == null ? "root" : name) + " to " + (level == null ? "null" : Level.toLevel(level)));
+		Logger logger = (name == null ? Logger.getRootLogger() : Logger.getLogger(name));
+		if (level == null)
+			logger.setLevel(null);
+		else
+			logger.setLevel(Level.toLevel(level));
 	}
 }
