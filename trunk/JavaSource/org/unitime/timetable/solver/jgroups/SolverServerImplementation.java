@@ -28,6 +28,7 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 
 import org.apache.commons.logging.Log;
@@ -350,7 +351,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 			try {
 				Address local = getLocalAddress();
 				if (local != null)
-					iDispatcher.callRemoteMethod(local, "refreshExamSolution", new Object[] { sessionId, examTypeId }, new Class[] { Long.class, Long.class }, sFirstResponse);
+					iDispatcher.callRemoteMethod(local, "refreshExamSolutionLocal", new Object[] { sessionId, examTypeId }, new Class[] { Long.class, Long.class }, sFirstResponse);
 			} catch (Exception e) {
 				sLog.error("Failed to refresh solution: " + e.getMessage(), e);
 			}
@@ -618,6 +619,25 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 				sLog.info("Releasing master lock for " + server.getAcademicSession() + " ...");
 				server.releaseMasterLockIfHeld();
 			}
+		}
+	}
+
+	public void setApplicationPropertyLocal(Long sessionId, String key, String value) {
+		sLog.info("Set " + key + " to " + value + (sessionId == null ? "" : " (for session " + sessionId + ")"));
+		Properties properties = (sessionId == null ? ApplicationProperties.getConfigProperties() : ApplicationProperties.getSessionProperties(sessionId));
+		if (properties == null) return;
+		if (value == null)
+			properties.remove(key);
+		else
+			properties.setProperty(key, value);
+	}
+	
+	@Override
+	public void setApplicationProperty(Long sessionId, String key, String value) {
+		try {
+			iDispatcher.callRemoteMethods(null, "setApplicationPropertyLocal", new Object[] { sessionId, key, value }, new Class[] { Long.class, String.class, String.class }, sAllResponses);
+		} catch (Exception e) {
+			sLog.error("Failed to update the application property " + key + " along the cluster: " + e.getMessage(), e);
 		}
 	}
 }
