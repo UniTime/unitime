@@ -758,6 +758,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Login is required to use this page.")
 	String exceptionLoginRequired();
 	
+	@DefaultMessage("Student emails are disabled.")
+	String exceptionStudentEmailsDisabled();
+	
 	@DefaultMessage("Filter assignments of the selected class by name, day, start time, date, room or instructor." +
 			"<br><br>You can also use the following tags:" +
 			"<ul>" +

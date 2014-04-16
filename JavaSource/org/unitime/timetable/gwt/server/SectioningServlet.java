@@ -1755,6 +1755,8 @@ public class SectioningServlet implements SectioningService {
 		try {
 			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+			if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true")))
+				throw new SectioningException(MSG.exceptionStudentEmailsDisabled());
 			StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId);
 			email.setCC(cc);
 			email.setEmailSubject(subject == null || subject.isEmpty() ? MSG.defaulSubject() : subject);
@@ -1826,7 +1828,7 @@ public class SectioningServlet implements SectioningService {
 			StudentSectioningStatus status = (statusRef == null || statusRef.isEmpty() ? null : (StudentSectioningStatus)hibSession.createQuery(
 					"from StudentSectioningStatus where reference = :ref").setString("ref", statusRef).uniqueResult());
 
-			return server.execute(new MassCancelAction(studentIds, status, subject, message, cc), currentUser());
+			return server.execute(server.createAction(MassCancelAction.class).forStudents(studentIds).withStatus(status).withEmail(subject, message, cc), currentUser());
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
