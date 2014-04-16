@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
@@ -45,6 +45,7 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.SolverServerService;
 
 /**
  * @author Tomas Muller
@@ -52,6 +53,8 @@ import org.unitime.timetable.security.rights.Right;
 @Service("gwtAdminTable[type=logging]")
 public class Loggers implements AdminTable {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
+	@Autowired SolverServerService solverServerService;
 	
 	@Override
 	public PageName name() {
@@ -133,28 +136,25 @@ public class Loggers implements AdminTable {
 	@PreAuthorize("checkPermission('ApplicationConfig')")
 	public void update(Record record, SessionContext context, Session hibSession) {
 		boolean root = record.getUniqueId() != null && record.getUniqueId() == 0;
-		Logger logger = (root ? Logger.getRootLogger() : Logger.getLogger(record.getField(0)));
-		logger.setLevel(Level.toLevel(Integer.valueOf(record.getField(1))));
-		record.setUniqueId(System.currentTimeMillis());
+		Level level = Level.toLevel(Integer.valueOf(record.getField(1)));
+		solverServerService.setLoggingLevel(root ? null : record.getField(0), level.toInt());
+		record.setUniqueId(root ? 0 : System.currentTimeMillis());
 		
-		String value = logger.getLevel().toString();
-		for (Enumeration f = logger.getAllAppenders(); f.hasMoreElements();) {
-			Appender appender = (Appender)f.nextElement();
-			value += ", " + appender.getName();
-		}
-		String defaultValue = ApplicationProperties.getDefaultProperties().getProperty(root ? "log4j.rootLogger" : "log4j.logger." + logger.getName());
+		String defaultValue = ApplicationProperties.getDefaultProperties().getProperty(root ? "log4j.rootLogger" : "log4j.logger." + record.getField(0));
+		if (defaultValue != null && defaultValue.indexOf(',') > 0)
+			defaultValue = defaultValue.substring(0, defaultValue.indexOf(',')).trim();
 
-		ApplicationConfig config = ApplicationConfig.getConfig(root ? "log4j.rootLogger" : "log4j.logger." + logger.getName());
-		if (value.equals(defaultValue)) {
+		ApplicationConfig config = ApplicationConfig.getConfig(root ? "log4j.logger.root" : "log4j.logger." + record.getField(0));
+		if (level.toString().equalsIgnoreCase(defaultValue)) {
 			if (config != null)
 				hibSession.delete(config);
 		} else {
 			if (config == null) {
 				config = new ApplicationConfig();
-				config.setKey(root ? "log4j.rootLogger" : "log4j.logger." + logger.getName());
-				config.setDescription(MESSAGES.descriptionLoggingLevelFor(logger.getName()));
+				config.setKey(root ? "log4j.logger.root" : "log4j.logger." + record.getField(0));
+				config.setDescription(MESSAGES.descriptionLoggingLevelFor(record.getField(0)));
 			}
-			config.setValue(value);
+			config.setValue(level.toString());
 			hibSession.saveOrUpdate(config);
 		}
 	}
@@ -163,13 +163,10 @@ public class Loggers implements AdminTable {
 	@PreAuthorize("checkPermission('ApplicationConfig')")
 	public void delete(Record record, SessionContext context, Session hibSession) {
 		boolean root = record.getUniqueId() != null && record.getUniqueId() == 0;
-		Logger logger = (root ? Logger.getRootLogger() : Logger.getLogger(record.getField(0)));
-		logger.setLevel(null);
-		if (!root) {
-			ApplicationConfig config = ApplicationConfig.getConfig("log4j.logger." + logger.getName());
-			if (config != null)
-				hibSession.delete(config);
-		}
+		solverServerService.setLoggingLevel(root ? null : record.getField(0), null);
+		ApplicationConfig config = ApplicationConfig.getConfig(root ? "log4j.logger.root" : "log4j.logger." + record.getField(0));
+		if (config != null)
+			hibSession.delete(config);
 	}
 
 }

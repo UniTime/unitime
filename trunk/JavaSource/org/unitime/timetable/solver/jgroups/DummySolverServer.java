@@ -481,4 +481,8 @@ public class DummySolverServer implements SolverServer, MessageListener {
 	@Override
 	public void setApplicationProperty(Long sessionId, String key, String value) {
 	}
+
+	@Override
+	public void setLoggingLevel(String name, Integer level) {
+	}
 }

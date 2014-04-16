@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.events.EventExpirationService;
+import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
@@ -71,8 +72,8 @@ public class InitServlet extends HttpServlet implements Servlet {
 			Debug.info(" - Initializing Hibernate ... ");							
 			_RootDAO.initialize();
 			
-			// Now, when hibernate is initialized, we can re-initialize logging with application configuration included
-			Debug.init(ApplicationProperties.getProperties());
+			// Update logging according to the changes recorded in the application config
+			ApplicationConfig.configureLogging();
 			
 			if (RoomAvailability.getInstance()!=null) {
 			    Debug.info(" - Initializing Room Availability Service ... ");
