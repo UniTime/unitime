@@ -39,7 +39,6 @@ import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ApplicationConfigForm;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.SessionConfig;
@@ -48,6 +47,7 @@ import org.unitime.timetable.model.dao.SessionConfigDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.SolverServerService;
 
 
 /** 
@@ -65,6 +65,7 @@ public class ApplicationConfigAction extends Action {
     // --------------------------------------------------------- Instance Variables
 	
 	@Autowired SessionContext sessionContext;
+	@Autowired SolverServerService solverServerService;
 
     // --------------------------------------------------------- Methods
 
@@ -173,13 +174,13 @@ public class ApplicationConfigAction extends Action {
                 		if (wasSession) { // there was a session config for the current session
                 			if (update) { // update --> delete all with the same value
                         		for (SessionConfig config: (List<SessionConfig>)hibSession.createQuery("from SessionConfig where key = :key and value = :value").setString("key", frm.getKey()).setString("value", oldValue).list()) {
-                        			ApplicationProperties.getSessionProperties(config.getSession().getUniqueId()).remove(frm.getKey());
+                        			solverServerService.setApplicationProperty(config.getSession().getUniqueId(), frm.getKey(), null);
                         			hibSession.delete(config);
                         		}
                 			} else { // create --> delete just the current one
                 				SessionConfig config = SessionConfig.getConfig(frm.getKey(), sessionContext.getUser().getCurrentAcademicSessionId());
                 				if (config != null) {
-                					ApplicationProperties.getSessionProperties(config.getSession().getUniqueId()).remove(frm.getKey());
+                					solverServerService.setApplicationProperty(config.getSession().getUniqueId(), frm.getKey(), null);
                         			hibSession.delete(config);
                 				}
                 			}
@@ -193,7 +194,7 @@ public class ApplicationConfigAction extends Action {
                 		config.setValue(frm.getValue());
     	                config.setDescription(frm.getDescription());
     	                
-    	                ApplicationProperties.getConfigProperties().put(frm.getKey(), frm.getValue());
+    	                solverServerService.setApplicationProperty(null, frm.getKey(), frm.getValue());
     	                
     	                hibSession.saveOrUpdate(config);
                 	} else {
@@ -201,7 +202,7 @@ public class ApplicationConfigAction extends Action {
                 			// update --> delete global value
                 			ApplicationConfig config = ApplicationConfigDAO.getInstance().get(frm.getKey());
                 			if (config != null) {
-                				ApplicationProperties.getConfigProperties().remove(frm.getKey());
+                    			solverServerService.setApplicationProperty(null, frm.getKey(), null);
                     			hibSession.delete(config);
                 			}
                 		}
@@ -221,7 +222,7 @@ public class ApplicationConfigAction extends Action {
                 			config.setValue(frm.getValue());
         	                config.setDescription(frm.getDescription());
         	                
-        	                ApplicationProperties.getSessionProperties(sessionId).put(frm.getKey(), frm.getValue());
+        	                solverServerService.setApplicationProperty(sessionId, frm.getKey(), frm.getValue());
         	                
         	                hibSession.saveOrUpdate(config);
         	                updatedSessionIds.add(sessionId);
@@ -233,7 +234,7 @@ public class ApplicationConfigAction extends Action {
                 					"from SessionConfig where key = :key and value = :value")
                 					.setString("key", frm.getKey()).setString("value", oldValue).list()) {
                 				if (!updatedSessionIds.contains(other.getSession().getUniqueId())) {
-                					ApplicationProperties.getSessionProperties(other.getSession().getUniqueId()).remove(frm.getKey());
+                					solverServerService.setApplicationProperty(other.getSession().getUniqueId(), frm.getKey(), null);
                 					hibSession.delete(other);
                 				}
                 			}
@@ -272,17 +273,17 @@ public class ApplicationConfigAction extends Action {
                 		ApplicationConfig appConfig = ApplicationConfigDAO.getInstance().get(frm.getKey());
                 		if (appConfig != null) {
                 			hibSession.delete(appConfig);
-                			ApplicationProperties.getConfigProperties().remove(frm.getKey());
+                			solverServerService.setApplicationProperty(null, frm.getKey(), null);
                 		}
                 	} else {
                 		String oldValue = sessionConfig.getValue();
                 		hibSession.delete(sessionConfig);
-            			ApplicationProperties.getSessionProperties(sessionContext.getUser().getCurrentAcademicSessionId()).remove(frm.getKey());
+            			solverServerService.setApplicationProperty(sessionContext.getUser().getCurrentAcademicSessionId(), frm.getKey(), null);
             			
             			for (SessionConfig other: (List<SessionConfig>)hibSession.createQuery(
             					"from SessionConfig where key = :key and value = :value")
             					.setString("key", frm.getKey()).setString("value", oldValue).list()) {
-            				ApplicationProperties.getSessionProperties(other.getSession().getUniqueId()).remove(frm.getKey());
+            				solverServerService.setApplicationProperty(other.getSession().getUniqueId(), frm.getKey(), null);
             				hibSession.delete(other);
             			}
                 	}

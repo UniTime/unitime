@@ -190,4 +190,9 @@ public class SolverServerService implements InitializingBean, DisposableBean {
         }
         return false;
 	}
+	
+	public void setApplicationProperty(Long sessionId, String key, String value) {
+		if (iServer != null)
+			iServer.setApplicationProperty(sessionId, key, value);
+	}
 }
