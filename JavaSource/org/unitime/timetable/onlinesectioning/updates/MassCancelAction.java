@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.ClassWaitList;
@@ -59,18 +60,29 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private List<Long> iStudentIds;
 	private StudentSectioningStatus iStatus;
+	private boolean iEmail = false;
 	private String iSubject;
 	private String iMessage;
 	private String iCC;
 	
-	public MassCancelAction(List<Long> studentIds, StudentSectioningStatus status, String subject, String message, String cc) {
+	public MassCancelAction forStudents(List<Long> studentIds) {
 		iStudentIds = studentIds;
+		return this;
+	}
+	
+	public MassCancelAction withStatus(StudentSectioningStatus status) {
 		iStatus = status;
+		return this;
+	}
+	
+	public MassCancelAction withEmail(String subject, String message, String cc) {
+		iEmail = true;
 		iSubject = subject;
 		iMessage = message;
 		iCC = cc;
+		return this;
 	}
-	
+
 	public List<Long> getStudentIds() { return iStudentIds; }
 	public StudentSectioningStatus getStatus() { return iStatus; }
 	public String getSubject() { return iSubject; }
@@ -175,11 +187,13 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 							action.addEnrollment(enrollment);
 						}
 						
-						StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId).oldStudent(oldStudent);
-						email.setCC(getCC());
-						email.setEmailSubject(getSubject() == null || getSubject().isEmpty() ? MSG.defaulSubjectMassCancel() : getSubject());
-						email.setMessage(getMessage());
-						server.execute(email, helper.getUser(), emailSent);
+						if (iEmail && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
+							StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId).oldStudent(oldStudent);
+							email.setCC(getCC());
+							email.setEmailSubject(getSubject() == null || getSubject().isEmpty() ? MSG.defaulSubjectMassCancel() : getSubject());
+							email.setMessage(getMessage());
+							server.execute(email, helper.getUser(), emailSent);
+						}
 					}
 					helper.commitTransaction();
 				} catch (Exception e) {
