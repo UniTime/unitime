@@ -78,5 +78,7 @@ public interface SolverServer {
 	
 	public void refreshExamSolution(Long sessionId, Long examTypeId);
 	
+	public void setApplicationProperty(Long sessionId, String key, String value);
+	
 	public void reset();
 }

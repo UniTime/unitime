@@ -477,4 +477,8 @@ public class DummySolverServer implements SolverServer, MessageListener {
 
 	@Override
 	public void reset() {}
+
+	@Override
+	public void setApplicationProperty(Long sessionId, String key, String value) {
+	}
 }
