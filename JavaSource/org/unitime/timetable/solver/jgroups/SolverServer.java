@@ -80,5 +80,7 @@ public interface SolverServer {
 	
 	public void setApplicationProperty(Long sessionId, String key, String value);
 	
+	public void setLoggingLevel(String name, Integer level);
+	
 	public void reset();
 }
