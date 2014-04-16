@@ -30,6 +30,22 @@
 	<category>
 		<title>Bug Fixes</title>
 		<item>
+			<name>Add Event</name>
+			<description>
+				<line>Fixed the behavior of the "contact information changed" confirmation when an academic session is changed.
+					<line>Original contact got incorrectly reset to the current value of the main contact when the academic session was changed.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.4.308</version>
+	<release-date>Tue, 11 Mar 2014</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
 			<name>Add / Edit Event</name>
 			<description>
 				<line>Fixed an issue with room availability that was causing a JavaScript exception while updating an event meeting in a room during unavailable time.</line>
