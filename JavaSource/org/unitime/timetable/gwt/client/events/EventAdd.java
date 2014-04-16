@@ -667,7 +667,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iCoursesForm.setVisible(type == EventType.Course);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propAttendance()), type == EventType.Special);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam && iSponsors.getItemCount() > 0);
-				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propExpirationDate()), (getProperties().isCanSetExpirationDate() || iExpirationDate.getValue() != null) && type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam);
+				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propExpirationDate()), getProperties() != null && (getProperties().isCanSetExpirationDate() || iExpirationDate.getValue() != null) && type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam);
 				if (iMeetings.getRowCount() > 1) {
 					LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
 					RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(iMeetings.getMeetings(), getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
@@ -1159,10 +1159,18 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iForm.getRowFormatter().setVisible(iEnrollmentRow, false);
 			iForm.getRowFormatter().setVisible(iEnrollmentRow + 1, false);
 			
+			// Reset the event, but keep the original contact
+			ContactInterface original = iOriginalContact;
 			setEvent(event, false);
+			iOriginalContact = original;
+			if (iOriginalContact != null && !iOriginalContact.hasExternalId() && iLookupButton.isVisible())
+				iOriginalContact = null;
 			
 			if (notes != null && !notes.isEmpty())
 				iNotes.setText(notes);
+			
+			// Re-check the change in the main contact
+			checkMainContactChanged();
 		}
 		EventType type = getEventType();
 		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam && iSponsors.getItemCount() > 0);
