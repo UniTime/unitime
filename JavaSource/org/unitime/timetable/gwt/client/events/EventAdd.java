@@ -1162,10 +1162,16 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iForm.getRowFormatter().setVisible(iEnrollmentRow, false);
 			iForm.getRowFormatter().setVisible(iEnrollmentRow + 1, false);
 			
+			// Reset the event, but keep the original contact
+			ContactInterface original = iOriginalContact;
 			setEvent(event, false);
+			iOriginalContact = original;
 			
 			if (notes != null && !notes.isEmpty())
 				iNotes.setText(notes);
+			
+			// Re-check the change in the main contact
+			checkMainContactChanged();
 		}
 		EventType type = getEventType();
 		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam && iSponsors.getItemCount() > 0);
