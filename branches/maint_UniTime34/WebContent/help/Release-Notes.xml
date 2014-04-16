@@ -38,6 +38,21 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other Improvements</title>
+		<item>
+			<name>Examination Detail: Enrollments Table</name>
+			<description>
+				<line>Examinations for a student dialog: added a column (named Conflict) displaying examination conflicts.
+					<line>Only course of the conflicting exam is displayed, following the conflict color coding (direct conflict in red, >2 exams a day in orange, back-to-back in yellow).
+						<line>More information is available in mouse-over tooltip.</line>
+					</line>
+					<line>Conflicting class and course related events are displayed as well, also in red, with just the event name.</line>
+					<line>The Conflict column is only visible if there is at least one examination conflict in the student's schedule.</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

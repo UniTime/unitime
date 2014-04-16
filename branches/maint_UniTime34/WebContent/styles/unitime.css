@@ -2520,6 +2520,22 @@ div.gwt-MenuBarPopup {
 	overflow: hidden;
 }
 
+.unitime-EventOwners .conflict {
+	color: red;
+}
+
+.unitime-EventOwners .conflict .dc {
+	color: #c81e14;
+}
+
+.unitime-EventOwners .conflict .m2d {
+	color: #f06428;
+}
+
+.unitime-EventOwners .conflict .b2b {
+	color: #dcb414;
+}
+
 .unitime-Enrollments {
 	width: 100%;
 }

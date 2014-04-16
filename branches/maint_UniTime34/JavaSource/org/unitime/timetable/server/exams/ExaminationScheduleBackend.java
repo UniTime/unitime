@@ -21,9 +21,12 @@ package org.unitime.timetable.server.exams;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.client.sectioning.ExaminationEnrollmentTable.ExaminationScheduleRpcRequest;
 import org.unitime.timetable.gwt.client.sectioning.ExaminationEnrollmentTable.ExaminationScheduleRpcResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -36,17 +39,22 @@ import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.InstrOfferingConfig;
-import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.BackToBackConflict;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DirectConflict;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayConflict;
+import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.solver.service.SolverService;
 
 @GwtRpcImplements(ExaminationScheduleRpcRequest.class)
@@ -134,54 +142,127 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 				instructor.setExternalId(i.getExternalUniqueId());
 				instructor.setEmail(i.getEmail());
 				related.addInstructor(instructor);
-			}				
-			
-			if (proxy == null) {
-	    		if (x.getAssignedPeriod() != null) {
-	    			ExamPeriod period = x.getAssignedPeriod();
-	    			related.setDate(period.getStartDateLabel());
-	    			related.setDayOfYear(period.getDateOffset());
-	    			related.setStartSlot(period.getStartSlot());
-	    			related.setEndSlot(period.getEndSlot());
-	    			int printOffset = (x.getPrintOffset() == null ? 0 : x.getPrintOffset());
-	    			related.setTime(period.getStartTimeLabel(printOffset) + " - " + period.getEndTimeLabel(x.getLength(), printOffset));
-	    		}
-	    		for (Location r: x.getAssignedRooms()) {
+			}
+    		
+    		ExamAssignmentInfo assignment = null;
+    		ExamPeriod period = null;
+    		if (proxy != null) {
+    			assignment = proxy.getAssignmentInfo(x.getUniqueId());
+    			period = (assignment == null ? null : assignment.getPeriod());
+    		} else {
+    			assignment = new ExamAssignmentInfo(x, false);
+    			period = x.getAssignedPeriod();
+    		}
+    		
+			if (period != null) {
+    			related.setDate(period.getStartDateLabel());
+    			related.setDayOfYear(period.getDateOffset());
+    			related.setStartSlot(period.getStartSlot());
+    			related.setEndSlot(period.getEndSlot());
+    			int printOffset = (x.getPrintOffset() == null ? 0 : x.getPrintOffset());
+    			related.setTime(period.getStartTimeLabel(printOffset) + " - " + period.getEndTimeLabel(x.getLength(), printOffset));
+    		}
+			if (assignment != null && assignment.getRooms() != null) {
+				for (ExamRoomInfo r: assignment.getRooms()) {
 					ResourceInterface location = new ResourceInterface();
 					location.setType(ResourceType.ROOM);
-					location.setId(r.getUniqueId());
-					location.setName(r.getLabel());
+					location.setId(r.getLocationId());
+					location.setName(r.getName());
 					location.setSize(r.getCapacity());
-					location.setRoomType(r.getRoomTypeLabel());
-					location.setBreakTime(r.getEffectiveBreakTime());
-					location.setMessage(r.getEventMessage());
+					location.setRoomType(r.getLocation().getRoomTypeLabel());
+					location.setBreakTime(r.getLocation().getEffectiveBreakTime());
+					location.setMessage(r.getLocation().getEventMessage());
 					related.addLocation(location);
-	    		}
-			} else {
-				ExamAssignment assignment = proxy.getAssignment(x.getUniqueId());
-				if (assignment != null && assignment.getPeriod() != null) {
-	    			ExamPeriod period = assignment.getPeriod();
-	    			related.setDate(period.getStartDateLabel());
-	    			related.setDayOfYear(period.getDateOffset());
-	    			related.setStartSlot(period.getStartSlot());
-	    			related.setEndSlot(period.getEndSlot());
-	    			int printOffset = (x.getPrintOffset() == null ? 0 : x.getPrintOffset());
-	    			related.setTime(period.getStartTimeLabel(printOffset) + " - " + period.getEndTimeLabel(x.getLength(), printOffset));
-	    		}
-				if (assignment != null && assignment.getRooms() != null) {
-					for (ExamRoomInfo r: assignment.getRooms()) {
-						ResourceInterface location = new ResourceInterface();
-						location.setType(ResourceType.ROOM);
-						location.setId(r.getLocationId());
-						location.setName(r.getName());
-						location.setSize(r.getCapacity());
-						location.setRoomType(r.getLocation().getRoomTypeLabel());
-						location.setBreakTime(r.getLocation().getEffectiveBreakTime());
-						location.setMessage(r.getLocation().getEventMessage());
-						related.addLocation(location);
-					}
 				}
 			}
+			
+			String conflicts = "";
+
+			if (period != null) {
+		        int nrTravelSlotsClassEvent = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6"));
+		        int nrTravelSlotsCourseEvent = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0"));
+
+		        TreeSet<Event> events = new TreeSet<Event>();
+		        
+		        // class events
+		        for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
+		        	events.addAll(hibSession.createQuery(
+		        			"select distinct m1.event" +
+		        			" from StudentClassEnrollment s1, ClassEvent e1 inner join e1.meetings m1, Exam e2 inner join e2.owners o2, StudentClassEnrollment s2" +
+		        			" where e2.uniqueId = :examId and e1.clazz = s1.clazz and s1.student = s2.student and s1.student.uniqueId = :studentId" +
+		        			ExaminationEnrollmentsBackend.where(t2, 2) + 
+		        			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod")
+		        			.setLong("examId", x.getUniqueId())
+		        			.setLong("studentId", request.getStudentId())
+		        			.setDate("meetingDate", period.getStartDate())
+		        			.setInteger("startSlot", period.getStartSlot() - nrTravelSlotsClassEvent)
+		        			.setInteger("endSlot", period.getEndSlot() + nrTravelSlotsClassEvent)
+		        			.list());
+		        }
+		        
+		    	// course events
+		        for (int t1 = 0; t1 < ExamOwner.sOwnerTypes.length; t1++) {
+		            for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {
+		            	events.addAll(hibSession.createQuery(
+		            			"select distinct m1.event" +
+		            			" from StudentClassEnrollment s1, CourseEvent e1 inner join e1.meetings m1 inner join e1.relatedCourses o1, Exam e2 inner join e2.owners o2, StudentClassEnrollment s2" +
+		            			" where e2.uniqueId = :examId and s1.student = s2.student and s1.student.uniqueId = :studentId" +
+		            			ExaminationEnrollmentsBackend.where(t1, 1) + ExaminationEnrollmentsBackend.where(t2, 2) +
+		            			" and m1.meetingDate = :meetingDate and m1.startPeriod < :endSlot and :startSlot < m1.stopPeriod and e1.reqAttendance = true and m1.approvalStatus = 1")
+		            			.setLong("examId", x.getUniqueId())
+		        			.setLong("studentId", request.getStudentId())
+		            			.setDate("meetingDate", period.getStartDate())
+		            			.setInteger("startSlot", period.getStartSlot() - nrTravelSlotsCourseEvent)
+		            			.setInteger("endSlot", period.getEndSlot() + nrTravelSlotsCourseEvent)
+		            			.list());
+		            }
+		        }
+		        
+				for (Event e: events)
+					conflicts += (conflicts.isEmpty() ? "" : "<br>") +
+							"<span class='dc' title='" + HtmlUtils.htmlEscape(e.getEventTypeAbbv() + " " + e.getEventName()) + "'>" + HtmlUtils.htmlEscape(e.getEventName()) + "</span>";
+			}
+			
+			if (assignment != null) {
+				for (DirectConflict conflict: assignment.getDirectConflicts()) {
+		    		ExamAssignment other = conflict.getOtherExam();
+		    		if (other != null && conflict.getStudents().contains(request.getStudentId())) {
+		    			for (ExamSectionInfo section: other.getSections())
+		    				if (section.getStudentIds().contains(request.getStudentId()))
+		    					conflicts += (conflicts.isEmpty() ? "" : "<br>") +
+		    					"<span class='dc' title='" + HtmlUtils.htmlEscape("Direct " + other.getExamName()) + "'>" + HtmlUtils.htmlEscape(section.getSubject() + " " + section.getCourseNbr()) + "</span>";
+		    		}
+				}
+		    	for (BackToBackConflict conflict: assignment.getBackToBackConflicts()) {
+		    		ExamAssignment other = conflict.getOtherExam();
+		    		if (other != null && conflict.getStudents().contains(request.getStudentId())) {
+		    			for (ExamSectionInfo section: other.getSections())
+		    				if (section.getStudentIds().contains(request.getStudentId()))
+		    					conflicts += (conflicts.isEmpty() ? "" : "<br>") +
+		    					"<span class='b2b' title='" + HtmlUtils.htmlEscape("Back-To-Back " + other.getExamName()) + "'>" + HtmlUtils.htmlEscape(section.getSubject() + " " + section.getCourseNbr()) + "</span>";
+		    		}
+		    	}
+		    	for (MoreThanTwoADayConflict conflict: assignment.getMoreThanTwoADaysConflicts()) {
+		    		if (!conflict.getStudents().contains(request.getStudentId())) continue;
+
+		    		String name = "", first = "", next = "";
+		    		for (ExamAssignment other: conflict.getOtherExams()) {
+		    			name += (name.isEmpty() ? "" : ", ") + other.getExamName();
+		    			for (ExamSectionInfo section: other.getSections())
+		    				if (section.getStudentIds().contains(request.getStudentId())) {
+		    					String course = section.getSubject() + " " + section.getCourseNbr();
+		    					if (first.isEmpty() || course.compareTo(first) < 0) first = course;
+		    					if (owner.getCourse().getCourseName().compareTo(course) < 0 && (next.isEmpty() || course.compareTo(next) < 0)) next = course;
+		    				}
+		    		}
+		    		
+		    		conflicts += (conflicts.isEmpty() ? "" : "<br>") +
+		    				"<span class='m2d' title='" + HtmlUtils.htmlEscape(">2 A Day " + name) + "'>" + HtmlUtils.htmlEscape(next.isEmpty() ? first : next) + "</span>";
+		    	}
+			}
+			
+			if (!conflicts.isEmpty())
+				related.setConflicts(conflicts);
 			
     		response.addExam(related);
 		}
