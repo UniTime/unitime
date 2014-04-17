@@ -1603,7 +1603,21 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(initNormalCell(io.getControllingCourseOffering().getTitle()!=null ? io.getControllingCourseOffering().getTitle() : "&nbsp;", isEditable));
     	}
     	if (isShowCredit()){
-            row.addContent(initNormalCell((io.getCredit()!=null?"<span title='"+io.getCredit().creditText()+"'>"+io.getCredit().creditAbbv()+"</span>":""), isEditable));     		
+    		String credit = "";
+    		if (co.isIsControl().booleanValue()) credit += "<b>";
+    		if (isManagedAs)
+    			credit = "<font color=\"" + disabledColor + "\"><b>" + (co.getCredit() == null ? "" : "<span title='"+co.getCredit().creditText()+"'>" + co.getCredit().creditAbbv() + "</span>") + "</b></font>";
+    		else
+    			credit = "<b>" + (co.getCredit() == null ? "" : "<span title='"+co.getCredit().creditText()+"'>" + co.getCredit().creditAbbv() + "</span>") + "</b>";
+    		if (co.isIsControl().booleanValue()) credit += "</b>";
+    		for (Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator(); it.hasNext();) {
+            	CourseOffering x = (CourseOffering)it.next();
+            	credit += "<br>";
+            	if (x.getCredit() != null) {
+            		credit += "<font color=\"" + disabledColor + "\"><span title='"+x.getCredit().creditText()+"'>"+x.getCredit().creditAbbv()+"</span></font>";
+            	}
+    		}
+            row.addContent(initNormalCell(credit, isEditable));   
     	}
     	if (isShowSubpartCredit()){
             row.addContent(initNormalCell("", isEditable));

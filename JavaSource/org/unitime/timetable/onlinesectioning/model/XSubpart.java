@@ -27,7 +27,9 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 import org.cpsolver.studentsct.model.Section;
@@ -35,7 +37,7 @@ import org.cpsolver.studentsct.model.Subpart;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.CourseCreditUnitConfig;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
@@ -54,6 +56,7 @@ public class XSubpart implements Serializable, Externalizable {
     private Long iParentId = null;
     private String iCreditAbbv = null, iCreditText = null;
     private boolean iAllowOverlap = false;
+    private Map<Long, String[]> iCreditByCourse = new HashMap<Long, String[]>();
 
     public XSubpart() {}
     
@@ -61,7 +64,7 @@ public class XSubpart implements Serializable, Externalizable {
     	readExternal(in);
     }
     
-    public XSubpart(SchedulingSubpart subpart, CourseCreditUnitConfig credit, OnlineSectioningHelper helper) {
+    public XSubpart(SchedulingSubpart subpart, boolean courseCredit, OnlineSectioningHelper helper) {
     	iUniqueId = subpart.getUniqueId();
         iInstructionalType = sF3Z.format(subpart.getItype().getItype()) + subpart.getSchedulingSubpartSuffix(helper.getHibSession());
         iAllowOverlap = subpart.isStudentAllowOverlap();
@@ -71,9 +74,12 @@ public class XSubpart implements Serializable, Externalizable {
         if (subpart.getCredit() != null) {
         	iCreditAbbv = subpart.getCredit().creditAbbv();
         	iCreditText = subpart.getCredit().creditText();
-        } else if (credit != null) {
-        	iCreditAbbv = credit.creditAbbv();
-        	iCreditText = credit.creditText();
+        }
+        if (courseCredit) {
+        	for (CourseOffering co: subpart.getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
+        		if (co.getCredit() != null)
+        			iCreditByCourse.put(co.getUniqueId(), new String[] {co.getCredit().creditAbbv(), co.getCredit().creditText()});
+        	}
         }
         for (Class_ clazz: subpart.getClasses())
         	iSections.add(new XSection(clazz, helper));
@@ -150,9 +156,22 @@ public class XSubpart implements Serializable, Externalizable {
     /**
      * Get credit (Online Student Scheduling only)
      */
-    public String getCreditAbbv() { return iCreditAbbv; }
-    public String getCreditText() { return iCreditText; }
-    public String getCredit() { return getCreditAbbv() == null ? null : getCreditAbbv() + "|" + getCreditText(); }
+    public String getCreditAbbv(Long courseId) {
+    	String[] credit = (courseId != null ? iCreditByCourse.get(courseId) : null);
+    	return (credit != null ? credit[0] : iCreditAbbv);
+    }
+    public String getCreditText(Long courseId) {
+    	String[] credit = (courseId != null ? iCreditByCourse.get(courseId) : null);
+    	return (credit != null ? credit[1] : iCreditText);
+    }
+    public String getCredit(Long courseId) {
+    	if (courseId != null) {
+        	String[] credit = iCreditByCourse.get(courseId);
+        	if (credit != null)
+        		return credit[0] + "|" + credit[1];
+    	}
+    	return iCreditAbbv == null ? null : iCreditAbbv + "|" + iCreditText;
+    }
     
     @Override
     public boolean equals(Object o) {
@@ -184,6 +203,11 @@ public class XSubpart implements Serializable, Externalizable {
 		iCreditText = (String)in.readObject();
 		
 		iAllowOverlap = in.readBoolean();
+		
+		int nrCredits = in.readInt();
+		iCreditByCourse.clear();
+		for (int i = 0; i < nrCredits; i++)
+			iCreditByCourse.put(in.readLong(), new String[] {(String)in.readObject(), (String)in.readObject()});
 	}
 
 	@Override
@@ -203,6 +227,13 @@ public class XSubpart implements Serializable, Externalizable {
 		out.writeObject(iCreditText);
 		
 		out.writeBoolean(iAllowOverlap);
+		
+		out.writeInt(iCreditByCourse.size());
+		for (Map.Entry<Long, String[]> entry: iCreditByCourse.entrySet()) {
+			out.writeLong(entry.getKey());
+			out.writeObject(entry.getValue()[0]);
+			out.writeObject(entry.getValue()[1]);
+		}
 	}
 
 	public static class XSubpartSerializer implements Externalizer<XSubpart> {

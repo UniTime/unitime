@@ -35,7 +35,7 @@ import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Subpart;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
-import org.unitime.timetable.model.CourseCreditUnitConfig;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -68,14 +68,13 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
     	if (iLimit >= 9999) iLimit = -1;
     	TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator());
         subparts.addAll(config.getSchedulingSubparts());
-        boolean subpartCredit = false;
-        for (SchedulingSubpart ss: subparts) {
-        	if (ss.getCredit() != null) { subpartCredit = true; break; }
+        boolean credit = false;
+        for (CourseOffering co: config.getInstructionalOffering().getCourseOfferings()) {
+        	if (co.getCredit() != null) { credit = true; break; }
         }
-        CourseCreditUnitConfig credit = (subpartCredit ? null : config.getInstructionalOffering().getCredit());
         for (SchedulingSubpart subpart: subparts) {
     		iSubparts.add(new XSubpart(subpart, credit, helper));
-    		if (credit != null) credit = null;
+    		credit = false;
         }
     	Collections.sort(iSubparts, new XSubpartComparator());
     }

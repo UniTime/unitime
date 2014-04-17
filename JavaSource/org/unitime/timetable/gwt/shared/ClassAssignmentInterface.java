@@ -74,7 +74,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Long iCourseId = null;
 		private boolean iAssigned = true;
-		private String iSubject, iCourseNbr, iTitle, iNote;
+		private String iSubject, iCourseNbr, iTitle, iNote, iCreditText = null, iCreditAbbv = null;
 		private boolean iHasUniqueName = true;
 		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null;
 		
@@ -108,6 +108,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getNote() { return iNote; }
 		public void setNote(String note) { iNote = note; }
 		
+		public boolean hasCredit() { return iCreditAbbv != null && !iCreditAbbv.isEmpty(); }
+		public String getCreditText() { return iCreditText; }
+		public void setCreditText(String creditText) { iCreditText = creditText; }
+		public String getCreditAbbv() { return iCreditAbbv; }
+		public void setCreditAbbv(String creditAbbv) { iCreditAbbv = creditAbbv; }
+
 		public boolean hasUniqueName() { return iHasUniqueName; }
 		public void setHasUniqueName(boolean hasUniqueName) { iHasUniqueName = hasUniqueName; }
 

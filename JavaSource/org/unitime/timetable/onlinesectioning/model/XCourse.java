@@ -49,6 +49,7 @@ public class XCourse extends XCourseId {
     private int iLimit = 0;
     private int iProjected = 0;
     private Integer iWkEnroll = null, iWkChange = null, iWkDrop = null;
+    private String iCreditAbbv = null, iCreditText = null;
 
     public XCourse() {
     	super();
@@ -86,6 +87,10 @@ public class XCourse extends XCourseId {
 			iConsentLabel = course.getConsentType().getLabel();
 			iConsentAbbv = course.getConsentType().getAbbv();
 		}
+        if (course.getCredit() != null) {
+        	iCreditAbbv = course.getCredit().creditAbbv();
+        	iCreditText = course.getCredit().creditText();
+        }
     }
     
     public XCourse(Course course) {
@@ -130,6 +135,13 @@ public class XCourse extends XCourseId {
 		return iDetails;
 	}
 	
+    /**
+     * Get credit (Online Student Scheduling only)
+     */
+    public String getCreditAbbv() { return iCreditAbbv; }
+    public String getCreditText() { return iCreditText; }
+    public String getCredit() { return getCreditAbbv() == null ? null : getCreditAbbv() + "|" + getCreditText(); }
+	
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		super.readExternal(in);
@@ -145,6 +157,8 @@ public class XCourse extends XCourseId {
 		iWkEnroll = (in.readBoolean() ? in.readInt() : null);
 		iWkChange = (in.readBoolean() ? in.readInt() : null);
 		iWkDrop = (in.readBoolean() ? in.readInt() : null);
+		iCreditAbbv = (String)in.readObject();
+		iCreditText = (String)in.readObject();
 	}
 
 	@Override
@@ -168,6 +182,8 @@ public class XCourse extends XCourseId {
 		out.writeBoolean(iWkDrop != null);
 		if (iWkDrop != null)
 			out.writeInt(iWkDrop);
+		out.writeObject(iCreditAbbv);
+		out.writeObject(iCreditText);
 	}
 	
 	public static class XCourseSerializer implements Externalizer<XCourse> {

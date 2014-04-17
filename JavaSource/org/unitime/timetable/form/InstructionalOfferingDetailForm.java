@@ -70,7 +70,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private List courseOfferings;
     private String subjectAreaAbbr;
     private String courseNbr;
-    private String creditText;
     private String nextId;
     private String previousId;
     private String catalogLinkLabel;
@@ -131,7 +130,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         instrOfferingNameNoTitle = "";
         courseOfferings = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
         nextId = previousId = null;
-        creditText = "";
         catalogLinkLabel = null;
         catalogLinkLocation = null;
         byReservationOnly = false; coordinators = null;
@@ -292,14 +290,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     	return false;
     }
 
-	public String getCreditText() {
-		return creditText;
-	}
-
-	public void setCreditText(String creditText) {
-		this.creditText = creditText;
-	}
-
 	public Integer getEnrollment() {
 		return enrollment;
 	}
@@ -346,4 +336,28 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     
     public String getAccommodation() { return accommodation; }
     public void setAccommodation(String accommodation) { this.accommodation = accommodation; }
+    
+    public boolean getHasCredit() {
+    	if (courseOfferings==null || courseOfferings.isEmpty()) return false;
+    	for (Iterator i=courseOfferings.iterator();i.hasNext();)
+    		if (((CourseOffering)i.next()).getCredit() != null) return true;
+    	return false;
+    }
+    
+    public boolean getHasScheduleBookNote() {
+    	if (courseOfferings==null || courseOfferings.isEmpty()) return false;
+    	for (Iterator i=courseOfferings.iterator();i.hasNext();) {
+    		CourseOffering course = (CourseOffering)i.next();
+    		if (course.getScheduleBookNote() != null && !course.getScheduleBookNote().isEmpty()) return true;
+    	}
+    	return false;
+    }
+
+    public boolean getHasCourseReservation() {
+    	if (courseOfferings==null || courseOfferings.isEmpty()) return false;
+    	for (Iterator i=courseOfferings.iterator();i.hasNext();)
+    		if (((CourseOffering)i.next()).getReservation() != null) return true;
+    	return false;
+    }
+
 }

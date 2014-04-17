@@ -1796,6 +1796,10 @@ public class CurriculaServlet implements CurriculaService {
 					course.setCourseNbr(c.getCourseNbr());
 					course.setNote(c.getScheduleBookNote());
 					course.setTitle(c.getTitle());
+					if (c.getCredit() != null) {
+						course.setCreditText(c.getCredit().creditText());
+						course.setCreditAbbv(c.getCredit().creditAbbv());
+					}
 					course.setHasUniqueName(true);
 					boolean unlimited = false;
 					int courseLimit = 0;

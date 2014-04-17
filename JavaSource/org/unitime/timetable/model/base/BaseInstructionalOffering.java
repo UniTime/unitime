@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -56,7 +55,6 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private Set<CourseOffering> iCourseOfferings;
 	private Set<InstrOfferingConfig> iInstrOfferingConfigs;
 	private Set<Reservation> iReservations;
-	private Set<CourseCreditUnitConfig> iCreditConfigs;
 	private Set<DepartmentalInstructor> iCoordinators;
 
 	public static String PROP_UNIQUEID = "uniqueId";
@@ -143,13 +141,6 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public void addToreservations(Reservation reservation) {
 		if (iReservations == null) iReservations = new HashSet<Reservation>();
 		iReservations.add(reservation);
-	}
-
-	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
-	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
-	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
-		if (iCreditConfigs == null) iCreditConfigs = new HashSet<CourseCreditUnitConfig>();
-		iCreditConfigs.add(courseCreditUnitConfig);
 	}
 
 	public Set<DepartmentalInstructor> getCoordinators() { return iCoordinators; }

@@ -1428,12 +1428,13 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	    iPdfTable.addCell(titleCell);
     	}
     	if (isShowCredit()){
-    		if (io.getCredit()!=null) {
-        	    PdfPCell cell = createCell();
-        	    addText(cell, io.getCredit().creditAbbv(), false, false, Element.ALIGN_LEFT, color, true);
-    	    	iPdfTable.addCell(cell);
-    		} else
-    			iPdfTable.addCell(createCell());     		
+    	    PdfPCell cell = createCell();
+    	    addText(cell, (co.getCredit() != null ? co.getCredit().creditAbbv() : ""), true, false, Element.ALIGN_LEFT, isManagedAs ? sDisableColor : color, true);
+    	    for (Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator(); it.hasNext();) {
+            	CourseOffering x = (CourseOffering)it.next();
+            	addText(cell, (x.getCredit() != null ? x.getCredit().creditAbbv() : ""), false, false, Element.ALIGN_LEFT, sDisableColor, true);
+    	    }
+    	    iPdfTable.addCell(cell);
     	}
     	if (isShowSubpartCredit()) {
     		iPdfTable.addCell(createCell());

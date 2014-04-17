@@ -62,10 +62,10 @@ public abstract class BaseArrangeCreditUnitConfig extends CourseCreditUnitConfig
 	public String toDebugString() {
 		return "ArrangeCreditUnitConfig[" +
 			"\n	CourseCreditFormat: " + getCourseCreditFormat() +
+			"\n	CourseOwner: " + getCourseOwner() +
 			"\n	CreditType: " + getCreditType() +
 			"\n	CreditUnitType: " + getCreditUnitType() +
 			"\n	DefinesCreditAtCourseLevel: " + getDefinesCreditAtCourseLevel() +
-			"\n	InstructionalOfferingOwner: " + getInstructionalOfferingOwner() +
 			"\n	SubpartOwner: " + getSubpartOwner() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
