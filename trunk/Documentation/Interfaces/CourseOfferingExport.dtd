@@ -23,7 +23,7 @@
 <!-- studentScheduling was introduced in UniTime 3.4, if false class appears like it has zero limit in (both batch and online) student scheduling -->
 <!ATTLIST class studentScheduling ( false | true ) #IMPLIED >
 <!ATTLIST class id CDATA #IMPLIED >
-<!ATTLIST class limit NMTOKEN #IMPLIED >
+<!ATTLIST class limit NMTOKEN #REQUIRED >
 <!ATTLIST class scheduleNote CDATA #IMPLIED >
 <!ATTLIST class suffix CDATA #REQUIRED >
 <!ATTLIST class type CDATA #REQUIRED >
@@ -35,7 +35,7 @@
 <!ELEMENT consent EMPTY >
 <!ATTLIST consent type CDATA #REQUIRED >
 
-<!ELEMENT course ( class* ) >
+<!ELEMENT course ( consent?, courseCredit? ) >
 <!ATTLIST course id CDATA #IMPLIED >
 <!ATTLIST course controlling ( false | true ) #IMPLIED >
 <!ATTLIST course courseNbr NMTOKEN #REQUIRED >
@@ -63,7 +63,7 @@
 <!ATTLIST instructor mname CDATA #IMPLIED >
 <!ATTLIST instructor share NMTOKEN #IMPLIED >
 
-<!ELEMENT offering ( designatorRequired?, consent?, courseCredit*, course+, config*, exam* ) >
+<!ELEMENT offering ( designatorRequired?, courseCredit?, course+, config*, exam* ) >
 <!ATTLIST offering action CDATA #IMPLIED >
 <!ATTLIST offering id NMTOKEN #REQUIRED >
 <!ATTLIST offering offered  ( false | true ) #REQUIRED >
@@ -104,6 +104,7 @@
 <!ATTLIST time days NMTOKEN #REQUIRED >
 <!ATTLIST time endTime NMTOKEN #REQUIRED >
 <!ATTLIST time startTime NMTOKEN #REQUIRED >
+<!ATTLIST time timePattern CDATA #IMPLIED >
 
 <!ELEMENT date EMPTY >
 <!ATTLIST date endDate CDATA #REQUIRED >
