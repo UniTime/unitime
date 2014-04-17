@@ -37,6 +37,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Detail: Enrollment Table</name>
+			<description>
+				<line>Fixed the link when clicking on another exam of a student (from his/her examination schedule).
+					<line>The link was broken in Firefox, but it worked fine in Chrome and Safari.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
