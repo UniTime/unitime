@@ -45,6 +45,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Buildings: Update Data</name>
+			<description>
+				<line>When update of room departments is enabled for existing rooms (unitime.external.room.update.existing and unitime.external.room.update.existing.departments are set to true):
+					<line>Reset the list of departments to what is set in the external room departments table (instead of just adding new departments from the relation).</line>
+					<line>This fixes the issue of adding the same department into the relation every time the Update Data is clicked.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
