@@ -116,7 +116,7 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 					@Override
 					public void onMouseClick(TableEvent<RelatedObjectInterface> event) {
 						if (event.getData() != null && event.getData().hasDetailPage())
-							ToolBox.open(event.getData().getDetailPage());
+							ToolBox.open(GWT.getHostPageBaseURL() + event.getData().getDetailPage());
 						if (event.getData() == null && event.getCol() >= 0) {
 							table.sort(event.getCol(), new RelatedObjectComparator(event.getCol()));
 							boolean asc = table.getHeader(event.getCol()).getOrder();
