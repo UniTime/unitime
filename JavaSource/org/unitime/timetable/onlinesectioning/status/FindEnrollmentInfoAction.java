@@ -484,7 +484,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				a.setSubpartId(section.getSubpartId());
 				a.addNote(course.getNote());
 				a.addNote(section.getNote());
-				a.setCredit(subpart.getCredit());
+				a.setCredit(subpart.getCredit(course.getCourseId()));
 				if (a.getParentSection() == null) {
 					String consent = server.getCourse(courseId()).getConsentLabel();
 					if (consent != null)

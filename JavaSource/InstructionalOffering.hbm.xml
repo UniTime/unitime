@@ -117,6 +117,7 @@
             <one-to-many class="Reservation"/>
         </set>
 
+		<!-- 
         <set
             name="creditConfigs"
             inverse="true"
@@ -128,6 +129,7 @@
             <key column="instr_offr_id"/>
             <one-to-many class="CourseCreditUnitConfig"/>
         </set>
+         -->
 
         <property
             name="uniqueIdRolledForwardFrom"

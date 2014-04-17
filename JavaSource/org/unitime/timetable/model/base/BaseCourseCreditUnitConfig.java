@@ -25,7 +25,7 @@ import org.unitime.timetable.model.CourseCreditFormat;
 import org.unitime.timetable.model.CourseCreditType;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseCreditUnitType;
-import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
 
 /**
@@ -42,7 +42,7 @@ public abstract class BaseCourseCreditUnitConfig implements Serializable {
 	private CourseCreditType iCreditType;
 	private CourseCreditUnitType iCreditUnitType;
 	private SchedulingSubpart iSubpartOwner;
-	private InstructionalOffering iInstructionalOfferingOwner;
+	private CourseOffering iCourseOwner;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_DEFINES_CREDIT_AT_COURSE_LEVEL = "definesCreditAtCourseLevel";
@@ -77,8 +77,8 @@ public abstract class BaseCourseCreditUnitConfig implements Serializable {
 	public SchedulingSubpart getSubpartOwner() { return iSubpartOwner; }
 	public void setSubpartOwner(SchedulingSubpart subpartOwner) { iSubpartOwner = subpartOwner; }
 
-	public InstructionalOffering getInstructionalOfferingOwner() { return iInstructionalOfferingOwner; }
-	public void setInstructionalOfferingOwner(InstructionalOffering instructionalOfferingOwner) { iInstructionalOfferingOwner = instructionalOfferingOwner; }
+	public CourseOffering getCourseOwner() { return iCourseOwner; }
+	public void setCourseOwner(CourseOffering courseOwner) { iCourseOwner = courseOwner; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseCreditUnitConfig)) return false;
@@ -98,10 +98,10 @@ public abstract class BaseCourseCreditUnitConfig implements Serializable {
 	public String toDebugString() {
 		return "CourseCreditUnitConfig[" +
 			"\n	CourseCreditFormat: " + getCourseCreditFormat() +
+			"\n	CourseOwner: " + getCourseOwner() +
 			"\n	CreditType: " + getCreditType() +
 			"\n	CreditUnitType: " + getCreditUnitType() +
 			"\n	DefinesCreditAtCourseLevel: " + getDefinesCreditAtCourseLevel() +
-			"\n	InstructionalOfferingOwner: " + getInstructionalOfferingOwner() +
 			"\n	SubpartOwner: " + getSubpartOwner() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

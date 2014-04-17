@@ -20,7 +20,10 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.DemandOfferingType;
@@ -56,6 +59,7 @@ public abstract class BaseCourseOffering implements Serializable {
 	private DemandOfferingType iDemandOfferingType;
 	private CourseType iCourseType;
 	private OfferingConsentType iConsentType;
+	private Set<CourseCreditUnitConfig> iCreditConfigs;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_IS_CONTROL = "isControl";
@@ -141,6 +145,13 @@ public abstract class BaseCourseOffering implements Serializable {
 
 	public OfferingConsentType getConsentType() { return iConsentType; }
 	public void setConsentType(OfferingConsentType consentType) { iConsentType = consentType; }
+
+	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
+	public void setCreditConfigs(Set<CourseCreditUnitConfig> creditConfigs) { iCreditConfigs = creditConfigs; }
+	public void addTocreditConfigs(CourseCreditUnitConfig courseCreditUnitConfig) {
+		if (iCreditConfigs == null) iCreditConfigs = new HashSet<CourseCreditUnitConfig>();
+		iCreditConfigs.add(courseCreditUnitConfig);
+	}
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseOffering)) return false;

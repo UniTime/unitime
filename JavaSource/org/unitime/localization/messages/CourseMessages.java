@@ -361,7 +361,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Title")
 	String columnTitle();
 
-	@DefaultMessage("Offering Credit")
+	@DefaultMessage("Course Credit")
 	String columnOfferingCredit();
 
 	@DefaultMessage("Subpart Credit")
@@ -624,6 +624,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Type")
 	String columnCourseType();
+	
+	@DefaultMessage("Credit")
+	String columnCredit();
 	
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();

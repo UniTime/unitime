@@ -1094,8 +1094,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		setCacheable(true).
 		uniqueResult();
 	}
-
-	private boolean elementCourseCredit(Element element, InstructionalOffering io) throws Exception {
+	
+	private boolean elementCourseCredit(Element element, CourseOffering co) throws Exception {
 		boolean changed = false;
 		String elementName = "courseCredit";
         Element credit = element.element(elementName);
@@ -1119,20 +1119,64 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	        	maxCredit = Float.parseFloat(maxCreditStr);
 	        }
 	        CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(creditFormat, creditType, creditUnitType, minCredit, maxCredit, fractionalIncrementsAllowed, true);
-	        if (io.getCredit() == null && ccuc != null){
+	        if (co.getCredit() == null && ccuc != null){
 	        	changed = true;
 	        	addNote("\tadded offering credit");
-	        } else if (io.getCredit() != null && !isSameCreditConfig(io.getCredit(),ccuc)) {
+	        } else if (co.getCredit() != null && !isSameCreditConfig(co.getCredit(),ccuc)) {
 	        	addNote("\toffering credit values changed ");
 	        	changed = true;
 	        } 
 	        if (changed){
-	        	io.setCredit(ccuc);
-	        	ccuc.setOwner(io);
-	        	getHibSession().saveOrUpdate(io);
+	        	co.setCredit(ccuc);
+	        	ccuc.setOwner(co);
+	        	getHibSession().saveOrUpdate(co);
 	        	getHibSession().flush();
-	        	getHibSession().refresh(io);
-	        	ChangeLog.addChange(getHibSession(), getManager(), session, io.getCredit(), ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, io.getControllingCourseOffering().getSubjectArea(), io.getControllingCourseOffering().getDepartment());
+	        	getHibSession().refresh(co);
+	        	ChangeLog.addChange(getHibSession(), getManager(), session, co.getCredit(), ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, co.getSubjectArea(), co.getDepartment());
+	        }
+        }
+		return(changed);
+	}
+
+	private boolean elementCourseCredit(Element element, InstructionalOffering io) throws Exception {
+		boolean changed = false;
+		String elementName = "courseCredit";
+        Element credit = element.element(elementName);
+        if (credit != null) {
+        	String creditFormat = getRequiredStringAttribute(credit, "creditFormat", elementName);     		
+        	String creditType = getRequiredStringAttribute(credit, "creditType", elementName);  		
+        	String creditUnitType = getRequiredStringAttribute(credit, "creditUnitType", elementName);
+	        Boolean fractionalIncrementsAllowed = getOptionalBooleanAttribute(credit, "fractionalCreditAllowed");
+       	
+	        String minCreditStr = getOptionalStringAttribute(credit, "fixedCredit");
+	        if(minCreditStr == null) {
+	        	minCreditStr = getOptionalStringAttribute(credit, "minimumCredit");
+	        }
+	        Float minCredit = null;
+	        if (minCreditStr != null){
+	        	minCredit = new Float(minCreditStr);
+	        }
+	        String maxCreditStr = getOptionalStringAttribute(credit, "maximumCredit");
+	        Float maxCredit = null;
+	        if (maxCreditStr != null){
+	        	maxCredit = Float.parseFloat(maxCreditStr);
+	        }
+	        CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(creditFormat, creditType, creditUnitType, minCredit, maxCredit, fractionalIncrementsAllowed, true);
+	        CourseOffering co = io.getControllingCourseOffering();
+	        if (co.getCredit() == null && ccuc != null){
+	        	changed = true;
+	        	addNote("\tadded offering credit");
+	        } else if (co.getCredit() != null && !isSameCreditConfig(co.getCredit(),ccuc)) {
+	        	addNote("\toffering credit values changed ");
+	        	changed = true;
+	        } 
+	        if (changed){
+	        	co.setCredit(ccuc);
+	        	ccuc.setOwner(co);
+	        	getHibSession().saveOrUpdate(co);
+	        	getHibSession().flush();
+	        	getHibSession().refresh(co);
+	        	ChangeLog.addChange(getHibSession(), getManager(), session, co.getCredit(), ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, co.getSubjectArea(), co.getDepartment());
 	        }
         }
 		return(changed);
@@ -1309,6 +1353,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				getHibSession().refresh(io);
 				ChangeLog.addChange(getHibSession(), getManager(), session, co, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, co.getSubjectArea(), co.getDepartment());
 				handleCustomCourseChildElements(co, ico.getElement());
+				if (elementCourseCredit(element, co)) addNote("\tadded course credit");
 			}
 			changed = true;
 		} else {
@@ -1388,6 +1433,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						if(changed){
 				        	ChangeLog.addChange(getHibSession(), getManager(), session, oco, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, oco.getSubjectArea(), oco.getDepartment());
 						}					
+						if (elementCourseCredit(element, oco)) addNote("\tcourse credit changed");
 					}	
 					
 				}
@@ -1408,6 +1454,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					getHibSession().refresh(io);
 		        	handleCustomCourseChildElements(nco, ico.getElement());
 		        	ChangeLog.addChange(getHibSession(), getManager(), session, nco, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, nco.getSubjectArea(), nco.getDepartment());
+					if (elementCourseCredit(element, oco)) addNote("\tadded course credit");
 				}
 			}
 			List removeCourses = new ArrayList<Object>();

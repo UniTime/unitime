@@ -593,7 +593,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		if (section.getNote() != null) note = (note == null || note.isEmpty() ? "" : note + "<br>") + section.getNote();
 		out.println("	<td style= \"" + style + "\">" + (note == null ? "&nbsp;" : note.replace("\n", "<br>")) + "</td>");
 		XSubpart subpart = offering.getSubpart(section.getSubpartId());
-		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(subpart) + "\">" + creditAbbv(subpart) + "</td>");
+		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(subpart, course.getCourseId()) + "\">" + creditAbbv(subpart, course.getCourseId()) + "</td>");
 		out.println("</tr>");
 	}
 	
@@ -681,17 +681,17 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				diff(old.getNote(), section.getNote()).replace("\n", "<br>") + "</td>");
 		XSubpart oldSubpart = oldOffering.getSubpart(old.getSectionId());
 		XSubpart subpart = offering.getSubpart(section.getSubpartId());
-		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(subpart) + "\">" + diff(creditAbbv(oldSubpart), creditAbbv(subpart)) + "</td>");
+		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(subpart, course.getCourseId()) + "\">" + diff(creditAbbv(oldSubpart, course.getCourseId()), creditAbbv(subpart, course.getCourseId())) + "</td>");
 		out.println("</tr>");
 	}
 	
-	private String creditAbbv(XSubpart subpart) {
-		String credit = (subpart == null ? null : subpart.getCredit());
+	private String creditAbbv(XSubpart subpart, Long courseId) {
+		String credit = (subpart == null ? null : subpart.getCredit(courseId));
 		return credit == null ? "" : credit.indexOf('|') < 0 ? credit : credit.substring(0, credit.indexOf('|')); 
 	}
 
-	private String creditText(XSubpart subpart) {
-		String credit = (subpart == null ? null : subpart.getCredit());
+	private String creditText(XSubpart subpart, Long courseId) {
+		String credit = (subpart == null ? null : subpart.getCredit(courseId));
 		return credit == null ? "" : credit.indexOf('|') < 0 ? credit : credit.substring(1 + credit.indexOf('|')); 
 	}
 

@@ -76,11 +76,21 @@
             unique="true"
             update="true"/>
 
+		<!-- 
         <many-to-one
             name="instructionalOfferingOwner"
             class="InstructionalOffering"
             column="instr_offr_id"
             foreign-key="fk_crs_crdt_unit_cfg_io_own"
+            unique="true"
+            update="true"/>
+       	 -->
+
+        <many-to-one
+            name="courseOwner"
+            class="CourseOffering"
+            column="course_id"
+            foreign-key="fk_crs_crdt_unit_cfg_crs_own"
             unique="true"
             update="true"/>
 

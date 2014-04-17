@@ -69,11 +69,11 @@ public abstract class BaseVariableRangeCreditUnitConfig extends VariableFixedCre
 	public String toDebugString() {
 		return "VariableRangeCreditUnitConfig[" +
 			"\n	CourseCreditFormat: " + getCourseCreditFormat() +
+			"\n	CourseOwner: " + getCourseOwner() +
 			"\n	CreditType: " + getCreditType() +
 			"\n	CreditUnitType: " + getCreditUnitType() +
 			"\n	DefinesCreditAtCourseLevel: " + getDefinesCreditAtCourseLevel() +
 			"\n	FractionalIncrementsAllowed: " + getFractionalIncrementsAllowed() +
-			"\n	InstructionalOfferingOwner: " + getInstructionalOfferingOwner() +
 			"\n	MaxUnits: " + getMaxUnits() +
 			"\n	MinUnits: " + getMinUnits() +
 			"\n	SubpartOwner: " + getSubpartOwner() +

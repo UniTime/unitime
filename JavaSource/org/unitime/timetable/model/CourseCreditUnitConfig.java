@@ -108,9 +108,9 @@ public abstract class CourseCreditUnitConfig extends BaseCourseCreditUnitConfig 
 			setSubpartOwner(schedulingSubpart);
 		}
 	}
-	public void setOwner(InstructionalOffering instructionalOffering){
+	public void setOwner(CourseOffering courseOffering){
 		if(isDefinesCreditAtCourseLevel().booleanValue()){
-			setInstructionalOfferingOwner(instructionalOffering);
+			setCourseOwner(courseOffering);
 		}
 	}
 	

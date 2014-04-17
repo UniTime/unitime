@@ -195,6 +195,10 @@ public class SectioningServlet implements SectioningService {
 				course.setSubject(c.getSubjectAreaAbbv());
 				course.setCourseNbr(c.getCourseNbr());
 				course.setNote(c.getScheduleBookNote());
+				if (c.getCredit() != null) {
+					course.setCreditText(c.getCredit().creditText());
+					course.setCreditAbbv(c.getCredit().creditAbbv());
+				}
 				course.setTitle(c.getTitle());
 				course.setHasUniqueName(true);
 				boolean unlimited = false;
@@ -228,6 +232,8 @@ public class SectioningServlet implements SectioningService {
 					course.setSubject(c.getSubjectArea());
 					course.setCourseNbr(c.getCourseNumber());
 					course.setNote(c.getNote());
+					course.setCreditAbbv(c.getCreditAbbv());
+					course.setCreditText(c.getCreditText());
 					course.setTitle(c.getTitle());
 					course.setHasUniqueName(c.hasUniqueName());
 					course.setLimit(c.getLimit());
