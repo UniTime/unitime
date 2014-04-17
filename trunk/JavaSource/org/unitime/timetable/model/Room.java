@@ -19,9 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.criterion.Restrictions;
@@ -212,9 +214,11 @@ public class Room extends BaseRoom {
 				for (ExternalRoomFeature erf: er.getRoomFeatures()) {
 					GlobalRoomFeature grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(session, erf.getValue());
 					if (grf == null)
-						grf = GlobalRoomFeature.findGlobalRoomFeatureForAbbv(erf.getName());
-					if (grf != null)
+						grf = GlobalRoomFeature.findGlobalRoomFeatureForAbbv(session, erf.getName());
+					if (grf != null) {
+						grf.getRooms().add(r);
 						r.getFeatures().add(grf);
+					}
 				}
 				LocationPermIdGenerator.setPermanentId(r);
 				hibSession.saveOrUpdate(r);
@@ -235,19 +239,39 @@ public class Room extends BaseRoom {
 				if (resetRoomFeatures) {
 					for (Iterator<RoomFeature> i = r.getFeatures().iterator(); i.hasNext();) {
 						RoomFeature rf = i.next();
-						if (rf instanceof GlobalRoomFeature) i.remove();
+						if (rf instanceof GlobalRoomFeature) {
+							rf.getRooms().remove(r);
+							i.remove();
+						}
 					}
 					for (ExternalRoomFeature erf: er.getRoomFeatures()) {
 						GlobalRoomFeature grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(session, erf.getValue());
 						if (grf == null)
-							grf = GlobalRoomFeature.findGlobalRoomFeatureForAbbv(erf.getName());
-						if (grf != null)
+							grf = GlobalRoomFeature.findGlobalRoomFeatureForAbbv(session, erf.getName());
+						if (grf != null) {
+							grf.getRooms().add(r);
 							r.getFeatures().add(grf);
+						}
 					}
 				}
 				hibSession.saveOrUpdate(r);
 				if (resetRoomDepartments) {
+					Map<String, ExternalRoomDepartment> code2extRoomDept = new HashMap<String, ExternalRoomDepartment>();
 					for (ExternalRoomDepartment erd: er.getRoomDepartments())
+						code2extRoomDept.put(erd.getDepartmentCode(), erd);
+					for (Iterator<RoomDept> i = r.getRoomDepts().iterator(); i.hasNext(); ) {
+						RoomDept rd = (RoomDept)i.next();
+						ExternalRoomDepartment erd = code2extRoomDept.remove(rd.getDepartment().getDeptCode());
+						if (erd != null) {
+							rd.setControl(ExternalRoomDepartment.isControllingExternalDept(erd, er.getRoomDepartments()));
+							hibSession.saveOrUpdate(rd);
+						} else {
+							rd.getDepartment().getRoomDepts().remove(rd);
+							i.remove();
+							hibSession.delete(rd);
+						}
+					}
+					for (ExternalRoomDepartment erd: code2extRoomDept.values())
 						r.addExternalRoomDept(erd, er.getRoomDepartments());
 				}
 			}

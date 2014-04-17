@@ -83,10 +83,11 @@ public class GlobalRoomFeature extends BaseGlobalRoomFeature {
 		return(null);
 	}
     
-	public static GlobalRoomFeature findGlobalRoomFeatureForAbbv(String label){
+	public static GlobalRoomFeature findGlobalRoomFeatureForAbbv(Session session, String label){
 		GlobalRoomFeatureDAO grfDao = new GlobalRoomFeatureDAO();
 		List features = grfDao.getSession().createCriteria(GlobalRoomFeature.class)
 			.add(Restrictions.eq("abbv", label))
+			.add(Restrictions.eq("session.uniqueId", session.getUniqueId()))
 			.setCacheable(true).list();
 
 		if (features.size() == 1){
