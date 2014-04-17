@@ -231,8 +231,15 @@
 							<TD align="left" class="WebTableHeader"><loc:message name="columnCourseType"/></TD>
 						</logic:equal>
 						<TD align="left" class="WebTableHeader"><loc:message name="columnTitle"/></TD>
-						<TD align="left" class="WebTableHeader"><loc:message name="columnReserved"/></TD>
-						<TD align="left" class="WebTableHeader"><loc:message name="columnScheduleOfClassesNote"/></TD>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseReservation" value="true">
+							<TD align="left" class="WebTableHeader"><loc:message name="columnReserved"/></TD>
+						</logic:equal>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasCredit" value="true">
+							<TD align="left" class="WebTableHeader"><loc:message name="columnCredit"/></TD>
+						</logic:equal>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasScheduleBookNote" value="true">
+							<TD align="left" class="WebTableHeader"><loc:message name="columnScheduleOfClassesNote"/></TD>
+						</logic:equal>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnDemandsFrom"/></TD>
 						</logic:equal>
@@ -259,12 +266,23 @@
 							</TD>
 						</logic:equal>
 						<TD class="BottomBorderGray"><bean:write name="co" property="courseNameWithTitle"/></TD>
-						<TD class="BottomBorderGray">
-							<logic:notEmpty name="co" property="reservation">
-								<bean:write name="co" property="reservation"/>
-							</logic:notEmpty>
-						</TD>
-						<TD class="BottomBorderGray">&nbsp;<bean:write name="co" property="scheduleBookNote"/></TD>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseReservation" value="true">
+							<TD class="BottomBorderGray">
+								<logic:notEmpty name="co" property="reservation">
+									<bean:write name="co" property="reservation"/>
+								</logic:notEmpty>
+							</TD>
+						</logic:equal>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasCredit" value="true">
+							<TD class="BottomBorderGray">
+								<logic:notEmpty name="co" property="credit">
+									<span title='<%=co.getCredit().creditText()%>'><%=co.getCredit().creditAbbv()%></span>
+								</logic:notEmpty>
+							</TD>
+						</logic:equal>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasScheduleBookNote" value="true">
+							<TD class="BottomBorderGray">&nbsp;<bean:write name="co" property="scheduleBookNote"/></TD>
+						</logic:equal>
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
 							<TD class="BottomBorderGray">&nbsp;
 							<%
@@ -357,15 +375,6 @@
 			</TD>
 		</TR>
 
-		<logic:notEmpty name="instructionalOfferingDetailForm" property="creditText">
-			<TR>
-				<TD><loc:message name="propertyCredit"/></TD>
-				<TD>
-					<bean:write name="instructionalOfferingDetailForm" property="creditText" />
-				</TD>
-			</TR>
-		</logic:notEmpty>
-		
 		<logic:equal name="instructionalOfferingDetailForm" property="byReservationOnly" value="true">
 			<TR>
 				<TD><loc:message name="propertyByReservationOnly"/></TD>

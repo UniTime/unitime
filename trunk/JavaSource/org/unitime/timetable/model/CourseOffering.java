@@ -377,4 +377,23 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	if (cmp!=0) return cmp;
     	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(co.getUniqueId() == null ? -1 : co.getUniqueId());
     }
+    
+    public CourseCreditUnitConfig getCredit(){
+    	if(this.getCreditConfigs() == null || this.getCreditConfigs().size() != 1){
+    		return(null);
+    	} else {
+    		return((CourseCreditUnitConfig)this.getCreditConfigs().iterator().next());
+    	}
+    }
+
+    public void setCredit(CourseCreditUnitConfig courseCreditUnitConfig){
+    	if (this.getCreditConfigs() == null || this.getCreditConfigs().size() == 0){
+    		this.addTocreditConfigs(courseCreditUnitConfig);
+    	} else if (!this.getCreditConfigs().contains(courseCreditUnitConfig)){
+    		this.getCreditConfigs().clear();
+    		this.getCreditConfigs().add(courseCreditUnitConfig);
+    	} else {
+    		//course already contains this config so we do not need to add it again.
+    	}
+    }
 }

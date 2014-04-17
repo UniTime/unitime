@@ -167,10 +167,6 @@ public class CourseOfferingExport extends BaseExport {
         offeringElement.addAttribute("id", (offering.getExternalUniqueId()!=null?offering.getExternalUniqueId():offering.getUniqueId().toString()));
         offeringElement.addAttribute("offered", (offering.isNotOffered()?"false":"true"));
         offeringElement.addAttribute("action", "insert");
-        for (Iterator i=offering.getCreditConfigs().iterator();i.hasNext();) {
-            CourseCreditUnitConfig credit = (CourseCreditUnitConfig)i.next();
-            exportCredit(offeringElement.addElement("courseCredit"), credit, session);
-        }
         for (Iterator i=offering.getCourseOfferings().iterator();i.hasNext();) {
             CourseOffering course = (CourseOffering)i.next();
             exportCourse(offeringElement.addElement("course"), course, session);
@@ -221,6 +217,10 @@ public class CourseOfferingExport extends BaseExport {
             courseElement.addAttribute("title", course.getTitle());
         if (course.getScheduleBookNote()!=null)
             courseElement.addAttribute("scheduleBookNote", course.getScheduleBookNote());
+        for (Iterator i=course.getCreditConfigs().iterator();i.hasNext();) {
+            CourseCreditUnitConfig credit = (CourseCreditUnitConfig)i.next();
+            exportCredit(courseElement.addElement("courseCredit"), credit, session);
+        }
     }
 
     protected void exportConfig(Element configElement, InstrOfferingConfig config, Session session) {

@@ -379,7 +379,7 @@ public class PdfWorksheet {
         println("---------- ------------------------------------- ------ ------------------------------- ----- ----- ----- ---------- ----------");
         println(rpad(co.getCourseName(),10)+" "+
                 rpad(title,37)+(title.length()>37?"-":" ")+" "+
-                rpad(offering.getCredit()==null?"":offering.getCredit().creditAbbv(),5)+" "+
+                rpad(co.getCredit()==null?"":co.getCredit().creditAbbv(),5)+" "+
                 rpad(courseOrg,31)+" "+
                 lpad(courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),5)+" "+
                 lpad(enrl<=0?"":String.valueOf(enrl),5)+" "+

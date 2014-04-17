@@ -330,7 +330,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				Subpart clonedSubpart = new Subpart(subpart.getSubpartId(), subpart.getInstructionalType(), subpart.getName(), clonedConfig,
 						(subpart.getParentId() == null ? null: subparts.get(subpart.getParentId())));
 				clonedSubpart.setAllowOverlap(subpart.isAllowOverlap());
-				clonedSubpart.setCredit(subpart.getCredit());
+				clonedSubpart.setCredit(subpart.getCredit(courseId));
 				subparts.put(subpart.getSubpartId(), clonedSubpart);
 				for (XSection section: subpart.getSections()) {
 					int limit = section.getLimit();

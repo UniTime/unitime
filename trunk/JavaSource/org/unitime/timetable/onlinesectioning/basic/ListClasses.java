@@ -107,7 +107,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						}
 						a.addNote(c.getNote());
 						a.addNote(section.getNote());
-						a.setCredit(subpart.getCredit());
+						a.setCredit(subpart.getCredit(c.getCourseId()));
 						if (section.getTime() != null) {
 							for (DayCode d: DayCode.toDayCodes(section.getTime().getDays()))
 								a.addDay(d.getIndex());

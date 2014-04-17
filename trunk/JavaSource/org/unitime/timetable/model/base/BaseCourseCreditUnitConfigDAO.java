@@ -63,7 +63,7 @@ public abstract class BaseCourseCreditUnitConfigDAO extends _RootDAO<CourseCredi
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<CourseCreditUnitConfig> findByInstructionalOfferingOwner(org.hibernate.Session hibSession, Long instructionalOfferingOwnerId) {
-		return hibSession.createQuery("from CourseCreditUnitConfig x where x.instructionalOfferingOwner.uniqueId = :instructionalOfferingOwnerId").setLong("instructionalOfferingOwnerId", instructionalOfferingOwnerId).list();
+	public List<CourseCreditUnitConfig> findByCourseOwner(org.hibernate.Session hibSession, Long courseOwnerId) {
+		return hibSession.createQuery("from CourseCreditUnitConfig x where x.courseOwner.uniqueId = :courseOwnerId").setLong("courseOwnerId", courseOwnerId).list();
 	}
 }

@@ -157,6 +157,7 @@ public class WebTable extends Composite {
 				iTable.getFlexCellFormatter().setColSpan(i, j, cell.getColSpan());
 				iTable.getFlexCellFormatter().setVerticalAlignment(i, j, cell.getVerticalAlignment());
 				iTable.getFlexCellFormatter().setHorizontalAlignment(i, j, cell.getHorizontalAlignment());
+				iTable.getFlexCellFormatter().getElement(i, j).setTitle(cell.getTitle());
 				Roles.getColumnheaderRole().set(iTable.getCellFormatter().getElement(i, j));
 			}
 			Roles.getRowRole().set(iTable.getRowFormatter().getElement(i));
@@ -258,6 +259,7 @@ public class WebTable extends Composite {
 				iTable.getFlexCellFormatter().setWidth(i+getHeaderRowsCount(), j, cell.getWidth());
 				iTable.getFlexCellFormatter().setVerticalAlignment(i+getHeaderRowsCount(), j, cell.getVerticalAlignment());
 				iTable.getFlexCellFormatter().setHorizontalAlignment(i+getHeaderRowsCount(), j, cell.getHorizontalAlignment());
+				iTable.getFlexCellFormatter().getElement(i+getHeaderRowsCount(), j).setTitle(cell.getTitle());
 				Roles.getGridcellRole().set(iTable.getCellFormatter().getElement(i + getHeaderRowsCount(), j));
 			}
 			Roles.getRowRole().set(iTable.getRowFormatter().getElement(i + getHeaderRowsCount()));
@@ -412,6 +414,7 @@ public class WebTable extends Composite {
 				t.getFlexCellFormatter().setWidth(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getWidth());
 				t.getFlexCellFormatter().setVerticalAlignment(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getVerticalAlignment());
 				t.getFlexCellFormatter().setHorizontalAlignment(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getHorizontalAlignment());
+				t.getFlexCellFormatter().getElement(getRowIdx() + iTable.getHeaderRowsCount(), col).setTitle(cell.getTitle());
 			}
 		}
 		@Override
@@ -435,6 +438,7 @@ public class WebTable extends Composite {
 		VerticalAlignmentConstant iVerticalAlignment = HasVerticalAlignment.ALIGN_TOP;
 		HorizontalAlignmentConstant iHorizontalAlignment = HasHorizontalAlignment.ALIGN_LEFT;
 		String iAriaLabel = null;
+		String iTitle = null;
 		
 		public Cell(String value) {
 			iValue = value;
@@ -470,6 +474,8 @@ public class WebTable extends Composite {
 		public void setHorizontalAlignment(HorizontalAlignmentConstant vertical) { iHorizontalAlignment = vertical; }
 		public boolean getWordWrap() { return iWrap; }
 		public void setWordWrap(boolean wrap) { iWrap = wrap; }
+		public void setTitle(String title) { iTitle = title; }
+		public String getTitle() { return iTitle; }
 		
 		@Override
 		public String toString() {

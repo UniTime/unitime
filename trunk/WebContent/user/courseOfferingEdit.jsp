@@ -253,7 +253,6 @@
 			</TD>
 		</TR>
 
-		<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
 		<%
 		// Get Form
 		String frmName = "courseOfferingEditForm";
@@ -309,7 +308,6 @@
 				</table>
 			</TD>
 		</TR>
-		</logic:equal>
 
 		<logic:equal name="courseOfferingEditForm" property="allowDemandCourseOfferings" value="true">
 			<logic:notEmpty name="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" scope="request">

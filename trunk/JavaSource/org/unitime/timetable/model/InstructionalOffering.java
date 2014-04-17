@@ -445,6 +445,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     		}
     	}
     }
+    
+    /*
     public CourseCreditUnitConfig getCredit(){
     	if(this.getCreditConfigs() == null || this.getCreditConfigs().size() != 1){
     		return(null);
@@ -463,7 +465,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     		//course already contains this config so we do not need to add it again.
     	}
     }
-
+	*/
 
 	/** Return number of classes of all of the given ITYPE */
 	public int getNrClasses(ItypeDesc itype) {

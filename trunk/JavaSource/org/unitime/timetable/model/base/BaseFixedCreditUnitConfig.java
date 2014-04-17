@@ -68,11 +68,11 @@ public abstract class BaseFixedCreditUnitConfig extends CourseCreditUnitConfig i
 	public String toDebugString() {
 		return "FixedCreditUnitConfig[" +
 			"\n	CourseCreditFormat: " + getCourseCreditFormat() +
+			"\n	CourseOwner: " + getCourseOwner() +
 			"\n	CreditType: " + getCreditType() +
 			"\n	CreditUnitType: " + getCreditUnitType() +
 			"\n	DefinesCreditAtCourseLevel: " + getDefinesCreditAtCourseLevel() +
 			"\n	FixedUnits: " + getFixedUnits() +
-			"\n	InstructionalOfferingOwner: " + getInstructionalOfferingOwner() +
 			"\n	SubpartOwner: " + getSubpartOwner() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

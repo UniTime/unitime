@@ -318,67 +318,65 @@ public class CourseOfferingEditAction extends Action {
 		            co.setConsentType(oct);
 		        }
 
-		        // Update consent only if course is controlling
-		        if (co.isIsControl().booleanValue()) {
-			        if (frm.getCreditFormat() == null || frm.getCreditFormat().length() == 0 || frm.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)){
-			        	CourseCreditUnitConfig origConfig = io.getCredit();
-			        	if (origConfig != null){
-							io.setCredit(null);
-							hibSession.delete(origConfig);
-			        	}
-			        } else {
-			         	if(io.getCredit() != null){
-			        		CourseCreditUnitConfig ccuc = io.getCredit();
-			        		if (ccuc.getCreditFormat().equals(frm.getCreditFormat())){
-			        			boolean changed = false;
-			        			if (!ccuc.getCreditType().getUniqueId().equals(frm.getCreditType())){
-			        				changed = true;
-			        			}
-			        			if (!ccuc.getCreditUnitType().getUniqueId().equals(frm.getCreditUnitType())){
-			        				changed = true;
-			        			}
-			        			if (ccuc instanceof FixedCreditUnitConfig) {
-									FixedCreditUnitConfig fcuc = (FixedCreditUnitConfig) ccuc;
-									if (!fcuc.getFixedUnits().equals(frm.getUnits())){
+		        // Update credit
+		        if (frm.getCreditFormat() == null || frm.getCreditFormat().length() == 0 || frm.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)){
+		        	CourseCreditUnitConfig origConfig = co.getCredit();
+		        	if (origConfig != null){
+						co.setCredit(null);
+						hibSession.delete(origConfig);
+		        	}
+		        } else {
+		         	if(co.getCredit() != null){
+		        		CourseCreditUnitConfig ccuc = co.getCredit();
+		        		if (ccuc.getCreditFormat().equals(frm.getCreditFormat())){
+		        			boolean changed = false;
+		        			if (!ccuc.getCreditType().getUniqueId().equals(frm.getCreditType())){
+		        				changed = true;
+		        			}
+		        			if (!ccuc.getCreditUnitType().getUniqueId().equals(frm.getCreditUnitType())){
+		        				changed = true;
+		        			}
+		        			if (ccuc instanceof FixedCreditUnitConfig) {
+								FixedCreditUnitConfig fcuc = (FixedCreditUnitConfig) ccuc;
+								if (!fcuc.getFixedUnits().equals(frm.getUnits())){
+									changed = true;
+								}
+							} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
+								VariableFixedCreditUnitConfig vfcuc = (VariableFixedCreditUnitConfig) ccuc;
+								if (!vfcuc.getMinUnits().equals(frm.getUnits())){
+									changed = true;
+								}
+								if (!vfcuc.getMaxUnits().equals(frm.getMaxUnits())){
+									changed = true;
+								}
+								if (vfcuc instanceof VariableRangeCreditUnitConfig) {
+									VariableRangeCreditUnitConfig vrcuc = (VariableRangeCreditUnitConfig) vfcuc;
+									if (!vrcuc.isFractionalIncrementsAllowed().equals(frm.getFractionalIncrementsAllowed())){
 										changed = true;
-									}
-								} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
-									VariableFixedCreditUnitConfig vfcuc = (VariableFixedCreditUnitConfig) ccuc;
-									if (!vfcuc.getMinUnits().equals(frm.getUnits())){
-										changed = true;
-									}
-									if (!vfcuc.getMaxUnits().equals(frm.getMaxUnits())){
-										changed = true;
-									}
-									if (vfcuc instanceof VariableRangeCreditUnitConfig) {
-										VariableRangeCreditUnitConfig vrcuc = (VariableRangeCreditUnitConfig) vfcuc;
-										if (!vrcuc.isFractionalIncrementsAllowed().equals(frm.getFractionalIncrementsAllowed())){
-											changed = true;
-										}
 									}
 								}
-			        			if (changed){
-			        				CourseCreditUnitConfig origConfig = io.getCredit();
-			            			io.setCredit(null);
-			            			hibSession.delete(origConfig);
-			            			io.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
-			            			io.getCredit().setOwner(io);
-			        			}
-			        		} else {
-			        			CourseCreditUnitConfig origConfig = io.getCredit();
-			        			io.setCredit(null);
-			        			hibSession.delete(origConfig);
-			        			io.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
-			        			io.getCredit().setOwner(io);
-			        		}
-			        	} else {
-			    			io.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
-			    			io.getCredit().setOwner(io);
-			        	}
-			        }
+							}
+		        			if (changed){
+		        				CourseCreditUnitConfig origConfig = co.getCredit();
+		            			co.setCredit(null);
+		            			hibSession.delete(origConfig);
+		            			co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+		            			co.getCredit().setOwner(co);
+		        			}
+		        		} else {
+		        			CourseCreditUnitConfig origConfig = co.getCredit();
+		        			co.setCredit(null);
+		        			hibSession.delete(origConfig);
+		        			co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+		        			co.getCredit().setOwner(co);
+		        		}
+		        	} else {
+		    			co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+		    			co.getCredit().setOwner(co);
+		        	}
 
-			        if (io.getCredit() != null){
-			        	hibSession.saveOrUpdate(io.getCredit());
+			        if (co.getCredit() != null){
+			        	hibSession.saveOrUpdate(co.getCredit());
 			        }
 
 			        io.setByReservationOnly(frm.isByReservationOnly());
@@ -504,8 +502,8 @@ public class CourseOfferingEditAction extends Action {
 	        	co.setConsentType(OfferingConsentTypeDAO.getInstance().get(frm.getConsent()));
 	        
 	        if (frm.getCreditFormat() != null && !frm.getCreditFormat().isEmpty() && !frm.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)) {
-	        	io.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
-    			io.getCredit().setOwner(io);
+	        	co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+    			co.getCredit().setOwner(co);
 	        }
 
 	        io.setByReservationOnly(frm.isByReservationOnly());
@@ -527,8 +525,8 @@ public class CourseOfferingEditAction extends Action {
 	        }
 
 	        frm.setInstrOfferingId((Long)hibSession.save(io));
-	        if (io.getCredit() != null)
-	        	hibSession.saveOrUpdate(io.getCredit());
+	        if (co.getCredit() != null)
+	        	hibSession.saveOrUpdate(co.getCredit());
 
 
 	        frm.setCourseOfferingId((Long)hibSession.save(co));
@@ -636,30 +634,30 @@ public class CourseOfferingEditAction extends Action {
         	for (int i=0;i<Constants.PREF_ROWS_ADDED;i++)
         		frm.getInstructors().add(Constants.BLANK_OPTION_VALUE);
         
-        // Consent Type and Credit can be edited only on the controlling course offering
-        if (co.isIsControl().booleanValue()) {
+        if (frm.getCreditFormat() == null){
+	        if (co.getCredit() != null){
+	        	CourseCreditUnitConfig credit = co.getCredit();
+	        	frm.setCreditText(credit.creditText());
+	        	frm.setCreditFormat(credit.getCreditFormat());
+	        	frm.setCreditType(credit.getCreditType().getUniqueId());
+	        	frm.setCreditUnitType(credit.getCreditUnitType().getUniqueId());
+	        	if (credit instanceof FixedCreditUnitConfig){
+	        		frm.setUnits(((FixedCreditUnitConfig) credit).getFixedUnits());
+	        	} else if (credit instanceof VariableFixedCreditUnitConfig){
+	        		frm.setUnits(((VariableFixedCreditUnitConfig) credit).getMinUnits());
+	        		frm.setMaxUnits(((VariableFixedCreditUnitConfig) credit).getMaxUnits());
+	        		if (credit instanceof VariableRangeCreditUnitConfig){
+	        			frm.setFractionalIncrementsAllowed(((VariableRangeCreditUnitConfig) credit).isFractionalIncrementsAllowed());
+	        		}
+	        	}
+	        }
+        }
 
-            if (frm.getCreditFormat() == null){
-    	        if (io.getCredit() != null){
-    	        	CourseCreditUnitConfig credit = io.getCredit();
-    	        	frm.setCreditText(credit.creditText());
-    	        	frm.setCreditFormat(credit.getCreditFormat());
-    	        	frm.setCreditType(credit.getCreditType().getUniqueId());
-    	        	frm.setCreditUnitType(credit.getCreditUnitType().getUniqueId());
-    	        	if (credit instanceof FixedCreditUnitConfig){
-    	        		frm.setUnits(((FixedCreditUnitConfig) credit).getFixedUnits());
-    	        	} else if (credit instanceof VariableFixedCreditUnitConfig){
-    	        		frm.setUnits(((VariableFixedCreditUnitConfig) credit).getMinUnits());
-    	        		frm.setMaxUnits(((VariableFixedCreditUnitConfig) credit).getMaxUnits());
-    	        		if (credit instanceof VariableRangeCreditUnitConfig){
-    	        			frm.setFractionalIncrementsAllowed(((VariableRangeCreditUnitConfig) credit).isFractionalIncrementsAllowed());
-    	        		}
-    	        	}
-    	        }
-            }
-            LookupTables.setupCourseCreditFormats(request); // Course Credit Formats
-            LookupTables.setupCourseCreditTypes(request); //Course Credit Types
-            LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
+        LookupTables.setupCourseCreditFormats(request); // Course Credit Formats
+        LookupTables.setupCourseCreditTypes(request); //Course Credit Types
+        LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
+        
+        if (co.isIsControl().booleanValue()) {
 
             // Catalog Link
             String linkLookupClass = ApplicationProperties.getProperty("tmtbl.catalogLink.lookup.class");
