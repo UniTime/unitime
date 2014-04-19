@@ -63,6 +63,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.context.AnonymousUserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
@@ -322,7 +323,8 @@ public class MenuServlet implements MenuService {
 				Long sessionId = (sessionContext.isAuthenticated() ? sessionContext.getUser().getCurrentAcademicSessionId() : null);
 				return (sessionId == null ? false : sessionContext.hasPermissionAnyAuthority(right, new SimpleQualifier("Session", sessionId)));
 			} else if ("role".equals(authority)) {
-				String role = (sessionContext.isAuthenticated() ? sessionContext.getUser().getCurrentAuthority().getRole() : null);
+				UserAuthority ua = (sessionContext.isAuthenticated() && sessionContext.getUser().getCurrentAuthority() != null ? sessionContext.getUser().getCurrentAuthority() : null);
+				String role = (ua != null ? ua.getRole() : null);
 				return (role == null ? false : sessionContext.hasPermissionAnyAuthority(right, new SimpleQualifier("Role", role)));
 			} else if ("any".equals(authority)) {
 				return sessionContext.hasPermissionAnyAuthority(right);
