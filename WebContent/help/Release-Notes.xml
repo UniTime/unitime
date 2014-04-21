@@ -54,6 +54,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Academic Session Restore</name>
+			<description>
+				<line>Fixed import of travel times (location ids were not properly translated).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
