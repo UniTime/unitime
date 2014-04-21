@@ -41,7 +41,7 @@ public class AnonymousUserContext extends AbstractUserContext {
 		try {
 			TreeSet<Session> sessions = new TreeSet<Session>();
 			
-			Roles anonRole = Roles.getRole(Roles.ROLE_ANONYMOUS);
+			Roles anonRole = Roles.getRole(Roles.ROLE_ANONYMOUS, hibSession);
 			if (anonRole != null && anonRole.isEnabled()) {
 				for (Session session: new TreeSet<Session>(SessionDAO.getInstance().findAll(hibSession))) {
 					if (session.getStatusType() == null || !session.getStatusType().isAllowNoRole() || session.getStatusType().isTestSession()) continue;
