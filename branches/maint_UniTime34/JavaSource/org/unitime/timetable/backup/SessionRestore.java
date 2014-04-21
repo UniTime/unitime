@@ -81,6 +81,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.OnlineSectioningLog;
@@ -96,6 +97,7 @@ import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao._RootDAO;
 
 import com.google.protobuf.ByteString;
@@ -573,6 +575,11 @@ public class SessionRestore {
 					owner.setOwnerId(((InstructionalOffering)get(InstructionalOffering.class, owner.getOwnerId().toString())).getUniqueId());
 					break;
 				}
+			}
+			if (getObject() instanceof TravelTime) {
+				TravelTime tt = (TravelTime)getObject();
+				tt.setLocation1Id(((Location)get(Location.class, tt.getLocation1Id().toString())).getUniqueId());
+				tt.setLocation2Id(((Location)get(Location.class, tt.getLocation2Id().toString())).getUniqueId());
 			}
 		}
 	}
