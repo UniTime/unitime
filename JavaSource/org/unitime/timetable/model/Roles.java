@@ -64,8 +64,8 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     public static String USER_ROLES_ATTR_NAME = "userRoles";
     public static String ROLES_ATTR_NAME = "rolesList";
     
-    public static Roles getRole(String roleRef) {
-    	return (Roles)RolesDAO.getInstance().getSession().createQuery(
+    public static Roles getRole(String roleRef, org.hibernate.Session hibSession) {
+    	return (Roles)hibSession.createQuery(
     			"from Roles where reference = :reference")
     			.setString("reference", roleRef).setCacheable(true).uniqueResult();
     }

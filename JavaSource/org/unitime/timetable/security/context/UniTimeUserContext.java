@@ -139,7 +139,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			
 			TreeSet<Session> sessions = new TreeSet<Session>();
 
-			Roles instructorRole = Roles.getRole(Roles.ROLE_INSTRUCTOR);
+			Roles instructorRole = Roles.getRole(Roles.ROLE_INSTRUCTOR, hibSession);
 			if (instructorRole != null && instructorRole.isEnabled()) {
 				for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery(
 						"from DepartmentalInstructor where externalUniqueId = :id")
@@ -169,7 +169,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 				}
 			}
 
-			Roles studentRole = Roles.getRole(Roles.ROLE_STUDENT);
+			Roles studentRole = Roles.getRole(Roles.ROLE_STUDENT, hibSession);
 			if (studentRole != null && studentRole.isEnabled()) {
 				for (Student student: (List<Student>)hibSession.createQuery(
 						"from Student where externalUniqueId = :id")
@@ -198,7 +198,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					setCurrentAuthority(authorities.get(0));
 			}
 			
-			Roles noRole = Roles.getRole(Roles.ROLE_NONE);
+			Roles noRole = Roles.getRole(Roles.ROLE_NONE, hibSession);
 			if (noRole != null && noRole.isEnabled()) {
 				for (Session session: new TreeSet<Session>(SessionDAO.getInstance().findAll(hibSession))) {
 					if (session.getStatusType() == null || !session.getStatusType().isAllowNoRole() || session.getStatusType().isTestSession()) continue;
