@@ -870,7 +870,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 						if (p != null) p.removeStyleName("hover");
 					}
 					((P)event.getSource()).addStyleName("hover");
-					RoomHint.showHint(p.getElement(), room.getUniqueId(), "", room.getProperty("distance", ""));
+					RoomHint.showHint(p.getElement(), room.getUniqueId(), "", room.getProperty("distance", ""), true);
 				}
 			});
 			p.addMouseOutHandler(new MouseOutHandler() {
@@ -1097,7 +1097,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 						if (p != null) p.removeStyleName("hover");
 					}
 					((P)event.getSource()).addStyleName("hover");
-					RoomHint.showHint(prm.getElement(), room.getUniqueId(), "", room.getProperty("distance", ""));
+					RoomHint.showHint(prm.getElement(), room.getUniqueId(), "", room.getProperty("distance", ""), true);
 				}
 			});
 			prm.addMouseOutHandler(new MouseOutHandler() {
