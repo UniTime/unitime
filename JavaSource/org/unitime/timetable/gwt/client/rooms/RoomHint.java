@@ -101,10 +101,10 @@ public class RoomHint {
 	
 	/** Never use from GWT code */
 	public static void _showRoomHint(JavaScriptObject source, String locationId, String prefix, String distance) {
-		showHint((Element) source.cast(), Long.valueOf(locationId), prefix, distance);
+		showHint((Element) source.cast(), Long.valueOf(locationId), prefix, distance, true);
 	}
 	
-	public static void showHint(final Element relativeObject, final long locationId, final String prefix, final String distance) {
+	public static void showHint(final Element relativeObject, final long locationId, final String prefix, final String distance, final boolean showRelativeToTheObject) {
 		sLastLocationId = locationId;
 		sShowHint = true;
 		RPC.execute(RoomInterface.RoomHintRequest.load(locationId), new AsyncCallback<RoomInterface.RoomHintResponse>() {
@@ -115,7 +115,7 @@ public class RoomHint {
 			@Override
 			public void onSuccess(RoomInterface.RoomHintResponse result) {
 				if (result != null && locationId == sLastLocationId && sShowHint)
-					GwtHint.showHint(relativeObject, content(result, prefix, distance));
+					GwtHint.showHint(relativeObject, content(result, prefix, distance), showRelativeToTheObject);
 			}
 		});
 	}
