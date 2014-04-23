@@ -53,7 +53,6 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
-import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
@@ -388,7 +387,7 @@ public class EnrollmentTable extends Composite {
 			}
 			@Override
 			public void onSuccess(final EligibilityCheck check) {
-				if (check == null || !check.hasFlag(EligibilityFlag.CAN_ENROLL)) {
+				if (check == null) {
 					callback.onSuccess(false);
 					return;
 				}

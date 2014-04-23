@@ -76,8 +76,8 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public Long getSessionId() { return iSessionId; }
-		public void setStudentIt(Long studentId) { iStudentId = studentId; }
-		public Long getStudentIt() { return iStudentId; }
+		public void setStudentId(Long studentId) { iStudentId = studentId; }
+		public Long getStudentId() { return iStudentId; }
 	}
 
 }
