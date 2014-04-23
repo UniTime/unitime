@@ -29,6 +29,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -1155,6 +1156,7 @@ public class TimeGrid extends Composite {
 		private P iHint;
 		private PopupPanel iPopup;
 		private SelectionPanel iMoving = null;
+		private Long iLastRoomId = null;
 		
 		public SelectionLayer() {
 			setStyleName("selection-layer");
@@ -1198,6 +1200,7 @@ public class TimeGrid extends Composite {
 			
 			String text = (iDayOfWeeks == null ? CONSTANTS.longDays()[dayOfWeek] : iDayOfWeeks.get(dayOfWeek)) + " " + (isSingleRoom() ? iSelectedWeeks.get(week) : iSelectedWeeks.get(0)).getDayNames().get(dayOfWeek) +
 					" " + time + (isSingleRoom() ? "" : " " + iRoomResources.get(week).getName());
+			ResourceInterface room = (isSingleRoom() ? iRoomResources.get(0) : iRoomResources.get(week));
 			iPopup.setPopupPosition(event.getClientX() + Window.getScrollLeft(), event.getClientY() + Window.getScrollTop());
 			
 			getElement().getStyle().setCursor(Cursor.CROSSHAIR);
@@ -1212,6 +1215,10 @@ public class TimeGrid extends Composite {
 			case Event.ONMOUSEMOVE:
 				iSelection.setEnd(dayOfWeek, slot, week);
 				if (!iPopup.isShowing()) iPopup.show();
+				if (!room.getId().equals(iLastRoomId)) {
+					RoomHint.showHint(iPopup.getElement(), room.getId(), "", (room.hasDistance() ? String.valueOf(Math.round(room.getDistance())) : ""), false);
+					iLastRoomId = room.getId();
+				}
 				break;
 			case Event.ONMOUSEUP:
 				onMouseUp();
@@ -1220,12 +1227,19 @@ public class TimeGrid extends Composite {
 				if (!iPopup.isShowing() && (iSelection.isActive() || iMoving == null)) iPopup.show();
 				if (iSelection.isActive() && !iSelection.isVisible()) {
 					iSelection.setVisible(true);					
-				}	
+				}
+				if (!room.getId().equals(iLastRoomId)) {
+					RoomHint.showHint(iPopup.getElement(), room.getId(), "", (room.hasDistance() ? String.valueOf(Math.round(room.getDistance())) : ""), false);
+					iLastRoomId = room.getId();
+				}
 				break;
 			case Event.ONMOUSEOUT:
 				com.google.gwt.user.client.Element child = DOM.eventGetToElement(event);
 				if (child != null && !DOM.isOrHasChild(getElement(), child)) {
-					if (iPopup.isShowing()) iPopup.hide();
+					if (iPopup.isShowing()) {
+						iPopup.hide();
+						RoomHint.hideHint(); iLastRoomId = null;
+					}
 					iSelection.setVisible(false);
 				}
 				/*
