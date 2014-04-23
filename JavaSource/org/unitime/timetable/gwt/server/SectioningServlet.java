@@ -1876,7 +1876,10 @@ public class SectioningServlet implements SectioningService {
 				if (server == null) 
 					return new EligibilityCheck(MSG.exceptionNoSolver());
 				
-				return null;
+				EligibilityCheck check = new EligibilityCheck();
+				check.setSessionId(server.getAcademicSession().getUniqueId());
+				check.setStudentId(studentId);
+				return check;
 			}
 			
 			if (sessionId == null && studentId != null) {
@@ -1907,7 +1910,7 @@ public class SectioningServlet implements SectioningService {
 			check.setFlag(EligibilityFlag.IS_ADMIN, getSessionContext().hasPermission(Right.StudentSchedulingAdmin));
 			check.setFlag(EligibilityFlag.IS_ADVISOR, getSessionContext().hasPermission(Right.StudentSchedulingAdvisor));
 			check.setSessionId(sessionId);
-			check.setStudentIt(studentId);
+			check.setStudentId(studentId);
 			
 			return server.execute(server.createAction(CheckEligibility.class).forStudent(studentId).withCheck(check), currentUser());
 		} catch (Exception e) {
