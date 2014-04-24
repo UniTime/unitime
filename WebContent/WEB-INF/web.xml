@@ -115,6 +115,16 @@
     	<servlet-class>org.unitime.timetable.gwt.server.UniTimeRemoteLoggingService</servlet-class>
     </servlet>
     
+    <servlet>
+    	<servlet-name>patternServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.PatternServlet</servlet-class>
+    </servlet>
+    
+    <servlet>
+    	<servlet-name>roomPictureServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.server.rooms.RoomPictureServlet</servlet-class>
+    </servlet>
+    
     <servlet-mapping>
         <servlet-name>gwt-dispatcher</servlet-name>
         <url-pattern>*.gwt</url-pattern>
@@ -133,6 +143,11 @@
     <servlet-mapping>
       <servlet-name>patternServlet</servlet-name>
       <url-pattern>/pattern</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+    	<servlet-name>roomPictureServlet</servlet-name>
+    	<url-pattern>/picture</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>

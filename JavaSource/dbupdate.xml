@@ -9661,13 +9661,13 @@
 			update %SCHEMA%.solver_parameter set value=replace(value,'net.sf.cpsolver','org.cpsolver') where value like 'net.sf.cpsolver%'
 		</sql>
 	</update>
-	<update version="134" date="4-Apr-2013" comment="Cluster Discovery Time Stamp">
+	<update version="134" date="4-Apr-2014" comment="Cluster Discovery Time Stamp">
 		<mysql>alter table %SCHEMA%.cluster_discovery add time_stamp datetime</mysql>
 		<mysql>update %SCHEMA%.cluster_discovery set time_stamp = now()</mysql>
 		<plsql>alter table %SCHEMA%.cluster_discovery add time_stamp date</plsql>
 		<plsql>update %SCHEMA%.cluster_discovery set time_stamp = CURRENT_TIMESTAMP</plsql>
 	</update>
-	<update version="135" date="17-Apr-2013" comment="Course Credit">
+	<update version="135" date="17-Apr-2014" comment="Course Credit">
 		<mysql>alter table %SCHEMA%.course_credit_unit_config add course_id decimal(20,0)</mysql>
 		<plsql>alter table %SCHEMA%.course_credit_unit_config add course_id number(20,0)</plsql>
 		<sql>update %SCHEMA%.course_credit_unit_config g set g.course_id = (select c.uniqueid from %SCHEMA%.course_offering c where c.is_control = 1 and c.instr_offr_id = g.instr_offr_id) where g.instr_offr_id is not null</sql>
@@ -9676,4 +9676,63 @@
 		<plsql>alter table %SCHEMA%.course_credit_unit_config drop constraint fk_crs_crdt_unit_cfg_io_own</plsql>
 		<sql>alter table %SCHEMA%.course_credit_unit_config drop column instr_offr_id</sql>
 	</update>
+	<update version="136" date="24-Apr-2014" comment="Room Pictures">
+		<mysql>
+			create table %SCHEMA%.room_picture (
+				uniqueid decimal(20,0) not null primary key,
+				location_id decimal(20,0) not null,
+				data_file longblob not null,
+				file_name varchar(260) binary not null,
+				content_type varchar(260) binary not null,
+				time_stamp datetime not null
+			) engine = INNODB
+		</mysql>
+		<mysql>
+			create table %SCHEMA%.location_picture (
+				uniqueid decimal(20,0) not null primary key,
+				location_id decimal(20,0) not null,
+				data_file longblob not null,
+				file_name varchar(260) binary not null,
+				content_type varchar(260) binary not null,
+				time_stamp datetime not null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.room_picture (
+				uniqueid number(20,0) constraint nn_room_pic_id not null,
+				location_id number(20,0) constraint nn_room_pic_loc not null,
+				data_file blob constraint nn_room_pic_file not null,
+				file_name varchar2(260 char) constraint nn_room_pic_name not null,
+				content_type varchar2(260 char) constraint nn_room_pic_type not null,
+				time_stamp date constraint nn_room_pic_time not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.room_picture add constraint pk_room_picture primary key (uniqueid)</plsql>
+		<plsql>
+			create table %SCHEMA%.location_picture (
+				uniqueid number(20,0) constraint nn_loc_pic_id not null,
+				location_id number(20,0) constraint nn_loc_pic_loc not null,
+				data_file blob constraint nn_loc_pic_file not null,
+				file_name varchar2(260 char) constraint nn_loc_pic_name not null,
+				content_type varchar2(260 char) constraint nn_loc_pic_type not null,
+				time_stamp date constraint nn_loc_pic_time not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.location_picture add constraint pk_location_picture primary key (uniqueid)</plsql>
+		<sql>
+			alter table %SCHEMA%.room_picture 
+				add constraint fk_room_picture foreign key (location_id)
+				references %SCHEMA%.room (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.location_picture 
+				add constraint fk_location_picture foreign key (location_id)
+				references %SCHEMA%.non_university_location (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'RoomEditChangePicture'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeCapacity'
+		</sql>
+	</update>	
 </dbupdate>

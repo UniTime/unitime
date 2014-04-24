@@ -1026,4 +1026,6 @@ public abstract class Location extends BaseLocation implements Comparable {
     	}
     	return pattern;
     }
+    
+    public abstract Set<? extends LocationPicture> getPictures();
 }

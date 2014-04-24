@@ -114,6 +114,10 @@
 						&nbsp;
 						<html:submit property="doit" accesskey="E" styleClass="btn" title="Edit Event Availability (Alt+E)">Edit Event Availability</html:submit>
 					</sec:authorize>
+					<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditChangePicture')">
+						&nbsp;
+						<html:submit property="doit" styleClass="btn" title="Edit Room Pictures">Pictures</html:submit>
+					</sec:authorize>
 					<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationDelete')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomDelete'))">
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
@@ -430,7 +434,22 @@
 			</TR>
 		</sec:authorize>
 
-		</sec:authorize>		
+		</sec:authorize>
+		
+		<logic:notEmpty name="<%=frmName%>" property="pictures">
+			<TR>
+				<TD colspan='2'>
+					<tt:section-title>Room Pictures</tt:section-title>
+				</TD>
+			</TR>
+			<TR>
+				<TD colspan='2'>
+					<logic:iterate name="<%=frmName%>" property="pictures" id="picture">
+						<img src="<%=picture%>" style="max-height: 300px; max-width: 200px;"/>
+					</logic:iterate>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 
 		<tt:last-change type='Location'>
 			<bean:write name="<%=frmName%>" property="id"/>
@@ -492,6 +511,10 @@
 				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditEventAvailability')">
 					&nbsp;
 					<html:submit property="doit" accesskey="E" styleClass="btn" title="Edit Event Availability (Alt+E)">Edit Event Availability</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditChangePicture')">
+					&nbsp;
+					<html:submit property="doit" styleClass="btn" title="Edit Room Pictures">Pictures</html:submit>
 				</sec:authorize>
 				<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationDelete')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomDelete'))">
 					&nbsp;

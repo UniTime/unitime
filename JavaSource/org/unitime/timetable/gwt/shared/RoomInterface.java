@@ -326,6 +326,7 @@ public class RoomInterface implements IsSerializable {
 		private boolean iIgnoreRoomCheck = false;
 		
 		private Map<String, String> iFeatures = null;
+		private List<RoomPictureInterface> iPictures = null;
 		
 		public RoomHintResponse() {
 		}
@@ -401,6 +402,14 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean isIgnoreRoomCheck() { return iIgnoreRoomCheck; }
 		public void setIgnoreRoomCheck(boolean ignoreRoomCheck) { iIgnoreRoomCheck = ignoreRoomCheck; }
+		
+		public boolean hasPictures() { return iPictures != null && !iPictures.isEmpty(); }
+		public void addPicture(RoomPictureInterface picture) {
+			if (iPictures == null)
+				iPictures = new ArrayList<RoomPictureInterface>();
+			iPictures.add(picture);
+		}
+		public List<RoomPictureInterface> getPictures() { return iPictures; }
 	}
 	
 	public static class RoomHintRequest implements GwtRpcRequest<RoomHintResponse> {
@@ -418,5 +427,90 @@ public class RoomInterface implements IsSerializable {
 		}
 	}
 
+	public static class RoomPictureInterface implements IsSerializable {
+		private Long iUniqueId;
+		private String iName;
+		private String iType;
+		
+		public RoomPictureInterface() {}
+		
+		public RoomPictureInterface(Long uniqueId, String name, String type) {
+			setUniqueId(uniqueId);
+			setName(name);
+			setType(type);
+		}
+		
+		public Long getUniqueId() { return iUniqueId; }
+		public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+		
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+		
+		public String getType() { return iType; }
+		public void setType(String type) { iType = type; }
+	}
+	
+	public static class RoomPictureRequest implements GwtRpcRequest<RoomPictureResponse> {
+		public static enum Operation implements IsSerializable {
+			LOAD,
+			SAVE,
+			UPLOAD,
+		}
+		private Operation iOperation;
+		private Long iLocationId;
+		private List<RoomPictureInterface> iPictures;
+		
+		public RoomPictureRequest() {}
+		
+		public Long getLocationId() { return iLocationId; }
+		public void setLocationId(Long locationId) { iLocationId = locationId; }
+		
+		public List<RoomPictureInterface> getPictures() { return iPictures; }
+		public void setPictures(List<RoomPictureInterface> pictures) { iPictures = pictures; }
 
+		public Operation getOperation() { return iOperation; }
+		public void setOperation(Operation operation) { iOperation = operation; }
+		
+		public String toString() { return getOperation().name() + "[" + getLocationId() + "]"; }
+		
+		public static RoomPictureRequest load(Long locationId) {
+			RoomPictureRequest request = new RoomPictureRequest();
+			request.setOperation(Operation.LOAD);
+			request.setLocationId(locationId);
+			return request;
+		}
+		
+		public static RoomPictureRequest save(Long locationId, List<RoomPictureInterface> pictures) {
+			RoomPictureRequest request = new RoomPictureRequest();
+			request.setOperation(Operation.SAVE);
+			request.setLocationId(locationId);
+			request.setPictures(pictures);
+			return request;
+		}
+		
+		public static RoomPictureRequest upload(Long locationId) {
+			RoomPictureRequest request = new RoomPictureRequest();
+			request.setOperation(Operation.UPLOAD);
+			request.setLocationId(locationId);
+			return request;
+		}
+	}
+	
+	public static class RoomPictureResponse implements GwtRpcResponse {
+		private String iName;
+		private List<RoomPictureInterface> iPictures;
+		
+		public RoomPictureResponse() {}
+		
+		public boolean hasPictures() { return iPictures != null && !iPictures.isEmpty(); }
+		public void addPicture(RoomPictureInterface picture) {
+			if (iPictures == null)
+				iPictures = new ArrayList<RoomPictureInterface>();
+			iPictures.add(picture);
+		}
+		public List<RoomPictureInterface> getPictures() { return iPictures; }
+		
+		public void setName(String name) { iName = name; }
+		public String getName() { return iName; }
+	}
 }
