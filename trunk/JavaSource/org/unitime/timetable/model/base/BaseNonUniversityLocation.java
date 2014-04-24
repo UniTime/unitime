@@ -20,9 +20,12 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.NonUniversityLocationPicture;
 import org.unitime.timetable.model.RoomType;
 
 /**
@@ -35,6 +38,7 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 	private String iName;
 
 	private RoomType iRoomType;
+	private Set<NonUniversityLocationPicture> iPictures;
 
 	public static String PROP_NAME = "name";
 
@@ -54,6 +58,13 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 
 	public RoomType getRoomType() { return iRoomType; }
 	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
+
+	public Set<NonUniversityLocationPicture> getPictures() { return iPictures; }
+	public void setPictures(Set<NonUniversityLocationPicture> pictures) { iPictures = pictures; }
+	public void addTopictures(NonUniversityLocationPicture nonUniversityLocationPicture) {
+		if (iPictures == null) iPictures = new HashSet<NonUniversityLocationPicture>();
+		iPictures.add(nonUniversityLocationPicture);
+	}
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof NonUniversityLocation)) return false;

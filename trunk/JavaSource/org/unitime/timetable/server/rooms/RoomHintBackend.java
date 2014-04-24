@@ -20,6 +20,7 @@
 package org.unitime.timetable.server.rooms;
 
 import java.text.DecimalFormat;
+import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -29,9 +30,11 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintResponse;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.LocationPicture;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -97,6 +100,9 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    		response.setBreakTime(location.getEffectiveBreakTime());
 	    	
 	    	response.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
+	    	
+	    	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getPictures()))
+	    		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType()));
 	    	
 	    	return response;
 		} else {

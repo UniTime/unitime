@@ -20,10 +20,13 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomPicture;
 import org.unitime.timetable.model.RoomType;
 
 /**
@@ -39,6 +42,7 @@ public abstract class BaseRoom extends Location implements Serializable {
 
 	private RoomType iRoomType;
 	private Building iBuilding;
+	private Set<RoomPicture> iPictures;
 
 	public static String PROP_ROOM_NUMBER = "roomNumber";
 	public static String PROP_CLASSIFICATION = "classification";
@@ -68,6 +72,13 @@ public abstract class BaseRoom extends Location implements Serializable {
 
 	public Building getBuilding() { return iBuilding; }
 	public void setBuilding(Building building) { iBuilding = building; }
+
+	public Set<RoomPicture> getPictures() { return iPictures; }
+	public void setPictures(Set<RoomPicture> pictures) { iPictures = pictures; }
+	public void addTopictures(RoomPicture roomPicture) {
+		if (iPictures == null) iPictures = new HashSet<RoomPicture>();
+		iPictures.add(roomPicture);
+	}
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Room)) return false;

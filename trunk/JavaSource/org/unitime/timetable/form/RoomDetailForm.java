@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +70,7 @@ public class RoomDetailForm extends ActionForm {
     private String breakTime;
     private String note;
     private String eventStatus;
+    private List<String> pictures = new ArrayList<String>();
 	
 	private Long previos, next;
 
@@ -104,6 +106,7 @@ public class RoomDetailForm extends ActionForm {
 		examEnabled.clear(); 
 		previos = null; next = null;
 		eventDepartment = null;
+		pictures.clear();
 	}
 
 	public Integer getCapacity() {
@@ -323,5 +326,9 @@ public class RoomDetailForm extends ActionForm {
     public String getEventStatus() { return eventStatus; }
     
     public void setEventStatus(String eventStatus) { this.eventStatus = eventStatus; }
+    
+    public List<String> getPictures() { return pictures; }
+    
+    public void setPictures(List<String> pictures) { this.pictures = pictures; }
 }
 
