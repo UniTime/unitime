@@ -256,7 +256,18 @@
                 column="building_id"
                 not-null="true"
                 foreign-key="fk_room_building"/>
+                
+            <set
+                name="pictures"
+                inverse="true"
+                lazy="true"
+                cascade="all"
+                table="room_picture">
 
+                <cache include="non-lazy" usage="transactional"/>
+                <key column="location_id"/>
+                <one-to-many class="RoomPicture"/>
+            </set>
         </union-subclass>
 
         <union-subclass
@@ -277,6 +288,17 @@
                 foreign-key="fk_non_university_location_type"
                 not-null="true"/>
 
+            <set
+                name="pictures"
+                inverse="true"
+                lazy="true"
+                cascade="all"
+                table="location_picture">
+
+                <cache include="non-lazy" usage="transactional"/>
+                <key column="location_id"/>
+                <one-to-many class="NonUniversityLocationPicture"/>
+            </set>
         </union-subclass>
 
     </class>
@@ -349,5 +371,69 @@
             type="java.lang.Integer"
             not-null="true"/>
 
+    </class>
+    
+    <class name="LocationPicture" abstract="true">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">room_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="dataFile"
+            column="data_file"
+            type="byte[]"
+            not-null="true"/>
+            
+        <property
+            name="fileName"
+            column="file_name"
+            type="java.lang.String"
+            length="260"
+            not-null="true"/>
+
+        <property
+            name="contentType"
+            column="content_type"
+            type="java.lang.String"
+            length="260"
+            not-null="true"/>
+            
+        <property
+            name="timeStamp"
+            column="time_stamp"
+            type="java.util.Date"
+            not-null="true"/>
+
+        <union-subclass
+            name="RoomPicture"
+            table="room_picture"
+            abstract="false">
+
+            <many-to-one
+                name="location"
+                class="Room"
+                column="location_id"
+                foreign-key="fk_room_picture"
+                not-null="true"/>
+        </union-subclass>
+        
+        <union-subclass
+            name="NonUniversityLocationPicture"
+            table="location_picture"
+            abstract="false">
+
+            <many-to-one
+                name="location"
+                class="NonUniversityLocation"
+                column="location_id"
+                foreign-key="fk_location_picture"
+                not-null="true"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>

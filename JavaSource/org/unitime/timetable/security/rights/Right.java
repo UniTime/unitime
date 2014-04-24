@@ -177,6 +177,7 @@ public enum Right {
 	RoomEditChangeExaminationStatus(Location.class),
 	RoomEditChangeRoomProperties(Location.class),
 	RoomEditChangeEventProperties(Location.class),
+	RoomEditChangePicture(Location.class),
 	RoomAvailability(Session.class),
 	RoomDepartments(Department.class),
 	EditRoomDepartments(Department.class),

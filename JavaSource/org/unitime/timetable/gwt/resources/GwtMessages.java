@@ -602,6 +602,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Conflict")
 	String colConflict();
 
+	@DefaultMessage("Picture")
+	String colPicture();
+
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
 	
@@ -841,6 +844,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Instructor:")
 	String propInstructor();
+	
+	@DefaultMessage("New Picture:")
+	String propNewPicture();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -1141,6 +1147,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Loading page ...")
 	String waitLoadingPage();
+	
+	@DefaultMessage("Loading room pictures...")
+	String waitLoadingRoomPictures();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -1337,6 +1346,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to save as default: {0}")
 	String failedSaveAsDefault(String reason);
 	
+	@DefaultMessage("Failed to load room pictures: {0}")
+	String failedToLoadRoomPictures(String reason);
+	
+	@DefaultMessage("Failed to update room pictures: {0}")
+	String failedToSaveRoomPictures(String reason);
+	
+	@DefaultMessage("Failed to upload room picture: {0}")
+	String failedToUploadRoomPicture(String reason);
+	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
 	
@@ -1513,6 +1531,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Expiration date is in the past.")
 	String errorExpirationDateInPast();
+	
+	@DefaultMessage("Room {0} does not exist.")
+	String errorRoomDoesNotExist(String name);
 
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
@@ -1931,6 +1952,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Online Student Scheduling Reports")
 	String pageOnlineSectioningReports();
 	
+	@DefaultMessage("Room Pictures")
+	String pageRoomPictures();
+
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	

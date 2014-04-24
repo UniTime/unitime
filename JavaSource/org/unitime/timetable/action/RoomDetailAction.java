@@ -50,6 +50,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.LocationPicture;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
@@ -145,6 +146,12 @@ public class RoomDetailAction extends Action {
 				return null;
 			}
 			
+			if(doit.equals("Pictures")) {
+				// return mapping.findForward("showEditRoomDept");
+				response.sendRedirect(response.encodeURL("gwt.jsp?page=roompictures&id="+roomDetailForm.getId()));
+				return null;
+			}
+
 			//modify room groups
 			if(doit.equals(rsc.getMessage("button.modifyRoomGroups"))) {
 				return mapping.findForward("showEditRoomGroup");
@@ -268,6 +275,8 @@ public class RoomDetailAction extends Action {
             }
             if (skip) i.remove();
 		}
+		for (LocationPicture picture: new TreeSet<LocationPicture>(location.getPictures()))
+			roomDetailForm.getPictures().add("picture?id=" + picture.getUniqueId());
 		roomDetailForm.setGroups(new TreeSet(location.getRoomGroups()));
         for (Iterator i=roomDetailForm.getGroups().iterator();i.hasNext();) {
             RoomGroup rg = (RoomGroup)i.next();

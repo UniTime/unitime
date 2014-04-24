@@ -185,6 +185,9 @@ public class LocationPermissions {
 
 	@PermissionForRight(Right.RoomEditChangeEventProperties)
 	public static class RoomEditChangeEventProperties extends RoomEditChangeCapacity {}
+	
+	@PermissionForRight(Right.RoomEditChangePicture)
+	public static class RoomEditChangePicture extends RoomEditChangeCapacity {}
 
 	@PermissionForRight(Right.EditRoomDepartments)
 	public static class EditRoomDepartments implements Permission<Department> {

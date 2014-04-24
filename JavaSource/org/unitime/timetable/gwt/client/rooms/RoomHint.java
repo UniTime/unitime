@@ -19,16 +19,21 @@
 */
 package org.unitime.timetable.gwt.client.rooms;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
@@ -44,15 +49,31 @@ public class RoomHint {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static boolean sShowHint = false;
+	private static Timer sLastSwapper = null;
 	
 	public static Widget content(RoomInterface.RoomHintResponse room, String prefix, String distance) {
+		if (sLastSwapper != null) {
+			sLastSwapper.cancel(); sLastSwapper = null;
+		}
 		SimpleForm form = new SimpleForm();
 		form.removeStyleName("unitime-NotPrintableBottomLine");
 		form.addRow(new Label((prefix == null || prefix.isEmpty() ? "" : prefix + " ") + (room.hasDisplayName() || room.hasRoomTypeLabel() ? MESSAGES.label(room.getLabel(), room.hasDisplayName() ? room.getDisplayName() : room.getRoomTypeLabel()) : room.getLabel()), false));
+		List<String> urls = new ArrayList<String>();
 		if (room.hasMiniMapUrl()) {
-			Image image = new Image(room.getMiniMapUrl());
+			urls.add(room.getMiniMapUrl());
+		}
+		if (room.hasPictures()) {
+			for (RoomPictureInterface picture: room.getPictures())
+				urls.add(GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
+		}
+		if (!urls.isEmpty()) {
+			Image image = new Image(urls.get(0));
 			image.setStyleName("minimap");
 			form.addRow(image);
+			if (urls.size() > 1) {
+				sLastSwapper = new ImageSwapper(image, urls);
+				sLastSwapper.scheduleRepeating(3000);
+			}
 		}
 		if (room.hasCapacity()) {
 			if (room.hasExamCapacity()) {
@@ -122,6 +143,9 @@ public class RoomHint {
 	
 	public static void hideHint() {
 		sShowHint = false;
+		if (sLastSwapper != null) {
+			sLastSwapper.cancel(); sLastSwapper = null;
+		}
 		GwtHint.hideHint();
 	}
 		
@@ -133,5 +157,22 @@ public class RoomHint {
 		@org.unitime.timetable.gwt.client.rooms.RoomHint::hideHint()();
 	};
 	}-*/;
+	
+	private static class ImageSwapper extends Timer {
+		Image iImage;
+		List<String> iUrls;
+		int iIndex;
+		
+		ImageSwapper(Image image, List<String> urls) {
+			iImage = image; iUrls = urls; iIndex = 0;
+		}
+		
+		@Override
+		public void run() {
+			iIndex ++;
+			iImage.setUrl(iUrls.get(iIndex % iUrls.size()));
+			if (!iImage.isAttached()) cancel();
+		}
+	}
 
 }

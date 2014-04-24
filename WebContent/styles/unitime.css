@@ -3076,6 +3076,8 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-RoomHint .minimap {
 	border: 1px solid #9CB0CE;
+	max-width: 300px;
+	max-height: 200px;
 }
 
 .unitime-VerticalScrollPanel {
@@ -3213,4 +3215,18 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-IgnoreRoomCheck {
 	font-style: italic;
+}
+
+.unitime-RoomPictures {
+	width: 100%;
+}
+
+.unitime-RoomPictures .image {
+	max-height: 200px;
+	max-width: 400px;
+}
+
+.unitime-RoomPictures .remove {
+  cursor: pointer;
+  cursor: hand;
 }
