@@ -568,7 +568,7 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
             
             model = new StudentSectioningModel(getProperties());
             Progress.getInstance(model).addProgressListener(new ProgressWriter(System.out));
-            setInitalSolution(model);
+            setInitalSolution(new Solution(model, new DefaultSingleAssignment<Request, Enrollment>()));
             initSolver();
             
             getProperties().setProperty("Xml.LoadBest", "true");
@@ -988,11 +988,11 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
             boolean anonymize = "false".equals(ApplicationProperties.getProperty("unitime.solution.export.names", "false"));
             boolean idconv = "true".equals(ApplicationProperties.getProperty("unitime.solution.export.id-conv", "false"));
         	
+            getProperties().setProperty("Xml.SaveBest", "true");
+            getProperties().setProperty("Xml.SaveInitial", "true");
+            getProperties().setProperty("Xml.SaveCurrent", "true");
             if (anonymize) {
                 getProperties().setProperty("Xml.ConvertIds", idconv ? "true" : "false");
-                getProperties().setProperty("Xml.SaveBest", "false");
-                getProperties().setProperty("Xml.SaveInitial", "false");
-                getProperties().setProperty("Xml.SaveCurrent", "true");
                 getProperties().setProperty("Xml.SaveOnlineSectioningInfo", "true");
                 getProperties().setProperty("Xml.SaveStudentInfo", "false");
                 getProperties().setProperty("Xml.ShowNames", "false");
@@ -1016,9 +1016,6 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
             
             if (anonymize) {
                 getProperties().setProperty("Xml.ConvertIds", "false");
-                getProperties().remove("Xml.SaveBest");
-                getProperties().remove("Xml.SaveInitial");
-                getProperties().remove("Xml.SaveCurrent");
                 getProperties().setProperty("Xml.SaveOnlineSectioningInfo", "true");
                 getProperties().setProperty("Xml.SaveStudentInfo", "true");
                 getProperties().setProperty("Xml.ShowNames", "true");
