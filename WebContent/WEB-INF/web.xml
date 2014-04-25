@@ -116,11 +116,6 @@
     </servlet>
     
     <servlet>
-    	<servlet-name>patternServlet</servlet-name>
-    	<servlet-class>org.unitime.timetable.gwt.server.PatternServlet</servlet-class>
-    </servlet>
-    
-    <servlet>
     	<servlet-name>roomPictureServlet</servlet-name>
     	<servlet-class>org.unitime.timetable.server.rooms.RoomPictureServlet</servlet-class>
     </servlet>
