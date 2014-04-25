@@ -75,6 +75,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Events: Time Grid</name>
+			<description>
+				<line>Room details popup is shown whenever it is allowed to select some time in a room (mouse cursor is a cross).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
