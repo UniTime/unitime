@@ -30,5 +30,14 @@ public class NonUniversityLocationPicture extends BaseNonUniversityLocationPictu
 	public NonUniversityLocationPicture() {
 		super();
 	}
+	
+	public NonUniversityLocationPicture clonePicture() {
+		NonUniversityLocationPicture picture = new NonUniversityLocationPicture();
+		picture.setContentType(getContentType());
+		picture.setFileName(getFileName());
+		picture.setDataFile(getDataFile());
+		picture.setTimeStamp(getTimeStamp());
+		return picture;
+	}
 
 }

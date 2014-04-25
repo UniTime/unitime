@@ -30,5 +30,13 @@ public class RoomPicture extends BaseRoomPicture {
 	public RoomPicture() {
 		super();
 	}
-
+	
+	public RoomPicture clonePicture() {
+		RoomPicture picture = new RoomPicture();
+		picture.setContentType(getContentType());
+		picture.setFileName(getFileName());
+		picture.setDataFile(getDataFile());
+		picture.setTimeStamp(getTimeStamp());
+		return picture;
+	}
 }

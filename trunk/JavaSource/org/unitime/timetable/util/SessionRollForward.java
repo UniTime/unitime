@@ -78,6 +78,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.NonUniversityLocationPicture;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -89,6 +90,7 @@ import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
+import org.unitime.timetable.model.RoomPicture;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -461,6 +463,14 @@ public class SessionRollForward {
 					}
 				}
 				rDao.saveOrUpdate(toRoom);
+				
+				for (RoomPicture fromPicture: fromRoom.getPictures()) {
+					RoomPicture toPicture = fromPicture.clonePicture();
+					toPicture.setLocation(toRoom);
+					toRoom.addTopictures(toPicture);
+					rDao.getSession().saveOrUpdate(toPicture);
+				}
+
 				rDao.getSession().flush();
 				// rDao.getSession().evict(toRoom); -- commented out to prevent NonUniqueObjectException
 				// rDao.getSession().evict(fromRoom);
@@ -561,6 +571,14 @@ public class SessionRollForward {
 			rollRoomFeaturesForLocationForward(fromNonUniversityLocation, toNonUniversityLocation, toSession, roomFeatureCache);
 			rollRoomGroupsForLocationForward(fromNonUniversityLocation, toNonUniversityLocation, toSession, roomGroupCache);
 			nulDao.saveOrUpdate(toNonUniversityLocation);
+			
+			for (NonUniversityLocationPicture fromPicture: fromNonUniversityLocation.getPictures()) {
+				NonUniversityLocationPicture toPicture = fromPicture.clonePicture();
+				toPicture.setLocation(toNonUniversityLocation);
+				toNonUniversityLocation.addTopictures(toPicture);
+				nulDao.getSession().saveOrUpdate(toPicture);
+			}
+
 			if (fromNonUniversityLocation.getRoomDepts() != null && !fromNonUniversityLocation.getRoomDepts().isEmpty()){
 				for (Iterator deptIt = fromNonUniversityLocation.getRoomDepts().iterator(); deptIt.hasNext();){
 					fromRoomDept = (RoomDept)deptIt.next();
@@ -570,7 +588,7 @@ public class SessionRollForward {
 				nulDao.getSession().flush();
 				nulDao.getSession().evict(toNonUniversityLocation);
 				nulDao.getSession().evict(fromNonUniversityLocation);
-			}					
+			}	
 		} catch (Exception e) {
 			Debug.error(e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Non University Locations", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all non university locations forward."));
