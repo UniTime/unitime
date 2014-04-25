@@ -847,6 +847,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("New Picture:")
 	String propNewPicture();
+	
+	@DefaultMessage("Applies To:")
+	String propAppliesTo();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -2242,6 +2245,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Select...")
 	String itemSelect();
+	
+	@DefaultMessage("This academic session only")
+	String itemThisSessionOnly();
+
+	@DefaultMessage("This academic session and all future sessions")
+	String itemAllFutureSessions();
+
+	@DefaultMessage("All academic sessions")
+	String itemAllSessions();
 	
 	@DefaultMessage("{0} seats")
 	String hintRoomCapacity(String size);
