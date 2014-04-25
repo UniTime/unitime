@@ -456,7 +456,13 @@ public class RoomInterface implements IsSerializable {
 			SAVE,
 			UPLOAD,
 		}
+		public static enum Apply implements IsSerializable {
+			THIS_SESSION_ONLY,
+			ALL_FUTURE_SESSIONS,
+			ALL_SESSIONS,
+		}
 		private Operation iOperation;
+		private Apply iApply;
 		private Long iLocationId;
 		private List<RoomPictureInterface> iPictures;
 		
@@ -471,6 +477,9 @@ public class RoomInterface implements IsSerializable {
 		public Operation getOperation() { return iOperation; }
 		public void setOperation(Operation operation) { iOperation = operation; }
 		
+		public Apply getApply() { return iApply; }
+		public void setApply(Apply apply) { iApply = apply; }
+		
 		public String toString() { return getOperation().name() + "[" + getLocationId() + "]"; }
 		
 		public static RoomPictureRequest load(Long locationId) {
@@ -480,11 +489,12 @@ public class RoomInterface implements IsSerializable {
 			return request;
 		}
 		
-		public static RoomPictureRequest save(Long locationId, List<RoomPictureInterface> pictures) {
+		public static RoomPictureRequest save(Long locationId, Apply apply, List<RoomPictureInterface> pictures) {
 			RoomPictureRequest request = new RoomPictureRequest();
 			request.setOperation(Operation.SAVE);
 			request.setLocationId(locationId);
 			request.setPictures(pictures);
+			request.setApply(apply);
 			return request;
 		}
 		
@@ -499,6 +509,7 @@ public class RoomInterface implements IsSerializable {
 	public static class RoomPictureResponse implements GwtRpcResponse {
 		private String iName;
 		private List<RoomPictureInterface> iPictures;
+		private RoomPictureRequest.Apply iApply;
 		
 		public RoomPictureResponse() {}
 		
@@ -512,5 +523,8 @@ public class RoomInterface implements IsSerializable {
 		
 		public void setName(String name) { iName = name; }
 		public String getName() { return iName; }
+		
+		public RoomPictureRequest.Apply getApply() { return iApply; }
+		public void setApply(RoomPictureRequest.Apply apply) { iApply = apply; }
 	}
 }

@@ -35,9 +35,12 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest.Apply;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureResponse;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -45,6 +48,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
@@ -62,6 +66,7 @@ public class RoomPicturesPage extends Composite {
 	private UniTimeHeaderPanel iHeader, iFooter;
 	
 	private UniTimeFileUpload iFileUpload;
+	private ListBox iApply;
 	
 	private Long iLocationId = null;
 	
@@ -72,7 +77,7 @@ public class RoomPicturesPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				iHeader.showLoading();
-				RPC.execute(RoomPictureRequest.save(iLocationId, iTable.getData()), new AsyncCallback<RoomPictureResponse>() {
+				RPC.execute(RoomPictureRequest.save(iLocationId, Apply.values()[iApply.getSelectedIndex()], iTable.getData()), new AsyncCallback<RoomPictureResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						iHeader.setErrorMessage(MESSAGES.failedToSaveRoomPictures(caught.getMessage()));
@@ -93,8 +98,32 @@ public class RoomPicturesPage extends Composite {
 		});
 		
 		iHeader.setEnabled("update", false);
-
 		iForm.addHeaderRow(iHeader);
+		
+		
+		iApply = new ListBox();
+		for (Apply apply: Apply.values()) {
+			String item = apply.name();
+			switch (apply) {
+			case THIS_SESSION_ONLY:
+				item = MESSAGES.itemThisSessionOnly();
+				break;
+			case ALL_FUTURE_SESSIONS:
+				item = MESSAGES.itemAllFutureSessions();
+				break;
+			case ALL_SESSIONS:
+				item = MESSAGES.itemAllSessions();
+				break;
+			}
+			iApply.addItem(item, apply.name());
+		}
+		iForm.addRow(MESSAGES.propAppliesTo(), iApply);
+		iApply.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iHeader.setEnabled("update", true);
+			}
+		});
 		
 		iTable = new UniTimeTable<RoomPictureInterface>();
 		iTable.setStyleName("unitime-RoomPictures");
@@ -160,6 +189,7 @@ public class RoomPicturesPage extends Composite {
 					if (result.hasPictures())
 						for (final RoomPictureInterface picture: result.getPictures())
 							iTable.addRow(picture, line(picture));
+					iApply.setSelectedIndex(result.getApply().ordinal());
 					iFooter.setVisible(true);
 					iHeader.setHeaderTitle(result.getName());
 					iFileUpload.reset();

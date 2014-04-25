@@ -21,7 +21,11 @@ package org.unitime.timetable.server.rooms;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.fileupload.FileItem;
@@ -33,6 +37,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest.Apply;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureResponse;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.LocationPicture;
@@ -41,7 +46,6 @@ import org.unitime.timetable.model.NonUniversityLocationPicture;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPicture;
 import org.unitime.timetable.model.dao.LocationDAO;
-import org.unitime.timetable.model.dao.LocationPictureDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -55,7 +59,8 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 	@Override
 	public RoomPictureResponse execute(RoomPictureRequest request, SessionContext context) {
 		RoomPictureResponse response = new RoomPictureResponse();
-		Location location = LocationDAO.getInstance().get(request.getLocationId());
+		org.hibernate.Session hibSession = LocationDAO.getInstance().getSession();
+		Location location = LocationDAO.getInstance().get(request.getLocationId(), hibSession);
 		if (location == null)
 			throw new GwtRpcException(MESSAGES.errorRoomDoesNotExist(request.getLocationId().toString()));
 		response.setName(location.getLabel());
@@ -68,13 +73,32 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 		case LOAD:
 			for (LocationPicture p: new TreeSet<LocationPicture>(location.getPictures()))
 				response.addPicture(new RoomPictureInterface(p.getUniqueId(), p.getFileName(), p.getContentType()));
+
+			boolean samePast = true, sameFuture = true;
+			for (Location other: (List<Location>)hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId")
+					.setLong("uniqueId", location.getUniqueId()).setLong("permanentId", location.getPermanentId()).list()) {
+				if (!samePictures(location, other)) {
+					if (other.getSession().getSessionBeginDateTime().before(location.getSession().getSessionBeginDateTime())) {
+						samePast = false;
+					} else {
+						sameFuture = false;
+					}
+				}
+				if (!sameFuture) break;
+			}
+			if (samePast && sameFuture)
+				response.setApply(Apply.ALL_SESSIONS);
+			else if (sameFuture)
+				response.setApply(Apply.ALL_FUTURE_SESSIONS);
+			else
+				response.setApply(Apply.THIS_SESSION_ONLY);
+			
 			context.setAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES, null);
 			break;
 		case SAVE:
 			Map<Long, LocationPicture> pictures = new HashMap<Long, LocationPicture>();
 			for (LocationPicture p: location.getPictures())
 				pictures.put(p.getUniqueId(), p);
-			org.hibernate.Session hibSession = LocationPictureDAO.getInstance().getSession();
 			for (RoomPictureInterface p: request.getPictures()) {
 				LocationPicture picture = pictures.remove(p.getUniqueId());
 				if (picture == null && temp != null) {
@@ -96,6 +120,43 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 				hibSession.delete(picture);
 			}
 			hibSession.saveOrUpdate(location);
+			if (request.getApply() != Apply.THIS_SESSION_ONLY) {
+				for (Location other: (List<Location>)hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId")
+						.setLong("uniqueId", location.getUniqueId()).setLong("permanentId", location.getPermanentId()).list()) {
+					
+					if (request.getApply() == Apply.ALL_FUTURE_SESSIONS && other.getSession().getSessionBeginDateTime().before(location.getSession().getSessionBeginDateTime()))
+						continue;
+					
+					Set<LocationPicture> otherPictures = new HashSet<LocationPicture>(other.getPictures());
+					p1: for (LocationPicture p1: location.getPictures()) {
+						for (Iterator<LocationPicture> i = otherPictures.iterator(); i.hasNext(); ) {
+							LocationPicture p2 = i.next();
+							if (samePicture(p1, p2)) {
+								i.remove();
+								continue p1;
+							}
+						}
+						if (location instanceof Room) {
+							RoomPicture p2 = ((RoomPicture)p1).clonePicture();
+							p2.setLocation(other);
+							((Room)other).getPictures().add(p2);
+							hibSession.saveOrUpdate(p2);
+						} else {
+							NonUniversityLocationPicture p2 = ((NonUniversityLocationPicture)p1).clonePicture();
+							p2.setLocation(other);
+							((NonUniversityLocation)other).getPictures().add(p2);
+							hibSession.saveOrUpdate(p2);
+						}
+					}
+					
+					for (LocationPicture picture: otherPictures) {
+						other.getPictures().remove(picture);
+						hibSession.delete(picture);
+					}
+					
+					hibSession.saveOrUpdate(other);
+				}
+			}
 			hibSession.flush();
 			context.setAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES, null);
 			break;
@@ -125,6 +186,21 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 		}
 		
 		return response;
+	}
+	
+	private boolean samePictures(Location l1, Location l2) {
+		if (l1.getPictures().size() != l2.getPictures().size()) return false;
+		p1: for (LocationPicture p1: l1.getPictures()) {
+			for (LocationPicture p2: l2.getPictures()) {
+				if (samePicture(p1, p2)) continue p1;
+			}
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean samePicture(LocationPicture p1, LocationPicture p2) {
+		return p1.getFileName().equals(p2.getFileName()) && Math.abs(p1.getTimeStamp().getTime() - p2.getTimeStamp().getTime()) < 1000 && p1.getContentType().equals(p2.getContentType());
 	}
 
 }
