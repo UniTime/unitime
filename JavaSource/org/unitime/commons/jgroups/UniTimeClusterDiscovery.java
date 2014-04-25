@@ -229,10 +229,11 @@ public class UniTimeClusterDiscovery extends Discovery {
 					if (cluster.getOwnAddress().equals(addressAsString(address))) continue cluster;
 				
 				PingData pd = deserialize(cluster.getPingData());
-				if (pd != null && cluster.getTimeStamp().getTime() < deadline)
+				if (pd != null && cluster.getTimeStamp().getTime() < deadline) {
 					log.debug("Purging " + pd.getPhysicalAddrs() + " from cluster " + group_addr + ".");
 				
-				hibSession.delete(cluster);
+					hibSession.delete(cluster);
+				}
 			}
 			hibSession.flush();
             if (tx != null && tx.isActive()) tx.commit();
