@@ -31,7 +31,6 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.ClassWaitList;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseRequest;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningStatus;
@@ -119,7 +118,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 						action.setStudent(OnlineSectioningLog.Entity.newBuilder()
 							.setUniqueId(student.getUniqueId())
 							.setExternalId(student.getExternalUniqueId())
-							.setName(student.getName(DepartmentalInstructor.sNameFormatFirstMiddleLast)));
+							.setName(helper.getStudentNameFormat().format(student)));
 						
 						for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
 							StudentClassEnrollment enrl = i.next();

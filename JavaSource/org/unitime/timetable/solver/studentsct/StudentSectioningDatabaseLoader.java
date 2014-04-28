@@ -82,7 +82,6 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.ExactTimeMins;
@@ -116,6 +115,7 @@ import org.unitime.timetable.solver.curricula.StudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.NameFormat;
 
 
 /**
@@ -478,7 +478,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     }
     
     public void skipStudent(org.unitime.timetable.model.Student s, Hashtable<Long,Course> courseTable, Hashtable<Long,Section> classTable) {
-    	iProgress.debug("Skipping student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getName(DepartmentalInstructor.sNameFormatLastFist)+")");
+    	iProgress.debug("Skipping student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+NameFormat.defaultFormat().format(s)+")");
     	
     	// If the student is enrolled in some classes, decrease the space in these classes accordingly
     	Map<Course, List<Section>> assignment = new HashMap<Course, List<Section>>();
@@ -599,10 +599,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	return null;
         }
         
-        iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getName(DepartmentalInstructor.sNameFormatLastFist)+")");
+        NameFormat nameFormat = NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.student.name", NameFormat.LAST_FIRST_MIDDLE.reference()));
+        iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+nameFormat.format(s)+")");
         Student student = new Student(s.getUniqueId().longValue());
         student.setExternalId(s.getExternalUniqueId());
-        student.setName(s.getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
+        student.setName(nameFormat.format(s));
         student.setStatus(s.getSectioningStatus() == null ? null : s.getSectioningStatus().getReference());
         if (iLoadStudentInfo) loadStudentInfo(student,s);
 
@@ -643,7 +644,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 for (org.unitime.timetable.model.CourseRequest cr: crs) {
                     Course course = courseTable.get(cr.getCourseOffering().getUniqueId());
                     if (course==null) {
-                        iProgress.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + cr.getCourseOffering().getCourseName() + " that is not loaded.");
+                        iProgress.warn("Student " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + cr.getCourseOffering().getCourseName() + " that is not loaded.");
                         continue;
                     }
                     for (Iterator k=cr.getClassWaitLists().iterator();k.hasNext();) {
@@ -664,14 +665,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                             if (section!=null) {
                                 assignedSections.add(section);
                                 if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
-                                	iProgress.error("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
+                                	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
                                 }
                                 assignedConfig = section.getSubpart().getConfig();
                                 if (!subparts.add(section.getSubpart().getId())) {
-                                	iProgress.error("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
+                                	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
                                 }
                             } else {
-                            	iProgress.error("There is a problem assigning " + course.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
+                            	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
                             }
                         }
                     }
@@ -693,7 +694,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     request.setInitialAssignment(enrollment);
                 }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
-                	iProgress.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
+                	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + ") wrong number of classes (" +
                 			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + ").");
                 }
             }
@@ -710,7 +711,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		if (enrl.getCourseRequest() != null) continue; // already loaded
         		Course course = courseTable.get(enrl.getCourseOffering().getUniqueId());
                 if (course==null) {
-                    iProgress.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + enrl.getCourseOffering().getCourseName()+" that is not loaded.");
+                    iProgress.warn("Student " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + enrl.getCourseOffering().getCourseName()+" that is not loaded.");
                     continue;
                 }
                 if (enrl.getTimestamp() != null) timeStamp.put(enrl.getCourseOffering().getUniqueId(), enrl.getTimestamp().getTime());
@@ -719,7 +720,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	for (WaitList w: s.getWaitlists()) {
         		Course course = courseTable.get(w.getCourseOffering().getUniqueId());
                 if (course==null) {
-                    iProgress.warn("Student " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ") requests course " + w.getCourseOffering().getCourseName()+" that is not loaded.");
+                    iProgress.warn("Student " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + w.getCourseOffering().getCourseName()+" that is not loaded.");
                     continue;
                 }
                 if (w.getTimestamp() != null) timeStamp.put(w.getCourseOffering().getUniqueId(), w.getTimestamp().getTime());
@@ -755,16 +756,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     if (section!=null) {
                         assignedSections.add(section);
                         if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
-                        	iProgress.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
+                        	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
                         	continue courses;
                         }
                         assignedConfig = section.getSubpart().getConfig();
                         if (!subparts.add(section.getSubpart().getId())) {
-                        	iProgress.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
+                        	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart.");
                         	continue courses;
                         }
                     } else {
-                    	iProgress.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
+                    	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): class " + enrl.getClazz().getClassLabel() + " not known.");
                     	Section x = classTable.get(enrl.getClazz().getUniqueId());
                     	if (x != null) {
                     		iProgress.info("  but a class with the same id is loaded, but under offering " + x.getSubpart().getConfig().getOffering().getName() + " (id is " + x.getSubpart().getConfig().getOffering().getId() + 
@@ -778,7 +779,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     request.setInitialAssignment(enrollment);
                 }
                 if (assignedConfig!=null && assignedSections.size() != assignedConfig.getSubparts().size()) {
-                	iProgress.error("There is a problem assigning " + request.getName() + " to " + s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +
+                	iProgress.error("There is a problem assigning " + request.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): wrong number of classes (" +
                 			"has " + assignedSections.size() + ", expected " + assignedConfig.getSubparts().size() + ").");
                 }
         	}
@@ -814,7 +815,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
            	CourseRequest cr = (CourseRequest)r;
            	Enrollment enrl = (Enrollment)r.getInitialAssignment();
            	org.unitime.timetable.model.Student s = (student.getId() >= 0 ? StudentDAO.getInstance().get(student.getId()) : null);
-           	iProgress.error("There is a problem assigning " + cr.getName() + " to " + (s == null ? student.getId() : s.getName(DepartmentalInstructor.sNameFormatInitialLast) + " (" + s.getExternalUniqueId() + ")" ));
+           	iProgress.error("There is a problem assigning " + cr.getName() + " to " + (s == null ? student.getId() : NameFormat.defaultFormat().format(s) + " (" + s.getExternalUniqueId() + ")" ));
            	boolean hasLimit = false, hasOverlap = false;
            	for (Iterator<Section> i = enrl.getSections().iterator(); i.hasNext();) {
            		Section section = i.next();

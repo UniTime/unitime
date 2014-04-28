@@ -28,6 +28,7 @@ import java.io.Serializable;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 
 /**
  * @author Tomas Muller
@@ -46,10 +47,10 @@ public class XInstructor implements Serializable, Externalizable {
 		readExternal(in);
 	}
 	
-	public XInstructor(DepartmentalInstructor instructor, String nameFormat) {
+	public XInstructor(DepartmentalInstructor instructor, OnlineSectioningHelper helper) {
 		iUniqueId = instructor.getUniqueId();
 		iExternalId = instructor.getExternalUniqueId();
-		iName = instructor.getName(nameFormat);
+		iName = helper.getInstructorNameFormat().format(instructor);
 		iEmail = instructor.getEmail();
 	}
 	

@@ -242,7 +242,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				instance.set("name", iRequest.getText().trim().toUpperCase());
 				instance.set("id", iRequest.getText().trim());
 				for (Student student: (List<Student>)instance.limit(20).query(helper.getHibSession()).list())
-					response.addSuggestion(student.getName(DepartmentalInstructor.sNameFormatLastFist), student.getExternalUniqueId(), "Student", "student");
+					response.addSuggestion(helper.getStudentNameFormat().format(student), student.getExternalUniqueId(), "Student", "student");
 			}
 		}
 		

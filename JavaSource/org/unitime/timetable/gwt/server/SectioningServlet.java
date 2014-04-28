@@ -128,6 +128,7 @@ import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.LoginManager;
+import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
@@ -306,6 +307,7 @@ public class SectioningServlet implements SectioningService {
 				}
 			}
 			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+			NameFormat nameFormat = NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.instructor.name", NameFormat.INITIAL_LAST.reference()));
 			for (Class_ clazz: classes) {
 				if (!clazz.isEnabledForStudentScheduling()) continue;
 				ClassAssignmentInterface.ClassAssignment a = new ClassAssignmentInterface.ClassAssignment();
@@ -348,7 +350,7 @@ public class SectioningServlet implements SectioningService {
 				if (!clazz.getClassInstructors().isEmpty()) {
 					for (Iterator<ClassInstructor> i = clazz.getClassInstructors().iterator(); i.hasNext(); ) {
 						ClassInstructor instr = i.next();
-						a.addInstructor(instr.getInstructor().getName(DepartmentalInstructor.sNameFormatShort));
+						a.addInstructor(nameFormat.format(instr.getInstructor()));
 						a.addInstructoEmail(instr.getInstructor().getEmail());
 					}
 				}
@@ -598,7 +600,7 @@ public class SectioningServlet implements SectioningService {
 					UniTimePrincipal principal = new UniTimePrincipal(user.getExternalUserId(), user.getName());
 					for (Student s: student) {
 						principal.addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
-						principal.setName(s.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
+						principal.setName(NameFormat.defaultFormat().format(s));
 					}
 					getSessionContext().setAttribute("user", principal);
 					getSessionContext().removeAttribute("request");
@@ -621,7 +623,7 @@ public class SectioningServlet implements SectioningService {
 				UserContext user = getSessionContext().getUser();
 				UniTimePrincipal principal = new UniTimePrincipal(user.getExternalUserId(), user.getName());
 				principal.addStudentId(student.getSession().getUniqueId(), student.getUniqueId());
-				principal.setName(student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
+				principal.setName(NameFormat.defaultFormat().format(student));
 				getSessionContext().setAttribute("user", principal);
 				getSessionContext().removeAttribute("request");
 				return principal.getName();
@@ -1061,6 +1063,7 @@ public class SectioningServlet implements SectioningService {
 						);
 				
 				if (server == null) {
+					NameFormat nameFormat = NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.student.name", NameFormat.LAST_FIRST_MIDDLE.reference()));
 					Map<String, String> approvedBy2name = new Hashtable<String, String>();
 					Hashtable<Long, ClassAssignmentInterface.Enrollment> student2enrollment = new Hashtable<Long, ClassAssignmentInterface.Enrollment>();
 					for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
@@ -1074,7 +1077,7 @@ public class SectioningServlet implements SectioningService {
 							ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 							st.setId(enrollment.getStudent().getUniqueId());
 							st.setExternalId(enrollment.getStudent().getExternalUniqueId());
-							st.setName(enrollment.getStudent().getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
+							st.setName(nameFormat.format(enrollment.getStudent()));
 							for (AcademicAreaClassification ac: enrollment.getStudent().getAcademicAreaClassifications()) {
 								st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
 								st.addClassification(ac.getAcademicClassification().getCode());
@@ -1168,7 +1171,7 @@ public class SectioningServlet implements SectioningService {
 							ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 							st.setId(request.getCourseDemand().getStudent().getUniqueId());
 							st.setExternalId(request.getCourseDemand().getStudent().getExternalUniqueId());
-							st.setName(request.getCourseDemand().getStudent().getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
+							st.setName(nameFormat.format(request.getCourseDemand().getStudent()));
 							for (AcademicAreaClassification ac: request.getCourseDemand().getStudent().getAcademicAreaClassifications()) {
 								st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
 								st.addClassification(ac.getAcademicClassification().getCode());
@@ -1245,6 +1248,7 @@ public class SectioningServlet implements SectioningService {
 						throw new SectioningException(MSG.exceptionBadStudentId());
 					OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId());
 					if (server == null) {
+						NameFormat nameFormat = NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.instructor.name", NameFormat.INITIAL_LAST.reference()));
 						ClassAssignmentInterface ret = new ClassAssignmentInterface();
 						Hashtable<Long, CourseAssignment> courses = new Hashtable<Long, ClassAssignmentInterface.CourseAssignment>();
 						for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
@@ -1310,7 +1314,7 @@ public class SectioningServlet implements SectioningService {
 							if (enrollment.getClazz().getDisplayInstructor())
 								for (ClassInstructor ci : enrollment.getClazz().getClassInstructors()) {
 									if (!ci.isLead()) continue;
-									clazz.addInstructor(ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort));
+									clazz.addInstructor(nameFormat.format(ci.getInstructor()));
 									clazz.addInstructoEmail(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
 								}
 						}

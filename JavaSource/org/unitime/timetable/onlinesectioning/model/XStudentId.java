@@ -48,7 +48,7 @@ public class XStudentId implements Serializable, Comparable<XStudentId>, Externa
     public XStudentId(Student student, OnlineSectioningHelper helper) {
     	iStudentId = student.getUniqueId();
     	iExternalId = student.getExternalUniqueId();
-    	iName = student.getName(helper.getStudentNameFormat());
+    	iName = helper.getStudentNameFormat().format(student);
     }
     
     public XStudentId(org.cpsolver.studentsct.model.Student student) {
