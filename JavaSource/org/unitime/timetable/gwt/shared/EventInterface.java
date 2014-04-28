@@ -952,6 +952,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     
     public static class ContactInterface implements IsSerializable, Comparable<ContactInterface> {
     	private String iFirstName, iMiddleName, iLastName;
+    	private String iFormattedName;
     	private String iExternalId, iEmail, iPhone;
     	
     	public ContactInterface() {}
@@ -963,6 +964,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     		iExternalId = person.getId();
     		iEmail = person.getEmail();
     		iPhone = person.getPhone();
+    		iFormattedName = null;
     	}
     	
     	public void setFirstName(String name) { iFirstName = name; }
@@ -989,7 +991,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	public boolean hasPhone() { return iPhone != null && !iPhone.isEmpty(); }
     	public String getPhone() { return iPhone; }
     	
+    	public void setFormattedName(String name) { iFormattedName = name; }
+    	public boolean hasFormattedName() { return iFormattedName != null && !iFormattedName.isEmpty(); }
+    	public String getFormattedName() { return iFormattedName; }
+    	
     	public String getName(GwtMessages messages) {
+    		if (hasFormattedName()) return getFormattedName();
     		if (messages == null) return toString();
     		return messages.formatName(
     				hasFirstName() ? getFirstName() : "",
@@ -1016,6 +1023,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	}
     	
     	public String toString() { 
+    		if (hasFormattedName()) return getFormattedName();
     		return (hasLastName() ? getLastName() : "") + (hasFirstName() || hasMiddleName() ?
     				", " + (hasFirstName() ? getFirstName() + (hasMiddleName() ? " " + getMiddleName() : "") : getMiddleName()) : "");
     	}

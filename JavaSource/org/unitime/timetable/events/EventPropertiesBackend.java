@@ -24,6 +24,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
 import org.unitime.timetable.gwt.shared.PersonInterface;
@@ -117,6 +118,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 	
 	public ContactInterface lookupMainContact(Long sessionId, SessionContext context) {
 		UserContext user = context.getUser();
+		String nameFormat = user.getProperty(UserProperty.NameFormat);
 		org.hibernate.Session hibSession = EventContactDAO.getInstance().getSession();
 		EventContact contact = (EventContact)hibSession.createQuery(
 				"from EventContact where externalUniqueId = :userId"
@@ -129,6 +131,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setEmail(contact.getEmailAddress());
 			c.setPhone(contact.getPhone());
 			c.setExternalId(contact.getExternalUniqueId());
+			c.setFormattedName(contact.getName(nameFormat));
 			return c;
 		}
 		TimetableManager manager = (TimetableManager)hibSession.createQuery(
@@ -141,6 +144,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setMiddleName(manager.getMiddleName());
 			c.setLastName(manager.getLastName());
 			c.setEmail(manager.getEmailAddress());
+			c.setFormattedName(manager.getName(nameFormat));
 			return c;
 		}
 		DepartmentalInstructor instructor = (DepartmentalInstructor)hibSession.createQuery(
@@ -153,6 +157,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setMiddleName(instructor.getMiddleName());
 			c.setLastName(instructor.getLastName());
 			c.setEmail(instructor.getEmail());
+			c.setFormattedName(instructor.getName(nameFormat));
 			return c;
 		}
 		Staff staff = (Staff)hibSession.createQuery(
@@ -165,6 +170,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setMiddleName(staff.getMiddleName());
 			c.setLastName(staff.getLastName());
 			c.setEmail(staff.getEmail());
+			c.setFormattedName(staff.getName(nameFormat));
 			return c;
 		}
 		Student student = (Student)hibSession.createQuery(
@@ -177,6 +183,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setMiddleName(student.getMiddleName());
 			c.setLastName(student.getLastName());
 			c.setEmail(student.getEmail());
+			c.setFormattedName(student.getName(nameFormat));
 			return c;
 		}
 		if (user.getName() != null && !user.getName().isEmpty()) {
