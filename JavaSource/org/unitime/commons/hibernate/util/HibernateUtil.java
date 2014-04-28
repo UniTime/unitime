@@ -200,6 +200,9 @@ public class HibernateUtil {
             String idgen = getProperty(properties, "tmtbl.uniqueid.generator");
             if (idgen!=null)
                 setProperty(document, "tmtbl.uniqueid.generator", idgen);
+            
+            if (!"true".equals(ApplicationProperties.getProperty("unitime.hibernate.cluster", "true")))
+            	setProperty(document, "net.sf.ehcache.configurationResourceName", "ehcache-nocluster.xml");
 
             /*// JDBC Pool 
             setProperty(document, "connection.pool_size", "5");
@@ -330,6 +333,9 @@ public class HibernateUtil {
             
             String idgen = ApplicationProperties.getProperty("tmtbl.uniqueid.generator");
             if (idgen!=null) setProperty(document, "tmtbl.uniqueid.generator", idgen);
+            
+            if (!"true".equals(ApplicationProperties.getProperty("unitime.hibernate.cluster", "true")))
+            	setProperty(document, "net.sf.ehcache.configurationResourceName", "ehcache-nocluster.xml");
             
             for (Enumeration e=ApplicationProperties.getProperties().propertyNames();e.hasMoreElements();) {
                 String name = (String)e.nextElement();
