@@ -110,7 +110,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         
         if (clazz.isDisplayInstructor())
             for (ClassInstructor ci: clazz.getClassInstructors()) {
-            	iInstructors.add(new XInstructor(ci.getInstructor(), helper.getInstructorNameFormat()));
+            	iInstructors.add(new XInstructor(ci.getInstructor(), helper));
             }
     }
     

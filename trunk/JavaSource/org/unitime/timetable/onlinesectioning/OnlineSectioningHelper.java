@@ -62,6 +62,7 @@ import org.unitime.timetable.onlinesectioning.model.XReservationId;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
@@ -339,12 +340,12 @@ public class OnlineSectioningHelper {
     	return iExactTimeConversion;
     }
     
-    public String getStudentNameFormat() {
-    	return ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle);
+    public NameFormat getStudentNameFormat() {
+    	return NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.student.name", NameFormat.LAST_FIRST_MIDDLE.reference()));
     }
     
-    public String getInstructorNameFormat() {
-    	return ApplicationProperties.getProperty("unitime.enrollment.instructor.name", DepartmentalInstructor.sNameFormatInitialLast);
+    public NameFormat getInstructorNameFormat() {
+    	return NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.instructor.name", NameFormat.INITIAL_LAST.reference()));
     }
     
     public String getApproverName(String externalId, Long sessionId) {

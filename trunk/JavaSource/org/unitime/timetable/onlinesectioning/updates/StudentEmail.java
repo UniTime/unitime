@@ -52,7 +52,6 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -197,7 +196,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (html != null) {
 						Email email = Email.createEmail();
 
-						email.addRecipient(dbStudent.getEmail(), dbStudent.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
+						email.addRecipient(dbStudent.getEmail(), helper.getStudentNameFormat().format(dbStudent));
 						
 						if (getCC() != null && !getCC().isEmpty()) {
 							helper.logOption("cc", getCC());
@@ -423,8 +422,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		}
 		out.println("			</tr>");
 		out.println("			<tr>");
-		out.println("				<td style=\"color: #333333; text-align: right; vertical-align: top; padding: 10px 5px 5px 5px;\">" + 
-				student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle) + "</td>");
+		out.println("				<td style=\"color: #333333; text-align: right; vertical-align: top; padding: 10px 5px 5px 5px;\">" + helper.getStudentNameFormat().format(student) + "</td>");
 		out.println("				<td style=\"color: #333333; text-align: right; vertical-align: top; padding: 10px 5px 5px 5px;\">" + 
 				server.getAcademicSession().getTerm() + " " + server.getAcademicSession().getYear() + " (" + server.getAcademicSession().getCampus() + ")</td>");
 		out.println("			</tr>");
