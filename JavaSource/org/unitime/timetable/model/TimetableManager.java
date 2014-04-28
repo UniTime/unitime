@@ -33,12 +33,14 @@ import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseTimetableManager;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.Qualifiable;
+import org.unitime.timetable.util.NameFormat;
+import org.unitime.timetable.util.NameInterface;
 
 
 /**
  * @author Tomas Muller
  */
-public class TimetableManager extends BaseTimetableManager implements Comparable, Qualifiable {
+public class TimetableManager extends BaseTimetableManager implements Comparable, Qualifiable, NameInterface {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -131,6 +133,10 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 				(hasMiddleName() ? " " + getMiddleName() : "");
 	}
 	
+    public String getName(String instructorNameFormat) {
+    	return NameFormat.fromReference(instructorNameFormat).format(this);
+    }
+
     public Collection getClasses(Session session) {
     	Vector classes = new Vector(); 
     	for (Iterator i=departmentsForSession(session.getUniqueId()).iterator();i.hasNext();) {

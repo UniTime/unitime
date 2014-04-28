@@ -24,13 +24,15 @@ import java.util.List;
 import org.hibernate.FlushMode;
 import org.unitime.timetable.model.base.BaseEventContact;
 import org.unitime.timetable.model.dao.EventContactDAO;
+import org.unitime.timetable.util.NameFormat;
+import org.unitime.timetable.util.NameInterface;
 
 
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer, Zuzana Mullerova
  */
-public class EventContact extends BaseEventContact {
+public class EventContact extends BaseEventContact implements NameInterface {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -80,5 +82,9 @@ public class EventContact extends BaseEventContact {
         return ((getLastName() == null ? "" : getLastName().trim()) + ", "+ 
                 (getFirstName() == null ? "" : getFirstName().trim()) + " "+
                 (getMiddleName() == null ? "" : getMiddleName().trim()));
+    }
+    
+    public String getName(String nameFormat) {
+    	return NameFormat.fromReference(nameFormat).format(this);
     }
 }

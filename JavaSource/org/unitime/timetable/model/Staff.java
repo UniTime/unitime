@@ -29,6 +29,8 @@ import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseStaff;
 import org.unitime.timetable.model.dao.StaffDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.NameFormat;
+import org.unitime.timetable.util.NameInterface;
 
 
 
@@ -36,7 +38,7 @@ import org.unitime.timetable.util.Constants;
 /**
  * @author Tomas Muller
  */
-public class Staff extends BaseStaff implements Comparable {
+public class Staff extends BaseStaff implements Comparable, NameInterface {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -156,44 +158,7 @@ public class Staff extends BaseStaff implements Comparable {
 	}
 	
 	public String getName(String instructorNameFormat) {
-		if (DepartmentalInstructor.sNameFormatLastFist.equals(instructorNameFormat))
-			return Constants.toInitialCase(
-					(getLastName()==null?"":getLastName().trim())+", "+
-					(getFirstName()==null?"":getFirstName().trim()));
-		if (DepartmentalInstructor.sNameFormatFirstLast.equals(instructorNameFormat))
-			return Constants.toInitialCase(
-					(getFirstName()==null?"":getFirstName().trim())+" "+
-					(getLastName()==null?"":getLastName().trim()));
-		if (DepartmentalInstructor.sNameFormatInitialLast.equals(instructorNameFormat))
-			return (getFirstName()==null?"":this.getFirstName().trim().substring(0,1).toUpperCase())+
-					(getMiddleName()==null?"":" "+this.getMiddleName().trim().substring(0,1).toUpperCase())+" "+
-					Constants.toInitialCase(getLastName()==null?"":getLastName().trim());
-		if (DepartmentalInstructor.sNameFormatLastInitial.equals(instructorNameFormat))
-			return Constants.toInitialCase((getLastName()==null?"":getLastName().trim()))+", "+
-					(getFirstName()==null?"":this.getFirstName().trim().substring(0,1).toUpperCase())+
-					(getMiddleName()==null?"":" "+this.getMiddleName().trim().substring(0,1).toUpperCase());
-		if (DepartmentalInstructor.sNameFormatFirstMiddleLast.equals(instructorNameFormat))
-			return Constants.toInitialCase(
-					(getFirstName()==null?"":getFirstName().trim())+
-					(getMiddleName()==null?"":" "+getMiddleName().trim())+" "+
-					(getLastName()==null?"":getLastName().trim()));
-		if (DepartmentalInstructor.sNameFormatShort.equals(instructorNameFormat)) {
-			StringBuffer sb = new StringBuffer();
-			if (getFirstName()!=null && getFirstName().length()>0) {
-				sb.append(getFirstName().substring(0,1).toUpperCase());
-				sb.append(". ");
-			}
-			if (getLastName()!=null && getLastName().length()>0) {
-				sb.append(getLastName().substring(0,1).toUpperCase());
-				sb.append(getLastName().substring(1,Math.min(10,getLastName().length())).toLowerCase().trim());
-			}
-			return sb.toString();
-		}
-		return Constants.toInitialCase(
-				(getFirstName()==null?"":getFirstName().trim())+
-				(getMiddleName()==null?"":" "+getMiddleName().trim())+" "+
-				(getLastName()==null?"":getLastName().trim()));
+		return NameFormat.fromReference(instructorNameFormat).format(this);
 	}
-	
 
 }

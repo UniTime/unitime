@@ -38,6 +38,8 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.NameFormat;
+import org.unitime.timetable.util.NameInterface;
 
 
 
@@ -45,7 +47,7 @@ import org.unitime.timetable.util.Constants;
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
-public class DepartmentalInstructor extends BaseDepartmentalInstructor implements Comparable{
+public class DepartmentalInstructor extends BaseDepartmentalInstructor implements Comparable, NameInterface {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -69,16 +71,16 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     public static String INSTR_HAS_PREF_ATTR_NAME = "instructorsHasPrefs";
 	
 	/** Request attribute name for instructor departments  **/
-    public static String INSTRDEPT_LIST_ATTR_NAME = "instructorDeptList";
-	
+    public static String INSTRDEPT_LIST_ATTR_NAME = "instructorDeptList";	
+
 	/** Name Format */
-	public static final String sNameFormatLastFist = "last-first";
-	public static final String sNameFormatFirstLast = "first-last";
-	public static final String sNameFormatInitialLast = "initial-last";
-	public static final String sNameFormatLastInitial = "last-initial";
-	public static final String sNameFormatFirstMiddleLast = "first-middle-last";
-	public static final String sNameFormatLastFirstMiddle = "last-first-middle";
-	public static final String sNameFormatShort = "short";
+	public static final String sNameFormatLastFist = NameFormat.LAST_FIRST.reference();
+	public static final String sNameFormatFirstLast = NameFormat.FIRST_LAST.reference();
+	public static final String sNameFormatInitialLast = NameFormat.INITIAL_LAST.reference();
+	public static final String sNameFormatLastInitial = NameFormat.LAST_INITIAL.reference();
+	public static final String sNameFormatFirstMiddleLast = NameFormat.FIRST_MIDDLE_LAST.reference();
+	public static final String sNameFormatLastFirstMiddle = NameFormat.LAST_FIRST_MIDDLE.reference();
+	public static final String sNameFormatShort = NameFormat.SHORT.reference();
 	
 
 	/**
@@ -153,17 +155,6 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	 * 
 	 * @return
 	 */
-	private String nameLastInit() {
-		return (hasLastName() ? Constants.toInitialCase(getLastName()) : "").trim() +
-				(hasFirstName() || hasMiddleName() ? "," : "") +
-				(hasFirstName() ? " " + getFirstName().substring(0, 1).toUpperCase() : "") +
-				(hasMiddleName() ? " " + getMiddleName().substring(0, 1).toUpperCase() : "");
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
 	private String nameLastFirst() {
 		return Constants.toInitialCase(
 				(hasLastName() ? getLastName() : "") +
@@ -177,32 +168,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	}
 	
 	public String getName(String instructorNameFormat) {
-		if (sNameFormatLastFist.equals(instructorNameFormat))
-			return getNameLastFirst();
-		if (sNameFormatFirstLast.equals(instructorNameFormat))
-			return nameFirstLast();
-		if (sNameFormatInitialLast.equals(instructorNameFormat))
-			return getNameInitLast();
-		if (sNameFormatLastInitial.equals(instructorNameFormat))
-			return nameLastInit();
-		if (sNameFormatFirstMiddleLast.equals(instructorNameFormat))
-			return nameFirstMiddleLast();
-		if (sNameFormatLastFirstMiddle.equals(instructorNameFormat))
-			return nameLastFirstMiddle();
-		if (sNameFormatShort.equals(instructorNameFormat))
-			return nameShort();
-		return nameFirstMiddleLast();
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	private String nameFirstMiddleLast() {
-		return Constants.toInitialCase(
-				(hasFirstName() ? getFirstName() : "") +
-				(hasMiddleName() ? " " + getMiddleName() : "") +
-				(hasLastName() ? " " + getLastName() : "")).trim();
+		return NameFormat.fromReference(instructorNameFormat).format(this);
 	}
 
 	public boolean hasLastName() {
