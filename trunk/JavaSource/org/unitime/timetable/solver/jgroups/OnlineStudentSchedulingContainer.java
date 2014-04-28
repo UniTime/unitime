@@ -86,8 +86,8 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		iGlobalLock.readLock().lock();
 		try {
 			OnlineSectioningServer instance = iInstances.get(sessionId);
-			if (sessionId == null) {
-				sLog.error("Server " + sessionId + " does not exist.");
+			if (instance == null) {
+				sLog.warn("Server " + sessionId + " does not exist.");
 				return null;
 			}
 			try {
@@ -114,7 +114,29 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 
 	@Override
 	public OnlineSectioningServer createSolver(String sessionId, DataProperties config) {
+		if (!canCreateSolver(Long.valueOf(sessionId))) return null;
 		return createInstance(Long.valueOf(sessionId), config);
+	}
+	
+	protected boolean canCreateSolver(Long sessionId) {
+		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+		try {
+			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
+			if (session == null) return false;
+			
+			String year = ApplicationProperties.getProperty("unitime.enrollment.year");
+			if (year != null && !session.getAcademicYear().matches(year)) return false;
+
+			String term = ApplicationProperties.getProperty("unitime.enrollment.term");
+			if (term != null && !session.getAcademicTerm().matches(term)) return false;
+
+			String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
+			if (campus != null && !session.getAcademicInitiative().matches(campus)) return false;
+
+			return true;
+		} finally {
+			hibSession.close();
+		}
 	}
 	
 	public OnlineSectioningServer createInstance(final Long academicSessionId, DataProperties config) {

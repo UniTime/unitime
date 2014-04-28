@@ -48,9 +48,6 @@ import org.jgroups.blocks.locking.LockService;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
-import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
@@ -83,6 +80,7 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 		super.start();
 		GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
 				.transport().addProperty("channelLookup", "org.unitime.commons.jgroups.SectioningChannelLookup").clusterName("UniTime:sectioning")
+				.asyncTransportExecutor().addProperty("maxThreads", "50")
 				.globalJmxStatistics().cacheManagerName("OnlineSchedulingCacheManager").allowDuplicateDomains(true).disable()
 				.build();
 		Configuration config = new ConfigurationBuilder()
@@ -105,34 +103,12 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 		OnlineSectioningServer server = getInstance(Long.valueOf(sessionId));
 		return server != null && server.isMaster();
 	}
-	
+
 	@Override
 	public boolean createRemoteSolver(String sessionId, DataProperties config, Address caller) {
-		if (!canCreateSolver(Long.valueOf(sessionId))) return false;
 		return super.createSolver(sessionId, config) != null;
 	}
-	
-	protected boolean canCreateSolver(Long sessionId) {
-		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
-		try {
-			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
-			if (session == null) return false;
-			
-			String year = ApplicationProperties.getProperty("unitime.enrollment.year");
-			if (year != null && !session.getAcademicYear().matches(year)) return false;
 
-			String term = ApplicationProperties.getProperty("unitime.enrollment.term");
-			if (term != null && !session.getAcademicTerm().matches(term)) return false;
-
-			String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
-			if (campus != null && !session.getAcademicInitiative().matches(campus)) return false;
-
-			return true;
-		} finally {
-			hibSession.close();
-		}
-	}
-	
 	@Override
 	public Object invoke(String method, String sessionId, Class[] types, Object[] args) throws Exception {
 		try {

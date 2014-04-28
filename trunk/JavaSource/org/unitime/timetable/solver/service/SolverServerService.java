@@ -27,15 +27,18 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
+import org.jgroups.blocks.RpcDispatcher;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.jgroups.UniTimeChannelLookup;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.jgroups.LocalSolverServer;
 import org.unitime.timetable.solver.jgroups.RemoteSolverContainer;
 import org.unitime.timetable.solver.jgroups.SolverContainer;
 import org.unitime.timetable.solver.jgroups.SolverContainerWrapper;
@@ -49,7 +52,8 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 @Service("solverServerService")
 public class SolverServerService implements InitializingBean, DisposableBean {
 	private static Log sLog = LogFactory.getLog(SolverServerService.class);
-	private SolverServerImplementation iServer = null;
+	private JChannel iChannel = null;
+	private SolverServer iServer = null;
 	
 	private SolverContainer<SolverProxy> iCourseSolverContainer;
 	private SolverContainer<ExamSolverProxy> iExamSolverContainer;
@@ -59,21 +63,46 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		try {
-			JChannel channel = (JChannel) new UniTimeChannelLookup().getJGroupsChannel(null);
-			
-			iServer = new SolverServerImplementation(true, channel);
-			
-			channel.connect("UniTime:rpc");
-			
-			iServer.start();
-			
-			iCourseSolverContainer = new SolverContainerWrapper<SolverProxy>(iServer.getDispatcher(), (RemoteSolverContainer<SolverProxy>) iServer.getCourseSolverContainer(), true);
-			iExamSolverContainer = new SolverContainerWrapper<ExamSolverProxy>(iServer.getDispatcher(), (RemoteSolverContainer<ExamSolverProxy>) iServer.getExamSolverContainer(), true);
-			iStudentSolverContainer = new SolverContainerWrapper<StudentSolverProxy>(iServer.getDispatcher(), (RemoteSolverContainer<StudentSolverProxy>) iServer.getStudentSolverContainer(), true);
-			iOnlineStudentSchedulingContainer = new SolverContainerWrapper<OnlineSectioningServer>(iServer.getDispatcher(), (RemoteSolverContainer<OnlineSectioningServer>) iServer.getOnlineStudentSchedulingContainer(), false);
+			if (!"true".equals(ApplicationProperties.getProperty("unitime.solver.cluster", "true"))) {
+				iServer = new LocalSolverServer();
+				
+				iServer.start();
+				
+				iCourseSolverContainer = iServer.getCourseSolverContainer();
+				iExamSolverContainer = iServer.getExamSolverContainer();
+				iStudentSolverContainer = iServer.getStudentSolverContainer();
+				iOnlineStudentSchedulingContainer = iServer.getOnlineStudentSchedulingContainer();
+			} else {
+				iChannel = (JChannel) new UniTimeChannelLookup().getJGroupsChannel(null);
+				
+				iServer = new SolverServerImplementation(true, iChannel);
+				
+				iChannel.connect("UniTime:rpc");
+				
+				iServer.start();
+				
+				iCourseSolverContainer = new SolverContainerWrapper<SolverProxy>(
+						((SolverServerImplementation)iServer).getDispatcher(),
+						(RemoteSolverContainer<SolverProxy>) iServer.getCourseSolverContainer(), true);
+				iExamSolverContainer = new SolverContainerWrapper<ExamSolverProxy>(
+						((SolverServerImplementation)iServer).getDispatcher(),
+						(RemoteSolverContainer<ExamSolverProxy>) iServer.getExamSolverContainer(), true);
+				iStudentSolverContainer = new SolverContainerWrapper<StudentSolverProxy>(
+						((SolverServerImplementation)iServer).getDispatcher(),
+						(RemoteSolverContainer<StudentSolverProxy>) iServer.getStudentSolverContainer(), true);
+				iOnlineStudentSchedulingContainer = new SolverContainerWrapper<OnlineSectioningServer>(
+						((SolverServerImplementation)iServer).getDispatcher(),
+						(RemoteSolverContainer<OnlineSectioningServer>) iServer.getOnlineStudentSchedulingContainer(), false);
+			}
 		} catch (Exception e) {
 			sLog.fatal("Failed to start solver server: " + e.getMessage(), e);
 		}
+	}
+	
+	private RpcDispatcher getDispatcher() {
+		if (iServer instanceof SolverServerImplementation)
+			return ((SolverServerImplementation)iServer).getDispatcher();
+		return null;
 	}
 
 	@Override
@@ -82,11 +111,13 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 			sLog.info("Server is going down...");
 			iServer.stop();
 			
-			sLog.info("Disconnecting from the channel...");
-			iServer.getChannel().disconnect();
+			if (iChannel != null) {
+				sLog.info("Disconnecting from the channel...");
+				iChannel.disconnect();
 			
-			sLog.info("Closing the channel...");
-			iServer.getChannel().close();
+				sLog.info("Closing the channel...");
+				iChannel.close();
+			}
 			
 			iServer = null; 
 		} catch (Exception e) {
@@ -172,10 +203,11 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	public SolverServer getServer(String host) {
 		if ("local".equals(host) || host == null)
 			return iServer;
-		for (Address address: iServer.getChannel().getView().getMembers()) {
-			if (host.equals(address.toString()))
-				return iServer.crateServerProxy(address);
-		}
+		if (iChannel != null)
+			for (Address address: iChannel.getView().getMembers()) {
+				if (host.equals(address.toString()))
+					return iServer.crateServerProxy(address);
+			}
 		return null;
 	}
 	
@@ -193,7 +225,11 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	
 	public void setApplicationProperty(Long sessionId, String key, String value) {
 		try {
-			iServer.getDispatcher().callRemoteMethods(null, "setApplicationProperty", new Object[] { sessionId, key, value }, new Class[] { Long.class, String.class, String.class }, SolverServerImplementation.sAllResponses);
+			RpcDispatcher dispatcher = getDispatcher();
+			if (dispatcher != null)
+				dispatcher.callRemoteMethods(null, "setApplicationProperty", new Object[] { sessionId, key, value }, new Class[] { Long.class, String.class, String.class }, SolverServerImplementation.sAllResponses);
+			else
+				iServer.setApplicationProperty(sessionId, key, value);
 		} catch (Exception e) {
 			sLog.error("Failed to update the application property " + key + " along the cluster: " + e.getMessage(), e);
 		}
@@ -201,7 +237,11 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	
 	public void setLoggingLevel(String name, Integer level) {
 		try {
-			iServer.getDispatcher().callRemoteMethods(null, "setLoggingLevel", new Object[] { name, level }, new Class[] { String.class, Integer.class }, SolverServerImplementation.sAllResponses);
+			RpcDispatcher dispatcher = getDispatcher();
+			if (dispatcher != null)
+				dispatcher.callRemoteMethods(null, "setLoggingLevel", new Object[] { name, level }, new Class[] { String.class, Integer.class }, SolverServerImplementation.sAllResponses);
+			else
+				iServer.setLoggingLevel(name, level);
 		} catch (Exception e) {
 			sLog.error("Failed to update the logging level for " + name + " along the cluster: " + e.getMessage(), e);
 		}

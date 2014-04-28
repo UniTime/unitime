@@ -56,23 +56,17 @@ import org.jgroups.util.RspList;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.jgroups.UniTimeChannelLookup;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ApplicationConfig;
-import org.unitime.timetable.model.ExamType;
-import org.unitime.timetable.model.Solution;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
-import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.RoomAvailability;
 
 /**
  * @author Tomas Muller
  */
-public class SolverServerImplementation implements MessageListener, MembershipListener, SolverServer, Receiver {
+public class SolverServerImplementation extends AbstractSolverServer implements MessageListener, MembershipListener, Receiver {
 	private static Log sLog = LogFactory.getLog(SolverServerImplementation.class);
 	private static SolverServerImplementation sInstance = null;
 	public static final RequestOptions sFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
@@ -88,12 +82,11 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	private RemoteRoomAvailability iRemoteRoomAvailability;
 	private OnlineStudentSchedulingGenericUpdater iUpdater;
 	
-	protected int iUsageBase = 0;
-	protected Date iStartTime = new Date();
-	protected boolean iActive = false;
 	protected boolean iLocal = false;
 	
 	public SolverServerImplementation(boolean local, JChannel channel) {
+		super();
+		
 		iLocal = local;
 		iChannel = channel;
 		// iChannel.setReceiver(this);
@@ -112,20 +105,21 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	
 	public RpcDispatcher getDispatcher() { return iDispatcher; }
 	
-	public void start() throws Exception {
+	@Override
+	public void start() {
 		iCourseSolverContainer.start();
 		iExamSolverContainer.start();
 		iStudentSolverContainer.start();
 		iOnlineStudentSchedulingContainer.start();
 		iUpdater.start();
 
-		iActive = true;
-		sLog.info("Solver server is up and running.");
+		super.start();
 	}
 	
-	public void stop() throws Exception {
-		iActive = false;
-		
+	@Override
+	public void stop() {
+		super.stop();
+
 		iCourseSolverContainer.stop();
 		iExamSolverContainer.stop();
 		iStudentSolverContainer.stop();
@@ -166,54 +160,12 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 
 	@Override
 	public int getUsage() {
-		int ret = iUsageBase;
-		if (isLocal()) ret += 500;
+		int ret = super.getUsage();
 		ret += iCourseSolverContainer.getUsage();
 		ret += iExamSolverContainer.getUsage();
 		ret += iStudentSolverContainer.getUsage();
 		ret += iOnlineStudentSchedulingContainer.getUsage();
 		return ret;
-	}
-	
-	@Override
-	public void setUsageBase(int base) {
-		iUsageBase = base;
-	}
-	
-	@Override
-	public long getAvailableMemory() {
-		return Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
-	}
-	
-	@Override
-	public int getAvailableProcessors() {
-		return Runtime.getRuntime().availableProcessors();
-	}
-	
-	@Override
-	public long getMemoryLimit() {
-		return 1024l * 1024l * Long.parseLong(ApplicationProperties.getProperty(ApplicationProperty.SolverMemoryLimit));
-	}
-	
-	@Override
-	public String getVersion() {
-		return Constants.getVersion();
-	}
-	
-	public Date getStartTime() {
-		return iStartTime;
-	}
-	
-	@Override
-	public boolean isActive() {
-		return iActive;
-	}
-	
-	@Override
-	public boolean isAvailable() {
-		if (!isActive()) return false;
-		if (getMemoryLimit() > getAvailableMemory()) System.gc();
-		return getMemoryLimit() <= getAvailableMemory();
 	}
 	
 	public List<SolverServer> getServers(boolean onlyAvailable) {
@@ -301,7 +253,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	@Override
 	public RoomAvailabilityInterface getRoomAvailability() {
 		if (isLocal())
-			return RoomAvailability.getInstance();
+			return super.getRoomAvailability();
 
 		Address local = getLocalAddress();
 		if (local != null)
@@ -314,12 +266,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	}
 	
 	public void refreshCourseSolutionLocal(Long... solutionIds) {
-		try {
-			for (Long solutionId: solutionIds)
-				Solution.refreshSolution(solutionId);
-		} finally {
-			_RootDAO.closeCurrentThreadSessions();
-		}
+		super.refreshCourseSolution(solutionIds);
 	}
 	
 	@Override
@@ -338,11 +285,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	}
 	
 	public void refreshExamSolutionLocal(Long sessionId, Long examTypeId) {
-		try {
-			ExamType.refreshSolution(sessionId, examTypeId);
-		} finally {
-			_RootDAO.closeCurrentThreadSessions();
-		}
+		super.refreshExamSolution(sessionId, examTypeId);
 	}
 	
 	@Override
@@ -596,7 +539,6 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
         				sInstance.iActive = false;
 
         				sLog.info("Server is going down...");
-    					
     					sInstance.stop();
     					
     					sLog.info("Disconnecting from the channel...");
