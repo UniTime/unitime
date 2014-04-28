@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.jgroups;
 
 import java.util.Date;
+import java.util.List;
 
 import org.jgroups.Address;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -33,6 +34,10 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
  */
 public interface SolverServer {
 	public static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4, SCOPE_ONLINE = 5;
+	
+	public void start();
+	
+	public void stop();
 
 	public boolean isLocal();
 	
@@ -83,4 +88,8 @@ public interface SolverServer {
 	public void setLoggingLevel(String name, Integer level);
 	
 	public void reset();
+	
+	public List<SolverServer> getServers(boolean onlyAvailable);
+	
+	public SolverServer crateServerProxy(Address address);
 }

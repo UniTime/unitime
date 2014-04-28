@@ -27,7 +27,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -57,19 +56,17 @@ import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
-import org.unitime.timetable.util.Constants;
 
 /**
  * @author Tomas Muller
  */
-public class DummySolverServer implements SolverServer, MessageListener {
+public class DummySolverServer extends AbstractSolverServer implements MessageListener {
 	private static Log sLog = LogFactory.getLog(DummySolverServer.class);
 	public static final RequestOptions sFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	public static final RequestOptions sAllResponses = new RequestOptions(ResponseMode.GET_ALL, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	
 	private JChannel iChannel = null;
 	private RpcDispatcher iDispatcher;
-	protected Date iStartTime = new Date();
 	private RpcDispatcher iRoomAvailabilityDispatcher;
 	protected Properties iProperties = null;
 	
@@ -103,7 +100,7 @@ public class DummySolverServer implements SolverServer, MessageListener {
 			iProperties = ApplicationProperties.getProperties();
 		return iProperties;
 	}
-
+	
 	@Override
 	public boolean isLocal() {
 		return false;
@@ -135,32 +132,13 @@ public class DummySolverServer implements SolverServer, MessageListener {
 	}
 
 	@Override
-	public Date getStartTime() {
-		return iStartTime;
-	}
-
-	@Override
 	public int getUsage() {
 		return 0;
 	}
 
 	@Override
-	public String getVersion() {
-		return Constants.getVersion();
-	}
-
-	@Override
-	public void setUsageBase(int usage) {
-	}
-
-	@Override
 	public long getAvailableMemory() {
 		return 0;
-	}
-	
-	@Override
-	public int getAvailableProcessors() {
-		return Runtime.getRuntime().availableProcessors();
 	}
 
 	@Override
@@ -176,10 +154,6 @@ public class DummySolverServer implements SolverServer, MessageListener {
 	@Override
 	public boolean isAvailable() {
 		return false;
-	}
-
-	@Override
-	public void shutdown() {
 	}
 
 	@Override
@@ -231,28 +205,6 @@ public class DummySolverServer implements SolverServer, MessageListener {
 		}
     }
 
-	@Override
-	public void refreshCourseSolution(Long... solutionId) {
-		try {
-			Address local = getLocalAddress();
-			if (local != null)
-				iDispatcher.callRemoteMethod(local, "refreshCourseSolutionLocal", new Object[] { solutionId }, new Class[] { Long[].class }, sFirstResponse);
-		} catch (Exception e) {
-			sLog.error("Failed to refresh solution: " + e.getMessage(), e);
-		}
-	}
-
-	@Override
-	public void refreshExamSolution(Long sessionId, Long examTypeId) {
-		try {
-			Address local = getLocalAddress();
-			if (local != null)
-				iDispatcher.callRemoteMethod(local, "refreshExamSolution", new Object[] { sessionId, examTypeId }, new Class[] { Long.class, Long.class }, sFirstResponse);
-		} catch (Exception e) {
-			sLog.error("Failed to refresh solution: " + e.getMessage(), e);
-		}
-	}
-	
 	public class DummyContainer<T> implements RemoteSolverContainer<T> {
 		protected RpcDispatcher iDispatcher;
 		protected Class<T> iClazz;
@@ -476,13 +428,17 @@ public class DummySolverServer implements SolverServer, MessageListener {
 	}
 
 	@Override
-	public void reset() {}
-
-	@Override
-	public void setApplicationProperty(Long sessionId, String key, String value) {
+	public List<SolverServer> getServers(boolean onlyAvailable) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void setLoggingLevel(String name, Integer level) {
+	public SolverServer crateServerProxy(Address address) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void shutdown() {
+		throw new UnsupportedOperationException();
 	}
 }
