@@ -83,7 +83,7 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 		super.start();
 		GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
 				.transport().addProperty("channelLookup", "org.unitime.commons.jgroups.SectioningChannelLookup").clusterName("UniTime:sectioning")
-				.globalJmxStatistics().cacheManagerName("OnlineSchedulingCacheManager").disable()
+				.globalJmxStatistics().cacheManagerName("OnlineSchedulingCacheManager").allowDuplicateDomains(true).disable()
 				.build();
 		Configuration config = new ConfigurationBuilder()
 				.clustering().cacheMode(CacheMode.REPL_ASYNC)
