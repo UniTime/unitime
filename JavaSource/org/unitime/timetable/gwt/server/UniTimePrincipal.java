@@ -24,9 +24,9 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
@@ -49,7 +49,7 @@ public class UniTimePrincipal implements Principal, Serializable {
 			if (!student.isEmpty()) {
 				for (Student s: student) {
 					addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
-					iName = s.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+					iName = NameFormat.LAST_FIRST_MIDDLE.format(s);
 				}
 			}
 		} finally {

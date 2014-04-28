@@ -208,7 +208,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     			for (XCourseId course: courseRequest.getCourseIds()) {
     				XOffering offering = server.getOffering(course.getOfferingId());
                     if (offering == null)
-                    	helper.warn("Student " + s.getName(helper.getStudentNameFormat()) + " (" + s.getExternalUniqueId() + ") requests course " + course.getCourseName() + " that is not loaded.");
+                    	helper.warn("Student " + helper.getStudentNameFormat().format(s) + " (" + s.getExternalUniqueId() + ") requests course " + course.getCourseName() + " that is not loaded.");
     			}
     			XEnrollment enrollment = courseRequest.getEnrollment();
     			if (enrollment != null) {
@@ -236,13 +236,13 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     							if (enrollment.getSectionIds().contains(section.getSectionId())) {
     		    					for (XSection other: checked.keySet()) {
     		    						if (section.isOverlapping(offering.getDistributions(), other)) {
-    		    							helper.warn("There is a problem assigning " + enrollment.getCourseName() + " to " + s.getName(helper.getStudentNameFormat()) + " (" + s.getExternalUniqueId() + "): "+
+    		    							helper.warn("There is a problem assigning " + enrollment.getCourseName() + " to " + helper.getStudentNameFormat().format(s) + " (" + s.getExternalUniqueId() + "): "+
     		    									section.getSubpartName() + " " + section.getName() + " " + section.getTime() +
     		            							" overlaps with " + checked.get(other).getCourseName() + " " + other.getSubpartName() + " " + other.getName() + " " + other.getTime());
     		    						}
     		    					}
     		    					if (!mixedConfig && !config.getConfigId().equals(enrollment.getConfigId())) {
-    		    						helper.warn("There is a problem assigning " + enrollment.getCourseName() + " to " + s.getName(helper.getStudentNameFormat()) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
+    		    						helper.warn("There is a problem assigning " + enrollment.getCourseName() + " to " + helper.getStudentNameFormat().format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
     		    						mixedConfig = true;
     		    					}
     		    					checked.put(section, enrollment);
@@ -251,9 +251,9 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     						}
 							if (config.getConfigId().equals(enrollment.getConfigId()) && nrMatches != 1) {
 								if (nrMatches > 1)
-									helper.warn("There is a problem assigning " + enrollment.getCourseName() + " to " + s.getName(helper.getStudentNameFormat()) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart " + subpart.getName() + ".");
+									helper.warn("There is a problem assigning " + enrollment.getCourseName() + " to " + helper.getStudentNameFormat().format(s) + " (" + s.getExternalUniqueId() + "): two or more classes of the same subpart " + subpart.getName() + ".");
 								else
-									helper.warn("There is a problem assigning " + enrollment.getCourseName() + " to " + s.getName(helper.getStudentNameFormat()) + " (" + s.getExternalUniqueId() + "): no class of the subpart " + subpart.getName() + ".");
+									helper.warn("There is a problem assigning " + enrollment.getCourseName() + " to " + helper.getStudentNameFormat().format(s) + " (" + s.getExternalUniqueId() + "): no class of the subpart " + subpart.getName() + ".");
 							}
     					}
     				}

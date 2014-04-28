@@ -44,6 +44,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -73,7 +74,6 @@ import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumCourseGroup;
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
@@ -97,6 +97,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.curricula.CurriculumFilterBackend;
 import org.unitime.timetable.test.MakeCurriculaFromLastlikeDemands;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
@@ -1869,6 +1870,7 @@ public class CurriculaServlet implements CurriculaService {
 			ArrayList<ClassAssignmentInterface.ClassAssignment> results = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Long sessionId = getAcademicSessionId();
+			NameFormat nameFormat = NameFormat.fromReference(UserProperty.NameFormat.get(sessionContext.getUser()));
 			try {
 				CourseOffering courseOffering = null;
 				for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
@@ -1931,7 +1933,7 @@ public class CurriculaServlet implements CurriculaService {
 					if (!clazz.getClassInstructors().isEmpty()) {
 						for (Iterator<ClassInstructor> i = clazz.getClassInstructors().iterator(); i.hasNext(); ) {
 							ClassInstructor instr = i.next();
-							a.addInstructor(instr.getInstructor().getName(DepartmentalInstructor.sNameFormatShort));
+							a.addInstructor(nameFormat.format(instr.getInstructor()));
 							a.addInstructoEmail(instr.getInstructor().getEmail());
 						}
 					}
