@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -161,6 +162,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				}
 				EventFilterBackend.EventQuery query = EventFilterBackend.getQuery(request.getEventFilter(), context);
 				int limit = request.getLimit();
+				String nameFormat = context.getUser().getProperty(UserProperty.NameFormat);
 				
 				List<Meeting> meetings = null;
 				Map<Long, Set<Long>[]> restrictions = null;
@@ -691,6 +693,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							contact.setMiddleName(m.getEvent().getMainContact().getMiddleName());
 							contact.setLastName(m.getEvent().getMainContact().getLastName());
 							contact.setEmail(m.getEvent().getMainContact().getEmailAddress());
+							contact.setFormattedName(m.getEvent().getMainContact().getName(nameFormat));
 							event.setContact(contact);
 						}
 						for (EventContact additional: m.getEvent().getAdditionalContacts()) {
@@ -699,6 +702,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							contact.setMiddleName(additional.getMiddleName());
 							contact.setLastName(additional.getLastName());
 							contact.setEmail(additional.getEmailAddress());
+							contact.setFormattedName(additional.getName(nameFormat));
 							event.addAdditionalContact(contact);
 						}
 						event.setEmail(m.getEvent().getEmail());
@@ -727,6 +731,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									instructor.setMiddleName(i.getInstructor().getMiddleName());
 									instructor.setLastName(i.getInstructor().getLastName());
 									instructor.setEmail(i.getInstructor().getEmail());
+									instructor.setFormattedName(i.getInstructor().getName(nameFormat));
 									event.addInstructor(instructor);
 				    			}
 				    		}
@@ -822,6 +827,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								instructor.setMiddleName(i.getMiddleName());
 								instructor.setLastName(i.getLastName());
 								instructor.setEmail(i.getEmail());
+								instructor.setFormattedName(i.getName(nameFormat));
 								event.addInstructor(instructor);
 			    			}
 			    			String name = null;
@@ -1278,6 +1284,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									contact.setMiddleName(m.getEvent().getMainContact().getMiddleName());
 									contact.setLastName(m.getEvent().getMainContact().getLastName());
 									contact.setEmail(m.getEvent().getMainContact().getEmailAddress());
+									contact.setFormattedName(m.getEvent().getMainContact().getName(nameFormat));
 									event.setContact(contact);
 								}
 								for (EventContact additional: m.getEvent().getAdditionalContacts()) {
@@ -1286,6 +1293,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									contact.setMiddleName(additional.getMiddleName());
 									contact.setLastName(additional.getLastName());
 									contact.setEmail(additional.getEmailAddress());
+									contact.setFormattedName(additional.getName(nameFormat));
 									event.addAdditionalContact(contact);
 								}
 								event.setEmail(m.getEvent().getEmail());
@@ -1313,6 +1321,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 											instructor.setMiddleName(i.getInstructor().getMiddleName());
 											instructor.setLastName(i.getInstructor().getLastName());
 											instructor.setEmail(i.getInstructor().getEmail());
+											instructor.setFormattedName(i.getInstructor().getName(nameFormat));
 											event.addInstructor(instructor);
 						    			}
 						    		}
@@ -1398,6 +1407,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										instructor.setMiddleName(i.getMiddleName());
 										instructor.setLastName(i.getLastName());
 										instructor.setEmail(i.getEmail());
+										instructor.setFormattedName(i.getName(nameFormat));
 										event.addInstructor(instructor);
 					    			}
 					    			for (ExamOwner owner: new TreeSet<ExamOwner>(xe.getExam().getOwners())) {
@@ -1575,6 +1585,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										instructor.setMiddleName(i.getInstructor().getMiddleName());
 										instructor.setLastName(i.getInstructor().getLastName());
 										instructor.setEmail(i.getInstructor().getEmail());
+										instructor.setFormattedName(i.getInstructor().getName(nameFormat));
 										event.addInstructor(instructor);
 					    			}
 					    		}

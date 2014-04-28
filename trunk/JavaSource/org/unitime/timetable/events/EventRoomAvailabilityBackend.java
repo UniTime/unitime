@@ -27,6 +27,7 @@ import java.util.TreeSet;
 
 import org.hibernate.Query;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
@@ -71,6 +72,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		EventRoomAvailabilityRpcResponse response = new EventRoomAvailabilityRpcResponse();
 		
 		Session session = SessionDAO.getInstance().get(request.getSessionId());
+		String nameFormat = context.getUser().getProperty(UserProperty.NameFormat);
 		
 		if (request.hasDates() && request.hasLocations()) {
 			for (int idx = 0; idx < request.getLocations().size(); idx += 1000) {
@@ -128,6 +130,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 								instructor.setMiddleName(i.getInstructor().getMiddleName());
 								instructor.setLastName(i.getInstructor().getLastName());
 								instructor.setEmail(i.getInstructor().getEmail());
+								instructor.setFormattedName(i.getInstructor().getName(nameFormat));
 								conflict.addInstructor(instructor);
 			    			}
 			    		}
@@ -140,6 +143,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 							instructor.setMiddleName(i.getMiddleName());
 							instructor.setLastName(i.getLastName());
 							instructor.setEmail(i.getEmail());
+							instructor.setFormattedName(i.getName(nameFormat));
 							conflict.addInstructor(instructor);
 		    			}
 					} else if (Event.sEventTypeCourse == m.getEvent().getEventType()) {
