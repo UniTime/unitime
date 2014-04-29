@@ -35,7 +35,7 @@
 <!ELEMENT consent EMPTY >
 <!ATTLIST consent type CDATA #REQUIRED >
 
-<!ELEMENT course ( class* ) >
+<!ELEMENT course ( consent? ) >
 <!ATTLIST course id CDATA #IMPLIED >
 <!ATTLIST course controlling ( false | true ) #IMPLIED >
 <!ATTLIST course courseNbr NMTOKEN #REQUIRED >
@@ -63,7 +63,7 @@
 <!ATTLIST instructor mname CDATA #IMPLIED >
 <!ATTLIST instructor share NMTOKEN #IMPLIED >
 
-<!ELEMENT offering ( designatorRequired?, consent?, courseCredit*, course+, config*, exam* ) >
+<!ELEMENT offering ( designatorRequired?, courseCredit*, course+, config*, exam* ) >
 <!ATTLIST offering action CDATA #IMPLIED >
 <!ATTLIST offering id NMTOKEN #REQUIRED >
 <!ATTLIST offering offered  ( false | true ) #REQUIRED >

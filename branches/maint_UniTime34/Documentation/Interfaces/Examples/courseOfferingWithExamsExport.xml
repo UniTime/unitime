@@ -22,9 +22,12 @@
 
 <offerings campus="PuWL" year="2006" term="Fall">
 	<offering id="10234" offered="true" action="update|delete|insert">
-		<consent type="department|instructor"/>
 		<courseCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="3"/>
-		<course subject="A&amp;AE" courseNbr="101" controlling="true" title="" scheduleBookNote=""/>
+		<course subject="A&amp;AE" courseNbr="101" controlling="true" title="" scheduleBookNote="">
+			<!-- Since UniTime 3.4, consent is on courses not on offerings -->
+			<!-- DP for department, IN for instructor -->
+			<consent type="DP|IN"/>
+		</course>
 		<course subject="A&amp;AE" courseNbr="101H" controlling="false" title="" scheduleBookNote=""/>
 		<config name="1" limit="20">
 			<subpart type="Lec" suffix="" minPerWeek="100">
