@@ -734,7 +734,11 @@ public class OnlineSectioningHelper {
 	}
 	
 	public static String getTimeString(int slot) {
-        int min = slot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
+		return getTimeString(slot, 0);
+	}
+	
+	public static String getTimeString(int slot, int breakTime) {
+        int min = slot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - breakTime;
         int h = min / 60;
         int m = min % 60;
         if (CFG.useAmPm())
@@ -744,7 +748,7 @@ public class OnlineSectioningHelper {
 	}
 	
 	public static String toString(XTime t) {
-		return DayCode.toString(t.getDays()) + " " + getTimeString(t.getSlot()) + " - " + getTimeString(t.getSlot() + t.getLength());
+		return DayCode.toString(t.getDays()) + " " + getTimeString(t.getSlot()) + " - " + getTimeString(t.getSlot() + t.getLength(), t.getBreakTime());
 	}
 
 	public static String toString(XFreeTimeRequest f) {
@@ -752,7 +756,7 @@ public class OnlineSectioningHelper {
 	}
 
 	public static String toString(TimeLocation t) {
-		return DayCode.toString(t.getDayCode()) + " " + getTimeString(t.getStartSlot()) + " - " + getTimeString(t.getStartSlot() + t.getLength());
+		return DayCode.toString(t.getDayCode()) + " " + getTimeString(t.getStartSlot()) + " - " + getTimeString(t.getStartSlot() + t.getLength(), t.getBreakTime());
 	}
 
 	public static String toString(FreeTimeRequest f) {
