@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.ReservationService;
@@ -40,8 +41,10 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationFilterRpcRequest;
+import org.unitime.timetable.interfaces.ExternalCourseOfferingReservationEditAction;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
@@ -657,6 +660,23 @@ public class ReservationServlet implements ReservationService {
 				if (permissionOfferingLockNeeded.check(user, offering))
 					StudentSectioningQueue.offeringChanged(hibSession, user, offering.getSession().getUniqueId(), offering.getUniqueId());
 				hibSession.flush();
+				
+				String className = ApplicationProperty.ExternalActionCourseOfferingReservationEdit.value();
+		    	if (className != null && !className.trim().isEmpty()){
+		    		ExternalCourseOfferingReservationEditAction editAction = (ExternalCourseOfferingReservationEditAction) Class.forName(className).newInstance();
+		    		editAction.performExternalCourseOfferingReservationEditAction(r.getInstructionalOffering(), hibSession);
+		    	}
+		    	
+		        ChangeLog.addChange(
+		        		hibSession,
+		                sessionContext,
+		                r.getInstructionalOffering(),
+		                ChangeLog.Source.RESERVATION,
+		                reservation.getId() == null ? ChangeLog.Operation.CREATE : ChangeLog.Operation.UPDATE,
+		                r.getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
+		                r.getInstructionalOffering().getDepartment());
+		        hibSession.flush();
+		        
 				return r.getUniqueId();
 			} finally {
 				hibSession.close();
@@ -688,6 +708,22 @@ public class ReservationServlet implements ReservationService {
 				if (permissionOfferingLockNeeded.check(user, offering))
 					StudentSectioningQueue.offeringChanged(hibSession, user, offering.getSession().getUniqueId(), offering.getUniqueId());
 				hibSession.flush();
+				
+				String className = ApplicationProperty.ExternalActionCourseOfferingReservationEdit.value();
+		    	if (className != null && !className.trim().isEmpty()){
+		    		ExternalCourseOfferingReservationEditAction editAction = (ExternalCourseOfferingReservationEditAction) Class.forName(className).newInstance();
+		    		editAction.performExternalCourseOfferingReservationEditAction(offering, hibSession);
+		    	}
+		    	
+		    	ChangeLog.addChange(
+		        		hibSession,
+		                sessionContext,
+		                offering,
+		                ChangeLog.Source.RESERVATION,
+		                ChangeLog.Operation.DELETE,
+		                offering.getControllingCourseOffering().getSubjectArea(),
+		                offering.getDepartment());
+		    	hibSession.flush();
 			} finally {
 				hibSession.close();
 			}
