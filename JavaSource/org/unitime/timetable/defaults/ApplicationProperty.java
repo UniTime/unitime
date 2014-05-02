@@ -169,6 +169,7 @@ public enum ApplicationProperty {
 	 * If manager setting for this property is created, each user (timetable manager) can change his/her menu style.
 	 * See http://help34.unitime.org/Customizations for more details.
 	 */
+	@DefaultValue("Dynamic On Top")
 	@Values({"Dynamic On Top", "Static On Top", "Tree On Side", "Static Tree On Side", "Dynamic Tree On Side", "Stack On Side", "Static Stack On Side", "Dynamic Stack On Side"})
 	@Description("All Pages: menu style")
 	MenuStyle("unitime.menu.style"),
@@ -201,6 +202,9 @@ public enum ApplicationProperty {
 	@Description("Login: login page response delay (in milliseconds), after the maximal number of failed logins is reached")
 	LoginFailedAttemptDelay("tmtbl.login.failed.delay.milliseconds"),
 
+	/**
+	 * Access Level: all | {dept code}(:{dept code})*
+	 */
 	@Description("Login: application access level (deprecated)")
 	@Deprecated
 	AccessLevel("tmtbl.access_level"),
@@ -1547,10 +1551,10 @@ public enum ApplicationProperty {
 	ContactUsOfficeHours("tmtbl.contact.office_hours"),
 
 	@Description("Contact Us: email")
-	ContactUsOfficeEmail("tmtbl.contact.email"),
+	ContactUsEmail("tmtbl.contact.email"),
 
 	@Description("Contact Us: mailto anchor (e.g., timetabling@universty.edu?subject=TIMETABLING: &lt;add subject here&gt)")
-	ContactUsOfficeMailTo("tmtbl.contact.email_mailto"),
+	ContactUsMailTo("tmtbl.contact.email_mailto"),
 
 	@DefaultValue("^(tmtbl|unitime)\\..*$")
 	@Description("Application Configuration: only properties matching the following regular expression are displayed")
