@@ -34,7 +34,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.dom4j.Element;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.AssignmentInfo;
 import org.unitime.timetable.model.ClassEvent;
@@ -275,7 +275,7 @@ public class CourseTimetableImport extends BaseImport {
 				if (assignment.getSolution().isCommited()) {
     				ClassEvent event = clazz.getEvent();
     				if (event != null) {
-    	            	if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.changePastMeetings", "true"))) {
+    	            	if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
     	            		getHibSession().delete(event);
     	            	} else {
     	            		for (Iterator<Meeting> j = event.getMeetings().iterator(); j.hasNext(); )

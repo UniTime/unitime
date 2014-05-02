@@ -29,7 +29,7 @@ import org.hibernate.HibernateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -77,7 +77,7 @@ public class BuildingListAction extends Action {
 		
 		sessionContext.checkPermission(Right.BuildingList);
 		
-		DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+		DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperty.DistanceEllipsoid.value());
 	    WebTable webTable = new WebTable( 5,
 	    		null, "buildingList.do?ord=%%",
 	    		new String[] {"Abbreviation", "Name", "External ID", ellipsoid.getFirstCoordinateName(), ellipsoid.getSecondCoordinateName()},

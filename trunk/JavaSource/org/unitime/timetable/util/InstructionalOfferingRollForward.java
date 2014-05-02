@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCatalog;
@@ -609,12 +609,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			return(null);
 		}
 		CourseOffering co = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromInstructionalOffering.getControllingCourseOffering().getUniqueId());
-		if (co == null){
-			String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
-
-	    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
-	    		co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(toSession.getUniqueId(), fromInstructionalOffering.getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation(), fromInstructionalOffering.getControllingCourseOffering().getCourseNbr());
-	    	} 
+		if (co == null && ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()) {
+			co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(toSession.getUniqueId(), fromInstructionalOffering.getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation(), fromInstructionalOffering.getControllingCourseOffering().getCourseNbr());
 		}
 		
 		if (co != null){

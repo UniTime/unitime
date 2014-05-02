@@ -49,7 +49,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.impl.LocalizedLookupDispatchAction;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.localization.messages.Messages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.form.ClassListFormInterface;
@@ -314,7 +314,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 			    else {
 		            query.append(" = '");
 			    }
-	            if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
+	            if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
 	            	courseNbr = courseNbr.toUpperCase();
 	            query.append(courseNbr);
 	            query.append("'  ");

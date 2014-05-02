@@ -53,7 +53,7 @@ import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.commons.web.WebTable.WebTableTweakStyle;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.form.PersonalizedExamReportForm;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
@@ -106,9 +106,9 @@ public class PersonalizedExamReportAction extends Action {
     @Autowired SessionContext sessionContext;
     
     static {
-        if (ApplicationProperties.getProperty("tmtbl.externalUid.translation")!=null) {
+        if (ApplicationProperty.ExternalUserIdTranslation.value()!=null) {
             try {
-                sTranslation = (ExternalUidTranslation)Class.forName(ApplicationProperties.getProperty("tmtbl.externalUid.translation")).getConstructor().newInstance();
+                sTranslation = (ExternalUidTranslation)Class.forName(ApplicationProperty.ExternalUserIdTranslation.value()).getConstructor().newInstance();
             } catch (Exception e) { Debug.error("Unable to instantiate external uid translation class, "+e.getMessage()); }
         }
     }
@@ -364,7 +364,7 @@ public class PersonalizedExamReportAction extends Action {
             sLog.info("No classes or exams found for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student!=null?student.getName(DepartmentalInstructor.sNameFormatShort):userName));
         }
         
-        boolean useCache = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.conflicts.cache","true"));
+        boolean useCache = ApplicationProperty.ExaminationCacheConflicts.isTrue();
         
         if ("Export PDF".equals(myForm.getOp())) {
             sLog.info("  Generating PDF for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student.getName(DepartmentalInstructor.sNameFormatShort)));
@@ -616,7 +616,7 @@ public class PersonalizedExamReportAction extends Action {
                 new String[] {"left", "left", "left", "left", "left"},
                 new boolean[] {true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
-        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
+        String noRoom = ApplicationProperty.ExaminationsNoRoomText.value();
         for (ExamAssignmentInfo exam : exams) {
             if (exam.getPeriod()==null) continue;
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
@@ -651,7 +651,7 @@ public class PersonalizedExamReportAction extends Action {
     
     public PdfWebTable getStudentConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student) {
         String nl = (html?"<br>":"\n");
-        boolean showBackToBack = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.student.btb","true"));
+        boolean showBackToBack = ApplicationProperty.ExaminationReportsStudentBackToBacks.isTrue();
         PdfWebTable table = new PdfWebTable( 6,
                 student.getSession().getLabel()+" Examination Conflicts" + (showBackToBack? " and/or Back-To-Back Examinations" : "") + " for "+student.getName(DepartmentalInstructor.sNameFormatLastFist),
                 "personalSchedule.do?o3=%%&q=" + QueryEncoderBackend.encode(student.getExternalUniqueId()+ ":" + student.getSession().getUniqueId()),
@@ -665,7 +665,7 @@ public class PersonalizedExamReportAction extends Action {
                     new String[] {"left","left","left","left","left","left"},
                     new boolean[] {true,  true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
-        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
+        String noRoom = ApplicationProperty.ExaminationsNoRoomText.value();
         for (ExamAssignmentInfo exam : exams) {
             for (DirectConflict conflict : exam.getDirectConflicts()) {
                 if (conflict.getOtherExam()!=null && exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
@@ -853,7 +853,7 @@ public class PersonalizedExamReportAction extends Action {
                 new String[] {"left", "right", "center", "left", "left", "left", "left", "right"},
                 new boolean[] {true, true, true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
-        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
+        String noRoom = ApplicationProperty.ExaminationsNoRoomText.value();
         for (ExamAssignmentInfo exam : exams) {
             if (exam.getPeriod()==null) continue;
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
@@ -892,7 +892,7 @@ public class PersonalizedExamReportAction extends Action {
     
     public PdfWebTable getInstructorConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, DepartmentalInstructor instructor) {
         String nl = (html?"<br>":"\n");
-        boolean showBackToBack = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.instructor.btb","true"));
+        boolean showBackToBack = ApplicationProperty.ExaminationReportsInstructorBackToBacks.isTrue();
         PdfWebTable table = new PdfWebTable( 8,
                 instructor.getDepartment().getSession().getLabel()+" Examination Instructor Conflicts" + (showBackToBack? " and/or Back-To-Back Examinations" : "") + " for "+instructor.getName(DepartmentalInstructor.sNameFormatLastFist),
                 "personalSchedule.do?o4=%%&q=" + QueryEncoderBackend.encode(instructor.getExternalUniqueId()+ ":"+instructor.getDepartment().getSession().getUniqueId()),
@@ -908,7 +908,7 @@ public class PersonalizedExamReportAction extends Action {
                     new String[] {"left","left","right","center","left","left","left","left"},
                     new boolean[] {true,  true, true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
-        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
+        String noRoom = ApplicationProperty.ExaminationsNoRoomText.value();
         for (ExamAssignmentInfo exam : exams) {
             for (DirectConflict conflict : exam.getInstructorDirectConflicts()) {
                 if (conflict.getOtherExam()!=null && exam.compareTo(conflict.getOtherExam())>=0 && exams.contains(conflict.getOtherExam())) continue;
@@ -1114,7 +1114,7 @@ public class PersonalizedExamReportAction extends Action {
                     new String[] {"left","left","left","right","center","left","left","left"},
                     new boolean[] {true, true,  true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
-        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
+        String noRoom = ApplicationProperty.ExaminationsNoRoomText.value();
         table.setBlankWhenSame(true);
         for (ExamAssignmentInfo exam : exams) {
             for (DirectConflict conflict : exam.getDirectConflicts()) {
@@ -1421,7 +1421,7 @@ public class PersonalizedExamReportAction extends Action {
                 new boolean[] {true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
         table.setBlankWhenSame(true);
-        boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
+        boolean suffix = ApplicationProperty.ExaminationReportsClassSufix.isTrue();
         for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
             StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
             String course = sce.getCourseOffering().getCourseName();
@@ -1475,7 +1475,7 @@ public class PersonalizedExamReportAction extends Action {
         }
         table.setRowStyle("white-space:nowrap");
         table.setBlankWhenSame(true);
-        boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
+        boolean suffix = ApplicationProperty.ExaminationReportsClassSufix.isTrue();
         for (Iterator i=allClasses.iterator();i.hasNext();) {
             ClassInstructor ci = (ClassInstructor)i.next();
             String course = ci.getClassInstructing().getSchedulingSubpart().getControllingCourseOffering().getCourseName();

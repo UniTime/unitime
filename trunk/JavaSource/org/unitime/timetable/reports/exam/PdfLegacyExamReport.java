@@ -48,6 +48,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.commons.Email;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
@@ -135,7 +136,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     }
     
     public PdfLegacyExamReport(int mode, OutputStream out, String title, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
-        super(mode, out, title, ApplicationProperties.getProperty("tmtbl.exam.report." + (examType == null ? "all" : examType.getReference()), (examType == null ? "EXAMINATIONS" : examType.getLabel().toUpperCase()) + " EXAMINATIONS"), 
+        super(mode, out, title,
+        		ApplicationProperty.ExaminationPdfReportTitle.value(examType == null ? "all" : examType.getReference(), examType == null ? "EXAMINATIONS" : examType.getLabel().toUpperCase() + " EXAMINATIONS"),
                 title + " -- " + session.getLabel(), session.getLabel());
         if (subjectAreas!=null && subjectAreas.size() == 1) setFooter(subjectAreas.iterator().next().getSubjectAreaAbbreviation());
         iExams = exams;
@@ -143,20 +145,20 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iExamType = examType;
         iSubjectAreas = subjectAreas;
         iDispRooms = "true".equals(System.getProperty("room","true"));
-        iNoRoom = System.getProperty("noroom",ApplicationProperties.getProperty("tmtbl.exam.report.noroom","INSTR OFFC"));
+        iNoRoom = System.getProperty("noroom", ApplicationProperty.ExaminationsNoRoomText.value());
         iDirect = "true".equals(System.getProperty("direct","true"));
         iM2d = "true".equals(System.getProperty("m2d",(examType == null || examType.getType() == ExamType.sExamTypeFinal?"true":"false")));
         iBtb = "true".equals(System.getProperty("btb","false"));
         iLimit = Integer.parseInt(System.getProperty("limit", "-1"));
-        iItype = "true".equals(System.getProperty("itype",ApplicationProperties.getProperty("tmtbl.exam.report.itype","true")));
+        iItype = "true".equals(System.getProperty("itype", ApplicationProperty.ExaminationReportsShowInstructionalType.value()));
         iTotals = "true".equals(System.getProperty("totals","true"));
-        iUseClassSuffix = "true".equals(System.getProperty("suffix",ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false")));
-        iExternal = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"));
+        iUseClassSuffix = "true".equals(System.getProperty("suffix", ApplicationProperty.ExaminationReportsClassSufix.value()));
+        iExternal = ApplicationProperty.ExaminationReportsExternalId.isTrue();
         iDispLimits = "true".equals(System.getProperty("verlimit","true"));
-        iClassSchedule = "true".equals(System.getProperty("cschedule",ApplicationProperties.getProperty("tmtbl.exam.report.cschedule","true")));
+        iClassSchedule = "true".equals(System.getProperty("cschedule", ApplicationProperty.ExaminationPdfReportsIncludeClassSchedule.value()));
         iDispFullTermDates = "true".equals(System.getProperty("fullterm","false"));
-        iFullTermCheckDatePattern = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.fullterm.checkdp","true"));
-        iMeetingTimeUseEvents = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.meeting_time.use_events","true"));
+        iFullTermCheckDatePattern = ApplicationProperty.ExaminationPdfReportsFullTermCheckDatePattern.isTrue();
+        iMeetingTimeUseEvents = ApplicationProperty.ExaminationPdfReportsUseEventsForMeetingTimes.isTrue();
         if (System.getProperty("since")!=null) {
             try {
                 iSince = new SimpleDateFormat(System.getProperty("sinceFormat","MM/dd/yy")).parse(System.getProperty("since"));
@@ -164,7 +166,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 sLog.error("Unable to parse date "+System.getProperty("since")+", reason: "+e.getMessage());
             }
         }
-        setRoomCode(System.getProperty("roomcode",ApplicationProperties.getProperty("tmtbl.exam.report.roomcode")));
+        setRoomCode(System.getProperty("roomcode", ApplicationProperty.ExaminationRoomCode.value()));
     }
     
     public void setDispRooms(boolean dispRooms) { iDispRooms = dispRooms; }
@@ -904,13 +906,13 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         }
         Hashtable<Long, Set<Meeting>> period2meetings = new Hashtable();
         ExamType type = ExamTypeDAO.getInstance().get(examTypeId);
-        if (assgn && eventConf && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+type.getReference(),"true"))) {
+        if (assgn && eventConf && ApplicationProperty.ExaminationConsiderEventConflicts.isTrue(type.getReference())) {
             sLog.info("  Loading overlapping class meetings...");
             for (Iterator i=new ExamDAO().getSession().createQuery(
                     "select p.uniqueId, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId")
-                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
+                    .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
                     .setLong("sessionId", sessionId).setLong("examTypeId", examTypeId)
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -927,7 +929,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     "select p.uniqueId, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where ce.reqAttendance=true and m.approvalStatus = 1 and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId")
-                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))
+                    .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue())
                     .setLong("sessionId", sessionId).setLong("examTypeId", examTypeId)
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -959,7 +961,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         return ret;
     }
     
-    public static void main(String[] args) {
+	public static void main(String[] args) {
         try {
             Properties props = new Properties();
             props.setProperty("log4j.rootLogger", "DEBUG, A1");

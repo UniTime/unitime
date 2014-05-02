@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -76,7 +76,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				Session academicSession = SessionDAO.getInstance().get(sessionId);
 				switch (type) {
 				case ROOM:
-					if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.event_rooms_only", "true"))) {
+					if (ApplicationProperty.EventRoomTimetableAllRooms.isTrue()) {
 						List<Room> rooms = hibSession.createQuery("select distinct r from Room r " +
 								"where r.session.uniqueId = :sessionId and r.eventDepartment.allowEvents = true and (" +
 								"r.buildingAbbv || ' ' || r.roomNumber = :name or r.buildingAbbv || r.roomNumber = :name)")
@@ -280,7 +280,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 				List<ResourceInterface> resources = new ArrayList<ResourceInterface>();
 				switch (type) {
 				case ROOM:
-					if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.event_rooms_only", "true"))) {
+					if (ApplicationProperty.EventRoomTimetableAllRooms.isTrue()) {
 						List<Room> rooms = hibSession.createQuery("select distinct r from Room r, " +
 								"RoomTypeOption o where r.session.uniqueId = :sessionId and " +
 								"r.eventDepartment.allowEvents = true and " + 

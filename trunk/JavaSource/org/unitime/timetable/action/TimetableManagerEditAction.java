@@ -40,7 +40,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.TimetableManagerForm;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
@@ -136,12 +136,7 @@ public class TimetableManagerEditAction extends Action {
         if (op.equalsIgnoreCase(rsc.getMessage("button.addTimetableManager"))) {
         	sessionContext.checkPermission(Right.TimetableManagerAdd);
             frm.setOp1("1");
-            String uidLookupEnabled = ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.enabled");
-            if (uidLookupEnabled!=null && uidLookupEnabled.equalsIgnoreCase("true")) {
-                frm.setLookupEnabled(Boolean.TRUE);
-            } else {
-                frm.setLookupEnabled(Boolean.FALSE);
-            }            
+            frm.setLookupEnabled(ApplicationProperty.ManagerExternalIdLookup.isTrue() && ApplicationProperty.ManagerExternalIdLookupClass.value() != null);
         }
         
         // Lookup puid / career account
@@ -288,7 +283,7 @@ public class TimetableManagerEditAction extends Action {
         String id = frm.getExternalId();
         if (id!=null && id.trim().length()>0 && frm.getLookupEnabled().booleanValue()) {
             
-        	String className = ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.class");        	
+        	String className = ApplicationProperty.ManagerExternalIdLookupClass.value();        	
         	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).newInstance());
        		UserInfo results = lookup.doLookup(id);
        		if (results == null) return;
@@ -383,8 +378,7 @@ public class TimetableManagerEditAction extends Action {
                 frm.addToSolverGrs(sg);
         }        
         
-        String uidLookupEnabled = ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.enabled");
-        if (uidLookupEnabled!=null && uidLookupEnabled.equalsIgnoreCase("true")) {
+        if (ApplicationProperty.ManagerExternalIdLookup.isTrue() && ApplicationProperty.ManagerExternalIdLookupClass.value() != null) {
         	frm.setLookupEnabled(Boolean.TRUE);
             frm.setFirstName(mgr.getFirstName());
             frm.setMiddleName(mgr.getMiddleName());

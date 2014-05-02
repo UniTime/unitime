@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -67,8 +66,6 @@ public class ReloadStudent extends ReloadAllData {
 	
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) return false;
-
 		helper.info(getStudentIds().size() + " students changed.");
 
 		helper.beginTransaction();

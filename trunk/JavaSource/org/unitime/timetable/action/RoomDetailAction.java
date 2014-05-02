@@ -41,7 +41,7 @@ import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.RoomDetailForm;
@@ -261,7 +261,7 @@ public class RoomDetailAction extends Action {
 		roomDetailForm.setCapacity(location.getCapacity());
 		roomDetailForm.setCoordinateX(location.getCoordinateX());
 		roomDetailForm.setCoordinateY(location.getCoordinateY());
-		roomDetailForm.setArea(location.getArea() == null ? null : new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).format(location.getArea()));
+		roomDetailForm.setArea(location.getArea() == null ? null : new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value()).format(location.getArea()));
 		roomDetailForm.setIgnoreTooFar(location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue());
 		roomDetailForm.setIgnoreRoomCheck(location.isIgnoreRoomCheck().booleanValue());
 		roomDetailForm.setGlobalFeatures(new TreeSet(location.getGlobalRoomFeatures()));

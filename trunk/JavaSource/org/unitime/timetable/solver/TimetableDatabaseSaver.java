@@ -46,7 +46,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.AssignmentInfo;
@@ -186,7 +186,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				iProgress.incProgress();
     			}
 				tx.commit();
-		    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+		    	String className = ApplicationProperty.ExternalActionSolutionCommit.value();
 		    	if (className != null && className.trim().length() > 0){
 		    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
 		    		commitAction.performExternalSolutionCommitAction(touchedSolutions, hibSession);
@@ -281,7 +281,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     					if (solution.isCommited().booleanValue()){
     						solution.uncommitSolution(hibSession, getModel().getProperties().getProperty("General.OwnerPuid"));
     						if (!iCommitSolution){
-    					    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+    							String className = ApplicationProperty.ExternalActionSolutionCommit.value();
     					    	if (className != null && className.trim().length() > 0){
     					    		HashSet<Solution> touchedSolutions = new HashSet<Solution>();
     					    		touchedSolutions.add(solution);

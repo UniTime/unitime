@@ -41,6 +41,7 @@ import javax.mail.internet.MimeMultipart;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Tomas Muller
@@ -56,8 +57,8 @@ public class JavaMailWrapper extends Email {
         if (p.getProperty("mail.smtp.host")==null && p.getProperty("tmtbl.smtp.host")!=null)
             p.setProperty("mail.smtp.host", p.getProperty("tmtbl.smtp.host"));
         
-        final String user = ApplicationProperties.getProperty("mail.smtp.user", ApplicationProperties.getProperty("unitime.email.user", ApplicationProperties.getProperty("tmtbl.mail.user")));
-        final String password = ApplicationProperties.getProperty("mail.smtp.password", ApplicationProperties.getProperty("unitime.email.password", ApplicationProperties.getProperty("tmtbl.mail.pwd")));
+        final String user = ApplicationProperty.EmailSmtpUser.value();
+        final String password = ApplicationProperty.EmailSmtpPassword.value();
         
         Authenticator a = null;
         if (user != null && password != null) {
@@ -144,14 +145,9 @@ public class JavaMailWrapper extends Email {
 		long t0 = System.currentTimeMillis();
 		try {
 			if (iMail.getFrom() == null || iMail.getFrom().length == 0)
-		        setFrom(
-		        		ApplicationProperties.getProperty("unitime.email.sender", 
-		        				ApplicationProperties.getProperty("tmtbl.inquiry.sender", ApplicationProperties.getProperty("tmtbl.contact.email"))),
-		        		ApplicationProperties.getProperty("unitime.email.sender.name", 
-		        				ApplicationProperties.getProperty("tmtbl.inquiry.sender.name", ApplicationProperties.getProperty("tmtbl.contact.email.name", "UniTime Email")))
-		        		);
+		        setFrom(ApplicationProperty.EmailSenderAddress.value(), ApplicationProperty.EmailSenderName.value());
 	        if (iMail.getReplyTo() == null || iMail.getReplyTo().length == 0)
-	        	setReplyTo(ApplicationProperties.getProperty("unitime.email.replyto"), ApplicationProperties.getProperty("unitime.email.replyto.name"));
+	        	setReplyTo(ApplicationProperty.EmailReplyToAddress.value(), ApplicationProperty.EmailReplyToName.value());
 	        iMail.setSentDate(new Date());
 	        iMail.setContent(iBody);
 	        iMail.saveChanges();

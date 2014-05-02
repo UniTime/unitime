@@ -32,7 +32,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.cpsolver.ifs.util.ToolBox;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
@@ -72,7 +72,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ExamVerificationReport.class);
     private boolean iSkipHoles = true;
     // Skip subparts of the same itype as parent subpart
-    private boolean iSkipSuffixSubparts = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.verification.skipSuffixSubparts", "true"));
+    private boolean iSkipSuffixSubparts = ApplicationProperty.ExaminationPdfReportsSkipSuffixSubpart.isTrue();
     private boolean iHasAssignment = false;
     
     public ExamVerificationReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
@@ -186,22 +186,22 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         String ret = "";
         for (Class_ c : classes) {
             if (ret.length()==0)
-                ret+=genName(ApplicationProperties.getProperty("tmtbl.exam.name.Class"),c);
+                ret+=genName(ApplicationProperty.ExamNameClass.value(),c);
             else if (prev.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().equals(c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea())) {
                 //same subject area
                 if (prev.getSchedulingSubpart().getControllingCourseOffering().equals(c.getSchedulingSubpart().getControllingCourseOffering())) {
                     //same course number
                     if (prev.getSchedulingSubpart().equals(c.getSchedulingSubpart()))
-                        ret+=genName(ApplicationProperties.getProperty("tmtbl.exam.name.sameSubpart.Class"),c);
+                        ret+=genName(ApplicationProperty.ExamNameSameSubpartClass.value(), c);
                     else
-                        ret+=genName(ApplicationProperties.getProperty("tmtbl.exam.name.sameCourse.Class"),c);
+                        ret+=genName(ApplicationProperty.ExamNameSameCourseClass.value(), c);
                 } else {
                     //different course number
-                    ret+=genName(ApplicationProperties.getProperty("tmtbl.exam.name.sameSubject.Class"),c);
+                    ret+=genName(ApplicationProperty.ExamNameSameSubjectClass.value(), c);
                 }
             } else {
-                ret+=genName(ApplicationProperties.getProperty("tmtbl.exam.name.diffSubject.separator"),prev);
-                ret+=genName(ApplicationProperties.getProperty("tmtbl.exam.name.Class"),c);
+                ret+=genName(ApplicationProperty.ExamNameSeparator.value(),prev);
+                ret+=genName(ApplicationProperty.ExamNameClass.value(),c);
             }
             prev = c;
         }

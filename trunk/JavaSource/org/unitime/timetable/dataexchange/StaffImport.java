@@ -25,7 +25,7 @@ import java.util.Iterator;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Session;
@@ -66,11 +66,7 @@ public class StaffImport extends BaseImport {
     
 	
     public void loadXml(Element root) throws Exception {
-		String trimLeadingZeros =
-	        ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false");
-		if (trimLeadingZeros.equals("true")){
-			trimLeadingZerosFromExternalId = true;
-		}
+    	trimLeadingZerosFromExternalId = ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue();
 
         if (!root.getName().equalsIgnoreCase("staff")) {
         	throw new Exception("Given XML file is not a Staff load file.");

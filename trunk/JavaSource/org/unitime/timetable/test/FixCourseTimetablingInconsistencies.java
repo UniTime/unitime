@@ -38,6 +38,7 @@ import org.cpsolver.ifs.util.DistanceMetric;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -80,7 +81,7 @@ public class FixCourseTimetablingInconsistencies {
 	public FixCourseTimetablingInconsistencies(Long sessionId) {
 		iSessionId = sessionId;
 		iDistanceMetric = new DistanceMetric(
-				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
+				DistanceMetric.Ellipsoid.valueOf(ApplicationProperty.DistanceEllipsoid.value()));
 	}
 	
 	public void fixAll(org.hibernate.Session hibSession) {
@@ -289,6 +290,7 @@ public class FixCourseTimetablingInconsistencies {
                         	sLog.warn("Clazz " + clazz.getClassLabel() + " prohibits assigned time " + time.getName());
                         	pattern.setPreference(d, t, PreferenceLevel.sStronglyDiscouraged);
                         	p.setPreference(pattern.getPreferences());
+                        	if (p.getOwner() == null) p.setOwner(clazz);
                         	iHibSession.saveOrUpdate(p);
                         	return true;
                     	}
@@ -313,6 +315,7 @@ public class FixCourseTimetablingInconsistencies {
                     }
                 }
             	p.setPreference(pattern.getPreferences());
+            	if (p.getOwner() == null) p.setOwner(clazz);
             	iHibSession.saveOrUpdate(p);
             }
             if (found) return true;
@@ -363,6 +366,7 @@ public class FixCourseTimetablingInconsistencies {
 				if (!remaining.remove(p.getRoom())) {
 					sLog.warn("Clazz " + clazz.getClassLabel() + " requires a room " + p.getRoom().getLabel() + " different from the assigned room " + assignment.getPlacement().getRoomName(","));
 		        	p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+		        	if (p.getOwner() == null) p.setOwner(clazz);
 		        	iHibSession.save(p);
 				}
 			}
@@ -370,6 +374,7 @@ public class FixCourseTimetablingInconsistencies {
 				if (assignment.getRooms().contains(p.getRoom())) {
 					sLog.warn("Clazz " + clazz.getClassLabel() + " prohibits the assigned room " + p.getRoom().getLabel());
 					p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
+		        	if (p.getOwner() == null) p.setOwner(clazz);
 		        	iHibSession.save(p);
 				}
 			}
@@ -377,6 +382,7 @@ public class FixCourseTimetablingInconsistencies {
 		for (RoomPref p: roomPrefs) {
 			if (hasReq && !p.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sRequired) && remaining.remove(p.getRoom())) {
 	        	p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+	        	if (p.getOwner() == null) p.setOwner(clazz);
 	        	iHibSession.save(p);
 			}
 		}
@@ -446,6 +452,7 @@ public class FixCourseTimetablingInconsistencies {
 				if (!remaining.remove(p.getBuilding())) {
 					sLog.warn("Clazz " + clazz.getClassLabel() + " requires a building " + p.getBuilding().getAbbreviation() + " different from the assigned building " + assignment.getPlacement().getRoomName(","));
 		        	p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+		        	if (p.getOwner() == null) p.setOwner(clazz);
 		        	iHibSession.save(p);
 				}
 			}
@@ -453,6 +460,7 @@ public class FixCourseTimetablingInconsistencies {
 				if (remaining.contains(p.getBuilding())) {
 					sLog.warn("Clazz " + clazz.getClassLabel() + " prohibits the assigned building " + p.getBuilding().getAbbreviation());
 					p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
+		        	if (p.getOwner() == null) p.setOwner(clazz);
 		        	iHibSession.save(p);
 				}
 			}
@@ -460,6 +468,7 @@ public class FixCourseTimetablingInconsistencies {
 		for (BuildingPref p: bldgPrefs) {
 			if (hasReq && !p.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sRequired) && remaining.remove(p.getBuilding())) {
 	        	p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+	        	if (p.getOwner() == null) p.setOwner(clazz);
 	        	iHibSession.save(p);
 			}
 		}
@@ -590,6 +599,7 @@ public class FixCourseTimetablingInconsistencies {
 					if (!loc.getFeatures().contains(p.getRoomFeature())) {
 						sLog.info("Class " + clazz.getClassLabel() + " requires feature " + p.getRoomFeature().getLabel() + " but assigned room " + loc.getLabel() + " does not have it.");
 						p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
+			        	if (p.getOwner() == null) p.setOwner(clazz);
 						iHibSession.saveOrUpdate(p);
 					}
 				}
@@ -599,6 +609,7 @@ public class FixCourseTimetablingInconsistencies {
 					if (loc.getFeatures().contains(p.getRoomFeature())) {
 						sLog.info("Class " + clazz.getClassLabel() + " prohibits feature " + p.getRoomFeature().getLabel() + " but assigned room " + loc.getLabel() + " does have it.");
 						p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
+			        	if (p.getOwner() == null) p.setOwner(clazz);
 						iHibSession.saveOrUpdate(p);
 					}
 				}
@@ -614,6 +625,7 @@ public class FixCourseTimetablingInconsistencies {
 					if (!loc.getRoomGroups().contains(p.getRoomGroup())) {
 						sLog.info("Class " + clazz.getClassLabel() + " requires feature " + p.getRoomGroup().getName() + " but assigned room " + loc.getLabel() + " does not have it.");
 						p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
+			        	if (p.getOwner() == null) p.setOwner(clazz);
 						iHibSession.saveOrUpdate(p);
 					}
 				}
@@ -623,6 +635,7 @@ public class FixCourseTimetablingInconsistencies {
 					if (loc.getRoomGroups().contains(p.getRoomGroup())) {
 						sLog.info("Class " + clazz.getClassLabel() + " prohibits feature " + p.getRoomGroup().getName() + " but assigned room " + loc.getLabel() + " does have it.");
 						p.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
+			        	if (p.getOwner() == null) p.setOwner(clazz);
 						iHibSession.saveOrUpdate(p);
 					}
 				}
@@ -669,7 +682,7 @@ public class FixCourseTimetablingInconsistencies {
 		}
 	}
 
-    public static void main(String args[]) {
+	public static void main(String args[]) {
         try {
             Properties props = new Properties();
             props.setProperty("log4j.rootLogger", "DEBUG, A1");
@@ -693,7 +706,7 @@ public class FixCourseTimetablingInconsistencies {
 
                 Session session = Session.getSessionUsingInitiativeYearTerm(
                         ApplicationProperties.getProperty("initiative", "PWL"),
-                        ApplicationProperties.getProperty("year","2010"),
+                        ApplicationProperties.getProperty("year","2014"),
                         ApplicationProperties.getProperty("term","Spring")
                         );
                 

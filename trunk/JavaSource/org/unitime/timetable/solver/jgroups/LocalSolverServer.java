@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.jgroups.Address;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -142,7 +143,7 @@ public class LocalSolverServer extends AbstractSolverServer {
 			super();
 			setDaemon(true);
 			setName("Updater[generic]");
-			iSleepTimeInSeconds = Long.parseLong(ApplicationProperties.getProperty("unitime.sectioning.queue.loadInterval", "300"));
+			iSleepTimeInSeconds = ApplicationProperty.OnlineSchedulingQueueLoadInterval.intValue();
 			iLog = Logger.getLogger(OnlineStudentSchedulingGenericUpdater.class + ".updater[generic]");
 		}
 		
@@ -201,8 +202,8 @@ public class LocalSolverServer extends AbstractSolverServer {
 					if (nrSolutions == 0) continue;
 					
 					Properties properties = ApplicationProperties.getConfigProperties();
-					if (properties.getProperty("unitime.enrollment.server.class") == null)
-						properties.setProperty("unitime.enrollment.server.class", InMemoryServer.class.getName());
+					if (properties.getProperty(ApplicationProperty.OnlineSchedulingServerClass.key()) == null)
+						properties.setProperty(ApplicationProperty.OnlineSchedulingServerClass.key(), InMemoryServer.class.getName());
 
 					try {
 						iOnlineStudentSchedulingContainer.createSolver(session.getUniqueId().toString(), null);

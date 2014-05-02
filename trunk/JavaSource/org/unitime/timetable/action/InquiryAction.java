@@ -37,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.InquiryForm;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.security.Qualifiable;
@@ -144,12 +144,12 @@ public class InquiryAction extends Action {
 	            		}
 	            	}
                     
-                    if (ApplicationProperties.getProperty("unitime.email.inquiry") != null)
-                    	email.addRecipient(ApplicationProperties.getProperty("unitime.email.inquiry"), ApplicationProperties.getProperty("unitime.email.inquiry.name"));
+                    if (ApplicationProperty.EmailInquiryAddress.value() != null)
+                    	email.addRecipient(ApplicationProperty.EmailInquiryAddress.value(), ApplicationProperty.EmailInquiryAddressName.value());
                     else
                     	email.addNotify();
                     
-                    boolean autoreply = "true".equals(ApplicationProperties.getProperty("unitime.email.inquiry.autoreply", ApplicationProperties.getProperty("tmtbl.inquiry.autoreply", "false")));
+                    boolean autoreply = ApplicationProperty.EmailInquiryAutoreply.isTrue();
                     
                     if (!autoreply) {
                         if (sessionContext.getUser().getEmail() != null && !sessionContext.getUser().getEmail().isEmpty()) {
@@ -157,7 +157,7 @@ public class InquiryAction extends Action {
                         } else if (c != null && c.getEmailAddress() != null && !c.getEmailAddress().isEmpty()) {
                         	email.addRecipientCC(c.getEmailAddress(), c.getName());
                         } else {
-                        	email.addRecipientCC(sessionContext.getUser().getUsername() + ApplicationProperties.getProperty("unitime.email.inquiry.suffix", ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@unitime.org")), sessionContext.getUser().getName());
+                        	email.addRecipientCC(sessionContext.getUser().getUsername() + ApplicationProperty.EmailInquiryAddressSuffix.value(), sessionContext.getUser().getName());
                         }
                     }
                     email.send();
@@ -170,8 +170,8 @@ public class InquiryAction extends Action {
 	    	            		"We will contact you soon. "+
 	            				"This email was automatically generated, please do not reply.\n\n";
                         
-    	            		if (ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")!=null) {
-                                mail += "Thank you, \n\n"+ApplicationProperties.getProperty("tmtbl.inquiry.sender.name")+"\n\n";
+    	            		if (ApplicationProperty.EmailSenderName.value() != null) {
+                                mail += "Thank you, \n\n"+ApplicationProperty.EmailSenderName.value()+"\n\n";
                             }
                             
                             mail +=
@@ -188,7 +188,7 @@ public class InquiryAction extends Action {
                             } else if (c != null && c.getEmailAddress() != null && !c.getEmailAddress().isEmpty()) {
                             	email.addRecipient(c.getEmailAddress(), c.getName());
                             } else {
-                            	email.addRecipient(sessionContext.getUser().getUsername() + ApplicationProperties.getProperty("unitime.email.inquiry.suffix", ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@unitime.org")), sessionContext.getUser().getName());
+                            	email.addRecipient(sessionContext.getUser().getUsername() + ApplicationProperty.EmailInquiryAddressSuffix.value(), sessionContext.getUser().getName());
                             }
                             
                             email.send();

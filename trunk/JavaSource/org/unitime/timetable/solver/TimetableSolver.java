@@ -77,7 +77,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.model.Assignment;
@@ -1486,7 +1486,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 	}
 
 	public synchronized boolean passivateIfNeeded(File folder, String puid) {
-		long inactiveTimeToPassivate = Long.parseLong(ApplicationProperties.getProperty("unitime.solver.passivation.time", "30")) * 60000l;
+		long inactiveTimeToPassivate = 60000l * ApplicationProperty.SolverPasivationTime.intValue();
 		if (isPassivated() || inactiveTimeToPassivate <= 0 || timeFromLastUsed() < inactiveTimeToPassivate || isWorking()) return false;
 		return passivate(folder, puid);
 	}
@@ -1500,8 +1500,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
         	File temp = File.createTempFile("course-" + getProperties().getProperty("General.SolverGroupId","").replace(',', '-'), ".xml");
             File conv = null;
             
-            boolean anonymize = "false".equals(ApplicationProperties.getProperty("unitime.solution.export.names", "false"));
-            boolean idconv = "true".equals(ApplicationProperties.getProperty("unitime.solution.export.id-conv", "false"));
+            boolean anonymize = ApplicationProperty.SolverXMLExportNames.isFalse(); 
+            boolean idconv = ApplicationProperty.SolverXMLExportConvertIds.isTrue();
             if (anonymize) {
                 getProperties().setProperty("Xml.ConvertIds", idconv ? "true" : "false");
                 getProperties().setProperty("Xml.ShowNames", "false");

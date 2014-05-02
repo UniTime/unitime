@@ -34,7 +34,7 @@ import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.DistanceMetric;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
@@ -359,7 +359,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		
 		final Map<Long, Double> distances = (room2distance == null ? new Hashtable<Long, Double>() : room2distance);
 		if (nearby && building != null && !building.isEmpty() && (limit <= 0 || ret.size() < limit)) {
-			double allowedDistance = Double.parseDouble(ApplicationProperties.getProperty("tmtbl.events.nearByDistance", "670")); // 670m by default
+			double allowedDistance = ApplicationProperty.EventNearByDistance.doubleValue();
 			Set<Coordinates> coord = new HashSet<Coordinates>();
 			for (Location location: ret)
 				coord.add(new Coordinates(location));
@@ -503,8 +503,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 	public DistanceMetric getDistanceMetric() {
 		if (iMetrics == null) {
 			DataProperties config = new DataProperties();
-			config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
-			config.setProperty("Distances.Speed", ApplicationProperties.getProperty("tmtbl.events.distanceSpeed", "67.0"));
+			config.setProperty("Distances.Ellipsoid", ApplicationProperty.DistanceEllipsoid.value());
+			config.setProperty("Distances.Speed", ApplicationProperty.EventDistanceSpeed.value());
 			iMetrics = new DistanceMetric(new DataProperties(config));
 			TravelTime.populateTravelTimes(iMetrics);
 		}

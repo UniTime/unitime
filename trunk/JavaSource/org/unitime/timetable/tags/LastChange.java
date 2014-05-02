@@ -179,7 +179,7 @@ public class LastChange extends BodyTagSupport {
 
         nrChanges += printLastChangeTableRow(webTable, 
                 combine(
-                        ChangeLog.findLastChange(CourseOffering.class.getName(), offeringIds, ChangeLog.Source.RESERVATION),
+                        ChangeLog.findLastChange(InstructionalOffering.class.getName(), io.getUniqueId(), ChangeLog.Source.RESERVATION),
                         ChangeLog.findLastChange(Class_.class.getName(), classIds, ChangeLog.Source.RESERVATION)));
         
         nrChanges += printLastChangeTableRow(webTable,

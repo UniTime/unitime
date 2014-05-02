@@ -35,6 +35,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -340,7 +341,7 @@ public class CourseOfferingExport extends BaseExport {
             timeElement.addAttribute("startTime", startSlot2startTime(time.getStartSlot()));
             timeElement.addAttribute("endTime", timeLocation2endTime(time));
             DatePattern dp = assignment.getDatePattern();
-            if (dp != null && (!dp.isDefault() || "true".equals(ApplicationProperties.getProperty("tmtbl.export.defaultDatePattern", "false"))))
+            if (dp != null && (!dp.isDefault() || ApplicationProperty.DataExchangeIncludeDefaultDatePattern.isTrue()))
             	timeElement.addAttribute("datePattern", dp.getName());
             if (assignment.getTimePattern() != null)
             	timeElement.addAttribute("timePattern", assignment.getTimePattern().getName());
@@ -372,7 +373,7 @@ public class CourseOfferingExport extends BaseExport {
     }
     
     protected void exportDatePattern(Element classElement, DatePattern dp, Session session) {
-        if (dp!=null && (!dp.equals(session.getDefaultDatePattern()) || "true".equals(ApplicationProperties.getProperty("tmtbl.export.defaultDatePattern", "false")))) {
+        if (dp!=null && (!dp.equals(session.getDefaultDatePattern()) || ApplicationProperty.DataExchangeIncludeDefaultDatePattern.isTrue())) {
             Calendar startDate = Calendar.getInstance(Locale.US);
             startDate.setTime(dp.getStartDate());
             Calendar endDate = Calendar.getInstance(Locale.US);

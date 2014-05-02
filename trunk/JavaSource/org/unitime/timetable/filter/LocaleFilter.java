@@ -30,7 +30,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.util.Formats;
 
 /**
@@ -65,7 +65,7 @@ public class LocaleFilter implements Filter {
 				
 				// Fall back to unitime.locale
 				if (locale == null)
-					locale = ApplicationProperties.getProperty("unitime.locale", "en");
+					locale = ApplicationProperty.Locale.value();
 				
 				Localization.setLocale(locale);
 			}

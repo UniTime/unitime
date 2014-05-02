@@ -28,7 +28,7 @@ import java.util.TreeSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.events.EventEnrollmentsBackend;
 import org.unitime.timetable.gwt.client.sectioning.ExaminationEnrollmentTable.ExaminationEnrollmentsRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -237,8 +237,8 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
 		
         org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 
-        int nrTravelSlotsClassEvent = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6"));
-        int nrTravelSlotsCourseEvent = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0"));
+        int nrTravelSlotsClassEvent = ApplicationProperty.ExaminationTravelTimeClass.intValue();
+        int nrTravelSlotsCourseEvent = ApplicationProperty.ExaminationTravelTimeCourse.intValue();
         
         // class events
         for (int t2 = 0; t2 < ExamOwner.sOwnerTypes.length; t2++) {

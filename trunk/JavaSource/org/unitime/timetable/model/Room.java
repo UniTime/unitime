@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.criterion.Restrictions;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseRoom;
 import org.unitime.timetable.model.dao.ExternalRoomDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
@@ -152,13 +152,13 @@ public class Room extends BaseRoom {
     
 	public static void addNewExternalRoomsToSession(Session session) {
 		String query = "from ExternalRoom er where er.building.session.uniqueId=:sessionId and er.building.externalUniqueId is not null and er.externalUniqueId is not null";
-		boolean updateExistingRooms = "true".equalsIgnoreCase(ApplicationProperties.getProperty("unitime.external.room.update.existing", "false"));
+		boolean updateExistingRooms = ApplicationProperty.BuildingsExternalUpdateExistingRooms.isTrue();
 		if (!updateExistingRooms)
 			query += " and er.externalUniqueId not in (select r.externalUniqueId from Room r where r.session.uniqueId =:sessionId " +
 					"and r.externalUniqueId is not null)";
-		boolean resetRoomFeatures = "true".equalsIgnoreCase(ApplicationProperties.getProperty("unitime.external.room.update.existing.features", "false"));
-		boolean resetRoomDepartments = "true".equalsIgnoreCase(ApplicationProperties.getProperty("unitime.external.room.update.existing.departments", "false"));
-		String classifications = ApplicationProperties.getProperty("unitime.external.room.update.classifications");
+		boolean resetRoomFeatures = ApplicationProperty.BuildingsExternalUpdateExistingRoomFeatures.isTrue();
+		boolean resetRoomDepartments = ApplicationProperty.BuildingsExternalUpdateExistingRoomDepartments.isTrue();
+		String classifications = ApplicationProperty.BuildingsExternalUpdateClassification.value();
 		if (classifications != null) {
 			String classificationsQuery = "";
 			for (String c: classifications.split(",")) {

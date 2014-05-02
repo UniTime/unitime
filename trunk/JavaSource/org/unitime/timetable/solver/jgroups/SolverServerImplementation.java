@@ -56,6 +56,7 @@ import org.jgroups.util.RspList;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.jgroups.UniTimeChannelLookup;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -511,8 +512,8 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	
     public static void main(String[] args) {
     	try {
-    		if (ApplicationProperties.getProperty("unitime.data.dir") == null)
-    			ApplicationProperties.getDefaultProperties().setProperty("unitime.data.dir", ".");
+    		if (ApplicationProperty.DataDir.value() == null)
+    			ApplicationProperties.getDefaultProperties().setProperty(ApplicationProperty.DataDir.key(), ".");
     		
     		if (System.getProperty("catalina.base") == null)
     			ApplicationProperties.getDefaultProperties().setProperty("catalina.base", ".");

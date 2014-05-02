@@ -27,7 +27,7 @@ import net.sf.ehcache.distribution.CacheManagerPeerProviderFactory;
 import net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProvider;
 
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Tomas Muller
@@ -37,7 +37,7 @@ public class JGroupsCacheManagerPeerProviderFactory extends CacheManagerPeerProv
 	@Override
     public CacheManagerPeerProvider createCachePeerProvider(CacheManager cacheManager, Properties properties) {
         try {
-        	String configuration = JGroupsUtils.getConfigurationString(ApplicationProperties.getProperty("unitime.hibernate.jgroups.config", "hibernate-jgroups-tcp.xml")); 
+        	String configuration = JGroupsUtils.getConfigurationString(ApplicationProperty.HibernateClusterConfiguration.value());
         	JGroupsCacheManagerPeerProvider peerProvider = new JGroupsCacheManagerPeerProvider(cacheManager, configuration);
         	peerProvider.setChannelName("UniTime:hibernate");
             

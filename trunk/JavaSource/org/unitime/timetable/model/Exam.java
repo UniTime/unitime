@@ -38,6 +38,7 @@ import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseExam;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
@@ -81,7 +82,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         StringBuffer sb = new StringBuffer();
         ExamOwner prev = null;
         TreeSet owners = new TreeSet(getOwners());
-        if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.name.expandCrosslistedOfferingToCourses","false"))) {
+        if (ApplicationProperty.ExaminationNameExpandCrossListedOfferingsToCourses.isTrue()) {
         	HashSet dummies = new HashSet();
         	for (Iterator i=owners.iterator();i.hasNext();) {
                 ExamOwner owner = (ExamOwner)i.next();
@@ -126,13 +127,13 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 }
             } else {
                 //different subject area
-                if (prev!=null) sb.append(prev.genName(ApplicationProperties.getProperty("tmtbl.exam.name.diffSubject.separator")));
+                if (prev!=null) sb.append(prev.genName(ApplicationProperty.ExamNameSeparator.value()));
                 sb.append(owner.genName(ApplicationProperties.getProperty("tmtbl.exam.name."+ExamOwner.sOwnerTypes[owner.getOwnerType()])));
             }
             prev = owner;
         }
-        String suffix = (prev==null?"":prev.genName(ApplicationProperties.getProperty("tmtbl.exam.name.suffix")));
-        int limit = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.name.maxLength","100")) - suffix.length();
+        String suffix = (prev==null?"":prev.genName(ApplicationProperty.ExamNameSuffix.value()));
+        int limit = ApplicationProperty.ExamNameMaxLength.intValue() - suffix.length();
         return (sb.toString().length()<=limit?sb.toString():sb.toString().substring(0,limit-3)+"...")+suffix;
 	}
 	
@@ -1017,12 +1018,9 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         if (getPreferences()==null) setPreferences(new HashSet());
         
         //Prefer overlapping period for evening classes
-        PreferenceLevel eveningPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
-                "tmtbl.exam.defaultPrefs."+getExamType().getReference()+".eveningClasses.pref",
-                (getExamType().getType()==ExamType.sExamTypeMidterm?PreferenceLevel.sNeutral:PreferenceLevel.sRequired)));
+        PreferenceLevel eveningPref = PreferenceLevel.getPreferenceLevel(ApplicationProperty.ExamDefaultsEveningClassPreference.value(getExamType().getReference()));
         if (!PreferenceLevel.sNeutral.equals(eveningPref.getPrefProlog()) && (override || getPreferences(ExamPeriodPref.class).isEmpty())) {
-            int firstEveningPeriod = Integer.parseInt(ApplicationProperties.getProperty(
-                    "tmtbl.exam.defaultPrefs."+getExamType().getReference()+".eveningClasses.firstEveningPeriod","216")); //6pm
+            int firstEveningPeriod = ApplicationProperty.ExamDefaultsEveningClassStart.intValue(getExamType().getReference()); 
             HashSet<ExamPeriod> periods = new HashSet();
             for (Iterator i=getOwners().iterator();i.hasNext();) {
                 ExamOwner owner = (ExamOwner)i.next();
@@ -1065,9 +1063,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         }
         
         //Prefer original room
-        PreferenceLevel originalPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
-                "tmtbl.exam.defaultPrefs."+getExamType().getReference()+".originalRoom.pref",
-                (getExamType().getType()==ExamType.sExamTypeMidterm?PreferenceLevel.sNeutral:PreferenceLevel.sStronglyPreferred)));
+        PreferenceLevel originalPref = PreferenceLevel.getPreferenceLevel(ApplicationProperty.ExamDefaultsOriginalRoomPreference.value(getExamType().getReference()));
         if (!PreferenceLevel.sNeutral.equals(originalPref.getPrefProlog()) && (override || getPreferences(RoomPref.class).isEmpty())) {
             HashSet<Location> locations = new HashSet();
             for (Iterator i=getOwners().iterator();i.hasNext();) {
@@ -1103,11 +1099,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         }
         
         //Prefer original building
-        PreferenceLevel originalBuildingPref = PreferenceLevel.getPreferenceLevel(ApplicationProperties.getProperty(
-                "tmtbl.exam.defaultPrefs."+getExamType().getReference()+".originalBuilding.pref",
-                (getExamType().getType()==ExamType.sExamTypeMidterm?PreferenceLevel.sNeutral:PreferenceLevel.sPreferred)));
-        boolean examRoomsOnly = "true".equals(ApplicationProperties.getProperty(
-                "tmtbl.exam.defaultPrefs."+getExamType().getReference()+".originalBuilding.onlyForExaminationRooms", "false"));
+        PreferenceLevel originalBuildingPref = PreferenceLevel.getPreferenceLevel(ApplicationProperty.ExamDefaultsOriginalBuildingPreference.value(getExamType().getReference()));
+        boolean examRoomsOnly = ApplicationProperty.ExamDefaultsOriginalBuildingOnlyForExamRooms.isTrue(getExamType().getReference());
         if (!PreferenceLevel.sNeutral.equals(originalBuildingPref.getPrefProlog()) && (override || getPreferences(BuildingPref.class).isEmpty())) {
             HashSet<Building> buildings = new HashSet<Building>();
             for (Iterator i=getOwners().iterator();i.hasNext();) {

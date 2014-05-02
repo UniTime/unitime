@@ -20,7 +20,7 @@
 package org.unitime.commons.hibernate.util;
 
 import org.dom4j.Document;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Stephanie Schluttenhofer
@@ -41,7 +41,7 @@ public class UniTimeCoreDatabaseUpdate extends DatabaseUpdate {
 
 	@Override
 	protected String findDbUpdateFileName() {
-		return(ApplicationProperties.getProperty("tmtbl.db.update","dbupdate.xml"));
+		return ApplicationProperty.DatabaseUpdateFile.value();
 	}
 	@Override
 	protected String versionParameterName() {

@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassEditForm;
@@ -284,7 +284,7 @@ public class ClassEditAction extends PreferencesAction {
 
     	            tx.commit();
     	            
-                    String className = ApplicationProperties.getProperty("tmtbl.external.class.edit_action.class");
+                    String className = ApplicationProperty.ExternalActionClassEdit.value();
                 	if (className != null && className.trim().length() > 0){
                     	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
                    		editAction.performExternalClassEditAction(c, hibSession);

@@ -35,6 +35,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.CalendarServlet.HttpParams;
 import org.unitime.timetable.gwt.server.CalendarServlet.Params;
 import org.unitime.timetable.gwt.server.CalendarServlet.QParams;
@@ -104,7 +105,7 @@ public class UploadServlet extends HttpServlet {
 	
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
-			String maxSizeProperty = ApplicationProperties.getProperty("unitime.upload.max_size_in_bytes");
+			String maxSizeProperty = ApplicationProperty.MaxUploadSize.value();
 			int maxSize = (maxSizeProperty == null ? DEFAULT_MAX_SIZE : Integer.parseInt(maxSizeProperty));
 			
 			ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory(maxSize, ApplicationProperties.getTempFolder()));

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -45,7 +44,6 @@ public class ReloadAllStudents extends ReloadAllData {
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) return false;
 		Lock lock = server.lockAll();
 		try {
 			helper.beginTransaction();

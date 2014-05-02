@@ -45,7 +45,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ClassesForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -177,7 +177,7 @@ public class ClassesAction extends Action {
             }
         }
         
-        String msg = ApplicationProperties.getProperty("tmtbl.classes.message");
+        String msg = ApplicationProperty.ClassesMessage.value(); 
         if (msg!=null && msg.length()>0)
             request.setAttribute(Constants.REQUEST_MSSG, msg);
 		
@@ -308,7 +308,7 @@ public class ClassesAction extends Action {
                     new boolean[] {true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
         table.setBlankWhenSame(true);
-        boolean suffix = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false"));
+        boolean suffix = ApplicationProperty.ExaminationReportsClassSufix.isTrue();
         for (Class_ clazz: classes) {
             for (CourseOffering co : (Collection<CourseOffering>)clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
                 if (!match(form, co)) continue;

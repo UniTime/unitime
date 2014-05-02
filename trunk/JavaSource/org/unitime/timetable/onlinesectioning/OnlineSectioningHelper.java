@@ -43,7 +43,7 @@ import org.cpsolver.studentsct.reservation.IndividualReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -341,11 +341,11 @@ public class OnlineSectioningHelper {
     }
     
     public NameFormat getStudentNameFormat() {
-    	return NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.student.name", NameFormat.LAST_FIRST_MIDDLE.reference()));
+    	return NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
     }
     
     public NameFormat getInstructorNameFormat() {
-    	return NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.instructor.name", NameFormat.INITIAL_LAST.reference()));
+    	return NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
     }
     
     public String getApproverName(String externalId, Long sessionId) {

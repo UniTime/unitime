@@ -54,7 +54,7 @@ import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.CacheMode;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Building;
@@ -144,8 +144,8 @@ public class ExamDatabaseLoader extends ExamLoader {
             loadStudents();
             loadDistributions();
             ExamType type = ExamTypeDAO.getInstance().get(iExamTypeId, hibSession);
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+type.getReference(),"true"))) loadAvailabilitiesFromEvents();
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.sameRoom."+type.getReference(),"false"))) makeupSameRoomConstraints();
+            if (ApplicationProperty.ExaminationConsiderEventConflicts.isTrue(type.getReference())) loadAvailabilitiesFromEvents();
+            if (ApplicationProperty.ExaminationCreateSameRoomConstraints.isTrue(type.getReference())) makeupSameRoomConstraints();
             getModel().init();
             getModel().clearAssignmentContexts(getAssignment());
             checkConsistency();
@@ -227,7 +227,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         if (SolverServerImplementation.getInstance() != null) HibernateUtil.clearCache();
         Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamTypeId);
         ExamType type = ExamTypeDAO.getInstance().get(iExamTypeId);
-        boolean considerLimit = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.useLimit."+type.getUniqueId(), (type.getType() == ExamType.sExamTypeFinal?"false":"true")));
+        boolean considerLimit = ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(type.getReference(), type.getType() != ExamType.sExamTypeFinal);
         iProgress.setPhase("Loading exams...", exams.size());
         for (Iterator i=exams.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -641,7 +641,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                         HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and "+
                         "(exists elements(e.clazz.studentEnrollments) or exists elements(e.clazz.classInstructors))"
                         )
-                        .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
+                        .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
                         .setLong("examTypeId", iExamTypeId)
                         .setLong("sessionId", iSessionId)
                         .setCacheable(true)
@@ -652,7 +652,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                         "e.reqAttendance=true and m.approvalStatus = 1 and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and "+
                         "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                         HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
-                        .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))
+                        .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue())
                         .setLong("examTypeId", iExamTypeId)
                         .setLong("sessionId", iSessionId)
                         .setCacheable(true)
@@ -665,7 +665,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and "+
                 "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
-                .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
+                .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
                 .setLong("examTypeId", iExamTypeId)
                 .setLong("sessionId", iSessionId)
                 .setCacheable(true).list().iterator();i.hasNext();) {
@@ -685,7 +685,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and i.lead=true and "+
                 "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
-                .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
+                .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
                 .setLong("examTypeId", iExamTypeId)
                 .setLong("sessionId", iSessionId)
                 .setCacheable(true).list().iterator();i.hasNext();) {
@@ -990,8 +990,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     public void roomAvailabilityActivate(RoomAvailabilityInterface availability, Date startTime, Date endTime, String exclude) {
         try {
-        	availability.activate(new SessionDAO().get(iSessionId), startTime, endTime, exclude,
-        			"true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
+        	availability.activate(new SessionDAO().get(iSessionId), startTime, endTime, exclude, ApplicationProperty.RoomAvailabilitySolverWaitForSync.isTrue());
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
             iProgress.warn("Unable to access room availability service, reason:"+e.getMessage());

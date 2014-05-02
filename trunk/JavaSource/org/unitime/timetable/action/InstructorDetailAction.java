@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructorEditForm;
@@ -339,7 +339,7 @@ public class InstructorDetailAction extends PreferencesAction {
 				request.setAttribute("classTable", tblData);
 			}
 			
-			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("unitime.events.instructorUnavailability", "false")) && inst.getExternalUniqueId() != null && !inst.getExternalUniqueId().isEmpty() &&
+			if (ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue() && inst.getExternalUniqueId() != null && !inst.getExternalUniqueId().isEmpty() &&
 				RoomAvailability.getInstance() != null && RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService) {
 				WebTable.setOrder(sessionContext, "instructorUnavailability.ord", request.getParameter("iuord"), 1);
 				WebTable eventTable = new WebTable(5, "Instructor Unavailability", "instructorDetail.do?instructorId=" + frm.getInstructorId() + "&iuord=%%", new String[] {"Event", "Type", "Date", "Time", "Room"}, new String[] {"left", "left", "left", "left", "left"}, null);

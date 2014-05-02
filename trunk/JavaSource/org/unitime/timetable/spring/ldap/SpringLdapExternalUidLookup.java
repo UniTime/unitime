@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.ldap.core.ContextSource;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.ldap.SpringSecurityLdapTemplate;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
@@ -39,8 +39,8 @@ public class SpringLdapExternalUidLookup implements ExternalUidLookup {
 		try {
 			ContextSource source = (ContextSource)SpringApplicationContextHolder.getBean("unitimeLdapContextSource");
 			
-			String query = ApplicationProperties.getProperty("unitime.authentication.ldap.identify", "uid={0},ou=identify");
-			String idAttributeName = ApplicationProperties.getProperty("unitime.authentication.ldap.group-role-attribute", "uid");
+			String query = ApplicationProperty.AuthenticationLdapIdentify.value(); 
+			String idAttributeName = ApplicationProperty.AuthenticationLdapIdAttribute.value();
 
 			SpringSecurityLdapTemplate template = new SpringSecurityLdapTemplate(source);
 			DirContextOperations user = template.retrieveEntry(query.replaceAll("\\{0\\}", uid), new String[] {"uid", idAttributeName, "cn", "givenName", "sn", "mail"});

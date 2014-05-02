@@ -40,6 +40,7 @@ import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
@@ -92,7 +93,7 @@ public class PdfWorksheet {
     private SubjectArea iCurrentSubjectArea = null;
     
     private PdfWorksheet(OutputStream out, Collection<SubjectArea> subjectAreas, String courseNumber) throws IOException, DocumentException  {
-        iUseCommitedAssignments = "true".equals(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.useCommitedAssignments","true"));
+        iUseCommitedAssignments = ApplicationProperty.WorksheetPdfUseCommittedAssignments.isTrue();
         iSubjectAreas = new TreeSet<SubjectArea>(new Comparator<SubjectArea>() {
     		@Override
     		public int compare(SubjectArea s1, SubjectArea s2) {
@@ -116,7 +117,7 @@ public class PdfWorksheet {
         	if (session == null) session += sa.getSession().getLabel();
         }
         iDoc.addTitle(subjects + (iCourseNumber==null?"":" "+iCourseNumber) + " Worksheet");
-        iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.author","UniTime "+Constants.getVersion()+", www.unitime.org"));
+        iDoc.addAuthor(ApplicationProperty.WorksheetPdfAuthor.value().replace("%", Constants.getVersion()));
         iDoc.addSubject(subjects + (session == null ? "" : " -- " + session));
         iDoc.addCreator("UniTime "+Constants.getVersion()+", www.unitime.org");
         if (!iSubjectAreas.isEmpty())
@@ -566,8 +567,8 @@ public class PdfWorksheet {
     
     protected void printHeader() throws DocumentException {
         out(renderMiddle(
-                ApplicationProperties.getProperty("tmtbl.pdf.worksheet.author","UniTime "+Constants.getVersion()),
-                ApplicationProperties.getProperty("tmtbl.pdf.worksheet.title","PDF WORKSHEET")
+                ApplicationProperty.WorksheetPdfAuthor.value().replace("%", Constants.getVersion()),
+                ApplicationProperty.WorksheetPdfTitle.value()
                 ));
         out(mpad(
                 new SimpleDateFormat("EEE MMM dd, yyyy").format(new Date()),
@@ -616,7 +617,7 @@ public class PdfWorksheet {
         iDoc.close();
     }
 
-    public static void main(String[] args) {
+	public static void main(String[] args) {
         try {
             HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
             

@@ -36,7 +36,7 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -443,7 +443,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     		initClassHasErrorsToFalse();
     		validateMinLessThanMaxClassLimits(errors);
     		validateMinOrMaxParentClassLimits(errors, this.getMaxClassLimits(), "maxLimit", ((getDisplayMaxLimit().booleanValue())? MSG.errorTotalMaxChildrenAtLeastMaxParent():MSG.errorLimitsChildClasses()));
-    		if ("true".equals(ApplicationProperties.getProperty("unitime.instrOfferingConfig.checkConfigLimit", "true")))
+    		if (ApplicationProperty.ConfigEditCheckLimits.isTrue())
     			validateSubpartClassLimits(errors);
     	}
     }

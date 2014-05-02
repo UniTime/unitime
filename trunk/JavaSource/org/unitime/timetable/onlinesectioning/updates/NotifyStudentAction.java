@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -104,7 +104,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 					}
 				}
 				helper.debug(message);
-				if (server.getAcademicSession().isSectioningEnabled() && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
+				if (server.getAcademicSession().isSectioningEnabled() && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue()) {
 					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).oldEnrollment(iOldOffering, iOldEnrollment), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
@@ -159,7 +159,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 					}
 				}
 				helper.debug(message);
-				if (server.getAcademicSession().isSectioningEnabled() && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
+				if (server.getAcademicSession().isSectioningEnabled() && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue()) {
 					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).oldStudent(iOldStudent), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {

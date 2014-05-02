@@ -107,7 +107,7 @@ public class ExamResetInstructors {
         hibSession.flush();
 	}
 	
-    public static void main(String args[]) {
+	public static void main(String args[]) {
         try {
             Properties props = new Properties();
             props.setProperty("log4j.rootLogger", "DEBUG, A1");

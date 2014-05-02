@@ -30,7 +30,7 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.hibernate.CacheMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.MessageLog;
 import org.unitime.timetable.model.dao.MessageLogDAO;
 
@@ -62,7 +62,7 @@ public class MessageLogAppender extends AppenderSkeleton {
 	
 	public Level getMinLevel() {
 		if (iMinLevel == null) {
-			iMinLevel = Level.toLevel(ApplicationProperties.getProperty("unitime.message.log.level", Level.WARN.toString()), Level.WARN);
+			iMinLevel = Level.toLevel(ApplicationProperty.MessageLogLevel.value());
 		}
 		return iMinLevel;
 	}
@@ -117,9 +117,9 @@ public class MessageLogAppender extends AppenderSkeleton {
 		
 		public Saver() {
 			super("MessageLogSaver");
-			iLogLimit = Integer.parseInt(ApplicationProperties.getProperty("unitime.message.log.limit", String.valueOf(iLogLimit)));
-			iCleanupInterval = Integer.parseInt(ApplicationProperties.getProperty("unitime.message.log.cleanup.interval", String.valueOf(iCleanupInterval)));
-			iCleanupDays = Integer.parseInt(ApplicationProperties.getProperty("unitime.message.log.cleanup.days", String.valueOf(iCleanupDays)));
+			iLogLimit = ApplicationProperty.MessageLogLimit.intValue();
+			iCleanupInterval = ApplicationProperty.MessageLogCleanupInterval.intValue();
+			iCleanupDays = ApplicationProperty.LogCleanupMessageLog.intValue();
 			setDaemon(true);
 		}
 		

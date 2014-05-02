@@ -44,7 +44,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -141,7 +141,7 @@ public class SectioningServlet implements SectioningService {
 	
 	public SectioningServlet() {
 		try {
-			String providerClass = ApplicationProperties.getProperty("unitime.custom.CourseDetailsProvider");
+			String providerClass = ApplicationProperty.CustomizationCourseDetails.value();
 			if (providerClass != null)
 				iCourseDetailsProvider = (CourseDetailsProvider)Class.forName(providerClass).newInstance();
 		} catch (Exception e) {
@@ -307,7 +307,7 @@ public class SectioningServlet implements SectioningService {
 				}
 			}
 			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-			NameFormat nameFormat = NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.instructor.name", NameFormat.INITIAL_LAST.reference()));
+			NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
 			for (Class_ clazz: classes) {
 				if (!clazz.isEnabledForStudentScheduling()) continue;
 				ClassAssignmentInterface.ClassAssignment a = new ClassAssignmentInterface.ClassAssignment();
@@ -932,7 +932,7 @@ public class SectioningServlet implements SectioningService {
 		OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId());
 		if (server != null) {
 			if (server.getAcademicSession().isSectioningEnabled()) return false;
-			if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.requests.save","false"))) return false;
+			if (ApplicationProperty.OnlineSchedulingSaveRequests.isFalse()) return false;
 		}
 		Long studentId = getStudentId(request.getAcademicSessionId());
 		if (studentId == null && isAdminOrAdvisor())
@@ -1063,7 +1063,7 @@ public class SectioningServlet implements SectioningService {
 						);
 				
 				if (server == null) {
-					NameFormat nameFormat = NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.student.name", NameFormat.LAST_FIRST_MIDDLE.reference()));
+					NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
 					Map<String, String> approvedBy2name = new Hashtable<String, String>();
 					Hashtable<Long, ClassAssignmentInterface.Enrollment> student2enrollment = new Hashtable<Long, ClassAssignmentInterface.Enrollment>();
 					for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
@@ -1248,7 +1248,7 @@ public class SectioningServlet implements SectioningService {
 						throw new SectioningException(MSG.exceptionBadStudentId());
 					OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId());
 					if (server == null) {
-						NameFormat nameFormat = NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.instructor.name", NameFormat.INITIAL_LAST.reference()));
+						NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
 						ClassAssignmentInterface ret = new ClassAssignmentInterface();
 						Hashtable<Long, CourseAssignment> courses = new Hashtable<Long, ClassAssignmentInterface.CourseAssignment>();
 						for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
@@ -1765,7 +1765,7 @@ public class SectioningServlet implements SectioningService {
 		try {
 			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-			if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true")))
+			if (ApplicationProperty.OnlineSchedulingEmailConfirmation.isFalse())
 				throw new SectioningException(MSG.exceptionStudentEmailsDisabled());
 			StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId);
 			email.setCC(cc);

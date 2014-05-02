@@ -33,7 +33,7 @@ import java.util.TreeSet;
 
 import org.cpsolver.coursett.model.TimeLocation;
 import org.dom4j.Element;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
@@ -65,7 +65,7 @@ public class StudentSectioningImport extends BaseImport {
         try {
             beginTransaction();
             
-            boolean trimLeadingZerosFromExternalId = "true".equals(ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false"));
+            boolean trimLeadingZerosFromExternalId = ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue();
             
 	        String campus = rootElement.attributeValue("campus");
 	        String year   = rootElement.attributeValue("year");

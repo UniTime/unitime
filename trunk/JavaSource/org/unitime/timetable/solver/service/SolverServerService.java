@@ -32,7 +32,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.jgroups.UniTimeChannelLookup;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -63,7 +63,7 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		try {
-			if (!"true".equals(ApplicationProperties.getProperty("unitime.solver.cluster", "true"))) {
+			if (ApplicationProperty.SolverClusterEnabled.isFalse()) {
 				iServer = new LocalSolverServer();
 				
 				iServer.start();

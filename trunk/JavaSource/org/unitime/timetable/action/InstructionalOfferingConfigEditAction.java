@@ -46,7 +46,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.InstructionalOfferingConfigEditForm;
 import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
 import org.unitime.timetable.interfaces.ExternalLinkLookup;
@@ -421,7 +421,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	    frm.setConfigCount(new Integer (configs.size()));
 
 	    // Catalog Link
-        String linkLookupClass = ApplicationProperties.getProperty("tmtbl.catalogLink.lookup.class");
+        String linkLookupClass = ApplicationProperty.CourseCatalogLinkProvider.value();
         if (linkLookupClass!=null && linkLookupClass.trim().length()>0) {
         	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).newInstance());
        		Map results = lookup.getLink(io);
@@ -818,7 +818,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             
             hibSession.refresh(io);
 
-        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_config.change_action.class");
+        	String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
         	if (className != null && className.trim().length() > 0){
 	        	ExternalInstrOffrConfigChangeAction configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
 	       		configChangeAction.performExternalInstrOffrConfigChangeAction(io, hibSession);
@@ -936,7 +936,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             hibSession.refresh(ioc);
             hibSession.refresh(io);
             
-        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_config.change_action.class");
+        	String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
         	if (className != null && className.trim().length() > 0){
 	        	ExternalInstrOffrConfigChangeAction configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
 	       		configChangeAction.performExternalInstrOffrConfigChangeAction(io, hibSession);

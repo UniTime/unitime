@@ -36,7 +36,7 @@ import org.apache.struts.action.ActionMessages;
 import org.cpsolver.ifs.util.DataProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.SolverForm;
 import org.unitime.timetable.form.SolverForm.LongIdValue;
 import org.unitime.timetable.model.SolverGroup;
@@ -71,7 +71,7 @@ public class SolverAction extends Action {
 			for (SolverServer server: solverServerService.getServers(true))
 				hosts.add(server.getHost());
 			Collections.sort(hosts);
-			if (ApplicationProperties.isLocalSolverEnabled())
+			if (ApplicationProperty.SolverLocalEnabled.isTrue())
 				hosts.add(0, "local");
 			hosts.add(0, "auto");
 			request.setAttribute("hosts", hosts);

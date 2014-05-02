@@ -54,7 +54,7 @@ public class JGroupsUtils {
         return retval;
     }
 
-    private static String _getProperty(String var, String default_value) {
+	private static String _getProperty(String var, String default_value) {
         if(var == null)
             return null;
         List<String> list=Util.parseCommaDelimitedStrings(var);

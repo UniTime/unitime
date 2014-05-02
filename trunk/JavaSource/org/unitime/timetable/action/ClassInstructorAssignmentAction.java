@@ -39,7 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassInstructorAssignmentForm;
@@ -173,7 +173,7 @@ public class ClassInstructorAssignmentAction extends Action {
                 	
                 	hibSession.flush();
 
-                	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_config.assign_instructors_action.class");
+                	String className = ApplicationProperty.ExternalActionInstrOfferingConfigAssignInstructors.value();
                 	if (className != null && className.trim().length() > 0){
         	        	ExternalInstrOfferingConfigAssignInstructorsAction assignAction = (ExternalInstrOfferingConfigAssignInstructorsAction) (Class.forName(className).newInstance());
         	       		assignAction.performExternalInstrOfferingConfigAssignInstructorsAction(ioc, InstrOfferingConfigDAO.getInstance().getSession());
@@ -237,8 +237,7 @@ public class ClassInstructorAssignmentAction extends Action {
         frm.setInstrOffrConfigLimit(ioc.getLimit());
         frm.setInstrOfferingId(io.getUniqueId());
 
-        String displayExternalIds = ApplicationProperties.getProperty("tmtbl.class_setup.show_display_external_ids", "false");
-        frm.setDisplayExternalId(new Boolean(displayExternalIds));
+        frm.setDisplayExternalId(ApplicationProperty.ClassSetupShowExternalIds.isTrue());
 
         String name = io.getCourseNameWithTitle();
         if (io.hasMultipleConfigurations()) {

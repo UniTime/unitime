@@ -36,7 +36,7 @@ import org.jgroups.Address;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -58,7 +58,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		iContainer = container;
 		setDaemon(true);
 		setName("Updater[generic]");
-		iSleepTimeInSeconds = Long.parseLong(ApplicationProperties.getProperty("unitime.sectioning.queue.loadInterval", "300"));
+		iSleepTimeInSeconds = ApplicationProperty.OnlineSchedulingQueueLoadInterval.intValue(); 
 		iLog = Logger.getLogger(OnlineStudentSchedulingGenericUpdater.class + ".updater[generic]"); 
 	}
 	
@@ -105,7 +105,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		lock.lock();
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		try {
-			boolean replicate = "true".equals(ApplicationProperties.getProperty("unitime.enrollment.server.replicated", "true"));
+			boolean replicate = ApplicationProperty.OnlineSchedulingServerReplicated.isTrue();
 			Map<String, Set<Address>> solvers = new HashMap<String, Set<Address>>();
 			try {
 				RspList<Set<String>> ret = iContainer.getDispatcher().callRemoteMethods(

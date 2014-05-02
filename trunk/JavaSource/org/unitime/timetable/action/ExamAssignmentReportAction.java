@@ -48,7 +48,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamAssignmentReportForm;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -123,7 +123,7 @@ public class ExamAssignmentReportAction extends Action {
             if (solver!=null && solver.getExamTypeId().equals(myForm.getExamType()))
                 assignedExams = solver.getAssignedExams(myForm.getSubjectArea());
             else {
-                if ("true".equals(ApplicationProperties.getProperty("tmtbl.exams.conflicts.cache","true")) && myForm.getSubjectArea()!=null && myForm.getSubjectArea()>0)
+                if (ApplicationProperty.ExaminationCacheConflicts.isTrue() && myForm.getSubjectArea()!=null && myForm.getSubjectArea()>0)
                     assignedExams = Exam.findAssignedExams(session.getUniqueId(),myForm.getSubjectArea(),myForm.getExamType());
                 else
                     assignedExams = findAssignedExams(session.getUniqueId(),myForm.getSubjectArea(),myForm.getExamType());
@@ -346,7 +346,7 @@ public class ExamAssignmentReportAction extends Action {
                     "select p.uniqueId, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId")
-                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
+                    .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
                     .setLong("sessionId", sessionId).setLong("examTypeId", examTypeId)
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -362,7 +362,7 @@ public class ExamAssignmentReportAction extends Action {
                     "select p.uniqueId, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where ce.reqAttendance=true and m.approvalStatus = 1 and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId")
-                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))
+                    .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeCourse.intValue())
                     .setLong("sessionId", sessionId).setLong("examTypeId", examTypeId)
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();

@@ -41,7 +41,7 @@ import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamsForm;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamType;
@@ -162,7 +162,7 @@ public class ExamsAction extends Action {
             }
         }
 		
-        String msg = ApplicationProperties.getProperty("tmtbl.exams.message");
+        String msg = ApplicationProperty.ExamsMessage.value();
         if (msg!=null && msg.length()>0)
             request.setAttribute(Constants.REQUEST_MSSG, msg);
         
@@ -172,6 +172,12 @@ public class ExamsAction extends Action {
 	}
 		
 	private PdfWebTable getTable(boolean html, ExamsForm form, Vector<ExamAssignment> exams) {
+		String itype = MSG.columnExamInstructionalType();
+		if (ApplicationProperty.ExaminationReportsExternalId.isTrue()) {
+			itype = ApplicationProperty.ExaminationReportsExternalIdName.value();
+			if (itype == null)
+				itype = MSG.columnExamExternalId();
+		}
 	    PdfWebTable table = new PdfWebTable( 7,
                 form.getSessionLabel()+" "+form.getExamTypeLabel().toLowerCase()+" "+ MSG.examinations() + 
                 	("--ALL--".equals(form.getSubjectArea())?"":" ("+
@@ -179,7 +185,7 @@ public class ExamsAction extends Action {
                 new String[] {
                     MSG.columnExamSubject(),
                     MSG.columnExamCourse(),
-                    ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))?ApplicationProperties.getProperty("tmtbl.exam.report.external.name", MSG.columnExamExternalId()):MSG.columnExamInstructionalType()),
+                    itype,
                     MSG.columnExamSection(),
                     MSG.columnExamDate(),
                     MSG.columnExamTime(),
@@ -187,7 +193,7 @@ public class ExamsAction extends Action {
                 new String[] {"left", "left", "left", "left", "left", "left", "left"},
                 new boolean[] {true, true, true, true, true, true, true} );
         table.setRowStyle("white-space:nowrap");
-        String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
+        String noRoom = ApplicationProperty.ExaminationsNoRoomText.value();
         for (ExamAssignment exam : exams) {
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
                 if (!"--ALL--".equals(form.getSubjectArea()) && !section.getSubject().equals(form.getSubjectArea())) continue;

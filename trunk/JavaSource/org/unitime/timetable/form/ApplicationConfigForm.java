@@ -28,6 +28,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 
@@ -172,5 +173,39 @@ public class ApplicationConfigForm extends ActionForm {
 
 	public void setSessions(Long[] sessions) {
 		this.sessions = sessions;
+	}
+	
+	public String getType() {
+		ApplicationProperty p = ApplicationProperty.fromKey(key);
+		if (p == null) return null;
+		Class type = p.type();
+		if (type == null || type.equals(String.class)) return null; 
+		if (type.equals(Class.class) && p.implementation() != null) {
+			if (p.implementation().isInterface())
+				return "class implementing " + p.implementation().getSimpleName();
+			else
+				return "class extending " + p.implementation().getSimpleName();
+		}
+		return type.getSimpleName().toLowerCase();
+	}
+	
+	public String getValues() {
+		ApplicationProperty p = ApplicationProperty.fromKey(key);
+		if (p == null) return null;
+		String[] vals = p.availableValues();
+		if (vals != null && vals.length > 0) {
+			String ret = "";
+			for (int i = 0; i < vals.length; i++) {
+				if (i > 0) ret += ", ";
+				ret += vals[i];
+			}
+			return ret;
+		}
+		return null;
+	}
+	
+	public String getDefault() {
+		ApplicationProperty p = ApplicationProperty.fromKey(key);
+		return (p != null ? p.defaultValue() : null);
 	}
 }

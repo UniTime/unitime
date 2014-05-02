@@ -42,7 +42,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.Logger;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.export.events.EventsExportEventsToICal;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -97,7 +97,7 @@ public class EventEmail {
 		try {
 			if (!request().isEmailConfirmation()) return;
 			
-			if (!"true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true")))) {
+			if (ApplicationProperty.EmailConfirmationEvents.isFalse()) {
 				response().info(MESSAGES.emailDisabled());
 				return;
 	        }
@@ -114,7 +114,7 @@ public class EventEmail {
 			if (event().hasSponsor() && event().getSponsor().hasEmail())
 				email.addRecipientCC(event().getSponsor().getEmail(), event().getSponsor().getName());
 			if (event().hasEmail()) {
-				String suffix = ApplicationProperties.getProperty("unitime.email.event.suffix", null);
+				String suffix = ApplicationProperty.EmailDefaultAddressSuffix.value();
 				for (String address: event().getEmail().split("[\n,]")) {
 					if (!address.trim().isEmpty()) {
 						if (suffix != null && address.indexOf('@') < 0)
@@ -124,13 +124,13 @@ public class EventEmail {
 					}
 				}
 			}
-			if (event().hasInstructors() && "true".equals(ApplicationProperties.getProperty("unitime.email.event.instructor", "true"))) {
+			if (event().hasInstructors() && ApplicationProperty.EmailConfirmationEventInstructors.isTrue()) {
 				for (ContactInterface contact: event().getInstructors()) {
 					if (contact.getEmail() != null && !contact.getEmail().isEmpty())
 						email.addRecipientCC(contact.getEmail(), contact.getName(MESSAGES));
 				}
 			}
-			if (event().hasCoordinators() && "true".equals(ApplicationProperties.getProperty("unitime.email.event.coordinator", "false"))) {
+			if (event().hasCoordinators() && ApplicationProperty.EmailConfirmationEventCoordinators.isTrue()) {
 				for (ContactInterface contact: event().getCoordinators()) {
 					if (contact.getEmail() != null && !contact.getEmail().isEmpty())
 						email.addRecipientCC(contact.getEmail(), contact.getName(MESSAGES));
@@ -145,9 +145,9 @@ public class EventEmail {
 				email.setReplyTo(event().getContact().getEmail(), event().getContact().getName(MESSAGES));
 			}
 			
-			if (event().getId() != null && "true".equals(ApplicationProperties.getProperty("unitime.email.inbound.enabled")) && ApplicationProperties.getProperty("unitime.email.inbound.address") != null) {
+			if (event().getId() != null && ApplicationProperty.InboundEmailsEnabled.isTrue() && ApplicationProperty.InboundEmailsReplyToAddress.value() != null) {
 				email.setSubject("[EVENT-"+ Long.toHexString(event().getId()) +"] " + event().getName() + " (" + event().getType().getName(CONSTANTS) + ")");
-				email.addReplyTo(ApplicationProperties.getProperty("unitime.email.inbound.address"), ApplicationProperties.getProperty("unitime.email.inbound.name", "UniTime Events"));
+				email.addReplyTo(ApplicationProperty.InboundEmailsReplyToAddress.value(), ApplicationProperty.InboundEmailsReplyToAddressName.value());
 			} else {
 				email.setSubject(event().getName() + " (" + event().getType().getName(CONSTANTS) + ")");
 			}
@@ -312,7 +312,7 @@ public class EventEmail {
 	}
 	
 	public static void eventExpired(Event cancelledEvent, Set<Meeting> cancelledMeetings) throws Exception {
-		if (!"true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true"))))
+		if (ApplicationProperty.EmailConfirmationEvents.isFalse())
 			return;
 
 		Session session = cancelledEvent.getSession();
@@ -339,7 +339,7 @@ public class EventEmail {
 	}
 	
 	public static void eventUpdated(Event updatedEvent, String message, InternetAddress replyTo, DataSource attachment) throws Exception {
-		if (!"true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true"))))
+		if (ApplicationProperty.EmailConfirmationEvents.isFalse())
 			return;
 
 		Session session = updatedEvent.getSession();
