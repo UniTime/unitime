@@ -36,8 +36,10 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.activation.DataSource;
@@ -77,6 +79,10 @@ import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 
 /**
@@ -240,7 +246,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							@Override
 							public InputStream getInputStream() throws IOException {
 								return new ByteArrayInputStream(
-										html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>", buffer.toString()).getBytes("UTF-8"));
+										html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Grid'/>", buffer.toString()).getBytes("UTF-8"));
 							}
 							
 							@Override
@@ -320,6 +326,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						student.setEmailTimeStamp(ts);
 						
 						helper.getHibSession().saveOrUpdate(dbStudent);
+						helper.getHibSession().flush();
 						
 						server.update(student, false);
 						
@@ -397,128 +404,357 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			"C4A883"
 	};
 	
-	private String generateMessage(org.unitime.timetable.model.Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		StringWriter buffer = new StringWriter();
-		PrintWriter out = new PrintWriter(buffer);
+	private String generateMessage(org.unitime.timetable.model.Student student, OnlineSectioningServer server, OnlineSectioningHelper helper)  throws IOException, TemplateException {
+		Configuration cfg = new Configuration();
+		cfg.setClassForTemplateLoading(StudentEmail.class, "");
+		cfg.setLocale(Localization.getJavaLocale());
+		cfg.setOutputEncoding("utf-8");
+		Template template = cfg.getTemplate("StudentEmail.ftl");
+		Map<String, Object> input = new HashMap<String, Object>();
 		
-		out.println("<html>");
-		out.println("<head>");
-		out.println("  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
-		if (getEmailSubject() == null || getEmailSubject().isEmpty()) {
-			out.println("	<title>" + MSG.emailDeafultTitle() + "</title>");
-		} else {
-			out.println("	<title>" + getEmailSubject().replace("%session%", server.getAcademicSession().toString()) + "</title>");
-		}
-		out.println("</head>");
-		out.println("<body style=\"font-family: sans-serif, verdana, arial;\">");
-		out.println("	<table style=\"border: 1px solid #9CB0CE; padding: 5px; margin-top: 10px; min-width: 800px;\" align=\"center\">");
-		out.println("		<tr><td><table width=\"100%\">");
-		out.println("			<tr>");
-		out.println("				<td rowspan=\"2\"><img src=\"http://www.unitime.org/include/unitime.png\" border=\"0\" height=\"100px\"/></td>");
-		if (getEmailSubject() == null || getEmailSubject().isEmpty()) {
-			out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">" + MSG.emailDeafultTitle() + "</td>");
-		} else {
-			out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">" + getEmailSubject().replace("%session%", server.getAcademicSession().toString()) + "</td>");
-		}
-		out.println("			</tr>");
-		out.println("			<tr>");
-		out.println("				<td style=\"color: #333333; text-align: right; vertical-align: top; padding: 10px 5px 5px 5px;\">" + helper.getStudentNameFormat().format(student) + "</td>");
-		out.println("				<td style=\"color: #333333; text-align: right; vertical-align: top; padding: 10px 5px 5px 5px;\">" + 
-				server.getAcademicSession().getTerm() + " " + server.getAcademicSession().getYear() + " (" + server.getAcademicSession().getCampus() + ")</td>");
-		out.println("			</tr>");
-		out.println("		</table></td></tr>");
-		if (getMessage() != null && !getMessage().isEmpty()) {
-			out.println("		<tr><td " +
-					"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-					MSG.emailMessage() + "</td></tr>");
-			out.println("		<tr><td>");
-			out.println(getMessage().replace("\n", "<br>"));
-			out.println("		</td></tr>");
-		}
-		generateChange(out, server, helper);
-		out.println("		<tr><td " +
-				"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-				MSG.emailClassList() + "</td></tr>");
-		out.println("		<tr><td>");
+		input.put("msg", MSG);
+		if (getEmailSubject() != null && !getEmailSubject().isEmpty())
+			input.put("subject", getEmailSubject().replace("%session%", server.getAcademicSession().toString()));
+		input.put("student", getStudent());
+		input.put("name", helper.getStudentNameFormat().format(student));
+		input.put("server", server);
+		input.put("helper", helper);
+		input.put("message", getMessage());
+		input.put("dfConsentApproval", sConsentApprovalDateFormat);
 		
-		generateListOfClasses(out, server, helper);
-		
-		out.println("		</td></tr>");
-		
-		if (getStudent().getRequests().isEmpty()) {
+		input.put("classes", generateListOfClasses(student, server, helper));
 
-			out.println("		<tr><td " +
-					"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-					MSG.emailTimetable() + "</td></tr>");
-			out.println("		<tr><td>");
-			
+		
+		if (!getStudent().getRequests().isEmpty()) {
 			try {
 				iTimetableImage = generateTimetableImage(server);
 			} catch (Exception e) {
-				helper.error("Unable to create PDF timetable: " + e.getMessage(), e);
+				helper.error("Unable to create timetable image: " + e.getMessage(), e);
+				StringWriter buffer = new StringWriter();
+				PrintWriter out = new PrintWriter(buffer);
 				generateTimetable(out, server, helper);
+				out.flush(); out.close();							
+				input.put("timetable", buffer.toString());
 			}
 			if (iTimetableImage != null)
-				out.println("<img src='cid:timetable.png' border='0' alt='Timetable Image'/>");
-			
-			out.println("		</td></tr>");
+				input.put("timetable", "<img src='cid:timetable.png' border='0' alt='Timetable Grid'/>");
 		}
 		
-		if (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER) {
-			if (getOldEnrollment() == null && getOldStudent() == null)
-				out.println("		<tr><td>" + MSG.emailSentBy(helper.getUser().getName()) + "</td></tr>");
-			else
-				out.println("		<tr><td>" + MSG.emailChangesMadeBy(helper.getUser().getName()) + "</td></tr>");
-		}
+		if (getOldOffering() != null) {
+			List<TableLine> listOfChanges = new ArrayList<TableLine>();
 
-		out.println("	</table>");
-		out.println("	<table style=\"width: 800px; margin-top: -3px;\" align=\"center\">");
-		out.println("		<tr>");
-		out.println("			<td width=\"33%\" align=\"left\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
-				GWT.pageVersion(Constants.getVersion(), Constants.getReleaseDate()) + "</td>");
-		out.println("			<td width=\"34%\" align=\"center\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
-				GWT.pageCopyright() + "</td>");
-		out.println("			<td width=\"33%\" align=\"right\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
-				sTimeStampFormat.format(getTimeStamp()) + "</td>");
-		out.println("		</tr>");
-		out.println("	</table>");
-		out.println("</body>");
-		out.println("</html>");
+			XCourseRequest newRequest = null;
+			XOffering newOffering = null;
+			XCourse course = getOldOffering().getCourse(getOldEnrollment().getCourseId());
+			for (XRequest r: getStudent().getRequests()) {
+				if (r instanceof XCourseRequest && ((XCourseRequest)r).getCourseIdByOfferingId(getOldOffering().getOfferingId()) != null) {
+					newRequest = (XCourseRequest)r;
+					newOffering = server.getOffering(getOldOffering().getOfferingId());
+					course = newOffering.getCourse(newRequest.getEnrollment().getCourseId());
+					break;
+				}
+			}
+			input.put("changedCourse", course);
+
+			if (getOldEnrollment() == null && newRequest != null && newRequest.getEnrollment() != null) {
+				setSubject(MSG.emailEnrollmentNew(course.getSubjectArea(), course.getCourseNumber()));
+				XEnrollment enrollment = newRequest.getEnrollment();
+				String consent = consent(server, enrollment);
+				boolean first = true;
+				for (XSection section: newOffering.getSections(enrollment)) {
+					XSection parent = (section.getParentId() == null ? null : newOffering.getSection(section.getParentId()));
+					XSubpart subpart = newOffering.getSubpart(section.getSubpartId());
+					String requires = null;
+					if (parent != null) {
+						requires = parent.getName(course.getCourseId());
+					} else {
+						requires = consent; consent = null;
+					}
+					listOfChanges.add(new TableSectionLine(newRequest, course, subpart, section, requires, first));
+					first = false;
+				}
+				input.put("changes", listOfChanges);
+			} else if (getOldEnrollment() != null && newRequest != null && newRequest.getEnrollment() != null) {
+				setSubject(MSG.emailEnrollmentChanged(course.getSubjectArea(), course.getCourseNumber()));
+
+				boolean first = true;
+				String consent = consent(server, newRequest.getEnrollment());
+				sections: for (XSection section: newOffering.getSections(newRequest.getEnrollment())) {
+					XSection parent = (section.getParentId() == null ? null : newOffering.getSection(section.getParentId()));
+					XSubpart subpart = newOffering.getSubpart(section.getSubpartId());
+					
+					for (XSection old: getOldOffering().getSections(getOldEnrollment())) {
+						if (old.getSubpartId().equals(section.getSubpartId())) {
+							String requires = null;
+							if (parent != null)
+								requires = parent.getName(course.getCourseId());
+							
+							XSubpart oldSubpart = getOldOffering().getSubpart(old.getSubpartId());
+							XSection oldParent = (old.getParentId() == null ? null : getOldOffering().getSection(old.getParentId()));
+							String oldRequires = null;
+							if (oldParent != null)
+								oldRequires = oldParent.getName(course.getCourseId());
+							
+							if (oldRequires == null && requires == null) {
+								requires = consent;
+								oldRequires = consent;
+								consent = null;
+							}
+
+							listOfChanges.add(new TableSectionModifiedLine(newRequest, course, oldSubpart, subpart, old, section, oldRequires, requires, first));
+							first = false;
+							continue sections;
+						}
+					}
+					
+					String requires = null;
+					if (parent != null) {
+						requires = parent.getName(course.getCourseId());
+					} else {
+						requires = consent; consent = null;
+					}
+					listOfChanges.add(new TableSectionLine(newRequest, course, subpart, section, requires, first));
+					first = false;
+				}
+				sections: for (XSection old: getOldOffering().getSections(getOldEnrollment())) {
+					for (XSection section: newOffering.getSections(newRequest.getEnrollment()))
+						if (old.getSubpartId().equals(section.getSubpartId())) continue sections;
+					
+					XSubpart subpart = getOldOffering().getSubpart(old.getSubpartId());
+					XSection parent = (old.getParentId() == null ? null : getOldOffering().getSection(old.getParentId()));
+					String requires = null;
+					if (parent != null)
+						requires = parent.getName(course.getCourseId());
+					listOfChanges.add(new TableSectionDeletedLine(newRequest, course, subpart, old, requires, first));
+					first = false;
+				}
+
+				input.put("changes", listOfChanges);
+			} else if (getOldEnrollment() != null && (newRequest == null || newRequest.getEnrollment() == null)) {
+				setSubject(newRequest == null
+						? MSG.emailCourseDropReject(course.getSubjectArea(), course.getCourseNumber())
+						: MSG.emailCourseDropChange(course.getSubjectArea(), course.getCourseNumber()));
+				if (newRequest !=  null && getStudent().canAssign(newRequest)) {
+					input.put("changeMessage", (newRequest.isAlternative() ?
+							newRequest.isWaitlist() ? MSG.emailCourseWaitListedAlternative() : MSG.emailCourseNotEnrolledAlternative() :
+							newRequest.isWaitlist() ? MSG.emailCourseWaitListed() : MSG.emailCourseNotEnrolled()));
+				} else if (newRequest == null && course.getConsentLabel() != null) {
+					input.put("changeMessage", MSG.emailConsentRejected(course.getConsentLabel().toLowerCase()));
+				}
+			}
+		} else if (getOldStudent() != null && !getOldStudent().getRequests().isEmpty()) {
+			boolean somethingWasAssigned = false;
+			for (XRequest or: getOldStudent().getRequests()) {
+				if (or instanceof XCourseRequest && ((XCourseRequest)or).getEnrollment() != null) {
+					somethingWasAssigned = true; break;
+				}
+			}
+			if (somethingWasAssigned) {
+				List<TableLine> listOfChanges = new ArrayList<TableLine>();
+				requests: for (XRequest nr: getStudent().getRequests()) {
+					if (nr instanceof XFreeTimeRequest) continue;
+					XCourseRequest ncr = (XCourseRequest)nr;
+					for (XRequest or: getOldStudent().getRequests()) {
+						if (or instanceof XFreeTimeRequest) continue;
+						XCourseRequest ocr = (XCourseRequest)or;
+						if (or.getRequestId().equals(nr.getRequestId())) {
+							if (ocr.getEnrollment() == null) {
+								if (ncr.getEnrollment() == null) continue; // both unassigned
+								// was assigned
+								boolean first = true;
+								String consent = consent(server, ncr.getEnrollment());
+								XOffering no = server.getOffering(ncr.getEnrollment().getOfferingId());
+								XCourse course = no.getCourse(ncr.getEnrollment().getCourseId());
+								for (XSection section: no.getSections(ncr.getEnrollment())) {
+									XSubpart subpart = no.getSubpart(section.getSubpartId());
+									XSection parent = (section.getParentId() == null ? null : no.getSection(section.getParentId()));
+									String requires = null;
+									if (parent != null) {
+										requires = parent.getName(course.getCourseId());
+									} else {
+										requires = consent; consent = null;
+									}
+									listOfChanges.add(new TableSectionLine(ncr, course, subpart, section, requires, first));
+									first = false;
+								}
+							} else if (ncr.getEnrollment() == null) {
+								XOffering oo = server.getOffering(ocr.getEnrollment().getOfferingId());
+								XCourse course = oo.getCourse(ocr.getEnrollment().getCourseId());
+								// was un-assigned
+								boolean first = true;
+								for (XSection section: oo.getSections(ocr.getEnrollment())) {
+									XSubpart subpart = oo.getSubpart(section.getSubpartId());
+									XSection parent = (section.getParentId() == null ? null : oo.getSection(section.getParentId()));
+									String requires = null;
+									if (parent != null)
+										requires = parent.getName(course.getCourseId());
+									listOfChanges.add(new TableSectionDeletedLine(ncr, course, subpart, section, requires, first));
+									first = false;
+								}
+							} else {
+								XOffering no = server.getOffering(ncr.getEnrollment().getOfferingId());
+								XOffering oo = server.getOffering(ocr.getEnrollment().getOfferingId());
+								// both assigned
+								XCourse course = no.getCourse(ncr.getEnrollment().getCourseId());
+								String consent = consent(server, ncr.getEnrollment());
+								boolean first = true;
+								sections: for (XSection section: no.getSections(ncr.getEnrollment())) {
+									for (XSection old: oo.getSections(ocr.getEnrollment())) {
+										if (old.getSubpartId().equals(section.getSubpartId())) {
+											if (equals(section, old)) continue sections;
+											
+											XSubpart subpart = no.getSubpart(section.getSubpartId());
+											XSection parent = (section.getParentId() == null ? null : no.getSection(section.getParentId()));
+											String requires = null;
+											if (parent != null)
+												requires = parent.getName(course.getCourseId());
+											
+											XSubpart oldSubpart = oo.getSubpart(old.getSubpartId());
+											XSection oldParent = (old.getParentId() == null ? null : oo.getSection(old.getParentId()));
+											String oldRequires = null;
+											if (oldParent != null)
+												oldRequires = oldParent.getName(course.getCourseId());
+											
+											if (oldRequires == null && requires == null) {
+												requires = consent;
+												oldRequires = consent;
+												consent = null;
+											}
+											
+											listOfChanges.add(new TableSectionModifiedLine(ncr, course, oldSubpart, subpart, old, section, oldRequires, requires, first));
+											first = false;
+											continue sections;
+										}
+									}
+									
+									XSubpart subpart = no.getSubpart(section.getSubpartId());
+									XSection parent = (section.getParentId() == null ? null : no.getSection(section.getParentId()));
+									String requires = null;
+									if (parent != null) {
+										requires = parent.getName(course.getCourseId());
+									} else {
+										requires = consent; consent = null;
+									}
+									listOfChanges.add(new TableSectionLine(ncr, course, subpart, section, requires, first));
+									first = false;
+								}
+								course = oo.getCourse(ocr.getEnrollment().getCourseId());
+								sections: for (XSection old: oo.getSections(ocr.getEnrollment())) {
+									for (XSection section: no.getSections(ncr.getEnrollment()))
+										if (old.getSubpartId().equals(section.getSubpartId())) continue sections;
+									
+									XSubpart subpart = oo.getSubpart(old.getSubpartId());
+									XSection parent = (old.getParentId() == null ? null : oo.getSection(old.getParentId()));
+									String requires = null;
+									if (parent != null)
+										requires = parent.getName(course.getCourseId());
+
+									listOfChanges.add(new TableSectionDeletedLine(ocr, course, subpart, old, requires, first));
+									first = false;
+								}
+							}
+							continue requests;
+						}
+					}
+					// old request not found
+					if (ncr.getEnrollment() != null) {
+						XOffering no = server.getOffering(ncr.getEnrollment().getOfferingId());
+						boolean first = true;
+						XCourse course = no.getCourse(ncr.getEnrollment().getCourseId());
+						String consent = consent(server, ncr.getEnrollment());
+						for (XSection section: no.getSections(ncr.getEnrollment())) {
+							XSubpart subpart = no.getSubpart(section.getSubpartId());
+							XSection parent = (section.getParentId() == null ? null : no.getSection(section.getParentId()));
+							String requires = null;
+							if (parent != null) {
+								requires = parent.getName(course.getCourseId());
+							} else {
+								requires = consent; consent = null;
+							}
+							listOfChanges.add(new TableSectionLine(ncr, course, subpart, section, requires, first));
+							first = false;
+						}
+					}
+				}
+				requests: for (XRequest or: getOldStudent().getRequests()) {
+					if (or instanceof XFreeTimeRequest || ((XCourseRequest)or).getEnrollment() == null) continue;
+					for (XRequest nr: getStudent().getRequests()) {
+						if (or instanceof XFreeTimeRequest) continue;
+						if (or.getRequestId().equals(nr.getRequestId())) continue requests;
+					}
+					// new request not found
+					boolean first = true;
+					XCourseRequest ocr = (XCourseRequest)or;
+					XOffering oo = server.getOffering(ocr.getEnrollment().getOfferingId());
+					XCourse course = oo.getCourse(ocr.getEnrollment().getCourseId());
+					for (XSection section: oo.getSections(((XCourseRequest)or).getEnrollment())) {
+						XSubpart subpart = oo.getSubpart(section.getSubpartId());
+						XSection parent = (section.getParentId() == null ? null : oo.getSection(section.getParentId()));
+						String requires = null;
+						if (parent != null)
+							requires = parent.getName(course.getCourseId());
+
+						listOfChanges.add(new TableSectionDeletedLine(ocr, course, subpart, section, requires, first));
+						first = false;
+					}
+				}
+				
+				input.put("changes", listOfChanges);				
+			} else {
+				setSubject(MSG.emailSubjectNotification());
+			}
+		} else {
+			setSubject(MSG.emailSubjectNotification());
+		}
 		
-		out.flush(); out.close();
-		return buffer.getBuffer().toString();
+		input.put("manager", helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER);
+		input.put("changed", getOldEnrollment() != null || getOldStudent() != null);
+		input.put("version", GWT.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));
+		input.put("copyright", GWT.pageCopyright());
+		input.put("ts", sTimeStampFormat.format(getTimeStamp()));
+		input.put("link", ApplicationProperty.UniTimeUrl.value());
+		
+		StringWriter s = new StringWriter();
+		template.process(input, new PrintWriter(s));
+		s.flush(); s.close();
+
+		return s.toString();
 	}
 	
-	private void generateListOfClassesHeader(PrintWriter out) {
-		out.println("<table width=\"100%\">");
-		out.println("<tr>");
-		String style = "white-space: nowrap; font-weight: bold; padding-top: 5px;";
-		out.println("	<td style=\"" + style + "\">" + MSG.colSubject() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colCourse() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colSubpart() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colClass() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colDays() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colStart() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colEnd() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colDate() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colRoom() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colInstructor() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colParent() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colNote() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MSG.colCredit() + "</td>");
-		out.println("</tr>");
-	}
-	
-	private void generateListOfClassesFooter(PrintWriter out, boolean link) {
-		if (link) {
-			String url = ApplicationProperty.UniTimeUrl.value();
-			if (url != null) {
-				out.println("	<tr><td colspan=\"12\" style=\"font-size: 9pt; font-style: italic; color: #9CB0CE; text-align: right; margin-top: -2px; white-space: nowrap;\">");
-				out.println("		" + MSG.emailLinkToUniTime(url));
-				out.println("	</td></tr>");
+	List<TableLine> generateListOfClasses(org.unitime.timetable.model.Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		List<TableLine> listOfClasses = new ArrayList<TableLine>();
+		for (XRequest request: getStudent().getRequests()) {
+			if (request instanceof XCourseRequest) {
+				XCourseRequest cr = (XCourseRequest)request;
+				XEnrollment enrollment = cr.getEnrollment();
+				if (enrollment == null) {
+					if (!getStudent().canAssign(cr)) continue;
+					XCourse course = server.getCourse(cr.getCourseIds().get(0).getCourseId());
+					listOfClasses.add(new TableCourseLine(cr, course));
+				} else {
+					XOffering offering = server.getOffering(enrollment.getOfferingId());
+					XCourse course = offering.getCourse(enrollment.getCourseId());
+					String consent = consent(server, enrollment);
+					boolean first = true;
+					for (XSection section: offering.getSections(enrollment)) {
+						XSection parent = (section.getParentId() == null ? null : offering.getSection(section.getParentId()));
+						XSubpart subpart = offering.getSubpart(section.getSubpartId());
+						String requires = null;
+						if (parent != null) {
+							requires = parent.getName(course.getCourseId());
+						} else {
+							requires = consent; consent = null;
+						}
+						listOfClasses.add(new TableSectionLine(cr, course, subpart, section, requires, first));
+						first = false;
+					}
+				}
+			}
+			if (request instanceof XFreeTimeRequest) {
+				listOfClasses.add(new TableLineFreeTime((XFreeTimeRequest)request));
 			}
 		}
-		out.println("</table>");
+		return listOfClasses;
 	}
 	
 	public static boolean equals(XSection a, XSection b) {
@@ -530,231 +766,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			ToolBox.equals(a.getParentId(), b.getParentId());
 	}
 	
-	private String time(int slot) {
-        int h = slot / 12;
-        int m = 5 * (slot % 12);
-        if (CONST.useAmPm())
-        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
-        else
-			return h + ":" + (m < 10 ? "0" : "") + m;
+	private static String startTime(XTime time) {
+		return OnlineSectioningHelper.getTimeString(time.getSlot());
 	}
 	
-	private String startTime(XTime time) {
-		return time(time.getSlot());
-	}
-	
-	private String endTime(XTime time) {
-		return time(time.getSlot() + time.getLength() - time.getBreakTime());
+	private static String endTime(XTime time) {
+		return OnlineSectioningHelper.getTimeString(time.getSlot() + time.getLength(), time.getBreakTime());
 	}
 
-	private void generateListOfClassesLine(PrintWriter out, XOffering offering, XCourse course, XSection section, String style, String consent) {
-		out.println("<tr>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getSubjectArea() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getCourseNumber() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + section.getSubpartName() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + section.getName(course.getCourseId()) + "</td>");
-		if (section.getTime() == null) {
-			out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"4\">" + MSG.emailArrangeHours() + "</td>");
-		} else {
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + DayCode.toString(section.getTime().getDays()) + "</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + startTime(section.getTime()) + "</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + endTime(section.getTime()) + "</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + section.getTime().getDatePatternName() + "</td>");
-		}
-		if (section.getRooms() == null || section.getRooms().isEmpty()) {
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
-		} else {
-			String rooms = "";
-			for (XRoom room: section.getRooms()) {
-				if (!rooms.isEmpty()) rooms += ", ";
-				rooms += room.getName();
-			}
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + rooms + "</td>");
-		}
-		if (section.getInstructors().isEmpty()) {
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
-		} else {
-			String html = "";
-			for (XInstructor instructor: section.getInstructors()) {
-				if (!html.isEmpty()) html += ", ";
-				if (instructor.getEmail() == null) {
-					html += instructor.getName();
-				} else {
-					html += "<a href='mailto:" + instructor.getEmail() + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + instructor.getName()+ "</a>";
-				}
-			}
-			out.println("	<td style= \"" + style + "\">" + html + "</td>");
-		}
-		XSection parent = (section.getParentId() == null ? null : offering.getSection(section.getParentId()));
-		out.println("	<td style= \"" + style + "\">" + (parent == null ? consent == null ? "&nbsp;" : consent : parent.getName(course.getCourseId())) + "</td>");
-		String note = course.getNote();
-		if (section.getNote() != null) note = (note == null || note.isEmpty() ? "" : note + "<br>") + section.getNote();
-		out.println("	<td style= \"" + style + "\">" + (note == null ? "&nbsp;" : note.replace("\n", "<br>")) + "</td>");
-		XSubpart subpart = offering.getSubpart(section.getSubpartId());
-		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(subpart, course.getCourseId()) + "\">" + creditAbbv(subpart, course.getCourseId()) + "</td>");
-		out.println("</tr>");
-	}
-	
-	private String diff(String a, String b) {
-		if (a == null || a.isEmpty())
-			return (b == null || b.isEmpty() ? "<span style='text-decoration: none;'>&nbsp;</span>" : b);
-		if (b == null || b.isEmpty())
-			return "<span style='text-decoration: line-through;'>" + a + "</span>";
-		if (a.equals(b))
-			return a;
-		return "<span style='text-decoration: line-through;'>" + a + "</span> &rarr; " + b;
-	}
-	
-	private void generateListOfClassesDiff(PrintWriter out, XOffering oldOffering, XOffering offering, XCourse course, XSection old, XSection section, String style, String consent) {
-		out.println("<tr>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getSubjectArea() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getCourseNumber() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + section.getSubpartName() + "</td>");
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + diff(old.getName(course.getCourseId()), section.getName(course.getCourseId())) + "</td>");
-		if (section.getTime() == null) {
-			out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"4\">" +
-					diff(old.getTime() == null ? MSG.emailArrangeHours() : DayCode.toString(old.getTime().getDays()) + " " + startTime(old.getTime()),
-					MSG.emailArrangeHours()) + "</td>");
-		} else {
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + 
-					diff(old.getTime() == null ? null : DayCode.toString(old.getTime().getDays()), DayCode.toString(section.getTime().getDays())) +
-					"</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + 
-					diff(old.getTime() == null ? null : startTime(old.getTime()), startTime(section.getTime())) +
-					"</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + 
-					diff(old.getTime() == null ? null : endTime(old.getTime()), endTime(section.getTime())) +
-					"</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" +
-					diff(old.getTime() == null ? null : old.getTime().getDatePatternName(), section.getTime().getDatePatternName()) +
-					"</td>");
-		}
-	
-		String oldRooms = "";
-		if (old.getRooms() != null && !old.getRooms().isEmpty()) {
-			for (XRoom room: old.getRooms()) {
-				if (!oldRooms.isEmpty()) oldRooms += ", ";
-				oldRooms += room.getName();
-			}
-		}
-		
-		String rooms = "";
-		if (section.getRooms() != null && !section.getRooms().isEmpty()) {
-			for (XRoom room: section.getRooms()) {
-				if (!rooms.isEmpty()) rooms += ", ";
-				rooms += room.getName();
-			}
-		}
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + diff(oldRooms, rooms) + "</td>");
-		
-		String oldInstructors = "";
-		if (!old.getInstructors().isEmpty()) {
-			for (XInstructor instructor: old.getInstructors()) {
-				if (!oldInstructors.isEmpty()) oldInstructors += ", ";
-				if (instructor.getEmail() == null) {
-					oldInstructors += instructor.getName();
-				} else {
-					oldInstructors += "<a href='mailto:" + instructor.getEmail() + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + instructor.getName()+ "</a>";
-				}
-			}
-		}
-		String instructors = "";
-		if (!section.getInstructors().isEmpty()) {
-			for (XInstructor instructor: section.getInstructors()) {
-				if (!instructors.isEmpty()) instructors += ", ";
-				if (instructor.getEmail() == null) {
-					instructors += instructor.getName();
-				} else {
-					instructors += "<a href='mailto:" + instructor.getEmail() + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + instructor.getName()+ "</a>";
-				}
-			}
-		}
-		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + diff(oldInstructors, instructors) + "</td>");
-
-		XSection oldParent = (old.getParentId() == null ? null : oldOffering.getSection(old.getParentId()));
-		XSection parent = (section.getParentId() == null ? null : offering.getSection(section.getParentId()));
-		out.println("	<td style= \"" + style + "\">" + (oldParent == null && parent == null ? consent == null ? "&nbsp;" : consent : diff(oldParent == null ? null : oldParent.getName(course.getCourseId()), parent == null ? null : parent.getName(course.getCourseId()))) + "</td>");
-		out.println("	<td style= \"" + style + "\">" +
-				(course.getNote() == null ? "" : course.getNote().replace("\n", "<br>") + "<br>") +
-				diff(old.getNote(), section.getNote()).replace("\n", "<br>") + "</td>");
-		XSubpart oldSubpart = oldOffering.getSubpart(old.getSectionId());
-		XSubpart subpart = offering.getSubpart(section.getSubpartId());
-		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(subpart, course.getCourseId()) + "\">" + diff(creditAbbv(oldSubpart, course.getCourseId()), creditAbbv(subpart, course.getCourseId())) + "</td>");
-		out.println("</tr>");
-	}
-	
-	private String creditAbbv(XSubpart subpart, Long courseId) {
-		String credit = (subpart == null ? null : subpart.getCredit(courseId));
-		return credit == null ? "" : credit.indexOf('|') < 0 ? credit : credit.substring(0, credit.indexOf('|')); 
-	}
-
-	private String creditText(XSubpart subpart, Long courseId) {
-		String credit = (subpart == null ? null : subpart.getCredit(courseId));
-		return credit == null ? "" : credit.indexOf('|') < 0 ? credit : credit.substring(1 + credit.indexOf('|')); 
-	}
-
-	private void generateListOfClassesLine(PrintWriter out, XRequest request, String consent, OnlineSectioningServer server) {
-		XEnrollment enrollment = (request instanceof XCourseRequest ? ((XCourseRequest)request).getEnrollment() : null);
-		if (enrollment == null) {
-			if (request instanceof XCourseRequest) {
-				XCourseRequest cr = (XCourseRequest)request;
-				if (!getStudent().canAssign(cr)) return;
-				XCourse course = server.getCourse(cr.getCourseIds().get(0).getCourseId());
-				out.println("<tr>");
-				String style = "color: red; border-top: 1px dashed #9CB0CE;";
-				out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getSubjectArea() + "</td>");
-				out.println("	<td style= \"white-space: nowrap; " + style + "\">" + course.getCourseNumber() + "</td>");
-				out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
-				out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
-				if (request.isAlternative())
-					out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"9\" align=\"center\">" + (cr.isWaitlist() ? MSG.emailWaitListedAlternativeRequest() : MSG.emailNotEnrolledAlternativeRequest()) + "</td>");
-				else
-					out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"9\" align=\"center\">" + (cr.isWaitlist() ? MSG.emailWaitListedRequest() : MSG.emailNotEnrolledRequest()) + "</td>");
-				out.println("</tr>");
-			}
-			return;
-		} else {
-			XOffering offering = server.getOffering(enrollment.getOfferingId());
-			XCourse course = offering.getCourse(enrollment.getCourseId());
-			boolean first = true, firstNoParent = true;
-			for (XSection section: offering.getSections(enrollment)) {
-				String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-				generateListOfClassesLine(out, offering, course, section, style, firstNoParent ? consent : null);
-				first = false;
-				if (section.getParentId() == null) firstNoParent = false;
-			}
-		}
-		if (request instanceof XFreeTimeRequest) {
-			XFreeTimeRequest fr = (XFreeTimeRequest)request;
-			String style = "border-top: 1px dashed #9CB0CE;";
-			out.println("<tr>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + MSG.freeTimeSubject() + "</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + MSG.freeTimeCourse() + "</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + DayCode.toString(fr.getTime().getDays()) + "</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + startTime(fr.getTime()) + "</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + endTime(fr.getTime()) + "</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"6\">&nbsp;</td>");
-			out.println("</tr>");
-			return;
-		}
-	}
-
-	
-	protected void generateListOfClasses(PrintWriter out, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		if (getStudent().getRequests().isEmpty()) {
-			out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">" + MSG.emailNoSchedule() + "</td></tr></table>");
-			return;
-		}
-		generateListOfClassesHeader(out);
-		for (XRequest request: getStudent().getRequests()) {
-			XEnrollment enrollment = (request instanceof XCourseRequest ? ((XCourseRequest)request).getEnrollment() : null);
-			generateListOfClassesLine(out, request, consent(server, enrollment), server);
-		}
-		generateListOfClassesFooter(out, true);
-	}
-	
 	private String consent(OnlineSectioningServer server, XEnrollment enrollment) {
 		if (enrollment == null || enrollment.getCourseId() == null) return null;
 		XCourse info = server.getCourse(enrollment.getCourseId());
@@ -763,204 +782,6 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			return MSG.consentWaiting(info.getConsentLabel().toLowerCase());
 		else 
 			return MSG.consentApproved(sConsentApprovalDateFormat.format(enrollment.getApproval().getTimeStamp()));
-	}
-	
-	public void generateChange(PrintWriter out, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		if (getOldOffering() != null) {
-			XCourseRequest newRequest = null;
-			XOffering newOffering = null;
-			for (XRequest r: getStudent().getRequests()) {
-				if (r instanceof XCourseRequest && ((XCourseRequest)r).getCourseIdByOfferingId(getOldOffering().getOfferingId()) != null) {
-					newRequest = (XCourseRequest)r;
-					newOffering = server.getOffering(getOldOffering().getOfferingId());
-					break;
-				}
-			}
-			if (getOldEnrollment() == null && newRequest != null && newRequest.getEnrollment() != null) {
-				XCourse course = newOffering.getCourse(newRequest.getEnrollment().getCourseId());
-				setSubject(MSG.emailEnrollmentNew(course.getSubjectArea(), course.getCourseNumber()));
-				out.println("		<tr><td " +
-						"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-						MSG.emailCourseEnrollment(course.getSubjectArea(), course.getCourseNumber()) + "</td></tr>");
-				out.println("		<tr><td>");
-				generateListOfClassesHeader(out);
-				generateListOfClassesLine(out, newRequest, consent(server, newRequest.getEnrollment()), server);
-				generateListOfClassesFooter(out, false);
-				out.println("		</td></tr>");
-			} else if (getOldEnrollment() != null && newRequest != null && newRequest.getEnrollment() != null) {
-				XCourse course = newOffering.getCourse(newRequest.getEnrollment().getCourseId());
-				setSubject(MSG.emailEnrollmentChanged(course.getSubjectArea(), course.getCourseNumber()));
-				out.println("		<tr><td " +
-						"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-						MSG.emailCourseEnrollment(course.getSubjectArea(), course.getCourseNumber()) + "</td></tr>");
-				out.println("		<tr><td>");
-				generateListOfClassesHeader(out);
-				boolean first = true, firstWithNoParent = true;
-				sections: for (XSection section: newOffering.getSections(newRequest.getEnrollment())) {
-					for (XSection old: getOldOffering().getSections(getOldEnrollment())) {
-						if (old.getSubpartId().equals(section.getSubpartId())) {
-							String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-							generateListOfClassesDiff(out, getOldOffering(), newOffering, course, old, section, style, firstWithNoParent ? consent(server, newRequest.getEnrollment()) : null);
-							first = false;
-							if (section.getParentId() == null && old.getParentId() == null) firstWithNoParent = false;
-							continue sections;
-						}
-					}
-					String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-					generateListOfClassesLine(out, newOffering, course, section, style, firstWithNoParent ? consent(server, newRequest.getEnrollment()) : null);
-					first = false;
-					if (section.getParentId() == null) firstWithNoParent = false;
-				}
-				sections: for (XSection old: getOldOffering().getSections(getOldEnrollment())) {
-					for (XSection section: newOffering.getSections(newRequest.getEnrollment()))
-						if (old.getSubpartId().equals(section.getSubpartId())) continue sections;
-					String style = "text-decoration: line-through;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-					generateListOfClassesLine(out, getOldOffering(), course, old, style, null);
-					first = false;
-				}
-				generateListOfClassesFooter(out, false);
-				out.println("		</td></tr>");
-			} else if (getOldEnrollment() != null && (newRequest == null || newRequest.getEnrollment() == null)) {
-				XCourse course = getOldOffering().getCourse(getOldEnrollment().getCourseId());
-				setSubject(newRequest == null
-						? MSG.emailCourseDropReject(course.getSubjectArea(), course.getCourseNumber())
-						: MSG.emailCourseDropChange(course.getSubjectArea(), course.getCourseNumber()));
-				out.println("		<tr><td " +
-						"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-						MSG.emailCourseEnrollment(course.getSubjectArea(), course.getCourseNumber()) + "</td></tr>");
-				out.println("		<tr><td>");
-				XCourse info = server.getCourse(course.getCourseId());
-				String consent = (info == null ? null : info.getConsentLabel());
-				if (newRequest !=  null && getStudent().canAssign(newRequest))
-					out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">" + 
-							(newRequest.isAlternative() ?
-									newRequest.isWaitlist() ? MSG.emailCourseWaitListedAlternative() : MSG.emailCourseNotEnrolledAlternative() :
-									newRequest.isWaitlist() ? MSG.emailCourseWaitListed() : MSG.emailCourseNotEnrolled()) + "</td></tr></table>");
-				else if (newRequest == null && consent != null) {
-					out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">" + MSG.emailConsentRejected(consent.toLowerCase()) + "</td></tr></table>");
-				}
-				out.println("		</td></tr>");
-			}
-		} else if (getOldStudent() != null && !getOldStudent().getRequests().isEmpty()) {
-			boolean somethingWasAssigned = false;
-			for (XRequest or: getOldStudent().getRequests()) {
-				if (or instanceof XCourseRequest && ((XCourseRequest)or).getEnrollment() != null) {
-					somethingWasAssigned = true; break;
-				}
-			}
-			if (somethingWasAssigned) {
-				out.println("		<tr><td " +
-						"style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-						MSG.emailEnrollmentChanges() + "</td></tr>");
-				out.println("		<tr><td>");
-				int nrLines = 0;
-				generateListOfClassesHeader(out);
-				requests: for (XRequest nr: getStudent().getRequests()) {
-					if (nr instanceof XFreeTimeRequest) continue;
-					XCourseRequest ncr = (XCourseRequest)nr;
-					for (XRequest or: getOldStudent().getRequests()) {
-						if (or instanceof XFreeTimeRequest) continue;
-						XCourseRequest ocr = (XCourseRequest)or;
-						if (or.getRequestId().equals(nr.getRequestId())) {
-							if (ocr.getEnrollment() == null) {
-								if (ncr.getEnrollment() == null) continue; // both unassigned
-								// was assigned
-								boolean first = true, firstWithNoParent = true;
-								XOffering no = server.getOffering(ncr.getEnrollment().getOfferingId());
-								for (XSection section: no.getSections(ncr.getEnrollment())) {
-									String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, no, no.getCourse(ncr.getEnrollment().getCourseId()), section, style, firstWithNoParent ? consent(server, ncr.getEnrollment()) : null);
-									nrLines++;
-									first = false;
-									if (section.getParentId() == null) firstWithNoParent = false;
-								}
-							} else if (ncr.getEnrollment() == null) {
-								XOffering oo = server.getOffering(ocr.getEnrollment().getOfferingId());
-								// was un-assigned
-								boolean first = true;
-								for (XSection section: oo.getSections(ocr.getEnrollment())) {
-									String style = "text-decoration: line-through;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, oo, oo.getCourse(ocr.getEnrollment().getCourseId()), section, style, null);
-									nrLines++;
-									first = false;
-								}
-							} else {
-								XOffering no = server.getOffering(ncr.getEnrollment().getOfferingId());
-								XOffering oo = server.getOffering(ocr.getEnrollment().getOfferingId());
-								// both assigned
-								boolean first = true, firstWithNoParent = true;
-								sections: for (XSection section: no.getSections(ncr.getEnrollment())) {
-									for (XSection old: oo.getSections(ocr.getEnrollment())) {
-										if (old.getSubpartId().equals(section.getSubpartId())) {
-											if (equals(section, old)) continue sections;
-											String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-											generateListOfClassesDiff(out, oo, no, no.getCourse(ncr.getEnrollment().getCourseId()), old, section, style, firstWithNoParent ? consent(server, ncr.getEnrollment()) : null);
-											nrLines++;
-											first = false;
-											if (section.getParentId() == null && old.getParentId() == null) firstWithNoParent = false;
-											continue sections;
-										}
-									}
-									String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, no, no.getCourse(ncr.getEnrollment().getCourseId()), section, style, firstWithNoParent ? consent(server, ncr.getEnrollment()) : null);
-									nrLines++;
-									first = false;
-									if (section.getParentId() == null) firstWithNoParent = false;
-								}
-								sections: for (XSection old: oo.getSections(ocr.getEnrollment())) {
-									for (XSection section: no.getSections(ncr.getEnrollment()))
-										if (old.getSubpartId().equals(section.getSubpartId())) continue sections;
-									String style = "text-decoration: line-through;" + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-									generateListOfClassesLine(out, oo, oo.getCourse(ocr.getEnrollment().getCourseId()), old, style, null);
-									nrLines++;
-									first = false;
-								}
-							}
-							continue requests;
-						}
-					}
-					// old request not found
-					if (ncr.getEnrollment() != null) {
-						XOffering no = server.getOffering(ncr.getEnrollment().getOfferingId());
-						boolean first = true, firstWithNoParent = true;
-						for (XSection section: no.getSections(ncr.getEnrollment())) {
-							String style = (first ? " border-top: 1px dashed #9CB0CE;" : "");
-							generateListOfClassesLine(out, no, no.getCourse(ncr.getEnrollment().getCourseId()), section, style, firstWithNoParent ? consent(server, ncr.getEnrollment()) : null);
-							nrLines++;
-							first = false;
-							if (section.getParentId() == null) firstWithNoParent = false;
-						}
-					}
-				}
-				requests: for (XRequest or: getOldStudent().getRequests()) {
-					if (or instanceof XFreeTimeRequest || ((XCourseRequest)or).getEnrollment() == null) continue;
-					for (XRequest nr: getStudent().getRequests()) {
-						if (or instanceof XFreeTimeRequest) continue;
-						if (or.getRequestId().equals(nr.getRequestId())) continue requests;
-					}
-					// new request not found
-					boolean first = true, firstWithNoParent = true;
-					XOffering oo = server.getOffering(((XCourseRequest)or).getEnrollment().getOfferingId());
-					for (XSection section: oo.getSections(((XCourseRequest)or).getEnrollment())) {
-						String style = "text-decoration: line-through; " + (first ? " border-top: 1px dashed #9CB0CE;" : "");
-						generateListOfClassesLine(out, oo, oo.getCourse(((XCourseRequest)or).getEnrollment().getCourseId()), section, style, firstWithNoParent ? consent(server, ((XCourseRequest)or).getEnrollment()) : null);
-						nrLines++;
-						first = false;
-						if (section.getParentId() == null) firstWithNoParent = false;
-					}
-				}
-				if (nrLines == 0) {
-					if (getMessage() == null || getMessage().isEmpty())
-						out.println("<tr><td colspan='11'><i>" + MSG.emailNoChange() + "</i></td></tr>");
-				}
-				generateListOfClassesFooter(out, false);
-				out.println("		</td></tr>");
-			} else {
-				setSubject(MSG.emailSubjectNotification());
-			}
-		} else {
-			setSubject(MSG.emailSubjectNotification());
-		}
 	}
 	
 	public void generateTimetable(PrintWriter out, OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -1322,4 +1143,399 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		return out.toByteArray();
 	}
 	
+	public static interface TableLine {
+		public XRequest getRequest();
+		
+		public String getSubject();
+		public String getCourseNumber();
+		public String getType();
+		public String getName();
+		
+		public XTime getTime();
+		public String getRooms();
+		public String getInstructors();
+		
+		public boolean isFirst();
+		public boolean isAssigned();
+		public boolean isFreeTime();
+		
+		public String getArrangeHours();
+		public String getDays();
+		public String getStart();
+		public String getEnd();
+		public String getDate();
+
+		public String getCredit();
+		public String getNote();
+		public String getRequires();
+	}
+	
+	public static class TableCourseLine implements TableLine {
+		protected XCourseRequest iRequest;
+		protected XCourse iCourse;
+		
+		public TableCourseLine(XCourseRequest request, XCourse course) {
+			iRequest = request;
+			iCourse = course;
+		}
+
+		public XRequest getRequest() { return iRequest; }
+		public XCourse getCourse() { return iCourse; }
+
+		@Override
+		public String getSubject() { return getCourse().getSubjectArea(); }
+
+		@Override
+		public String getCourseNumber() { return getCourse().getCourseNumber(); }
+		
+		@Override
+		public String getType() { return null; }
+
+		@Override
+		public String getName() { return null; }
+
+		@Override
+		public XTime getTime() { return null; }
+		
+		@Override
+		public boolean isAssigned() { return false; }
+		
+		@Override
+		public boolean isFirst() { return true; }
+		
+		@Override
+		public String getCredit() { return null; }
+
+		@Override
+		public String getNote() {
+			if (iRequest.isAlternative())
+				return (iRequest.isWaitlist() ? MSG.emailWaitListedAlternativeRequest() : MSG.emailNotEnrolledAlternativeRequest());
+			else
+				return (iRequest.isWaitlist() ? MSG.emailWaitListedRequest() : MSG.emailNotEnrolledRequest());
+		}
+
+		@Override
+		public String getRequires() {
+			return null;
+		}
+		
+		@Override
+		public String getRooms() { return null; }
+		
+		@Override
+		public String getInstructors() { return null; }
+
+		@Override
+		public boolean isFreeTime() { return false; }
+
+		@Override
+		public String getArrangeHours() { return null; }
+
+		@Override
+		public String getDays() { return null; }
+
+		@Override
+		public String getStart() { return null; }
+
+		@Override
+		public String getEnd() { return null; }
+
+		@Override
+		public String getDate() { return null; }
+	}
+	
+	public static class TableSectionLine extends TableCourseLine {
+		protected XSection iSection;
+		protected XSubpart iSubpart;
+		protected String iRequires;
+		private boolean iFirst;
+		
+		public TableSectionLine(XCourseRequest request, XCourse course, XSubpart subpart, XSection section, String requires, boolean first) {
+			super(request, course);
+			iCourse = course;
+			iSubpart = subpart;
+			iSection = section;
+			iRequires = requires;
+			iFirst = first;
+		}
+		
+		@Override
+		public boolean isFirst() { return iFirst; }
+
+		@Override
+		public String getType() { return iSection.getSubpartName(); }
+
+		@Override
+		public String getName() { return iSection.getName(iCourse.getCourseId()); }
+
+		
+		public XSection getSection() { return iSection; }
+		public XSubpart getSubpart() { return iSubpart; }
+		
+		@Override
+		public String getRequires() { return iRequires; }
+
+		@Override
+		public String getNote() {
+			if (iCourse.getNote() != null && !iCourse.getNote().isEmpty()) {
+				if (iSection.getNote() != null && !iSection.getNote().isEmpty()) {
+					return iCourse.getNote() + "\n" + iSection.getNote();
+				} else {
+					return iCourse.getNote();
+				}
+			} else if (iSection.getNote() != null && !iSection.getNote().isEmpty()) {
+				return iSection.getNote();
+			} else {
+				return null;
+			}
+		}
+		
+		@Override
+		public String getCredit() { return iSubpart == null ? null : iSubpart.getCreditAbbv(iCourse.getCourseId()); }
+		
+		@Override
+		public XTime getTime() { return iSection.getTime(); }
+		
+		@Override
+		public boolean isAssigned() { return true; }
+		
+		@Override
+		public String getRooms() {
+			String rooms = "";
+			if (iSection.getRooms() != null && !iSection.getRooms().isEmpty()) {
+				for (XRoom room: iSection.getRooms()) {
+					if (!rooms.isEmpty()) rooms += ", ";
+					rooms += room.getName();
+				}
+			}
+			return rooms;
+		}
+		
+		@Override
+		public String getInstructors() {
+			String instructors = "";
+			if (!iSection.getInstructors().isEmpty()) {
+				for (XInstructor instructor: iSection.getInstructors()) {
+					if (!instructors.isEmpty()) instructors += ", ";
+					if (instructor.getEmail() == null) {
+						instructors += instructor.getName();
+					} else {
+						instructors += "<a href='mailto:" + instructor.getEmail() + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + instructor.getName()+ "</a>";
+					}
+				}
+			}
+			return instructors;
+		}
+		
+		@Override
+		public String getArrangeHours() { return MSG.emailArrangeHours(); }
+
+		@Override
+		public String getDays() { return DayCode.toString(getTime().getDays()); }
+
+		@Override
+		public String getStart() { return startTime(getTime()); }
+
+		@Override
+		public String getEnd() { return endTime(getTime()); }
+
+		@Override
+		public String getDate() { return getTime().getDatePatternName(); }
+	}
+	
+	public static class TableLineFreeTime implements TableLine {
+		private XFreeTimeRequest iRequest;
+		
+		public TableLineFreeTime(XFreeTimeRequest request) {
+			iRequest = request;
+		}
+
+		public XRequest getRequest() { return iRequest; }
+		
+		@Override
+		public String getSubject() { return MSG.freeTimeCourse(); }
+
+		@Override
+		public String getCourseNumber() { return MSG.freeTimeSubject(); }
+		
+		@Override
+		public String getType() { return null; }
+
+		@Override
+		public String getName() { return null; }
+		
+		@Override
+		public XTime getTime() { return iRequest.getTime(); }
+		
+		@Override
+		public boolean isAssigned() { return true; }
+		
+		@Override
+		public boolean isFirst() { return true; }
+		
+		@Override
+		public String getCredit() { return null; }
+
+		@Override
+		public String getNote() { return null; }
+
+		@Override
+		public String getRequires() { return null; }
+		
+		@Override
+		public String getRooms() { return ""; }
+		
+		@Override
+		public String getInstructors() { return ""; }
+		
+		@Override
+		public boolean isFreeTime() { return true; }
+		
+		@Override
+		public String getArrangeHours() { return MSG.emailArrangeHours(); }
+
+		@Override
+		public String getDays() { return DayCode.toString(getTime().getDays()); }
+
+		@Override
+		public String getStart() { return startTime(getTime()); }
+
+		@Override
+		public String getEnd() { return endTime(getTime()); }
+
+		@Override
+		public String getDate() { return getTime().getDatePatternName(); }
+	}
+	
+	public static class TableSectionDeletedLine extends TableSectionLine {
+		
+		public TableSectionDeletedLine(XCourseRequest request, XCourse course, XSubpart subpart, XSection section, String requires, boolean first) {
+			super(request, course, subpart, section, requires, first);
+		}
+	}
+	
+	public static class TableSectionModifiedLine extends TableSectionLine {
+		private XSubpart iOldSubpart;
+		private XSection iOldSection;
+		private String iOldRequires;
+		
+		public TableSectionModifiedLine(XCourseRequest request, XCourse course, XSubpart oldSubpart, XSubpart subpart, XSection oldSection, XSection section, String oldRequires, String requires, boolean first) {
+			super(request, course, subpart, section, requires, first);
+			iOldSection = oldSection;
+			iOldSubpart = oldSubpart;
+			iOldRequires = oldRequires;
+		}
+		
+		public XSubpart getOldSubpart() { return iOldSubpart; }
+		public XSection getOldSection() { return iOldSection; }
+		public XTime getOldTime() { return iOldSection.getTime(); }
+		
+		@Override
+		public String getName() {
+			return diff(iOldSection.getName(iCourse.getCourseId()), iSection.getName(iCourse.getCourseId()));
+		}
+		
+		public String diff(String a, String b) {
+			if (a == null || a.isEmpty())
+				return (b == null || b.isEmpty() ? "<span style='text-decoration: none;'>&nbsp;</span>" : b);
+			if (b == null || b.isEmpty())
+				return "<span style='text-decoration: line-through;'>" + a + "</span>";
+			if (a.equals(b))
+				return a;
+			return "<span style='text-decoration: line-through;'>" + a + "</span> &rarr; " + b;
+		}
+		
+		@Override
+		public String getRequires() {
+			return diff(iOldRequires, iRequires);
+		}
+		
+		@Override
+		public String getInstructors() {
+			String oldInstructors = "";
+			if (!iOldSection.getInstructors().isEmpty()) {
+				for (XInstructor instructor: iOldSection.getInstructors()) {
+					if (!oldInstructors.isEmpty()) oldInstructors += ", ";
+					if (instructor.getEmail() == null) {
+						oldInstructors += instructor.getName();
+					} else {
+						oldInstructors += "<a href='mailto:" + instructor.getEmail() + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + instructor.getName()+ "</a>";
+					}
+				}
+			}
+			String instructors = "";
+			if (!iSection.getInstructors().isEmpty()) {
+				for (XInstructor instructor: iSection.getInstructors()) {
+					if (!instructors.isEmpty()) instructors += ", ";
+					if (instructor.getEmail() == null) {
+						instructors += instructor.getName();
+					} else {
+						instructors += "<a href='mailto:" + instructor.getEmail() + "' style=\"color: inherit; background-color : transparent; text-decoration: none;\">" + instructor.getName()+ "</a>";
+					}
+				}
+			}
+			return diff(oldInstructors, instructors);
+		}
+		
+		@Override
+		public String getRooms() {
+			String oldRooms = "";
+			if (iOldSection.getRooms() != null && !iOldSection.getRooms().isEmpty()) {
+				for (XRoom room: iOldSection.getRooms()) {
+					if (!oldRooms.isEmpty()) oldRooms += ", ";
+					oldRooms += room.getName();
+				}
+			}
+			
+			String rooms = "";
+			if (iSection.getRooms() != null && !iSection.getRooms().isEmpty()) {
+				for (XRoom room: iSection.getRooms()) {
+					if (!rooms.isEmpty()) rooms += ", ";
+					rooms += room.getName();
+				}
+			}
+			return diff(oldRooms, rooms);
+		}
+		
+		@Override
+		public String getNote() {
+			String note = diff(iOldSection.getNote(), iSection.getNote());			
+			if (iCourse.getNote() != null && !iCourse.getNote().isEmpty()) {
+				if (note != null && !note.isEmpty()) {
+					return iCourse.getNote() + "\n" + note;
+				} else {
+					return iCourse.getNote();
+				}
+			} else if (note != null && !note.isEmpty()) {
+				return note;
+			} else {
+				return null;
+			}
+		}
+				
+		@Override
+		public String getArrangeHours() { 
+			return diff(getOldTime() == null ? MSG.emailArrangeHours() : DayCode.toString(getOldTime().getDays()) + " " + startTime(getOldTime()), MSG.emailArrangeHours());
+		}
+
+		@Override
+		public String getDays() { 
+			return diff(getOldTime() == null ? null : DayCode.toString(getOldTime().getDays()), DayCode.toString(getTime().getDays()));
+		}
+
+		@Override
+		public String getStart() {
+			return diff(getOldTime() == null ? null : startTime(getOldTime()), startTime(getTime()));
+		}
+
+		@Override
+		public String getEnd() {
+			return diff(getOldTime() == null ? null : endTime(getOldTime()), endTime(getTime()));
+		}
+
+		@Override
+		public String getDate() { 
+			return diff(getOldTime() == null ? null : getOldTime().getDatePatternName(), getTime().getDatePatternName());
+		}
+	}
 }

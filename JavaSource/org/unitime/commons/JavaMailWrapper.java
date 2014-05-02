@@ -136,7 +136,7 @@ public class JavaMailWrapper extends Email {
         BodyPart attachement = new MimeBodyPart();
         attachement.setDataHandler(data);
         attachement.setFileName(name);
-        attachement.setHeader("Content-ID", name);
+        attachement.setHeader("Content-ID", "<" + name + ">");
         iBody.addBodyPart(attachement);
 	}
 	
