@@ -400,6 +400,8 @@ public class ApplicationConfigAction extends Action {
 						reference = p.reference();
 					}
 					
+					if (p != null && p.isSecret()) continue;
+					
 					webTable.addLine(
 				    		editable && (p != null && !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + (reference == null ? key : key.replace("%", "<" + reference + ">")) + "';\"" : null,
 				    		new String[] {
