@@ -29,7 +29,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingAddAction;
 import org.unitime.timetable.model.base.BaseCourseOffering;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -206,7 +206,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		    cdao.saveOrUpdate(co);		    
 		    cdao.getSession().refresh(co);
 		    cdao.getSession().refresh(subjArea);
-        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr.add_action.class");
+        	String className = ApplicationProperty.ExternalActionInstructionalOfferingAdd.value();
         	if (className != null && className.trim().length() > 0){
 	        	ExternalInstructionalOfferingAddAction addAction = (ExternalInstructionalOfferingAddAction) (Class.forName(className).newInstance());
 	       		addAction.performExternalInstructionalOfferingAddAction(io, hibSession);

@@ -34,7 +34,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
@@ -117,7 +117,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 		}
 		// Check additional emails
 		if (request.getEvent().hasEmail()) {
-			String suffix = ApplicationProperties.getProperty("unitime.email.event.suffix", null);
+			String suffix = ApplicationProperty.EmailDefaultAddressSuffix.value();
 			for (String address: request.getEvent().getEmail().split("[\n,]")) {
 				String email = address.trim();
 				if (email.isEmpty()) continue;

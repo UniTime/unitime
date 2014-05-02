@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
@@ -63,7 +64,7 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 		iLastTimeStamp = lastTimeStamp;
 		setDaemon(true);
 		setName("Updater[" + getAcademicSession().toCompactString() + "]");
-		iSleepTimeInSeconds = Long.parseLong(ApplicationProperties.getProperty("unitime.sectioning.queue.updateInterval", "30"));
+		iSleepTimeInSeconds = ApplicationProperty.OnlineSchedulingQueueUpdateInterval.intValue();
 		iLog = Logger.getLogger(OnlineStudentSchedulingUpdater.class + ".updater[" + getAcademicSession().toCompactString() + "]"); 
 	}
 	

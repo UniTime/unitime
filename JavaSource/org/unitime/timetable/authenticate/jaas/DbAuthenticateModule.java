@@ -42,6 +42,7 @@ import org.unitime.timetable.model.dao.UserDAO;
  *
  * @author Tomas Muller
  */
+@Deprecated
 public class DbAuthenticateModule extends AuthenticateModule {
 	private static Logger sLog = Logger.getLogger(DbAuthenticateModule.class);
 

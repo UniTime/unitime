@@ -35,6 +35,7 @@ import org.jgroups.blocks.mux.MuxUpHandler;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.jgroups.JGroupsUtils;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -87,7 +88,7 @@ public abstract class OnlineSectioningTestFwk {
 	}
 	
 	protected void startServer() {
-        final Session session = Session.getSessionUsingInitiativeYearTerm(
+		final Session session = Session.getSessionUsingInitiativeYearTerm(
                 ApplicationProperties.getProperty("initiative", "woebegon"),
                 ApplicationProperties.getProperty("year","2010"),
                 ApplicationProperties.getProperty("term","Fal")
@@ -108,7 +109,7 @@ public abstract class OnlineSectioningTestFwk {
 
         if (remote) {
             try {
-            	iChannel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml")));
+            	iChannel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperty.SolverClusterConfiguration.value()));
             	iChannel.setUpHandler(new MuxUpHandler());
         		
         		iSolverServer = new DummySolverServer(iChannel);

@@ -45,7 +45,7 @@ import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -257,7 +257,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		boolean avoidOverExpected = server.getAcademicSession().isSectioningEnabled();
 		if (avoidOverExpected && helper.getUser() != null && helper.getUser().hasType() && helper.getUser().getType() != OnlineSectioningLog.Entity.EntityType.STUDENT)
 			avoidOverExpected = false;
-		String override = ApplicationProperties.getProperty("unitime.sectioning.allowOverExpected");
+		String override = ApplicationProperty.OnlineSchedulingAllowOverExpected.value();
 		if (override != null)
 			avoidOverExpected = "false".equalsIgnoreCase(override);
 		

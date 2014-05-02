@@ -25,7 +25,7 @@ import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Tomas Muller
@@ -35,7 +35,7 @@ public class HibernateChannelLookup implements JGroupsChannelLookup {
 	@Override
 	public Channel getJGroupsChannel(Properties p) {
 		try {
-			return new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.hibernate.jgroups.config", "hibernate-jgroups-tcp.xml")));
+			return new JChannel(JGroupsUtils.getConfigurator(ApplicationProperty.HibernateClusterConfiguration.value()));
 		} catch (Exception e) {
 			Debug.error(e.getMessage(), e);
 			return null;

@@ -24,7 +24,7 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -61,7 +61,7 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 			response.setDisplayName(location.getDisplayName());
 			response.setRoomTypeLabel(location.getRoomTypeLabel());
 			
-			String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
+			String minimap = ApplicationProperty.RoomHintMinimapUrl.value();
 	    	if (minimap != null && location.getCoordinateX() != null && location.getCoordinateY() != null)
 	    		response.setMiniMapUrl(minimap
 	    				.replace("%x", location.getCoordinateX().toString())
@@ -77,7 +77,7 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    	}
 	    	
 	    	if (location.getArea() != null)
-	    		response.setArea(new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).format(location.getArea()) + " " + MSG.roomAreaUnitsShort());
+	    		response.setArea(new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value()).format(location.getArea()) + " " + MSG.roomAreaUnitsShort());
 
 	    	for (GlobalRoomFeature f: location.getGlobalRoomFeatures()) {
 	    		String type = (f.getFeatureType() == null ? MESSAGES.roomFeatures() : f.getFeatureType().getReference());
@@ -96,7 +96,7 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    	
 	    	response.setNote(location.getEventMessage());
 	    	
-	    	if ("true".equals(ApplicationProperties.getProperty("unitime.roomHint.showBreakTime", "false")))
+	    	if (ApplicationProperty.RoomHintShowBreakTime.isTrue())
 	    		response.setBreakTime(location.getEffectiveBreakTime());
 	    	
 	    	response.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
@@ -112,7 +112,7 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 			response.setId(-building.getUniqueId());
 			response.setLabel(building.getName());
 			
-	    	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
+	    	String minimap = ApplicationProperty.RoomHintMinimapUrl.value();
 	    	if (minimap != null && building.getCoordinateX() != null && building.getCoordinateY() != null)
 	    		response.setMiniMapUrl(minimap
 	    				.replace("%x", building.getCoordinateX().toString())

@@ -21,7 +21,7 @@ package org.unitime.timetable.server;
 
 import java.net.URL;
 
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget.CourseDetailsRpcRequest;
 import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget.CourseDetailsRpcResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -72,7 +72,7 @@ public class CourseDetailsBackend implements GwtRpcImplementation<CourseDetailsR
 	
 	public static String getCourseDetails(AcademicSessionInfo session, String subject, String courseNbr) {
 		try {
-			String providerClass = ApplicationProperties.getProperty("unitime.custom.CourseDetailsProvider");
+			String providerClass = ApplicationProperty.CustomizationCourseDetails.value();
 			if (providerClass != null)
 				return ((CourseDetailsProvider)Class.forName(providerClass).newInstance()).getDetails(session, subject, courseNbr);
 		} catch (Exception e) {}
@@ -81,7 +81,7 @@ public class CourseDetailsBackend implements GwtRpcImplementation<CourseDetailsR
 	
 	public static URL getCourseUrl(AcademicSessionInfo session, String subject, String courseNbr) {
 		try {
-			String providerClass = ApplicationProperties.getProperty("unitime.custom.CourseUrlProvider");
+			String providerClass = ApplicationProperty.CustomizationCourseLink.value();
 			if (providerClass != null)
 				return ((CourseUrlProvider)Class.forName(providerClass).newInstance()).getCourseUrl(session, subject, courseNbr);
 		} catch (Exception e) {}

@@ -26,7 +26,7 @@ import java.util.TreeSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.sectioning.ExaminationEnrollmentTable.ExaminationScheduleRpcRequest;
 import org.unitime.timetable.gwt.client.sectioning.ExaminationEnrollmentTable.ExaminationScheduleRpcResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -182,8 +182,8 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 			String conflicts = "";
 
 			if (period != null) {
-		        int nrTravelSlotsClassEvent = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6"));
-		        int nrTravelSlotsCourseEvent = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0"));
+		        int nrTravelSlotsClassEvent = ApplicationProperty.ExaminationTravelTimeClass.intValue();
+		        int nrTravelSlotsCourseEvent = ApplicationProperty.ExaminationTravelTimeCourse.intValue();
 
 		        TreeSet<Event> events = new TreeSet<Event>();
 		        

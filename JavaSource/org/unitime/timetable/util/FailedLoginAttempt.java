@@ -22,14 +22,12 @@ package org.unitime.timetable.util;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Stephanie Schluttenhofer
  */
 public class FailedLoginAttempt {
-	private final static int DEFAULT_LOCKOUT_MINUTES = 15;
-
 	private String userId;
 	private int count;
 	private Date lastFailedAttempt;
@@ -39,28 +37,14 @@ public class FailedLoginAttempt {
 		this.count = count;
 		this.lastFailedAttempt = lastFailedAttempt;
 	}		
-			
-	private int getNumberOfLockoutMinutes(){
-		String numberOfLockoutMinutesStr = ApplicationProperties.getProperty("tmtbl.login.failed.lockout.minutes", Integer.toString(DEFAULT_LOCKOUT_MINUTES));
-		int numberOfLockoutMinutes;
-		try {
-			numberOfLockoutMinutes = Integer.parseInt(numberOfLockoutMinutesStr);
-		} catch (NumberFormatException e) {			
-			numberOfLockoutMinutes = DEFAULT_LOCKOUT_MINUTES;
-		}
-		if (numberOfLockoutMinutes < 0){
-			numberOfLockoutMinutes = DEFAULT_LOCKOUT_MINUTES;
-		}
-		return(numberOfLockoutMinutes);
-	}
-	
+
 	public boolean isUserLockedOut(String user, Date attemptTime){
-		if (userId != null && user != null && userId.equals(user) && count >= LoginManager.getMaxFailedAttempts()){
+		if (userId != null && user != null && userId.equals(user) && count >= ApplicationProperty.LoginMaxFailedAttempts.intValue()) {
 			Calendar checkTime = Calendar.getInstance();
 			checkTime.setTime(lastFailedAttempt);
 			Calendar attempt = Calendar.getInstance();
 			attempt.setTime(attemptTime);
-			checkTime.add(Calendar.MINUTE, getNumberOfLockoutMinutes());
+			checkTime.add(Calendar.MINUTE, ApplicationProperty.LoginFailedLockout.intValue());
 			boolean lockedOut = attempt.before(checkTime);
 			if (!lockedOut){
 				count = 0;

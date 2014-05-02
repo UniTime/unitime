@@ -24,7 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.ReservationInterface.DefaultExpirationDates;
@@ -62,7 +62,7 @@ public class ReservationDefaultExpirationDatesBackend implements GwtRpcImplement
 	}
 
 	public Date getDefaultExpirationDate(Session session, String type) {
-		String expirationStr = ApplicationProperties.getProperty("unitime.reservations." + type + ".expiration_date", ApplicationProperties.getProperty("unitime.reservations.expiration_date"));
+		String expirationStr = ApplicationProperty.ReservationExpirationDate.value(type, ApplicationProperty.ReservationExpirationDateGlobal.value()); 
 		Date expiration = null;
 		if (expirationStr != null && !expirationStr.isEmpty()) {
 			try {
@@ -77,7 +77,7 @@ public class ReservationDefaultExpirationDatesBackend implements GwtRpcImplement
 			}
 		}
 
-		String expInDaysStr = ApplicationProperties.getProperty("unitime.reservations." + type + ".expire_in_days", ApplicationProperties.getProperty("unitime.reservations.expire_in_days"));
+		String expInDaysStr = ApplicationProperty.ReservationExpirationInDays.value(type, ApplicationProperty.ReservationExpirationInDaysGlobal.value());
 		if (expInDaysStr != null && !expInDaysStr.isEmpty()) {
 			try {
 				Calendar cal = Calendar.getInstance(Localization.getJavaLocale());

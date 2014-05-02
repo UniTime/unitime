@@ -33,6 +33,7 @@ import org.cpsolver.ifs.util.DataProperties;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jgroups.blocks.locking.LockService;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
@@ -124,13 +125,13 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
 			if (session == null) return false;
 			
-			String year = ApplicationProperties.getProperty("unitime.enrollment.year");
+			String year = ApplicationProperty.OnlineSchedulingAcademicYear.value();
 			if (year != null && !session.getAcademicYear().matches(year)) return false;
 
-			String term = ApplicationProperties.getProperty("unitime.enrollment.term");
+			String term = ApplicationProperty.OnlineSchedulingAcademicTerm.value();
 			if (term != null && !session.getAcademicTerm().matches(term)) return false;
 
-			String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
+			String campus = ApplicationProperty.OnlineSchedulingAcademicCampus.value();
 			if (campus != null && !session.getAcademicInitiative().matches(campus)) return false;
 
 			return true;
@@ -144,7 +145,10 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		iGlobalLock.writeLock().lock();
 		try {
 			ApplicationProperties.setSessionId(academicSessionId);
-			Class serverClass = Class.forName(ApplicationProperties.getProperty("unitime.enrollment.server.class", ReplicatedServerWithMaster.class.getName()));
+			String serverClassName = ApplicationProperty.OnlineSchedulingServerClass.value();
+			if (serverClassName == null)
+				serverClassName = ReplicatedServerWithMaster.class.getName();
+			Class serverClass = Class.forName(serverClassName);
 			OnlineSectioningServer server = (OnlineSectioningServer)serverClass.getConstructor(OnlineSectioningServerContext.class).newInstance(getServerContext(academicSessionId));
 			iInstances.put(academicSessionId, server);
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
@@ -236,17 +240,13 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 	}
 	
 	public boolean isEnabled() {
-		// if autostart is enabled, just check whether there are some instances already loaded in
-		if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.autostart", "false")))
-			return !iInstances.isEmpty();
-		
 		// quick check for existing instances
 		if (!iInstances.isEmpty()) return true;
 		
 		// otherwise, look for a session that has sectioning enabled
-		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
-		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
-		String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
+		String year = ApplicationProperty.OnlineSchedulingAcademicYear.value();
+		String term = ApplicationProperty.OnlineSchedulingAcademicTerm.value();
+		String campus = ApplicationProperty.OnlineSchedulingAcademicCampus.value();
 		for (Iterator<Session> i = SessionDAO.getInstance().findAll().iterator(); i.hasNext(); ) {
 			final Session session = i.next();
 			

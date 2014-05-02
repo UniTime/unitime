@@ -35,7 +35,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.util.LoginManager;
 
 
@@ -77,12 +77,12 @@ public class LoginAction extends Action {
 		// Check form is submitted
 		if (cs == null || !cs.equals("login")) {
 		    String m = (String)request.getAttribute("message");
-			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+(m==null?"":"?m="+m));
+			response.sendRedirect(ApplicationProperty.LoginPage.value()+(m==null?"":"?m="+m));
 			return null;
 		}
 		
 		if (username == null || username.length() == 0  || password == null || password.length() == 0) {
-			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=1" + "&menu=" + menu);
+			response.sendRedirect(ApplicationProperty.LoginPage.value()+"?e=1" + "&menu=" + menu);
 			return null;
 		}
 		
@@ -92,7 +92,7 @@ public class LoginAction extends Action {
 			// count this attempt, allows for slowing down of responses if the user is flooding the system with failed requests
 			LoginManager.addFailedLoginAttempt(username, attemptDateTime);
 			//TODO figure out what the appropriate message is
-			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=4" + "&menu=" + menu);
+			response.sendRedirect(ApplicationProperty.LoginPage.value()+"?e=4" + "&menu=" + menu);
 			return null;
 		}
 		
@@ -105,7 +105,7 @@ public class LoginAction extends Action {
     	} catch (Exception e) {
 			LoginManager.addFailedLoginAttempt(username, attemptDateTime);
 			Debug.error(e.getMessage());
-			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=3" + "&menu=" + menu);
+			response.sendRedirect(ApplicationProperty.LoginPage.value()+"?e=3" + "&menu=" + menu);
     	}
 
 		return null;

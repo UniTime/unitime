@@ -27,7 +27,7 @@ import java.util.Locale;
 import java.util.Vector;
 
 import org.cpsolver.ifs.util.ToolBox;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
@@ -267,8 +267,8 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     
     public TimeBlock overlaps(Collection<TimeBlock> times) {
     	if (times==null || times.isEmpty()) return null;
-        int breakTimeStart = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.class.breakTime.start", "0"));
-        int breakTimeStop = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability.class.breakTime.stop", "0"));
+        int breakTimeStart = ApplicationProperty.RoomAvailabilityClassBreakTimeStart.intValue(); 
+        int breakTimeStop = ApplicationProperty.RoomAvailabilityClassBreakTimeStop.intValue();
         for (Date date: getDates()) {
         	DummyTimeBlock dummy = new DummyTimeBlock(date, breakTimeStart, breakTimeStop);
         	for (TimeBlock time: times)

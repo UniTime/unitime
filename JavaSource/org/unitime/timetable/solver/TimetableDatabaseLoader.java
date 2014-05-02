@@ -72,7 +72,7 @@ import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.AcademicClassification;
@@ -292,7 +292,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     public int msglevel(String type, int defaultLevel) {
-    	String level = ApplicationProperties.getProperty("unitime.solver.log.level." + type);
+    	String level = ApplicationProperty.SolverLogLevel.value(type);
     	if (level == null) return defaultLevel;
     	if ("warn".equalsIgnoreCase(level)) return Progress.MSGLEVEL_WARN;
     	if ("error".equalsIgnoreCase(level)) return Progress.MSGLEVEL_ERROR;
@@ -3389,8 +3389,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     public void roomAvailabilityActivate(RoomAvailabilityInterface availability, Date startTime, Date endTime) {
         try {
-        	availability.activate(new SessionDAO().get(iSessionId), startTime, endTime, RoomAvailabilityInterface.sClassType,
-                        "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
+        	availability.activate(new SessionDAO().get(iSessionId), startTime, endTime, RoomAvailabilityInterface.sClassType, ApplicationProperty.RoomAvailabilitySolverWaitForSync.isTrue());
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
             iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), "Unable to access room availability service, reason:"+e.getMessage());

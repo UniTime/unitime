@@ -51,7 +51,7 @@ import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.cpsolver.coursett.preference.SumPreferenceCombination;
 import org.hibernate.LazyInitializationException;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ClassInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -99,7 +99,7 @@ public class ClassInfoModel implements Serializable {
     private Collection<ClassAssignment> iDates = null;
     private Collection<ClassAssignment> iTimes = null;
     private Vector<ClassRoomInfo> iRooms = null;
-    private boolean iShowStudentConflicts = "true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.showStudentConflicts", "true"));
+    private boolean iShowStudentConflicts = ApplicationProperty.ClassAssignmentShowStudentConflicts.isTrue();
     private boolean iUnassignConflictingAssignments = false;
     
     public void clear(String userId) {
@@ -265,9 +265,8 @@ public class ClassInfoModel implements Serializable {
     
     public String assign(SessionContext context) {
         if (iChange==null) return "Nothing to assign.";
-        if (!"true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.allowUnassignment", "true")))
-        	if (!iChange.getConflicts().isEmpty())
-        		return "It is not allowed to keep a class unassigned.";
+        if (ApplicationProperty.ClassAssignmentAllowUnassignments.isFalse() && !iChange.getConflicts().isEmpty())
+        	return "It is not allowed to keep a class unassigned.";
         sLog.info("About to be assigned: "+iChange);
         org.hibernate.Session hibSession = Class_DAO.getInstance().getSession();
         String message = null;
@@ -331,8 +330,7 @@ public class ClassInfoModel implements Serializable {
         if (iChange==null) return false;
         for (ClassAssignment assignment : iChange.getAssignments())
             if (!assignment.isValid()) return false;
-        if (!"true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.allowUnassignment", "true")))
-        	if (!iChange.getConflicts().isEmpty()) return false;
+        if (ApplicationProperty.ClassAssignmentAllowUnassignments.isFalse() && !iChange.getConflicts().isEmpty()) return false;
         return true;
     }
     
@@ -1175,8 +1173,8 @@ public class ClassInfoModel implements Serializable {
                 permIds.add(room.getPermanentId());
             }
  			
- 			boolean changePast = "true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.changePastMeetings", "true"));
- 			boolean ignorePast = "true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.ignorePastMeetings", "true"));
+ 			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
+ 			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
 
  			Vector <Date>datesToCheck = null;
  			if (ignorePast || !changePast) {

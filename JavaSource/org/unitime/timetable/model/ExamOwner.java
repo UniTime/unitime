@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseExamOwner;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
@@ -632,7 +633,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                 .setLong("examOwnerId", getOwnerId())
-                .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
+                .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
                 .setLong("periodId", periodId)
                 .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -650,7 +651,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
-                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
+                    .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
                     .setLong("periodId", periodId)
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -668,7 +669,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
-                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
+                    .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
                     .setLong("periodId", periodId)
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -686,7 +687,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                     "p.uniqueId=:periodId and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                     HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                     .setLong("examOwnerId", getOwnerId())
-                    .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
+                    .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
                     .setLong("periodId", periodId)
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -799,16 +800,12 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     }
     
     public int getSize() {
-        boolean considerLimit = "true".equals(
-                ApplicationProperties.getProperty("tmtbl.exam.useLimit."+getExam().getExamType().getReference(),
-                (getExam().getExamType().getType()==ExamType.sExamTypeFinal?"false":"true")));
+        boolean considerLimit = ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(getExam().getExamType().getReference(), getExam().getExamType().getType() != ExamType.sExamTypeFinal);
         return (considerLimit?Math.max(countStudents(), getLimit()):countStudents());
     }
     
     public int getSize(CourseOffering co) {
-        boolean considerLimit = "true".equals(
-                ApplicationProperties.getProperty("tmtbl.exam.useLimit."+getExam().getExamType().getReference(),
-                (getExam().getExamType().getType()==ExamType.sExamTypeFinal?"false":"true")));
+    	boolean considerLimit = ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(getExam().getExamType().getReference(), getExam().getExamType().getType() != ExamType.sExamTypeFinal);
         return (considerLimit?Math.max(countStudents(), getLimit()):countStudents(co));
     }
 
@@ -827,7 +824,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     public String getItype() {
         switch (getOwnerType()) {
             case sOwnerTypeClass : 
-                if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.external","false"))) {
+                if (ApplicationProperty.ExaminationReportsExternalId.isTrue()) {
                     String ext = ((Class_)getOwnerObject()).getExternalId(getCourse());
                     return (ext==null?"":ext);
                 } else
@@ -845,9 +842,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         switch (getOwnerType()) {
             case sOwnerTypeClass :
                 Class_ clazz = (Class_)getOwnerObject();
-                return ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.suffix","false")) && clazz.getClassSuffix(getCourse())!=null?clazz.getClassSuffix(getCourse()):clazz.getSectionNumberString());
+                return (ApplicationProperty.ExaminationReportsClassSufix.isTrue() && clazz.getClassSuffix(getCourse())!=null?clazz.getClassSuffix(getCourse()):clazz.getSectionNumberString());
             case sOwnerTypeConfig : 
-                if ("false".equals(ApplicationProperties.getProperty("tmtbl.exam.report.itype","true")))
+                if (ApplicationProperty.ExaminationReportsShowInstructionalType.isFalse())
                     return "["+((InstrOfferingConfig)getOwnerObject()).getName()+"]";
             case sOwnerTypeCourse : 
             case sOwnerTypeOffering : 
@@ -888,7 +885,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
      * P ... itype parent code
      * _ ... space
      */
-    protected String genName(char code) {
+	protected String genName(char code) {
         switch (code) {
         case '_' : return " ";
         case 's' : return getCourse().getSubjectArea().getSubjectAreaAbbreviation();

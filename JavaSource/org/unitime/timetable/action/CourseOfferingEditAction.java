@@ -44,7 +44,7 @@ import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.localization.messages.SecurityMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.CourseOfferingEditForm;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
@@ -421,7 +421,7 @@ public class CourseOfferingEditAction extends Action {
 
             hibSession.refresh(io);
             
-        	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.edit_action.class");
+        	String className = ApplicationProperty.ExternalActionCourseOfferingEdit.value();
         	if (className != null && className.trim().length() > 0){
         		if (io == null){
         			io = co.getInstructionalOffering();
@@ -553,13 +553,13 @@ public class CourseOfferingEditAction extends Action {
         	if (permissionOfferingLockNeeded.check(sessionContext.getUser(), io))
         		StudentSectioningQueue.offeringChanged(hibSession, sessionContext.getUser(), io.getSessionId(), io.getUniqueId());    
             
-		    String className1 = ApplicationProperties.getProperty("tmtbl.external.instr_offr.add_action.class");
+		    String className1 = ApplicationProperty.ExternalActionInstructionalOfferingAdd.value();
         	if (className1 != null && className1.trim().length() > 0){
 	        	ExternalInstructionalOfferingAddAction addAction = (ExternalInstructionalOfferingAddAction) (Class.forName(className1).newInstance());
 	       		addAction.performExternalInstructionalOfferingAddAction(io, hibSession);
         	}
 
-        	String className2 = ApplicationProperties.getProperty("tmtbl.external.course_offering.edit_action.class");
+        	String className2 = ApplicationProperty.ExternalActionCourseOfferingEdit.value();
         	if (className2 != null && className2.trim().length() > 0){
 	        	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className2).newInstance());
 	       		editAction.performExternalCourseOfferingEditAction(io, hibSession);
@@ -660,7 +660,7 @@ public class CourseOfferingEditAction extends Action {
         if (co.isIsControl().booleanValue()) {
 
             // Catalog Link
-            String linkLookupClass = ApplicationProperties.getProperty("tmtbl.catalogLink.lookup.class");
+            String linkLookupClass = ApplicationProperty.CourseCatalogLinkProvider.value();
             if (linkLookupClass!=null && linkLookupClass.trim().length()>0) {
             	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).newInstance());
            		Map results = lookup.getLink(io);

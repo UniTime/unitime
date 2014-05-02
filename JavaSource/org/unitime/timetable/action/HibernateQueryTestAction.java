@@ -55,7 +55,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.hibernate.util.PrettyFormatter;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.HibernateQueryTestForm;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -118,7 +118,7 @@ public class HibernateQueryTestAction extends Action {
         
         if(errors.size()==0) {
             try {
-            	int limit = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.test_hql.max_line", "100"));
+            	int limit = ApplicationProperty.TestHQLMaxLines.intValue();
 		        String query = frm.getQuery();	        
 		        _RootDAO rdao = new _RootDAO();
 		        Session hibSession = rdao.getSession();	        

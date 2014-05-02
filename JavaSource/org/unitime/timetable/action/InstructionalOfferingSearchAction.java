@@ -45,7 +45,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.impl.LocalizedLookupDispatchAction;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.localization.messages.Messages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.model.Assignment;
@@ -433,9 +433,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 	    
 	    if (subjAreaId != null && !courseNbr.isEmpty()) {
 		    // Offering exists - redirect to offering detail
-	    	String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
-
-	    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")) {
+	    	if (ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()) {
 	    		CourseOffering course = CourseOffering.findBySessionSubjAreaIdCourseNbr(sessionContext.getUser().getCurrentAcademicSessionId(), subjAreaId, courseNbr);
 	    		if (course != null) {
 		            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showInstructionalOfferingDetail"));

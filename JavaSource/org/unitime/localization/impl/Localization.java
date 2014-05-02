@@ -42,7 +42,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 import com.google.gwt.i18n.client.Constants;
 import com.google.gwt.i18n.client.Messages;
@@ -59,13 +59,13 @@ public class Localization {
 	private static final ThreadLocal<String> sLocale = new ThreadLocal<String>() {
 		 @Override
 		 protected String initialValue() {
-             return ApplicationProperties.getProperty("unitime.locale", "en");
+			 return ApplicationProperty.Locale.value();
 		 }
 	};
 	private static final ThreadLocal<Locale> sJavaLocale = new ThreadLocal<Locale>() {
 		 @Override
 		 protected Locale initialValue() {
-            return guessJavaLocale(ApplicationProperties.getProperty("unitime.locale", "en"));
+            return guessJavaLocale(ApplicationProperty.Locale.value());
 		 }
 	};
 	

@@ -41,7 +41,7 @@ import org.cpsolver.exam.model.ExamInstructor;
 import org.cpsolver.exam.model.ExamPlacement;
 import org.cpsolver.exam.model.ExamStudent;
 import org.cpsolver.ifs.assignment.Assignment;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -251,7 +251,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam) {
-        this(exam, "true".equals(ApplicationProperties.getProperty("tmtbl.exams.conflicts.cache","true")));
+        this(exam, ApplicationProperty.ExaminationCacheConflicts.isTrue());
     }
     
     public ExamAssignmentInfo(org.unitime.timetable.model.Exam exam, Hashtable<Long,Set<Long>> owner2students, Hashtable<Long,Hashtable<Long,Set<Long>>> onwer2course2students, 
@@ -331,8 +331,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             if (!check(pref, exam, getPeriod(), getRooms(), null))
                 iDistributions.add(new DistributionConflict(pref, exam));
         }
-        if (exam.getAssignedPeriod()!=null &&
-                "true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+exam.getExamType().getReference(),"true"))) {
+        if (exam.getAssignedPeriod()!=null && ApplicationProperty.ExaminationConsiderEventConflicts.isTrue(exam.getExamType().getReference())) {
             computeUnavailablility(exam, exam.getAssignedPeriod().getUniqueId());
             for (Iterator i=exam.getInstructors().iterator();i.hasNext();)
                 computeUnavailablility((DepartmentalInstructor)i.next(), exam.getAssignedPeriod());
@@ -650,7 +649,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         iBackToBacks.addAll(backToBacks.values());
         iMoreThanTwoADays.addAll(m2ds.values());
         
-        if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+exam.getExamType().getReference(), "true")))
+        if (ApplicationProperty.ExaminationConsiderEventConflicts.isTrue(exam.getExamType().getReference()))
             computeUnavailablility(exam,getPeriodId(),period2meetings);
             
         Hashtable<org.unitime.timetable.model.Exam,DirectConflict> idirects = new Hashtable();
@@ -686,7 +685,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 if (getPeriod().getDateOffset().equals(otherPeriod.getDateOffset()))
                     sameDateExams.add(other);
             }
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+exam.getExamType().getReference(), "true")))
+            if (ApplicationProperty.ExaminationConsiderEventConflicts.isTrue(exam.getExamType().getReference()))
                 computeUnavailablility(instructor, getPeriod(), period2meetings);
             if (sameDateExams.size()>=2) {
                 TreeSet examIds = new TreeSet();
@@ -1584,8 +1583,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 iMoreThanTwoADays.add(m2d);
             }
             
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+examOwner.getExam().getExamType().getReference(), "true"))) {
-                int nrTravelSlots = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6"));
+            if (ApplicationProperty.ExaminationConsiderEventConflicts.isTrue(examOwner.getExam().getExamType().getReference())) {
+                int nrTravelSlots = ApplicationProperty.ExaminationTravelTimeClass.intValue();
             	for (Iterator i = new ExamDAO().getSession().createQuery(
                 		"select m from ClassEvent e inner join e.meetings m, StudentClassEnrollment en "+
                 		"where en.student.uniqueId=:studentId and e.clazz=en.clazz and " +

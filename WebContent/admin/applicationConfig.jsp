@@ -17,12 +17,6 @@
  * 
  --%>
 <%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.ApplicationProperties"%>
-<%@ page import="java.util.Vector"%>
-<%@ page import="java.util.Collections"%>
-<%@ page import="java.util.regex.Pattern"%>
-<%@page import="org.unitime.commons.web.WebTable"%>
-<%@page import="org.unitime.commons.Debug"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -78,7 +72,7 @@
 					<html:hidden property="key"/>
 				</logic:equal>
 				<logic:notEqual name="applicationConfigForm" property="op" value="edit">
-					<html:text property="key" size="75" maxlength="1000"/>
+					<html:text property="key" size="120" maxlength="1000"/>
 				</logic:notEqual>									
 				&nbsp;<html:errors property="key"/>
 			</TD>
@@ -103,6 +97,33 @@
 				<script>document.getElementById('sessionsCell').style.display = 'none';</script>
 			</logic:equal>
 		</TR>
+		
+		<logic:notEmpty name="applicationConfigForm" property="type">
+			<TR>
+				<TD valign="top">Type:</TD>
+				<TD valign="top">
+					<bean:write name="applicationConfigForm" property="type"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+
+		<logic:notEmpty name="applicationConfigForm" property="values">
+			<TR>
+				<TD valign="top">Vales:</TD>
+				<TD valign="top">
+					<bean:write name="applicationConfigForm" property="values"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+
+		<logic:notEmpty name="applicationConfigForm" property="default">
+			<TR>
+				<TD valign="top">Default:</TD>
+				<TD valign="top">
+					<bean:write name="applicationConfigForm" property="default"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 
 		<TR>
 			<TD valign="top">Value:</TD>
@@ -168,31 +189,11 @@
 			<span class="unitime-Hint">s) Applies to current academic session.</span>
 		</TD>
 	</TR>
-</TABLE>
-
-<BR>&nbsp;<BR>
-
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<% 
-		WebTable.setOrder(sessionContext,"applicationConfig.ord2",request.getParameter("ord2"),1);
-		Vector props = new Vector (ApplicationProperties.getProperties().keySet()); 
-		Collections.sort(props);
-		Pattern pattern = null;
-		try {
-			pattern = Pattern.compile(ApplicationProperties.getProperty("tmtbl.appConfig.pattern","^tmtbl\\..*$"));
-		} catch (Exception e) {
-			Debug.error(e);
-			pattern = Pattern.compile("^tmtbl\\..*$");
-		}
-		WebTable table = new WebTable(2, "Application Properties", "applicationConfig.do?ord2=%%", new String[] {"Name","Value"}, new String[] {"left","left"}, null);
-		table.enableHR("#9CB0CE");
-		for (Object prop: props) {
-			if (!pattern.matcher(prop.toString()).matches()) continue;
-			String value = ApplicationProperties.getProperty(prop.toString());
-			table.addLine(null, new String[] {prop.toString(), value}, new String[] {prop.toString(), value});
-		}			
-		out.println(table.printTable(WebTable.getOrder(sessionContext,"applicationConfig.ord2")));
-	%>
+	<logic:notEmpty scope="request" name="hash">
+		<script type="text/javascript" language="javascript">
+			location.hash = '<%=request.getAttribute("hash")%>';
+		</script>
+	</logic:notEmpty>
 </TABLE>
 </logic:equal>
 </html:form>

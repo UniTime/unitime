@@ -38,7 +38,7 @@ import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamEditForm;
@@ -197,7 +197,7 @@ public class ExamEditAction extends PreferencesAction {
             }
             
             ExamType type = ExamTypeDAO.getInstance().get(frm.getExamType());
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.useLimit."+type.getReference(), (type.getType() == ExamType.sExamTypeFinal?"false":"true"))))
+            if (ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(type.getReference(), type.getType() != ExamType.sExamTypeFinal))
                 frm.setSizeNote("A number of enrolled students or a total limit of selected classes/courses (whichever is bigger) is used when blank");
             else
                 frm.setSizeNote("A number of enrolled students is used when blank");

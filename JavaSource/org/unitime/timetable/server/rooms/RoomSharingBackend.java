@@ -30,7 +30,7 @@ import java.util.TreeSet;
 
 import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
@@ -82,7 +82,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		model.setId(location.getUniqueId());
 		model.setName(location.getLabel());
 		for (int i = 0; true; i++) {
-			String mode = ApplicationProperties.getProperty("unitime.room.sharingMode" + (1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
+			String mode = ApplicationProperty.RoomSharingMode.value(String.valueOf(1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
 			if (mode == null || mode.isEmpty()) break;
 			model.addMode(new RoomInterface.RoomSharingDisplayMode(mode));
 		}
@@ -250,7 +250,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		model.setId(location.getUniqueId());
 		model.setName(location.getLabel());
 		for (int i = 0; true; i++) {
-			String mode = ApplicationProperties.getProperty("unitime.room.sharingMode" + (1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
+			String mode = ApplicationProperty.RoomSharingMode.value(String.valueOf(1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
 			if (mode == null || mode.isEmpty()) break;
 			model.addMode(new RoomInterface.RoomSharingDisplayMode(mode));
 		}

@@ -25,7 +25,7 @@ import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Tomas Muller
@@ -37,7 +37,7 @@ public class UniTimeChannelLookup implements JGroupsChannelLookup {
 	public Channel getJGroupsChannel(Properties p) {
 		try {
 			if (sChannel == null)
-				sChannel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml")));
+				sChannel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperty.SolverClusterConfiguration.value()));
 			return sChannel;
 		} catch (Exception e) {
 			Debug.error(e.getMessage(), e);

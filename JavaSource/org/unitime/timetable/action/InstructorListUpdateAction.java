@@ -39,7 +39,7 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructorListUpdateForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
@@ -300,7 +300,7 @@ public class InstructorListUpdateAction extends Action {
 			}
 			
 			tx.commit();
-            String className = ApplicationProperties.getProperty("tmtbl.external.class.edit_action.class");
+            String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
             	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
             	for(Class_ c : updatedClasses){

@@ -47,11 +47,11 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.backup.SessionBackup;
 import org.unitime.timetable.backup.SessionRestore;
 import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.dataexchange.DataExchangeHelper.LogWriter;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.DataImportForm;
 import org.unitime.timetable.form.DataImportForm.ExportType;
 import org.unitime.timetable.model.Session;
@@ -293,7 +293,7 @@ public class DataImportAction extends Action {
                                 "UniTime "+Constants.getVersion()+
                                 " (Univesity Timetabling Application, http://www.unitime.org).");
                     	mail.addRecipient(address, getOwnerName());
-                    	if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.data", "false")))
+                    	if (ApplicationProperty.EmailNotificationDataExchange.isTrue())
                     		mail.addNotifyCC();
                         if (!iImport && hasOutput() && output().exists()) 
                         	mail.addAttachement(output(), iSessionName + "_" + iForm.getExportType().getType() + "." + output().getName().substring(output().getName().lastIndexOf('.') + 1));

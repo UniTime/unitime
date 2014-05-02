@@ -217,7 +217,7 @@ public class ApplicationProperties {
 	}
 	
 	public static String getProperty(ApplicationProperty property) {
-		return getProperty(property.key(), property.defaultValue());
+		return property.value();
 	}
 
 	/**
@@ -331,10 +331,6 @@ public class ApplicationProperties {
         File dir = new File(new File(getBasePath()).getParentFile(), "temp");
 		dir.mkdir();
 		return dir;
-	}
-
-	public static boolean isLocalSolverEnabled() {
-		return "true".equalsIgnoreCase(getProperty("tmtbl.solver.local.enabled","true"));
 	}
 	
 	public static File getTempFile(String prefix, String ext) {

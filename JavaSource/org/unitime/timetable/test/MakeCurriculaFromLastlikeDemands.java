@@ -35,6 +35,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
@@ -69,9 +70,9 @@ public class MakeCurriculaFromLastlikeDemands {
     
     public MakeCurriculaFromLastlikeDemands(Long sessionId) {
         this(sessionId,
-        	 Float.parseFloat(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.totalShareLimit", "0.03")),
-             Float.parseFloat(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.shareLimit", "0.00")),
-             Integer.parseInt(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.enrlLimit", "0")));
+        		ApplicationProperty.CurriculumLastLikeDemandsTotalShareLimit.floatValue(),
+        		ApplicationProperty.CurriculumLastLikeDemandsShareLimit.floatValue(),
+        		ApplicationProperty.CurriculumLastLikeDemandsEnrollmentLimit.intValue());
     }
     
     public Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> loadLastLikeCurricula(org.hibernate.Session hibSession) {
@@ -562,7 +563,7 @@ public class MakeCurriculaFromLastlikeDemands {
     	}
     }
     
-    public static void main(String args[]) {
+	public static void main(String args[]) {
         try {
             Properties props = new Properties();
             props.setProperty("log4j.rootLogger", "DEBUG, A1");
@@ -584,7 +585,7 @@ public class MakeCurriculaFromLastlikeDemands {
             try {
                 tx = hibSession.beginTransaction();
 
-                Session session = Session.getSessionUsingInitiativeYearTerm(
+				Session session = Session.getSessionUsingInitiativeYearTerm(
                         ApplicationProperties.getProperty("initiative", "PWL"),
                         ApplicationProperties.getProperty("year","2010"),
                         ApplicationProperties.getProperty("term","Spring")

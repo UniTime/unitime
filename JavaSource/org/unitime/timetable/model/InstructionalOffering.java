@@ -32,7 +32,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseInstructionalOffering;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
@@ -240,7 +240,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		    else {
 	            query.append(" = '");
 		    }
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
+            if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
             	courseNbr = courseNbr.toUpperCase();
             query.append(courseNbr);
             query.append("'  ");

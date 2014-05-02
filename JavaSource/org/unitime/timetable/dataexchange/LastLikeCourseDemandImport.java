@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.dom4j.Element;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
@@ -56,11 +56,7 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	}
 
 	public void loadXml(Element root) throws Exception {
-		String trimLeadingZeros =
-	        ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false");
-		if (trimLeadingZeros.equals("true")){
-			trimLeadingZerosFromExternalId = true;
-		}
+		trimLeadingZerosFromExternalId = ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue();
 		try {
 			String rootElementName = "lastLikeCourseDemand";
 	        if (!root.getName().equalsIgnoreCase(rootElementName)) {

@@ -30,7 +30,7 @@ import org.hibernate.FlushMode;
 import org.hibernate.NonUniqueResultException;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.base.BaseDepartmentalInstructor;
@@ -476,12 +476,12 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     }
     
     public static boolean canLookupInstructor() {
-    	return ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.class") != null;
+    	return ApplicationProperty.InstructorExternalIdLookupClass.value() != null;
     }
     
     public static UserInfo lookupInstructor(String externalId) throws Exception {
     	ExternalUidLookup lookup = null;
-        String className = ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.class");
+        String className = ApplicationProperty.InstructorExternalIdLookupClass.value();
         if (className != null)
         	lookup = (ExternalUidLookup)Class.forName(className).newInstance();
         return (lookup == null ? null : lookup.doLookup(externalId));

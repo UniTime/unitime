@@ -41,6 +41,7 @@ import org.hibernate.Transaction;
 import org.hibernate.jdbc.Work;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -223,7 +224,7 @@ public abstract class DatabaseUpdate {
         try {
             new UniTimeCoreDatabaseUpdate().performUpdate();
             
-            String additionalUpdates = ApplicationProperties.getProperty("tmtbl.db.addon.update.class");
+            String additionalUpdates = ApplicationProperty.DatabaseUpdateAddonClass.value();
             if (additionalUpdates != null && !additionalUpdates.trim().isEmpty()){
             	DatabaseUpdate du = (DatabaseUpdate) (Class.forName(additionalUpdates).newInstance());;
             	du.performUpdate();

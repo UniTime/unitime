@@ -35,7 +35,6 @@ import java.util.Set;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
@@ -141,26 +140,24 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 					}
 				}
 				
-				if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) {
-			        Map<Long, List<XCourseRequest>> requestMap = new HashMap<Long, List<XCourseRequest>>();
-					List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
-		                    "select distinct s from Student s " +
-		                    "left join fetch s.courseDemands as cd " +
-		                    "left join fetch cd.courseRequests as cr " +
-		                    "left join fetch cr.classWaitLists as cwl " + 
-		                    "left join fetch s.classEnrollments as e " +
-		                    "left join fetch s.academicAreaClassifications as a " +
-		                    "left join fetch s.posMajors as mj " +
-		                    "left join fetch s.waitlists as w " +
-		                    "left join fetch s.groups as g " +
-		                    "where s.session.uniqueId=:sessionId").
-		                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
-		            for (org.unitime.timetable.model.Student student: students) {
-		            	XStudent s = loadStudent(student, requestMap, server, helper);
-		            	if (s != null)
-		            		server.update(s, true);
-		            }
-				}
+		        Map<Long, List<XCourseRequest>> requestMap = new HashMap<Long, List<XCourseRequest>>();
+				List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
+	                    "select distinct s from Student s " +
+	                    "left join fetch s.courseDemands as cd " +
+	                    "left join fetch cd.courseRequests as cr " +
+	                    "left join fetch cr.classWaitLists as cwl " + 
+	                    "left join fetch s.classEnrollments as e " +
+	                    "left join fetch s.academicAreaClassifications as a " +
+	                    "left join fetch s.posMajors as mj " +
+	                    "left join fetch s.waitlists as w " +
+	                    "left join fetch s.groups as g " +
+	                    "where s.session.uniqueId=:sessionId").
+	                    setLong("sessionId",server.getAcademicSession().getUniqueId()).list();
+	            for (org.unitime.timetable.model.Student student: students) {
+	            	XStudent s = loadStudent(student, requestMap, server, helper);
+	            	if (s != null)
+	            		server.update(s, true);
+	            }
 				
 		    	List<Object[]> infos = helper.getHibSession().createQuery(
 		    			"select i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId, i.clazz.uniqueId, i.nbrExpectedStudents from SectioningInfo i where i.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")

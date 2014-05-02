@@ -34,7 +34,7 @@ import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.SchedulingSubpartEditForm;
@@ -493,7 +493,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         }
         sdao.update(ss);
  
-        String className = ApplicationProperties.getProperty("tmtbl.external.sched_subpart.edit_action.class");
+        String className = ApplicationProperty.ExternalActionSchedulingSubpartEdit.value();
     	if (className != null && className.trim().length() > 0){
         	ExternalSchedulingSubpartEditAction editAction = (ExternalSchedulingSubpartEditAction) (Class.forName(className).newInstance());
        		editAction.performExternalSchedulingSubpartEditAction(ss, sdao.getSession());

@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseSchedulingSubpart;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -395,8 +395,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     }
     
     public boolean canInheritParentPreferences() {
-    	return getParentSubpart() != null && getParentSubpart().getItype().equals(getItype()) &&
-    			"true".equals(ApplicationProperties.getProperty("unitime.preferences.hierarchicalInheritance", "false"));
+    	return getParentSubpart() != null && getParentSubpart().getItype().equals(getItype()) && ApplicationProperty.PreferencesHierarchicalInheritance.isTrue();
     }
     
     public Set effectivePreferences(Class type) {

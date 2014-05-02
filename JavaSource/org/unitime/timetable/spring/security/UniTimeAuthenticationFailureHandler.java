@@ -30,7 +30,7 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.User;
 import org.unitime.timetable.util.LoginManager;
 
@@ -57,8 +57,7 @@ public class UniTimeAuthenticationFailureHandler extends SimpleUrlAuthentication
 		
 		LoginManager.addFailedLoginAttempt(request.getParameter("j_username"), new Date());
 		
-		if ("true".equals(ApplicationProperties.getProperty("unitime.password.reset", "true"))
-				&& User.findByUserName(request.getParameter("j_username")) != null)
+		if (ApplicationProperty.PasswordReset.isTrue() && User.findByUserName(request.getParameter("j_username")) != null)
 			request.getSession().setAttribute("SUGGEST_PASSWORD_RESET", true);
 		
 		super.onAuthenticationFailure(request, response, exception);

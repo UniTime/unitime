@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.form.SolverForm;
@@ -115,7 +115,7 @@ public class ListSolutionsAction extends Action {
             for (SolverServer server: solverServerService.getServers(true))
 				hosts.add(server.getHost());
 			Collections.sort(hosts);
-			if (ApplicationProperties.isLocalSolverEnabled())
+			if (ApplicationProperty.SolverLocalEnabled.isTrue())
 				hosts.add(0, "local");
 			hosts.add(0, "auto");
 			request.setAttribute("hosts", hosts);
@@ -201,7 +201,7 @@ public class ListSolutionsAction extends Action {
                 			touchedSolutionSet.add(solution);
                 			boolean committed = solution.commitSolution(myForm.getMessages(),hibSession,sessionContext.getUser().getExternalUserId());
                 			hibSession.update(solution);
-                	    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+                	    	String className = ApplicationProperty.ExternalActionSolutionCommit.value();
                 	    	if (className != null && className.trim().length() > 0){
                 	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());              	    		
                 	    		commitAction.performExternalSolutionCommitAction(touchedSolutionSet, hibSession);
@@ -210,7 +210,7 @@ public class ListSolutionsAction extends Action {
                 			
                 		} else {
                 			solution.uncommitSolution(hibSession, sessionContext.getUser().getExternalUserId());
-                	    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+                			String className = ApplicationProperty.ExternalActionSolutionCommit.value();
                 	    	if (className != null && className.trim().length() > 0){
                 	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
                 	    		HashSet<Solution> solutions = new HashSet<Solution>();
@@ -256,7 +256,7 @@ public class ListSolutionsAction extends Action {
                 			if (solution.isCommited().booleanValue()) {
                 				sessionContext.checkPermission(solution.getOwner(), Right.TimetablesSolutionCommit);
                 				solution.uncommitSolution(hibSession, sessionContext.getUser().getExternalUserId());
-                    	    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
+                    	    	String className = ApplicationProperty.ExternalActionSolutionCommit.value();
                     	    	if (className != null && className.trim().length() > 0){
                     	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
                     	    		HashSet<Solution> solutions = new HashSet<Solution>();

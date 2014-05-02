@@ -63,7 +63,7 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -1196,7 +1196,7 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
     }
 
     public synchronized boolean passivateIfNeeded(File folder, String puid) {
-		long inactiveTimeToPassivate = Long.parseLong(ApplicationProperties.getProperty("unitime.solver.passivation.time", "30")) * 60000l;
+		long inactiveTimeToPassivate = 60000l * ApplicationProperty.SolverPasivationTime.intValue();
 		if (isPassivated() || inactiveTimeToPassivate <= 0 || timeFromLastUsed() < inactiveTimeToPassivate || isWorking()) return false;
         return passivate(folder, puid);
     }
@@ -1236,8 +1236,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
     
     public byte[] exportXml() throws Exception {
         synchronized (currentSolution()) {
-            boolean anonymize = "false".equals(ApplicationProperties.getProperty("unitime.solution.export.names", "false"));
-            boolean idconv = "true".equals(ApplicationProperties.getProperty("unitime.solution.export.id-conv", "false"));
+            boolean anonymize = ApplicationProperty.SolverXMLExportNames.isFalse();
+            boolean idconv = ApplicationProperty.SolverXMLExportConvertIds.isTrue();
 
             if (anonymize) {
                 getProperties().setProperty("Xml.Anonymize", "true");

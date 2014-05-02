@@ -48,6 +48,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.PageNames;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.shared.MenuException;
@@ -92,7 +93,7 @@ public class MenuServlet implements MenuService {
 
 	public MenuServlet() {
 		try {
-			String menu = ApplicationProperties.getProperty("unitime.menu","menu.xml");
+			String menu = ApplicationProperty.MenuFile.value();
 			Document document = null;
 	        URL menuUrl = ApplicationProperties.class.getClassLoader().getResource(menu);
 	        SAXReader sax = new SAXReader();
@@ -117,7 +118,7 @@ public class MenuServlet implements MenuService {
 	        if (!"unitime-menu".equals(document.getRootElement().getName())) throw new ServletException("Menu has an unknown format.");
 	        iRoot = document.getRootElement();
 	        
-	        String customMenu = ApplicationProperties.getProperty("unitime.menu.custom","menu-custom.xml");
+	        String customMenu = ApplicationProperty.CustomMenuFile.value();
 			Document customDocument = null;
 	        URL customMenuUrl = ApplicationProperties.class.getClassLoader().getResource(customMenu);
 	        if (customMenuUrl!=null) {
@@ -563,8 +564,8 @@ public class MenuServlet implements MenuService {
 	public String[] getHelpPageAndLocalizedTitle(String title) throws MenuException {
 		String name = title.trim().replace(' ', '_').replace("(", "").replace(")", "").replace(':', '_');
 		String help = null;
-		if ("true".equals(ApplicationProperties.getProperty("tmtbl.wiki.help", "true")) && ApplicationProperties.getProperty("tmtbl.wiki.url") != null) {
-			help = ApplicationProperties.getProperty("tmtbl.wiki.url") + name;
+		if (ApplicationProperty.PageHelpEnabled.isTrue() && ApplicationProperty.PageHelpUrl.value() != null) {
+			help = ApplicationProperty.PageHelpUrl.value() + name;
 		}
 		return new String[] {
 				help,

@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 
 /** 
@@ -98,7 +98,7 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
         creditFormat = null; creditType = null; creditUnitType = null; units = null; maxUnits = null; fractionalIncrementsAllowed = new Boolean(false); creditText = "";
         autoSpreadInTime = Boolean.FALSE;
         studentAllowOverlap = Boolean.FALSE;
-        subpartCreditEditAllowed =new Boolean(ApplicationProperties.getProperty("tmtbl.subpart.credit.editable", "false").equals("true"));
+        subpartCreditEditAllowed = ApplicationProperty.SubpartCreditEditable.isTrue();
         itypeBasic = false;
         instructionalType = null; instructionalTypeLabel = null;
         super.reset(mapping, request);

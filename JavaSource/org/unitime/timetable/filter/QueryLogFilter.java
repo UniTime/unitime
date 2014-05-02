@@ -51,7 +51,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.model.dao.QueryLogDAO;
 import org.unitime.timetable.security.UserContext;
@@ -208,7 +208,7 @@ public class QueryLogFilter implements Filter {
 		
 		public Saver() {
 			super("QueryLogSaver");
-			iLogLimit = Integer.parseInt(ApplicationProperties.getProperty("unitime.query.log.limit", "5000"));
+			iLogLimit = ApplicationProperty.QueryLogLimit.intValue();
 			setDaemon(true);
 		}
 		

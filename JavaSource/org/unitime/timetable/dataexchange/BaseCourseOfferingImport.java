@@ -35,7 +35,7 @@ import org.dom4j.Element;
 import org.hibernate.FlushMode;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
@@ -102,8 +102,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		super();
 		changeCount = 0;
 		
-		String courseNumbersMustBeUniqueStr = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
-		courseNumbersMustBeUnique = courseNumbersMustBeUniqueStr.equalsIgnoreCase("true");
+		courseNumbersMustBeUnique = ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue();
 
 	}
 
@@ -423,12 +422,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	}
 
 	protected void initializeTrimLeadingZeros() {
-		String trimLeadingZeros =
-	        ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false");
-		if (trimLeadingZeros.equals("true")){
-			trimLeadingZerosFromExternalId = true;
-		}
-		
+		trimLeadingZerosFromExternalId = ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue();
 	}
 
 	protected void loadSetupData() throws Exception{

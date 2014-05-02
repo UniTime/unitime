@@ -38,7 +38,7 @@ import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseAssignment;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.AssignmentInfoDAO;
@@ -338,7 +338,7 @@ public class Assignment extends BaseAssignment {
         event.setMinCapacity(clazz.getClassLimit());
         event.setMaxCapacity(clazz.getClassLimit());
         
-        boolean changePast = "true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.changePastMeetings", "true"));
+        boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);

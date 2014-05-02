@@ -28,7 +28,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Tomas Muller
@@ -55,7 +55,7 @@ public class DataExchangeIntegrationHelper {
         		log.append(message + "<br>\n");
         	}
         };
-        String manager = document.getRootElement().attributeValue("manager", ApplicationProperties.getProperty("unitime.xml.manager"));
+        String manager = document.getRootElement().attributeValue("manager", ApplicationProperty.DataExchangeXmlManager.value());
 		DataExchangeHelper.importDocument(document, manager, logger);
 		log.append("</body></html>");
 		return log.toString();

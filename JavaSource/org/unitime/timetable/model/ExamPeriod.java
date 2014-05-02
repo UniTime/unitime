@@ -29,7 +29,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.base.BaseExamPeriod;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -207,7 +207,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public boolean overlap(Assignment assignment) {
-        return overlap(assignment, Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")));
+        return overlap(assignment, ApplicationProperty.ExaminationTravelTimeClass.intValue());
     }
     
     public boolean overlap(Assignment assignment, int nrTravelSlots) {
@@ -235,7 +235,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public boolean overlap(Meeting meeting) {
-        return overlap(meeting, Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")));
+        return overlap(meeting, ApplicationProperty.ExaminationTravelTimeClass.intValue());
     }
     
     public boolean overlap(Meeting meeting, int nrTravelSlots) {
@@ -244,7 +244,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public List<Meeting> findOverlappingClassMeetings() {
-        return findOverlappingClassMeetings(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")));
+        return findOverlappingClassMeetings(ApplicationProperty.ExaminationTravelTimeClass.intValue());
     }
 
     public List<Meeting> findOverlappingClassMeetings(int nrTravelSlots) {
@@ -259,7 +259,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     } 
     
     public List<Meeting> findOverlappingClassMeetings(Long classId) {
-        return findOverlappingClassMeetings(classId, Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")));
+        return findOverlappingClassMeetings(classId, ApplicationProperty.ExaminationTravelTimeClass.intValue());
     }
     
     public List<Meeting> findOverlappingClassMeetings(Long classId, int nrTravelSlots) {
@@ -276,7 +276,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public Hashtable<Meeting,Set<Long>> findOverlappingCourseMeetingsWithReqAttendence(Set<Long> studentIds) {
-        return findOverlappingCourseMeetingsWithReqAttendence(studentIds, Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")));
+        return findOverlappingCourseMeetingsWithReqAttendence(studentIds, ApplicationProperty.ExaminationTravelTimeCourse.intValue());
     }
 
     public Hashtable<Meeting,Set<Long>> findOverlappingCourseMeetingsWithReqAttendence(Set<Long> studentIds, int nrTravelSlots) {

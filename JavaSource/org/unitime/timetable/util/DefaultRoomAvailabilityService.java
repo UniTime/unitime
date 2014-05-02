@@ -30,7 +30,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.hibernate.Query;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.EventDateMapping;
@@ -105,7 +105,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         }
     }
     public void activate(Session session, Date startTime, Date endTime, String excludeType, boolean waitForSync) {
-        iInstructorAvailabilityEnabled = ("true".equalsIgnoreCase(ApplicationProperties.getProperty("unitime.events.instructorUnavailability", "false")));
+        iInstructorAvailabilityEnabled = ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue();
         TimeFrame time = new TimeFrame(startTime, endTime);
         EventDateMapping.Class2EventDateMap class2eventDateMap = (sClassType.equals(excludeType) ? EventDateMapping.getMapping(session.getUniqueId()) : null);
         synchronized(iCache) {

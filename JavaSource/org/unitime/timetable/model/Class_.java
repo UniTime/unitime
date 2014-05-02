@@ -41,7 +41,7 @@ import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
 import org.unitime.timetable.model.base.BaseClass_;
@@ -1096,7 +1096,7 @@ public class Class_ extends BaseClass_ {
             
             ClassEvent event = getEvent();
             if (event != null) {
-            	if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.changePastMeetings", "true"))) {
+            	if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
             		hibSession.delete(event);
             	} else {
             		Calendar cal = Calendar.getInstance(Locale.US);
@@ -1163,7 +1163,7 @@ public class Class_ extends BaseClass_ {
             if (tx!=null) tx.commit();
             
             new _RootDAO().getSession().refresh(this);
-            String className = ApplicationProperties.getProperty("tmtbl.external.class.edit_action.class");
+            String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
             	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
            		editAction.performExternalClassEditAction(this, hibSession);
@@ -1289,7 +1289,7 @@ public class Class_ extends BaseClass_ {
             if (tx!=null) tx.commit();
             
             new _RootDAO().getSession().refresh(this);
-            String className = ApplicationProperties.getProperty("tmtbl.external.class.edit_action.class");
+            String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
             	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
            		editAction.performExternalClassEditAction(this, hibSession);
@@ -1401,7 +1401,7 @@ public class Class_ extends BaseClass_ {
 
 	public static ExternalClassNameHelperInterface getExternalClassNameHelper() {
 		if (externalClassNameHelper == null){
-            String className = ApplicationProperties.getProperty("tmtbl.class.naming.helper", "org.unitime.timetable.util.DefaultExternalClassNameHelper");
+            String className = ApplicationProperty.ClassNamingHelper.value();
         	if (className != null && className.trim().length() > 0){
         		try {
 					externalClassNameHelper = (ExternalClassNameHelperInterface) (Class.forName(className).newInstance());

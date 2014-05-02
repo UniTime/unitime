@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.CrossListsModifyForm;
 import org.unitime.timetable.interfaces.ExternalCourseCrosslistAction;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingRemoveAction;
@@ -338,7 +338,7 @@ public class CrossListsModifyAction extends Action {
                     Event.deleteFromEvents(hibSession, co1);
 		            Exam.deleteFromExams(hibSession, co1);
 		            
-                	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.remove_action.class");
+                	String className = ApplicationProperty.ExternalActionCourseOfferingRemove.value(); 
                 	if (className != null && className.trim().length() > 0){
                 		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).newInstance());
         	       		removeAction.performExternalCourseOfferingRemoveAction(co1, hibSession);
@@ -361,7 +361,7 @@ public class CrossListsModifyAction extends Action {
 
 	    	        hibSession.refresh(io);
 	                hibSession.refresh(io1);
-	            	className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_in_crosslist.add_action.class");
+	            	className = ApplicationProperty.ExternalActionInstructionalOfferingInCrosslistAdd.value();
 	            	if (className != null && className.trim().length() > 0){
 	            		ExternalInstructionalOfferingInCrosslistAddAction addAction = (ExternalInstructionalOfferingInCrosslistAddAction) (Class.forName(className).newInstance());
 	    	       		addAction.performExternalInstructionalOfferingInCrosslistAddAction(io1, hibSession);
@@ -451,7 +451,7 @@ public class CrossListsModifyAction extends Action {
                         io1.removeCourseOffering(co2);
                         Event.deleteFromEvents(hibSession, co2);
                         Exam.deleteFromExams(hibSession, co2);
-                    	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.remove_action.class");
+                    	String className = ApplicationProperty.ExternalActionCourseOfferingRemove.value();
                     	if (className != null && className.trim().length() > 0){
                     		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).newInstance());
             	       		removeAction.performExternalCourseOfferingRemoveAction(co2, hibSession);
@@ -549,7 +549,7 @@ public class CrossListsModifyAction extends Action {
 	        for (Iterator i1=keys.iterator(); i1.hasNext();) {
 	        	hibSession.refresh(saList.get(i1.next()));
 	        }	
-        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr.crosslist_action.class");
+        	String className = ApplicationProperty.ExternalActionCourseCrosslist.value();
         	if (className != null && className.trim().length() > 0){
 	        	ExternalCourseCrosslistAction addAction = (ExternalCourseCrosslistAction) (Class.forName(className).newInstance());
 	       		addAction.performExternalCourseCrosslistAction(io, hibSession);

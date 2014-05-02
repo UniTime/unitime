@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.reports.exam.AbbvExamScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.AbbvScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.ConflictsByCourseAndInstructorReport;
@@ -143,13 +143,13 @@ public class ExamPdfReportForm extends ExamReportForm {
         setMode(session.getAttribute("ExamPdfReport.mode")==null?sModes[0]:(String)session.getAttribute("ExamPdfReport.mode"));
         setSubjects((String[])session.getAttribute("ExamPdfReport.subjects"));
         setDispRooms("1".equals(session.getUser().getProperty("ExamPdfReport.dispRooms", "1")));
-        setNoRoom(session.getUser().getProperty("ExamPdfReport.noRoom", ApplicationProperties.getProperty("tmtbl.exam.report.noroom")));
+        setNoRoom(session.getUser().getProperty("ExamPdfReport.noRoom", ApplicationProperty.ExaminationsNoRoomText.value()));
         setDirect("1".equals(session.getUser().getProperty("ExamPdfReport.direct", "1")));
         setM2d("1".equals(session.getUser().getProperty("ExamPdfReport.m2d", "1")));
         setBtb("1".equals(session.getUser().getProperty("ExamPdfReport.btb", "0")));
         setLimit(session.getUser().getProperty( "ExamPdfReport.limit"));
         setTotals("1".equals(session.getUser().getProperty("ExamPdfReport.totals","1")));
-        setRoomCodes(session.getUser().getProperty("ExamPdfReport.roomCodes", ApplicationProperties.getProperty("tmtbl.exam.report.roomcode")));
+        setRoomCodes(session.getUser().getProperty("ExamPdfReport.roomCodes", ApplicationProperty.ExaminationRoomCode.value()));
         setEmail("1".equals(session.getUser().getProperty( "ExamPdfReport.email", "0")));
         setAddress(session.getUser().getProperty("ExamPdfReport.addr"));
         setCc(session.getUser().getProperty("ExamPdfReport.cc"));
@@ -161,7 +161,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         setSince(session.getUser().getProperty("ExamPdfReport.since"));
         setEmailInstructors("1".equals(session.getUser().getProperty("ExamPdfReport.emailInstructors", "0")));
         setEmailStudents("1".equals(session.getUser().getProperty("ExamPdfReport.emailStudents", "0")));
-        setItype("1".equals(session.getUser().getProperty("ExamPdfReport.itype", "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.itype","true")) ? "1" : "0")));
+        setItype("1".equals(session.getUser().getProperty("ExamPdfReport.itype", ApplicationProperty.ExaminationReportsShowInstructionalType.isTrue() ? "1" : "0")));
         setClassSchedule("1".equals(session.getUser().getProperty("ExamPdfReport.cschedule", "1")));
         setIgnoreEmptyExams("1".equals(session.getUser().getProperty("ExamPdfReport.ignempty", "1")));
     }

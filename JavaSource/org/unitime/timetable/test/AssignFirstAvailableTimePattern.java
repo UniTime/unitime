@@ -57,7 +57,7 @@ public class AssignFirstAvailableTimePattern {
 
             org.hibernate.Session hibSession = new _RootDAO().getSession();
             
-            Session session = Session.getSessionUsingInitiativeYearTerm(
+			Session session = Session.getSessionUsingInitiativeYearTerm(
                     ApplicationProperties.getProperty("initiative", "MUNI FI"),
                     ApplicationProperties.getProperty("year","2010"),
                     ApplicationProperties.getProperty("term","Podzim")

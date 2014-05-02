@@ -34,7 +34,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.log4j.Logger;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
@@ -58,7 +58,7 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 	private static SecretKey secret() throws NoSuchAlgorithmException, InvalidKeySpecException {
 		byte salt[] = new byte[] { (byte)0x33, (byte)0x7b, (byte)0x09, (byte)0x0e, (byte)0xcf, (byte)0x5a, (byte)0x58, (byte)0xd9 };
 		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-		KeySpec spec = new PBEKeySpec(ApplicationProperties.getProperty("unitime.encode.secret", "ThisIs8Secret").toCharArray(), salt, 1024, 128);
+		KeySpec spec = new PBEKeySpec(ApplicationProperty.UrlEncoderSecret.value().toCharArray(), salt, 1024, 128);
 		SecretKey key = factory.generateSecret(spec);
 		return new SecretKeySpec(key.getEncoded(), "AES");
 	}

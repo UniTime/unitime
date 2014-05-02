@@ -590,7 +590,7 @@ public class SessionBackup {
             
             HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 
-            Session session = Session.getSessionUsingInitiativeYearTerm(
+			Session session = Session.getSessionUsingInitiativeYearTerm(
                     ApplicationProperties.getProperty("initiative", "PWL"),
                     ApplicationProperties.getProperty("year","2012"),
                     ApplicationProperties.getProperty("term","Spring")

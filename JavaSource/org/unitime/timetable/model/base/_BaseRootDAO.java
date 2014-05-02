@@ -64,6 +64,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 		initialize(configFileName, getNewConfiguration(null));
 	}
 
+	@SuppressWarnings("deprecation")
 	public static void initialize (String configFileName, Configuration configuration) {
 		if (configFileName == null && sSessionFactory != null) return;
         if (sSessionFactoryMap != null && sSessionFactoryMap.get(configFileName) != null) return;

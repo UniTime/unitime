@@ -27,7 +27,7 @@ import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.criterion.Restrictions;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseBuilding;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
@@ -270,7 +270,7 @@ public class Building extends BaseBuilding implements Comparable {
     @Deprecated
     public String getHtmlHint() {
     	String hint = getName();
-    	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
+    	String minimap = ApplicationProperty.RoomHintMinimapUrl.value();
     	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
     		hint += "<br><img src=\\'" + 
 			minimap

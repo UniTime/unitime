@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.ClassWaitList;
@@ -186,7 +186,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 							action.addEnrollment(enrollment);
 						}
 						
-						if (iEmail && "true".equals(ApplicationProperties.getProperty("unitime.enrollment.email", "true"))) {
+						if (iEmail && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue()) {
 							StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId).oldStudent(oldStudent);
 							email.setCC(getCC());
 							email.setEmailSubject(getSubject() == null || getSubject().isEmpty() ? MSG.defaulSubjectMassCancel() : getSubject());

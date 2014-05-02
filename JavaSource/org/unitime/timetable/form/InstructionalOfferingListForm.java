@@ -33,7 +33,7 @@ import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 
@@ -180,7 +180,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	 *            The courseNbr to set.
 	 */
 	public void setCourseNbr(String courseNbr) {
-        if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
+        if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
         	courseNbr = courseNbr.toUpperCase();
 		this.courseNbr = courseNbr;
 	}

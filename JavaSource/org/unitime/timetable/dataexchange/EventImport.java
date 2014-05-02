@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.dom4j.Element;
 import org.hibernate.FlushMode;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.ChangeLog;
@@ -65,7 +65,7 @@ public class EventImport extends EventRelatedImports {
 	 * 
 	 */
 	public EventImport() {
-        String className = ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.class");
+        String className = ApplicationProperty.InstructorExternalIdLookupClass.value();
         if (className != null) {
 	        try {
 	        	iLookup = (ExternalUidLookup)Class.forName(className).newInstance();
@@ -80,11 +80,7 @@ public class EventImport extends EventRelatedImports {
 	 */
 	@Override
 	public void loadXml(Element rootElement) throws Exception {
-		String trimLeadingZeros =
-	        ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false");
-		if (trimLeadingZeros.equals("true")){
-			trimLeadingZerosFromExternalId = true;
-		}
+		trimLeadingZerosFromExternalId = ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue();
 		int loadedCount = 0;
 		int recordCount = 0;
 		try {

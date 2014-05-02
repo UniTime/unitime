@@ -40,7 +40,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingDetailForm;
@@ -196,7 +196,7 @@ public class InstructionalOfferingDetailAction extends Action {
 	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered);
 
 	    	doMakeNotOffered(request, frm);
-	    	if ("false".equals(ApplicationProperties.getProperty("unitime.offering.makeNotOfferedStaysOnDetail", "false"))) {
+	    	if (ApplicationProperty.MakeNotOfferedStaysOnDetail.isFalse()) {
 	    		ActionRedirect redirect = new ActionRedirect(mapping.findForward("showInstructionalOfferings"));
                 redirect.setAnchor("A" + frm.getInstrOfferingId());
                 return redirect;
@@ -283,7 +283,7 @@ public class InstructionalOfferingDetailAction extends Action {
 			io.deleteAllDistributionPreferences(hibSession);
             Event.deleteFromEvents(hibSession, io);
 	        Exam.deleteFromExams(hibSession, io);
-        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr.delete_action.class");
+        	String className = ApplicationProperty.ExternalActionInstructionalOfferingDelete.value();
         	if (className != null && className.trim().length() > 0){
 	        	ExternalInstructionalOfferingDeleteAction deleteAction = (ExternalInstructionalOfferingDeleteAction) (Class.forName(className).newInstance());
 	       		deleteAction.performExternalInstructionalOfferingDeleteAction(io, hibSession);
@@ -427,7 +427,7 @@ public class InstructionalOfferingDetailAction extends Action {
         }
     
         // Catalog Link
-        String linkLookupClass = ApplicationProperties.getProperty("tmtbl.catalogLink.lookup.class");
+        String linkLookupClass = ApplicationProperty.CourseCatalogLinkProvider.value(); 
         if (linkLookupClass!=null && linkLookupClass.trim().length()>0) {
         	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).newInstance());
        		Map results = lookup.getLink(io);
@@ -503,7 +503,7 @@ public class InstructionalOfferingDetailAction extends Action {
             hibSession.flush();
             hibSession.clear();
             
-        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr.not_offered_action.class");
+        	String className = ApplicationProperty.ExternalActionInstructionalOfferingNotOffered.value();
         	if (className != null && className.trim().length() > 0){
 	        	ExternalInstructionalOfferingNotOfferedAction notOfferedAction = (ExternalInstructionalOfferingNotOfferedAction) (Class.forName(className).newInstance());
 	       		notOfferedAction.performExternalInstructionalOfferingNotOfferedAction(io, hibSession);
@@ -559,7 +559,7 @@ public class InstructionalOfferingDetailAction extends Action {
             hibSession.flush();
             hibSession.clear();
 
-        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr.offered_action.class");
+        	String className = ApplicationProperty.ExternalActionInstructionalOfferingOffered.value();
         	if (className != null && className.trim().length() > 0){
 	        	ExternalInstructionalOfferingOfferedAction offeredAction = (ExternalInstructionalOfferingOfferedAction) (Class.forName(className).newInstance());
 	       		offeredAction.performExternalInstructionalOfferingOfferedAction(io, hibSession);
