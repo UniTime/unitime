@@ -29,7 +29,7 @@ import javax.activation.DataSource;
 import javax.activation.FileDataSource;
 
 import org.apache.struts.upload.FormFile;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Tomas Muller
@@ -37,7 +37,7 @@ import org.unitime.timetable.ApplicationProperties;
 public abstract class Email {
 
 	public static Email createEmail() throws Exception {
-		return (Email)Class.forName(ApplicationProperties.getProperty("unitime.email.class", JavaMailWrapper.class.getName())).newInstance();
+		return (Email)Class.forName(ApplicationProperty.EmailProvider.value()).newInstance();
 	}
 	
 	public abstract void setSubject(String subject) throws Exception;
@@ -65,15 +65,11 @@ public abstract class Email {
 	}
 
 	public void addNotify() throws Exception {
-		addRecipient(
-				ApplicationProperties.getProperty("unitime.email.notif", ApplicationProperties.getProperty("tmtbl.notif.email", ApplicationProperties.getProperty("tmtbl.notif.commit.email"))),
-				ApplicationProperties.getProperty("unitime.email.notif.name", ApplicationProperties.getProperty("tmtbl.notif.email.name", "UniTime Operator")));
+		addRecipient(ApplicationProperty.EmailNotificationAddress.value(), ApplicationProperty.EmailNotificationAddressName.value());
 	}
 	
 	public void addNotifyCC() throws Exception {
-		addRecipientCC(
-				ApplicationProperties.getProperty("unitime.email.notif", ApplicationProperties.getProperty("tmtbl.notif.email", ApplicationProperties.getProperty("tmtbl.notif.commit.email"))),
-				ApplicationProperties.getProperty("unitime.email.notif.name", ApplicationProperties.getProperty("tmtbl.notif.email.name", "UniTime Operator")));
+		addRecipientCC(ApplicationProperty.EmailNotificationAddress.value(), ApplicationProperty.EmailNotificationAddressName.value());
 	}
 	
 	protected abstract void addAttachement(String name, DataHandler data) throws Exception;

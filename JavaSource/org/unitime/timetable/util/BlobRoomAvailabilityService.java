@@ -33,7 +33,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -42,10 +42,8 @@ import org.unitime.timetable.model.dao._RootDAO;
  */
 public class BlobRoomAvailabilityService extends RoomAvailabilityService {
     private static Log sLog = LogFactory.getLog(RoomAvailabilityInterface.class);
-    private String iRequestSql =
-        ApplicationProperties.getProperty("tmtbl.room.availability.request","{ call room_avail_interface.request(?) }");
-    private String iResponseSql =
-        ApplicationProperties.getProperty("tmtbl.room.availability.response","{? = call room_avail_interface.response()}");
+    private String iRequestSql = ApplicationProperty.BlobRoomAvailabilityRequestSQL.value();
+    private String iResponseSql = ApplicationProperty.BlobRoomAvailabilityResponseSQL.value();
 
     protected void sendRequest(Document request) throws IOException {
         try {

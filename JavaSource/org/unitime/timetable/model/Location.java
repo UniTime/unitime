@@ -40,7 +40,7 @@ import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseLocation;
 import org.unitime.timetable.model.dao.ExamLocationPrefDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -468,8 +468,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	if (getUniqueId().equals(other.getUniqueId())) return 0.0;
     	if (this instanceof Location && isIgnoreTooFar()!=null && isIgnoreTooFar().booleanValue()) return 0.0;
     	if (other instanceof Location && other.isIgnoreTooFar()!=null && other.isIgnoreTooFar().booleanValue()) return 0.0;
-    	DistanceMetric m = new DistanceMetric(
-				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
+    	DistanceMetric m = new DistanceMetric(DistanceMetric.Ellipsoid.valueOf(ApplicationProperty.DistanceEllipsoid.value()));
     	return m.getDistanceInMeters(getUniqueId(), getCoordinateX(), getCoordinateY(), other.getUniqueId(), other.getCoordinateX(), other.getCoordinateY());
 	}
 	
@@ -921,7 +920,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     @Deprecated
 	private String getHtmlHintImpl(String preference) {
     	String hint = (preference == null ? "" : preference + " " ) + getLabel() + (getDisplayName() == null ? " (" + getRoomTypeLabel() + ")" : " (" + getDisplayName() + ")");
-    	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
+    	String minimap = ApplicationProperty.RoomHintMinimapUrl.value();
     	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
     		hint += "<br><img src=\\'" + 
     			minimap
@@ -939,7 +938,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	}
     	hint += "</td></tr>";
     	if (getArea() != null) {
-    		hint += "<tr><td>" + MSG.propertyRoomArea() + "</td><td width=\\'99%\\'>" + new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).format(getArea()) + " " + MSG.roomAreaUnitsShort() + "</td></tr>";
+    		hint += "<tr><td>" + MSG.propertyRoomArea() + "</td><td width=\\'99%\\'>" + new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value()).format(getArea()) + " " + MSG.roomAreaUnitsShort() + "</td></tr>";
     	}
     	Map<String, String> features = new HashMap<String, String>();
     	for (GlobalRoomFeature f: getGlobalRoomFeatures()) {
@@ -987,7 +986,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	if (getBreakTime() != null)
     		return getBreakTime();
     	if (getEventDepartment() == null)
-    		return Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getRoomType().getReference(), "0"));
+    		return ApplicationProperty.RoomDefaultBreakTime.intValue(getRoomType().getReference());
     	else
     		return getRoomType().getOption(getEventDepartment()).getBreakTime();
     }

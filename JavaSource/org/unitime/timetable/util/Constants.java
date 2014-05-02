@@ -28,7 +28,7 @@ import java.util.Locale;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ConstantsMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -442,21 +442,20 @@ public class Constants extends org.cpsolver.coursett.Constants {
     }
     
     public static int getDefaultExamStartOffset(ExamType examType){
-      	return getExamOffset("tmtbl.exam.defaultStartOffset." + examType.getReference());
+    	return getExamOffset(ApplicationProperty.ExaminationPeriodDefaultStartOffset.value(examType.getReference()));
     }
     
     public static int getDefaultExamStopOffset(ExamType examType){
-    	return getExamOffset("tmtbl.exam.defaultStopOffset." + examType.getReference());
+    	return getExamOffset(ApplicationProperty.ExaminationPeriodDefaultStopOffset.value(examType.getReference()));
     }
         
-    private static int getExamOffset(String offsetParameterName){
+    private static int getExamOffset(String value){
     	int offset = 0;
-    	String offsetStr = ApplicationProperties.getProperty(offsetParameterName);
-    	if (offsetStr == null || offsetStr.trim().length() == 0){
+    	if (value == null || value.trim().length() == 0){
     		offset = 0;
     	} else {
     		try {
-				offset = Integer.parseInt(offsetStr);
+				offset = Integer.parseInt(value);
 			} catch (NumberFormatException e) {
 				offset = 0;
 			}
@@ -503,7 +502,7 @@ public class Constants extends org.cpsolver.coursett.Constants {
 	private static Boolean sCurriculaToInitialCase = null;
 	public static String curriculaToInitialCase(String text) {
 		if (sCurriculaToInitialCase == null)
-			sCurriculaToInitialCase = "true".equals(ApplicationProperties.getProperty("tmtbl.toInitialCase.curriculum", "false"));
+			sCurriculaToInitialCase = ApplicationProperty.CurriculumConvertNamesToInitialCase.isTrue();
 		if (sCurriculaToInitialCase)
 			return Constants.toInitialCase(text);
 		return text;

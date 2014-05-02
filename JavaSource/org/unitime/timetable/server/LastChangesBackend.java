@@ -22,7 +22,7 @@ package org.unitime.timetable.server;
 import java.util.List;
 
 import org.hibernate.Query;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -116,7 +116,7 @@ public class LastChangesBackend implements GwtRpcImplementation<LastChangesReque
 		if (request.hasOption("limit"))
 			q.setMaxResults(Integer.valueOf(request.getOption("limit")));
 		else
-			q.setMaxResults(Integer.valueOf(ApplicationProperties.getProperty("unitime.changelog.limit", "1000")));
+			q.setMaxResults(ApplicationProperty.LastChangesLimit.intValue());
 		
 		if (request.hasOption("operation")) {
 			q.setString("operation", request.getOption("operation").toUpperCase());

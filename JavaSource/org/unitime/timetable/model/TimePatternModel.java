@@ -36,7 +36,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.util.Constants;
@@ -122,7 +122,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
 		
 		if (iTimePattern == null) {
 			for (int i = 0; true; i++) {
-				String mode = ApplicationProperties.getProperty("unitime.room.sharingMode" + (1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
+				String mode =ApplicationProperty.RoomSharingMode.value(String.valueOf(1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
 				if (mode == null || mode.isEmpty()) break;
 				iModes.add(new RoomInterface.RoomSharingDisplayMode(mode));
 			}

@@ -30,7 +30,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.unitime.commons.Email;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.util.CalendarUtils;
@@ -108,7 +108,7 @@ public abstract class EventRelatedImports extends BaseImport {
            	
         	email.addRecipient(getManager().getEmailAddress(), getManager().getName());
            	
-        	if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.data", "false")))
+        	if (ApplicationProperty.EmailNotificationDataExchange.isTrue())
         		email.addNotifyCC();
            	
            	email.send();

@@ -42,7 +42,7 @@ import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
@@ -170,7 +170,7 @@ public class EditRoomAction extends Action {
             editRoomForm.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
             editRoomForm.setCoordX(location.getCoordinateX()==null ? null : location.getCoordinateX().toString());
             editRoomForm.setCoordY(location.getCoordinateY()==null ? null : location.getCoordinateY().toString());
-            editRoomForm.setArea(location.getArea() == null ? null : new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).format(location.getArea()));
+            editRoomForm.setArea(location.getArea() == null ? null : new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value()).format(location.getArea()));
             editRoomForm.setControlDept(location.getControllingDepartment() == null ? null : location.getControllingDepartment().getUniqueId().toString());
             editRoomForm.setEventDepartment(location.getEventDepartment() == null ? null : location.getEventDepartment().getUniqueId().toString());
             
@@ -321,7 +321,7 @@ public class EditRoomAction extends Action {
             Double area = null;
             if (editRoomForm.getArea() != null && !editRoomForm.getArea().isEmpty()) {
             	try {
-            		area = new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).parse(editRoomForm.getArea()).doubleValue();
+            		area = new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value()).parse(editRoomForm.getArea()).doubleValue();
             	} catch (NumberFormatException e) {
             		area = location.getArea();
             	}
@@ -447,7 +447,7 @@ public class EditRoomAction extends Action {
             Double area = null;
             if (editRoomForm.getArea() != null && !editRoomForm.getArea().isEmpty()) {
             	try {
-            		area = new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).parse(editRoomForm.getArea()).doubleValue();
+            		area = new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value()).parse(editRoomForm.getArea()).doubleValue();
             	} catch (NumberFormatException e) {
             	}
             }

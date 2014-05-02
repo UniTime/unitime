@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.unitime.commons.Email;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamPdfReportForm;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExamOwner;
@@ -141,12 +142,12 @@ public class PdfExamReportQueueItem extends QueueItem {
         	iProgress = 0;
             setStatus("Loading exams...");
             TreeSet<ExamAssignmentInfo> exams = null;
-            if (iExamSolver!=null && iExamSolver.getExamTypeId().equals(iForm.getExamType()) && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.pdfReports.canUseSolution","false"))) {
+            if (iExamSolver!=null && iExamSolver.getExamTypeId().equals(iForm.getExamType()) && ApplicationProperty.ExaminationPdfReportsCanUseSolution.isTrue()) {
                     exams = new TreeSet(iExamSolver.getAssignedExams());
                     if (iForm.getIgnoreEmptyExams()) for (Iterator<ExamAssignmentInfo> i=exams.iterator();i.hasNext();) {
                         if (i.next().getStudentIds().isEmpty()) i.remove();
                     }
-                    if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.pdfReports.useSolution.preloadCrosslistedExams","true"))) {
+                    if (ApplicationProperty.ExaminationPdfReportsPreloadCrosslistedExams.isTrue()) {
                 		setStatus("  Fetching exams...");
                 		hibSession.createQuery(
                                 "select o from Exam x inner join x.owners o where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId"

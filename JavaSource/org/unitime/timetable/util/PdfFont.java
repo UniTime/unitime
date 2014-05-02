@@ -22,7 +22,7 @@ package org.unitime.timetable.util;
 import java.awt.Color;
 import java.util.Hashtable;
 
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
@@ -35,7 +35,7 @@ public class PdfFont {
 	private static Hashtable<String, Font> sFontCache = new Hashtable<String, Font>();
 	
 	private static Font getFont(float size, boolean fixed, boolean bold, boolean italic) {
-		if ("true".equals(ApplicationProperties.getProperty("unitime.pdf.fontcache", "false"))) {
+		if (ApplicationProperty.PdfFontCache.isTrue()) {
 			Font font = sFontCache.get(size + (fixed ? "F": "") + (bold ? "B": "") + (italic ? "I" : ""));
 			if (font == null) {
 				font = createFont(size, fixed, bold, italic);
@@ -48,14 +48,25 @@ public class PdfFont {
 	}
 	
 	private static Font createFont(float size, boolean fixed, boolean bold, boolean italic) {
-		String font = ApplicationProperties.getProperty("unitime.pdf.font" + (fixed ? ".fixed" : "") + (bold ? italic ? ".bolditalic" : ".bold" : italic ? ".italic" : ""));
+		String font = null;
+		if (fixed)
+			font = ApplicationProperty.PdfFontFixed.value();
+		else if (bold) {
+			if (italic)
+				font = ApplicationProperty.PdfFontBoldItalic.value();
+			else
+				font = ApplicationProperty.PdfFontBold.value();
+		} else if (italic)
+			font = ApplicationProperty.PdfFontItalic.value();
+		else
+			font = ApplicationProperty.PdfFontNormal.value();
 		if (font != null && !font.isEmpty()) {
 			try {
 				BaseFont base = BaseFont.createFont(font, BaseFont.IDENTITY_H, true);
 				if (base != null) return new Font(base, size);
 			} catch (Throwable t) {}
 		}
-		font = ApplicationProperties.getProperty("unitime.pdf.font" + (fixed ? ".fixed" : ""));
+		font = (fixed ? ApplicationProperty.PdfFontFixed.value() : ApplicationProperty.PdfFontNormal.value());
 		if (font != null && !font.isEmpty()) {
 			try {
 				BaseFont base = BaseFont.createFont(font, BaseFont.IDENTITY_H, true);
@@ -69,8 +80,7 @@ public class PdfFont {
 	}
 		
 	public static Font getBigFont(boolean bold, boolean italic) {
-		return getFont(Float.parseFloat(ApplicationProperties.getProperty("unitime.pdf.fontsize.big", "16")),
-				false, bold, italic);
+		return getFont(ApplicationProperty.PdfFontSizeBig.floatValue(), false, bold, italic);
 	}
 	
 	public static Font getBigFont(boolean bold) {
@@ -82,8 +92,7 @@ public class PdfFont {
 	}
 
 	public static Font getFont(boolean bold, boolean italic) {
-		return getFont(Float.parseFloat(ApplicationProperties.getProperty("unitime.pdf.fontsize.normal", "12")),
-				false, bold, italic);
+		return getFont(ApplicationProperty.PdfFontSizeNormal.floatValue(), false, bold, italic);
 	}
 	
 	public static Font getFont(boolean bold) {
@@ -106,8 +115,7 @@ public class PdfFont {
 	}
 
 	public static Font getSmallFont(boolean bold, boolean italic) {
-		return getFont(Float.parseFloat(ApplicationProperties.getProperty("unitime.pdf.fontsize.small", "9")),
-				false, bold, italic);
+		return getFont(ApplicationProperty.PdfFontSizeSmall.floatValue(), false, bold, italic);
 	}
 	
 	public static Font getSmallFont(boolean bold) {
@@ -130,7 +138,6 @@ public class PdfFont {
 	}
 
 	public static Font getFixedFont() {
-		return getFont(Float.parseFloat(ApplicationProperties.getProperty("unitime.pdf.fontsize.fixed", "9")),
-				true, false, false);
+		return getFont(ApplicationProperty.PdfFontSizeFixed.floatValue(), true, false, false);
 	}
 }

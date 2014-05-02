@@ -45,7 +45,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ListSolutionsForm.InfoComparator;
 import org.unitime.timetable.model.base.BaseSolution;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -119,7 +119,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 
 		hibSession.update(this);
 		
-	    if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.changePastMeetings", "true"))) {
+	    if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
 			deleteObjects(hibSession,
 		              "ClassEvent",
 		              "select e.uniqueId from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId");
@@ -372,7 +372,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		    	hibSession.delete(event);
 		}
 		
-		if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.changePastMeetings", "true"))) {
+		if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
 			for (Enumeration e=classEvents.elements();e.hasMoreElements();) {
 			    ClassEvent event = (ClassEvent)e.nextElement();
 			    hibSession.delete(event);
@@ -419,7 +419,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	
 	public static void sendNotification(Solution uncommittedSolution, Solution committedSolution, String puid, boolean success, List<String> messages) {
 		try {
-			if (!"true".equals(ApplicationProperties.getProperty("unitime.email.notif.commit", ApplicationProperties.getProperty("tmtbl.notif.commit.enabled", "true"))))
+			if (ApplicationProperty.EmailNotificationSolutionCommits.isFalse()) 
 				return; //email notification disabled
 
 			Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);

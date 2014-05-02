@@ -44,7 +44,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingModifyForm;
@@ -266,12 +266,9 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setInstrOffrConfigId(ioc.getUniqueId());
         frm.setInstrOffrConfigLimit(ioc.getLimit());
         frm.setInstrOfferingId(io.getUniqueId());
-        String displayInstructorFlags = ApplicationProperties.getProperty("tmtbl.class_setup.show_display_instructor_flags", "false");
-        frm.setDisplayDisplayInstructors(new Boolean(displayInstructorFlags));
-        String displayEnabledForStudentScheduling = ApplicationProperties.getProperty("tmtbl.class_setup.show_enabled_for_student_scheduling", "true");
-        frm.setDisplayEnabledForStudentScheduling(new Boolean(displayEnabledForStudentScheduling));
-        String displayExternalIds = ApplicationProperties.getProperty("tmtbl.class_setup.show_display_external_ids", "false");
-        frm.setDisplayExternalId(new Boolean(displayExternalIds));
+        frm.setDisplayDisplayInstructors(ApplicationProperty.ClassSetupDisplayInstructorFlags.isTrue());
+        frm.setDisplayEnabledForStudentScheduling(ApplicationProperty.ClassSetupEnabledForStudentScheduling.isTrue());
+        frm.setDisplayExternalId(ApplicationProperty.ClassSetupShowExternalIds.isTrue());
        
 
         String name = io.getCourseNameWithTitle();
@@ -390,7 +387,7 @@ public class InstructionalOfferingModifyAction extends Action {
 	        hibSession.flush();
 	        hibSession.refresh(ioc);
 	        hibSession.refresh(ioc.getInstructionalOffering());
-        	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_config.change_action.class");
+        	String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
         	if (className != null && className.trim().length() > 0){
 	        	ExternalInstrOffrConfigChangeAction configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
 	       		configChangeAction.performExternalInstrOffrConfigChangeAction(ioc.getInstructionalOffering(), hibSession);
@@ -831,12 +828,12 @@ public class InstructionalOfferingModifyAction extends Action {
 					changed = true;
 					modifiedClass.setRoomRatio(roomRatio);
 				}
-		        Boolean displayInstructorFlags = new Boolean(ApplicationProperties.getProperty("tmtbl.class_setup.show_display_instructor_flags", "false"));
+		        Boolean displayInstructorFlags = ApplicationProperty.ClassSetupDisplayInstructorFlags.isTrue();
 				if (displayInstructorFlags && !modifiedClass.isDisplayInstructor().equals(displayInstructor)){
 					changed = true;
 					modifiedClass.setDisplayInstructor(displayInstructor);
 				}
-				Boolean displayEnabledForStudentScheduling = new Boolean(ApplicationProperties.getProperty("tmtbl.class_setup.show_enabled_for_student_scheduling", "true"));
+				Boolean displayEnabledForStudentScheduling = ApplicationProperty.ClassSetupEnabledForStudentScheduling.isTrue();
 				if (displayEnabledForStudentScheduling && !modifiedClass.isEnabledForStudentScheduling().equals(enabledForStudentScheduling)){
 					changed = true;
 					modifiedClass.setEnabledForStudentScheduling(enabledForStudentScheduling);

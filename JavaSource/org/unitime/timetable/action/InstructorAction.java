@@ -35,7 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
@@ -79,14 +79,7 @@ public class InstructorAction extends Action {
 	
 		InstructorEditForm frm = (InstructorEditForm) form;
 		
-        String uidLookupEnabled = ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.enabled");
-        if (uidLookupEnabled!=null && uidLookupEnabled.equalsIgnoreCase("true")) {
-        	frm.setLookupEnabled(Boolean.TRUE);
-        }
-        else {
-        	frm.setLookupEnabled(Boolean.FALSE);
-        }
-
+		frm.setLookupEnabled(ApplicationProperty.InstructorExternalIdLookup.isTrue() && ApplicationProperty.InstructorExternalIdLookupClass.value() != null);
 
 		return null;
 	}
@@ -173,7 +166,7 @@ public class InstructorAction extends Action {
     private UserInfo lookupInstructor(InstructorEditForm frm) throws Exception {
         String id = frm.getCareerAcct();
         if (id!=null && id.trim().length()>0 && frm.getLookupEnabled().booleanValue()) {
-        	String className = ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.class");
+        	String className = ApplicationProperty.InstructorExternalIdLookupClass.value(); 
         	ExternalUidLookup lookup = (ExternalUidLookup) (Class.forName(className).newInstance());
        		return lookup.doLookup(id);
         }

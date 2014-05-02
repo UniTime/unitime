@@ -32,7 +32,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SubjectArea;
@@ -100,7 +100,7 @@ public class CourseOfferingEditForm extends ActionForm {
 
         ActionErrors errors = new ActionErrors();
         
-        if (getCourseNbr() != null && "true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true"))) {
+        if (getCourseNbr() != null && ApplicationProperty.CourseOfferingNumberUpperCase.isTrue()) {
         	setCourseNbr(getCourseNbr().toUpperCase());
         }
 
@@ -112,8 +112,8 @@ public class CourseOfferingEditForm extends ActionForm {
 			}
 			else {
 				
-		    	String courseNbrRegex = ApplicationProperties.getProperty("tmtbl.courseNumber.pattern");
-		    	String courseNbrInfo = ApplicationProperties.getProperty("tmtbl.courseNumber.patternInfo");
+		    	String courseNbrRegex = ApplicationProperty.CourseOfferingNumberPattern.value(); 
+		    	String courseNbrInfo = ApplicationProperty.CourseOfferingNumberPatternInfo.value();
 		    	try { 
 			    	Pattern pattern = Pattern.compile(courseNbrRegex);
 			    	Matcher matcher = pattern.matcher(courseNbr);
@@ -126,9 +126,7 @@ public class CourseOfferingEditForm extends ActionForm {
 		    	}
 
 				
-		    	String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
-
-		    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
+		    	if (ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()){
 					SubjectArea sa = new SubjectAreaDAO().get(subjectAreaId);
 					CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(sa.getSessionId(), sa.getSubjectAreaAbbreviation(), courseNbr);
 					if (add && co != null) {
@@ -312,7 +310,7 @@ public class CourseOfferingEditForm extends ActionForm {
 	}
 
 	public void setCourseNbr(String courseNbr) {
-        if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
+		if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
         	courseNbr = courseNbr.toUpperCase();
 		this.courseNbr = courseNbr;
 	}

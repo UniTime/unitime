@@ -44,6 +44,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.CurriculaService;
@@ -111,7 +112,7 @@ public class CurriculaServlet implements CurriculaService {
 	
 	public CurriculaServlet() {
 		try {
-			String providerClass = ApplicationProperties.getProperty("unitime.custom.CourseDetailsProvider");
+			String providerClass = ApplicationProperty.CustomizationCourseDetails.value();
 			if (providerClass != null)
 				iCourseDetailsProvider = (CourseDetailsProvider)Class.forName(providerClass).newInstance();
 		} catch (Exception e) {
@@ -2307,9 +2308,9 @@ public class CurriculaServlet implements CurriculaService {
 					
 					if (updateCurriculumCourses) {
 						
-						float totalShareLimit = Float.parseFloat(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.totalShareLimit", "0.03"));
-						float shareLimit = Float.parseFloat(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.shareLimit", "0.00"));
-						int enrollmentLimit = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.curriculum.lldemands.enrlLimit", "0"));
+						float totalShareLimit = ApplicationProperty.CurriculumLastLikeDemandsTotalShareLimit.floatValue();
+						float shareLimit = ApplicationProperty.CurriculumLastLikeDemandsShareLimit.floatValue();
+						int enrollmentLimit = ApplicationProperty.CurriculumLastLikeDemandsEnrollmentLimit.intValue();
 
 						Hashtable<String, Hashtable<String, Hashtable<Long, Integer>>> clasfMajorCourse2ll = loadClasfMajorCourse2ll(hibSession, c);
 						

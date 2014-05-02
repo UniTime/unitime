@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -417,7 +417,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
     			st.setId(enrollment.getStudent().getUniqueId());
     			st.setExternalId(enrollment.getStudent().getExternalUniqueId());
-    			st.setName(enrollment.getStudent().getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
+    			st.setName(enrollment.getStudent().getName(ApplicationProperty.OnlineSchedulingStudentNameFormat.value()));
     			for (AcademicAreaClassification ac: enrollment.getStudent().getAcademicAreaClassifications()) {
     				st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
     				st.addClassification(ac.getAcademicClassification().getCode());

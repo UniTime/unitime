@@ -40,7 +40,7 @@ import javax.mail.internet.MimeMultipart;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -91,7 +91,7 @@ public class EventInboundEmailService {
 				line = line.trim();
 				if (line.isEmpty() && text == null && skip == null) continue;
 				if (line.matches("(?i)-+ ?Original message ?-+") || line.matches("(?i)-+ ?Forwarded message ?-+") || line.matches("On .* wrote:")) break;
-				if (line.matches("(?i)[0-9]+/[0-9]+/[0-9]+ " + ApplicationProperties.getProperty("unitime.email.sender.name", "UniTime Application") + " <" + ApplicationProperties.getProperty("unitime.email.sender") + ">")) break;
+				if (line.matches("(?i)[0-9]+/[0-9]+/[0-9]+ " + ApplicationProperty.EmailSenderName.value() + " <" + ApplicationProperty.EmailSenderAddress.value() + ">")) break;
 				if (line.startsWith(">") || line.isEmpty()) {
 					skip = (skip == null ? "" : skip + "\n") + line;
 				} else {

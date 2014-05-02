@@ -23,7 +23,7 @@ import java.io.Serializable;
 
 
 import org.cpsolver.ifs.util.DistanceMetric;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -122,8 +122,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     public double getDistance(ClassRoomInfo other) {
     	if (isIgnoreTooFar() || other.isIgnoreTooFar()) return 0;
     	if (sDistanceMetric == null) {
-    		sDistanceMetric = new DistanceMetric(
-    				DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())));
+    		sDistanceMetric = new DistanceMetric(DistanceMetric.Ellipsoid.valueOf(ApplicationProperty.DistanceEllipsoid.value()));
     	}
     	return sDistanceMetric.getDistanceInMeters(getLocationId(), getCoordX(), getCoordY(), other.getLocationId(), other.getCoordX(), other.getCoordY());
     }

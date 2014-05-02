@@ -40,6 +40,7 @@ import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.RollForwardSessionForm;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
@@ -2227,7 +2228,7 @@ public class SessionRollForward {
             }
         }
         hibSession.flush(); hibSession.clear();
-        if (ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true").equals("true")){
+        if (ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()) {
 	        hibSession.createQuery("update CourseOffering c set c.demand="+
 	                "(select count(distinct d.student) from LastLikeCourseDemand d where "+
 	                "(c.subjectArea=d.subjectArea and c.courseNbr=d.courseNbr)) where "+
@@ -2682,7 +2683,7 @@ public class SessionRollForward {
 		if (toOffering == null) {
 			CourseOffering toCourse = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromReservation.getInstructionalOffering().getControllingCourseOffering().getUniqueId());
 			if (toCourse == null){
-		    	if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true"))) {
+		    	if (ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()) {
 		    		toCourse = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(
 		    				toSession.getUniqueId(),
 		    				fromReservation.getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation(),
@@ -2762,7 +2763,7 @@ public class SessionRollForward {
 		
 		CourseOffering toCourse = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromReservation.getCourse().getUniqueId());
 		if (toCourse == null){
-	    	if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true"))) {
+	    	if (ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue()) {
 	    		toCourse = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(
 	    				toSession.getUniqueId(),
 	    				fromReservation.getCourse().getSubjectArea().getSubjectAreaAbbreviation(),

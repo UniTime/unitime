@@ -26,7 +26,7 @@ import javax.security.auth.login.Configuration;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * Configure JAAS using tmtbl.authenticate.modules rather than
@@ -43,7 +43,7 @@ public class LoginConfiguration extends Configuration {
 
 	public void init() {
 		Debug.info("Configuring authentication service ...");
-		String m = ApplicationProperties.getProperty("tmtbl.authenticate.modules");
+		String m = ApplicationProperty.AuthenticationModules.value();
 		String[] modules = (m == null || m.isEmpty() ? new String[] {} : m.split(";"));
 		sEntries = new AppConfigurationEntry[modules.length];
 		for (int idx = 0; idx < modules.length; idx++) {

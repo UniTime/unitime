@@ -29,7 +29,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.webutil.WebTextValidation;
 
@@ -80,8 +80,8 @@ public class NonUnivLocationForm extends ActionForm {
         	errors.add("Name", 
                     new ActionMessage("errors.required", "Name") );
         } else {
-	    	String nonUniversityLocationRegex = ApplicationProperties.getProperty("tmtbl.nonUniversityLocation.pattern");
-	    	String nonUniversityLocationInfo = ApplicationProperties.getProperty("tmtbl.nonUniversityLocation.patternInfo");
+	    	String nonUniversityLocationRegex = ApplicationProperty.NonUniversityLocationPattern.value();
+	    	String nonUniversityLocationInfo = ApplicationProperty.NonUniversityLocationPatternInfo.value();
 	    	if (nonUniversityLocationRegex != null && nonUniversityLocationRegex.trim().length() > 0){
 		    	try { 
 			    	Pattern pattern = Pattern.compile(nonUniversityLocationRegex);

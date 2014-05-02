@@ -278,7 +278,7 @@ public class MuniPdFKSCZVDatePatterns extends Extension<Lecture, Placement> {
 
             org.hibernate.Session hibSession = new _RootDAO().getSession();
             
-            Session session = Session.getSessionUsingInitiativeYearTerm(
+			Session session = Session.getSessionUsingInitiativeYearTerm(
                     ApplicationProperties.getProperty("initiative", "PdF"),
                     ApplicationProperties.getProperty("year","2011"),
                     ApplicationProperties.getProperty("term","Podzim")

@@ -37,7 +37,7 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.SubjectAreaEditForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingRemoveAction;
@@ -207,7 +207,7 @@ public class SubjectAreaEditAction extends Action {
 
 			SubjectArea sa = sdao.get(frm.getUniqueId());
 
-        	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.remove_action.class");
+        	String className = ApplicationProperty.ExternalActionCourseOfferingRemove.value();
 			if (className != null && className.trim().length() > 0){
         		ExternalCourseOfferingRemoveAction removeAction = (ExternalCourseOfferingRemoveAction) (Class.forName(className).newInstance());
     			for (Iterator i = sa.getCourseOfferings().iterator(); i.hasNext(); ) {
@@ -420,7 +420,7 @@ public class SubjectAreaEditAction extends Action {
 			if (oldDept!=null) {
 			    hibSession.refresh(oldDept); hibSession.refresh(sa.getDepartment());
 			}
-            String className = ApplicationProperties.getProperty("tmtbl.external.class.edit_action.class");
+            String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
             	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).newInstance());
             	for(Class_ c : updatedClasses){

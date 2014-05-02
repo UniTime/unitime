@@ -23,7 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.dao._RootDAO;
 
 /**
@@ -133,11 +133,11 @@ public class LogCleaner {
 	}
 	
 	public static void cleanupLogs() {
-		cleanupChangeLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.cleanup.changeLog", "366")));
-		cleanupQueryLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.cleanup.queryLog", "92")));
-		cleanupOnlineSectioningLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.cleanup.sectioningLog", "366")));
-		cleanupMessageLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.message.log.cleanup.days", "14")));
-		cleanupStudentSectioningQueue(Integer.parseInt(ApplicationProperties.getProperty("unitime.cleanup.sectioningQueue", "14")));
+		cleanupChangeLog(ApplicationProperty.LogCleanupChangeLog.intValue());
+		cleanupQueryLog(ApplicationProperty.LogCleanupQueryLog.intValue());
+		cleanupOnlineSectioningLog(ApplicationProperty.LogCleanupOnlineSchedulingLog.intValue());
+		cleanupMessageLog(ApplicationProperty.LogCleanupMessageLog.intValue());
+		cleanupStudentSectioningQueue(ApplicationProperty.LogCleanupOnlineSchedulingQueue.intValue());
 	}
 
 }

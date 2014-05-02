@@ -20,7 +20,7 @@
 package org.unitime.timetable.server.instructor;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget.InstructorAvailabilityModel;
@@ -51,7 +51,7 @@ public class InstructorAvailabilityBackend implements GwtRpcImplementation<Instr
 	public InstructorAvailabilityModel execute(InstructorAvailabilityRequest request, SessionContext context) {
 		InstructorAvailabilityModel model = new InstructorAvailabilityModel();
 		for (int i = 0; true; i++) {
-			String mode = ApplicationProperties.getProperty("unitime.room.sharingMode" + (1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
+			String mode = ApplicationProperty.RoomSharingMode.value(String.valueOf(1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
 			if (mode == null || mode.isEmpty()) break;
 			model.addMode(new RoomInterface.RoomSharingDisplayMode(mode));
 		}

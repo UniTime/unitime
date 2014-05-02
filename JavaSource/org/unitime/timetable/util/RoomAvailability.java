@@ -24,7 +24,7 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.ExamPeriod;
@@ -43,9 +43,9 @@ public class RoomAvailability {
     
     public static RoomAvailabilityInterface getInstance() {
         if (sInstance!=null) return sInstance;
-        if (ApplicationProperties.getProperty("tmtbl.room.availability.class")==null) return null;
+        if (ApplicationProperty.RoomAvailabilityImplementation.value()==null) return null;
         try {
-            sInstance = (RoomAvailabilityInterface)Class.forName(ApplicationProperties.getProperty("tmtbl.room.availability.class")).getConstructor().newInstance();
+            sInstance = (RoomAvailabilityInterface)Class.forName(ApplicationProperty.RoomAvailabilityImplementation.value()).getConstructor().newInstance();
             return sInstance;
         } catch (Exception e) {
             Debug.error(e);

@@ -46,7 +46,7 @@ import javax.imageio.ImageIO;
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -511,7 +511,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	private void generateListOfClassesFooter(PrintWriter out, boolean link) {
 		if (link) {
-			String url = ApplicationProperties.getProperty("unitime.url");
+			String url = ApplicationProperty.UniTimeUrl.value();
 			if (url != null) {
 				out.println("	<tr><td colspan=\"12\" style=\"font-size: 9pt; font-style: italic; color: #9CB0CE; text-align: right; margin-top: -2px; white-space: nowrap;\">");
 				out.println("		" + MSG.emailLinkToUniTime(url));

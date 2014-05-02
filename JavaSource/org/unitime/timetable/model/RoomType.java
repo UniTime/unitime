@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.hibernate.criterion.Restrictions;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseRoomType;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.RoomTypeOptionDAO;
@@ -81,7 +81,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
     	if (department == null) {
     		RoomTypeOption opt = new RoomTypeOption(this, department);
     		opt.setStatus(RoomTypeOption.getDefaultStatus());
-        	opt.setBreakTime(Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getReference(), "0")));
+        	opt.setBreakTime(ApplicationProperty.RoomDefaultBreakTime.intValue(getReference()));
     		return opt;
     	}
         RoomTypeOption opt = (RoomTypeOption)RoomTypeOptionDAO.getInstance().getSession().createQuery(
@@ -93,7 +93,7 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
         if (opt==null) opt = new RoomTypeOption(this, department);
         if (opt.getStatus() == null) opt.setStatus(RoomTypeOption.getDefaultStatus());
         if (opt.getBreakTime() == null)
-        	opt.setBreakTime(Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getReference(), "0")));
+        	opt.setBreakTime(ApplicationProperty.RoomDefaultBreakTime.intValue(getReference()));
         return opt;
     }
     

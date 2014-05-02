@@ -43,6 +43,7 @@ import org.unitime.timetable.ApplicationProperties;
 /**
  * @author Tomas Muller
  */
+@Deprecated
 public class LdapAuthenticateModule extends AuthenticateModule {
 	private static Logger sLog = Logger.getLogger(LdapAuthenticateModule.class);
 	private String iExternalUid;

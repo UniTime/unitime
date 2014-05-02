@@ -37,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.commons.Base64;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.admin.PasswordPage.PasswordChangeRequest;
 import org.unitime.timetable.gwt.client.admin.PasswordPage.PasswordChangeResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
@@ -121,7 +121,7 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 					input.put("url", url);
 					input.put("version", MESSAGES.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));
 					input.put("ts", new Date());
-					input.put("sender", ApplicationProperties.getProperty("unitime.email.sender.name", "The UniTime Team"));
+					input.put("sender", ApplicationProperty.EmailSenderName.value());
 					
 					StringWriter s = new StringWriter();
 					template.process(input, new PrintWriter(s));

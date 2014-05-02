@@ -24,7 +24,7 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 
 /**
@@ -37,8 +37,8 @@ public class Wiki extends BodyTagSupport {
     
     public Wiki() {
         super();
-        iEnabled = "true".equals(ApplicationProperties.getProperty("tmtbl.wiki.help",(iEnabled?"true":"false")));
-        iWikiUrl = (String)ApplicationProperties.getProperty("tmtbl.wiki.url",iWikiUrl);
+        iEnabled = ApplicationProperty.PageHelpEnabled.isTrue();
+        iWikiUrl = ApplicationProperty.PageHelpUrl.value();
     }
 
     public void setWikiUrl(String wikiUrl) {

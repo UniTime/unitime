@@ -58,7 +58,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
@@ -348,7 +348,7 @@ public class RoomListAction extends Action {
 		
 		Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
 		Session session = SessionDAO.getInstance().get(sessionId);
-		DecimalFormat dfa = new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00"));
+		DecimalFormat dfa = new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value());
 		
 		Collection rooms = roomListForm.getRooms();
 		if (rooms.size() == 0) {
@@ -931,7 +931,7 @@ public class RoomListAction extends Action {
 	public void buildPdfWebTable(OutputStream out, RoomListForm roomListForm, boolean featuresOneColumn, ExamType examType) throws Exception {
 		Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
 		Session session = SessionDAO.getInstance().get(sessionId);
-		DecimalFormat dfa = new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00"));
+		DecimalFormat dfa = new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value());
 
 		Collection rooms = roomListForm.getRooms();
 
@@ -1459,7 +1459,7 @@ public class RoomListAction extends Action {
 	public void buildCsvWebTable(PrintWriter out, RoomListForm roomListForm, boolean featuresOneColumn, ExamType examType) throws Exception {
 		Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
 		Session session = SessionDAO.getInstance().get(sessionId);
-		DecimalFormat dfa = new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00"));
+		DecimalFormat dfa = new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value());
 
 		Collection rooms = roomListForm.getRooms();
 

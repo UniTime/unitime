@@ -39,7 +39,7 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.NonUnivLocationForm;
 import org.unitime.timetable.model.ChangeLog;
@@ -172,7 +172,7 @@ public class AddNonUnivLocationAction extends Action {
             Double area = null;
             if (nonUnivLocationForm.getArea() != null && !nonUnivLocationForm.getArea().isEmpty()) {
             	try {
-            		area = new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).parse(nonUnivLocationForm.getArea()).doubleValue();
+            		area = new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value()).parse(nonUnivLocationForm.getArea()).doubleValue();
             	} catch (NumberFormatException e) {
             	}
             }

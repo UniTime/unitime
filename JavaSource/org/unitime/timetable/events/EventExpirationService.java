@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventNote;
@@ -50,7 +50,7 @@ public class EventExpirationService extends Thread {
 	private EventExpirationService() {
 		setName("EventExpirationService");
 		setDaemon(true);
-		iSleepTimeInMinutes = Long.parseLong(ApplicationProperties.getProperty("unitime.events.expiration.updateIntervalInMinutes", "5"));
+		iSleepTimeInMinutes = ApplicationProperty.EventExpirationServiceUpdateInterval.intValue();
 	}
 	
 	protected void checkForExpiredEventsIfNeeded() {

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,7 +39,10 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ApplicationConfigForm;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.SessionConfig;
@@ -109,18 +113,31 @@ public class ApplicationConfigAction extends Action {
             	if (sessionConfig == null) {
             		ApplicationConfig appConfig = ApplicationConfigDAO.getInstance().get(id);
             		if (appConfig == null) {
-                        errors.add("key", new ActionMessage("errors.invalid", "Name : " + id));
-                        saveErrors(request, errors);
+                    	ApplicationProperty p = ApplicationProperty.fromKey(id);
+                    	if (p != null) {
+                    		frm.setOp("add");
+                    		frm.setKey(id);
+                            frm.setValue(p.value());
+                            frm.setDescription(p.description());
+                            frm.setAllSessions(true);
+                    	} else {
+                    		errors.add("key", new ActionMessage("errors.invalid", "Name : " + id));
+                    		saveErrors(request, errors);
+                    	}
             		} else {
                         frm.setKey(appConfig.getKey());
                         frm.setValue(appConfig.getValue());
                         frm.setDescription(appConfig.getDescription());
+                        if (frm.getDescription() == null || frm.getDescription().isEmpty())
+                        	frm.setDescription(ApplicationProperty.getDescription(frm.getKey()));
                         frm.setAllSessions(true);
             		}
             	} else {
             		frm.setKey(sessionConfig.getKey());
                     frm.setValue(sessionConfig.getValue());
                     frm.setDescription(sessionConfig.getDescription());
+                    if (frm.getDescription() == null || frm.getDescription().isEmpty())
+                    	frm.setDescription(ApplicationProperty.getDescription(frm.getKey()));
                     frm.setAllSessions(false);
                     List<Long> sessionIds = SessionConfigDAO.getInstance().getSession().createQuery("select session.uniqueId from SessionConfig where key = :key and value = :value")
                     		.setString("key", id).setString("value", sessionConfig.getValue()).list();
@@ -242,6 +259,7 @@ public class ApplicationConfigAction extends Action {
                 	}
                 	
                 	hibSession.flush();
+                	request.setAttribute("hash", frm.getKey());
                 	
                 	frm.reset(mapping, request);
                 } catch (Exception e) {
@@ -301,6 +319,7 @@ public class ApplicationConfigAction extends Action {
         
         // Cancel update
         if(op.equals(rsc.getMessage("button.cancelUpdateAppConfig"))) {
+        	request.setAttribute("hash", frm.getKey());
             frm.reset(mapping, request);
         }
 
@@ -329,14 +348,37 @@ public class ApplicationConfigAction extends Action {
 			    null );
         webTable.enableHR("#9CB0CE");
         
-		Map<String, Object> properties = new HashMap<String, Object>();
-		for (ApplicationConfig config: ApplicationConfigDAO.getInstance().findAll()) {
-			properties.put(config.getKey(), config);
-		}
-		if (sessionContext.getUser().getCurrentAcademicSessionId() != null) {
-			for (SessionConfig config: SessionConfig.findAll(sessionContext.getUser().getCurrentAcademicSessionId())) {
-				properties.put(config.getKey(), config);
+		Map<String, Object> configs = new HashMap<String, Object>();
+		for (ApplicationConfig config: ApplicationConfigDAO.getInstance().findAll())
+			configs.put(config.getKey(), config);
+		
+		Map<String, String> properties = new HashMap<String, String>();
+		for (Map.Entry<Object, Object> p: ApplicationProperties.getProperties().entrySet())
+			properties.put(p.getKey().toString(), p.getValue().toString());
+		for (ApplicationProperty property: ApplicationProperty.values()) {
+			if (properties.containsKey(property.key()) || property.isSecret() || property.isDeprecated()) continue;
+			if (property.reference() == null) {
+				properties.put(property.key(), property.defaultValue() == null ? "" : property.defaultValue());
+			} else {
+				boolean nomatch = true;
+				for (Object key: properties.keySet()) {
+					if (property.matches(key.toString())) { nomatch = false; break; }
+				}
+				if (nomatch)
+					properties.put(property.key(), property.defaultValue() == null ? "" : property.defaultValue());
 			}
+		}
+				
+		if (sessionContext.getUser().getCurrentAcademicSessionId() != null) {
+			for (SessionConfig config: SessionConfig.findAll(sessionContext.getUser().getCurrentAcademicSessionId()))
+				configs.put(config.getKey(), config);
+		}
+		
+		Pattern pattern = null;
+		try {
+			pattern = Pattern.compile(ApplicationProperty.ApplicationConfigPattern.value());
+		} catch (Exception e) {
+			pattern = Pattern.compile(ApplicationProperty.ApplicationConfigPattern.defaultValue());
 		}
 
 		boolean editable = sessionContext.hasPermission(Right.ApplicationConfigEdit);
@@ -344,21 +386,53 @@ public class ApplicationConfigAction extends Action {
 			webTable.addLine(null, new String[] {"No configuration keys found"}, null, null);
 		} else {
 			for (String key: new TreeSet<String>(properties.keySet())) {
-				Object o = properties.get(key);
+				String value = properties.get(key);
+				Object o = configs.get(key);
+				ApplicationProperty p = ApplicationProperty.fromKey(key);
+				String description = ApplicationProperty.getDescription(key);
+				if (description == null) description = "";
+
+				if (o == null) {
+					if (!pattern.matcher(key).matches()) continue;
+
+					String reference = null;
+					if (p != null && p.reference() != null) {
+						reference = p.reference();
+					}
+					
+					webTable.addLine(
+				    		editable && (p != null && !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + (reference == null ? key : key.replace("%", "<" + reference + ">")) + "';\"" : null,
+				    		new String[] {
+				    			"<a name='" + (reference == null ? key : key.replace("%", "<" + reference + ">")) + "'>" +
+				    			(reference == null ? HtmlUtils.htmlEscape(key) : HtmlUtils.htmlEscape(key).replace("%", "<i><u>" + reference + "</i></u>")) +
+				    			"</a>",
+				    			"<font color='gray'>" + HtmlUtils.htmlEscape(value) + "</font>",
+				    			(reference == null ? description : description.replace("%", "<i><u>" + reference + "</i></u>")) },
+				    		new String[] {key, value, description}
+				    		);
+					continue;
+				}
+				
 				if (o instanceof SessionConfig) {
 					SessionConfig config = (SessionConfig)o;
-				    webTable.addLine(
-				    		editable ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + config.getKey() + "';\"" : null,
-				    		new String[] {config.getKey()  + " <sup><font color='#2066CE' title='Applies to " + config.getSession().getLabel() + "'>s)</font></sup>",
-				    			config.getValue() == null ? "" : config.getValue(), config.getDescription() == null ? "" : config.getDescription()},
-				    		new String[] {config.getKey(), config.getValue() == null ? "" : config.getValue(), config.getDescription() == null ? "" : config.getDescription()}
+					if (config.getDescription() != null && !config.getDescription().isEmpty())
+						description = config.getDescription();
+
+					webTable.addLine(
+				    		editable && (p != null && !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + key + "';\"" : null,
+				    		new String[] {"<a name='"+key+"'>" + HtmlUtils.htmlEscape(key)  + " <sup><font color='#2066CE' title='Applies to " + config.getSession().getLabel() + "'>s)</font></sup></a>",
+				    			HtmlUtils.htmlEscape(value), description},
+				    		new String[] {key, value, description}
 				    		);
 				} else {
 					ApplicationConfig config = (ApplicationConfig)o;
+					if (config.getDescription() != null && !config.getDescription().isEmpty())
+						description = config.getDescription();
+
 				    webTable.addLine(
-				    		editable ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + config.getKey() + "';\"" : null,
-				    		new String[] {config.getKey(), config.getValue() == null ? "" : config.getValue(), config.getDescription() == null ? "" : config.getDescription()},
-				    		new String[] {config.getKey(), config.getValue() == null ? "" : config.getValue(), config.getDescription() == null ? "" : config.getDescription()}
+				    		editable && (p != null && !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + key + "';\"" : null,
+				    		new String[] {"<a name='"+key+"'>" + HtmlUtils.htmlEscape(key) + "</a>", HtmlUtils.htmlEscape(value), description},
+				    		new String[] {key, value, description}
 				    		);
 				}
 			}

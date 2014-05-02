@@ -32,7 +32,7 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CacheMode;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.OnlineSectioningLogDAO;
@@ -78,11 +78,11 @@ public class OnlineSectioningLogger extends Thread {
 	private OnlineSectioningLogger() {
 		super("OnlineSectioningLogger");
 		setDaemon(true);
-		iEnabled = "true".equals(ApplicationProperties.getProperty("unitime.sectioning.log", "true"));
-		iLogLimit = Integer.parseInt(ApplicationProperties.getProperty("unitime.sectioning.log.limit", "5000"));
+		iEnabled = ApplicationProperty.OnlineSchedulingLoggingEnabled.isTrue(); 
+		iLogLimit = ApplicationProperty.OnlineSchedulingLogLimit.intValue();
 		try {
-			if (ApplicationProperties.getProperty("unitime.sectioning.log.file") != null)
-				iOut = new PrintWriter(new FileWriter(new File(ApplicationProperties.getProperty("unitime.sectioning.log.file")), true));
+			if (ApplicationProperty.OnlineSchedulingLogFile.value() != null)
+				iOut = new PrintWriter(new FileWriter(new File(ApplicationProperty.OnlineSchedulingLogFile.value()), true));
 		} catch (IOException e) {
 			sLog.warn("Unable to create sectioning log: " + e.getMessage(), e);
 		}

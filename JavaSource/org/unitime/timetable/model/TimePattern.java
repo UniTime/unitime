@@ -28,7 +28,7 @@ import java.util.TreeSet;
 
 import org.cpsolver.coursett.model.TimeLocation;
 import org.hibernate.Query;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseTimePattern;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.security.UserContext;
@@ -56,8 +56,6 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     /** Request attribute name for available time patterns **/
     public static String TIME_PATTERN_ATTR_NAME = "timePatternsList";
     
-    private static Boolean sTimePatternEditableInitialDataLoad;
-
     /*[CONSTRUCTOR MARKER BEGIN]*/
 	public TimePattern () {
 		super();
@@ -467,10 +465,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
 	 * @return the sTimePatternEditableInitialDataLoad
 	 */
 	public static boolean isTimePatternEditableInitialDataLoad() {
-		if (sTimePatternEditableInitialDataLoad == null){
-			sTimePatternEditableInitialDataLoad = new Boolean(ApplicationProperties.getProperty("tmtbl.time_pattern.initial_data_load.editable", "false").equals("true"));
-		}
-		return sTimePatternEditableInitialDataLoad.booleanValue();
+		return ApplicationProperty.TimePatternEditableDuringInitialDataLoad.isTrue();
 	}
 	
 }

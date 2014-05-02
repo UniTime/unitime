@@ -47,6 +47,7 @@ import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Session;
@@ -489,7 +490,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 
 	@Override
 	public boolean checkDeadline(Long courseId, XTime sectionTime, Deadline type) {
-		if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.deadline", "true"))) return true;
+		if (!ApplicationProperty.OnlineSchedulingCheckDeadlines.isTrue()) return true;
 		
 		XCourse info = getCourse(courseId);
 		int deadline = 0;
@@ -571,7 +572,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 					setProperty("General.SettingsId", settings.getUniqueId().toString());
 				}
 				if (getProperty("Distances.Ellipsoid") == null || "DEFAULT".equals(getProperty("Distances.Ellipsoid")))
-					setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+					setProperty("Distances.Ellipsoid", ApplicationProperty.DistanceEllipsoid.value());
 				if ("Priority".equals(getProperty("StudentWeights.Mode")))
 					setProperty("StudentWeights.PriorityWeighting", "true");
 				else if ("Equal".equals(getProperty("StudentWeights.Mode")))
@@ -583,13 +584,13 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		
 		@Override
 		public String getProperty(String key) {
-			String value = ApplicationProperties.getProperty("unitime.sectioning.config." + key);
+			String value = ApplicationProperty.OnlineSchedulingParameter.value(key);
 			return value == null ? super.getProperty(key) : value;
 		}
 		
 		@Override
 		public String getProperty(String key, String defaultValue) {
-			String value = ApplicationProperties.getProperty("unitime.sectioning.config." + key);
+			String value = ApplicationProperty.OnlineSchedulingParameter.value(key);
 			return value == null ? super.getProperty(key, defaultValue) : value;
 		}
 	}

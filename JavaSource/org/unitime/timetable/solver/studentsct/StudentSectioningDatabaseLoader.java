@@ -71,7 +71,7 @@ import org.cpsolver.studentsct.reservation.Reservation;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
@@ -599,7 +599,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	return null;
         }
         
-        NameFormat nameFormat = NameFormat.fromReference(ApplicationProperties.getProperty("unitime.enrollment.student.name", NameFormat.LAST_FIRST_MIDDLE.reference()));
+        NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
         iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+nameFormat.format(s)+")");
         Student student = new Student(s.getUniqueId().longValue());
         student.setExternalId(s.getExternalUniqueId());

@@ -53,6 +53,7 @@ import org.hibernate.type.IntegerType;
 import org.unitime.commons.LocalContext;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.w3c.dom.Document;
@@ -113,7 +114,7 @@ public class HibernateUtil {
         configureHibernate(properties);
     }
     
-    public static String getProperty(Properties properties, String name) {
+	public static String getProperty(Properties properties, String name) {
         String value = properties.getProperty(name);
         if (value!=null) {
             sLog.debug("   -- " + name + "=" + value);
@@ -201,7 +202,7 @@ public class HibernateUtil {
             if (idgen!=null)
                 setProperty(document, "tmtbl.uniqueid.generator", idgen);
             
-            if (!"true".equals(ApplicationProperties.getProperty("unitime.hibernate.cluster", "true")))
+            if (ApplicationProperty.HibernateClusterEnabled.isFalse())
             	setProperty(document, "net.sf.ehcache.configurationResourceName", "ehcache-nocluster.xml");
 
             /*// JDBC Pool 
@@ -325,22 +326,22 @@ public class HibernateUtil {
             sLog.debug("  -- document builder created");
             Document document = builder.parse(ConfigHelper.getConfigStream(cfgName==null?"hibernate.cfg.xml":cfgName));
             
-            String dialect = ApplicationProperties.getProperty("dialect");
+            String dialect = ApplicationProperty.DatabaseDialect.value();
             if (dialect!=null) setProperty(document, "dialect", dialect);
             
-            String default_schema = ApplicationProperties.getProperty("default_schema");
+            String default_schema = ApplicationProperty.DatabaseSchema.value();
             if (default_schema!=null) setProperty(document, "default_schema", default_schema);
             
-            String idgen = ApplicationProperties.getProperty("tmtbl.uniqueid.generator");
+            String idgen = ApplicationProperty.DatabaseUniqueIdGenerator.value();
             if (idgen!=null) setProperty(document, "tmtbl.uniqueid.generator", idgen);
             
-            if (!"true".equals(ApplicationProperties.getProperty("unitime.hibernate.cluster", "true")))
+            if (ApplicationProperty.HibernateClusterEnabled.isFalse())
             	setProperty(document, "net.sf.ehcache.configurationResourceName", "ehcache-nocluster.xml");
             
             for (Enumeration e=ApplicationProperties.getProperties().propertyNames();e.hasMoreElements();) {
                 String name = (String)e.nextElement();
                 if (name.startsWith("hibernate.") || name.startsWith("connection.") || name.startsWith("tmtbl.hibernate.")) {
-                    String value = ApplicationProperties.getProperty(name);
+					String value = ApplicationProperties.getProperty(name);
                     if ("NULL".equals(value))
                         removeProperty(document, name);
                     else

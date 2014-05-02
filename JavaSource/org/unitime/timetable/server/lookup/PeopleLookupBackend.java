@@ -39,7 +39,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -76,9 +76,9 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 	private @Autowired ApplicationContext applicationContext;
     
 	public PeopleLookupBackend() {
-        if (ApplicationProperties.getProperty("tmtbl.externalUid.translation")!=null) {
+        if (ApplicationProperty.ExternalUserIdTranslation.value()!=null) {
             try {
-                iTranslation = (ExternalUidTranslation)Class.forName(ApplicationProperties.getProperty("tmtbl.externalUid.translation")).getConstructor().newInstance();
+                iTranslation = (ExternalUidTranslation)Class.forName(ApplicationProperty.ExternalUserIdTranslation.value()).getConstructor().newInstance();
             } catch (Exception e) {
             	sLog.error("Unable to instantiate external uid translation class, "+e.getMessage(), e);
             }
@@ -102,7 +102,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 			
 			SearchContext cx = new SearchContext();
 			cx.setSessionId(getAcademicSessionId(context));
-			cx.setLimit(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.lookup.limit", "1000")));
+			cx.setLimit(ApplicationProperty.PeopleLookupLimit.intValue());
 			cx.setQuery(request.getQuery().trim().toLowerCase());
 			if (cx.getQueryTokens().isEmpty()) return new GwtRpcResponseList<PersonInterface>();
 			
@@ -304,16 +304,16 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 				iLdapTemplate = applicationContext.getBean("ldapPeopleLookupTemplate", LdapTemplate.class);
 				if (iLdapTemplate != null) return iLdapTemplate;
 			} catch (BeansException e) {}
-			String url = ApplicationProperties.getProperty("tmtbl.lookup.ldap");
+			String url = ApplicationProperty.PeopleLookupLdapUrl.value();
 			if (url == null) return null;
 			sLog.warn("Failed to locate bean ldapPeopleLookupTemplate, creating the template manually.");
 			LdapContextSource source = new LdapContextSource();
 			source.setUrl(url);
-			source.setBase(ApplicationProperties.getProperty("tmtbl.lookup.ldap.name", ""));
-			String user = ApplicationProperties.getProperty("tmtbl.lookup.ldap.user");
+			source.setBase(ApplicationProperty.PeopleLookupLdapBase.value());
+			String user = ApplicationProperty.PeopleLookupLdapUser.value();
 			if (user != null) {
 				source.setUserDn(user);
-				String password = ApplicationProperties.getProperty("tmtbl.lookup.ldap.password");
+				String password = ApplicationProperty.PeopleLookupLdapPassword.value();
 				if (password != null) source.setPassword(password);
 			} else {
 				source.setAnonymousReadOnly(true);
@@ -331,7 +331,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 	protected SearchControls getSearchControls() {
 		if (iSearchControls == null) {
 			iSearchControls = new SearchControls();
-			iSearchControls.setCountLimit(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.lookup.ldap.countLimit", "100")));
+			iSearchControls.setCountLimit(ApplicationProperty.PeopleLookupLdapLimit.intValue());
 		}
 		return iSearchControls;
 	}
@@ -343,9 +343,9 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
             for (String token: context.getQueryTokens()) {
                 String t = token.replace('_', '*').replace('%', '*');
                 if (filter.length()==0)
-                    filter = ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*)(cn=* %* *)("+ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")+"=%*))").replaceAll("%", t);
+                    filter = ApplicationProperty.PeopleLookupLdapQuery.value().replaceAll("%", t);
                 else
-                    filter = "(&"+filter+ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*)(cn=* %* *)("+ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")+"=%*))").replaceAll("%", t)+")";
+                    filter = "(&"+filter+ApplicationProperty.PeopleLookupLdapQuery.value().replaceAll("%", t)+")";
             }
             getLdapTemplate().search("", filter, getSearchControls(), new AttributesMapper() {
         		protected String getAttribute(Attributes attrs, String name) {
@@ -365,10 +365,10 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                             Constants.toInitialCase(getAttribute(a,"givenName")),
                             Constants.toInitialCase(getAttribute(a,"cn")),
                             Constants.toInitialCase(getAttribute(a,"sn")),
-                            getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")),
-                            getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.phone","phone,officePhone,homePhone,telephoneNumber")),
-                            Constants.toInitialCase(getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.department","department"))),
-                            Constants.toInitialCase(getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.position","position,title"))),
+                            getAttribute(a, ApplicationProperty.PeopleLookupLdapEmailAttribute.value()),
+                            getAttribute(a, ApplicationProperty.PeopleLookupLdapPhoneAttribute.value()),
+                            Constants.toInitialCase(getAttribute(a, ApplicationProperty.PeopleLookupLdapDepartmentAttribute.value())),
+                            Constants.toInitialCase(getAttribute(a, ApplicationProperty.PeopleLookupLdapPositionAttribute.value())),
                             "Directory");
     				context.addPerson(person);
     				return person;

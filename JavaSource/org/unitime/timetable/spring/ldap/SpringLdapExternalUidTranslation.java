@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.ldap.core.ContextSource;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.ldap.SpringSecurityLdapTemplate;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
@@ -42,14 +42,13 @@ public class SpringLdapExternalUidTranslation implements ExternalUidTranslation 
     }
     
     public String uid2ext(String uid) {
-    	String externalIdAttribute = ApplicationProperties.getProperty("unitime.authentication.ldap.group-role-attribute", "uid");
+    	String externalIdAttribute = ApplicationProperty.AuthenticationLdapIdAttribute.value();
     	if ("uid".equals(externalIdAttribute)) return uid; // Nothing to translate
         try {
         	
 			ContextSource source = (ContextSource)SpringApplicationContextHolder.getBean("unitimeLdapContextSource");
 			
-			String query = ApplicationProperties.getProperty("unitime.authentication.ldap.uid2ext",
-					ApplicationProperties.getProperty("unitime.authentication.ldap.identify", "uid={0},ou=identify"));
+			String query = ApplicationProperty.AuthenticationLdapLogin2UserId.value();
 
 			SpringSecurityLdapTemplate template = new SpringSecurityLdapTemplate(source);
 			DirContextOperations user = template.retrieveEntry(query.replaceAll("\\{0\\}", uid), new String[] {externalIdAttribute});
@@ -64,13 +63,13 @@ public class SpringLdapExternalUidTranslation implements ExternalUidTranslation 
     }
     
     public String ext2uid(String externalUserId) {
-    	String externalIdAttribute = ApplicationProperties.getProperty("unitime.authentication.ldap.group-role-attribute", "uid");
+    	String externalIdAttribute = ApplicationProperty.AuthenticationLdapLogin2UserId.value();
     	if ("uid".equals(externalIdAttribute)) return externalUserId; // Nothing to translate
         try {
         	
         	ContextSource source = (ContextSource)SpringApplicationContextHolder.getBean("unitimeLdapContextSource");
 			
-			String query = ApplicationProperties.getProperty("unitime.authentication.ldap.ext2uid", externalIdAttribute + "={0},ou=identify");
+			String query = ApplicationProperty.AuthenticationLdapUserId2Login.value().replace("%", externalIdAttribute);
 			
 			SpringSecurityLdapTemplate template = new SpringSecurityLdapTemplate(source);
 			DirContextOperations user = template.retrieveEntry(query.replaceAll("\\{0\\}", externalIdAttribute), new String[] {"uid"});

@@ -45,6 +45,7 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.restlet.resource.ClientResource;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
@@ -199,7 +200,7 @@ public class Registration extends BodyTagSupport {
 			try {
 				pageContext.getOut().println(sMessage);
 				if (isUpdate()) {
-					Obtrusiveness obtrusiveness = Obtrusiveness.valueOf(ApplicationProperties.getProperty("unitime.registration.obtrusiveness", Obtrusiveness.high.name()));
+					Obtrusiveness obtrusiveness = Obtrusiveness.valueOf(ApplicationProperty.RegistrationPopupObtrusiveness.value());
 					if (getSessionContext().hasPermission(Right.Registration)) {
 						String backUrl = URLEncoder.encode(((HttpServletRequest)pageContext.getRequest()).getRequestURL().toString() + "?refresh=1", "ISO-8859-1");
 						pageContext.getOut().println(

@@ -64,7 +64,7 @@ import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.report.SectionConflictTable;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -672,7 +672,7 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
     }
 
     public synchronized boolean passivateIfNeeded(File folder, String puid) {
-		long inactiveTimeToPassivate = Long.parseLong(ApplicationProperties.getProperty("unitime.solver.passivation.time", "30")) * 60000l;
+		long inactiveTimeToPassivate = 60000l * ApplicationProperty.SolverPasivationTime.intValue();
 		if (isPassivated() || inactiveTimeToPassivate <= 0 || timeFromLastUsed() < inactiveTimeToPassivate || isWorking()) return false;
         return passivate(folder, puid);
     }
@@ -985,8 +985,8 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
 	public byte[] exportXml() throws Exception {
         synchronized (currentSolution()) {
             File temp = File.createTempFile("student-" + getSessionId(), ".xml");
-            boolean anonymize = "false".equals(ApplicationProperties.getProperty("unitime.solution.export.names", "false"));
-            boolean idconv = "true".equals(ApplicationProperties.getProperty("unitime.solution.export.id-conv", "false"));
+            boolean anonymize = ApplicationProperty.SolverXMLExportNames.isFalse(); 
+            boolean idconv = ApplicationProperty.SolverXMLExportConvertIds.isTrue();
         	
             getProperties().setProperty("Xml.SaveBest", "true");
             getProperties().setProperty("Xml.SaveInitial", "true");

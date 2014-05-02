@@ -35,7 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamPdfReportForm;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -69,7 +69,7 @@ public class ExamPdfReportAction extends Action {
         ExamSolverProxy examSolver = examinationSolverService.getSolver();
         
         if (examSolver!=null) {
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.pdfReports.canUseSolution","false"))) 
+            if (ApplicationProperty.ExaminationPdfReportsCanUseSolution.isTrue()) 
                 request.setAttribute(Constants.REQUEST_WARN, "Examination PDF reports are generated from the current solution (in-memory solution taken from the solver).");
             else
                 request.setAttribute(Constants.REQUEST_WARN, "Examination PDF reports are generated from the saved solution (solver assignments are ignored).");

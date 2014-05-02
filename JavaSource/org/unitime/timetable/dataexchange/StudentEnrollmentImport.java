@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.dom4j.Element;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -51,7 +51,7 @@ public class StudentEnrollmentImport extends BaseImport {
 
 	@Override
 	public void loadXml(Element rootElement) throws Exception {
-		boolean trimLeadingZerosFromExternalId = "true".equals(ApplicationProperties.getProperty("tmtbl.data.exchange.trim.externalId","false"));
+		boolean trimLeadingZerosFromExternalId = ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue();
 
         if (!rootElement.getName().equalsIgnoreCase("studentEnrollments"))
         	throw new Exception("Given XML file is not a Student Enrollments load file.");
@@ -265,7 +265,7 @@ public class StudentEnrollmentImport extends BaseImport {
 			throw e;
 		}
 		
-        if (session!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.finalExam.updateConflicts","false"))) {
+        if (session!=null && ApplicationProperty.DataExchangeUpdateStudentConflictsFinal.isTrue()) {
             try {
                 beginTransaction();
                 for (ExamType type: ExamType.findAllOfType(ExamType.sExamTypeFinal))
@@ -277,7 +277,7 @@ public class StudentEnrollmentImport extends BaseImport {
             }
         }
 
-        if (session!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.midtermExam.updateConflicts","false"))) {
+        if (session!=null && ApplicationProperty.DataExchangeUpdateStudentConflictsMidterm.isTrue()) {
             try {
                 beginTransaction();
                 for (ExamType type: ExamType.findAllOfType(ExamType.sExamTypeMidterm))

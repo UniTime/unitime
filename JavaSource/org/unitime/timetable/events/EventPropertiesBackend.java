@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
@@ -79,7 +79,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		
 		response.setCanExportCSV(true);// rights.canSeeSchedule(null) || rights.canLookupContacts());
 		
-		if (response.isCanLookupMainContact() && "true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail", "true")))) {
+		if (response.isCanLookupMainContact() && ApplicationProperty.EmailConfirmationEvents.isTrue()) {
 			// email confirmations are enabled and user has enough permissions
 			// use unitime.email.confirm.default to determine the default value of the "Send email confirmation" toggle
 			response.setEmailConfirmation("true".equalsIgnoreCase(context.getUser().getProperty("unitime.email.confirm.default", "true")));
@@ -99,7 +99,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			response.setFilterDefault("emails", context.getUser().getProperty("Defaults[AddEvent.emails]"));
 		}
 		
-		int tooEarly = Integer.valueOf(ApplicationProperties.getProperty("unitime.event.tooEarly", "-1"));
+		int tooEarly = ApplicationProperty.EventTooEarlySlot.intValue();
 		if (tooEarly > 0)
 			response.setTooEarlySlot(tooEarly);
 		

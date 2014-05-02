@@ -35,7 +35,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseSession;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -291,22 +291,22 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	public int getStartMonth() {		
 		return DateUtils.getStartMonth(
 		        earliestSessionRelatedDate(),
-		        getSessionStartYear(), 
-		        Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0")));
+		        getSessionStartYear(),
+		        ApplicationProperty.SessionNrExcessDays.intValue());
 	}
 
 	public int getEndMonth() {
 		return DateUtils.getEndMonth(
 		        latestSessionRelatedDate(), getSessionStartYear(), 
-		        Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0")));
+		        ApplicationProperty.SessionNrExcessDays.intValue());
 	}
 	
 	public int getPatternStartMonth() {
-		return getStartMonth() - Integer.parseInt(ApplicationProperties.getProperty("unitime.pattern.nrExcessMoths", "3"));
+		return getStartMonth() - ApplicationProperty.DatePatternNrExessMonth.intValue();
 	}
 	
 	public int getPatternEndMonth() {
-		return getEndMonth() + Integer.parseInt(ApplicationProperties.getProperty("unitime.pattern.nrExcessMoths", "3"));
+		return getEndMonth() + ApplicationProperty.DatePatternNrExessMonth.intValue();
 	}
 
 	public int getDayOfYear(int day, int month) {
@@ -385,10 +385,8 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
         Calendar eventEndDate = Calendar.getInstance(Locale.US);
         if (eventEndTime!=null) eventEndDate.setTime(eventEndTime);
 
-        int startMonth = DateUtils.getStartMonth(eventBeginTime!=null&&eventBeginTime.before(sessionBeginTime)?eventBeginTime:sessionBeginTime, acadYear, 
-        		Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0")));
-		int endMonth = DateUtils.getEndMonth(eventEndTime!=null&&eventEndTime.after(sessionEndTime)?eventEndTime:sessionEndTime, acadYear, 
-				Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0")));
+        int startMonth = DateUtils.getStartMonth(eventBeginTime!=null&&eventBeginTime.before(sessionBeginTime)?eventBeginTime:sessionBeginTime, acadYear, ApplicationProperty.SessionNrExcessDays.intValue());
+		int endMonth = DateUtils.getEndMonth(eventEndTime!=null&&eventEndTime.after(sessionEndTime)?eventEndTime:sessionEndTime, acadYear, ApplicationProperty.SessionNrExcessDays.intValue()); 
 		
 		for (int m = startMonth; m <= endMonth; m++) {
 			int yr = DateUtils.calculateActualYear(m, acadYear);

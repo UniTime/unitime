@@ -28,7 +28,7 @@ import org.jgroups.protocols.FRAG2;
 import org.jgroups.protocols.RSVP;
 import org.jgroups.stack.ProtocolStack;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 
 /**
  * @author Tomas Muller
@@ -38,12 +38,12 @@ public class SectioningChannelLookup extends UniTimeChannelLookup {
 	@Override
 	public Channel getJGroupsChannel(Properties p) {
 		try {
-			if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.jgroups.fork_channel", "false"))) {
+			if (ApplicationProperty.OnlineSchedulingClusterForkChannel.isTrue()) {
 				return new ForkChannel(super.getJGroupsChannel(p), "forked-stack", "sectioning-channel",
 						true, ProtocolStack.ABOVE, FRAG2.class,
 						new RSVP().setValue("timeout", 60000).setValue("resend_interval", 500).setValue("ack_on_delivery", false));
 			} else {
-				return new JChannel(JGroupsUtils.getConfigurator(ApplicationProperties.getProperty("unitime.enrollment.jgroups.config", "sectioning-jgroups-tcp.xml")));
+				return new JChannel(JGroupsUtils.getConfigurator(ApplicationProperty.OnlineSchedulingClusterConfiguration.value()));
 			}
 		} catch (Exception e) {
 			Debug.error(e.getMessage(), e);
