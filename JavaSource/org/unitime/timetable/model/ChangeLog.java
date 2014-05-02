@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.hibernate.Query;
+import org.hibernate.proxy.HibernateProxy;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base.BaseChangeLog;
 import org.unitime.timetable.model.dao.ChangeLogDAO;
@@ -233,6 +234,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
             }
             Number objectUniqueId = (Number)object.getClass().getMethod("getUniqueId", new Class[]{}).invoke(object, new Object[]{});
             String objectType = object.getClass().getName();
+            if (object instanceof HibernateProxy)
+            	objectType = ((HibernateProxy)object).getHibernateLazyInitializer().getEntityName();
             if (object instanceof Event) objectType = Event.class.getName();
             if (objectType.indexOf("$$")>=0)
                 objectType = objectType.substring(0,objectType.indexOf("$$"));
