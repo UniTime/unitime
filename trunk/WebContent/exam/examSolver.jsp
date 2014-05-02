@@ -299,15 +299,4 @@ try {
 	e.printStackTrace();
 }
 %>
-
-	<tt:propertyEquals name="tmtbl.solver.remote.allow_jnlp_exec" value="true">
-		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-			<TR>
-				<TD><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD>
-			</TR>
-			<TR><TD align="right">
-				<html:button onclick="document.location='solver/solver.jnlp';" property="op" value="Start Local Solver"/>
-			</TD></TR>
-		</TABLE>
-	</tt:propertyEquals>
 </html:form>
