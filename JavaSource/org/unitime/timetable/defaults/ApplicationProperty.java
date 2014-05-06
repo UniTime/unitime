@@ -55,12 +55,15 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidTranslation;
 
 /**
  * @author Tomas Muller
  */
+@SuppressWarnings("deprecation")
 public enum ApplicationProperty {
 	@Type(Class.class)
 	@Implements(Dialect.class)
@@ -490,7 +493,7 @@ public enum ApplicationProperty {
 	BuildingsExternalUpdateClassification("unitime.external.room.update.classifications"),
 
 	@Parameter("index")
-	@Description("Room Sharing Mode: defines %-th room sharing grid (starting with 1, format is name|first slot|last slot|first day|last day|increment, e.g., Workdays × Daytime|0|4|90|222|6 means Monday - Friday, starting at 7:30 am, ending at 6:30 pm, in half-hour increments)")
+	@Description("Room Sharing Mode: defines %-th room sharing grid (starting with 1, format is name|first slot|last slot|first day|last day|increment, e.g., Workdays \u00D7 Daytime|0|4|90|222|6 means Monday - Friday, starting at 7:30 am, ending at 6:30 pm, in half-hour increments)")
 	RoomSharingMode("unitime.room.sharingMode%"),
 
 	@Type(Boolean.class)
@@ -1002,13 +1005,25 @@ public enum ApplicationProperty {
 	@Implements(CourseUrlProvider.class)
 	@Description("Customization: course catalog link provider (interface CourseUrlProvider)")
 	CustomizationCourseLink("unitime.custom.CourseUrlProvider"),
-
+	
 	@Type(Class.class)
 	@Implements(ExternalLinkLookup.class)
 	@Description("Customization: course catalog link provider (interface ExternalLinkLookup, deprecated)")
 	@Deprecated
 	CourseCatalogLinkProvider("tmtbl.catalogLink.lookup.class"),
-
+	
+	@Type(Class.class)
+	@Implements(SectionUrlProvider.class)
+	@Deprecated
+	@Description("Customization: section link provider (interface SectionUrlProvider, deprecated)")
+	CustomizationSectionUrl("unitime.custom.SectionUrlProvider"),
+	
+	@Type(Class.class)
+	@Implements(SectionLimitProvider.class)
+	@Deprecated
+	@Description("Customization: section limit provider (interface SectionLimitProvider, deprecated)")
+	CustomizationSectionLimit("unitime.custom.SectionLimitProvider"),
+	
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Curriculum: convert academic area, classification and major codes and names to initial case")
@@ -1611,8 +1626,8 @@ public enum ApplicationProperty {
 	@Parameter("class")
 	@Description("Logging: logging level for %")
 	@ReadOnly
-	LoggingLevel("log4j.logger.%")
-
+	LoggingLevel("log4j.logger.%"),
+	
 	;
 
 	String iKey;
