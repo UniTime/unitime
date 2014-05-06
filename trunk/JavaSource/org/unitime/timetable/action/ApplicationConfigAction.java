@@ -421,7 +421,7 @@ public class ApplicationConfigAction extends Action {
 						description = config.getDescription();
 
 					webTable.addLine(
-				    		editable && (p != null && !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + key + "';\"" : null,
+				    		editable && (p == null || !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + key + "';\"" : null,
 				    		new String[] {"<a name='"+key+"'>" + HtmlUtils.htmlEscape(key)  + " <sup><font color='#2066CE' title='Applies to " + config.getSession().getLabel() + "'>s)</font></sup></a>",
 				    			HtmlUtils.htmlEscape(value), description},
 				    		new String[] {key, value, description}
@@ -432,7 +432,7 @@ public class ApplicationConfigAction extends Action {
 						description = config.getDescription();
 
 				    webTable.addLine(
-				    		editable && (p != null && !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + key + "';\"" : null,
+				    		editable && (p == null || !p.isReadOnly()) ? "onClick=\"document.location='applicationConfig.do?op=edit&id=" + key + "';\"" : null,
 				    		new String[] {"<a name='"+key+"'>" + HtmlUtils.htmlEscape(key) + "</a>", HtmlUtils.htmlEscape(value), description},
 				    		new String[] {key, value, description}
 				    		);
