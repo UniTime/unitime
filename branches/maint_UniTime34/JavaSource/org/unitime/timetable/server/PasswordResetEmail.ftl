@@ -27,7 +27,7 @@
 			<!-- header table -->
 			<tr><td><table width="100%">
 				<tr>
-					<td rowspan="2"><img src="http://www.unitime.org/include/unitime.png" border="0" height="100px"/></td>
+					<td rowspan="2"><img src="http://www.unitime.org/include/unitime.png" border="0" height="80px"/></td>
 					<td colspan="2" style="font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;">Password Change</td>
 				</tr>
 				</table></td></tr>

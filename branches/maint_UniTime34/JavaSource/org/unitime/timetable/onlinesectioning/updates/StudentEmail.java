@@ -399,7 +399,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		out.println("	<table style=\"border: 1px solid #9CB0CE; padding: 5px; margin-top: 10px; min-width: 800px;\" align=\"center\">");
 		out.println("		<tr><td><table width=\"100%\">");
 		out.println("			<tr>");
-		out.println("				<td rowspan=\"2\"><img src=\"http://www.unitime.org/include/unitime.png\" border=\"0\" height=\"100px\"/></td>");
+		out.println("				<td rowspan=\"2\"><img src=\"http://www.unitime.org/include/unitime.png\" border=\"0\" height=\"80px\"/></td>");
 		if (getEmailSubject() == null || getEmailSubject().isEmpty()) {
 			out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">" + MSG.emailDeafultTitle() + "</td>");
 		} else {
