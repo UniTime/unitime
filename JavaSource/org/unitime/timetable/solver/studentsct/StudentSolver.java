@@ -91,6 +91,8 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.onlinesectioning.solver.expectations.NeverOverExpected;
+import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.MemoryCounter;
@@ -1138,5 +1140,10 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
 		} catch (Exception e) {
 			throw new SectioningException(e.getMessage(), e);
 		}
+	}
+
+	@Override
+	public OverExpectedCriterion getOverExpectedCriterion() {
+		return new NeverOverExpected(getConfig());
 	}
 }

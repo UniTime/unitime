@@ -62,7 +62,7 @@ public class FractionallyOverExpected extends PercentageOverExpected {
 	public double getOverExpected(Assignment<Request, Enrollment> assignment, Section section, Request request) {
 		if (section.getLimit() <= 0) return 0.0; // ignore unlimited & not available
 		
-		double expected = getPercentage() * section.getSpaceExpected();
+		double expected = round(getPercentage() * section.getSpaceExpected());
 		double enrolled = section.getEnrollmentWeight(assignment, request) + request.getWeight();
 		double limit = section.getLimit();
 		int subparts = section.getSubpart().getConfig().getSubparts().size();

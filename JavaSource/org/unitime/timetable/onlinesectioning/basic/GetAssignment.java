@@ -63,6 +63,7 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 import org.unitime.timetable.util.Formats;
 
 /**
@@ -85,6 +86,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 		try {
 			Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 			DistanceMetric m = server.getDistanceMetric();
+			OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 			XStudent student = server.getStudent(iStudentId);
 			if (student == null) return null;
 	        ClassAssignmentInterface ret = new ClassAssignmentInterface();
@@ -272,7 +274,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 										a.setParentSection(MSG.consentWaiting(consent.toLowerCase()));
 								}
 							}
-							a.setExpected(Math.round(expectations.getExpectedSpace(section.getSectionId())));
+							a.setExpected(overExp.getExpected(section, expectations));
 						}
 					}
 				} else if (request instanceof XFreeTimeRequest) {

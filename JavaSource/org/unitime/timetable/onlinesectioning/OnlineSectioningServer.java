@@ -41,6 +41,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
+import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 
 
 /**
@@ -56,6 +57,7 @@ public interface OnlineSectioningServer {
 	public AcademicSessionInfo getAcademicSession();
 	public DistanceMetric getDistanceMetric();
 	public DataProperties getConfig();
+	public OverExpectedCriterion getOverExpectedCriterion();
 	
 	public Collection<? extends XCourseId> findCourses(String query, Integer limit, CourseMatcher matcher);
 	public Collection<? extends XCourseId> findCourses(CourseMatcher matcher);

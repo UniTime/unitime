@@ -23,6 +23,8 @@ import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
+import org.unitime.timetable.onlinesectioning.model.XExpectations;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 
 
 /**
@@ -31,5 +33,9 @@ import org.cpsolver.studentsct.model.Section;
 public interface OverExpectedCriterion {
 
 	public double getOverExpected(Assignment<Request, Enrollment> assignment, Section section, Request request);
+	
+	public Integer getExpected(XSection section, XExpectations expectations);
+	
+	public Integer getExpected(Section section);
 
 }
