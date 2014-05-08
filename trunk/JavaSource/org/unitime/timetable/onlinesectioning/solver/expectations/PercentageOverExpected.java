@@ -28,6 +28,8 @@ import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Subpart;
 import org.unitime.timetable.onlinesectioning.model.OnlineConfig;
 import org.unitime.timetable.onlinesectioning.model.OnlineSection;
+import org.unitime.timetable.onlinesectioning.model.XExpectations;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 
 
 /**
@@ -35,12 +37,22 @@ import org.unitime.timetable.onlinesectioning.model.OnlineSection;
  */
 public class PercentageOverExpected implements OverExpectedCriterion {
 	private Double iPercentage = null;
+	private Rounding iRounding = Rounding.ROUND;
+	
+	public static enum Rounding {
+		NONE,
+		CEIL,
+		FLOOR,
+		ROUND,
+	}
 	
 	public PercentageOverExpected(DataProperties config) {
 		iPercentage = config.getPropertyDouble("OverExpected.Percentage", iPercentage);
+		iRounding = Rounding.valueOf(config.getProperty("OverExpected.Rounding", iRounding.name()).toUpperCase());
 	}
 	
 	public PercentageOverExpected(Double percentage) {
+		super();
 		iPercentage = percentage;
 	}
 	
@@ -52,9 +64,26 @@ public class PercentageOverExpected implements OverExpectedCriterion {
 		return iPercentage == null ? 1.0 : iPercentage;
 	}
 	
+	public void setPercentage(Double percentage) {
+		iPercentage = percentage;
+	}
+	
+	protected double round(double value) {
+		switch (iRounding) {
+		case CEIL:
+			return Math.ceil(value);
+		case FLOOR:
+			return Math.floor(value);
+		case ROUND:
+			return Math.round(value);
+		default:
+			return value;
+		}
+	}
+	
 	protected boolean hasExpectations(Subpart subpart) {
 		for (Section section: subpart.getSections())
-			if (section.getSpaceExpected() > 0.0) return true;
+			if (round(section.getSpaceExpected()) > 0.0) return true;
 		return false;
 	}
 	
@@ -95,12 +124,34 @@ public class PercentageOverExpected implements OverExpectedCriterion {
 	public double getOverExpected(Assignment<Request, Enrollment> assignment, Section section, Request request) {
 		if (section.getLimit() <= 0) return 0.0; // ignore unlimited & not available
 		
-		double expected = getPercentage() * section.getSpaceExpected();
+		double expected = round(getPercentage() * section.getSpaceExpected());
 		double enrolled = section.getEnrollmentWeight(assignment, request) + request.getWeight();
 		double limit = section.getLimit();
 		int subparts = section.getSubpart().getConfig().getSubparts().size();
 		
 		return expected + enrolled > limit ? 1.0 / subparts : 0.0;
+	}
+	
+	@Override
+	public Integer getExpected(XSection section, XExpectations expectations) {
+		if (section.getLimit() <= 0) return null;
+		
+		double expected = round(getPercentage() * expectations.getExpectedSpace(section.getSectionId()));
+		if (expected > 0.0)
+			return (int) Math.floor(expected);
+		
+		return null;
+	}
+	
+	@Override
+	public Integer getExpected(Section section) {
+		if (section.getLimit() <= 0.0) return null;
+		
+		double expected = round(getPercentage() * section.getSpaceExpected());
+		if (expected > 0.0)
+			return (int) Math.floor(expected);
+		
+		return null;
 	}
 	
 	@Override

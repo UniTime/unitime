@@ -26,7 +26,6 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Subpart;
 
-
 /**
  * @author Tomas Muller
  */

@@ -43,6 +43,7 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 
 /**
  * @author Tomas Muller
@@ -79,6 +80,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			XCourse c = offering.getCourse(id.getCourseId());
 			XEnrollments enrollments = server.getEnrollments(c.getOfferingId());
 			XExpectations expectations = server.getExpectations(c.getOfferingId());
+			OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 			ClassAssignmentInterface.CourseAssignment courseAssign = new ClassAssignmentInterface.CourseAssignment();
 			courseAssign.setCourseId(c.getCourseId());
 			courseAssign.setCourseNbr(c.getCourseNumber());
@@ -130,7 +132,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						a.setSubpartId(subpart.getSubpartId());
 						if (a.getParentSection() == null)
 							a.setParentSection(c.getConsentLabel());
-						a.setExpected(Math.round(expectations.getExpectedSpace(section.getSectionId())));
+						a.setExpected(overExp.getExpected(section, expectations));
 						ret.add(a);
 					}
 		} finally {

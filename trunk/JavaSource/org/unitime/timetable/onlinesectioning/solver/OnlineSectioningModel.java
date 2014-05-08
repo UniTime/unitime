@@ -26,6 +26,7 @@ import org.cpsolver.studentsct.StudentSectioningModel;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.solver.expectations.AvoidUnbalancedWhenNoExpectations;
 import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 import org.unitime.timetable.onlinesectioning.solver.expectations.PercentageOverExpected;
@@ -47,6 +48,11 @@ public class OnlineSectioningModel extends StudentSectioningModel {
         	sLog.error("Unable to create custom over-expected criterion (" + e.getMessage() + "), using default.", e);
         	iOverExpectedCriterion = new PercentageOverExpected(properties);
         }
+	}
+
+	public OnlineSectioningModel(OnlineSectioningServer server) {
+		super(server.getConfig());
+		iOverExpectedCriterion = server.getOverExpectedCriterion();
 	}
 	
 	public OverExpectedCriterion getOverExpectedCriterion() { return iOverExpectedCriterion; }

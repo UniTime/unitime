@@ -91,6 +91,7 @@ import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection;
 
 /**
@@ -123,7 +124,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
-		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig());
+		OnlineSectioningModel model = new OnlineSectioningModel(server);
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
@@ -495,6 +496,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			boolean computeOverlaps,
 			DistanceConflict dc, Set<Long> savedClasses) throws SectioningException {
 		DistanceMetric m = server.getDistanceMetric();
+		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
         ClassAssignmentInterface ret = new ClassAssignmentInterface();
 		int nrUnassignedCourses = 0;
 		int nrAssignedAlt = 0;
@@ -711,7 +713,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					if (savedClasses != null && savedClasses.contains(section.getId())) a.setSaved(true);
 					if (a.getParentSection() == null)
 						a.setParentSection(server.getCourse(course.getId()).getConsentLabel());
-					a.setExpected(Math.round(section.getSpaceExpected()));
+					a.setExpected(overExp.getExpected(section));
 				}
 				ret.add(ca);
 			} else {

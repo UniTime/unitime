@@ -103,7 +103,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
-		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig());
+		OnlineSectioningModel model = new OnlineSectioningModel(server);
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 
 		OnlineSectioningLog.Action.Builder action = helper.getAction();

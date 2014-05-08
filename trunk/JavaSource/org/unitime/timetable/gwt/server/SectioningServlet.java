@@ -359,8 +359,6 @@ public class SectioningServlet implements SectioningService {
 				a.setSubpartId(clazz.getSchedulingSubpart().getUniqueId());
 				if (a.getParentSection() == null)
 					a.setParentSection(courseOffering.getConsentType() == null ? null : courseOffering.getConsentType().getLabel());
-				//TODO: Do we want to populate expected space?
-				a.setExpected(0.0);
 				results.add(a);
 			}
 			return results;
