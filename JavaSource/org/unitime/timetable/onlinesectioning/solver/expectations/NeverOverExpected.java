@@ -24,6 +24,8 @@ import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
+import org.unitime.timetable.onlinesectioning.model.XExpectations;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 
 
 /**
@@ -38,4 +40,13 @@ public class NeverOverExpected implements OverExpectedCriterion {
 		return 0.0;
 	}
 
+	@Override
+	public Integer getExpected(XSection section, XExpectations expectations) {
+		return null;
+	}
+
+	@Override
+	public Integer getExpected(Section section) {
+		return null;
+	}
 }

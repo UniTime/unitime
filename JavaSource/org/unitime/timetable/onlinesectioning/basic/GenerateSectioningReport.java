@@ -102,7 +102,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 	public CSVFile execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Lock lock = server.readLock();
 		try {
-			OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig());
+			OnlineSectioningModel model = new OnlineSectioningModel(server);
 			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 

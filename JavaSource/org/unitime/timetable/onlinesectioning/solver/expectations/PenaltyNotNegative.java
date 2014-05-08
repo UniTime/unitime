@@ -24,6 +24,8 @@ import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
+import org.unitime.timetable.onlinesectioning.model.XExpectations;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 
 
 /**
@@ -44,6 +46,28 @@ public class PenaltyNotNegative implements OverExpectedCriterion {
 	@Override
 	public String toString() {
 		return "not-negative";
+	}
+
+	@Override
+	public Integer getExpected(XSection section, XExpectations expectations) {
+		if (section.getLimit() <= 0.0) return null;
+		
+		int expected = (int) Math.round(expectations.getExpectedSpace(section.getSectionId()));
+		if (expected > 0)
+			return expected;
+		
+		return null;
+	}
+
+	@Override
+	public Integer getExpected(Section section) {
+		if (section.getLimit() <= 0.0) return null;
+		
+		int expected = (int) Math.round(section.getSpaceExpected());
+		if (expected > 0)
+			return expected;
+		
+		return null;
 	}
 
 }

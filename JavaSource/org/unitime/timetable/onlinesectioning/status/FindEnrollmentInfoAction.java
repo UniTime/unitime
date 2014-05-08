@@ -60,6 +60,7 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseInfoMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 
@@ -274,6 +275,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			XCourse course = offering.getCourse(info.getCourseId());
 			if (course == null) return ret;
 			XEnrollments enrollments = server.getEnrollments(info.getOfferingId());
+			OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 			XExpectations expectations = server.getExpectations(info.getOfferingId());
 			boolean isConsentToDoCourse = isConsentToDoCourse(info);
 			List<XSection> sections = new ArrayList<XSection>();
@@ -490,7 +492,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (consent != null)
 						a.setParentSection(consent);
 				}
-				a.setExpected(Math.round(expectations.getExpectedSpace(section.getSectionId())));
+				a.setExpected(overExp.getExpected(section, expectations));
 				e.setAssignment(a);
 				
 				ret.add(e);

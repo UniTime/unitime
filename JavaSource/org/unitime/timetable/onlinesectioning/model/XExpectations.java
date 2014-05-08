@@ -95,6 +95,13 @@ public class XExpectations implements Serializable, Externalizable {
 		return iExpectations == null ? new HashMap<Long, Double>() : new HashMap<Long, Double>(iExpectations);
 	}
 	
+	public boolean hasExpectations() {
+		if (iExpectations == null) return false;
+		for (Double exp: iExpectations.values())
+			if (exp > 0.0) return true;
+		return false;
+	}
+	
     @Override
     public boolean equals(Object o) {
         if (o == null || !(o instanceof XExpectations)) return false;

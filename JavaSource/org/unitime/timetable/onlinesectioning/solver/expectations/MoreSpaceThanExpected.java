@@ -27,7 +27,8 @@ import org.cpsolver.ifs.util.DataProperties;
 public class MoreSpaceThanExpected extends PercentageOverExpected {
 	
 	public MoreSpaceThanExpected(DataProperties config) {
-		super(1.0);
+		super(config);
+		setPercentage(1.0);
 	}
 	
 	public MoreSpaceThanExpected() {

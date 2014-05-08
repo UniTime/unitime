@@ -73,6 +73,9 @@ import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantWeights;
+import org.unitime.timetable.onlinesectioning.solver.expectations.AvoidUnbalancedWhenNoExpectations;
+import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
+import org.unitime.timetable.onlinesectioning.solver.expectations.PercentageOverExpected;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
@@ -266,6 +269,17 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	
 	@Override
 	public DistanceMetric getDistanceMetric() { return iDistanceMetric; }
+	
+	@Override
+	public OverExpectedCriterion getOverExpectedCriterion() {
+		try {
+            Class<OverExpectedCriterion> overExpectedCriterionClass = (Class<OverExpectedCriterion>)Class.forName(getConfig().getProperty("OverExpectedCriterion.Class", AvoidUnbalancedWhenNoExpectations.class.getName()));
+            return overExpectedCriterionClass.getConstructor(DataProperties.class).newInstance(getConfig());
+        } catch (Exception e) {
+        	iLog.error("Unable to create custom over-expected criterion (" + e.getMessage() + "), using default.", e);
+        	return new PercentageOverExpected(getConfig());
+        }
+	}
 	
 	@Override
 	public AcademicSessionInfo getAcademicSession() { return getProperty("AcademicSession", null); }

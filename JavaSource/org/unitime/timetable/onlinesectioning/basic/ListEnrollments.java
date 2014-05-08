@@ -49,6 +49,7 @@ import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 import org.unitime.timetable.util.Formats;
 
 /**
@@ -77,6 +78,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 			List<ClassAssignmentInterface.Enrollment> enrollments = new ArrayList<ClassAssignmentInterface.Enrollment>();
 			XOffering offering = server.getOffering(iOfferingId);
 			DistanceMetric m = server.getDistanceMetric();
+			OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 			Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 			XExpectations expectations = server.getExpectations(iOfferingId);
 
@@ -239,7 +241,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 										a.setParentSection(MSG.consentWaiting(consent.toLowerCase()));
 								}
 							}
-							a.setExpected(Math.round(expectations.getExpectedSpace(section.getSectionId())));
+							a.setExpected(overExp.getExpected(section, expectations));
 						}
 					}
 					enrollments.add(e);
