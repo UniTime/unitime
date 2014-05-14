@@ -132,24 +132,28 @@
 		<#assign stylebr="border-top: 1px dashed #9CB0CE;">
 	</#if>
 	<#if line.class.simpleName == "TableSectionDeletedLine">
-		<#assign style = style + " text-decoration: line-through;">
-		<#assign stylebr = stylebr + " text-decoration: line-through;">
+		<#assign style = style + " text-decoration: line-through; font-style: italic; color: gray;">
+		<#assign stylebr = stylebr + " text-decoration: line-through; font-style: italic; color: gray;">
 	</#if>
 	<#if line.freeTime>
-		<tr>
+		<tr style='vertical-align: top'>
 			<td style="${style}">${msg.freeTimeSubject()}</td>
-			<td style="${style}">{$msg.freeTimeCourse()}</td>
+			<td style="${style}">${msg.freeTimeCourse()}</td>
 			<td style="${style}"></td>
 			<td style="${style}"></td>
-			<td style="${style}">${helper.getDays(line.time)}</td>
-			<td style="${style}">${helper.getStartTime(line.time)}</td>
-			<td style="${style}">${helper.getEndTime(line.time)}</td>
+	 		<td style="${style}">${line.days}</td>
+			<td style="${style}">${line.start}</td>
+			<td style="${style}">${line.end}</td>
 			<td style="${stylebr}" colspan="6"></td>
 		</tr>
 	<#elseif line.assigned>
-		<tr>
-			<td style="${style}">${line.subject}</td>
-	 		<td style="${style}">${line.courseNumber}</td>
+		<tr style='vertical-align: top'>
+			<#if line.first>
+				<td style="${style}">${line.subject}</td>
+	 			<td style="${style}">${line.courseNumber}</td>
+	 		<#else>
+	 			<td style="${style}" colspan='2'></td>
+	 		</#if>
 	 		<td style="${style}">${line.type}</td>
 	 		<td style="${style}">${line.name}</td>
 	 		<#if line.time??>
@@ -161,15 +165,21 @@
 		 		<td style="${style}" colspan="4">${line.arrangeHours}</td>
 	 		</#if>
 	 		<td style="${style}">${line.rooms}</td>
-	 		<td style="${style}">${line.instructors}</td>
+	 		<td style="${stylebr}">${line.instructors}</td>
 	 		<#if line.requires??><td style="${stylebr}">${line.requires}</td><#else><td style="${style}"></td></#if>
 	 		<#if line.note??><td style="${stylebr}">${line.note?replace("\n", "<br>")}</td><#else><td style="${style}"></td></#if>
 	 		<#if line.credit??><td style="${style}">${line.credit}</td><#else><td style="${style}"></td></#if>
 		</tr>
+		<#if line.last && line.courseNote??>
+			<tr style='vertical-align: top'>
+				<td colspan='2'></td>
+				<td colspan='11'>${line.courseNote}</td>
+			</tr>
+		</#if>
 	<#else>
 		<#assign style="white-space: nowrap; color: red; border-top: 1px dashed #9CB0CE;">
 		<#assign stylebr="color: red; border-top: 1px dashed #9CB0CE;">
-	 	<tr>
+	 	<tr style='vertical-align: top'>
 	 		<td style="${style}">${line.subject}</td>
 	 		<td style="${style}">${line.courseNumber}</td>
 	 		<td style="${style}"></td>
@@ -177,4 +187,11 @@
 	 		<td style="${stylebr}" colspan="9" align="center">${line.note}</td>
 	 	</tr>	
 	</#if>
+</#macro>
+
+<#macro classTableNote note>
+	<tr style='vertical-align: top'>
+		<td colspan='2'></td>
+		<td colspan='11'>${note}</td>
+	</tr>
 </#macro>
