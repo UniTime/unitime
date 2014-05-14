@@ -38,6 +38,7 @@ import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
@@ -149,6 +150,14 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		
 		return new Long(getRequest().getStudentId()).compareTo(r.getRequest().getStudentId());
 	}
+	
+	public boolean isOverlappingFreeTime(FreeTimeRequest request, Enrollment e) {
+		if (request.getTime() == null || e.isAllowOverlap()) return false;
+        for (SctAssignment assignment : e.getAssignments())
+            if (!assignment.isAllowOverlap() && assignment.getTime() != null && request.getTime().hasIntersection(assignment.getTime()))
+            	return true;
+        return false;
+	}
 
 	public XEnrollment resection(OnlineSectioningServer server, ResectioningWeights w, DistanceConflict dc, TimeOverlapsCounter toc) {
 		w.setLastSectionProvider(this);
@@ -172,9 +181,14 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 			// only consider enrollments of the offering that is being checked
 			if (e.getOffering().getId() != getOffering().getOfferingId()) continue;
 			
-			for (Request other: request.getStudent().getRequests())
-				if (assignment.getValue(other) != null && !other.equals(getRequest()) && assignment.getValue(other).isOverlapping(e))
+			for (Request other: request.getStudent().getRequests()) {
+				if (other.equals(request)) continue;
+				Enrollment x = assignment.getValue(other);
+				if (e.isOverlapping(x))
 					continue enrollments;
+				if (!w.isFreeTimeAllowOverlaps() && other instanceof FreeTimeRequest && other.getPriority() < request.getPriority() && isOverlappingFreeTime((FreeTimeRequest) other, e))
+					continue enrollments;
+			}
 			
 			for (Section s: e.getSections()) {
 				if (getLastEnrollment() == null) {
@@ -365,10 +379,9 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		for (XRequest r: student.getRequests()) {
 			if (r instanceof XFreeTimeRequest) {
 				XFreeTimeRequest ft = (XFreeTimeRequest)r;
-				FreeTimeRequest ftr = new FreeTimeRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent,
+				new FreeTimeRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent,
 						new TimeLocation(ft.getTime().getDays(), ft.getTime().getSlot(), ft.getTime().getLength(), 0, 0.0,
 								-1l, "Free Time", server.getAcademicSession().getFreeTimePattern(), 0));
-				assignment.assign(0, ftr.createEnrollment());
 			} else {
 				XCourseRequest cr = (XCourseRequest)r;
 				List<Course> courses = new ArrayList<Course>();
