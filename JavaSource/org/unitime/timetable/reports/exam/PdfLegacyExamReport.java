@@ -52,6 +52,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
@@ -504,7 +505,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             lpad(assignment.getPeriod().getStartTimeLabel(assignment.getPrintOffset()),6)+" - "+
             lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength(), assignment.getPrintOffset()),6);
     }
-
+    
     public String getShortDate(Date date) {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(date);
@@ -532,10 +533,14 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             lpad(assignment.getPeriod().getStartTimeLabel(assignment.getPrintOffset()),6)+"-"+
             lpad(assignment.getPeriod().getEndTimeLabel(assignment.getLength(),assignment.getPrintOffset()),6);
     }
+    
+    public String formatShortPeriodNoEndTime(ExamAssignment assignment) {
+        return getShortDate(assignment.getPeriod().getStartDate())+" "+ lpad(assignment.getPeriod().getStartTimeLabel(assignment.getPrintOffset()),6);
+    }
 
-    public String getItype(Class_ clazz) {
+    public String getItype(CourseOffering course, Class_ clazz) {
         if (iExternal) {
-            String ext = clazz.getExternalUniqueId();
+            String ext = clazz.getExternalId(course);
             return (ext==null?"":ext);
         } else
             return clazz.getSchedulingSubpart().getItypeDesc();
