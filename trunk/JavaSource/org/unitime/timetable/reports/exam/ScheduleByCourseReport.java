@@ -63,8 +63,8 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
         }
         sLog.debug("  Printing report...");
         setHeader(new String[] {
-                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect    Meeting Times                         Enrl    Date And Time                   Room         Cap ExCap ",
-                "---- ------ "+(iItype?"------ ":"")+"----- -------------------------------------- -----  -------------------------------- ----------- ----- -----"});
+                "Subject Course   "+(iItype?iExternal?"ExtnID ":"Type   ":"")+"Section     Meeting Times                       Enrl    Date And Time                 Room         Cap ExCap",
+                "------- -------- "+(iItype?"------ ":"")+"--------- ------------------------------------ -----  ------------------------------ ----------- ----- -----"});
         printHeader();
         for (Iterator<String> i = new TreeSet<String>(subject2courseSections.keySet()).iterator(); i.hasNext();) {
             String subject = i.next();
@@ -79,13 +79,13 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                 if (iITypePrinted && !section.getItype().equals(lastItype)) iITypePrinted = false;
                 if (section.getExamAssignment().getRooms()==null || section.getExamAssignment().getRooms().isEmpty()) {
                     println(
-                            rpad(iSubjectPrinted?"":subject, 4)+" "+
-                            rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                            rpad(iSubjectPrinted?"":subject, 7)+" "+
+                            rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
                             (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
-                            lpad(section.getSection(), 5)+" "+
-                            rpad(getMeetingTime(section),38)+" "+
+                            lpad(section.getSection(), 9)+" "+
+                            rpad(getMeetingTime(section),36)+" "+
                             lpad(String.valueOf(section.getNrStudents()),5)+"  "+
-                            rpad((section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),32)+" "+
+                            rpad((section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),30)+" "+
                             (section.getExamAssignment()==null?"":iNoRoom)
                             );
                 } else {
@@ -93,13 +93,13 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                     boolean firstRoom = true;
                     for (ExamRoomInfo room : section.getExamAssignment().getRooms()) {
                         println(
-                                rpad(!firstRoom || iSubjectPrinted?"":subject, 4)+" "+
-                                rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                rpad(!firstRoom || iSubjectPrinted?"":subject, 7)+" "+
+                                rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
                                 (iItype?rpad(!firstRoom || iITypePrinted?"":section.getItype(), 6)+" ":"")+
-                                lpad(!firstRoom?"":section.getSection(), 5)+" "+
-                                rpad(!firstRoom?"":getMeetingTime(section),38)+" "+
+                                lpad(!firstRoom?"":section.getSection(), 9)+" "+
+                                rpad(!firstRoom?"":getMeetingTime(section),36)+" "+
                                 lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+"  "+
-                                rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),32)+" "+
+                                rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),30)+" "+
                                 formatRoom(room.getName())+" "+
                                 lpad(""+room.getCapacity(),5)+" "+
                                 lpad(""+room.getExamCapacity(),5)
