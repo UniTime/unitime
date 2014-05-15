@@ -68,8 +68,8 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
         }
         sLog.debug("  Printing report...");
         setHeader(new String[] {
-                "Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Date And Time                Name                      Type   Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect  Time",
-                "---- ------ "+(iItype?"------ ":"")+"----- ---------------------------- ------------------------- ------ ---- ------ "+(iItype?"------ ":"")+"----- ---------------------"});
+        		"Subject Course   "+(iItype?iExternal?"ExtnID ":"Type   ":"")+"Section   Date    Time   Name                      Type   Subject Course   "+(iItype?iExternal?"ExtnID ":"Type   ":"")+"Section   Time           ",
+        		"------- -------- "+(iItype?"------ ":"")+"--------- ------- ------ ------------------------- ------ ------- -------- "+(iItype?"------ ":"")+"--------- ---------------"});
         printHeader();
         for (Iterator<String> i = new TreeSet<String>(subject2courseSections.keySet()).iterator(); i.hasNext();) {
             String subject = i.next();
@@ -91,17 +91,17 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                             for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                                 if (!conflict.getOtherExam().getInstructors().contains(instructor)) continue;
                                 println(
-                                        rpad(iSubjectPrinted?"":subject,4)+" "+
-                                        rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                        rpad(iSubjectPrinted?"":subject,7)+" "+
+                                        rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
                                         (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                        lpad(iCoursePrinted?"":section.getSection(),5)+" "+
-                                        rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
+                                        lpad(iCoursePrinted?"":section.getSection(),9)+" "+
+                                        rpad(iCoursePrinted?"":formatShortPeriodNoEndTime(exam),14)+" "+
                                         rpad(iStudentPrinted?"":instructor.getName(),25)+" "+
                                         rpad(iPeriodPrinted?"":"DIRECT",6)+" "+
-                                        rpad(other.getSubject(),4)+" "+
-                                        rpad(other.getCourseNbr(),6)+" "+
+                                        rpad(other.getSubject(),7)+" "+
+                                        rpad(other.getCourseNbr(),8)+" "+
                                         (iItype?rpad(other.getItype(),6)+" ":"")+
-                                        lpad(other.getSection(),5)+" "+
+                                        lpad(other.getSection(),9)+" "+
                                         other.getExamAssignment().getTimeFixedLength()
                                         );
                                 iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
@@ -109,29 +109,29 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                         } else if (conflict.getOtherEventId()!=null) {
                             if (conflict.isOtherClass()) {
                                 println(
-                                    rpad(iSubjectPrinted?"":subject,4)+" "+
-                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                    rpad(iSubjectPrinted?"":subject,7)+" "+
+                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(iCoursePrinted?"":section.getSection(),5)+" "+
-                                    rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
+                                    lpad(iCoursePrinted?"":section.getSection(),9)+" "+
+                                    rpad(iCoursePrinted?"":formatShortPeriodNoEndTime(exam),14)+" "+
                                     rpad(iStudentPrinted?"":instructor.getName(),25)+" "+
                                     rpad(iPeriodPrinted?"":"CLASS",6)+" "+
-                                    rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),4)+" "+
-                                    rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),6)+" "+
+                                    rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),7)+" "+
+                                    rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),8)+" "+
                                     (iItype?rpad(iExternal?conflict.getOtherClass().getExternalUniqueId():conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
-                                    lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),5)+" "+
+                                    lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),9)+" "+
                                     getMeetingTime(conflict.getOtherEventTime())
                                     );
                             } else {
                                 println(
-                                        rpad(iSubjectPrinted?"":subject,4)+" "+
-                                        rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                        rpad(iSubjectPrinted?"":subject,7)+" "+
+                                        rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
                                         (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                        lpad(iCoursePrinted?"":section.getSection(),5)+" "+
-                                        rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
+                                        lpad(iCoursePrinted?"":section.getSection(),9)+" "+
+                                        rpad(iCoursePrinted?"":formatShortPeriodNoEndTime(exam),14)+" "+
                                         rpad(iStudentPrinted?"":instructor.getName(),25)+" "+
                                         rpad(iPeriodPrinted?"":"EVENT",6)+" "+
-                                        rpad(conflict.getOtherEventName(),(iItype?24:17))+" "+
+                                        rpad(conflict.getOtherEventName(),(iItype?33:26))+" "+
                                         getMeetingTime(conflict.getOtherEventTime())
                                         );
                             }
@@ -145,17 +145,17 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                             if (!otherExam.getInstructors().contains(instructor)) continue;
                             for (ExamSectionInfo other : otherExam.getSectionsIncludeCrosslistedDummies()) {
                                 println(
-                                        rpad(iSubjectPrinted?"":subject,4)+" "+
-                                        rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                        rpad(iSubjectPrinted?"":subject,7)+" "+
+                                        rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
                                         (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                        lpad(iCoursePrinted?"":section.getSection(),5)+" "+
-                                        rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
+                                        lpad(iCoursePrinted?"":section.getSection(),9)+" "+
+                                        rpad(iCoursePrinted?"":formatShortPeriodNoEndTime(exam),14)+" "+
                                         rpad(iStudentPrinted?"":instructor.getName(),25)+" "+
                                         rpad(iPeriodPrinted?"":">2-DAY",6)+" "+
-                                        rpad(other.getSubject(),4)+" "+
-                                        rpad(other.getCourseNbr(),6)+" "+
+                                        rpad(other.getSubject(),7)+" "+
+                                        rpad(other.getCourseNbr(),8)+" "+
                                         (iItype?rpad(other.getItype(),6)+" ":"")+
-                                        lpad(other.getSection(),5)+" "+
+                                        lpad(other.getSection(),9)+" "+
                                         other.getExamAssignment().getTimeFixedLength()
                                         );
                                 iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
@@ -168,17 +168,17 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
                         for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
                             if (!conflict.getOtherExam().getInstructors().contains(instructor)) continue;
                             println(
-                                    rpad(iSubjectPrinted?"":subject,4)+" "+
-                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                    rpad(iSubjectPrinted?"":subject,7)+" "+
+                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
                                     (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(iCoursePrinted?"":section.getSection(),5)+" "+
-                                    rpad(iCoursePrinted?"":exam.getPeriodNameFixedLength(),28)+" "+
+                                    lpad(iCoursePrinted?"":section.getSection(),9)+" "+
+                                    rpad(iCoursePrinted?"":formatShortPeriodNoEndTime(exam),14)+" "+
                                     rpad(iStudentPrinted?"":instructor.getName(),25)+" "+
                                     rpad(iPeriodPrinted?"":"BTB",6)+" "+
-                                    rpad(other.getSubject(),4)+" "+
-                                    rpad(other.getCourseNbr(),6)+" "+
+                                    rpad(other.getSubject(),7)+" "+
+                                    rpad(other.getCourseNbr(),8)+" "+
                                     (iItype?rpad(other.getItype(),6)+" ":"")+
-                                    lpad(other.getSection(),5)+" "+
+                                    lpad(other.getSection(),9)+" "+
                                     other.getExamAssignment().getTimeFixedLength()
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
