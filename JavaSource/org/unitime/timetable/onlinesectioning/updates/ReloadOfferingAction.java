@@ -93,38 +93,36 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 	
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		helper.beginTransaction();
-		try {
-			for (Long offeringId: getOfferingIds()) {
-				
-				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
-						.setUniqueId(offeringId)
-						.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
-				
-				List<Long> studentIds = (List<Long>)helper.getHibSession().createQuery(
-						"select distinct s.uniqueId from Student s " +
-						"left outer join s.classEnrollments e " +
-						"left outer join s.courseDemands d left outer join d.courseRequests r left outer join r.courseOffering co " +
-						"where e.courseOffering.instructionalOffering.uniqueId = :offeringId or " +
-						"co.instructionalOffering.uniqueId = :offeringId").setLong("offeringId", offeringId).list();
-				Lock lock = server.lockOffering(offeringId, studentIds, true);
-				try {
+		for (Long offeringId: getOfferingIds()) {
+			helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(offeringId)
+					.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
+			
+			List<Long> studentIds = (List<Long>)helper.getHibSession().createQuery(
+					"select distinct s.uniqueId from Student s " +
+					"left outer join s.classEnrollments e " +
+					"left outer join s.courseDemands d left outer join d.courseRequests r left outer join r.courseOffering co " +
+					"where e.courseOffering.instructionalOffering.uniqueId = :offeringId or " +
+					"co.instructionalOffering.uniqueId = :offeringId").setLong("offeringId", offeringId).list();
 
+			Lock lock = server.lockOffering(offeringId, studentIds, true);
+			try {
+				helper.beginTransaction();
+				try {
 					reloadOffering(server, helper, offeringId);
 					
-				} finally {
-					lock.release();
+					helper.commitTransaction();
+				} catch (Exception e) {
+					helper.rollbackTransaction();
+					if (e instanceof SectioningException)
+						throw (SectioningException)e;
+					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 				}
-									
-			}				
-			helper.commitTransaction();
-			return true;			
-		} catch (Exception e) {
-			helper.rollbackTransaction();
-			if (e instanceof SectioningException)
-				throw (SectioningException)e;
-			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+			} finally {
+				lock.release();
+			}
 		}
+		return true;			
 	}
 		
 	public void reloadOffering(final OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId) {
