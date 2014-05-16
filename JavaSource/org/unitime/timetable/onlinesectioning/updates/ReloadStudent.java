@@ -68,23 +68,23 @@ public class ReloadStudent extends ReloadAllData {
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		helper.info(getStudentIds().size() + " students changed.");
 
-		helper.beginTransaction();
-		try {
-			for (Long studentId: getStudentIds()) {
-				helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
-						.setUniqueId(studentId)
-						.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+		for (Long studentId: getStudentIds()) {
+			helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(studentId)
+					.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+			
+			OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+			action.setStudent(OnlineSectioningLog.Entity.newBuilder()
+					.setUniqueId(studentId)
+					.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
+			
+			Lock lock = server.lockStudent(studentId, (List<Long>)helper.getHibSession().createQuery(
+					"select distinct e.courseOffering.instructionalOffering.uniqueId from StudentClassEnrollment e where "+
+            		"e.student.uniqueId = :studentId").setLong("studentId", studentId).list(), true);
+			try {
 				
-				OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
-				action.setStudent(OnlineSectioningLog.Entity.newBuilder()
-						.setUniqueId(studentId)
-						.setType(OnlineSectioningLog.Entity.EntityType.STUDENT));
-				
-				Lock lock = server.lockStudent(studentId, (List<Long>)helper.getHibSession().createQuery(
-						"select distinct e.courseOffering.instructionalOffering.uniqueId from StudentClassEnrollment e where "+
-                		"e.student.uniqueId = :studentId").setLong("studentId", studentId).list(), true);
+				helper.beginTransaction();
 				try {
-					
 					// Unload student
 					XStudent oldStudent = server.getStudent(studentId);
 					if (oldStudent != null) {
@@ -127,22 +127,22 @@ public class ReloadStudent extends ReloadAllData {
 					}
 					
 					server.execute(server.createAction(NotifyStudentAction.class).forStudent(studentId).oldStudent(oldStudent), helper.getUser());
-
-				} finally {
-					lock.release();
+					helper.commitTransaction();
+				} catch (Exception e) {
+					helper.rollbackTransaction();
+					if (e instanceof SectioningException)
+						throw (SectioningException)e;
+					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 				}
-				
-				action.setEndTime(System.currentTimeMillis());
+
+			} finally {
+				lock.release();
 			}
 			
-			helper.commitTransaction();
-			return true;
-		} catch (Exception e) {
-			helper.rollbackTransaction();
-			if (e instanceof SectioningException)
-				throw (SectioningException)e;
-			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+			action.setEndTime(System.currentTimeMillis());
 		}
+		
+		return true;
 	}
 	
 	@Override

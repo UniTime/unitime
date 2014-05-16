@@ -67,23 +67,23 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		helper.info(getClassIds().size() + " class assignments changed.");
-		helper.beginTransaction();
-		try {
-			OnlineSectioningLog.Enrollment.Builder previous = OnlineSectioningLog.Enrollment.newBuilder()
-				.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
-			OnlineSectioningLog.Enrollment.Builder stored = OnlineSectioningLog.Enrollment.newBuilder()
-				.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
-			for (Long classId: getClassIds()) {
-				Class_ clazz = Class_DAO.getInstance().get(classId, helper.getHibSession());
-				if (clazz == null) {
-					helper.warn("Class " + classId + " wos deleted -- unsupported operation (use reload offering instead).");
-					continue;
-				}
-				Lock lock = server.lockOffering(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId(),
-						(List<Long>)helper.getHibSession().createQuery(
-								"select e.student.uniqueId from StudentClassEnrollment e where "+
-				                "e.clazz.uniqueId = :classId").setLong("classId", classId).list(),
-				                true);
+		OnlineSectioningLog.Enrollment.Builder previous = OnlineSectioningLog.Enrollment.newBuilder()
+			.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
+		OnlineSectioningLog.Enrollment.Builder stored = OnlineSectioningLog.Enrollment.newBuilder()
+			.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+		for (Long classId: getClassIds()) {
+			Class_ clazz = Class_DAO.getInstance().get(classId, helper.getHibSession());
+			if (clazz == null) {
+				helper.warn("Class " + classId + " wos deleted -- unsupported operation (use reload offering instead).");
+				continue;
+			}
+			Lock lock = server.lockOffering(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId(),
+					(List<Long>)helper.getHibSession().createQuery(
+							"select e.student.uniqueId from StudentClassEnrollment e where "+
+			                "e.clazz.uniqueId = :classId").setLong("classId", classId).list(),
+			                true);
+			try {
+				helper.beginTransaction();
 				try {
 					XOffering offering = server.getOffering(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
 					XSection oldSection = (offering == null ? null : offering.getSection(clazz.getUniqueId()));
@@ -103,22 +103,22 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 					server.update(offering);
 					
 					stored.addSection(OnlineSectioningHelper.toProto(newSection));
-				} finally {
-					lock.release();
-				}
+				helper.commitTransaction();
+				} catch (Exception e) {
+					helper.rollbackTransaction();
+					if (e instanceof SectioningException)
+						throw (SectioningException)e;
+					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+				}		
+			} finally {
+				lock.release();
 			}
-			
-			helper.getAction().addEnrollment(previous);
-			helper.getAction().addEnrollment(stored);
-			
-			helper.commitTransaction();
-			return true;
-		} catch (Exception e) {
-			helper.rollbackTransaction();
-			if (e instanceof SectioningException)
-				throw (SectioningException)e;
-			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
-		}		
+		}
+		
+		helper.getAction().addEnrollment(previous);
+		helper.getAction().addEnrollment(stored);
+		
+		return true;
 	}
 
 	@Override

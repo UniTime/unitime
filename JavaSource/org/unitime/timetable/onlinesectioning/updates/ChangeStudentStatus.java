@@ -64,16 +64,14 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		helper.beginTransaction();
-		try {
-			StudentSectioningStatus status = (hasStatus() ?
-					(StudentSectioningStatus)helper.getHibSession().createQuery(
-							"from StudentSectioningStatus where reference = :ref").setString("ref", getStatus()).uniqueResult()
-					: null);
-			for (Long studentId: getStudentIds()) {
-				Lock lock = server.lockStudent(studentId, null, true);
+		StudentSectioningStatus status = (hasStatus() ? (StudentSectioningStatus)helper.getHibSession().createQuery(
+				"from StudentSectioningStatus where reference = :ref").setString("ref", getStatus()).uniqueResult() : null);
+		for (Long studentId: getStudentIds()) {
+			Lock lock = server.lockStudent(studentId, null, true);
+			try {
+				XStudent student = server.getStudent(studentId);
+				helper.beginTransaction();
 				try {
-					XStudent student = server.getStudent(studentId);
 					Student dbStudent = StudentDAO.getInstance().get(studentId, helper.getHibSession());
 					if (student != null && dbStudent != null) {
 						
@@ -95,17 +93,18 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 						helper.getHibSession().saveOrUpdate(dbStudent);
 						server.update(student, false);
 					}
-				} finally {
-					lock.release();
+					helper.commitTransaction();
+				} catch (Exception e) {
+					helper.rollbackTransaction();
+					if (e instanceof SectioningException) throw (SectioningException)e;
+					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 				}
+
+			} finally {
+				lock.release();
 			}
-			helper.commitTransaction();
-			return true;			
-		} catch (Exception e) {
-			helper.rollbackTransaction();
-			if (e instanceof SectioningException) throw (SectioningException)e;
-			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
+		return true;			
 	}
 
 	@Override

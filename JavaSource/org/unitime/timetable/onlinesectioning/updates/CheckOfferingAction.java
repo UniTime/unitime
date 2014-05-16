@@ -97,20 +97,22 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				// offering is locked -> assuming that the offering will get checked when it is unlocked
 				if (server.isOfferingLocked(offeringId)) continue;
 				
-				helper.beginTransaction();
 				// lock and check the offering
 				Lock lock = server.lockOffering(offeringId, null, false);
 				try {
+					helper.beginTransaction();
+
 					XOffering offering = server.getOffering(offeringId);
 					helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
 							.setUniqueId(offeringId)
 							.setName(offering.getName())
 							.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
 					checkOffering(server, helper, offering);
+
+					helper.commitTransaction();
 				} finally {
 					lock.release();
 				}
-				helper.commitTransaction();
 				
 			} catch (Exception e) {
 				helper.rollbackTransaction();
