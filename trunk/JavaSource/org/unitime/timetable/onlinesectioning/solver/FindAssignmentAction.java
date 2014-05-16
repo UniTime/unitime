@@ -188,6 +188,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		Hashtable<CourseRequest, Set<Section>> preferredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
 		Hashtable<CourseRequest, Set<Section>> requiredOrSavedSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
 		Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse = new Hashtable<CourseRequest, Set<Section>>();
+		HashSet<FreeTimeRequest> pinnedFreeTimes = new HashSet<FreeTimeRequest>();
 		HashSet<FreeTimeRequest> requiredFreeTimes = new HashSet<FreeTimeRequest>();
 
 		if (getAssignment() != null && !getAssignment().isEmpty()) {
@@ -220,7 +221,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							preferredSections.add(section);
 							cr.getSelectedChoices().add(section.getChoice());
 							rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(
-									a.isPinned() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED));
+									a.isPinned() || a.isSaved() || getRequest().isNoChange() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED));
 						}
 					}
 					preferredSectionsForCourse.put(cr, preferredSections);
@@ -229,10 +230,11 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				} else {
 					FreeTimeRequest ft = (FreeTimeRequest)r;
 					for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
-						if (a != null && a.isFreeTime() && a.isPinned() && ft.getTime() != null &&
+						if (a != null && a.isFreeTime() && (a.isPinned() || getRequest().isNoChange()) && ft.getTime() != null &&
 							ft.getTime().getStartSlot() == a.getStart() &&
 							ft.getTime().getLength() == a.getLength() && 
 							ft.getTime().getDayCode() == DayCode.toInt(DayCode.toDayCodes(a.getDays()))) {
+							if (a.isPinned()) pinnedFreeTimes.add(ft);
 							requiredFreeTimes.add(ft);
 							for (OnlineSectioningLog.Time.Builder ftb: rq.getFreeTimeBuilderList())
 								ftb.setPreference(OnlineSectioningLog.Section.Preference.REQUIRED);
@@ -282,7 +284,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
         
 		long t2 = System.currentTimeMillis();
 
-		ClassAssignmentInterface ret = convert(server, model, assignment, student, neighbour, requiredSectionsForCourse, requiredFreeTimes, enrolled);
+		ClassAssignmentInterface ret = convert(server, model, assignment, student, neighbour, requiredSectionsForCourse, pinnedFreeTimes, enrolled);
 		
 		long t3 = System.currentTimeMillis();
 		helper.debug("Sectioning took "+(t3-t0)+"ms (model "+(t1-t0)+"ms, sectioning "+(t2-t1)+"ms, conversion "+(t3-t2)+"ms)");
