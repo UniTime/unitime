@@ -67,7 +67,7 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 	
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		helper.beginTransaction();
+		Lock lock = server.lockOffering(getOfferingId(), getStudentIds(), false);
 		try {
 			helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
 					.setUniqueId(getOfferingId())
@@ -75,7 +75,7 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 
 			String[] approval = getApproval().split(":");
 			
-			Lock lock = server.lockOffering(getOfferingId(), getStudentIds(), false);
+			helper.beginTransaction();
 			try {
 				
 				XOffering offering = server.getOffering(getOfferingId());
@@ -129,18 +129,18 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 					}
 					
 				}
-			} finally {
-				lock.release();
-			}
 
-			helper.commitTransaction();
-			
-			return true;			
-		} catch (Exception e) {
-			helper.rollbackTransaction();
-			if (e instanceof SectioningException)
-				throw (SectioningException)e;
-			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+				helper.commitTransaction();
+				
+				return true;			
+			} catch (Exception e) {
+				helper.rollbackTransaction();
+				if (e instanceof SectioningException)
+					throw (SectioningException)e;
+				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+			}
+		} finally {
+			lock.release();
 		}
 	}
 

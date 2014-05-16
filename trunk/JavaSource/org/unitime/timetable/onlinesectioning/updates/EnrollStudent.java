@@ -139,9 +139,9 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			}
 		};
 		
-		helper.beginTransaction();
+		Lock lock = server.lockStudent(getStudentId(), offeringIds, true);
 		try {
-			Lock lock = server.lockStudent(getStudentId(), offeringIds, true);
+			helper.beginTransaction();
 			try {
 				OnlineSectioningLog.Action.Builder action = helper.getAction();
 				
@@ -664,16 +664,16 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				action.addEnrollment(stored);
 				
 				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).oldStudent(oldStudent), helper.getUser());
-			} finally {
-				lock.release();
+				helper.commitTransaction();
+			} catch (Exception e) {
+				helper.rollbackTransaction();
+				if (e instanceof SectioningException)
+					throw (SectioningException)e;
+				helper.error("Failed to enroll student " + getStudentId() + ": " + e.getMessage(), e);
+				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 			}
-			helper.commitTransaction();
-		} catch (Exception e) {
-			helper.rollbackTransaction();
-			if (e instanceof SectioningException)
-				throw (SectioningException)e;
-			helper.error("Failed to enroll student " + getStudentId() + ": " + e.getMessage(), e);
-			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+		} finally {
+			lock.release();
 		}
 		
 		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()), helper.getUser());
