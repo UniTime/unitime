@@ -1193,7 +1193,7 @@ public enum ApplicationProperty {
 	JGroupsBindAddress("jgroups.bind_addr"),
 
 	@Type(Boolean.class)
-	@DefaultValue("true")
+	@DefaultValue("false")
 	@Description("Clustering: form hibernate cluster to replicate Hibernate L2 cache")
 	@Since(3.5)
 	HibernateClusterEnabled("unitime.hibernate.cluster"),
@@ -1231,7 +1231,7 @@ public enum ApplicationProperty {
 	OnlineSchedulingClusterInitialHosts("unitime.enrollment.initial_hosts"),
 
 	@Type(Boolean.class)
-	@DefaultValue("true")
+	@DefaultValue("false")
 	@Description("Clustering: form solver cluster to communitace between solver servers")
 	@Since(3.5)
 	SolverClusterEnabled("unitime.solver.cluster"),
