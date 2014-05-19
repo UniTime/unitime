@@ -61,6 +61,8 @@ public class ApplicationConfigForm extends ActionForm {
     private boolean allSessions;
     
     private Long[] sessions = null;
+    
+    private boolean showAll = false;
 
     // --------------------------------------------------------- Methods
 
@@ -97,6 +99,7 @@ public class ApplicationConfigForm extends ActionForm {
         description = "";
         allSessions = false;
         sessions = null;
+        showAll = false; 
     }
 
     /** 
@@ -208,4 +211,7 @@ public class ApplicationConfigForm extends ActionForm {
 		ApplicationProperty p = ApplicationProperty.fromKey(key);
 		return (p != null ? p.defaultValue() : null);
 	}
+	
+	public boolean getShowAll() { return showAll; }
+	public void setShowAll(boolean showAll) { this.showAll = showAll; }
 }

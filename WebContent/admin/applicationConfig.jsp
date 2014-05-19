@@ -184,16 +184,24 @@
 		</TD>
 	</TR>
 	<%= request.getAttribute(org.unitime.timetable.model.ApplicationConfig.APP_CFG_ATTR_NAME) %> 
-	<TR>
-		<TD colspan="3" align="right">
-			<span class="unitime-Hint">s) Applies to current academic session.</span>
-		</TD>
-	</TR>
 	<logic:notEmpty scope="request" name="hash">
 		<script type="text/javascript" language="javascript">
 			location.hash = '<%=request.getAttribute("hash")%>';
 		</script>
 	</logic:notEmpty>
+	<TR>
+		<TD colspan='2' valign="top">
+			<span class="unitime-Hint" style="vertical-align: top;">s) Applies to current academic session.</span>
+		</TD>
+		<TD align="right">
+			<input type='hidden' name='apply' value=''/><html:checkbox property="showAll" onchange="apply.value='1'; submit();"/>Show all properties&nbsp;&nbsp;&nbsp;&nbsp;			
+			<sec:authorize access="hasPermission(null, null, 'ApplicationConfigEdit')">
+				<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addAppConfig">
+					<bean:message key="button.addAppConfig" />
+				</html:submit>
+			</sec:authorize> 
+		</TD>
+	</TR>	
 </TABLE>
 </logic:equal>
 </html:form>
