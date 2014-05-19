@@ -49,8 +49,8 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
     
     public void printReport() throws DocumentException {
         setHeader(new String[] {
-                "Date And Time                          Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect    Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
-                "-------------------------------------- ---- ------ "+(iItype?"------ ":"")+"----- -------------------------------------- -----"+(iDispRooms?" ----------- ----- -----":"")});
+                "Date And Time                  Subject Course   "+(iItype?iExternal?"ExtnID ":"Type   ":"")+"Section     Meeting Times                         Enrl"+(iDispRooms?"  Room         Cap ExCap":""),
+                "------------------------------ ------- -------- "+(iItype?"------ ":"")+"--------- -------------------------------------- -----"+(iDispRooms?" ----------- ----- -----":"")});
         printHeader();
         sLog.debug("  Sorting exams...");
         TreeSet<ExamAssignmentInfo> exams = new TreeSet();
@@ -90,11 +90,11 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
 
                     if (!iDispRooms) {
                         println(
-                            rpad(iPeriodPrinted?"":formatPeriod(period),38)+" "+
-                            rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
-                            rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                            rpad(iPeriodPrinted?"":formatPeriod(period),30)+" "+
+                            rpad(iSubjectPrinted?"":section.getSubject(),7)+" "+
+                            rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
                             (iItype?rpad(iStudentPrinted?"":section.getItype(), 6)+" ":"")+
-                            lpad(section.getSection(),5)+" "+
+                            lpad(section.getSection(),9)+" "+
                             rpad(getMeetingTime(section),38)+" "+
                             lpad(String.valueOf(section.getNrStudents()),5)
                             );
@@ -102,11 +102,11 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                     } else {
                         if (section.getExamAssignment().getRooms()==null || section.getExamAssignment().getRooms().isEmpty()) {
                             println(
-                                    rpad(iPeriodPrinted?"":formatPeriod(period),38)+" "+
-                                    rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
-                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                    rpad(iPeriodPrinted?"":formatPeriod(period),30)+" "+
+                                    rpad(iSubjectPrinted?"":section.getSubject(),7)+" "+
+                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
                                     (iItype?rpad(iStudentPrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(section.getSection(),5)+" "+
+                                    lpad(section.getSection(),9)+" "+
                                     rpad(getMeetingTime(section),38)+" "+
                                     lpad(String.valueOf(section.getNrStudents()),5)+" "+iNoRoom
                                     );
@@ -116,11 +116,11 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                             boolean firstRoom = true;
                             for (ExamRoomInfo room : section.getExamAssignment().getRooms()) {
                                 println(
-                                        rpad(!firstRoom || iPeriodPrinted?"":formatPeriod(period),38)+" "+
-                                        rpad(!firstRoom || iSubjectPrinted?"":section.getSubject(),4)+" "+
-                                        rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                        rpad(!firstRoom || iPeriodPrinted?"":formatPeriod(period),30)+" "+
+                                        rpad(!firstRoom || iSubjectPrinted?"":section.getSubject(),7)+" "+
+                                        rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
                                         (iItype?rpad(!firstRoom || iStudentPrinted?"":section.getItype(), 6)+" ":"")+
-                                        lpad(!firstRoom?"":section.getSection(),5)+" "+
+                                        lpad(!firstRoom?"":section.getSection(),9)+" "+
                                         rpad(!firstRoom?"":getMeetingTime(section),38)+" "+
                                         lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+" "+
                                         formatRoom(room.getName())+" "+

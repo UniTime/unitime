@@ -81,6 +81,15 @@
 				<line>Room details popup is shown whenever it is allowed to select some time in a room (mouse cursor is a cross).</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination PDF Reports: Abbreviated Schedule, Individual Schedule, Instructor / Student Conflicts, Schedule by Course / Period / Room, Period Chart</name>
+			<description>
+				<line>Subject field increased to 7 characters.</line>
+				<line>Course (number) field increased to 8 characters.</line>
+				<line>Section field increased to 9 characters.</line>
+				<line>Few additional adjustments to accommodate for the above changes.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

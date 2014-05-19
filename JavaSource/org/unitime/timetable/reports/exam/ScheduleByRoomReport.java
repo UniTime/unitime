@@ -81,8 +81,8 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
         Vector periods = new Vector(ExamPeriod.findAll(getSession().getUniqueId(), getExamType()));
         sLog.info("  Printing report...");
         setHeader(new String[] {
-                "Bldg  Room  Capacity  ExCap Period Date And Time                          Subj Crsnbr "+(iItype?iExternal?"ExtnID ":"InsTyp ":"")+"Sect   Enrl",
-                "----- ----- -------- ------ ------ -------------------------------------- ---- ------ "+(iItype?"------ ":"")+"----- -----"});
+                "Bldg  Room  Capacity  ExCap Period Date And Time                          Subject Course   "+(iItype?iExternal?"ExtnID ":"Type   ":"")+"Section    Enrl",
+                "----- ----- -------- ------ ------ -------------------------------------- ------- -------- "+(iItype?"------ ":"")+"--------- -----"});
         printHeader();
         for (Iterator<ExamRoomInfo> i = rooms.iterator();i.hasNext();) {
             ExamRoomInfo room = i.next();
@@ -121,10 +121,10 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                                     lpad(iPeriodPrinted?"":String.valueOf(room.getExamCapacity()),6)+" "+
                                     lpad(iStudentPrinted?"":String.valueOf(periods.indexOf(period)+1),6)+" "+
                                     rpad(iStudentPrinted?"":formatPeriod(section.getExamAssignment()),38)+" "+
-                                    rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
-                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                    rpad(iSubjectPrinted?"":section.getSubject(), 7)+" "+
+                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
                                     (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
-                                    lpad(section.getSection(),5)+" "+
+                                    lpad(section.getSection(), 9)+" "+
                                     lpad(String.valueOf(section.getNrStudents()),5)
                                     );
                             iPeriodPrinted = iStudentPrinted = iSubjectPrinted = iCoursePrinted = iITypePrinted = !iNewPage;
