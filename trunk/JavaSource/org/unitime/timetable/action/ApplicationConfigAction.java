@@ -99,6 +99,10 @@ public class ApplicationConfigAction extends Action {
             op = frm.getOp();
         }
         
+        if ("1".equals(request.getParameter("apply"))) {
+        	sessionContext.getUser().setProperty("ApplicationConfig.showAll", frm.getShowAll() ? "1" : "0");
+        }
+
         ActionMessages errors = new ActionMessages();
         
         // Edit Config - Load existing config values to be edited
@@ -117,7 +121,7 @@ public class ApplicationConfigAction extends Action {
                     	if (p != null) {
                     		frm.setOp("add");
                     		frm.setKey(id);
-                            frm.setValue(p.value());
+                            frm.setValue(ApplicationProperties.getProperty(id, ""));
                             frm.setDescription(p.description());
                             frm.setAllSessions(true);
                     	} else {
@@ -322,10 +326,12 @@ public class ApplicationConfigAction extends Action {
         	request.setAttribute("hash", frm.getKey());
             frm.reset(mapping, request);
         }
-
+        
+        frm.setShowAll("1".equals(sessionContext.getUser().getProperty("ApplicationConfig.showAll", "0")));
+        
         if ("list".equals(frm.getOp())) {
             //Read all existing ApplicationConfig and store in request
-            getApplicationConfigList(request);        
+            getApplicationConfigList(request, frm.getShowAll());        
             return mapping.findForward("list");
         }
         
@@ -337,7 +343,7 @@ public class ApplicationConfigAction extends Action {
      * @param request Request object
      * @throws Exception
      */
-    private void getApplicationConfigList(HttpServletRequest request) throws Exception {
+    private void getApplicationConfigList(HttpServletRequest request, boolean showAll) throws Exception {
         WebTable.setOrder(sessionContext,"applicationConfig.ord",request.getParameter("ord"),1);
 		
 		// Create web table instance 
@@ -394,6 +400,7 @@ public class ApplicationConfigAction extends Action {
 
 				if (o == null) {
 					if (!pattern.matcher(key).matches()) continue;
+					if (!showAll && (p != null && (value == null ? "": value).equals(p.value() == null ? "" : p.value()))) continue;
 
 					String reference = null;
 					if (p != null && p.reference() != null) {
