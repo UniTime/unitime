@@ -49,6 +49,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
@@ -90,6 +91,9 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 		if (!server.getAcademicSession().isSectioningEnabled())
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
 		
+		if (!CustomStudentEnrollmentHolder.isAllowWaitListing())
+			return true;
+		
 		boolean result = true;
 		
 		for (Long offeringId: getOfferingIds()) {
@@ -126,6 +130,8 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 	
 	public void checkOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, XOffering offering) {
 		if (!server.getAcademicSession().isSectioningEnabled() || offering == null) return;
+		
+		if (!CustomStudentEnrollmentHolder.isAllowWaitListing()) return;
 		
 		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>();
 		

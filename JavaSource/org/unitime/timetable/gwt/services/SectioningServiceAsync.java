@@ -45,10 +45,10 @@ public interface SectioningServiceAsync {
 	void section(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 	void checkCourses(boolean online, CourseRequestInterface request, AsyncCallback<Collection<String>> callback) throws SectioningException, PageAccessException;
 	void computeSuggestions(boolean online, CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment, String filter, AsyncCallback<Collection<ClassAssignmentInterface>> callback) throws SectioningException, PageAccessException;
-	void logIn(String userName, String password, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
+	void logIn(String userName, String password, String pin, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
 	void logOut(AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void whoAmI(AsyncCallback<String> callback) throws SectioningException, PageAccessException;
-	void checkEligibility(boolean online, Long sessionId, Long studentId, AsyncCallback<OnlineSectioningInterface.EligibilityCheck> callback) throws SectioningException, PageAccessException;
+	void checkEligibility(boolean online, Long sessionId, Long studentId, String pin, AsyncCallback<OnlineSectioningInterface.EligibilityCheck> callback) throws SectioningException, PageAccessException;
 	void lastAcademicSession(boolean sectioning, AsyncCallback<AcademicSessionProvider.AcademicSessionInfo> callback) throws SectioningException, PageAccessException;
 	void lastRequest(boolean online, Long sessionId, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
 	void lastResult(boolean online, Long sessionId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;

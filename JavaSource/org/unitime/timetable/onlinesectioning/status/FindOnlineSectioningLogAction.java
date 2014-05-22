@@ -131,7 +131,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					if (action.hasResult())
 						a.setResult(Constants.toInitialCase(action.getResult().name()));
 					// a.setProto(action.toString().replace("<", "&lt;").replace(">", "&gt;").replace(" ", "&nbsp;").replace("\n", "<br>"));
-					String html = "<table>";
+					String html = "<table class='unitime-ChangeLog'>";
 					html += "<tr><td class='unitime-MainTableHeader' colspan='2'>General</td></tr>";
 					html += "<tr><td><b>" + MSG.colOperation() + ":</b></td><td>" + Constants.toInitialCase(log.getOperation().replace('-', ' ')) + "</td></tr>";
 					if (action.hasResult())
@@ -147,7 +147,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					}
 					html += "<tr><td><b>Time Stamp:</b></td><td>" + df.format(log.getTimeStamp()) + "</td></tr>";
 					for (OnlineSectioningLog.Property p: action.getOptionList()) {
-						html += "<tr><td><b>" + Constants.toInitialCase(p.getKey()) + ":</b></td><td>" + (p.hasValue() ? p.getValue() : "") + "</td></tr>";
+						html += "<tr><td><b>" + Constants.toInitialCase(p.getKey()) + ":</b></td><td><div class='property'>" + (p.hasValue() ? p.getValue() : "") + "</div></td></tr>";
 					}
 					if (action.hasCpuTime()) {
 						html += "<tr><td><b>" + MSG.colCpuTime() + ":</b></td><td>" + nf.format(0.000000001 * action.getCpuTime()) + "</td></tr>";
@@ -252,7 +252,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 						}
 					}
 					html += "<tr><td class='unitime-MainTableHeader' colspan='2'>" + MSG.tableProto() + "</td></tr>";
-					html += "<tr><td colspan='2'>" + action.toString().replace("<", "&lt;").replace(">", "&gt;").replace(" ", "&nbsp;").replace("\n", "<br>") + "</td></tr>";
+					html += "<tr><td colspan='2' class='proto'>" + action.toString().replace("<", "&lt;").replace(">", "&gt;").replace(" ", "&nbsp;").replace("\n", "<br>") + "</td></tr>";
 					html += "</table>";
 					if ("student-email".equals(log.getOperation())) {
 						for (OnlineSectioningLog.Property p: action.getOptionList())

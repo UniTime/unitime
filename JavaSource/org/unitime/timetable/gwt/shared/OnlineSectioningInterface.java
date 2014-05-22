@@ -39,6 +39,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			IS_ADMIN, IS_ADVISOR,
 			CAN_USE_ASSISTANT,
 			CAN_ENROLL,
+			PIN_REQUIRED,
 			
 			;
 			

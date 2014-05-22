@@ -141,7 +141,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		try {
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
-				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId());
+				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
 				enrolled = new HashSet<Long>();
 				for (XRequest r: original.getRequests()) {
 					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null)
@@ -196,7 +196,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			OnlineSectioningLog.Enrollment.Builder requested = OnlineSectioningLog.Enrollment.newBuilder();
 			requested.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
 			for (ClassAssignmentInterface.ClassAssignment a: getAssignment())
-				if (a != null)
+				if (a != null && a.isAssigned())
 					requested.addSection(OnlineSectioningHelper.toProto(a));
 			action.addEnrollment(requested);
 			
