@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
-import org.cpsolver.ifs.util.ToolBox;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
@@ -115,7 +114,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 
 		ClientResource resource = null;
 		try {
-			String pin = (helper.getUser().hasExtension(OnlineSectioningLog.UserEntity.pin) ? helper.getUser().getExtension(OnlineSectioningLog.UserEntity.pin) : null);
+			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
 			helper.debug("Checking eligility for " + student.getName() + " (term: " + getBannerTerm(session) + ", id:" + student.getExternalId() + ", pin:" + pin + ")");
 			
@@ -135,7 +134,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			
 			// Check status, memorize enrolled sections
 			Gson gson = getGson();
-			List<XEInterface.RegisterResponse> current = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.TYPE);
+			List<XEInterface.RegisterResponse> current = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.TYPE_LIST);
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
 			helper.debug("Current registration: " + gson.toJson(current));
 			if (current == null || current.isEmpty() || !current.get(0).validStudent) {
@@ -198,14 +197,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				if (!added.isEmpty() || !removed.isEmpty()) {
 					check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later" +
 							" (" + (removed.isEmpty() ? "added " + added : added.isEmpty() ? "dropped " + removed : "added " + added + ", dropped " + removed) + ")");
-					// check.setFlag(EligibilityFlag.CAN_ENROLL, false);
+					check.setFlag(EligibilityFlag.CAN_ENROLL, false);
 				}
 			}
 		} catch (SectioningException e) {
-			helper.info("Banner eligibility failed: " + e.getMessage(), e);
+			helper.info("Banner eligibility failed: " + e.getMessage());
 			throw e;
 		} catch (Exception e) {
-			helper.info("Banner eligibility failed: " + e.getMessage(), e);
+			helper.warn("Banner eligibility failed: " + e.getMessage(), e);
 			throw new SectioningException(e.getMessage(), e);
 		} finally {
 			if (resource != null) resource.release();
@@ -213,84 +212,15 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	}
 	
 	@Override
-	public List<EnrolledSection> getEnrollment(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
-		ClientResource resource = null;
-		try {
-			String pin = (helper.getUser().hasExtension(OnlineSectioningLog.UserEntity.pin) ? helper.getUser().getExtension(OnlineSectioningLog.UserEntity.pin) : null);
-			AcademicSessionInfo session = server.getAcademicSession();
-			helper.debug("Retrieving enrollment for " + student.getName() + " (term: " + getBannerTerm(session) + ", id:" + student.getExternalId() + ", pin:" + pin + ")");
-			
-			// First, check student registration status
-			resource = new ClientResource(iBannerApiUrl);
-			resource.setNext(iClient);
-			resource.addQueryParameter("term", getBannerTerm(session));
-			resource.addQueryParameter("bannerId", student.getExternalId());
-			helper.getAction().addOptionBuilder().setKey("term").setValue(getBannerTerm(session));
-			if (pin != null && !pin.isEmpty()) {
-				resource.addQueryParameter("altPin", pin);
-				helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
-			}
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, iBannerApiUser, iBannerApiPassword);
-			
-			resource.get(MediaType.APPLICATION_JSON);
-			
-			// Check status, memorize enrolled sections
-			Gson gson = getGson();
-			List<XEInterface.RegisterResponse> current = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.TYPE);
-			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
-			helper.debug("Current registration: " + gson.toJson(current));
-			if (current == null || current.isEmpty() || !current.get(0).validStudent) {
-				String reason = null;
-				if (current != null && current.size() > 0 && current.get(0).failureReasons != null) {
-					for (String m: current.get(0).failureReasons) {
-						if (reason == null)
-							reason = m;
-						else
-							reason += "\n" + m;
-					}
-				}
-				throw new SectioningException(reason == null ? "Failed to check student registration status." : reason);
-			}
-			List<EnrolledSection> registered = new ArrayList<EnrolledSection>();
-			OnlineSectioningLog.Enrollment.Builder external = OnlineSectioningLog.Enrollment.newBuilder();
-			external.setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
-			if (current.get(0).registrations != null)
-				for (XEInterface.Registration reg: current.get(0).registrations) {
-					if ("R".equals(reg.statusIndicator)) {
-						registered.add(new EnrolledSection(reg.subject, reg.courseNumber, reg.courseReferenceNumber));
-						OnlineSectioningLog.Section.Builder section = external.addSectionBuilder()
-							.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
-							.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
-							.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
-						if (reg.registrationStatusDate != null)
-							section.setTimeStamp(reg.registrationStatusDate.getMillis());
-					}
-				}
-			helper.getAction().addEnrollment(external);
-			
-			helper.debug("Return: " + registered);
-			return registered;
-		} catch (SectioningException e) {
-			helper.warn("Failed to retrieve student registration data from Banner: " + e.getMessage());
-			throw e;
-		} catch (Exception e) {
-			helper.error("Failed to retrieve student registration data from Banner: " + e.getMessage(), e);
-			throw new SectioningException(e.getMessage(), e);
-		} finally {
-			if (resource != null) resource.release();
-		}
-	}
-
-	@Override
 	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Map<XCourse, List<XSection>> enrollments) throws SectioningException {
 		if (enrollments == null || enrollments.isEmpty())
 			return new ArrayList<StudentEnrollmentProvider.EnrollmentFailure>();
 		
 		ClientResource resource = null;
 		try {
-			String pin = (helper.getUser().hasExtension(OnlineSectioningLog.UserEntity.pin) ? helper.getUser().getExtension(OnlineSectioningLog.UserEntity.pin) : null);
+			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
-			sLog.info("Enrolling " + student.getName() + " to " + enrollments + " (term: " + getBannerTerm(session) + ", id:" + student.getExternalId() + ", pin:" + pin + ")");
+			helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + getBannerTerm(session) + ", id:" + student.getExternalId() + ", pin:" + pin + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(iBannerApiUrl);
@@ -308,7 +238,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			
 			// Check status, memorize enrolled sections
 			Gson gson = getGson();
-			List<XEInterface.RegisterResponse> current = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.TYPE);
+			List<XEInterface.RegisterResponse> current = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.TYPE_LIST);
 			if (current == null || current.isEmpty() || !current.get(0).validStudent) {
 				String reason = null;
 				if (current != null && current.size() > 0 && current.get(0).failureReasons != null) {
@@ -323,7 +253,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			Set<String> registered = new HashSet<String>();
 			helper.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(current));
-			sLog.info("Current registration: " + gson.toJson(current));
+			helper.debug("Current registration: " + gson.toJson(current));
 			if (current.get(0).registrations != null)
 				for (XEInterface.Registration reg: current.get(0).registrations) {
 					if ("R".equals(reg.statusIndicator))
@@ -347,14 +277,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			for (String id: registered)
 				req.drop(id);
 			
-			sLog.info("Request: " + gson.toJson(req));
+			helper.debug("Request: " + gson.toJson(req));
 			helper.getAction().addOptionBuilder().setKey("request").setValue(gson.toJson(req));
 			
 			resource.post(new JsonRepresentation(gson.toJson(req)));
 			
 			// Finally, check the response
 			XEInterface.RegisterResponse response = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.class);
-			sLog.info("Response: " + gson.toJson(response));
+			helper.debug("Response: " + gson.toJson(response));
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));
 			if (response == null || !response.validStudent) {
 				String reason = null;
@@ -440,15 +370,15 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 			}
 			
-			sLog.info("Return: " + fails);
+			helper.debug("Return: " + fails);
 			if (!fails.isEmpty())
 				helper.getAction().addOptionBuilder().setKey("message").setValue(fails.toString());
 			return fails;
 		} catch (SectioningException e) {
-			sLog.error("Banner enrollment failed: " + e.getMessage(), e);
+			helper.info("Banner enrollment failed: " + e.getMessage());
 			throw e;
 		} catch (Exception e) {
-			sLog.error("Banner enrollment failed: " + e.getMessage(), e);
+			helper.warn("Banner enrollment failed: " + e.getMessage(), e);
 			throw new SectioningException(e.getMessage(), e);
 		} finally {
 			if (resource != null) resource.release();
@@ -464,52 +394,6 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
-	public static void main(String[] args) {
-		try {
-			ToolBox.configureLogging();
-
-			// XStudentId student = new XStudentId(-1l, "PURDUE001", "Purdue Student");
-			
-			Map<Long, List<XSection>> enrollments = new HashMap<Long, List<XSection>>();
-			List<XSection> sections = new ArrayList<XSection>();
-			sections.add(new XSection("20151"));
-			sections.add(new XSection("20153"));
-			sections.add(new XSection("20108"));
-			sections.add(new XSection("20164"));
-			sections.add(new XSection("20222"));
-			enrollments.put(1l, sections);
-			
-			XEStudentEnrollment xe = new XEStudentEnrollment();
-			/*
-			xe.enroll(
-					new AcademicSessionInfo(-1l, "2014", "Fall", "M"),
-					student, 
-					"111111",
-					enrollments);
-			xe.enroll(
-					new AcademicSessionInfo(-1l, "2014", "Fall", "M"),
-					student, 
-					"111111",
-					new HashMap<Long, List<XSection>>());
-					*/
-			
-			ClientResource resource = new ClientResource(xe.iBannerApiUrl);
-			resource.setNext(xe.iClient);
-			resource.addQueryParameter("term", "201510");
-			resource.addQueryParameter("bannerId", "PURDUE001");
-			resource.addQueryParameter("altPin", "111111");
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, xe.iBannerApiUser, xe.iBannerApiPassword);
-			resource.get(MediaType.APPLICATION_JSON);
-			
-			System.out.println(resource.getResponseEntity().getText());
-			
-			xe.dispose();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	@Override
 	public boolean isAllowWaitListing() {
 		return false;

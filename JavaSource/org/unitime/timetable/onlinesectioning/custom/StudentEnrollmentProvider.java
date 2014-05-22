@@ -35,8 +35,6 @@ public interface StudentEnrollmentProvider {
 
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, XStudent student) throws SectioningException;
 	
-	public List<EnrolledSection> getEnrollment(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException;
-	
 	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Map<XCourse, List<XSection>> enrollments) throws SectioningException;
 	
 	public void dispose();
@@ -64,25 +62,6 @@ public interface StudentEnrollmentProvider {
 		
 		public String toString() {
 			return getCourse().getCourseName() + " " + getSection().getSubpartName() + " " + getSection().getName(getCourse().getCourseId()) + ": " + getMessage() + (isEnrolled() ? " (e)" : "");
-		}
-	}
-	
-	public static class EnrolledSection {
-		private String iSubjectArea;
-		private String iCourseNubmber;
-		private String iSection;
-		
-		public EnrolledSection(String subject, String course, String section) {
-			iSubjectArea = subject; iCourseNubmber = course; iSection = section;
-		}
-		
-		public String getSubjectArea() { return iSubjectArea; }
-		public String getCourseNumber() { return iCourseNubmber; }
-		public String getSection() { return iSection; }
-		
-		@Override
-		public String toString() {
-			return getSubjectArea() + " " + getCourseNumber() + ": " + getSection();
 		}
 	}
 }
