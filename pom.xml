@@ -630,6 +630,84 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>default-cli</id>
+						<configuration>
+							<licenseMerges>
+								<licenseMerge>
+									Common Development and Distribution License (CDDL), Version 1.0|
+									Common Development and Distribution License (CDDL) version 1.0|
+									CDDL|CDDL 1.0|CDDL 1.0 license|
+									Common Development and Distribution License (CDDL) v1.0|
+									Common Development and Distribution License|
+									Common Development and Distribution License, Version 1.0
+								</licenseMerge>
+								<licenseMerge>
+									Apache Software License (ASL), Version 2.0|
+									Apache License, Version 2.0|
+									The Apache Software License, Version 2.0|
+									Apache 2|Apache 2.0|Apache 2.0 license|
+									Apache License|Apache License 2.0|Apache License, version 2.0|
+									ASF 2.0|ASL 2.0|AL 2.0|
+									Google Web Toolkit Terms
+								</licenseMerge>
+								<licenseMerge>
+									BSD or BSD-style License|
+									BSD License|BSD|
+									BSD-style License|BSD-style license|
+									New BSD license
+								</licenseMerge>
+								<licenseMerge>
+									GNU Lesser General Public License (LGPL), Version 3|
+									GNU Lesser General Public License, Version 3|
+									LGPL 3.0 license|LGPL 3.0
+								</licenseMerge>
+								<licenseMerge>
+									GNU Lesser General Public License (LGPL), Version 2.1|
+									GNU Lesser General Public License, version 2.1|
+									LGPL 2.1 license|LGPL 2.1|
+									GNU LESSER GENERAL PUBLIC LICENSE|
+									GNU Lesser General Public License
+								</licenseMerge>
+								<licenseMerge>
+									GNU General Public License (GPL), Version 2|
+									The GNU General Public License, Version 2
+								</licenseMerge>
+								<licenseMerge>
+									Eclipse Public License (EPL), Version 1.0|
+									EPL 1.0 license|EPL 1.0|
+									Eclipse Public License - v 1.0|
+									license.txt
+								</licenseMerge>
+								<licenseMerge>
+									GNU General Public License, Version 2 with the Classpath Exception|
+									GPLv2+CE
+								</licenseMerge>
+								<licenseMerge>
+									Mozilla Public License (MPL), Version 1.1|
+									MPL 1.1|
+									Mozilla Public License
+								</licenseMerge>
+								<licenseMerge>
+									Public Domain|
+									The JSON License
+								</licenseMerge>
+							</licenseMerges>
+							<missingFile>3rd_party/3rd_party.properties</missingFile>
+							<fileTemplate>3rd_party/3rd_party.ftl</fileTemplate>
+							<useMissingFile>true</useMissingFile>
+							<sortArtifactByName>true</sortArtifactByName>
+							<outputDirectory>Documentation/License</outputDirectory>
+							<thirdPartyFilename>dependencies.txt</thirdPartyFilename>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
