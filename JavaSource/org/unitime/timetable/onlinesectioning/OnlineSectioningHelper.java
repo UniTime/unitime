@@ -762,4 +762,11 @@ public class OnlineSectioningHelper {
 	public static String toString(FreeTimeRequest f) {
 		return CFG.freePrefix() + toString(f.getTime());
 	}
+	
+	public String getPin() {
+		if (getUser().getParameterCount() > 0)
+			for (OnlineSectioningLog.Property p: getUser().getParameterList())
+				if ("pin".equals(p.getKey())) return p.getValue();
+		return null;
+	}
 }

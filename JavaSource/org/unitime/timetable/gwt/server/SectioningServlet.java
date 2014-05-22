@@ -1813,16 +1813,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					.setName(user.getName() == null ? user.getUsername() : user.getName())
 					.setType(getSessionContext().hasPermission(Right.StudentSchedulingAdvisor) ?
 							OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT);
-			if (pin != null)
-				entity.setExtension(OnlineSectioningLog.UserEntity.pin, pin);
+			if (pin != null) entity.addParameterBuilder().setKey("pin").setValue(pin);
 			return entity.build();
 		} else if (principal != null) {
 			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
 					.setExternalId(principal.getExternalId())
 					.setName(principal.getName())
 					.setType(OnlineSectioningLog.Entity.EntityType.STUDENT);
-			if (pin != null)
-				entity.setExtension(OnlineSectioningLog.UserEntity.pin, pin);
+			if (pin != null) entity.addParameterBuilder().setKey("pin").setValue(pin);
 			return entity.build();
 		} else {
 			return null;

@@ -85,7 +85,7 @@ public class XEInterface {
 	}
 	
 	public static class RegisterResponse {
-		public static final Type TYPE = new TypeToken<ArrayList<RegisterResponse>>() {}.getType();
+		public static final Type TYPE_LIST = new TypeToken<ArrayList<RegisterResponse>>() {}.getType();
 		
 		List<FailedRegistration> failedRegistrations;
 		List<String> failureReasons;
@@ -139,11 +139,6 @@ public class XEInterface {
 				courseReferenceNumbers = new ArrayList<XEInterface.CourseReferenceNumber>();
 			courseReferenceNumbers.add(new CourseReferenceNumber(crn));
 			return this;
-		}
-		
-		public void addAction(RegisterAction action) {
-			if (actionsAndOptions == null) actionsAndOptions = new ArrayList<RegisterAction>();
-			actionsAndOptions.add(action);
 		}
 	}
 
