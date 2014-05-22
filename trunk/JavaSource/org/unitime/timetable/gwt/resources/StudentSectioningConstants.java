@@ -122,5 +122,7 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultBooleanValue(true)
 	boolean tryAuthenticationWhenGuest();
-
+	
+	@DefaultBooleanValue(false)
+	boolean hasAuthenticationPin();
 }

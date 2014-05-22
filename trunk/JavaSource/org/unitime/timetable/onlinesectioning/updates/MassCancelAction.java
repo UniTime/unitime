@@ -40,6 +40,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
@@ -91,6 +92,9 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 	@Override
 	public Boolean execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		if (!server.getAcademicSession().isSectioningEnabled())
+			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
+		if (!CustomStudentEnrollmentHolder.isAllowWaitListing())
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
 
 		Exception caughtException = null;

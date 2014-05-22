@@ -116,6 +116,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private boolean iOnline;
 	private StudentSectioningPage.Mode iMode = null;
 	private OnlineSectioningInterface.EligibilityCheck iEligibilityCheck = null;
+	private PinDialog iPinDialog = null;
 
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history, OnlineSectioningInterface.EligibilityCheck check) {
 		iEligibilityCheck = check;
@@ -433,10 +434,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						LoadingWidget.getInstance().hide();
 						iSavedAssignment = result;
 						fillIn(result);
-						iErrorMessage.setHTML("<font color='blue'>" + MESSAGES.enrollOK() + "</font>");
+						if (!result.hasMessages())
+							iErrorMessage.setHTML("<font color='blue'>" + MESSAGES.enrollOK() + "</font>");
 						iErrorMessage.setVisible(true);
 						updateHistory();
-						UniTimeNotifications.info(MESSAGES.enrollOK());
+						if (!result.hasMessages())
+							UniTimeNotifications.info(MESSAGES.enrollOK());
 					}
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
@@ -586,6 +589,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iLastAssignment = result;
 		String calendarUrl = GWT.getHostPageBaseURL() + "calendar?sid=" + iSessionSelector.getAcademicSessionId() + "&cid=";
 		String ftParam = "&ft=";
+		boolean hasError = false;
 		if (!result.getCourseAssignments().isEmpty()) {
 			ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 			iAssignmentGrid.clear(true);
@@ -603,7 +607,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						WebTable.IconsCell icons = new WebTable.IconsCell();
 						if (clazz.isSaved())
 							icons.add(RESOURCES.saved(), MESSAGES.saved(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
-						else if (!clazz.isFreeTime() && result.isCanEnroll())
+						else if (clazz.hasError()) {
+							icons.add(RESOURCES.error(), clazz.getError());
+							style += " text-red";
+							hasError = true;
+						} else if (!clazz.isFreeTime() && result.isCanEnroll())
 							icons.add(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 						if (course.isLocked())
 							icons.add(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));
@@ -676,7 +684,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
 					WebTable.Row row = null;
 					String unassignedMessage = MESSAGES.courseNotAssigned();
-					if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
+					if (course.getNote() != null)
+						unassignedMessage = course.getNote();
+					else if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
 						unassignedMessage = "";
 						for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
 							String x = i.next();
@@ -698,7 +708,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					
 					WebTable.IconsCell icons = new WebTable.IconsCell();
 					if (course.isLocked())
-						icons.add(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));
+						icons.add(RESOURCES.courseLocked(), course.getNote() != null ? course.getNote() : MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));
 					
 					WebTable.CheckboxCell waitList = null;
 					Boolean w = iCourseRequests.getWaitList(course.getCourseName());
@@ -823,6 +833,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							WebTable.Row row = null;
 							
 							WebTable.IconsCell icons = new WebTable.IconsCell();
+							if (clazz.hasError())
+								icons.add(RESOURCES.error(), clazz.getError());
 							if (clazz.isSaved())
 								icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 							if (clazz.isOfHighDemand())
@@ -884,6 +896,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						WebTable.Row row = null;
 						
 						WebTable.IconsCell icons = new WebTable.IconsCell();
+						if (clazz.hasError())
+							icons.add(RESOURCES.error(), clazz.getError());
 						if (clazz.isSaved())
 							icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 						if (clazz.isOfHighDemand())
@@ -980,6 +994,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			} else {
 				AriaStatus.getInstance().setHTML(ARIA.timetable());
 			}
+			if (result.hasMessages()) {
+				if (hasError)
+					UniTimeNotifications.error(result.getMessages("<br>"));
+				else 
+					UniTimeNotifications.warn(result.getMessages("<br>"));
+				iErrorMessage.setHTML(result.getMessages("<br>"));
+			}
 		} else {
 			iErrorMessage.setHTML(MESSAGES.noSchedule());
 			if (LoadingWidget.getInstance().isShowing())
@@ -1019,15 +1040,33 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			return;
 		}
 		LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
-		iSectioningService.checkEligibility(iOnline, sessionId, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
+		iSectioningService.checkEligibility(iOnline, sessionId, null, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 			@Override
 			public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
 				iEligibilityCheck = result;
 				if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_USE_ASSISTANT)) {
 					if (result.hasMessage())
 						UniTimeNotifications.warn(result.getMessage());
-					iSchedule.setVisible(true);
-					lastRequest(sessionId);
+					if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
+						if (iPinDialog == null) iPinDialog = new PinDialog();
+						LoadingWidget.getInstance().hide();
+						AsyncCallback<OnlineSectioningInterface.EligibilityCheck> callback = (new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								UniTimeNotifications.error(caught.getMessage());
+								iSchedule.setVisible(true);
+								lastRequest(sessionId);
+							}
+							@Override
+							public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
+								iSchedule.setVisible(true);
+								lastRequest(sessionId);
+							}
+						}); 
+						iPinDialog.checkEligibility(iOnline, sessionId, null, callback);
+					} else {
+						lastRequest(sessionId);
+					}
 				} else {
 					LoadingWidget.getInstance().hide();
 					if (result.hasMessage()) {

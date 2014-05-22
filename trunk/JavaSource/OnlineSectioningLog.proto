@@ -22,6 +22,8 @@
 option java_package = "org.unitime.timetable.onlinesectioning";
 
 message Entity {
+	extensions 100 to max;
+	
 	enum EntityType {
 		CLAZZ = 0;
 		COURSE = 1;
@@ -41,6 +43,12 @@ message Entity {
 	optional EntityType type = 2;
 	optional string external_id = 3;
 	optional string name = 4;
+}
+
+message UserEntity {
+	extend Entity {
+		optional string pin = 100;
+	}
 }
 
 message Time {
@@ -90,6 +98,7 @@ message Enrollment {
 		STORED = 3;
 		APPROVED = 4;
 		REJECTED = 5;
+		EXTERNAL = 6;
 	}
 	required EnrollmentType type = 1;
 	repeated Section section = 2;

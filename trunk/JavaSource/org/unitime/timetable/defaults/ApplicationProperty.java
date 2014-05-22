@@ -57,6 +57,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
+import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidTranslation;
 
@@ -1005,6 +1006,11 @@ public enum ApplicationProperty {
 	@Implements(CourseUrlProvider.class)
 	@Description("Customization: course catalog link provider (interface CourseUrlProvider)")
 	CustomizationCourseLink("unitime.custom.CourseUrlProvider"),
+	
+	@Type(Class.class)
+	@Implements(StudentEnrollmentProvider.class)
+	@Description("Customization: student enrollment provider (interface StudentEnrollmentProvider, used by Student Scheduling Assistant when the academic session is in the assistant mode)")
+	CustomizationStudentEnrollments("unitime.custom.StudentEnrollmentProvider"),
 	
 	@Type(Class.class)
 	@Implements(ExternalLinkLookup.class)

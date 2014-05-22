@@ -200,6 +200,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iExpected = null;
 		private String iNote = null;
 		private String iCredit = null;
+		private String iError = null;
 		
 		public ClassAssignment() {}
 		public ClassAssignment(CourseAssignment course) {
@@ -419,6 +420,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public boolean isSaved() { return iSaved; }
 		public void setSaved(boolean saved) { iSaved = saved; }
+		
+		public void setError(String error) { iError = error; }
+		public boolean hasError() { return iError != null && !iError.isEmpty(); }
+		public String getError() { return iError; }
 		
 		public void setExpected(Integer expected) { iExpected = expected; }
 		public boolean hasExpected() { return iExpected != null; }

@@ -28,5 +28,4 @@ public interface UserAuthenticationProvider {
 	
 	public String getUser();
 	public void setUser(String user, AsyncCallback<Boolean> callback);
-
 }

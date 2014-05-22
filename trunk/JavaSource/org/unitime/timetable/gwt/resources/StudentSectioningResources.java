@@ -71,8 +71,11 @@ public interface StudentSectioningResources extends ClientBundle {
 	@Source("org/unitime/timetable/gwt/resources/icons/lock_unlock.png")
 	ImageResource unlocked();
 	
-	@Source("org/unitime/timetable/gwt/resources/icons/error.png")
+	@Source("org/unitime/timetable/gwt/resources/icons/warning.png")
 	ImageResource courseLocked();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/error.png")
+	ImageResource error();
 
 	@Source("org/unitime/timetable/gwt/resources/icons/printer.png")
 	ImageResource print();
