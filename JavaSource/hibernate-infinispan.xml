@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns="urn:infinispan:config:5.1"
-            xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd">
+            xmlns="urn:infinispan:config:6.0"
+            xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd">
    <global>
       <transport
             transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport"
@@ -70,13 +70,9 @@
       <eviction strategy="NONE"/>
       <expiration wakeUpInterval="0"/>
       <transaction transactionMode="NON_TRANSACTIONAL"/>
-      <loaders passivation="false" shared="false" preload="false">
-         <loader class="org.infinispan.loaders.cluster.ClusterCacheLoader" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">
-            <properties>
-               <property name="remoteCallTimeout" value="20000"/>
-            </properties>
-         </loader>
-      </loaders>
+      <persistence passivation="false">
+      	<cluster remoteCallTimeout="20000"/>
+      </persistence>
    </namedCache>
 
 </infinispan>

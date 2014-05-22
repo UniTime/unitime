@@ -11,6 +11,14 @@
 	
 	<name>UniTime</name>
 	<url>http://code.google.com/p/unitime</url>
+	<description>
+		UniTime is a comprehensive educational scheduling system that supports developing course and exam timetables,
+		managing changes to these timetables, sharing rooms with other events, and scheduling students to individual
+		classes. It is a distributed system that allows multiple university and departmental schedule managers to coordinate
+		efforts to build and modify a schedule that meets their diverse organizational needs while allowing for minimization
+		of student course conflicts. It can be used alone to create and maintain a school's schedule of classes and/or exams,
+		or interfaced with an existing student information system.
+	</description>
 	
 	<organization>
 		<name>UniTime LLC</name>
@@ -87,6 +95,10 @@
 				<exclusion>
 					<groupId>org.hibernate</groupId>
 					<artifactId>hibernate-testing</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.rhq.helpers</groupId>
+					<artifactId>rhq-pluginAnnotations</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -410,7 +422,7 @@
 			<artifactId>joda-time</artifactId>
 			<version>${joda.version}</version>
 		</dependency>
-		<!-- To enable ojdbc14 dependency, you also need to install oracle jdbc driver: 
+		<!-- To enable ojdbc14 dependency, you also need to install oracle jdbc driver:
 				mvn install:install-file -DgroupId=com.oracle -DartifactId=ojdbc14 -Dversion=10.2.0.4.0 -Dpackaging=jar -Dfile=3rd_party/ojdbc14.jar -DgeneratePom=true
 		<dependency>
 			<groupId>com.oracle</groupId>
@@ -624,7 +636,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cpsolver.version>1.3-SNAPSHOT</cpsolver.version>
-		<hibernate.version>4.2.5.Final</hibernate.version>
+		<hibernate.version>4.3.5.Final</hibernate.version>
 		<itext.version>2.1.7</itext.version>
 		<struts.version>1.3.10</struts.version>
 		<layot.version>1.3</layot.version>
@@ -662,11 +674,11 @@
 	</properties>
 	
 	<distributionManagement>
-		<repository>
-			<id>unitime.org</id>
-			<name>UniTime Release Repository</name>
-			<url>ftp://unitime.org/releases</url>
-		</repository>
+		<site>
+			<id>builds.unitime.org</id>
+			<name>UniTime Nightly Builds</name>
+			<url>http://builds.unitime.org</url>			
+		</site>
 	</distributionManagement>
 	
 	<repositories>
