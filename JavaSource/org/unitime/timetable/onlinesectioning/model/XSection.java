@@ -66,6 +66,8 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     private boolean iAllowOverlap = false;
     private String iInstructionalType = null;
     private String iSubpartName = null;
+    private String iExternalId = null;
+    private Map<Long, String> iExternalIdByCourse = new HashMap<Long, String>();
 
     public XSection() {
     }
@@ -99,8 +101,16 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         iParentId = (clazz.getParentClass() == null ? null : clazz.getParentClass().getUniqueId());
         iSubpartId = clazz.getSchedulingSubpart().getUniqueId();
         iNote = clazz.getSchedulePrintNote();
-        for (CourseOffering course: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings())
+        iExternalId = clazz.getExternalUniqueId();
+        if (iExternalId == null)
+        	iExternalId = clazz.getClassLabel();
+        for (CourseOffering course: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
         	iNameByCourse.put(course.getUniqueId(), clazz.getClassSuffix(course));
+        	String extId = clazz.getExternalId(course);
+        	if (extId == null)
+        		extId = clazz.getClassLabel(course);
+        	iExternalIdByCourse.put(course.getUniqueId(), extId);
+        }
         iNameByCourse.put(-1l, clazz.getSectionNumberString(helper.getHibSession()));
         if (assignment != null) {
         	iTime = new XTime(assignment, helper.getExactTimeConversion());
@@ -142,6 +152,12 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     			i++;
     		}
     	}
+    }
+    
+    /** For testing only! */
+    @Deprecated
+    public XSection(String externalId) {
+    	iExternalId = externalId;
     }
     
     /** Section id */
@@ -214,6 +230,15 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         return (name == null ? getName() : name);
     }
     
+    /**
+     * Return course-dependent external id
+     */
+    public String getExternalId(long courseId) {
+        if (iExternalIdByCourse == null) return iExternalId;
+        String externalId = iExternalIdByCourse.get(courseId);
+        return (externalId == null ? iExternalId : externalId);
+    }
+
     /**
      * Return course-dependent section names
      */
@@ -392,6 +417,13 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 		iAllowOverlap = in.readBoolean();
 		iInstructionalType = (String)in.readObject();
 		iSubpartName = (String)in.readObject();
+		
+		iExternalId = (String)in.readObject();
+		int nrExtIds = in.readInt();
+		iExternalIdByCourse.clear();
+		for (int i = 0; i < nrExtIds; i++)
+			iExternalIdByCourse.put(in.readLong(), (String)in.readObject());
+
 	}
 
 	@Override
@@ -425,6 +457,13 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 		out.writeBoolean(iAllowOverlap);
 		out.writeObject(iInstructionalType);
 		out.writeObject(iSubpartName);
+		
+		out.writeObject(iExternalId);
+		out.writeInt(iExternalIdByCourse.size());
+		for (Map.Entry<Long, String> entry: iExternalIdByCourse.entrySet()) {
+			out.writeLong(entry.getKey());
+			out.writeObject(entry.getValue());
+		}
 	}
 	
 	public static class XSectionSerializer implements Externalizer<XSection> {

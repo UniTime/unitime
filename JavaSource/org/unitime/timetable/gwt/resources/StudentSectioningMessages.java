@@ -404,11 +404,17 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Please Log In ...")
 	String dialogAuthenticate();
 	
+	@DefaultMessage("Please enter your PIN ...")
+	String dialogPin();
+	
 	@DefaultMessage("Username:")
 	String username();
 	
 	@DefaultMessage("Password:")
 	String password();
+	
+	@DefaultMessage("PIN:")
+	String pin();
 	
 	@DefaultMessage("Log&nbsp;In")
 	String buttonUserLogin();
@@ -418,6 +424,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Lookup")
 	String buttonUserLookup();
+	
+	@DefaultMessage("<u>O</u>k")
+	String buttonSetPin();
 
 	@DefaultMessage("Guest")
 	String userGuest();
@@ -761,6 +770,15 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Student emails are disabled.")
 	String exceptionStudentEmailsDisabled();
 	
+	@DefaultMessage("Failed to create enrollment provider: {0}")
+	String exceptionStudentEnrollmentProvider(String message);
+	
+	@DefaultMessage("Eligibility check failed: {0}")
+	String exceptionFailedEligibilityCheck(String message);
+	
+	@DefaultMessage("Checking eligibility...")
+	String waitEligibilityCheck();
+	
 	@DefaultMessage("Filter assignments of the selected class by name, day, start time, date, room or instructor." +
 			"<br><br>You can also use the following tags:" +
 			"<ul>" +
@@ -898,6 +916,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Enrollment disabled.")
 	String exceptionEnrollmentDisabled();
+	
+	@DefaultMessage("Authentication PIN is required.")
+	String exceptionAuthenticationPinRequired();
+	
+	@DefaultMessage("Authentication PIN was not provided.")
+	String exceptionAuthenticationPinNotProvided();
 
 	@DefaultMessage("Status")
 	String colStatus();

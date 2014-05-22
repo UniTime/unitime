@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.aria.ClickableHint;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
@@ -66,6 +67,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class UserAuthentication extends Composite implements UserAuthenticationProvider {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
+	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 
 	private Label iUserLabel;
 	private ClickableHint iHint;
@@ -74,6 +76,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 	
 	private AriaTextBox iUserName;
 	private AriaPasswordTextBox iUserPassword;
+	private AriaTextBox iPin = null;
 	
 	private DialogBox iDialog;
 	
@@ -117,29 +120,43 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 			public void onClose(CloseEvent<PopupPanel> event) {
 				iUserName.setText("");
 				iUserPassword.setText("");
+				if (iPin != null) iPin.setText("");
 			}
 		});
 		
 		FlexTable grid = new FlexTable();
 		grid.setCellPadding(5);
 		grid.setCellSpacing(0);
-		grid.setText(0, 0, MESSAGES.username());
+		int row = 0;
+		grid.setText(row, 0, MESSAGES.username());
 		iUserName = new AriaTextBox();
 		iUserName.setStyleName("gwt-SuggestBox");
 		iUserName.setAriaLabel(ARIA.propUserName());
-		grid.setWidget(0, 1, iUserName);
-		grid.setText(1, 0, MESSAGES.password());
+		grid.setWidget(row, 1, iUserName);
+		row++;
+		
+		grid.setText(row, 0, MESSAGES.password());
 		iUserPassword = new AriaPasswordTextBox();
 		iUserPassword.setStyleName("gwt-SuggestBox");
 		iUserPassword.setAriaLabel(ARIA.propPassword());
-		grid.setWidget(1, 1, iUserPassword);
+		grid.setWidget(row, 1, iUserPassword);
+		row++;
+		
+		if (CONSTANTS.hasAuthenticationPin()) {
+			grid.setText(row, 0, MESSAGES.pin());
+			iPin = new AriaTextBox();
+			iPin.setStyleName("gwt-SuggestBox");
+			iPin.setAriaLabel(ARIA.propPinNumber());
+			grid.setWidget(row, 1, iPin);	
+			row++;
+		}
 		
 		iError = new Label();
 		iError.setStyleName("unitime-ErrorMessage");
 		iError.setVisible(false);
-		grid.getFlexCellFormatter().setColSpan(2, 0, 2);
-		grid.setWidget(2, 0, iError);
-
+		grid.getFlexCellFormatter().setColSpan(row, 0, 2);
+		grid.setWidget(row, 0, iError);
+		row++;
 		
 		HorizontalPanel buttonPanelWithPad = new HorizontalPanel();
 		buttonPanelWithPad.setWidth("100%");
@@ -148,8 +165,9 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 		buttonPanelWithPad.add(buttonPanel);
 		buttonPanelWithPad.setCellHorizontalAlignment(buttonPanel, HasHorizontalAlignment.ALIGN_RIGHT);
 
-		grid.getFlexCellFormatter().setColSpan(3, 0, 2);
-		grid.setWidget(3, 0, buttonPanelWithPad);
+		grid.getFlexCellFormatter().setColSpan(row, 0, 2);
+		grid.setWidget(row, 0, buttonPanelWithPad);
+		row++;
 		
 		iLogIn = new AriaButton(MESSAGES.buttonUserLogin());
 		buttonPanel.add(iLogIn);
@@ -165,7 +183,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 			@Override
 			public void onValueChange(ValueChangeEvent<PersonInterface> event) {
 				if (event.getValue() != null)
-					sSectioningService.logIn("LOOKUP", event.getValue().getId(), sAuthenticateCallback);
+					sSectioningService.logIn("LOOKUP", event.getValue().getId(), null, sAuthenticateCallback);
 			}
 		});
 		iLookup = new AriaButton(MESSAGES.buttonUserLookup());
@@ -241,6 +259,8 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 				iError.setVisible(true);
 				iUserName.setEnabled(true);
 				iUserPassword.setEnabled(true);
+				if (iPin != null)
+					iPin.setEnabled(true);
 				iLogIn.setEnabled(true);
 				iSkip.setEnabled(true);
 				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -254,6 +274,8 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 			public void onSuccess(String result) {
 				iUserName.setEnabled(true);
 				iUserPassword.setEnabled(true);
+				if (iPin != null)
+					iPin.setEnabled(true);
 				iLogIn.setEnabled(true);
 				iSkip.setEnabled(true);
 				iError.setVisible(false);
@@ -329,9 +351,11 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 		}
 		iUserName.setEnabled(false);
 		iUserPassword.setEnabled(false);
+		if (iPin != null)
+			iPin.setEnabled(false);
 		iLogIn.setEnabled(false);
 		iSkip.setEnabled(false);
-		sSectioningService.logIn(iUserName.getText(), iUserPassword.getText(), sAuthenticateCallback);
+		sSectioningService.logIn(iUserName.getText(), iUserPassword.getText(), (iPin == null ? null : iPin.getText()), sAuthenticateCallback);
 	}
 	
 	public void logOut() {
@@ -419,7 +443,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 	}
 	
 	public static void personFound(String externalUniqueId) {
-		sSectioningService.logIn("LOOKUP", externalUniqueId, sAuthenticateCallback);
+		sSectioningService.logIn("LOOKUP", externalUniqueId, null, sAuthenticateCallback);
 	}
 	
 	private native JavaScriptObject createLookupCallback() /*-{

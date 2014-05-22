@@ -55,6 +55,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XDistributionType;
@@ -120,7 +121,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		try {
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
-				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId());
+				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
 				enrolled = new HashSet<Long>();
 				for (XRequest r: original.getRequests()) {
 					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null)
@@ -176,7 +177,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		OnlineSectioningLog.Enrollment.Builder requested = OnlineSectioningLog.Enrollment.newBuilder();
 		requested.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
 		for (ClassAssignmentInterface.ClassAssignment a: getAssignment())
-			if (a != null)
+			if (a != null && a.isAssigned())
 				requested.addSection(OnlineSectioningHelper.toProto(a));
 		action.addEnrollment(requested);
 

@@ -47,10 +47,10 @@ public interface SectioningService extends RemoteService {
 	Collection<String> checkCourses(boolean online, CourseRequestInterface request) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface section(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
 	Collection<ClassAssignmentInterface> computeSuggestions(boolean online, CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignment, String filter) throws SectioningException, PageAccessException;
-	String logIn(String userName, String password) throws SectioningException, PageAccessException;
+	String logIn(String userName, String password, String pin) throws SectioningException, PageAccessException;
 	Boolean logOut() throws SectioningException, PageAccessException;
 	String whoAmI() throws SectioningException, PageAccessException;
-	OnlineSectioningInterface.EligibilityCheck checkEligibility(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
+	OnlineSectioningInterface.EligibilityCheck checkEligibility(boolean online, Long sessionId, Long studentId, String pin) throws SectioningException, PageAccessException;
 	AcademicSessionProvider.AcademicSessionInfo lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException;
 	CourseRequestInterface lastRequest(boolean online, Long sessionId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface lastResult(boolean online, Long sessionId) throws SectioningException, PageAccessException;

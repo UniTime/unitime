@@ -57,6 +57,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -110,6 +112,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
 		Set<Long> offeringIds = new HashSet<Long>();
 		Set<Long> lockedCourses = new HashSet<Long>();
+		List<EnrollmentFailure> failures = null;
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
 			if (ca != null && !ca.isFreeTime()) {
 				XCourse course = server.getCourse(ca.getCourseId());
@@ -170,7 +173,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(getRequest()))
 					action.addRequest(r);
 
-				server.createAction(CheckAssignmentAction.class).forStudent(getStudentId()).withAssignment(getAssignment()).check(server, helper);
+				Map<XCourse, List<XSection>> enrlCheck = server.createAction(CheckAssignmentAction.class).forStudent(getStudentId()).withAssignment(getAssignment()).check(server, helper);
 				
 				Student student = (Student)helper.getHibSession().createQuery(
 						"select s from Student s " +
@@ -192,6 +195,19 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				action.getStudentBuilder().setUniqueId(student.getUniqueId())
 					.setExternalId(oldStudent.getExternalId())
 					.setName(oldStudent.getName());
+				
+				if (CustomStudentEnrollmentHolder.hasProvider()) {
+					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck);
+					for (Iterator<ClassAssignmentInterface.ClassAssignment> i = getAssignment().iterator(); i.hasNext(); ) {
+						ClassAssignmentInterface.ClassAssignment ca = i.next();
+						if (ca == null || ca.isFreeTime() || ca.getClassId() == null) continue;
+						for (EnrollmentFailure f: failures) {
+							if (!f.isEnrolled() && f.getSection().getSectionId().equals(ca.getClassId())) {
+								i.remove();
+							}
+						}
+					}
+				}
 				
 				Set<CourseDemand> remaining = new TreeSet<CourseDemand>(student.getCourseDemands());
 				int priority = 0;
@@ -676,7 +692,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			lock.release();
 		}
 		
-		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()), helper.getUser());
+		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures), helper.getUser());
 	}
 	
 	public static int getLimit(Enrollment enrollment, Map<Long, XSection> sections) {

@@ -3230,3 +3230,21 @@ unitime-RoomSharingWidget .legend .blank {
   cursor: pointer;
   cursor: hand;
 }
+
+.unitime-ChangeLog {
+	width: 800px;
+}
+
+.unitime-ChangeLog .property {
+	max-width: 700px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.unitime-ChangeLog .proto {
+	max-width: 800px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}

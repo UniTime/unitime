@@ -23,6 +23,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -49,9 +50,13 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 	public CourseRequestInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Lock lock = server.readLock();
 		try {
+			OnlineSectioningLog.Action.Builder action = helper.getAction();
+			action.setStudent(OnlineSectioningLog.Entity.newBuilder().setUniqueId(iStudentId));
 			XStudent student = server.getStudent(iStudentId);
 			if (student == null) return null;
 			CourseRequestInterface request = new CourseRequestInterface();
+			action.getStudentBuilder().setExternalId(student.getExternalId());
+			action.getStudentBuilder().setName(student.getName());
 			request.setStudentId(iStudentId);
 			request.setSaved(true);
 			request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
@@ -107,6 +112,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 					lastRequest = r;
 					lastRequestPriority = cd.getPriority();
 				}
+				action.addRequest(OnlineSectioningHelper.toProto(cd));
 			}
 			return request;
 		} finally {

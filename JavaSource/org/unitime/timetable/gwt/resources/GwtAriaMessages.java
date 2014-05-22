@@ -77,6 +77,9 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Password")
 	String propPassword();
 	
+	@DefaultMessage("Pin number")
+	String propPinNumber();
+	
 	@DefaultMessage("User authentication dialog opened, please enter your user name and password.")
 	String authenticationDialogOpened();
 	

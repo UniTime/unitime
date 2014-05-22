@@ -37,6 +37,7 @@ import java.util.TreeSet;
 import org.apache.log4j.Logger;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -100,6 +101,7 @@ import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.basic.ListClasses;
 import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.DefaultCourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -134,7 +136,7 @@ import org.unitime.timetable.util.NameFormat;
  * @author Tomas Muller
  */
 @Service("sectioning.gwt")
-public class SectioningServlet implements SectioningService {
+public class SectioningServlet implements SectioningService, DisposableBean {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static Logger sLog = Logger.getLogger(SectioningServlet.class);
 	private CourseDetailsProvider iCourseDetailsProvider;
@@ -587,7 +589,11 @@ public class SectioningServlet implements SectioningService {
 		}
 	}
 	
-	public String logIn(String userName, String password) throws SectioningException, PageAccessException {
+	public String logIn(String userName, String password, String pin) throws SectioningException, PageAccessException {
+		if (pin != null && !pin.isEmpty())
+			getSessionContext().setAttribute("pin", pin);
+		else
+			getSessionContext().removeAttribute("pin");
 		if ("LOOKUP".equals(userName)) {
 			getSessionContext().checkPermission(Right.StudentSchedulingAdvisor);
 			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
@@ -650,6 +656,7 @@ public class SectioningServlet implements SectioningService {
 	
 	public Boolean logOut() throws SectioningException, PageAccessException {
 		getSessionContext().removeAttribute("user");
+		getSessionContext().removeAttribute("pin");
 		getSessionContext().removeAttribute("sessionId");
 		getSessionContext().removeAttribute("request");
 		if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)) 
@@ -1681,7 +1688,7 @@ public class SectioningServlet implements SectioningService {
 				return server.getAcademicSession().getUniqueId();
 			}
 			
-			EligibilityCheck check = checkEligibility(online, null, studentId);
+			EligibilityCheck check = checkEligibility(online, null, studentId, null);
 			if (check == null || !check.hasFlag(EligibilityFlag.CAN_ENROLL))
 				throw new SectioningException(check.getMessage());
 			
@@ -1799,17 +1806,24 @@ public class SectioningServlet implements SectioningService {
 	private OnlineSectioningLog.Entity currentUser() {
 		UserContext user = getSessionContext().getUser();
 		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
+		String pin = (String)getSessionContext().getAttribute("pin");
 		if (user != null) {
-			return OnlineSectioningLog.Entity.newBuilder()
-				.setExternalId(user.getExternalUserId())
-				.setName(user.getName() == null ? user.getUsername() : user.getName())
-				.setType(getSessionContext().hasPermission(Right.StudentSchedulingAdvisor) ?
-						 OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT).build();
+			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
+					.setExternalId(user.getExternalUserId())
+					.setName(user.getName() == null ? user.getUsername() : user.getName())
+					.setType(getSessionContext().hasPermission(Right.StudentSchedulingAdvisor) ?
+							OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT);
+			if (pin != null)
+				entity.setExtension(OnlineSectioningLog.UserEntity.pin, pin);
+			return entity.build();
 		} else if (principal != null) {
-			return OnlineSectioningLog.Entity.newBuilder()
-				.setExternalId(principal.getExternalId())
-				.setName(principal.getName())
-				.setType(OnlineSectioningLog.Entity.EntityType.STUDENT).build();
+			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
+					.setExternalId(principal.getExternalId())
+					.setName(principal.getName())
+					.setType(OnlineSectioningLog.Entity.EntityType.STUDENT);
+			if (pin != null)
+				entity.setExtension(OnlineSectioningLog.UserEntity.pin, pin);
+			return entity.build();
 		} else {
 			return null;
 		}
@@ -1871,8 +1885,10 @@ public class SectioningServlet implements SectioningService {
 	}
 
 	@Override
-	public EligibilityCheck checkEligibility(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException {
+	public EligibilityCheck checkEligibility(boolean online, Long sessionId, Long studentId, String pin) throws SectioningException, PageAccessException {
 		try {
+			if (pin != null && !pin.isEmpty()) getSessionContext().setAttribute("pin", pin);
+			
 			if (!online) {
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
@@ -1919,5 +1935,10 @@ public class SectioningServlet implements SectioningService {
 			sLog.error(e.getMessage(), e);
 			return new EligibilityCheck(MSG.exceptionUnknown(e.getMessage()));
 		}
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		CustomStudentEnrollmentHolder.release();
 	}
 }

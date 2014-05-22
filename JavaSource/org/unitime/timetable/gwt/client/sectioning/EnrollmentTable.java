@@ -53,6 +53,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
@@ -380,7 +381,7 @@ public class EnrollmentTable extends Composite {
 	}
 	
 	public void showStudentAssistant(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
-		iSectioningService.checkEligibility(iOnline, null, student.getId(), new AsyncCallback<EligibilityCheck>() {
+		iSectioningService.checkEligibility(iOnline, null, student.getId(), null, new AsyncCallback<EligibilityCheck>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				callback.onFailure(caught);
@@ -391,73 +392,85 @@ public class EnrollmentTable extends Composite {
 					callback.onSuccess(false);
 					return;
 				}
+				
+				if (check.hasMessage())
+					UniTimeNotifications.warn(check.getMessage());
 
-				UserAuthenticationProvider user = new UserAuthenticationProvider() {
-					@Override
-					public String getUser() {
-						return student.getName();
-					}
-					@Override
-					public void setUser(String user, AsyncCallback<Boolean> callback) {
-					}
-				};
-				
-				AcademicSessionProvider session = new AcademicSessionProvider() {
-					@Override
-					public Long getAcademicSessionId() {
-						return check.getSessionId();
-					}
-					@Override
-					public String getAcademicSessionName() {
-						return "Current Session";
-					}
-					@Override
-					public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {
-					}
-					@Override
-					public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
-					}
-					@Override
-					public AcademicSessionInfo getAcademicSessionInfo() {
-						return null;
-					}
-				};
-												
-				final StudentSectioningWidget widget = new StudentSectioningWidget(iOnline, session, user, StudentSectioningPage.Mode.SECTIONING, false, check);
-				
-				iSectioningService.logIn(iOnline ? "LOOKUP" : "BATCH", iOnline ? student.getExternalId() : String.valueOf(student.getId()), new AsyncCallback<String>() {
+				AsyncCallback<OnlineSectioningInterface.EligibilityCheck> cb = (new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						callback.onFailure(caught);
 					}
 					@Override
-					public void onSuccess(String result) {
-						iSectioningService.savedRequest(iOnline, student.getId(), new AsyncCallback<CourseRequestInterface>() {
+					public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
+						UserAuthenticationProvider user = new UserAuthenticationProvider() {
+							@Override
+							public String getUser() {
+								return student.getName();
+							}
+							@Override
+							public void setUser(String user, AsyncCallback<Boolean> callback) {
+							}
+						};
+						
+						AcademicSessionProvider session = new AcademicSessionProvider() {
+							@Override
+							public Long getAcademicSessionId() {
+								return check.getSessionId();
+							}
+							@Override
+							public String getAcademicSessionName() {
+								return "Current Session";
+							}
+							@Override
+							public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {
+							}
+							@Override
+							public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
+							}
+							@Override
+							public AcademicSessionInfo getAcademicSessionInfo() {
+								return null;
+							}
+						};
+						
+						final StudentSectioningWidget widget = new StudentSectioningWidget(iOnline, session, user, StudentSectioningPage.Mode.SECTIONING, false, check);
+						
+						iSectioningService.logIn(iOnline ? "LOOKUP" : "BATCH", iOnline ? student.getExternalId() : String.valueOf(student.getId()), null, new AsyncCallback<String>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								callback.onFailure(caught);
 							}
 							@Override
-							public void onSuccess(final CourseRequestInterface request) {
-								iSectioningService.savedResult(iOnline, student.getId(), new AsyncCallback<ClassAssignmentInterface>() {
+							public void onSuccess(String result) {
+								iSectioningService.savedRequest(iOnline, student.getId(), new AsyncCallback<CourseRequestInterface>() {
 									@Override
 									public void onFailure(Throwable caught) {
 										callback.onFailure(caught);
 									}
-
 									@Override
-									public void onSuccess(ClassAssignmentInterface result) {
-										widget.setData(request, result);
-										final UniTimeDialogBox d = new UniTimeDialogBox(true, false);
-										d.setWidget(widget);
-										d.setText(MESSAGES.dialogAssistant(student.getName()));
-										d.setEscapeToHide(true);
-										callback.onSuccess(true);
-										d.center();
-										widget.addResizeHandler(new ResizeHandler() {
+									public void onSuccess(final CourseRequestInterface request) {
+										iSectioningService.savedResult(iOnline, student.getId(), new AsyncCallback<ClassAssignmentInterface>() {
 											@Override
-											public void onResize(ResizeEvent event) {
+											public void onFailure(Throwable caught) {
+												callback.onFailure(caught);
+											}
+
+											@Override
+											public void onSuccess(ClassAssignmentInterface result) {
+												widget.setData(request, result);
+												final UniTimeDialogBox d = new UniTimeDialogBox(true, false);
+												d.setWidget(widget);
+												d.setText(MESSAGES.dialogAssistant(student.getName()));
+												d.setEscapeToHide(true);
+												callback.onSuccess(true);
 												d.center();
+												widget.addResizeHandler(new ResizeHandler() {
+													@Override
+													public void onResize(ResizeEvent event) {
+														d.center();
+													}
+												});
 											}
 										});
 									}
@@ -465,7 +478,15 @@ public class EnrollmentTable extends Composite {
 							}
 						});
 					}
-				});				
+				}); 
+				
+				if (check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
+					LoadingWidget.getInstance().hide();
+					PinDialog pd = new PinDialog();
+					pd.checkEligibility(iOnline, check.getSessionId(), student.getId(), cb);
+				} else {
+					cb.onSuccess(check);
+				}
 			}
 		});
 	}
