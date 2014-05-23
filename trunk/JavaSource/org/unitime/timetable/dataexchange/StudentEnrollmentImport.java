@@ -19,12 +19,14 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.dom4j.Element;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -33,6 +35,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
+import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -123,13 +126,16 @@ public class StudentEnrollmentImport extends BaseImport {
 	        }
 	        
 	        info("Importing enrollments...");
- 	        for (Iterator i = rootElement.elementIterator("student"); i.hasNext(); ) {
+	        Date ts = new Date();
+	        for (Iterator i = rootElement.elementIterator("student"); i.hasNext(); ) {
 	            Element studentElement = (Element) i.next();
 	            
 	            String externalId = studentElement.attributeValue("externalId");
 	            if (externalId == null) continue;
 	            while (trimLeadingZerosFromExternalId && externalId.startsWith("0")) externalId = externalId.substring(1);
 	            
+	            boolean fixCourseDemands = false;
+	 	        
             	Student student = students.remove(externalId);
             	if (student == null) {
             		student = new Student();
@@ -149,6 +155,11 @@ public class StudentEnrollmentImport extends BaseImport {
             	for (StudentClassEnrollment enrollment: student.getClassEnrollments()) {
             		enrollments.put(new Pair(enrollment.getCourseOffering().getUniqueId(), enrollment.getClazz().getUniqueId()), enrollment);
             	}
+            	int nextPriority = 0;
+            	for (CourseDemand cd: student.getCourseDemands())
+            		if (!cd.isAlternative() && cd.getPriority() >= nextPriority)
+            			nextPriority = cd.getPriority() + 1;
+            	Set<CourseDemand> remaining = new TreeSet<CourseDemand>(student.getCourseDemands());
             	
             	for (Iterator j = studentElement.elementIterator("class"); j.hasNext(); ) {
             		Element classElement = (Element) j.next();
@@ -211,7 +222,7 @@ public class StudentEnrollmentImport extends BaseImport {
             		enrollment.setStudent(student);
             		enrollment.setClazz(clazz);
             		enrollment.setCourseOffering(course);
-            		enrollment.setTimestamp(new java.util.Date());
+            		enrollment.setTimestamp(ts);
             		enrollment.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
             		student.getClassEnrollments().add(enrollment);
             		
@@ -222,6 +233,30 @@ public class StudentEnrollmentImport extends BaseImport {
             					break demands;
             				}
             			}
+            		}
+            		
+            		if (enrollment.getCourseRequest() != null) {
+            			remaining.remove(enrollment.getCourseRequest().getCourseDemand());
+            		} else {
+            			CourseDemand cd = new CourseDemand();
+    					cd.setTimestamp(ts);
+    					cd.setCourseRequests(new HashSet<CourseRequest>());
+    					cd.setStudent(student);
+    					student.getCourseDemands().add(cd);
+    					cd.setAlternative(false);
+    					cd.setPriority(nextPriority++);
+    					cd.setWaitlist(false);
+    					CourseRequest cr = new CourseRequest();
+						cd.getCourseRequests().add(cr);
+						cr.setCourseDemand(cd);
+						cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
+						cr.setAllowOverlap(false);
+						cr.setCredit(0);
+						cr.setOrder(0);
+						cr.setCourseOffering(enrollment.getCourseOffering());
+						enrollment.setCourseRequest(cr);
+						cr.getClassEnrollments().add(enrollment);
+						fixCourseDemands = true;
             		}
             		
             		if (student.getUniqueId() != null) updatedStudents.add(student.getUniqueId());
@@ -239,6 +274,23 @@ public class StudentEnrollmentImport extends BaseImport {
             		updatedStudents.add((Long)getHibSession().save(student));
             	} else {
             		getHibSession().update(student);
+            	}
+            	
+            	if (fixCourseDemands) {
+            		// removed unused course demands
+            		for (CourseDemand cd: remaining) {
+            			if (cd.getFreeTime() != null)
+            				getHibSession().delete(cd.getFreeTime());
+            			for (CourseRequest cr: cd.getCourseRequests())
+            				getHibSession().delete(cr);
+            			student.getCourseDemands().remove(cd);
+            			getHibSession().delete(cd);
+            		}
+            		int priority = 0;
+            		for (CourseDemand cd: new TreeSet<CourseDemand>(student.getCourseDemands())) {
+            			cd.setPriority(priority++);
+            			getHibSession().saveOrUpdate(cd);
+            		}
             	}
 
 	        }
