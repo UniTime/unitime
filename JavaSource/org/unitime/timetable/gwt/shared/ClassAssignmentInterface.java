@@ -480,6 +480,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public static class Student implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private long iId;
+		private Long iSessionId = null;
 		private String iExternalId, iName;
 		private List<String> iArea, iClassification, iMajor, iGroup, iAccommodation;
 		
@@ -487,6 +488,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public void setId(long id) { iId = id; }
 		public long getId() { return iId; }
+		
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public Long getSessionId() { return iSessionId; }
 		
 		public String getExternalId() { return iExternalId; }
 		public void setExternalId(String externalId) { iExternalId = externalId; }

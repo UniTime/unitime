@@ -487,6 +487,7 @@ public class SectioningStatusPage extends Composite {
 			iSectioningService.lastAcademicSession(true, new AsyncCallback<AcademicSessionProvider.AcademicSessionInfo>() {
 				@Override
 				public void onFailure(Throwable caught) {
+					ToolBox.checkAccess(caught);
 					UniTimePageHeader header = (UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0);
 					AcademicSessionSelector session = new AcademicSessionSelector(StudentSectioningPage.Mode.SECTIONING);
 					header.setSessionSelector(session);

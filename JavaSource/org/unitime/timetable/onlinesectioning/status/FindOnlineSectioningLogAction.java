@@ -103,6 +103,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					if (student == null) continue;
 					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 					st.setId(student.getStudentId());
+					st.setSessionId(server.getAcademicSession().getUniqueId());
 					st.setExternalId(student.getExternalId());
 					st.setName(student.getName());
 					for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {

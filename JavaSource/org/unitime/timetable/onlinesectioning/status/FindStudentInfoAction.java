@@ -111,6 +111,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						students.put(request.getStudentId(), s);
 						ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
 						st.setId(request.getStudentId());
+						st.setSessionId(server.getAcademicSession().getUniqueId());
 						st.setExternalId(student.getExternalId());
 						st.setName(student.getName());
 						for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
@@ -211,6 +212,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			StudentInfo s = new StudentInfo();
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
 			st.setId(student.getStudentId());
+			st.setSessionId(server.getAcademicSession().getUniqueId());
 			st.setExternalId(student.getExternalId());
 			st.setName(student.getName());
 			for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {

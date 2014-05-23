@@ -52,8 +52,6 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
-import org.unitime.timetable.gwt.shared.CourseRequestInterface;
-import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
@@ -307,23 +305,20 @@ public class EnrollmentTable extends Composite {
 				buttons.addButton("assistant", MESSAGES.buttonAssistant(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {
-						LoadingWidget.getInstance().show(MESSAGES.loadingAssistant(student.getName()));
 						showStudentAssistant(student, new AsyncCallback<Boolean>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								LoadingWidget.getInstance().hide();
 								UniTimeNotifications.error(caught);
 							}
 							@Override
 							public void onSuccess(Boolean result) {
-								LoadingWidget.getInstance().hide();
 								if (result)
 									dialog.hide();
 							}
 						});
 					}
 				});
-				buttons.setEnabled("assistant", false);
+				buttons.setEnabled("assistant", student.getSessionId() != null);
 				if (iOnline) {
 					buttons.addButton("log", MESSAGES.buttonChangeLog(), new ClickHandler() {
 						@Override
@@ -357,136 +352,93 @@ public class EnrollmentTable extends Composite {
 						iEnrollments.clearHover();
 					}
 				});
+				/*
 				buttons.showLoading();
 				if (iOnline) {
-					iSectioningService.canEnroll(iOnline, student.getId(), new AsyncCallback<Long>() {
+					iSectioningService.checkEligibility(iOnline, null, student.getId(), null, new AsyncCallback<EligibilityCheck>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							buttons.clearMessage();
 						}
-
 						@Override
-						public void onSuccess(Long result) {
+						public void onSuccess(EligibilityCheck result) {
 							buttons.clearMessage();
-							buttons.setEnabled("assistant", result != null);
+							buttons.setEnabled("assistant", result.hasFlag(EligibilityCheck.EligibilityFlag.CAN_USE_ASSISTANT));
 						}
-					});					
+					});
 				} else {
 					buttons.setEnabled("assistant", true);
 					buttons.clearMessage();
-				}
+				}*/
 				dialog.center();
 			}
 		});
 	}
 	
 	public void showStudentAssistant(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
-		iSectioningService.checkEligibility(iOnline, null, student.getId(), null, new AsyncCallback<EligibilityCheck>() {
+		UserAuthenticationProvider user = new UserAuthenticationProvider() {
+			@Override
+			public String getUser() {
+				return student.getName();
+			}
+			@Override
+			public void setUser(String user, AsyncCallback<Boolean> callback) {
+			}
+		};
+		
+		AcademicSessionProvider session = new AcademicSessionProvider() {
+			@Override
+			public Long getAcademicSessionId() {
+				return student.getSessionId();
+			}
+			@Override
+			public String getAcademicSessionName() {
+				return "Current Session";
+			}
+			@Override
+			public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {
+			}
+			@Override
+			public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
+			}
+			@Override
+			public AcademicSessionInfo getAcademicSessionInfo() {
+				return null;
+			}
+		};
+		
+		final StudentSectioningWidget widget = new StudentSectioningWidget(iOnline, session, user, StudentSectioningPage.Mode.SECTIONING, false);
+		
+		iSectioningService.logIn(iOnline ? "LOOKUP" : "BATCH", iOnline ? student.getExternalId() : String.valueOf(student.getId()), null, new AsyncCallback<String>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				callback.onFailure(caught);
 			}
 			@Override
-			public void onSuccess(final EligibilityCheck check) {
-				if (check == null) {
-					callback.onSuccess(false);
-					return;
-				}
-				
-				if (check.hasMessage())
-					UniTimeNotifications.warn(check.getMessage());
+			public void onSuccess(String result) {
+				widget.checkEligibility(student.getSessionId(), student.getId(), true, new AsyncCallback<EligibilityCheck>() {
 
-				AsyncCallback<OnlineSectioningInterface.EligibilityCheck> cb = (new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						callback.onFailure(caught);
 					}
-					@Override
-					public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
-						UserAuthenticationProvider user = new UserAuthenticationProvider() {
-							@Override
-							public String getUser() {
-								return student.getName();
-							}
-							@Override
-							public void setUser(String user, AsyncCallback<Boolean> callback) {
-							}
-						};
-						
-						AcademicSessionProvider session = new AcademicSessionProvider() {
-							@Override
-							public Long getAcademicSessionId() {
-								return check.getSessionId();
-							}
-							@Override
-							public String getAcademicSessionName() {
-								return "Current Session";
-							}
-							@Override
-							public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {
-							}
-							@Override
-							public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
-							}
-							@Override
-							public AcademicSessionInfo getAcademicSessionInfo() {
-								return null;
-							}
-						};
-						
-						final StudentSectioningWidget widget = new StudentSectioningWidget(iOnline, session, user, StudentSectioningPage.Mode.SECTIONING, false, check);
-						
-						iSectioningService.logIn(iOnline ? "LOOKUP" : "BATCH", iOnline ? student.getExternalId() : String.valueOf(student.getId()), null, new AsyncCallback<String>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								callback.onFailure(caught);
-							}
-							@Override
-							public void onSuccess(String result) {
-								iSectioningService.savedRequest(iOnline, student.getId(), new AsyncCallback<CourseRequestInterface>() {
-									@Override
-									public void onFailure(Throwable caught) {
-										callback.onFailure(caught);
-									}
-									@Override
-									public void onSuccess(final CourseRequestInterface request) {
-										iSectioningService.savedResult(iOnline, student.getId(), new AsyncCallback<ClassAssignmentInterface>() {
-											@Override
-											public void onFailure(Throwable caught) {
-												callback.onFailure(caught);
-											}
 
-											@Override
-											public void onSuccess(ClassAssignmentInterface result) {
-												widget.setData(request, result);
-												final UniTimeDialogBox d = new UniTimeDialogBox(true, false);
-												d.setWidget(widget);
-												d.setText(MESSAGES.dialogAssistant(student.getName()));
-												d.setEscapeToHide(true);
-												callback.onSuccess(true);
-												d.center();
-												widget.addResizeHandler(new ResizeHandler() {
-													@Override
-													public void onResize(ResizeEvent event) {
-														d.center();
-													}
-												});
-											}
-										});
-									}
-								});
+					@Override
+					public void onSuccess(EligibilityCheck result) {
+						final UniTimeDialogBox d = new UniTimeDialogBox(true, false);
+						d.setWidget(widget);
+						d.setText(MESSAGES.dialogAssistant(student.getName()));
+						d.setEscapeToHide(true);
+						callback.onSuccess(true);
+						d.center();
+						widget.addResizeHandler(new ResizeHandler() {
+							@Override
+							public void onResize(ResizeEvent event) {
+								d.center();
 							}
 						});
 					}
-				}); 
-				
-				if (check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
-					LoadingWidget.getInstance().hide();
-					PinDialog pd = new PinDialog();
-					pd.checkEligibility(iOnline, check.getSessionId(), student.getId(), cb);
-				} else {
-					cb.onSuccess(check);
-				}
+				});
 			}
 		});
 	}
