@@ -99,6 +99,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 			st.setId(student.getStudentId());
+			st.setSessionId(server.getAcademicSession().getUniqueId());
 			st.setExternalId(student.getExternalId());
 			st.setName(student.getName());
 			for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {

@@ -59,7 +59,7 @@ public class SectioningStatusFilterBackend implements GwtRpcImplementation<Secti
 			
 			if (context.isAuthenticated()) {
 				request.setOption("user", context.getUser().getExternalUserId());
-				if (context.getUser().getCurrentAuthority().hasRight(Right.ConsentApproval))
+				if (context.getUser().getCurrentAuthority() != null && context.getUser().getCurrentAuthority().hasRight(Right.ConsentApproval))
 					request.setOption("approval", "true");
 			}
 

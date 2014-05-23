@@ -1081,6 +1081,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						if (e == null) {
 							ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 							st.setId(enrollment.getStudent().getUniqueId());
+							st.setSessionId(enrollment.getStudent().getSession().getUniqueId());
 							st.setExternalId(enrollment.getStudent().getExternalUniqueId());
 							st.setName(nameFormat.format(enrollment.getStudent()));
 							for (AcademicAreaClassification ac: enrollment.getStudent().getAcademicAreaClassifications()) {
@@ -1175,6 +1176,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							if (e != null) continue;
 							ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 							st.setId(request.getCourseDemand().getStudent().getUniqueId());
+							st.setSessionId(request.getCourseDemand().getStudent().getSession().getUniqueId());
 							st.setExternalId(request.getCourseDemand().getStudent().getExternalUniqueId());
 							st.setName(nameFormat.format(request.getCourseDemand().getStudent()));
 							for (AcademicAreaClassification ac: request.getCourseDemand().getStudent().getAcademicAreaClassifications()) {
@@ -1713,9 +1715,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public CourseRequestInterface savedRequest(boolean online, Long studentId) throws SectioningException, PageAccessException {
+	public CourseRequestInterface savedRequest(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException {
 		if (online) {
-			OnlineSectioningServer server = getServerInstance(canEnroll(online, studentId));
+			OnlineSectioningServer server = getServerInstance(sessionId == null ? canEnroll(online, studentId) : sessionId);
 			return server.execute(server.createAction(GetRequest.class).forStudent(studentId), currentUser());
 		} else {
 			OnlineSectioningServer server = getStudentSolver();
@@ -1727,9 +1729,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public ClassAssignmentInterface savedResult(boolean online, Long studentId) throws SectioningException, PageAccessException {
+	public ClassAssignmentInterface savedResult(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException {
 		if (online) {
-			OnlineSectioningServer server = getServerInstance(canEnroll(online, studentId));
+			OnlineSectioningServer server = getServerInstance(sessionId == null ? canEnroll(online, studentId) : sessionId);
 			return server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
 		} else {
 			OnlineSectioningServer server = getStudentSolver();

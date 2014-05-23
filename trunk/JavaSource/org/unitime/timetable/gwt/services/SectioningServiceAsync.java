@@ -67,8 +67,8 @@ public interface SectioningServiceAsync {
 	void querySuggestions(boolean online, String query, int limit, AsyncCallback<List<String[]>> callback) throws SectioningException, PageAccessException;
 	void lastStatusQuery(AsyncCallback<String> callback) throws SectioningException, PageAccessException;
 	void canEnroll(boolean online, Long studentId, AsyncCallback<Long> callback) throws SectioningException, PageAccessException;
-	void savedRequest(boolean online, Long studentId, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
-	void savedResult(boolean online, Long studentId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
+	void savedRequest(boolean online, Long sessionId, Long studentId, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
+	void savedResult(boolean online, Long sessionId, Long studentId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 	void selectSession(Long sessionId, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void lookupStudentSectioningStates(AsyncCallback<Map<String, String>> callback) throws SectioningException, PageAccessException;
 	void sendEmail(Long studentId, String subject, String message, String cc, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
