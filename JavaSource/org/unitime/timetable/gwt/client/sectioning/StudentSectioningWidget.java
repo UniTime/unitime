@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
@@ -118,8 +119,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private OnlineSectioningInterface.EligibilityCheck iEligibilityCheck = null;
 	private PinDialog iPinDialog = null;
 
-	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history, OnlineSectioningInterface.EligibilityCheck check) {
-		iEligibilityCheck = check;
+	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
 		iOnline = online;
 		iSessionSelector = sessionSelector;
@@ -1034,13 +1034,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 	}
 	
-	public void checkEligibility(final Long sessionId) {
+	public void checkEligibility(final Long sessionId, final Long studentId, final boolean saved, final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret) {
 		if (!iOnline || !iMode.isSectioning()) {
-			lastRequest(sessionId);
+			lastRequest(sessionId, studentId, saved);
+			if (ret != null) ret.onSuccess(null);
 			return;
 		}
 		LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
-		iSectioningService.checkEligibility(iOnline, sessionId, null, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
+		iSectioningService.checkEligibility(iOnline, sessionId, studentId, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 			@Override
 			public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
 				iEligibilityCheck = result;
@@ -1055,17 +1056,21 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							public void onFailure(Throwable caught) {
 								UniTimeNotifications.error(caught.getMessage());
 								iSchedule.setVisible(true);
-								lastRequest(sessionId);
+								lastRequest(sessionId, studentId, saved);
+								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
 							@Override
 							public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
+								iEligibilityCheck = result;
 								iSchedule.setVisible(true);
-								lastRequest(sessionId);
+								lastRequest(sessionId, studentId, saved);
+								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
 						}); 
 						iPinDialog.checkEligibility(iOnline, sessionId, null, callback);
 					} else {
-						lastRequest(sessionId);
+						lastRequest(sessionId, studentId, saved);
+						if (ret != null) ret.onSuccess(iEligibilityCheck);
 					}
 				} else {
 					LoadingWidget.getInstance().hide();
@@ -1075,6 +1080,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						UniTimeNotifications.error(result.getMessage());
 						iSchedule.setVisible(false);
 					}
+					if (ret != null) ret.onFailure(new SectioningException(result.getMessage()));
 				}
 			}
 			
@@ -1082,14 +1088,62 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
 				iEligibilityCheck = null;
+				if (ret != null) ret.onFailure(caught);
 			}
 		});
 	}
 	
-	public void lastRequest(Long sessionId) {
+	private void lastResult(final CourseRequestInterface request, boolean saved) {
+		AsyncCallback<ClassAssignmentInterface> callback = new AsyncCallback<ClassAssignmentInterface>() {
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+			}
+			public void onSuccess(final ClassAssignmentInterface saved) {
+				iSavedAssignment = saved;
+				iShowUnassignments.setVisible(true);
+				if (request.isSaved()) {
+					fillIn(saved);
+					addHistory();
+				} else {
+					iCourseRequests.validate(new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+						}
+						@Override
+						public void onSuccess(Boolean result) {
+							if (result) {
+								ArrayList<ClassAssignmentInterface.ClassAssignment> classes = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
+								for (ClassAssignmentInterface.CourseAssignment course: saved.getCourseAssignments())
+									classes.addAll(course.getClassAssignments());
+								iSectioningService.section(iOnline, request, classes, new AsyncCallback<ClassAssignmentInterface>() {
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+									}
+									public void onSuccess(ClassAssignmentInterface result) {
+										fillIn(result);
+										addHistory();
+									}
+								});
+							} else {
+								LoadingWidget.getInstance().hide();
+							}
+						}
+					});
+				}
+			}
+		};
+		if (saved)
+			iSectioningService.savedResult(iOnline, request.getAcademicSessionId(), request.getStudentId(), callback);
+		else
+			iSectioningService.lastResult(iOnline, request.getAcademicSessionId(), callback);
+	}
+	
+	public void lastRequest(Long sessionId, Long studentId, final boolean saved) {
 		if (!LoadingWidget.getInstance().isShowing())
 			LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
-		iSectioningService.lastRequest(iOnline, sessionId, new AsyncCallback<CourseRequestInterface>() {
+		
+		AsyncCallback<CourseRequestInterface> callback =  new AsyncCallback<CourseRequestInterface>() {
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
 			}
@@ -1101,52 +1155,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				clear();
 				iCourseRequests.setRequest(request);
 				if (iSchedule.isVisible()) {
-					iSectioningService.lastResult(iOnline, request.getAcademicSessionId(), new AsyncCallback<ClassAssignmentInterface>() {
-						public void onFailure(Throwable caught) {
-							LoadingWidget.getInstance().hide();
-						}
-						public void onSuccess(final ClassAssignmentInterface saved) {
-							iSavedAssignment = saved;
-							iShowUnassignments.setVisible(true);
-							if (request.isSaved()) {
-								fillIn(saved);
-								addHistory();
-							} else {
-								iCourseRequests.validate(new AsyncCallback<Boolean>() {
-									@Override
-									public void onFailure(Throwable caught) {
-										LoadingWidget.getInstance().hide();
-									}
-									@Override
-									public void onSuccess(Boolean result) {
-										if (result) {
-											ArrayList<ClassAssignmentInterface.ClassAssignment> classes = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
-											for (ClassAssignmentInterface.CourseAssignment course: saved.getCourseAssignments())
-												classes.addAll(course.getClassAssignments());
-											iSectioningService.section(iOnline, request, classes, new AsyncCallback<ClassAssignmentInterface>() {
-												public void onFailure(Throwable caught) {
-													LoadingWidget.getInstance().hide();
-												}
-												public void onSuccess(ClassAssignmentInterface result) {
-													fillIn(result);
-													addHistory();
-												}
-											});
-										} else {
-											LoadingWidget.getInstance().hide();
-										}
-									}
-								});
-							}
-						}
-					});
+					lastResult(request, saved);
 				} else {
 					LoadingWidget.getInstance().hide();
 				}
 			}
-		});
+		};
+		
+		if (saved)
+			iSectioningService.savedRequest(iOnline, sessionId, studentId, callback);
+		else
+			iSectioningService.lastRequest(iOnline, sessionId, callback);
 	}
-	
+
 	public void showSuggestionsAsync(final int rowIndex) {
 		if (rowIndex < 0) return;
 		GWT.runAsync(new RunAsyncCallback() {
