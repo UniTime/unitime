@@ -55,6 +55,9 @@
 <!ATTLIST class parent CDATA #IMPLIED >
 <!ATTLIST class startTime CDATA #IMPLIED >
 <!ATTLIST class time CDATA #IMPLIED >
+<!ATTLIST class externalId CDATA #IMPLIED >
+<!ATTLIST class type CDATA #IMPLIED >
+<!ATTLIST class suffix CDATA #IMPLIED >
 
 <!ELEMENT courseOffering ( alternative | class )* >
 <!ATTLIST courseOffering alternative ( false | true ) #IMPLIED >
