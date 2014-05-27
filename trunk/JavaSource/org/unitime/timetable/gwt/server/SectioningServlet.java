@@ -389,7 +389,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						session.getUniqueId(),
 						session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
 						MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()),
-						session.getStatusType().canOnlineSectionStudents()));
+						session.getStatusType().canOnlineSectionStudents() && CustomStudentEnrollmentHolder.isAllowWaitListing()));
 			}
 		} else {
 			for (Session session: SessionDAO.getInstance().findAll()) {
@@ -399,7 +399,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							session.getUniqueId(),
 							session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
 							MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()),
-							true));
+							CustomStudentEnrollmentHolder.isAllowWaitListing()));
 			}
 		}
 		if (ret.isEmpty()) {
@@ -725,7 +725,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					s.getUniqueId(),
 					s.getYear(), s.getTerm(), s.getCampus(),
 					MSG.sessionName(s.getYear(), s.getTerm(), s.getCampus()),
-					s.isSectioningEnabled());
+					s.isSectioningEnabled() && CustomStudentEnrollmentHolder.isAllowWaitListing());
 		} else {
 			Session session = SessionDAO.getInstance().get(sessionId);
 			if (session == null || session.getStatusType().isTestSession())
@@ -736,7 +736,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					session.getUniqueId(),
 					session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
 					MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()),
-					true);
+					CustomStudentEnrollmentHolder.isAllowWaitListing());
 		}
 	}
 	
