@@ -110,16 +110,20 @@ public class CurriculaServlet implements CurriculaService {
 	private static DecimalFormat sDF = new DecimalFormat("0.0");
 	private CourseDetailsProvider iCourseDetailsProvider;
 	
-	public CurriculaServlet() {
-		try {
-			String providerClass = ApplicationProperty.CustomizationCourseDetails.value();
-			if (providerClass != null)
-				iCourseDetailsProvider = (CourseDetailsProvider)Class.forName(providerClass).newInstance();
-		} catch (Exception e) {
-			sLog.warn("Failed to initialize course detail provider: " + e.getMessage());
+	public CurriculaServlet() {}
+	
+	private CourseDetailsProvider getCourseDetailsProvider() {
+		if (iCourseDetailsProvider == null) {
+			try {
+				String providerClass = ApplicationProperty.CustomizationCourseDetails.value();
+				if (providerClass != null)
+					iCourseDetailsProvider = (CourseDetailsProvider)Class.forName(providerClass).newInstance();
+			} catch (Exception e) {
+				sLog.warn("Failed to initialize course detail provider: " + e.getMessage());
+				iCourseDetailsProvider = new DefaultCourseDetailsProvider();
+			}
 		}
-		if (iCourseDetailsProvider == null)
-			iCourseDetailsProvider = new DefaultCourseDetailsProvider();
+		return iCourseDetailsProvider;
 	}
 	
 	private @Autowired SessionContext sessionContext;
@@ -1843,9 +1847,7 @@ public class CurriculaServlet implements CurriculaService {
 			try {
 				CourseOffering courseOffering = getCourse(hibSession, course);
 				if (courseOffering == null) throw new CurriculaException(MESSAGES.errorCourseDoesNotExist(course));
-				if (iCourseDetailsProvider == null)
-					throw new CurriculaException(MESSAGES.errorCourseDetailsInterfaceNotProvided());
-				String details = iCourseDetailsProvider.getDetails(
+				String details = getCourseDetailsProvider().getDetails(
 						new AcademicSessionInfo(courseOffering.getSubjectArea().getSession()),
 						courseOffering.getSubjectAreaAbbv(), courseOffering.getCourseNbr());
 				sLog.debug("Details of length " + details.length() + " retrieved (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");

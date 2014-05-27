@@ -142,15 +142,20 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	private CourseDetailsProvider iCourseDetailsProvider;
 	
 	public SectioningServlet() {
-		try {
-			String providerClass = ApplicationProperty.CustomizationCourseDetails.value();
-			if (providerClass != null)
-				iCourseDetailsProvider = (CourseDetailsProvider)Class.forName(providerClass).newInstance();
-		} catch (Exception e) {
-			sLog.warn("Failed to initialize course detail provider: " + e.getMessage());
+	}
+	
+	private CourseDetailsProvider getCourseDetailsProvider() {
+		if (iCourseDetailsProvider == null) {
+			try {
+				String providerClass = ApplicationProperty.CustomizationCourseDetails.value();
+				if (providerClass != null)
+					iCourseDetailsProvider = (CourseDetailsProvider)Class.forName(providerClass).newInstance();
+			} catch (Exception e) {
+				sLog.warn("Failed to initialize course detail provider: " + e.getMessage());
+				iCourseDetailsProvider = new DefaultCourseDetailsProvider();
+			}
 		}
-		if (iCourseDetailsProvider == null)
-			iCourseDetailsProvider = new DefaultCourseDetailsProvider();
+		return iCourseDetailsProvider;
 	}
 	
 	private @Autowired AuthenticationManager authenticationManager;
@@ -410,19 +415,17 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	
 	public String retrieveCourseDetails(Long sessionId, String course) throws SectioningException, PageAccessException {
 		setLastSessionId(sessionId);
-		if (iCourseDetailsProvider == null)
-			throw new SectioningException(MSG.exceptionNoCustomCourseDetails());
 		OnlineSectioningServer server = getServerInstance(sessionId); 
 		if (server == null) {
 			CourseOffering courseOffering = SaveStudentRequests.getCourse(CourseOfferingDAO.getInstance().getSession(), sessionId, course);
 			if (courseOffering == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
-			return iCourseDetailsProvider.getDetails(
+			return getCourseDetailsProvider().getDetails(
 					new AcademicSessionInfo(courseOffering.getSubjectArea().getSession()),
 					courseOffering.getSubjectAreaAbbv(), courseOffering.getCourseNbr());
 		} else {
 			XCourseId c = getServerInstance(sessionId).getCourse(course);
 			if (c == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
-			return server.getCourseDetails(c.getCourseId(), iCourseDetailsProvider);
+			return server.getCourseDetails(c.getCourseId(), getCourseDetailsProvider());
 		}
 	}
 	
