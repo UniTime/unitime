@@ -147,6 +147,9 @@
 	<% 
 	String sysMessage = ApplicationProperties.getProperty("tmtbl.system_message");
 	boolean showBackground = (sysMessage == null || sysMessage.trim().isEmpty());
+	if ("cas-logout".equals(request.getParameter("op"))) {
+		sysMessage = "You have been successfully logged out of UniTime, click <a href='j_spring_cas_security_logout'>here</a> to log out of all other applications as well."; 
+	}
 	%>
 	<tt:registration method="hasMessage">
 	<% showBackground = false; %>
