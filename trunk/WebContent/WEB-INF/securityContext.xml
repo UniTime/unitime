@@ -43,6 +43,28 @@
 		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>
 	</http>
 	
+	<!-- CAS Authentication (replace the above http element with the one bellow)
+	<http use-expressions="true" entry-point-ref="casEntryPoint">
+		<intercept-url pattern="/temp/*" access="isAuthenticated()"/>
+		<intercept-url pattern="/solver/solver.jnlp" access="isAuthenticated()"/>
+		<intercept-url pattern="/classes.do" access="permitAll" />
+		<intercept-url pattern="/exams.do" access="permitAll" />
+		<intercept-url pattern="/*.do" access="isAuthenticated()"/>
+		<intercept-url pattern="/**" access="permitAll" />
+		<form-login login-page="/login.jsp"
+			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
+			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
+		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/main.jsp?op=cas-logout"/>
+		<expression-handler ref="webExpressionHandler"/>
+		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
+		<anonymous enabled="false"/>
+		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>
+		<custom-filter ref="casFilter" position="CAS_FILTER"/>
+    	<custom-filter ref="casRequestSingleLogoutFilter" before="LOGOUT_FILTER"/>
+    	<custom-filter ref="casSingleLogoutFilter" before="CAS_FILTER"/>
+	</http>
+	-->
+	
 	<global-method-security pre-post-annotations="enabled">
 		<expression-handler ref="expressionHandler"/>
 	</global-method-security>
@@ -93,6 +115,43 @@
 		</beans:constructor-arg>
 		<beans:property name="userDetailsContextMapper" ref="unitimeUserContextMapper"/>
 	</beans:bean>
+	
+	<!-- CAS Authentication (uncomment the following beans)
+	<beans:bean id="casServiceProperties" class="org.springframework.security.cas.ServiceProperties">
+		<beans:property name="service" value="${unitime.url}/j_spring_cas_security_check"/>
+		<beans:property name="sendRenew" value="false"/>
+	</beans:bean>
+	
+	<beans:bean id="casAuthenticationProvider" class="org.springframework.security.cas.authentication.CasAuthenticationProvider">
+		<beans:property name="authenticationUserDetailsService" ref="unitimeAuthenticationUserDetailsService"/>
+    	<beans:property name="serviceProperties" ref="casServiceProperties"/>
+    	<beans:property name="ticketValidator">
+			<beans:bean class="org.jasig.cas.client.validation.Cas20ServiceTicketValidator">
+				<beans:constructor-arg index="0" value="${unitime.cas.url}" />
+			</beans:bean>
+    	</beans:property>
+    	<beans:property name="key" value="UniTime"/>
+    </beans:bean>
+    
+    <beans:bean id="casFilter" class="org.springframework.security.cas.web.CasAuthenticationFilter">
+    	<beans:property name="authenticationManager" ref="authenticationManager"/>
+    </beans:bean>
+
+	<beans:bean id="casEntryPoint" class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">
+		<beans:property name="loginUrl" value="${unitime.cas.url}/login"/>
+		<beans:property name="serviceProperties" ref="casServiceProperties"/>
+	</beans:bean>
+	
+	<beans:bean id="casSingleLogoutFilter" class="org.jasig.cas.client.session.SingleSignOutFilter"/>
+	
+	<beans:bean id="casRequestSingleLogoutFilter" class="org.springframework.security.web.authentication.logout.LogoutFilter">
+		<beans:constructor-arg value="${unitime.cas.url}/logout"/>
+    	<beans:constructor-arg>
+    		<beans:bean class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler"/>
+    	</beans:constructor-arg>
+    	<beans:property name="filterProcessesUrl" value="/j_spring_cas_security_logout"/>
+    </beans:bean>
+ 	-->
  	
 	<authentication-manager alias="authenticationManager">
 		<!-- Database Authentication -->
@@ -103,6 +162,9 @@
 		<authentication-provider ref="ldapAuthProvider"/>
 		<!-- JAAS (Legacy) Authentication -->
 		<authentication-provider ref="jaasAuthProvider"/>
+		<!-- CAS Authentication (uncomment the following authentication provider)
+		<authentication-provider ref="casAuthenticationProvider" />
+		 -->
 	</authentication-manager>
 	
 	<!-- LDAP People Lookup
