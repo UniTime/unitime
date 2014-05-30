@@ -330,8 +330,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							else
 								error += "\n" + e.message;
 						}
-					fails.add(new EnrollmentFailure(course, section, error == null ? "Enrollment failed." : error, "RW".equals(reg.courseRegistrationStatus) || "RE".equals(reg.courseRegistrationStatus)));
-					if ("RW".equals(reg.courseRegistrationStatus) || "RE".equals(reg.courseRegistrationStatus))
+					fails.add(new EnrollmentFailure(course, section, error == null ? "Enrollment failed." : error, reg.courseRegistrationStatus != null && reg.courseRegistrationStatus.startsWith("R")));
+					if (reg.courseRegistrationStatus != null && reg.courseRegistrationStatus.startsWith("R"))
 						external.addSection(external.addSectionBuilder()
 								.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
 								.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
