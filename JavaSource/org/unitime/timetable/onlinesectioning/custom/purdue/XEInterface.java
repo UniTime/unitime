@@ -36,6 +36,35 @@ public class XEInterface {
 		String courseReferenceNumber;
 		String courseTitle;
 		
+		/**
+		 * 40	CEC 40% refund
+		 * 60	CEC 60% refund
+		 * 80	CEC 80% refund
+		 * AA	Auditor Access
+		 * AU	Audit
+		 * CA	Cancel Administratively
+		 * DB	Boiler Gold Rush Drop Course
+		 * DC	Drop Course
+		 * DD	Drop/Delete
+		 * DT	Drop Course-TSW
+		 * DW	Drop (Web)
+		 * RC	**ReAdd Course**
+		 * RE	**Registered**
+		 * RT	**Web Registered**
+		 * RW	**Web Registered**
+		 * W	Withdrawn-W
+		 * W1	Withdrawn
+		 * W2	Withdrawn
+		 * W3	Withdrawn
+		 * W4	Withdrawn
+		 * W5	Withdrawn
+		 * WF	Withdrawn-WF
+		 * WG	Withdrawn-pending grade
+		 * WN	Withdrawn-WN
+		 * WT	Withdrawn-W
+		 * WU	Withdrawn-WU
+		 * WL	Waitlist
+		 */
 		String courseRegistrationStatus;
 		String courseRegistrationStatusDescription;
 		Double creditHour;
@@ -52,7 +81,14 @@ public class XEInterface {
 		String sequenceNumber;
 		
 		String statusDescription;
-		// R for registered, F for failure, D for deleted
+		/**
+		 * P = pending
+		 * R = registered
+		 * D = dropped
+		 * L = waitlisted
+		 * F = fatal error prevented registration
+		 * W = withdrawn 
+		 */
 		String statusIndicator;
 		
 		List<CrnError> crnErrors;
