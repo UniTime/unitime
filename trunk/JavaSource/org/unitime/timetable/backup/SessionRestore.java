@@ -609,8 +609,12 @@ public class SessionRestore {
 			}
 			if (getObject() instanceof TravelTime) {
 				TravelTime tt = (TravelTime)getObject();
-				tt.setLocation1Id(((Location)get(Location.class, tt.getLocation1Id().toString())).getUniqueId());
-				tt.setLocation2Id(((Location)get(Location.class, tt.getLocation2Id().toString())).getUniqueId());
+				Location l1 = (Location)get(Location.class, tt.getLocation1Id().toString());
+				if (l1 != null)
+					tt.setLocation1Id(l1.getUniqueId());
+				Location l2 = (Location)get(Location.class, tt.getLocation2Id().toString());
+				if (l2 != null)
+					tt.setLocation2Id(l2.getUniqueId());
 			}
 		}
 	}
