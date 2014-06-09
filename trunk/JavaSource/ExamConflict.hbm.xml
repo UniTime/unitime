@@ -65,8 +65,7 @@
             <many-to-many
                 class="Exam"
                 column="exam_id"
-                foreign-key="fk_xconflict_ex_exam"
-                fetch="join"/>
+                foreign-key="fk_xconflict_ex_exam"/>
 
         </set>
 
