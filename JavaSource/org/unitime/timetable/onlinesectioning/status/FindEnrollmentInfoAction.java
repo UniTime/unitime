@@ -37,6 +37,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
@@ -88,6 +89,12 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		return this;
 	}
 	
+	private SectioningStatusFilterRpcRequest iFilter = null;
+	public FindEnrollmentInfoAction withFilter(SectioningStatusFilterRpcRequest filter) {
+		iFilter = filter;
+		return this;
+	}
+	
 	public Query query() { return iQuery; }
 	
 	public Integer limit() { return iLimit; }
@@ -106,6 +113,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	public List<EnrollmentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		List<EnrollmentInfo> ret = new ArrayList<EnrollmentInfo>();
 		AcademicSessionInfo session = server.getAcademicSession();
+		Set<Long> studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
 		if (courseId() == null) {
 			Set<Long> students = new HashSet<Long>();
 			Set<Long> matchingStudents = new HashSet<Long>();
@@ -140,6 +148,23 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (students.add(request.getStudentId()))
 						addedStudents.add(request.getStudentId());
 					if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(info.getCourseId())) continue;
+					
+					if (studentIds != null && !studentIds.contains(request.getStudentId())) {
+						if (request.getEnrollment() != null) {
+							tEnrl ++;
+							if (request.getEnrollment().getReservation() != null) tRes ++;
+							if (course.getConsentLabel() != null && request.getEnrollment().getApproval() == null) tConNeed ++;
+						} else {
+							XStudent student = server.getStudent(request.getStudentId());
+							if (student != null && student.canAssign(request)) {
+								tUnasg ++;
+								if (request.isWaitlist())
+									tWait ++;
+							}
+						}
+						continue;
+					}
+					
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null) continue;
 					CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse);

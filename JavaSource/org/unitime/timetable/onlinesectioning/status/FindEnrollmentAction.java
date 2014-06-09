@@ -22,11 +22,13 @@ package org.unitime.timetable.onlinesectioning.status;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
@@ -69,6 +71,12 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 		return this;
 	}
 	
+	private SectioningStatusFilterRpcRequest iFilter = null;
+	public FindEnrollmentAction withFilter(SectioningStatusFilterRpcRequest filter) {
+		iFilter = filter;
+		return this;
+	}
+	
 	public Query query() { return iQuery; }
 
 	public Long courseId() { return iCourseId; }
@@ -89,11 +97,13 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 		XExpectations expectations = server.getExpectations(offering.getOfferingId());
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 		AcademicSessionInfo session = server.getAcademicSession();
+		Set<Long> studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
 		
 		for (XCourseRequest request: enrollments.getRequests()) {
 			if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(courseId())) continue;
 			if (classId() != null && request.getEnrollment() != null && !request.getEnrollment().getSectionIds().contains(classId())) continue;
 			if (request.getEnrollment() == null && !request.getCourseIds().contains(course)) continue;
+			if (studentIds != null && !studentIds.contains(request.getStudentId())) continue;
 			XStudent student = server.getStudent(request.getStudentId());
 			if (student == null) continue;
 			if (request.getEnrollment() == null && !student.canAssign(request)) continue;

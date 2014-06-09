@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -61,9 +62,10 @@ public interface SectioningServiceAsync {
 	void canApprove(Long classOrOfferingId, AsyncCallback<List<Long>> callback) throws SectioningException, PageAccessException;
 	void approveEnrollments(Long classOrOfferingId, List<Long> studentIds, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
 	void rejectEnrollments(Long classOrOfferingId, List<Long> studentIds, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
-	void findEnrollmentInfos(boolean online, String query, Long courseId, AsyncCallback<List<ClassAssignmentInterface.EnrollmentInfo>> callback) throws SectioningException, PageAccessException;
-	void findStudentInfos(boolean online, String query, AsyncCallback<List<ClassAssignmentInterface.StudentInfo>> callback) throws SectioningException, PageAccessException;
-	void findEnrollments(boolean online, String query, Long courseId, Long classId, AsyncCallback<List<ClassAssignmentInterface.Enrollment>> callback) throws SectioningException, PageAccessException;
+	void findEnrollmentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId, AsyncCallback<List<ClassAssignmentInterface.EnrollmentInfo>> callback) throws SectioningException, PageAccessException;
+	void findStudentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter, AsyncCallback<List<ClassAssignmentInterface.StudentInfo>> callback) throws SectioningException, PageAccessException;
+	void findEnrollments(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId, Long classId, AsyncCallback<List<ClassAssignmentInterface.Enrollment>> callback) throws SectioningException, PageAccessException;
+	@Deprecated
 	void querySuggestions(boolean online, String query, int limit, AsyncCallback<List<String[]>> callback) throws SectioningException, PageAccessException;
 	void lastStatusQuery(AsyncCallback<String> callback) throws SectioningException, PageAccessException;
 	void canEnroll(boolean online, Long studentId, AsyncCallback<Long> callback) throws SectioningException, PageAccessException;
