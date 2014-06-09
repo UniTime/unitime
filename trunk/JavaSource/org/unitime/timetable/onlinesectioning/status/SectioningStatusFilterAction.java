@@ -522,5 +522,9 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 		}
 	}
+	
+	public Set<Long> getStudentIds(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		return new HashSet<Long>((List<Long>)getQuery(iRequest, server).select("distinct s.uniqueId").query(helper.getHibSession()).list());
+	}
 
 }

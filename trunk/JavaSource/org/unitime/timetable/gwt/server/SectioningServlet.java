@@ -46,6 +46,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -1524,7 +1525,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		return courseIds;
 	}
 	
-	public List<EnrollmentInfo> findEnrollmentInfos(boolean online, String query, Long courseId) throws SectioningException, PageAccessException {
+	public List<EnrollmentInfo> findEnrollmentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId) throws SectioningException, PageAccessException {
 		try {
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
@@ -1540,7 +1541,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						query,
 						courseId,
 						getCoordinatingCourses(sessionId),
-						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null), currentUser()
+						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null)
+						.withFilter(filter), currentUser()
 				);				
 			} else {
 				OnlineSectioningServer server = getStudentSolver();
@@ -1550,7 +1552,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
-				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(query, courseId, null, null), currentUser());
+				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(query, courseId, null, null).withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1562,7 +1564,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 	}
 	
-	public List<ClassAssignmentInterface.StudentInfo> findStudentInfos(boolean online, String query) throws SectioningException, PageAccessException {
+	public List<ClassAssignmentInterface.StudentInfo> findStudentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter) throws SectioningException, PageAccessException {
 		try {
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
@@ -1577,7 +1579,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(
 						query,
 						getCoordinatingCourses(sessionId),
-						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null), currentUser()
+						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null)
+						.withFilter(filter), currentUser()
 				);
 			} else {
 				OnlineSectioningServer server = getStudentSolver();
@@ -1587,7 +1590,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
-				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(query, null, null), currentUser());
+				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(query, null, null).withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1633,7 +1636,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 	@Override
 	public List<org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment> findEnrollments(
-			boolean online, String query, Long courseId, Long classId)
+			boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId, Long classId)
 			throws SectioningException, PageAccessException {
 		try {
 			if (online) {
@@ -1648,7 +1651,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				
 				return server.execute(server.createAction(FindEnrollmentAction.class).withParams(
 						query, courseId, classId, 
-						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId).contains(courseId): false), currentUser());
+						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId).contains(courseId): false).withFilter(filter), currentUser());
 			} else {
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
@@ -1657,7 +1660,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
-				return server.execute(server.createAction(FindEnrollmentAction.class).withParams(query, courseId, classId, false), currentUser());
+				return server.execute(server.createAction(FindEnrollmentAction.class).withParams(query, courseId, classId, false).withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
