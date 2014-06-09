@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -87,6 +88,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 		DistanceMetric m = server.getDistanceMetric();
 		XExpectations expectations = server.getExpectations(offering.getOfferingId());
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
+		AcademicSessionInfo session = server.getAcademicSession();
 		
 		for (XCourseRequest request: enrollments.getRequests()) {
 			if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(courseId())) continue;
@@ -95,11 +97,11 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			XStudent student = server.getStudent(request.getStudentId());
 			if (student == null) continue;
 			if (request.getEnrollment() == null && !student.canAssign(request)) continue;
-			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(server, course, student, offering, request, isConsentToDoCourse()))) continue;
+			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse()))) continue;
 			
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 			st.setId(student.getStudentId());
-			st.setSessionId(server.getAcademicSession().getUniqueId());
+			st.setSessionId(session.getUniqueId());
 			st.setExternalId(student.getExternalId());
 			st.setName(student.getName());
 			for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {

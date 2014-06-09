@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -104,6 +105,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	@Override
 	public List<EnrollmentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		List<EnrollmentInfo> ret = new ArrayList<EnrollmentInfo>();
+		AcademicSessionInfo session = server.getAcademicSession();
 		if (courseId() == null) {
 			Set<Long> students = new HashSet<Long>();
 			Set<Long> matchingStudents = new HashSet<Long>();
@@ -140,7 +142,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(info.getCourseId())) continue;
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(server, course, student, offering, request, isConsentToDoCourse);
+					CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse);
 					if (query().match(m)) {
 						matchingStudents.add(request.getStudentId());
 						match++;
@@ -388,7 +390,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (!request.getEnrollment().getCourseId().equals(courseId())) {other++; continue; }
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(server, info, student, offering, request, isConsentToDoCourse);
+					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse);
 					if (query().match(m)) {
 						match++;
 						enrl ++;
@@ -405,7 +407,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (request.getEnrollment() != null || !request.hasCourse(courseId())) continue;
 					XStudent student = server.getStudent(request.getStudentId());
 					if (student == null || !student.canAssign(request)) continue;
-					CourseRequestMatcher m = new CourseRequestMatcher(server, info, student, offering, request, isConsentToDoCourse);
+					CourseRequestMatcher m = new CourseRequestMatcher(session, info, student, offering, request, isConsentToDoCourse);
 					
 					//TODO: Do we need this?
 					boolean hasEnrollment = false;
