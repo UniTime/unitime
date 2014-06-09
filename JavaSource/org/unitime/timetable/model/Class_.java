@@ -822,7 +822,7 @@ public class Class_ extends BaseClass_ {
     public Integer getMinRoomLimit() {
     	int expCap = (getExpectedCapacity()==null?0:getExpectedCapacity().intValue());
     	float roomRatio = (getRoomRatio()==null?0.0f:getRoomRatio().floatValue());
-    	return new Integer((int)Math.ceil(expCap<=0?roomRatio:expCap*roomRatio));
+    	return new Integer(Math.round(expCap<=0?roomRatio:expCap*roomRatio));
     }
 
     public static List findAll(Long sessionId) {
