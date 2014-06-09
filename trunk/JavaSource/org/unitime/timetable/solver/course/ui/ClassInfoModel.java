@@ -985,7 +985,7 @@ public class ClassInfoModel implements Serializable {
         	int maxClassLimit = clazz.getMaxExpectedCapacity().intValue();
         	if (maxClassLimit<minClassLimit) maxClassLimit = minClassLimit;
         	float room2limitRatio = clazz.getRoomRatio().floatValue();
-        	int roomCapacity = (int)Math.ceil(minClassLimit<=0?room2limitRatio:room2limitRatio*minClassLimit);
+        	int roomCapacity = Math.round(minClassLimit<=0?room2limitRatio:room2limitRatio*minClassLimit);
         	//TODO: Use parameters from the default solver configuration
             int discouragedCapacity = (int)Math.round(0.99 * roomCapacity);
             int stronglyDiscouragedCapacity = (int)Math.round(0.98 * roomCapacity);
