@@ -125,6 +125,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 						"left join fetch a.rooms r " +
 						"left join fetch c.classInstructors i " +
 						"left join fetch io.reservations x " +
+						"left join fetch co.creditConfigs cc " +
+						"left join fetch ss.creditConfigs sc " +
 						"where io.session.uniqueId = :sessionId and io.notOffered = false")
 						.setLong("sessionId", server.getAcademicSession().getUniqueId()).list();
 				for (InstructionalOffering io: offerings) {
