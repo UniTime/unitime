@@ -353,7 +353,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	int maxClassLimit = clazz.getMaxExpectedCapacity().intValue();
     	if (maxClassLimit<minClassLimit) maxClassLimit = minClassLimit;
     	float room2limitRatio = clazz.getRoomRatio().floatValue();
-    	int roomCapacity = (int)Math.ceil(minClassLimit<=0?room2limitRatio:room2limitRatio*minClassLimit);
+    	int roomCapacity = Math.round(minClassLimit<=0?room2limitRatio:room2limitRatio*minClassLimit);
         int discouragedCapacity = (int)Math.round((1.0-fewerSeatsStronglyDisouraged) * roomCapacity);
         int stronglyDiscouragedCapacity = (int)Math.round((1.0-fewerSeatsStronglyDisouraged) * roomCapacity);
 
@@ -576,7 +576,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment())
     		minClassLimit = maxClassLimit = Integer.MAX_VALUE;
     	float room2limitRatio = clazz.getRoomRatio().floatValue();
-    	int roomCapacity = (int)Math.ceil(minClassLimit<=0?room2limitRatio:room2limitRatio*minClassLimit);
+    	int roomCapacity = Math.round(minClassLimit<=0?room2limitRatio:room2limitRatio*minClassLimit);
     	
     	iProgress.trace("class limit: ["+minClassLimit+","+maxClassLimit+"]");
     	iProgress.trace("room2limitRatio: "+room2limitRatio);

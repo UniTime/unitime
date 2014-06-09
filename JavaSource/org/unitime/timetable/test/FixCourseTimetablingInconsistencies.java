@@ -156,7 +156,7 @@ public class FixCourseTimetablingInconsistencies {
 							if (d.getDistributionType().getReference().equals("CAN_SHARE_ROOM") || d.getDistributionType().getReference().equals("MEET_WITH")) {
 								for (DistributionObject o: d.getDistributionObjects()) {
 									if (o.getPrefGroup().equals(b.getClazz()) || o.getPrefGroup().equals(b.getClazz().getSchedulingSubpart())) {
-										int minSize = (int)Math.ceil(a.getClazz().getRoomRatio() * a.getClazz().getExpectedCapacity() +
+										int minSize = Math.round(a.getClazz().getRoomRatio() * a.getClazz().getExpectedCapacity() +
 												b.getClazz().getRoomRatio() * b.getClazz().getExpectedCapacity());
 										if (location.getCapacity() < minSize) {
 											sLog.info("Allowed overlap of classes in room " + location.getLabel() + ":\n" + 
@@ -185,7 +185,7 @@ public class FixCourseTimetablingInconsistencies {
 							if (p.weakenHardPreferences())
 								hibSession.save(p);
 						*/
-						int minSize = (int)Math.ceil(a.getClazz().getRoomRatio() * a.getClazz().getExpectedCapacity()) + (int)Math.ceil(b.getClazz().getRoomRatio() * b.getClazz().getExpectedCapacity());
+						int minSize = Math.round(a.getClazz().getRoomRatio() * a.getClazz().getExpectedCapacity()) + Math.round(b.getClazz().getRoomRatio() * b.getClazz().getExpectedCapacity());
 						if (location.getCapacity() < minSize) {
 							sLog.warn("Also the room is too small (" + location.getCapacity() + " < " + minSize + ")");
 							float ratio = ((float)location.getCapacity()) / minSize;
@@ -425,7 +425,7 @@ public class FixCourseTimetablingInconsistencies {
 	
 	private boolean fixRoomSize(Class_ clazz, Assignment assignment) {
 		if (clazz.getNbrRooms() == 0) return false;
-		int minSize = (int)Math.ceil(clazz.getRoomRatio() * clazz.getExpectedCapacity());
+		int minSize = Math.round(clazz.getRoomRatio() * clazz.getExpectedCapacity());
 		boolean ret = false;
 		for (Location loc: assignment.getRooms()) {
 			if (loc.getCapacity() < minSize) {
@@ -526,7 +526,7 @@ public class FixCourseTimetablingInconsistencies {
 							if (d.getDistributionType().getReference().equals("CAN_SHARE_ROOM") || d.getDistributionType().getReference().equals("MEET_WITH")) {
 								for (DistributionObject o: d.getDistributionObjects()) {
 									if (o.getPrefGroup().equals(b.getClazz()) || o.getPrefGroup().equals(b.getClazz().getSchedulingSubpart())) {
-										int minSize = (int)Math.ceil(a.getClazz().getRoomRatio() * a.getClazz().getExpectedCapacity() + 
+										int minSize = Math.round(a.getClazz().getRoomRatio() * a.getClazz().getExpectedCapacity() + 
 												b.getClazz().getRoomRatio() * b.getClazz().getExpectedCapacity());
 										for (Location location: a.getRooms()) {
 											sLog.info("Allowed overlap of classes in room " + location.getLabel() + ":\n" + 
@@ -546,7 +546,7 @@ public class FixCourseTimetablingInconsistencies {
 								}
 							}
 						}
-						int minSize = (int)Math.ceil(a.getClazz().getRoomRatio() * a.getClazz().getExpectedCapacity()) + (int)Math.ceil(b.getClazz().getRoomRatio() * b.getClazz().getExpectedCapacity());
+						int minSize = Math.round(a.getClazz().getRoomRatio() * a.getClazz().getExpectedCapacity()) + Math.round(b.getClazz().getRoomRatio() * b.getClazz().getExpectedCapacity());
 						for (Location location: a.getRooms()) {
 							if (location.getCapacity() < minSize) {
 								sLog.warn("Also the room is too small (" + location.getCapacity() + " < " + minSize + ")");
