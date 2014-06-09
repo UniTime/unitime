@@ -57,6 +57,7 @@ import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -98,7 +99,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		try {
 			helper.beginTransaction();
 
-			Long sessionId = server.getAcademicSession().getUniqueId();
+			AcademicSessionInfo session = server.getAcademicSession();
+			Long sessionId = session.getUniqueId();
 
 			List<String[]> ret = new ArrayList<String[]>();
 			Matcher m = Pattern.compile("^(.*\\W?subject:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(iQuery);
@@ -107,7 +109,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 						"select a from SubjectArea a where" +
 						" (lower(a.subjectAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.title) like '%' || :q || '%'") + ")" +
 						" and a.session.uniqueId = :sessionId order by a.subjectAreaAbbreviation"
-						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", server.getAcademicSession().getUniqueId()).setMaxResults(iLimit).list()) {
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (subject.getSubjectAreaAbbreviation().indexOf(' ') >= 0 ? "\"" + subject.getSubjectAreaAbbreviation() + "\"" : subject.getSubjectAreaAbbreviation()),
 							subject.getSubjectAreaAbbreviation() + " - " + (subject.getTitle())
@@ -450,7 +452,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				if ("default".startsWith(m.group(2).toLowerCase()))
 					ret.add(new String[] {
 							m.group(1) + "Default",
-							"Default - Academic session default (" + (server.getAcademicSession().getDefaultSectioningStatus() == null ? "No Restrictions" : server.getAcademicSession().getDefaultSectioningStatus()) + ")"
+							"Default - Academic session default (" + (session.getDefaultSectioningStatus() == null ? "No Restrictions" : session.getDefaultSectioningStatus()) + ")"
 					});
 				for (StudentSectioningStatus status: (List<StudentSectioningStatus>)StudentSectioningStatusDAO.getInstance().getSession().createQuery(
 						"select a from StudentSectioningStatus a where " +
@@ -603,12 +605,12 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 		private Date iFirstDate;
 		private String iDefaultStatus;
 		
-		public CourseRequestMatcher(OnlineSectioningServer server, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse) {
+		public CourseRequestMatcher(AcademicSessionInfo session, XCourse info, XStudent student, XOffering offering, XCourseRequest request, boolean isConsentToDoCourse) {
 			super(info, isConsentToDoCourse);
-			iFirstDate = server.getAcademicSession().getDatePatternFirstDate();
+			iFirstDate = session.getDatePatternFirstDate();
 			iStudent = student;
 			iRequest = request;
-			iDefaultStatus = server.getAcademicSession().getDefaultSectioningStatus();
+			iDefaultStatus = session.getDefaultSectioningStatus();
 			iOffering = offering;
 		}
 		
