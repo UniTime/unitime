@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.server.Query.QueryFormatter;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -79,6 +80,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 			List<SectioningAction> ret = new ArrayList<SectioningAction>();
 			DateFormat df = Localization.getDateFormat(CONST.timeStampFormat());
 			NumberFormat nf = Localization.getNumberFormat("0.00");
+			AcademicSessionInfo session = server.getAcademicSession();
 			
 			org.hibernate.Query q = helper.getHibSession().createQuery(
 					"select l, s.uniqueId from OnlineSectioningLog l, Student s " +
@@ -91,7 +93,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					"and (" + getQuery().toString(new SectioningLogQueryFormatter()) + ") " +
 					"and (l.result is not null or l.operation not in ('reload-offering', 'check-offering')) order by l.timeStamp desc, l.uniqueId desc");
 
-			q.setLong("sessionId", server.getAcademicSession().getUniqueId());
+			q.setLong("sessionId", session.getUniqueId());
 			if (getLimit() != null)
 				q.setMaxResults(getLimit());
 			
@@ -103,7 +105,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					if (student == null) continue;
 					ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
 					st.setId(student.getStudentId());
-					st.setSessionId(server.getAcademicSession().getUniqueId());
+					st.setSessionId(session.getUniqueId());
 					st.setExternalId(student.getExternalId());
 					st.setName(student.getName());
 					for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {

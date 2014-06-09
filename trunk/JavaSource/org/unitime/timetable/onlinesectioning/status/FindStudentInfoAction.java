@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -90,6 +91,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 		int gConNeed = 0, gtConNeed = 0;
 		Set<Long> unassigned = new HashSet<Long>();
+		AcademicSessionInfo session = server.getAcademicSession();
 		for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery))) {
 			XOffering offering = server.getOffering(info.getOfferingId());
 			if (offering == null) continue;
@@ -103,7 +105,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(info.getCourseId())) continue;
 				XStudent student = server.getStudent(request.getStudentId());
 				if (student == null) continue;
-				CourseRequestMatcher m = new CourseRequestMatcher(server, course, student, offering, request, isConsentToDoCourse);
+				CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse);
 				if (query().match(m)) {
 					StudentInfo s = students.get(request.getStudentId());
 					if (s == null) {
@@ -111,7 +113,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						students.put(request.getStudentId(), s);
 						ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
 						st.setId(request.getStudentId());
-						st.setSessionId(server.getAcademicSession().getUniqueId());
+						st.setSessionId(session.getUniqueId());
 						st.setExternalId(student.getExternalId());
 						st.setName(student.getName());
 						for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
@@ -164,7 +166,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setUnassigned(0);
 						s.setConsentNeeded(0);
 						s.setRequested(tReq);
-						s.setStatus(student.getStatus() == null ? server.getAcademicSession().getDefaultSectioningStatus() : student.getStatus());
+						s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 						s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
 					}
 					if (m.enrollment() != null) {
@@ -207,12 +209,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		
 		List<StudentInfo> ret = new ArrayList<StudentInfo>(students.values());
 		
-		for (XStudentId id: server.findStudents(new FindStudentInfoMatcher(server, query()))) {
+		for (XStudentId id: server.findStudents(new FindStudentInfoMatcher(session, query()))) {
 			XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
 			StudentInfo s = new StudentInfo();
 			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student(); s.setStudent(st);
 			st.setId(student.getStudentId());
-			st.setSessionId(server.getAcademicSession().getUniqueId());
+			st.setSessionId(session.getUniqueId());
 			st.setExternalId(student.getExternalId());
 			st.setName(student.getName());
 			for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
@@ -228,7 +230,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			for (String gr: student.getGroups()) {
 				st.addGroup(gr);
 			}
-			s.setStatus(student.getStatus() == null ? server.getAcademicSession().getDefaultSectioningStatus() : student.getStatus());
+			s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 			s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
 			ret.add(s);
 		}
@@ -282,9 +284,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		private Query iQuery;
 		private String iDefaultSectioningStatus;
 		
-		public FindStudentInfoMatcher(OnlineSectioningServer server, Query query) {
+		public FindStudentInfoMatcher(AcademicSessionInfo session, Query query) {
 			iQuery = query;
-			iDefaultSectioningStatus = server.getAcademicSession().getDefaultSectioningStatus();
+			iDefaultSectioningStatus = session.getDefaultSectioningStatus();
 		}
 
 		@Override
