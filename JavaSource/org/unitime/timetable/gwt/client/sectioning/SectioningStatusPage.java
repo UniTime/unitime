@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable.TopCell;
+import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -138,6 +139,7 @@ public class SectioningStatusPage extends Composite {
 	
 	private HTML iError = null, iCourseTableHint, iStudentTableHint;
 	private String iLastFilterOnEnter = null, iCourseFilter = null;
+	private SectioningStatusFilterRpcRequest iCourseFilterRequest = null;
 	private Map<String, String> iStates = null;
 	private int iStatusColumn = 0;
 	private UniTimeTextBox iSubject, iCC;
@@ -275,7 +277,7 @@ public class SectioningStatusPage extends Composite {
 					iSectioningService.canApprove(id, new AsyncCallback<List<Long>>() {
 						@Override
 						public void onSuccess(final List<Long> courseIdsCanApprove) {
-							iSectioningService.findEnrollments(iOnline, iCourseFilter, event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
+							iSectioningService.findEnrollments(iOnline, iCourseFilter, iCourseFilterRequest, event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
 								@Override
 								public void onFailure(Throwable caught) {
 									LoadingWidget.getInstance().hide();
@@ -312,7 +314,7 @@ public class SectioningStatusPage extends Composite {
 						}
 					});					
 				} else {
-					iSectioningService.findEnrollments(iOnline, iCourseFilter, event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
+					iSectioningService.findEnrollments(iOnline, iCourseFilter, iCourseFilterRequest, event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
@@ -615,6 +617,7 @@ public class SectioningStatusPage extends Composite {
 	
 	private void loadDataIfNeeded() {
 		iCourseFilter = iFilter.getValue();
+		iCourseFilterRequest = iFilter.getElementsRequest();
 		History.newItem(iCourseFilter + (iTabIndex == 1 ? "@" : iTabIndex == 2 ? "$" : ""), false);
 		
 		if (iFilter.isFilterPopupShowing()) iFilter.hideFilterPopup();
@@ -627,7 +630,7 @@ public class SectioningStatusPage extends Composite {
 		setLoading(true);
 		iError.setVisible(false);
 		if (iTabIndex == 0) {
-			iSectioningService.findEnrollmentInfos(iOnline, iCourseFilter, null, new AsyncCallback<List<EnrollmentInfo>>() {
+			iSectioningService.findEnrollmentInfos(iOnline, iCourseFilter, iCourseFilterRequest, null, new AsyncCallback<List<EnrollmentInfo>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					LoadingWidget.getInstance().hide();
@@ -667,7 +670,7 @@ public class SectioningStatusPage extends Composite {
 
 					@Override
 					public void onSuccess(final Boolean isAdmin) {
-						iSectioningService.findStudentInfos(iOnline, iCourseFilter, new AsyncCallback<List<StudentInfo>>() {
+						iSectioningService.findStudentInfos(iOnline, iCourseFilter, iCourseFilterRequest, new AsyncCallback<List<StudentInfo>>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
@@ -695,7 +698,7 @@ public class SectioningStatusPage extends Composite {
 					}
 				});				
 			} else {
-				iSectioningService.findStudentInfos(iOnline, iCourseFilter, new AsyncCallback<List<StudentInfo>>() {
+				iSectioningService.findStudentInfos(iOnline, iCourseFilter, iCourseFilterRequest, new AsyncCallback<List<StudentInfo>>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
@@ -757,7 +760,7 @@ public class SectioningStatusPage extends Composite {
 							setLoading(true);
 							iError.setVisible(false);
 							showDetails.setResource(RESOURCES.treeOpen());
-							iSectioningService.findEnrollmentInfos(iOnline, iCourseFilter, e.getCourseId(), new AsyncCallback<List<EnrollmentInfo>>() {
+							iSectioningService.findEnrollmentInfos(iOnline, iCourseFilter, iCourseFilterRequest, e.getCourseId(), new AsyncCallback<List<EnrollmentInfo>>() {
 								@Override
 								public void onFailure(Throwable caught) {
 									setLoading(false);

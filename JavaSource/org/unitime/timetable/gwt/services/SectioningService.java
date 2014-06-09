@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -63,9 +64,9 @@ public interface SectioningService extends RemoteService {
 	List<Long> canApprove(Long classOrOfferingId) throws SectioningException, PageAccessException;
 	String approveEnrollments(Long classOrOfferingId, List<Long> studentIds) throws SectioningException, PageAccessException;
 	Boolean rejectEnrollments(Long classOrOfferingId, List<Long> studentIds) throws SectioningException, PageAccessException;
-	List<ClassAssignmentInterface.EnrollmentInfo> findEnrollmentInfos(boolean online, String query, Long courseId) throws SectioningException, PageAccessException;
-	List<ClassAssignmentInterface.StudentInfo> findStudentInfos(boolean online, String query) throws SectioningException, PageAccessException;
-	List<ClassAssignmentInterface.Enrollment> findEnrollments(boolean online, String query, Long courseId, Long classId) throws SectioningException, PageAccessException;
+	List<ClassAssignmentInterface.EnrollmentInfo> findEnrollmentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId) throws SectioningException, PageAccessException;
+	List<ClassAssignmentInterface.StudentInfo> findStudentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter) throws SectioningException, PageAccessException;
+	List<ClassAssignmentInterface.Enrollment> findEnrollments(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId, Long classId) throws SectioningException, PageAccessException;
 	List<String[]> querySuggestions(boolean online, String query, int limit) throws SectioningException, PageAccessException;
 	String lastStatusQuery() throws SectioningException, PageAccessException;
 	Long canEnroll(boolean online, Long studentId) throws SectioningException, PageAccessException;
