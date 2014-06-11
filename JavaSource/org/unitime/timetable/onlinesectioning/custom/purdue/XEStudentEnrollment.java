@@ -263,15 +263,18 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// Next, try to enroll student into the given courses
 			Map<String, XSection> id2section = new HashMap<String, XSection>();
 			Map<String, XCourse> id2course = new HashMap<String, XCourse>();
+			Set<String> added = new HashSet<String>();
 			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(getBannerTerm(session), student.getExternalId(), pin);
 			for (Map.Entry<XCourse, List<XSection>> entry: enrollments.entrySet()) {
 				XCourse course = entry.getKey();
 				for (XSection section: entry.getValue()) {
 					String id = section.getExternalId(course.getCourseId());
 					registered.remove(id);
-					req.add(id);
-					id2section.put(id, section);
-					id2course.put(id, course);
+					if (added.add(id)) {
+						req.add(id);
+						id2section.put(id, section);
+						id2course.put(id, course);
+					}
 				}
 			}
 			for (String id: registered)
