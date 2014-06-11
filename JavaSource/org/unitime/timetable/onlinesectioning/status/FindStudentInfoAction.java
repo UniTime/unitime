@@ -111,7 +111,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 			for (XCourseRequest request: enrollments.getRequests()) {
 				if (!request.hasCourse(info.getCourseId())) continue;
 				if (request.getEnrollment() != null && !request.getEnrollment().getCourseId().equals(info.getCourseId())) continue;
-				if (studentIds != null && !studentIds.remove(request.getStudentId())) continue;
+				if (studentIds != null && !studentIds.contains(request.getStudentId())) continue;
 				XStudent student = server.getStudent(request.getStudentId());
 				if (student == null) continue;
 				CourseRequestMatcher m = new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse);
@@ -221,6 +221,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		if (studentIds != null && studentIds.size() < 1000) {
 			FindStudentInfoMatcher m = new FindStudentInfoMatcher(session, query());
 			for (Long id: studentIds) {
+				if (students.containsKey(id)) continue;
 				XStudent student = server.getStudent(id);
 				if (student == null) continue;
 				if (!m.match(student)) continue;
