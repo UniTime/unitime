@@ -310,10 +310,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					checked.add(id);
 					if ("R".equals(reg.statusIndicator)) {
 						// skip successfully registered enrollments
-						external.addSection(external.addSectionBuilder()
-								.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
-								.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
-								.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType)));
+						external.addSectionBuilder()
+							.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
+							.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
+							.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
 						continue;
 					}
 					if ("D".equals(reg.statusIndicator)) {
@@ -330,12 +330,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							else
 								error += "\n" + e.message;
 						}
-					fails.add(new EnrollmentFailure(course, section, error == null ? "Enrollment failed." : error, reg.courseRegistrationStatus != null && reg.courseRegistrationStatus.startsWith("R")));
-					if (reg.courseRegistrationStatus != null && reg.courseRegistrationStatus.startsWith("R"))
-						external.addSection(external.addSectionBuilder()
-								.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
-								.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
-								.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType)));
+					fails.add(new EnrollmentFailure(course, section, error == null ? reg.statusDescription != null ? reg.statusDescription : "Enrollment failed." : error, false));
 				}
 				helper.getAction().addEnrollment(external);
 			}
