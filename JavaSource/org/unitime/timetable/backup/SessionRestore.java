@@ -204,6 +204,7 @@ public class SessionRestore {
 	
 	public void create(TableData.Table table) throws InstantiationException, IllegalAccessException, DocumentException {
 		ClassMetadata metadata = iHibSessionFactory.getClassMetadata(table.getName());
+		if (metadata == null) return;
 		PersistentClass mapping = _RootDAO.getConfiguration().getClassMapping(table.getName());
 		Map<String, Integer> lengths = new HashMap<String, Integer>();
 		for (String property: metadata.getPropertyNames()) {
