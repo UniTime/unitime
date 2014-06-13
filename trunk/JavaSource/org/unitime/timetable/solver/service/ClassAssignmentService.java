@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.service;
 
 import java.util.HashSet;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,19 +47,18 @@ public class ClassAssignmentService implements AssignmentService<ClassAssignment
 		if (solver!=null) return new CachedClassAssignmentProxy(solver);
 		
 		String solutionIdsStr = (String)sessionContext.getAttribute(SessionAttribute.SelectedSolution);
-		Set<Long> solutionIds = new HashSet<Long>();
+		HashSet<Long> solutionIds = new HashSet<Long>();
 		if (solutionIdsStr != null) {
 			for (StringTokenizer s = new StringTokenizer(solutionIdsStr, ","); s.hasMoreTokens(); )
 				solutionIds.add(Long.valueOf(s.nextToken()));
 		}
 		
-		SolutionClassAssignmentProxy cachedProxy = (SolutionClassAssignmentProxy)sessionContext.getAttribute(SessionAttribute.ClassAssignment);
-		if (cachedProxy != null && cachedProxy.equals(solutionIds)) {
-			return cachedProxy;
-		}
+		ProxyHolder<HashSet<Long>, SolutionClassAssignmentProxy> h = (ProxyHolder<HashSet<Long>, SolutionClassAssignmentProxy>)sessionContext.getAttribute(SessionAttribute.ClassAssignment);
+		if (h != null && h.isValid(solutionIds))
+			return h.getProxy();
 		
 		SolutionClassAssignmentProxy newProxy = new SolutionClassAssignmentProxy(solutionIds);
-		sessionContext.setAttribute(SessionAttribute.ClassAssignment, newProxy);
+		sessionContext.setAttribute(SessionAttribute.ClassAssignment, new ProxyHolder<HashSet<Long>, SolutionClassAssignmentProxy>(solutionIds, newProxy));
 		return newProxy;
 	}
 }

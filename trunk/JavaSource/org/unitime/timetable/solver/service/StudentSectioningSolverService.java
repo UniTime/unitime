@@ -188,7 +188,8 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
 
 	@Override
 	public StudentSolverProxy getSolver() {
-		StudentSolverProxy solver = (StudentSolverProxy)sessionContext.getAttribute(SessionAttribute.StudentSectioningSolver);
+		ProxyHolder<String, StudentSolverProxy> h = (ProxyHolder<String, StudentSolverProxy>)sessionContext.getAttribute(SessionAttribute.StudentSectioningSolver);
+		StudentSolverProxy solver = (h != null && h.isValid() ? h.getProxy() : null);
 		if (solver!=null) {
 			try {
 				if (solver instanceof RemoteSolver && ((RemoteSolver)solver).exists())
@@ -206,13 +207,13 @@ public class StudentSectioningSolverService implements SolverService<StudentSolv
 		if (puid != null) {
 			solver = getSolver(puid, sessionId);
 			if (solver!=null) {
-				sessionContext.setAttribute(SessionAttribute.StudentSectioningSolver, solver);
+				sessionContext.setAttribute(SessionAttribute.StudentSectioningSolver, new ProxyHolder<String, StudentSolverProxy>(puid, solver));
 				return solver;
 			}
 		}
 		solver = getSolver(sessionContext.getUser().getExternalUserId(), sessionId);
 		if (solver!=null)
-			sessionContext.setAttribute(SessionAttribute.StudentSectioningSolver, solver);
+			sessionContext.setAttribute(SessionAttribute.StudentSectioningSolver, new ProxyHolder<String, StudentSolverProxy>(sessionContext.getUser().getExternalUserId(), solver));
 		return solver;
 	}
 	
