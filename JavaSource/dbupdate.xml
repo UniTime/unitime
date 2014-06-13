@@ -9734,5 +9734,10 @@
 			select distinct r.role_id, 'RoomEditChangePicture'
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeCapacity'
 		</sql>
+	</update>
+	<update version="137" date="13-Jun-2014" comment="Course Credit FKey Fix">
+		<mysql>alter table %SCHEMA%.course_credit_unit_config drop foreign key fk_crs_crdt_unit_cfg_crs_own</mysql>
+		<plsql>alter table %SCHEMA%.course_credit_unit_config drop constraint fk_crs_crdt_unit_cfg_crs_own</plsql>
+		<sql>alter table %SCHEMA%.course_credit_unit_config add constraint fk_crs_crdt_unit_cfg_crs_own foreign key (course_id) references %SCHEMA%.course_offering(uniqueid) on delete cascade</sql>
 	</update>	
 </dbupdate>
