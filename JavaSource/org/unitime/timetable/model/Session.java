@@ -92,6 +92,23 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		return (new SessionDAO()).get(id);
 	}
 
+	private static void deleteObjects(org.hibernate.Session hibSession, String objectName, Iterator idIterator) {
+		StringBuffer ids = new StringBuffer();
+		int idx = 0;
+		while (idIterator.hasNext()) {
+			ids.append(idIterator.next()); idx++;
+			if (idx==100) {
+				hibSession.createQuery("delete "+objectName+" as x where x.uniqueId in ("+ids+")").executeUpdate();
+				ids = new StringBuffer();
+				idx = 0;
+			} else if (idIterator.hasNext()) {
+				ids.append(",");
+			}
+		}
+		if (idx>0)
+			hibSession.createQuery("delete "+objectName+" as x where x.uniqueId in ("+ids+")").executeUpdate();
+	}
+	
 	/**
 	 * @param id
 	 * @throws HibernateException
@@ -141,7 +158,11 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	                    "delete " + str + " p where owner not in (from PreferenceGroup)").
 	                    executeUpdate();
 			}
-		    hibSession.createQuery("delete ExamConflict x where x.exams is empty").executeUpdate();
+		    deleteObjects(
+					hibSession,
+					"ExamConflict",
+					hibSession.createQuery("select x.uniqueId from ExamConflict x where x.exams is empty").iterate()
+					);
 		    tx.commit();
 		} catch (HibernateException e) {
 		    try {
