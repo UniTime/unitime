@@ -60,7 +60,6 @@ import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.ifs.extension.ConflictStatistics;
 import org.cpsolver.ifs.extension.Extension;
 import org.cpsolver.ifs.model.Constraint;
-import org.cpsolver.ifs.model.Value;
 import org.cpsolver.ifs.solver.ParallelSolver;
 import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.CSVFile;
@@ -398,7 +397,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     			}
     		}
     		if (time==null) {
-    			iProgress.warn("WARNING: Time "+placement.getTimeLocation()+" is no longer valid for class "+lecture.getName());
+    			iProgress.warn("WARNING: Time "+placement.getTimeLocation().getLongName()+" is no longer valid for class "+lecture.getName());
     			return null;
     		}
     		Vector rooms = new Vector();
@@ -423,13 +422,13 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
                 if (conflictConstraints.isEmpty()) {
                 	currentSolution().getAssignment().assign(0, placement);
                 } else {
-                    iProgress.warn("Unable to assign "+placement.variable().getName()+" &larr; "+placement.getName());
+                    iProgress.warn("Unable to assign "+placement.variable().getName()+" &larr; "+placement.getLongName());
                     iProgress.warn("&nbsp;&nbsp;Reason:");
                     for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                         Collection vals = (Collection)conflictConstraints.get(c);
                         for (Iterator j=vals.iterator();j.hasNext();) {
-                            Value v = (Value) j.next();
-                            iProgress.warn("&nbsp;&nbsp;&nbsp;&nbsp;"+v.variable().getName()+" = "+v.getName());
+                            Placement v = (Placement) j.next();
+                            iProgress.warn("&nbsp;&nbsp;&nbsp;&nbsp;"+v.variable().getName()+" = "+v.getLongName());
                         }
                         iProgress.debug("&nbsp;&nbsp;&nbsp;&nbsp;in constraint "+c);
                     }
