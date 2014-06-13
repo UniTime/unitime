@@ -86,8 +86,9 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 
 	@Override
 	public SolverProxy getSolver() {
-		SolverProxy solver = (SolverProxy)sessionContext.getAttribute(SessionAttribute.CourseTimetablingSolver);
-		if (solver!=null) {
+		ProxyHolder<String, SolverProxy> h = (ProxyHolder<String, SolverProxy>)sessionContext.getAttribute(SessionAttribute.CourseTimetablingSolver);
+		SolverProxy solver = (h != null && h.isValid() ? h.getProxy() : null);
+		if (solver != null) {
 			try {
 				if (solver instanceof RemoteSolver && ((RemoteSolver)solver).exists())
 					return solver;
@@ -104,13 +105,13 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 		if (puid != null) {
 			solver = getSolver(puid, sessionId);
 			if (solver!=null) {
-				sessionContext.setAttribute(SessionAttribute.CourseTimetablingSolver, solver);
+				sessionContext.setAttribute(SessionAttribute.CourseTimetablingSolver, new ProxyHolder<String, SolverProxy>(puid, solver));
 				return solver;
 			}
 		}
 		solver = getSolver(sessionContext.getUser().getExternalUserId(), sessionId);
 		if (solver!=null)
-			sessionContext.setAttribute(SessionAttribute.CourseTimetablingSolver, solver);
+			sessionContext.setAttribute(SessionAttribute.CourseTimetablingSolver, new ProxyHolder<String, SolverProxy>(sessionContext.getUser().getExternalUserId(), solver));
 		return solver;
 	}
 	

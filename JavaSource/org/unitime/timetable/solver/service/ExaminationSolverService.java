@@ -170,7 +170,8 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy> 
 
 	@Override
 	public ExamSolverProxy getSolver() {
-		ExamSolverProxy solver = (ExamSolverProxy)sessionContext.getAttribute(SessionAttribute.ExaminationSolver);
+		ProxyHolder<String, ExamSolverProxy> h = (ProxyHolder<String, ExamSolverProxy>)sessionContext.getAttribute(SessionAttribute.ExaminationSolver);
+		ExamSolverProxy solver = (h != null && h.isValid() ? h.getProxy() : null);
 		if (solver!=null) {
 			try {
 				if (solver instanceof RemoteSolver && ((RemoteSolver)solver).exists())
@@ -188,13 +189,13 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy> 
 		if (puid != null) {
 			solver = getSolver(puid, sessionId);
 			if (solver!=null) {
-				sessionContext.setAttribute(SessionAttribute.ExaminationSolver, solver);
+				sessionContext.setAttribute(SessionAttribute.ExaminationSolver, new ProxyHolder<String, ExamSolverProxy>(puid, solver));
 				return solver;
 			}
 		}
 		solver = getSolver(sessionContext.getUser().getExternalUserId(), sessionId);
 		if (solver!=null)
-			sessionContext.setAttribute(SessionAttribute.ExaminationSolver, solver);
+			sessionContext.setAttribute(SessionAttribute.ExaminationSolver, new ProxyHolder<String, ExamSolverProxy>(sessionContext.getUser().getExternalUserId(), solver));
 		return solver;
 	}
 	
