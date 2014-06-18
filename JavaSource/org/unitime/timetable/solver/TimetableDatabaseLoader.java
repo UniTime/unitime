@@ -1756,15 +1756,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private void loadInstructorGroupConstraint(DepartmentalInstructor instructor, DistributionPref pref) {
 		Constraint gc = createGroupConstraint(pref);
 		if (gc==null) return;
-		boolean allExternallyManaged = true;
+		boolean loadConstraint = false;
     	for (Iterator i=instructor.getClasses().iterator();i.hasNext();) {
     		ClassInstructor classInstructor = (ClassInstructor)i.next();
    			Class_ clazz = (Class_)classInstructor.getClassInstructing();
-   			if (!clazz.getManagingDept().isExternalManager().booleanValue()) {
-   				allExternallyManaged = false; break;
+   			if (classInstructor.isLead() && clazz.getManagingDept().isInheritInstructorPreferences()) {
+   				loadConstraint = true; break;
    			}
     	}
-    	if (allExternallyManaged) return;
+    	if (!loadConstraint) return;
     	for (Iterator i=instructor.getClasses().iterator();i.hasNext();) {
     		ClassInstructor classInstructor = (ClassInstructor)i.next();
     		if (!classInstructor.isLead()) continue;
@@ -1788,9 +1788,17 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
 
     private void loadInstructorGroupConstraints(Department department, org.hibernate.Session hibSession) {
-    	List instructors = hibSession.createQuery(
-    			"select distinct di from DepartmentalInstructor di inner join di.department d where d.uniqueId=:deptId"
-    			).setLong("deptId",department.getUniqueId().longValue()).list();
+    	if (!department.isInheritInstructorPreferences()) return;
+    	List instructors = null;
+    	if (department.isExternalManager()) {
+    		instructors = hibSession.createQuery("select distinct i.instructor from Class_ as c inner join c.classInstructors i " +
+    				"where i.lead = true and (c.managingDept=:deptId or (c.managingDept is null and c.controllingDept=:deptId))").
+    				setLong("deptId", department.getUniqueId()).list();    		
+    	} else {
+    		instructors = hibSession.createQuery(
+    				"select distinct di from DepartmentalInstructor di inner join di.department d where d.uniqueId=:deptId"
+    				).setLong("deptId",department.getUniqueId()).list();
+    	}
     	if (instructors==null || instructors.isEmpty()) return;
     	iProgress.setPhase("Loading instructor distr. constraints for "+department.getShortLabel()+" ...", instructors.size());
     	for (Iterator i=instructors.iterator();i.hasNext();) {

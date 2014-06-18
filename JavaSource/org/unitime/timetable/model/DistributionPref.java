@@ -358,8 +358,7 @@ public class DistributionPref extends BaseDistributionPref {
                 }
                 sb.append(":courseNbr");
             }       
-        }
-        if (ownerId != null) {
+        } else if (ownerId != null) {
             sb.append(" and di.department.uniqueId = :ownerId ");
         }
 
