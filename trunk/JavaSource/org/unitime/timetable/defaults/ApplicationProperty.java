@@ -1634,6 +1634,11 @@ public enum ApplicationProperty {
 	@ReadOnly
 	LoggingLevel("log4j.logger.%"),
 	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructor Add/Edit: allow editation of external id")
+	InstructorAllowEditExternalId("tmtbl.instructor.allowExternalIdEdit"),
+	
 	;
 
 	String iKey;
