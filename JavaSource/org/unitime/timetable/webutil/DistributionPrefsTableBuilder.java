@@ -257,22 +257,24 @@ public class DistributionPrefsTableBuilder {
 
             if (pg instanceof DepartmentalInstructor) {
         		DepartmentalInstructor instructor = (DepartmentalInstructor)pg;
-        		ownerType = instructor.getDepartment().getManagingDeptAbbv();
+        		Set<Department> owners = new TreeSet<Department>();
         		TreeSet classes = new TreeSet(new ClassInstructorComparator(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY)));
         		classes.addAll(instructor.getClasses());
-        		boolean allExternallyManaged = true;
         		for (Iterator i2=classes.iterator();i2.hasNext();) {
         			ClassInstructor clazz = (ClassInstructor)i2.next();
         			if (!clazz.isLead().booleanValue()) continue;
-        			if (allExternallyManaged && !clazz.getClassInstructing().getManagingDept().isExternalManager().booleanValue())
-        				allExternallyManaged=false;
         			if (objStr.length()>0) objStr += "<BR>";
             		objStr += clazz.getClassInstructing().toString();
+        			Department dept = clazz.getClassInstructing().getManagingDept();
+            		if (dept.isInheritInstructorPreferences()) owners.add(dept);
         		}
+        		ownerType = "";
+        		for (Department owner: owners)
+        			ownerType += (ownerType.isEmpty() ? "" : "<br>") + owner.getManagingDeptAbbv();
         		groupingText = "Instructor "+instructor.getName(instructorFormat);
         		groupingCmp = instructor.getName(instructorFormat);
                 //prefEditable = false;
-        		if (allExternallyManaged) continue;
+        		if (owners.isEmpty()) continue;
         	}
              
         	String distType = dp.getDistributionType().getLabel();
