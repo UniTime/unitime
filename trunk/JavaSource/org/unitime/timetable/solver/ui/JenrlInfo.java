@@ -92,7 +92,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 			if (isDistance())
 				setDistance(Placement.getDistanceInMeters(model.getDistanceMetric(),firstPl,secondPl));
 			StudentConflict imp = (StudentConflict)model.getCriterion(ImportantStudentConflict.class);
-			setIsImportant(imp != null && imp.inConflict(firstPl, secondPl));
+			setIsImportant(imp != null && imp.isApplicable(first, second) && imp.inConflict(firstPl, secondPl));
 			setIsInstructor(jc.getNrInstructors() > 0);
 		}
 		Hashtable<String, Double> curriculum2nrStudents = new Hashtable<String, Double>();
