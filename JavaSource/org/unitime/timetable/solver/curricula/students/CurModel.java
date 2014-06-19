@@ -409,8 +409,8 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 			}
 			it++;
 		}
-		cfg.setProperty("Curriculum.HC.Iters", String.valueOf(it));
-		cfg.setProperty("Curriculum.HC.Value", String.valueOf(getTotalValue(assignment)));
+		// cfg.setProperty("Curriculum.HC.Iters", String.valueOf(it));
+		// cfg.setProperty("Curriculum.HC.Value", String.valueOf(getTotalValue(assignment)));
 		sLog.debug("  -- final value: " + toString(assignment));
     }
     
@@ -443,9 +443,9 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
 			bound *= f;
 			it++;
 		}
-		cfg.setProperty("Curriculum.Deluge.Iters", String.valueOf(it));
+		// cfg.setProperty("Curriculum.Deluge.Iters", String.valueOf(it));
 		restoreBest(assignment);
-		cfg.setProperty("Curriculum.Deluge.Value", String.valueOf(getTotalValue(assignment)));
+		// cfg.setProperty("Curriculum.Deluge.Value", String.valueOf(getTotalValue(assignment)));
 		sLog.debug("  -- final value: " + toString(assignment));
     }
     
@@ -508,7 +508,7 @@ public class CurModel extends ModelWithContext<CurVariable, CurValue, CurModel.C
     			sLog.debug("    -- incomplete " + course.getCourseName() + ": " + getCourse(course.getCourseId()).getStudents(assignment) + " (" + course.getSize(assignment) + "/" + course.getOriginalMaxSize() + ")");
     		}
     	}
-    	cfg.setProperty("Curriculum.Initial.Value", String.valueOf(getTotalValue(assignment)));
+    	// cfg.setProperty("Curriculum.Initial.Value", String.valueOf(getTotalValue(assignment)));
 		sLog.debug("  -- initial value: " + toString(assignment));
 		for (String phase: cfg.getProperty("Curriculum.Phases", "HC,Deluge").split(",")) {
 			if ("hc".equalsIgnoreCase(phase)) hc(cfg, assignment);

@@ -126,13 +126,16 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 					.setLong("sessionId", session.getUniqueId()).list();
 		}
 
-		progress.setPhase("Loading curricula", curricula.size());
+		List<Initialization> inits = new ArrayList<Initialization>();
 		for (Curriculum curriculum: curricula) {
 			for (CurriculumClassification clasf: curriculum.getClassifications()) {
-				init(hibSession, clasf);
+				if (clasf.getNrStudents() > 0)
+					inits.add(new Initialization(clasf));
 			}
-			progress.incProgress();
 		}
+		new ParallelInitialization("Loading curricula",
+				iProperties.getPropertyInt("CurriculaCourseDemands.NrThreads", 1),
+				inits).execute(hibSession, progress);
 		
 		if (iDemands.isEmpty()) {
 			progress.warn("There are no curricula, using projected course demands instead.");
@@ -141,98 +144,6 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	
 	protected String getCacheName() {
 		return "curriculum-demands";
-	}
-	
-	private void init(org.hibernate.Session hibSession, CurriculumClassification clasf) {
-		if (clasf.getNrStudents() <= 0) return;
-		
-		sLog.debug("Processing " + clasf.getCurriculum().getAbbv() + " " + clasf.getName() + " ... (" + clasf.getNrStudents() + " students, " + clasf.getCourses().size() + " courses)");
-				
-		// Create model
-		List<CurStudent> students = new ArrayList<CurStudent>();
-		for (long i = 0; i < clasf.getNrStudents(); i++)
-			students.add(new CurStudent(- (1 + i), 1f));
-		CurModel m = new CurModel(students);
-		Hashtable<Long, CourseOffering> courses = new Hashtable<Long, CourseOffering>();
-		for (CurriculumCourse course: clasf.getCourses()) {
-			m.addCourse(course.getUniqueId(), course.getCourse().getCourseName(), course.getPercShare() * clasf.getNrStudents(), iEnrollmentPriorityProvider.getEnrollmentPriority(course));
-			courses.put(course.getUniqueId(), course.getCourse());
-			
-			Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getCourse().getUniqueId());
-			if (curricula == null) {
-				curricula = new Hashtable<String, Set<String>>();
-				iLoadedCurricula.put(course.getCourse().getUniqueId(), curricula);
-			}
-			Set<String> majors = curricula.get(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation());
-			if (majors == null) {
-				majors = new HashSet<String>();
-				curricula.put(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), majors);
-			}
-			if (clasf.getCurriculum().getMajors().isEmpty()) {
-				majors.add("");
-			} else {
-				for (PosMajor mj: clasf.getCurriculum().getMajors())
-					majors.add(mj.getCode());
-			}
-
-		}
-		computeTargetShare(clasf, m);
-		if (iSetStudentCourseLimits)
-			m.setStudentLimits();
-
-		// Load model from cache (if exists)
-		Solution<CurVariable, CurValue> cachedSolution = null;
-		Assignment<CurVariable, CurValue> assignment = new DefaultSingleAssignment<CurVariable, CurValue>();
-		Element cache = (clasf.getStudents() == null ? null : clasf.getStudents().getRootElement());
-		if (cache != null && cache.getName().equals(getCacheName())) {
-			cachedSolution = CurModel.loadFromXml(cache);
-			if (iSetStudentCourseLimits)
-				((CurModel)cachedSolution.getModel()).setStudentLimits();
-		}
-
-		// Check the cached model
-		if (cachedSolution != null && ((CurModel)cachedSolution.getModel()).isSameModel(m)) {
-			// Reuse
-			sLog.debug("  using cached model...");
-			m = ((CurModel)cachedSolution.getModel());
-			assignment = cachedSolution.getAssignment();
-		} else {
-			// Solve model
-			m.solve(iProperties, assignment);
-			
-			// Save into the cache
-			Document doc = DocumentHelper.createDocument();
-			m.saveAsXml(doc.addElement(getCacheName()), assignment);
-			// sLog.debug("Model:\n" + doc.asXML());
-			clasf.setStudents(doc);
-			hibSession.update(clasf);
-		}
-		
-		// Save results
-		String majors = "";
-		for (PosMajor major: clasf.getCurriculum().getMajors()) {
-			if (!majors.isEmpty()) majors += "|";
-			majors += major.getCode();
-		}
-		for (CurStudent s: m.getStudents()) {
-			WeightedStudentId student = new WeightedStudentId(- lastStudentId.newId());
-			student.setStats(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), clasf.getAcademicClassification().getCode(), majors);
-			student.setCurriculum(clasf.getCurriculum().getAbbv());
-			Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
-			iStudentRequests.put(student.getStudentId(), studentCourses);
-			Hashtable<Long, Double> priorities = new Hashtable<Long, Double>(); iEnrollmentPriorities.put(student.getStudentId(), priorities);
-			for (CurCourse course: s.getCourses(assignment)) {
-				CourseOffering co = courses.get(course.getCourseId());
-				if (course.getPriority() != null) priorities.put(co.getUniqueId(), course.getPriority());
-				Set<WeightedStudentId> courseStudents = iDemands.get(co.getUniqueId());
-				if (courseStudents == null) {
-					courseStudents = new HashSet<WeightedStudentId>();
-					iDemands.put(co.getUniqueId(), courseStudents);
-				}
-				courseStudents.add(student);
-				studentCourses.add(new WeightedCourseOffering(co, student.getWeight()));
-			}
-		}
 	}
 	
 	protected void computeTargetShare(CurriculumClassification clasf, CurModel model) {
@@ -299,5 +210,121 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 	public Double getEnrollmentPriority(Long studentId, Long courseId) {
 		Hashtable<Long, Double> priorities = iEnrollmentPriorities.get(studentId);
 		return (priorities == null ? null : priorities.get(courseId));
+	}
+	
+	public class Initialization implements ParallelInitialization.Task {
+		private CurriculumClassification iClassification;
+		private boolean iUpdateClassification = false;
+		private CurModel iModel;
+		private Hashtable<Long, CourseOffering> iCourses;
+		private Assignment<CurVariable, CurValue> iAssignment;
+		
+		public Initialization(CurriculumClassification classification) {
+			iClassification = classification;
+		}
+		
+		@Override
+		public void setup(org.hibernate.Session hibSession) {
+			sLog.debug("Processing " + iClassification.getCurriculum().getAbbv() + " " + iClassification.getName() + " ... (" + iClassification.getNrStudents() + " students, " + iClassification.getCourses().size() + " courses)");
+			
+			// Create model
+			List<CurStudent> students = new ArrayList<CurStudent>();
+			for (long i = 0; i < iClassification.getNrStudents(); i++)
+				students.add(new CurStudent(- (1 + i), 1f));
+			iModel = new CurModel(students);
+			iCourses = new Hashtable<Long, CourseOffering>();
+			for (CurriculumCourse course: iClassification.getCourses()) {
+				iModel.addCourse(course.getUniqueId(), course.getCourse().getCourseName(), course.getPercShare() * iClassification.getNrStudents(), iEnrollmentPriorityProvider.getEnrollmentPriority(course));
+				iCourses.put(course.getUniqueId(), course.getCourse());
+				
+				Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getCourse().getUniqueId());
+				if (curricula == null) {
+					curricula = new Hashtable<String, Set<String>>();
+					iLoadedCurricula.put(course.getCourse().getUniqueId(), curricula);
+				}
+				Set<String> majors = curricula.get(iClassification.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation());
+				if (majors == null) {
+					majors = new HashSet<String>();
+					curricula.put(iClassification.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), majors);
+				}
+				if (iClassification.getCurriculum().getMajors().isEmpty()) {
+					majors.add("");
+				} else {
+					for (PosMajor mj: iClassification.getCurriculum().getMajors())
+						majors.add(mj.getCode());
+				}
+
+			}
+			computeTargetShare(iClassification, iModel);
+			if (iSetStudentCourseLimits)
+				iModel.setStudentLimits();
+			
+			// Load model from cache (if exists)
+			Solution<CurVariable, CurValue> cachedSolution = null;
+			iAssignment = new DefaultSingleAssignment<CurVariable, CurValue>();
+			Element cache = (iClassification.getStudents() == null ? null : iClassification.getStudents().getRootElement());
+			if (cache != null && cache.getName().equals(getCacheName())) {
+				cachedSolution = CurModel.loadFromXml(cache);
+				if (iSetStudentCourseLimits)
+					((CurModel)cachedSolution.getModel()).setStudentLimits();
+			}
+
+			// Check the cached model
+			if (cachedSolution != null && ((CurModel)cachedSolution.getModel()).isSameModel(iModel)) {
+				// Reuse
+				sLog.debug("  using cached model...");
+				iModel = ((CurModel)cachedSolution.getModel());
+				iAssignment = cachedSolution.getAssignment();
+			} else {
+				iUpdateClassification = true;
+			}			
+		}
+		
+		@Override
+		public void execute() {
+			if (iUpdateClassification) {
+				// Solve model
+				iModel.solve(iProperties, iAssignment);
+			}
+		}
+		
+		@Override
+		public void teardown(org.hibernate.Session hibSession) {
+			if (iUpdateClassification) {
+				// Save into the cache
+				Document doc = DocumentHelper.createDocument();
+				iModel.saveAsXml(doc.addElement(getCacheName()), iAssignment);
+				// sLog.debug("Model:\n" + doc.asXML());
+				iClassification.setStudents(doc);
+
+				hibSession.update(iClassification);
+			}
+
+			// Save results
+			String majors = "";
+			for (PosMajor major: iClassification.getCurriculum().getMajors()) {
+				if (!majors.isEmpty()) majors += "|";
+				majors += major.getCode();
+			}
+			for (CurStudent s: iModel.getStudents()) {
+				WeightedStudentId student = new WeightedStudentId(- lastStudentId.newId());
+				student.setStats(iClassification.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), iClassification.getAcademicClassification().getCode(), majors);
+				student.setCurriculum(iClassification.getCurriculum().getAbbv());
+				Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
+				iStudentRequests.put(student.getStudentId(), studentCourses);
+				Hashtable<Long, Double> priorities = new Hashtable<Long, Double>(); iEnrollmentPriorities.put(student.getStudentId(), priorities);
+				for (CurCourse course: s.getCourses(iAssignment)) {
+					CourseOffering co = iCourses.get(course.getCourseId());
+					if (course.getPriority() != null) priorities.put(co.getUniqueId(), course.getPriority());
+					Set<WeightedStudentId> courseStudents = iDemands.get(co.getUniqueId());
+					if (courseStudents == null) {
+						courseStudents = new HashSet<WeightedStudentId>();
+						iDemands.put(co.getUniqueId(), courseStudents);
+					}
+					courseStudents.add(student);
+					studentCourses.add(new WeightedCourseOffering(co, student.getWeight()));
+				}
+			}
+		}
 	}
 }
