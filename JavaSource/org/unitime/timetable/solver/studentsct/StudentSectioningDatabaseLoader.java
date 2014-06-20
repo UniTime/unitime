@@ -1480,7 +1480,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (iFixWeights)
             	fixWeights(hibSession, courseTable.values());
             
-            getModel().clearAssignmentContexts(getAssignment());
+            getModel().createAssignmentContexts(getAssignment(), true);
         }
         
         /*

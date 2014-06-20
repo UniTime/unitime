@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -264,8 +265,12 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 			}
 			if (currentSolution().getBestInfo()!=null && getProperties().getPropertyBoolean("General.Save",false)) {
 				TimetableDatabaseSaver saver = new TimetableDatabaseSaver(this);
-				synchronized (currentSolution()) {
+				Lock lock = currentSolution().getLock().readLock();
+				lock.lock();
+				try {
 					saver.save();
+				} finally {
+					lock.unlock();
 				}
 			}
 			int repeat = getProperties().getPropertyInt("Test.Repeat",0);
@@ -546,10 +551,14 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     public PropertiesInfo getGlobalInfo() {
     	if (isPassivated()) return iGlobalInfoBeforePassivation;
     	Map<String,String> info = null;
-    	synchronized (super.currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		info = super.currentSolution().getBestInfo();
 			if (info==null)
 				info = super.currentSolution().getInfo();
+		} finally {
+			lock.unlock();
 		}
 		PropertiesInfo globalInfo = new PropertiesInfo(); 
 		for (Iterator i1=info.entrySet().iterator();i1.hasNext();) {
@@ -574,8 +583,12 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     		return null;
     	}
     	ConflictStatisticsInfo info = new ConflictStatisticsInfo();
-    	synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		info.load(this, cbs);
+    	} finally {
+    		lock.unlock();
     	}
     	return info; 
     }
@@ -593,15 +606,23 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     		return null;
     	}
     	ConflictStatisticsInfo info = new ConflictStatisticsInfo();
-    	synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		info.load(this, cbs, classId);
+    	} finally {
+    		lock.unlock();
     	}
     	return info; 
     }    
     
     public SolverUnassignedClassesModel getUnassignedClassesModel(String prefix) {
-    	synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		return new SolverUnassignedClassesModel(this, prefix);
+    	} finally {
+    		lock.unlock();
     	}
     }
 
@@ -679,7 +700,9 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     public Vector getTimetableGridTables(String findString, int resourceType, int startDay, int bgMode, boolean showEvents) {
     	Vector models = new Vector();
     	Query q = (findString == null ? null : new Query(findString));
-    	synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		TimetableModel model = (TimetableModel)currentSolution().getModel();
     		switch (resourceType) {
     		case TimetableGridModel.sResourceTypeRoom:
@@ -735,42 +758,62 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 				}
     			break;
     		}
+    	} finally {
+    		lock.unlock();
     	}
 		return models;
     }
     
     public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints) {
-    	synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		TimetableModel model = (TimetableModel)currentSolution().getModel();
     		for (Lecture lecture: model.variables()) {
     			if (lecture.getClassId().equals(classId))
     				return new ClassAssignmentDetails(this,lecture,includeConstraints);
     		}
    			return null;
+    	} finally {
+    		lock.unlock();
     	}
     }
     
     public Suggestions getSuggestions(SuggestionsModel model) {
     	if (iWorking) return null;
-    	synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().writeLock();
+		lock.lock();
+		try {
     		return new Suggestions(this,model);
+    	} finally {
+    		lock.unlock();
     	}
     }
     
     public AssignmentPreferenceInfo getInfo(Hint hint) {
-    	synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		return hint.getInfo(this);
+    	} finally {
+    		lock.unlock();
     	}
     }
     
     public String getNotValidReason(Hint hint) {
-    	synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		return hint.getNotValidReason(this);
+    	} finally {
+    		lock.unlock();
     	}
     }
 
     public void assign(Collection hints) {
-		synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().writeLock();
+		lock.lock();
+		try {
 			Hashtable initialAssignments = new Hashtable();
 			for (Placement placement: currentSolution().getAssignment().assignedValues()) {
 				initialAssignments.put(placement.variable(), placement);
@@ -808,12 +851,16 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 			}
 			record.done();
 			iAssignmentRecords.addElement(record);
+		} finally {
+			lock.unlock();
 		}
     }
     
     public Hashtable conflictInfo(Collection hints) {
     	Hashtable conflictTable = new Hashtable();
-		synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			HashSet done = new HashSet();
 			for (Iterator i=hints.iterator();i.hasNext();) {
 				Hint hint = (Hint)i.next();
@@ -849,21 +896,31 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		        }
 		        done.add(hint);
 			}
+		} finally {
+			lock.unlock();
 		}
 		return conflictTable;
     }
     
     public Map<String,String> currentSolutionInfo() {
     	if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
-    	synchronized (super.currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		return super.currentSolution().getInfo();
+    	} finally {
+    		lock.unlock();
     	}
     }
 
     public Map<String,String> bestSolutionInfo() {
     	if (isPassivated()) return iBestSolutionInfoBeforePassivation;
-    	synchronized (super.currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		return super.currentSolution().getBestInfo();
+    	} finally {
+    		lock.unlock();
     	}
     }
     
@@ -875,7 +932,9 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     public boolean backup(File folder, String puid) {
     	folder.mkdirs();
     	if (currentSolution()==null) return false;
-    	synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		TimetableXMLSaver saver = new TimetableXMLSaver(this);
     		File outXmlFile = new File(folder,puid+BackupFileFilter.sXmlExtension);
     		File outPropertiesFile = new File(folder,puid+BackupFileFilter.sPropertiesExtension);
@@ -897,6 +956,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     			if (outXmlFile.exists()) outXmlFile.delete();
     			if (outPropertiesFile.exists()) outPropertiesFile.delete();
     		}
+    	} finally {
+    		lock.unlock();
     	}
 		return false;
     }
@@ -977,7 +1038,9 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     }
     
     public Assignment getAssignment(Long classId) {
-    	synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		Lecture lecture = null;
     		for (Lecture l: currentSolution().getModel().variables()) {
     			if (l.getClassId().equals(classId)) {
@@ -1020,6 +1083,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     		}
     		assignment.setInstructors(instructors);
     		return assignment;
+    	} finally {
+    		lock.unlock();
     	}
     }
 
@@ -1031,7 +1096,9 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     }
     
     public AssignmentPreferenceInfo getAssignmentInfo(Long classId) {
-    	synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		Lecture lecture = null;
     		for (Lecture l: currentSolution().getModel().variables()) {
     			if (l.getClassId().equals(classId)) {
@@ -1042,6 +1109,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     		Placement placement = (Placement)currentSolution().getAssignment().getValue(lecture);
     		if (placement==null) return null;
     		return new AssignmentPreferenceInfo(this,placement);
+    	} finally {
+    		lock.unlock();
     	}
     }
 
@@ -1081,7 +1150,9 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 	
 	public Vector getChangesToInitial() {
 		Vector ret = new Vector();
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			for (Lecture lecture: currentSolution().getModel().variables()) {
 				if (!ToolBox.equals(lecture.getInitialAssignment(),currentSolution().getAssignment().getValue(lecture))) {
 					RecordedAssignment a = new RecordedAssignment(this,(Placement)lecture.getInitialAssignment(),currentSolution().getAssignment().getValue(lecture)); 
@@ -1094,34 +1165,46 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 					ret.addElement(a);
 				}
 			}
+		} finally {
+			lock.unlock();
 		}
 		return ret;
 	}
 	
 	public Vector getAssignedClasses() {
 		Vector ret = new Vector();
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			for (Lecture lecture: currentSolution().getAssignment().assignedVariables()) {
 				ret.addElement(new ClassAssignmentDetails(this,lecture,false));
 			}
+		} finally {
+			lock.unlock();
 		}
 		return ret;
 	}
 	
 	public Vector getAssignedClasses(String prefix) {
 		Vector ret = new Vector();
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			for (Lecture lecture: currentSolution().getAssignment().assignedVariables()) {
 				if (prefix == null || lecture.getName().startsWith(prefix))
 					ret.addElement(new ClassAssignmentDetails(this,lecture,false));
 			}
+		} finally {
+			lock.unlock();
 		}
 		return ret;
 	}
 
 	public Vector getChangesToBest() {
 		Vector ret = new Vector();
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			for (Lecture lecture: currentSolution().getModel().variables()) {
 				Placement placement = currentSolution().getAssignment().getValue(lecture);
 				if (!ToolBox.equals(lecture.getBestAssignment(), placement)) {
@@ -1135,6 +1218,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 					ret.addElement(a);
 				}
 			}
+		} finally {
+			lock.unlock();
 		}
 		return ret;
 	}
@@ -1144,7 +1229,9 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 	}
 	
 	public Vector getChangesToSolution(Long solutionId, boolean closeSession) throws Exception {
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			Session hibSession = (new SolutionDAO()).getSession();
 			Transaction tx = null;
 			Vector ret = new Vector();
@@ -1201,6 +1288,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 					hibSession.close();
 			}
 			return ret;
+		} finally {
+			lock.unlock();
 		}
 	}
 
@@ -1293,38 +1382,66 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 	}
 	
 	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType) {
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			return new RoomReport(this, sessionDays, startDayDayOfWeek, roomType);
+		} finally {
+			lock.unlock();
 		}
 	}
 	public DeptBalancingReport getDeptBalancingReport() {
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			return new DeptBalancingReport(this);
+		} finally {
+			lock.unlock();
 		}
 	}
 	public ViolatedDistrPreferencesReport getViolatedDistrPreferencesReport() {
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			return new ViolatedDistrPreferencesReport(this);
+		} finally {
+			lock.unlock();
 		}
 	}
 	public DiscouragedInstructorBtbReport getDiscouragedInstructorBtbReport() {
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			return new DiscouragedInstructorBtbReport(this);
+		} finally {
+			lock.unlock();
 		}
 	}
 	public StudentConflictsReport getStudentConflictsReport() {
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			return new StudentConflictsReport(this);
+		} finally {
+			lock.unlock();
 		}
 	}
 	public SameSubpartBalancingReport getSameSubpartBalancingReport() {
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			return new SameSubpartBalancingReport(this);
+		} finally {
+			lock.unlock();
 		}
 	}
 	public PerturbationReport getPerturbationReport() {
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			return new PerturbationReport(this);
+		} finally {
+			lock.unlock();
 		}
 	}
 	
@@ -1377,7 +1494,9 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 	}
 	
 	public CSVFile export() {
-		synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
 			CSVFile file = new CSVFile();
 			file.setSeparator(",");
 			file.setQuotationMark("\"");
@@ -1433,6 +1552,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 				});
 			}
 			return file;
+		} finally {
+			lock.unlock();
 		}
 	}
 	
@@ -1495,7 +1616,9 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 	}
     
     public byte[] exportXml() throws Exception {
-        synchronized (currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
         	File temp = File.createTempFile("course-" + getProperties().getProperty("General.SolverGroupId","").replace(',', '-'), ".xml");
             File conv = null;
             
@@ -1540,6 +1663,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
             }
             
             return ret.toByteArray();
+        } finally {
+        	lock.unlock();
         }
     }
     
@@ -1561,7 +1686,9 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     public Map<String,String> statusSolutionInfo() {
     	if (isPassivated())
     		return (iBestSolutionInfoBeforePassivation == null ? iCurrentSolutionInfoBeforePassivation : iBestSolutionInfoBeforePassivation);
-    	synchronized (super.currentSolution()) {
+		Lock lock = currentSolution().getLock().readLock();
+		lock.lock();
+		try {
     		Map<String,String> info = super.currentSolution().getBestInfo();
     		try {
     			org.cpsolver.ifs.solution.Solution<Lecture, Placement> solution = getWorkingSolution();
@@ -1569,6 +1696,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     				info = solution.getModel().getInfo(solution.getAssignment());
     		} catch (ConcurrentModificationException e) {}
     		return info;
+    	} finally {
+    		lock.unlock();
     	}
     }
     
