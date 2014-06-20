@@ -220,15 +220,23 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
     
     public Map<String,String> currentSolutionInfo() {
         if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
-        synchronized (super.currentSolution()) {
+        java.util.concurrent.locks.Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             return super.currentSolution().getExtendedInfo();
+        } finally {
+        	lock.unlock();
         }
     }
 
     public Map<String,String> bestSolutionInfo() {
         if (isPassivated()) return iBestSolutionInfoBeforePassivation;
-        synchronized (super.currentSolution()) {
+        java.util.concurrent.locks.Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             return super.currentSolution().getBestInfo();
+        } finally {
+        	lock.unlock();
         }
     }
 
@@ -240,12 +248,14 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
                 currentSolution().restoreBest();
             if (currentSolution().getBestInfo()!=null && getProperties().getPropertyBoolean("General.Save",false)) {
                 StudentSectioningSaver saver = new StudentSectioningDatabaseSaver(this);
-                synchronized (currentSolution()) {
-                    try {
-                        saver.save();
-                    } catch (Exception e) {
-                        Progress.getInstance(currentSolution().getModel()).error(e.getMessage(),e);
-                    }
+                java.util.concurrent.locks.Lock lock = currentSolution().getLock().readLock();
+                lock.lock();
+                try {
+                    saver.save();
+                } catch (Exception e) {
+                    Progress.getInstance(currentSolution().getModel()).error(e.getMessage(),e);
+                } finally {
+                	lock.unlock();
                 }
             }
             if (getProperties().getPropertyBoolean("General.Unload",false)) {
@@ -509,7 +519,9 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
     public boolean backup(File folder, String puid) {
         folder.mkdirs();
         if (currentSolution()==null) return false;
-        synchronized (currentSolution()) {
+        java.util.concurrent.locks.Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             getProperties().setProperty("Xml.SaveBest", "true");
             getProperties().setProperty("Xml.SaveInitial", "true");
             getProperties().setProperty("Xml.SaveCurrent", "true");
@@ -543,6 +555,8 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
                 if (outXmlFile.exists()) outXmlFile.delete();
                 if (outPropertiesFile.exists()) outPropertiesFile.delete();
             }
+        } finally {
+        	lock.unlock();
         }
         return false;
     }
@@ -603,12 +617,16 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
     }
     
     public void clear() {
-        synchronized (currentSolution()) {
+        java.util.concurrent.locks.Lock lock = currentSolution().getLock().writeLock();
+        lock.lock();
+        try {
             for (Request request: currentSolution().getModel().variables()) {
                 currentSolution().getAssignment().unassign(0, request);
             }
             currentSolution().clearBest();
-        }    
+        } finally {
+        	lock.unlock();
+        }
     }
     
     public Long getSessionId() {
@@ -701,13 +719,17 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
     public Map<String,String> statusSolutionInfo() {
     	if (isPassivated())
     		return (iBestSolutionInfoBeforePassivation == null ? iCurrentSolutionInfoBeforePassivation : iBestSolutionInfoBeforePassivation);
-    	synchronized (super.currentSolution()) {
+        java.util.concurrent.locks.Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
     		Map<String,String> info = super.currentSolution().getBestInfo();
     		try {
     			if (info == null || getSolutionComparator().isBetterThanBestSolution(super.currentSolution()))
     				info = super.currentSolution().getModel().getInfo(super.currentSolution().getAssignment());
     		} catch (ConcurrentModificationException e) {}
     		return info;
+    	} finally {
+    		lock.unlock();
     	}
     }
 
@@ -985,7 +1007,9 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
 	}
 	
 	public byte[] exportXml() throws Exception {
-        synchronized (currentSolution()) {
+        java.util.concurrent.locks.Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             File temp = File.createTempFile("student-" + getSessionId(), ".xml");
             boolean anonymize = ApplicationProperty.SolverXMLExportNames.isFalse(); 
             boolean idconv = ApplicationProperty.SolverXMLExportConvertIds.isTrue();
@@ -1024,6 +1048,8 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
             }
             
             return ret.toByteArray();
+        } finally {
+        	lock.unlock();
         }
     }
 	
@@ -1043,7 +1069,8 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
 			if (offering.getId() == offeringId) {
 				for (Course course: offering.getCourses())
 					for (CourseRequest req: course.getRequests()) {
-						ret.add(new XCourseRequest(req, currentSolution().getAssignment().getValue(req)));
+						if (!req.getStudent().isDummy())
+							ret.add(new XCourseRequest(req, currentSolution().getAssignment().getValue(req)));
 					}
 				break;
 			}

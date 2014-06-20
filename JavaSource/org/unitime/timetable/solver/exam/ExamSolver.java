@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -193,40 +194,58 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
     }
     
     public Exam getExam(long examId) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             for (Exam exam: currentSolution().getModel().variables()) {
                 if (exam.getId()==examId) return exam;
             }
             return null;
+        } finally {
+        	lock.unlock();
         }
     }
 
     public ExamInfo getInfo(long examId) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             Exam exam = getExam(examId);
             return (exam==null?null: new ExamInfo(exam));
+        } finally {
+        	lock.unlock();
         }
     }
     
     public ExamAssignment getAssignment(long examId) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             Exam exam = getExam(examId);
             ExamPlacement placement = (exam == null ? null : currentSolution().getAssignment().getValue(exam));
             return placement == null ? null : new ExamAssignment(placement, currentSolution().getAssignment());
+        } finally {
+        	lock.unlock();
         }
     }
     
     public ExamAssignmentInfo getAssignmentInfo(long examId) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             Exam exam = getExam(examId);
             ExamPlacement placement = (exam == null ? null : currentSolution().getAssignment().getValue(exam));
             return placement == null ? null : new ExamAssignmentInfo(placement, currentSolution().getAssignment());
+        } finally {
+        	lock.unlock();
         }
     }
     
     
     public ExamPlacement getPlacement(ExamAssignment assignment) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             Exam exam = getExam(assignment.getExamId());
             if (exam==null) return null;
             ExamPeriodPlacement period = null;
@@ -244,11 +263,15 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                 if (room!=null) rooms.add(room);
             }
             return new ExamPlacement(exam, period, rooms);
+        } finally {
+        	lock.unlock();
         }
     }
     
     public ExamAssignmentInfo getAssignment(Long examId, Long periodId, Collection<Long> roomIds) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             Exam exam = getExam(examId);
             if (exam==null) return null;
             ExamPeriodPlacement period = null;
@@ -265,11 +288,15 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                 if (room!=null) rooms.add(room);
             }
             return new ExamAssignmentInfo(exam, new ExamPlacement(exam, period, rooms), currentSolution().getAssignment());
+        } finally {
+        	lock.unlock();
         }
     }
     
     public String assign(ExamAssignment assignment) {
-        synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().writeLock();
+    	lock.lock();
+        try {
             Exam exam = getExam(assignment.getExamId());
             if (exam==null) return "Examination "+assignment.getExamName()+" not found.";
             ExamPeriodPlacement period = null;
@@ -299,11 +326,15 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                 ExamPlacement other = (ExamPlacement)conflicts.iterator().next();
                 return "Selected placement "+p.getName()+" is in conflict with exam "+other.variable().getName()+" that is assigned to "+other.getName()+"."; 
             }
+        } finally {
+        	lock.unlock();
         }
     }
     
     public String unassign(ExamInfo examInfo) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().writeLock();
+        lock.lock();
+        try {
             Exam exam = getExam(examInfo.getExamId());
             if (exam==null) return "Examination "+examInfo.getExamName()+" not found.";
             ExamPlacement placement = currentSolution().getAssignment().getValue(exam);
@@ -311,21 +342,31 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
             Progress.getInstance(currentSolution().getModel()).info(exam.getName() + ": " + placement.getName() + " &rarr; not assigned");
             currentSolution().getAssignment().unassign(0, exam);
             return null;
+        } finally {
+        	lock.unlock();
         }
     }
 
     
     public Map<String,String> currentSolutionInfo() {
         if (isPassivated()) return iCurrentSolutionInfoBeforePassivation;
-        synchronized (super.currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             return super.currentSolution().getInfo();
+        } finally {
+        	lock.unlock();
         }
     }
 
     public Map<String,String> bestSolutionInfo() {
         if (isPassivated()) return iBestSolutionInfoBeforePassivation;
-        synchronized (super.currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             return super.currentSolution().getBestInfo();
+        } finally {
+        	lock.unlock();
         }
     }
 
@@ -337,8 +378,12 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                 currentSolution().restoreBest();
             if (currentSolution().getBestInfo()!=null && getProperties().getPropertyBoolean("General.Save",false)) {
                 ExamDatabaseSaver saver = new ExamDatabaseSaver(this);
-                synchronized (currentSolution()) {
+                Lock lock = currentSolution().getLock().readLock();
+                lock.lock();
+                try {
                     saver.save();
+                } finally {
+                	lock.unlock();
                 }
             }
             if (getProperties().getPropertyBoolean("General.Unload",false)) {
@@ -573,7 +618,9 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
     public boolean backup(File folder, String puid) {
         folder.mkdirs();
         if (currentSolution()==null) return false;
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             File outXmlFile = new File(folder,"exam_"+puid+BackupFileFilter.sXmlExtension);
             File outPropertiesFile = new File(folder,"exam_"+puid+BackupFileFilter.sPropertiesExtension);
             try {
@@ -617,6 +664,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                 if (outXmlFile.exists()) outXmlFile.delete();
                 if (outPropertiesFile.exists()) outPropertiesFile.delete();
             }
+        } finally {
+        	lock.unlock();
         }
         return false;
     }
@@ -676,16 +725,22 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
     }
     
     public void clear() {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().writeLock();
+        lock.lock();
+        try {
             for (Exam exam: currentSolution().getModel().variables()) {
             	currentSolution().getAssignment().unassign(0, exam);
             }
             currentSolution().clearBest();
-        }    
+        } finally {
+        	lock.unlock();
+        }
     }
     
     public Collection<ExamAssignmentInfo> getAssignedExams() {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
             for (Exam exam: currentSolution().getModel().variables()) {
             	ExamPlacement placement = currentSolution().getAssignment().getValue(exam);
@@ -693,10 +748,14 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                     ret.add(new ExamAssignmentInfo(placement, currentSolution().getAssignment()));
             }
             return ret;
+        } finally {
+        	lock.unlock();
         }
     }
     public Collection<ExamInfo> getUnassignedExams() {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             Vector<ExamInfo> ret = new Vector<ExamInfo>();
             for (Exam exam: currentSolution().getModel().variables()) {
             	ExamPlacement placement = currentSolution().getAssignment().getValue(exam);
@@ -704,13 +763,17 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                     ret.add(new ExamInfo(exam));
             }
             return ret;
+        } finally {
+        	lock.unlock();
         }
     }
 
     public Collection<ExamAssignmentInfo> getAssignedExams(Long subjectAreaId) {
         if (subjectAreaId==null || subjectAreaId<0) return getAssignedExams();
         String sa = new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
             for (Exam exam: currentSolution().getModel().variables()) {
                 boolean hasSubjectArea = false;
@@ -725,12 +788,16 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                 }
             }
             return ret;
+        } finally {
+        	lock.unlock();
         }
     }
     public Collection<ExamInfo> getUnassignedExams(Long subjectAreaId) {
         if (subjectAreaId==null || subjectAreaId<0) return getUnassignedExams();
         String sa = new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ";
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             Vector<ExamInfo> ret = new Vector<ExamInfo>();
             for (Exam exam: currentSolution().getModel().variables()) {
                 boolean hasSubjectArea = false;
@@ -745,11 +812,15 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                 }
             }
             return ret;
+        } finally {
+        	lock.unlock();
         }
     }
     
     public Collection<ExamAssignmentInfo> getAssignedExamsOfRoom(Long roomId) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             ExamRoom room = null;
             for (ExamRoom r: ((ExamModel)currentSolution().getModel()).getRooms()) {
                 if (r.getId()==roomId) {
@@ -764,11 +835,15 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                 }
             }
             return ret;
+        } finally {
+        	lock.unlock();
         }
     }
 
     public Collection<ExamAssignmentInfo> getAssignedExamsOfInstructor(Long instructorId) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             ExamInstructor instructor = null;
             for (ExamInstructor i: ((ExamModel)currentSolution().getModel()).getInstructors()) {
                 if (i.getId()==instructorId) {
@@ -786,6 +861,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                     }
             }
             return ret;
+        } finally {
+        	lock.unlock();
         }
     }
     
@@ -796,7 +873,9 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
     public Collection<ExamAssignmentInfo[]> getChangesToInitial(Long subjectAreaId) {
         String sa = (subjectAreaId!=null && subjectAreaId>=0 ? new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
         Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             for (Exam exam: currentSolution().getModel().variables()) {
                 if (sa!=null) {
                     boolean hasSubjectArea = false;
@@ -812,6 +891,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                             new ExamAssignmentInfo(exam,currentSolution().getAssignment().getValue(exam), currentSolution().getAssignment())});
                 }
             }
+        } finally {
+        	lock.unlock();
         }
         return changes;
     }
@@ -819,7 +900,9 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
     public Collection<ExamAssignmentInfo[]> getChangesToBest(Long subjectAreaId) {
         String sa = (subjectAreaId!=null && subjectAreaId>=0 ? new SubjectAreaDAO().get(subjectAreaId).getSubjectAreaAbbreviation()+" ":null);
         Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             for (Exam exam: currentSolution().getModel().variables()) {
                 if (sa!=null) {
                     boolean hasSubjectArea = false;
@@ -835,6 +918,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                             new ExamAssignmentInfo(exam,currentSolution().getAssignment().getValue(exam),currentSolution().getAssignment())});
                 }
             }
+        } finally {
+        	lock.unlock();
         }
         return changes;
     }
@@ -856,8 +941,12 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
             return null;
         }
         ExamConflictStatisticsInfo info = new ExamConflictStatisticsInfo();
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             info.load(cbs);
+        } finally {
+        	lock.unlock();
         }
         return info; 
     }
@@ -875,14 +964,20 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
             return null;
         }
         ExamConflictStatisticsInfo info = new ExamConflictStatisticsInfo();
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             info.load(cbs, examId);
+        } finally {
+        	lock.unlock();
         }
         return info; 
     }
     
     public ExamProposedChange update(ExamProposedChange change) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().writeLock();
+        lock.lock();
+        try {
             Hashtable<Exam, ExamPlacement> undoAssign = new Hashtable();
             HashSet<Exam> undoUnassing = new HashSet();
             Vector<Exam> unassign = new Vector();
@@ -934,11 +1029,15 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                 change.getConflicts().add(new ExamAssignment(original==null?conflict:original, currentSolution().getAssignment()));
             }
             return change;            
+        } finally {
+        	lock.unlock();
         }
     }
     
     public Vector<ExamRoomInfo> getRooms(long examId, long periodId, ExamProposedChange change, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             //lookup exam, period etc.
             Exam exam = getExam(examId);
             if (exam==null) return null;
@@ -1013,11 +1112,15 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
             	currentSolution().getAssignment().assign(0, entry.getValue());
 
             return rooms;
-        }        
+        } finally {
+        	lock.unlock();
+        }
     }
     
     public Collection<ExamAssignmentInfo> getPeriods(long examId, ExamProposedChange change) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             //lookup exam
             Exam exam = getExam(examId);
             if (exam==null) return null;
@@ -1070,11 +1173,15 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
             	currentSolution().getAssignment().assign(0, entry.getValue());
             
             return periods;
+        } finally {
+        	lock.unlock();
         }
     }
     
     public ExamSuggestionsInfo getSuggestions(long examId, ExamProposedChange change, String filter, int depth, int limit, long timeOut) {
-        synchronized (currentSolution()) {
+    	Lock lock = currentSolution().getLock().writeLock();
+    	lock.lock();
+        try {
             Exam exam = getExam(examId);
             if (exam==null) return null;
             ExamSuggestions s = new ExamSuggestions(this);
@@ -1097,6 +1204,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                 message += suggestions.size()+" suggestions displayed)";
             }
             return new ExamSuggestionsInfo(suggestions, message, s.wasTimeoutReached());
+        } finally {
+        	lock.unlock();
         }
     }
     
@@ -1106,7 +1215,9 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
     }
     
     public TreeSet<ExamAssignment> getExamsOfRoom(long locationId) {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             ExamModel model = (ExamModel)currentSolution().getModel();
             ExamRoom room = null;
             for (ExamRoom r: model.getRooms()) {
@@ -1119,6 +1230,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
                 	ret.add(new ExamAssignment(placement, currentSolution().getAssignment()));
             }
             return ret;
+        } finally {
+        	lock.unlock();
         }
     }
     
@@ -1223,7 +1336,9 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
     public Map<String,String> statusSolutionInfo() {
     	if (isPassivated())
     		return (iBestSolutionInfoBeforePassivation == null ? iCurrentSolutionInfoBeforePassivation : iBestSolutionInfoBeforePassivation);
-    	synchronized (super.currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
     		Map<String,String> info = super.currentSolution().getBestInfo();
     		try {
     			Solution<Exam, ExamPlacement> solution = getWorkingSolution();
@@ -1231,11 +1346,15 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
     				info = solution.getModel().getInfo(solution.getAssignment());
     		} catch (ConcurrentModificationException e) {}
     		return info;
+        } finally {
+        	lock.unlock();
     	}
     }
     
     public byte[] exportXml() throws Exception {
-        synchronized (currentSolution()) {
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
             boolean anonymize = ApplicationProperty.SolverXMLExportNames.isFalse();
             boolean idconv = ApplicationProperty.SolverXMLExportConvertIds.isTrue();
 
@@ -1276,6 +1395,8 @@ public class ExamSolver extends ParallelSolver<Exam, ExamPlacement> implements E
             }
 
             return ret.toByteArray();
+        } finally {
+        	lock.unlock();
         }
     }
 }
