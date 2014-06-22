@@ -71,7 +71,7 @@ public class SolverWarnings extends BodyTagSupport {
 			for (String solutionId: id.split(",")) {
 				Solution solution = SolutionDAO.getInstance().get(Long.valueOf(solutionId));
 				for (SolverParameter p: solution.getParameters()) {
-					if ("General.SolverWarnings".equals(p.getDefinition().getName())) {
+					if ("General.SolverWarnings".equals(p.getDefinition().getName()) && p.getValue() != null) {
 						if (!warn.isEmpty()) warn += "<br>";
 						warn += p.getValue();
 					}
