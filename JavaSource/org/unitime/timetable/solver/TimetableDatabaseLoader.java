@@ -187,6 +187,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private boolean iAssignSingleton = true;
     private boolean iIgnoreRoomSharing = false;
     private boolean iLoadStudentInstructorConflicts = false;
+    private int iMaxRoomCombinations = 100;
     
     private String iAutoSameStudentsConstraint = "SAME_STUDENTS";
     private String iInstructorFormat = null;
@@ -230,6 +231,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         iMppAssignment = getModel().getProperties().getPropertyBoolean("General.MPP",iMppAssignment);
         iInteractiveMode = getModel().getProperties().getPropertyBoolean("General.InteractiveMode", iInteractiveMode);
         iAssignSingleton = getModel().getProperties().getPropertyBoolean("General.AssignSingleton", iAssignSingleton);
+        iMaxRoomCombinations = getModel().getProperties().getPropertyInt("General.MaxRoomCombinations", iMaxRoomCombinations);
         
         iFewerSeatsDisouraged = getModel().getProperties().getPropertyDouble("Global.FewerSeatsDisouraged", iFewerSeatsDisouraged);
         iFewerSeatsStronglyDisouraged = getModel().getProperties().getPropertyDouble("Global.FewerSeatsStronglyDisouraged", iFewerSeatsStronglyDisouraged);
@@ -1081,11 +1083,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	for (DepartmentalInstructor instructor: instructors) {
     		getInstructorConstraint(instructor,hibSession).addVariable(lecture);
     	}
+    	if (nrRooms > 1)
+    		lecture.setMaxRoomCombinations(iMaxRoomCombinations);
 
-    	long estNrValues = lecture.nrTimeLocations();
-    	for (int i=0;i<lecture.getNrRooms();i++) {
-    	    estNrValues *= (lecture.nrRoomLocations()-i)/(lecture.getNrRooms()-i);
-    	}
+    	long estNrValues = lecture.nrValues();
     	if (estNrValues>1000000) {
     	    iProgress.message(msglevel("hugeDomain", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(lecture)+" has too many possible placements ("+estNrValues+"). " +
     	    		"The class was not loaded in order to prevent out of memory exception. " +
@@ -1100,7 +1101,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     "If possible, please restrict the number of available rooms and/or times for this class.");
     	}
     	
-        if (lecture.values().isEmpty()) {
+        if (lecture.values(getAssignment()).isEmpty()) {
         	if (!iInteractiveMode) {
         		iProgress.message(msglevel("noPlacement", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(lecture)+" has no available placement (class not loaded).");
                 for (DepartmentalInstructor instructor: instructors) {
@@ -1151,9 +1152,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private void purgeInvalidValues() {
     	iProgress.setPhase("Purging invalid placements ...", getModel().variables().size());
     	for (Lecture lecture: new ArrayList<Lecture>(getModel().variables())) {
-    		List<Placement> oldValues = new ArrayList<Placement>(lecture.values());
+    		List<Placement> oldValues = new ArrayList<Placement>(lecture.values(getAssignment()));
     		lecture.purgeInvalidValues(iInteractiveMode);
-    		if (lecture.values().isEmpty()) {
+    		if (lecture.values(getAssignment()).isEmpty()) {
 	            String warn = "Class "+getClassLabel(lecture)+" has no available placement (after enforcing consistency between the problem and committed solutions"+(iInteractiveMode?"":", class not loaded")+")."; 
     			for (Placement p: oldValues) {
                     warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+p.getNotValidReason(getAssignment());
@@ -1186,7 +1187,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
     	if (lecture==null) return;
     	Placement initialPlacement = null;
-    	for (Iterator i2=lecture.values().iterator();i2.hasNext();) {
+    	for (Iterator i2=lecture.values(getAssignment()).iterator();i2.hasNext();) {
     		Placement placement = (Placement)i2.next();
     		if (placement.getTimeLocation().getDayCode()!=dayCode) continue;
     		if (placement.getTimeLocation().getStartSlot()!=startSlot) continue;
@@ -3297,11 +3298,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		}
     		
     		//check same instructor constraint
-    		if (!lecture.values().isEmpty() && lecture.timeLocations().size()==1 && !lecture.getInstructorConstraints().isEmpty()) {
+    		if (!lecture.values(getAssignment()).isEmpty() && lecture.timeLocations().size()==1 && !lecture.getInstructorConstraints().isEmpty()) {
         		for (Lecture other: getModel().variables()) {
-        			if (other.values().isEmpty() || other.timeLocations().size()!=1 || lecture.getClassId().compareTo(other.getClassId())<=0) continue;
-        			Placement p1 = lecture.values().get(0);
-        			Placement p2 = other.values().get(0);
+        			if (other.values(getAssignment()).isEmpty() || other.timeLocations().size()!=1 || lecture.getClassId().compareTo(other.getClassId())<=0) continue;
+        			Placement p1 = lecture.values(getAssignment()).get(0);
+        			Placement p2 = other.values(getAssignment()).get(0);
         			if (!other.getInstructorConstraints().isEmpty()) {
         	           	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
         	           		if (!other.getInstructorConstraints().contains(ic)) continue;
@@ -3323,8 +3324,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			if (!lecture.isSingleton()) continue;
     		for (Lecture other: getModel().variables()) {
     			if (!other.isSingleton() || lecture.getClassId().compareTo(other.getClassId())<=0) continue;
-    			Placement p1 = lecture.values().get(0);
-    			Placement p2 = other.values().get(0);
+    			Placement p1 = lecture.values(getAssignment()).get(0);
+    			Placement p2 = other.values(getAssignment()).get(0);
     			if (p1.shareRooms(p2) && p1.getTimeLocation().hasIntersection(p2.getTimeLocation()) && !p1.canShareRooms(p2)) {
     				iProgress.message(msglevel("reqRoomOverlap", Progress.MSGLEVEL_WARN), "Same room and overlapping time required:"+
     						"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName()+
@@ -3332,7 +3333,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			}
     		}
     		if (getAssignment().getValue(lecture)==null) {
-    			Placement placement = lecture.values().get(0);
+    			Placement placement = lecture.values(getAssignment()).get(0);
     			if (!placement.isValid()) {
     				String reason = "";
     	           	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {

@@ -27,6 +27,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -217,8 +218,10 @@ public class Suggestion implements Serializable, Comparable {
     	Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
     	iStudentConflictInfos = new Vector();
     	Placement currentPlacement = assignment.getValue(lecture);
-    	if (currentPlacement==null)
-    		currentPlacement = (lecture.values().isEmpty()?null:lecture.values().get(0));
+    	if (currentPlacement==null) {
+    		List<Placement> values = lecture.values(assignment);
+    		currentPlacement = (values.isEmpty()?null:values.get(0));
+    	}
     	
     	Hashtable committed = new Hashtable();
     	if (currentPlacement!=null) {

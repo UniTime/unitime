@@ -57,10 +57,10 @@ public class CurValueSelection implements ValueSelection<CurVariable, CurValue> 
 		Assignment<CurVariable, CurValue> assignment = solution.getAssignment();
 		CurValue currentValue = assignment.getValue(selectedVariable);
 		if (currentValue != null && currentValue.getStudent().getCourses(assignment).size() <= m.getStudentLimit().getMinLimit()) return null;
-		int size = selectedVariable.values().size();
+		int size = selectedVariable.values(solution.getAssignment()).size();
 		int i = ToolBox.random(size);
 		for (int j = 0; j < size; j++) {
-			CurValue student = selectedVariable.values().get((i + j) % size);
+			CurValue student = selectedVariable.values(solution.getAssignment()).get((i + j) % size);
 			if (student.equals(currentValue)) continue;
 			if (selectedVariable.getCourse().getStudents(assignment).contains(student.getStudent())) continue;
 			if (student.getStudent().getCourses(assignment).size() >= m.getStudentLimit().getMaxLimit()) continue;
@@ -87,7 +87,7 @@ public class CurValueSelection implements ValueSelection<CurVariable, CurValue> 
 		List<CurValue> allImprovingStudents = new ArrayList<CurValue>();
 		List<CurValue> allStudents = new ArrayList<CurValue>();
 		double bestValue = 0;
-		for (CurValue student: selectedVariable.values()) {
+		for (CurValue student: selectedVariable.values(solution.getAssignment())) {
 			if (student.equals(currentValue)) continue;
 			if (selectedVariable.getCourse().getStudents(assignment).contains(student.getStudent())) continue;
 			if (student.getStudent().getCourses(assignment).size() >= m.getStudentLimit().getMaxLimit()) continue;

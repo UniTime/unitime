@@ -610,7 +610,7 @@ public class InMemorySectioningTest {
             section.setSpaceHeld(section.getSpaceHeld() + (increment ? 1.0 : -1.0));
         List<Enrollment> feasibleEnrollments = new ArrayList<Enrollment>();
         int totalLimit = 0;
-        for (Enrollment enrl : enrollment.getRequest().values()) {
+        for (Enrollment enrl : enrollment.getRequest().values(assignment)) {
         	if (!enrl.getCourse().equals(enrollment.getCourse())) continue;
             boolean overlaps = false;
             for (Request otherRequest : enrollment.getRequest().getStudent().getRequests()) {

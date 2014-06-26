@@ -467,7 +467,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                 }
             if (!assignedSections.isEmpty()) {
                 sLog.debug("    -- committed assignment: "+assignedSections);
-                for (Enrollment enrollment: request.values()) {
+                for (Enrollment enrollment: request.values(getAssignment())) {
                     if (enrollment.getAssignments().containsAll(assignedSections)) {
                         request.setInitialAssignment(enrollment);
                         sLog.debug("      -- found: "+enrollment);

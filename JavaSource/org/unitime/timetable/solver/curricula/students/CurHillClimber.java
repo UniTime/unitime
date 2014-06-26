@@ -54,10 +54,10 @@ public class CurHillClimber implements NeighbourSelection<CurVariable, CurValue>
 			CurVariable course = model.variables().get((ix + i) % model.variables().size());
 			CurValue current = assignment.getValue(course);
 			if (!course.getCourse().isComplete(assignment) && current != null) continue;
-			int jx = ToolBox.random(course.values().size());
+			int jx = ToolBox.random(course.values(solution.getAssignment()).size());
 			if (current != null && current.getStudent().getCourses(assignment).size() <= model.getStudentLimit().getMinLimit()) continue;
-			for (int j = 0; j < course.values().size(); j++) {
-				CurValue student = course.values().get((j + jx) % course.values().size());
+			for (int j = 0; j < course.values(solution.getAssignment()).size(); j++) {
+				CurValue student = course.values(solution.getAssignment()).get((j + jx) % course.values(solution.getAssignment()).size());
 				if (course.getCourse().getStudents(assignment).contains(student.getStudent())) continue;
 				if (student.getStudent().getCourses(assignment).size() >= model.getStudentLimit().getMaxLimit()) continue;
 				if (course.getCourse().getSize(assignment) + student.getStudent().getWeight() - (current == null ? 0.0 : current.getStudent().getWeight())
