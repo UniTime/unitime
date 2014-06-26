@@ -1456,7 +1456,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             	        if (classAssignments != null && !classAssignments.isEmpty()) {
             	        	Set<Long> classIds = classAssignments.get(demand.getStudentId());
             	        	if (classIds != null) {
-            	                enrollments: for (Enrollment enrollment: request.values()) {
+            	                enrollments: for (Enrollment enrollment: request.values(getAssignment())) {
             	                	for (Section section: enrollment.getSections())
             	                		if (!classIds.contains(section.getId())) continue enrollments;
             	                	request.setInitialAssignment(enrollment);

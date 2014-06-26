@@ -439,7 +439,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 					CourseRequest r = SectioningRequest.convert(assignment, request, server);
 					Section s = r.getSection(section.getSectionId());
-					values: for (Enrollment en: r.values()) {
+					values: for (Enrollment en: r.values(assignment)) {
 						if (!en.getSections().contains(s)) continue;
 						for (Request x: r.getStudent().getRequests()) {
 							Enrollment xe = assignment.getValue(x);

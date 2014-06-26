@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 
+import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
@@ -716,6 +718,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
     public static void updateSpace(OnlineSectioningServer server, Enrollment newEnrollment, Enrollment oldEnrollment, XOffering newOffering, XOffering oldOffering) {
     	if (newEnrollment == null && oldEnrollment == null) return;
     	XExpectations expectations = server.getExpectations((newEnrollment == null ? oldEnrollment : newEnrollment).getOffering().getId());
+    	Assignment<Request, Enrollment> assignment = new DefaultSingleAssignment<Request, Enrollment>();
     	if (oldEnrollment != null) {
         	Map<Long, XSection> sections = new HashMap<Long, XSection>();
         	if (oldOffering != null)
@@ -725,7 +728,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
             				sections.put(section.getSectionId(), section);
             List<Enrollment> feasibleEnrollments = new ArrayList<Enrollment>();
             int totalLimit = 0;
-            for (Enrollment enrl : oldEnrollment.getRequest().values()) {
+            for (Enrollment enrl : oldEnrollment.getRequest().values(assignment)) {
             	if (!enrl.getCourse().equals(oldEnrollment.getCourse())) continue;
                 boolean overlaps = false;
                 for (Request otherRequest : oldEnrollment.getRequest().getStudent().getRequests()) {
@@ -769,14 +772,13 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
                 section.setSpaceHeld(section.getSpaceHeld() - 1.0);
             List<Enrollment> feasibleEnrollments = new ArrayList<Enrollment>();
             int totalLimit = 0;
-            for (Enrollment enrl : newEnrollment.getRequest().values()) {
+            for (Enrollment enrl : newEnrollment.getRequest().values(assignment)) {
             	if (!enrl.getCourse().equals(newEnrollment.getCourse())) continue;
                 boolean overlaps = false;
                 for (Request otherRequest : newEnrollment.getRequest().getStudent().getRequests()) {
                     if (otherRequest.equals(newEnrollment.getRequest()) || !(otherRequest instanceof org.cpsolver.studentsct.model.CourseRequest))
                         continue;
-                    @SuppressWarnings("deprecation")
-					Enrollment otherErollment = otherRequest.getAssignment();
+					Enrollment otherErollment = assignment.getValue(otherRequest);
                     if (otherErollment == null)
                         continue;
                     if (enrl.isOverlapping(otherErollment)) {

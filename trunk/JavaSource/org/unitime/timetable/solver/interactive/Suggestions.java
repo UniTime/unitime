@@ -66,7 +66,7 @@ public class Suggestions implements Serializable {
     private Suggestion iEmptySuggestion = null;
     private TreeSet iAllAssignments = null;
     private Vector iConfTable = null;
-    private int iNrTries;
+    private long iNrTries;
     private Vector iOriginalHints = null;
     private int iLimit = 100;
     private String iFilterText = null;
@@ -273,16 +273,16 @@ public class Suggestions implements Serializable {
     private TreeSet<PlacementValue> values(Lecture lecture) {
     	TreeSet<PlacementValue> vals = new TreeSet();
     	if (lecture.equals(iLecture)) {
-    		for (Placement p: (lecture.allowBreakHard() || !iAllowBreakHard?lecture.values():lecture.computeValues(true))) {
+    		for (Placement p: (lecture.allowBreakHard() || !iAllowBreakHard?lecture.values(iAssignment):lecture.computeValues(iAssignment, true))) {
     			if (match(p)) vals.add(new PlacementValue(p));
     		}
     	} else {
     		if (lecture.allowBreakHard() || !iAllowBreakHard) {
-    			for (Placement x: lecture.values()) {
+    			for (Placement x: lecture.values(iAssignment)) {
     				vals.add(new PlacementValue(x));
     			}
     		} else {
-    			for (Placement x: lecture.computeValues(true)) {
+    			for (Placement x: lecture.computeValues(iAssignment, true)) {
     				vals.add(new PlacementValue(x));
     			}
     		}
@@ -403,7 +403,7 @@ public class Suggestions implements Serializable {
     public void computeTryAllAssignments() {
     	iAllAssignments = new TreeSet();
     	Placement current = iAssignment.getValue(iLecture);
-    	for (Placement p: iLecture.values()) {
+    	for (Placement p: iLecture.values(iAssignment)) {
     		if (p.equals(current)) continue;
     		if (p.isHard(iAssignment) && !iAllowBreakHard) continue;
     		if (!match(p)) continue;
@@ -421,7 +421,7 @@ public class Suggestions implements Serializable {
     	return iAllAssignments;
     }
 
-    public int getNrTries() {
+    public long getNrTries() {
     	return iNrTries;
     }
     
