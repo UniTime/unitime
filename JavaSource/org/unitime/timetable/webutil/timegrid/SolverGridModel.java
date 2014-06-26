@@ -313,9 +313,10 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 
 	public static String hardConflicts2prefNoCache(Assignment<Lecture, Placement> assignment, Lecture lecture, Placement placement) {
     	if (lecture.isCommitted()) return PreferenceLevel.sRequired;
+    	List<Placement> values = lecture.values(assignment);
         if (placement==null) {
         	boolean hasNoConf = false;
-            for (Placement p: lecture.values()) {
+            for (Placement p: values) {
                 if (p.isHard(assignment)) continue;
                 if (lecture.getModel().conflictValues(assignment, p).isEmpty()) {
                 	hasNoConf=true; break;
@@ -333,13 +334,13 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
         			return (hasNoConf?PreferenceLevel.sStronglyPreferred:PreferenceLevel.sPreferred);
         	}
         }
-        if (lecture.values().size()==1)
+        if (values.size()==1)
             return PreferenceLevel.sRequired;
         boolean hasTime = false;
         boolean hasRoom = false;
         boolean hasTimeNoConf = false;
         boolean hasRoomNoConf = false;
-        for (Placement p: lecture.values()) {
+        for (Placement p: values) {
             if (p.equals(placement)) continue;
             if (p.isHard(assignment)) continue; 
             if (p.getTimeLocation().equals(placement.getTimeLocation())) {

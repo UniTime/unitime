@@ -131,7 +131,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			int nrSameRoomPlacementsNoConf = 0;
 			int nrSameTimePlacementsNoConf = 0;
 			int nrPlacementsNoConf = 0;
-			for (Placement p: lecture.values()) {
+			for (Placement p: lecture.values(assignment)) {
 				if (p.isHard(assignment)) continue;
 				if (p.equals(placement)) continue;
 				if (!lecture.getModel().conflictValues(assignment, p).isEmpty()) continue;
