@@ -366,12 +366,12 @@ public class DistributionPref extends BaseDistributionPref {
             getSession().
             createQuery(sb.toString());
         q.setLong("sessionId", sessionId.longValue());
-        if (ownerId!=null)
-            q.setLong("ownerId", ownerId.longValue());
         if (subjectAreaId!=null) {
             q.setLong("subjectAreaId", subjectAreaId.longValue());
             if (courseNbr!=null && courseNbr.trim().length()>0)
                 q.setString("courseNbr", courseNbr.toUpperCase());
+        } else if (ownerId!=null) {
+            q.setLong("ownerId", ownerId.longValue());
         }
         return q.list();
     }
