@@ -73,10 +73,10 @@ public class SameSubpartBalancingReport implements Serializable {
 			Hashtable detailCache = new Hashtable();
 			for (int i=0;i<Constants.SLOTS_PER_DAY_NO_EVENINGS;i++) {
 				for (int j=0;j<Constants.NR_DAYS_WEEK;j++) {
-					iLimit[i][j]=context.getMaxCourses()[i][j];
-					iUsage[i][j]=context.getNrCourses()[i][j];
-					iCourses[i][j]=new HashSet(context.getCourses()[i][j].size());
-					for (Placement placement: context.getCourses()[i][j]) {
+					iLimit[i][j]=context.getMaxCourses(i + Constants.DAY_SLOTS_FIRST, j);
+					iUsage[i][j]=context.getCourses(i + Constants.DAY_SLOTS_FIRST, j).size();
+					iCourses[i][j]=new HashSet(context.getCourses(i + Constants.DAY_SLOTS_FIRST, j).size());
+					for (Placement placement: context.getCourses(i + Constants.DAY_SLOTS_FIRST, j)) {
 						Lecture lecture = (Lecture)placement.variable();
 						ClassAssignmentDetails ca = (ClassAssignmentDetails)detailCache.get(lecture.getClassId());
 						if (ca==null) {
