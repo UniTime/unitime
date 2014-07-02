@@ -93,7 +93,7 @@ public class RollForwardSessionAction extends Action {
         String op = request.getParameter("op");		  
            
         if (op != null && op.equals(rsc.getMessage("button.rollForward"))) {
-    		sessionContext.checkPermission(rollForwardSessionForm.getSessionToRollForwardTo(), "Session", Right.SessionRollForward);
+    		sessionContext.checkPermission(Right.SessionRollForward);
 
     		ActionMessages errors = rollForwardSessionForm.validate(mapping, request);
             if (errors.isEmpty()) {

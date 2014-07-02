@@ -90,6 +90,14 @@
 				<line>Few additional adjustments to accommodate for the above changes.</line>
 			</description>
 		</item>
+		<item>
+			<name>Session Roll Forward</name>
+			<description>
+				<line>Do not check the target session on the SessionRollForward permission in the permission check.
+					<line>This change allows a session administrator role to do the first step of the roll forward (there are no managers in the target academic session yet).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
