@@ -50,7 +50,6 @@ import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedRoomsConstraint;
 import net.sf.cpsolver.coursett.constraint.RoomConstraint;
 import net.sf.cpsolver.coursett.constraint.SpreadConstraint;
 import net.sf.cpsolver.coursett.model.Configuration;
-import net.sf.cpsolver.coursett.model.InitialSectioning;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
@@ -111,6 +110,7 @@ import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
@@ -2179,6 +2179,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (canAttendConfigurations(cannotAttendLectures, configurations)) return;
     	iProgress.message(msglevel("badCourseReservation", Progress.MSGLEVEL_WARN), "Inconsistent course reservations for course "+getOfferingLabel(course));
     }
+    
+    private Collection<InstrOfferingConfig> sortedConfigs(InstructionalOffering offering) {
+    	if (offering.getInstrOfferingConfigs().size() <= 1)
+    		return offering.getInstrOfferingConfigs();
+    	TreeSet<InstrOfferingConfig> configs = new TreeSet<InstrOfferingConfig>(new InstrOfferingConfigComparator(offering.getControllingCourseOffering().getSubjectArea().getUniqueId()));
+		configs.addAll(offering.getInstrOfferingConfigs());
+		return configs;
+    }
 
     private Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> loadOffering(InstructionalOffering offering, boolean assignCommitted) {
     	// solver group ids for fast check
@@ -2192,7 +2200,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	List<Configuration> altCfgs = new ArrayList<Configuration>();
 		iAltConfigurations.put(offering, altCfgs);
     	
-    	for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+    	for (InstrOfferingConfig config: sortedConfigs(offering)) {
     		
     		// create a configuration, set alternative configurations
     		Configuration cfg = new Configuration(offering.getUniqueId(), config.getUniqueId(), config.getLimit().intValue());
@@ -3063,7 +3071,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			}
     		if (students.isEmpty()) continue;
     		
-    		InitialSectioning.initialSectioningCfg(iProgress, offering.getUniqueId(), offering.getCourseName(), students, iAltConfigurations.get(offering));
+    		getModel().getStudentSectioning().initialSectioning(offering.getUniqueId(), offering.getCourseName(), students, iAltConfigurations.get(offering));
     		
     		iProgress.incProgress();
     	}
