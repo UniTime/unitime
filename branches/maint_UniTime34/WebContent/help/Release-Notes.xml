@@ -98,6 +98,148 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Constraint Solver Update</name>
+			<description>
+				<line>Student Scheduling: Reservations
+					<line>Reservations that allow assignment over the class / configuration / course limit (i.e., individual reservations) have no limit cap.</line>
+				</line>
+				<line>Student Scheduling: Save XML
+					<line>Fixed a null exception when the given file has no parent.</line>
+					<line>Ensure that student weights are formated with US locale (i.e., can be parsed using Float.valueOf()).</line>
+				</line>
+				<line>Student Sectioning Model
+					<line>Extended info: Added ability to display a list of unbalanced sections</line>
+					<line>Maximal number of unbalanced sections to display is given by solver parameter Info.ListDisbalancedSections, defaults to zero.</line>
+				</line>
+				<line>Student Sectioning Reports
+					<line>Added an interface that is implemented by all the reports (StudentSectioningReport).</line>
+					<line>Added time / availability conflicts report: unlike the existing course conflict report, conflicts are counted between individual classes.</line>
+					<line>Distance conflict report: changed to compute conflicts between individual classes.</line>
+					<line>Unbalanced sections report: list sections that are dis-balanced by more than 10%.</line>
+					<line>Time-overlaps report: list time conflicts between classes (that do allow for time overlaps).</line>
+				</line>
+				<line>Student Scheduling: Required Reservation constraint added
+					<line>This global constraint ensures that reservations that must be used are used.
+						<line>That is, an enrollment is conflicting when there is a reservation for the student that must be used, but the given enrollment does not use it.</line>
+					</line>
+					<line>While the domain of the course request already does not allow for such enrollments, such an enrollment can be loaded in from the database or XML.
+						<line>This constraint is to prevent assignment of such invalid enrollments.</line>
+					</line>
+				</line>
+				<line>Student Sectioning: Student Choice Order
+					<line>When the new solver property StudentChoiceOrder.Fast is set to true, estimate the number of choices in an offering simply by multiplying sizes of subparts that have no children.
+						<line>This is turned on by default.</line>
+					</line>
+				</line>
+				<line>Student Sectioning: Course Request
+					<line>Added a new solver parameter Sectioning.MaxDomainSize (defaults to -1) which, if set to a positive integer, effectively limits the domain size of a course request.
+						<line>This means that offerings with hundreds of thousands of possible enrollments will only return a subset of the possible enrollments in the domain.</line>
+						<line>Also, an effort was made (in CourseRequest.computeEnrollments(...)) to spread the returned enrollments evenly across the (original/huge) domain.</line>
+					</line>
+				</line>
+
+				<line>Distance Metrics
+					<line>Synchronize access to distance cache and travel times to improve thread safety.</line>
+				</line>
+				
+				<line>IFS: neighborhood search algorithms
+					<line>Added a general versions of hill climber, great deluge, and simulated annealing to the solver.</line>
+					<line>With two problem independent neighboorhoods:
+						<line>Random move just picks a random unconflicting value to a variable</line>
+						<line>Random swap tries to resolve all possible conflicts (unlike with suggestions there is no limit on depth, however, no new conflict can be created by resolving an existing one)</line>
+					</line>
+					<line>Added a "simple search" algorithm that combines the ifs, hill climber, and great deluge or simulated annealing in a similar way as the examination solver (or the ITC competition solver) does.</line>
+					<line>Course Timetabling: Added a few problem dependent neighborhoods (only time or room is changed or swapped).</line>
+					<line>Added suggestion move
+						<line>A variable is selected randomly, a limited depth backtracking is used to find a possible change.</line>
+						<line>Unlike in NeighbourSelectionWithSuggestions, the very first found suggestion is returned.</line>
+					</line>
+					<line>Use construction or IFS heuristics whenever there are unassigned variables.</line>
+					<line>Bigger neigbourhoods (swap / suggestion moves) limited by a time limit (defaults to 200ms)
+						<line>If the limits is reached, the number of attempts is reduced to 1.</line>
+					</line>
+				</line>
+				<line>IFS: Hill Climber
+					<line>Added ability not to set the HC mode on the neigbhourhoods.
+						<line>In HC mode, the neighbourhoods (that support this feature) avoid returning worsening moves.</line>
+						<line>This, while improving the quality of the provided neighbourhoods, can slow down the sovler quite a bit in certain situations.</line>
+					</line>
+				</line>
+				<line>IFS: Step Counting Hill Climber
+					<line>Implemented SCHC algorithm.
+						<line>Inlike with the ordinary hill climber, there is a bound.</line>
+						<line>The bound is updated (to the value of the current solution) after a given number of moves.</line>
+						<line>Based on the given mode, either all moves, only accepted moves, or only improving moves are counted.</line>
+					</line>
+				</line>				
+				<line>Weakening Constraints
+					<line>Moved weakening of constraints into the standard neighbor selection (more general).</line>
+					<line>Also weaken all related weakening constraints when no value cannot be selected for the selected variable.</line>
+				</line>
+				
+				<line>Course Timetable: Student Sectioning
+					<line>Added ability to customize initial and final student sectioning.</line>
+					<line>All sectioning functions (that are needed in course timetabling) are accessed through TimetableModel.getStudentSectioning() interface.</line>
+					<line>Default (existing sectioning functionality) is wrapped with the DefaultStudentSectioning class, a custom sectioning can be provided by StudentSectioning.Class parameter.</line>
+				</line>
+				<line>Course Timetabling: Deterministic Student Sectioning
+					<line>Deterministic implementation of the initial student sectioning.</line>
+					<line>This class assign students to groups in a deterministic way:
+						<line>Students are ordered by their academic information (curriculum) and unique ids and assigned in this order to the first available group (configuration or lecture).</line>
+					</line>
+				</line>
+				<line>Course Timetabling: Group Constraint Forward Checking
+					<line>Extend forward checking to all hard group constraints (not only meet-together).</line>
+					<line>Also include forward checking when inConflict method is used (to be consistent with computeConflicts).</line>
+					<line>Improved forward checking routine to avoid unnecessary pair checks.</line>
+					<line>Limit the depth of the forward checking (to avoid spending too much time in there).</line>
+					<line>Avoid forward check on variables with large domains (parameter ForwardCheck.MaxDomainSize, defaults to 1000).</line>
+				</line>
+				<line>Course Timetabling: MaxBreaks constraint
+					<line>The MaxBreaks constraint limits the number of blocks of non back-to-back classes of an instructor on a day.</line>
+					<line>It has two parameters: a maximal number of breaks and a minimal length of a break between two classes not to be considered in the same block.
+						<line>For example, reference _MaxBreaks:1:30_ translates to a maximum number of one break (two blocks) on a day of classes not more than 30 minutes a part.</line>
+					</line>
+				</line>
+				<line>Course Timetabling: XML Save
+					<line>Ensure that student weights are formated with US locale (i.e., can be parsed using Float.valueOf()).</line>
+				</line>
+				<line>Course Timetabling: fixing (complete) solution phase
+					<line>Limit the number of fixes by only fixing a new best solution if it was found more than 5000 iterations away from the last best solution.</line>
+					<line>Moved the parameters from the constructor to the initSolver method (to ensure that the parameters are properly set every time the solver starts).</line>
+					<line>Added a few parameters to be able enable / disable fix solution phase, or to define how often it can be executed.</line>
+					<line>Few more tweaks in the computation of the incremental change of the criterion.</line>
+				</line>
+				<line>Course Timetabling: Group / Flexible Constraint
+					<line>Do not return a penalty when the constraint is hard (must be satisfied).</line>
+				</line>
+				<line>Course Timetabling: Useless Half Hours, Flexible Constraint, Broken Time Patterns, and Distribution Preferences criteria
+					<line>Corrected computation of the incremental change of the criterion (wrong value was returned in some cases).</line>
+				</line>
+				<line>Course Timetabling: Class Weights
+					<line>Added an ability to provide each class with a weight.
+						<line>This weight is used in the time and room preferences (the preference is weighted by the "importance" of the class).</line>
+					</line>
+					<line>For instance, this can be used for classes that are only offered once in a semester to have a lower weight.
+						<line>So that there is an incentive to put a class that is taught every week in a preferred time even if it bumps two classes (that only meet once) from their preferred times.</line>
+					</line>
+					<line>This also allows for things like giving compulsory or elective courses more weight over optional courses in the curriculum timetabling, if ever needed.</line>
+				</line>
+				<line>Course Timetabling: Group Constraints
+					<line>Cache TimeLocation.getFirstMeeting.
+						<line>This significantly improves the evaluation of precedence constraints.</line>
+					</line>
+					<line>Back-to-back sequence check: prefer conflict sets that do not contain the placement in question.</line>
+				</line>
+				<line>Course Timetabling: Placement.getNotValidReason(Assignment)
+					<line>When the placement is invalid due to an instructor or a room that is not available, try to include the name of the conflicting event in the reason.</line>
+				</line>
+				<line>Course Timetabling: Placement Validity Check (e.g. used in purging invalid values)
+					<line>Exclude weakening constraints from the check (a value that may become valid later in the search process should not be removed from the domain).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
