@@ -71,7 +71,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
     public Map<String,String> statusSolutionInfo() throws Exception;
 	public boolean isWorking() throws Exception;
 
-	public DataProperties getProperties() throws Exception;
+	public DataProperties getProperties();
 	public void setProperties(DataProperties properties) throws Exception;
 
 	public String getNote() throws Exception;
@@ -79,7 +79,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public int getDebugLevel() throws Exception;
 	public void setDebugLevel(int level) throws Exception;
 
-	public Map getProgress() throws Exception;
+	public Map getProgress();
 	public String getLog() throws Exception;
 	public String getLog(int level, boolean includeDate) throws Exception;
 	public String getLog(int level, boolean includeDate, String fromStage) throws Exception;

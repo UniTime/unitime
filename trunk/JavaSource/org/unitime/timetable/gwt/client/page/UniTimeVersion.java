@@ -19,8 +19,11 @@
 */
 package org.unitime.timetable.gwt.client.page;
 
-import org.unitime.timetable.gwt.services.MenuService;
-import org.unitime.timetable.gwt.services.MenuServiceAsync;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.MenuInterface;
+import org.unitime.timetable.gwt.shared.MenuInterface.VersionInfoInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -32,18 +35,18 @@ import com.google.gwt.user.client.ui.RootPanel;
  * @author Tomas Muller
  */
 public class UniTimeVersion extends Composite {
-	private final MenuServiceAsync iService = GWT.create(MenuService.class);
+	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 
 	private Label iLabel;
 	
 	public UniTimeVersion() {
 		iLabel = new Label();
-		//iLabel.setStyleName("unitime-Footer");
 		
-		iService.getVersion(new AsyncCallback<String>() {
+		RPC.execute(new MenuInterface.VersionInfoRpcRequest(), new AsyncCallback<VersionInfoInterface>() {
 			@Override
-			public void onSuccess(String result) {
-				iLabel.setText(result);
+			public void onSuccess(VersionInfoInterface result) {
+				iLabel.setText(MESSAGES.pageVersion(result.getBuildNumber(), result.getReleaseDate()));
 			}
 			
 			@Override

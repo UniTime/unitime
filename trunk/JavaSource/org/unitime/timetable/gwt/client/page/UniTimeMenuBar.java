@@ -28,9 +28,10 @@ import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.services.MenuService;
-import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 
 import com.google.gwt.core.client.GWT;
@@ -56,7 +57,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
  */
 public class UniTimeMenuBar extends UniTimeMenu {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	protected final MenuServiceAsync iService = GWT.create(MenuService.class);
+	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private MenuBar iMenu;
 	private SimplePanel iSimple = null;
@@ -110,9 +111,9 @@ public class UniTimeMenuBar extends UniTimeMenu {
 	}
 	
 	private void attach(final RootPanel rootPanel) {
-		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
+		RPC.execute(new MenuInterface.MenuRpcRequest(), new AsyncCallback<GwtRpcResponseList<MenuInterface>>() {
 			@Override
-			public void onSuccess(List<MenuInterface> result) {
+			public void onSuccess(GwtRpcResponseList<MenuInterface> result) {
 				initMenu(iMenu, result, 0);
 				if (iSimple != null)
 					rootPanel.add(iSimple);
@@ -128,9 +129,9 @@ public class UniTimeMenuBar extends UniTimeMenu {
 	
 	@Override
 	public void reload() {
-		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
+		RPC.execute(new MenuInterface.MenuRpcRequest(), new AsyncCallback<GwtRpcResponseList<MenuInterface>>() {
 			@Override
-			public void onSuccess(List<MenuInterface> result) {
+			public void onSuccess(GwtRpcResponseList<MenuInterface> result) {
 				iMenu.clearItems();
 				initMenu(iMenu, result, 0);
 			}

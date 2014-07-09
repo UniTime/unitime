@@ -20,11 +20,13 @@
 package org.unitime.timetable.gwt.client.page;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
-import org.unitime.timetable.gwt.services.MenuService;
-import org.unitime.timetable.gwt.services.MenuServiceAsync;
+import org.unitime.timetable.gwt.shared.MenuInterface;
+import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -47,7 +49,7 @@ public class UniTimePageLabel extends Composite {
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 
-	private final MenuServiceAsync iService = GWT.create(MenuService.class);
+	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 
 	private HorizontalPanel iPanel;
 	
@@ -99,7 +101,7 @@ public class UniTimePageLabel extends Composite {
 	}
 	
 	public void setPageName(final String title) {
-		iService.getHelpPageAndLocalizedTitle(title, new AsyncCallback<String[]>() {
+		RPC.execute(new MenuInterface.PageNameRpcRequest(title), new AsyncCallback<PageNameInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.setTitle("UniTime " + CONSTANTS.version() + "| " + title);
@@ -109,18 +111,18 @@ public class UniTimePageLabel extends Composite {
 				iUrl = null;
 			}
 			@Override
-			public void onSuccess(String[] result) {
-				if (result[0] == null) {
+			public void onSuccess(PageNameInterface result) {
+				if (result.getHelpUrl() == null) {
 					iHelp.setVisible(false);
 					iUrl = null;
 				} else {
 					iHelp.setVisible(true);
-					iUrl = result[0];
+					iUrl = result.getHelpUrl();
 				}
-				if (result[1] != null) {
-					iName.setText(result[1]);
-					iHelp.setTitle(MESSAGES.pageHelp(result[1]));
-					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + result[1]);
+				if (result.getName() != null) {
+					iName.setText(result.getName());
+					iHelp.setTitle(MESSAGES.pageHelp(result.getName()));
+					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + result.getName());
 				} else {
 					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + title);
 					iName.setText(title);
