@@ -24,10 +24,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Lookup;
@@ -49,13 +47,12 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasFocus;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
-import org.unitime.timetable.gwt.services.MenuService;
-import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
@@ -65,6 +62,9 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.ListItem;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.RecordComparator;
+import org.unitime.timetable.gwt.shared.UserDataInterface;
+import org.unitime.timetable.gwt.shared.UserDataInterface.GetUserDataRpcRequest;
+import org.unitime.timetable.gwt.shared.UserDataInterface.SetUserDataRpcRequest;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -108,8 +108,7 @@ public class SimpleEditPage extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	private final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
-	private final MenuServiceAsync iMenuService = GWT.create(MenuService.class);
+	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 
 	private SimpleForm iPanel;
 	private UniTimeHeaderPanel iHeader, iBottom;
@@ -541,15 +540,15 @@ public class SimpleEditPage extends Composite {
 				iData = result;
 				final Comparator<Record> cmp = iData.getComparator();
 				
-				Set<String> ordRequest = new HashSet<String>();
-				ordRequest.add("SimpleEdit.Order[" + iType.toString() + "]");
-				if (hasDetails())
-					ordRequest.add("SimpleEdit.Open[" + iType.toString() + "]");
-				ordRequest.add("SimpleEdit.Hidden[" + iType.toString() + "]");
 				if (iData.isSaveOrder()) {
-					iMenuService.getUserData(ordRequest, new AsyncCallback<HashMap<String,String>>() {
+					GetUserDataRpcRequest ordRequest = new GetUserDataRpcRequest();
+					ordRequest.add("SimpleEdit.Order[" + iType.toString() + "]");
+					if (hasDetails())
+						ordRequest.add("SimpleEdit.Open[" + iType.toString() + "]");
+					ordRequest.add("SimpleEdit.Hidden[" + iType.toString() + "]");
+					RPC.execute(ordRequest, new AsyncCallback<UserDataInterface>() {
 						@Override
-						public void onSuccess(HashMap<String, String> result) {
+						public void onSuccess(UserDataInterface result) {
 							final String order = "|" + result.get("SimpleEdit.Order[" + iType.toString() + "]") + "|";
 							if (hasDetails()) {
 								String open = "|" + result.get("SimpleEdit.Open[" + iType.toString() + "]") + "|";
@@ -1421,8 +1420,8 @@ public class SimpleEditPage extends Composite {
 			if (!ord.isEmpty()) ord += "|";
 			ord += r.getUniqueId();
 		}
-		List<String[]> data = new ArrayList<String[]>();
-		data.add(new String[] {"SimpleEdit.Order[" + iType.toString() + "]", ord});
+		SetUserDataRpcRequest data = new SetUserDataRpcRequest();
+		data.put("SimpleEdit.Order[" + iType.toString() + "]", ord);
 		if (iData.getFields()[0].getType() == FieldType.parent) {
 			String open = "";
 			for (int i = 0; i < iTable.getRowCount(); i++) {
@@ -1433,7 +1432,7 @@ public class SimpleEditPage extends Composite {
 					open += r.getUniqueId();
 				}
 			}
-			data.add(new String[] {"SimpleEdit.Open[" + iType.toString() + "]", open});
+			data.put("SimpleEdit.Open[" + iType.toString() + "]", open);
 		}
 		String hidden = "";
 		for (int i = 0; i < iData.getFields().length; i++) {
@@ -1442,14 +1441,14 @@ public class SimpleEditPage extends Composite {
 				hidden += iData.getFields()[i].getName();
 			}
 		}
-		data.add(new String[] {"SimpleEdit.Hidden[" + iType.toString() + "]", hidden});
-		iMenuService.setUserData(data, new AsyncCallback<Boolean>() {
+		data.put("SimpleEdit.Hidden[" + iType.toString() + "]", hidden);
+		RPC.execute(data, new AsyncCallback<GwtRpcResponseNull>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.clearMessage();
 			}
 			@Override
-			public void onSuccess(Boolean result) {
+			public void onSuccess(GwtRpcResponseNull result) {
 				iHeader.clearMessage();
 			}
 		});

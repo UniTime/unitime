@@ -19,13 +19,16 @@
 */
 package org.unitime.timetable.gwt.client.page;
 
-import java.util.HashMap;
-import java.util.TreeSet;
-
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.sectioning.AcademicSessionSelector;
-import org.unitime.timetable.gwt.services.MenuService;
-import org.unitime.timetable.gwt.services.MenuServiceAsync;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.shared.MenuInterface;
+import org.unitime.timetable.gwt.shared.MenuInterface.InfoInterface;
+import org.unitime.timetable.gwt.shared.MenuInterface.InfoPairInterface;
+import org.unitime.timetable.gwt.shared.MenuInterface.SessionInfoInterface;
+import org.unitime.timetable.gwt.shared.MenuInterface.SolverInfoInterface;
+import org.unitime.timetable.gwt.shared.MenuInterface.UserInfoInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -49,7 +52,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * @author Tomas Muller
  */
 public class UniTimePageHeader extends Composite {
-	private final MenuServiceAsync iService = GWT.create(MenuService.class);
+	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 
 	private HorizontalPanel iPanel = new HorizontalPanel();
 	private VerticalPanelWithHint iSolverInfo, iSessionInfo, iUserInfo;
@@ -105,13 +108,13 @@ public class UniTimePageHeader extends Composite {
 	}
 	
 	public void reloadSessionInfo() {
-		iService.getSessionInfo(new AsyncCallback<HashMap<String,String>>() {
+		RPC.execute(new MenuInterface.SessionInfoRpcRequest(), new AsyncCallback<SessionInfoInterface>() {
 			@Override
-			public void onSuccess(HashMap<String, String> result) {
+			public void onSuccess(SessionInfoInterface result) {
 				iSessionInfo.clear();
 				iSessionInfo.setHint(result);
 				if (result == null) return;
-				HTML sessionLabel = new HTML(result.get("0Session"), false);
+				HTML sessionLabel = new HTML(result.getSession(), false);
 				sessionLabel.setStyleName("unitime-SessionSelector");
 				iSessionInfo.add(sessionLabel);
 				Anchor hint = new Anchor("Click here to change the session / role.", true);
@@ -135,19 +138,19 @@ public class UniTimePageHeader extends Composite {
 	}
 
 	public void reloadUserInfo() {
-		iService.getUserInfo(new AsyncCallback<HashMap<String,String>>() {
+		RPC.execute(new MenuInterface.UserInfoRpcRequest(), new AsyncCallback<UserInfoInterface>() {
 			@Override
-			public void onSuccess(HashMap<String, String> result) {
+			public void onSuccess(UserInfoInterface result) {
 				iUserInfo.clear();
 				iUserInfo.setHint(result);
 				if (result == null) return;
-				HTML userLabel = new HTML(result.get("0Name"), false);
+				HTML userLabel = new HTML(result.getName(), false);
 				userLabel.setStyleName("unitime-SessionSelector");
 				iUserInfo.add(userLabel);
-				HTML hint = new HTML(result.get("2Role"), false);
-				hint.setStyleName(result.containsKey("Chameleon") ? "unitime-Hint" : "unitime-NotClickableHint");
+				HTML hint = new HTML(result.getRole(), false);
+				hint.setStyleName(result.isChameleon() ? "unitime-Hint" : "unitime-NotClickableHint");
 				iUserInfo.add(hint);
-				if (result.containsKey("Chameleon")) {
+				if (result.isChameleon()) {
 					ClickHandler c = new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
@@ -176,34 +179,31 @@ public class UniTimePageHeader extends Composite {
 	}
 	
 	public void reloadSolverInfo(boolean includeSolutionInfo, final Callback callback) {
-		iService.getSolverInfo(includeSolutionInfo, new AsyncCallback<HashMap<String,String>>() {
+		RPC.execute(new MenuInterface.SolverInfoRpcRequest(includeSolutionInfo), new AsyncCallback<SolverInfoInterface>() {
 			@Override
-			public void onSuccess(HashMap<String, String> result) {
+			public void onSuccess(SolverInfoInterface result) {
 				iSolverInfo.clear();
 				boolean hasSolver = false;
 				try {
 					iSolverInfo.setHint(result);
 					if (result != null) {
-						HTML userLabel = new HTML(result.get("1Solver"), false);
+						HTML userLabel = new HTML(result.getSolver(), false);
 						userLabel.setStyleName("unitime-SessionSelector");
 						iSolverInfo.add(userLabel);
-						HTML hint = new HTML(result.get("0Type"), false);
+						HTML hint = new HTML(result.getType(), false);
 						hint.setStyleName("unitime-Hint");
 						iSolverInfo.add(hint);
-						final String type = result.get("0Type");
-						ClickHandler c = new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent event) {
-								if (type.equals("Course Timetabling Solver"))
-									ToolBox.open(GWT.getHostPageBaseURL() + "solver.do");
-								else if (type.equals("Examinations Solver"))
-									ToolBox.open(GWT.getHostPageBaseURL() + "examSolver.do");
-								else
-									ToolBox.open(GWT.getHostPageBaseURL() + "studentSolver.do");
-							}
-						};
-						userLabel.addClickHandler(c);
-						hint.addClickHandler(c);
+						if (result.getUrl() != null) {
+							final String url = result.getUrl();
+							ClickHandler c = new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent event) {
+									ToolBox.open(GWT.getHostPageBaseURL() + url);
+								}
+							};
+							userLabel.addClickHandler(c);
+							hint.addClickHandler(c);
+						}
 						hasSolver = true;
 					}
 				} catch (Exception e) {}
@@ -278,18 +278,16 @@ public class UniTimePageHeader extends Composite {
 			};
 		}
 		
-		public void setHint(HashMap<String,String> hint) {
+		public void setHint(InfoInterface hint) {
 			String html = "";
 			if (hint != null && !hint.isEmpty()) {
 				html += "<table cellspacing=\"0\" cellpadding=\"3\">";
-				TreeSet<String> keys = new TreeSet<String>(hint.keySet());
-				for (String key: keys) {
-					String val = hint.get(key);
-					if (val.isEmpty()) continue;
-					String style = "";
-					if (key.startsWith("A")) 
-						style = "border-top: 1px dashed #AB8B00;";
-					html += "<tr><td style=\"" + style + "\">" + key.substring(1) + ":</td><td style=\"" + style + "\">" + val + "</td></tr>";
+				for (InfoPairInterface pair: hint.getPairs()) {
+					if (pair.getValue() == null || pair.getValue().isEmpty()) continue;
+					if (pair.hasSeparator())
+						html += "<tr><td style=\"border-bottom: 1px dashed #AB8B00;\">" + pair.getName() + ":</td><td style=\"border-bottom: 1px dashed #AB8B00;\">" + pair.getValue() + "</td></tr>";
+					else
+						html += "<tr><td>" + pair.getName() + ":</td><td>" + pair.getValue() + "</td></tr>";
 				}
 				html += "</table>";
 			}

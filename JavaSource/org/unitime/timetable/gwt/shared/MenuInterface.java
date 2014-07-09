@@ -24,6 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -101,5 +105,156 @@ public class MenuInterface implements IsSerializable {
 	
 	public static interface ValueEncoder {
 		public String encode(String value);
+	}
+	
+	public static class MenuRpcRequest implements GwtRpcRequest<GwtRpcResponseList<MenuInterface>> {
+		@Override
+		public String toString() { return null; }
+	}
+	
+	public static class InfoPairInterface implements IsSerializable {
+		private String iName, iValue;
+		private boolean iSeparator = false;
+		
+		public InfoPairInterface() {}
+		
+		public InfoPairInterface(String name, String value) {
+			iName = name;
+			iValue = value;
+		}
+		
+		public void setName(String name) { iName = name; }
+		public String getName() { return iName; }
+		
+		public void setValue(String value) { iValue = value; }
+		public String getValue() { return iValue; }
+		
+		public boolean hasSeparator() { return iSeparator; }
+		public void setSeparator(boolean separator) { iSeparator = separator; }
+		
+		@Override
+		public String toString() { return iName + ": " + iValue; }
+	}
+	
+	public static class InfoInterface implements GwtRpcResponse {
+		private List<InfoPairInterface> iPairs = new ArrayList<MenuInterface.InfoPairInterface>();
+		
+		public InfoInterface() {}
+		
+		public InfoPairInterface addPair(String name, String value) {
+			InfoPairInterface pair = new InfoPairInterface(name, value); 
+			iPairs.add(pair);
+			return pair;
+		}
+		public List<InfoPairInterface> getPairs() { return iPairs; }
+		
+		public boolean isEmpty() { return iPairs.isEmpty(); }
+		
+		@Override
+		public String toString() { return iPairs.toString(); }
+	}
+	
+	public static class UserInfoInterface extends InfoInterface {
+		private boolean iChameleon = false;
+		private String iName, iRole;
+		
+		public void setChameleon(boolean chameleon) { iChameleon = chameleon; }
+		public boolean isChameleon() { return iChameleon; }
+		
+		public void setName(String name) { iName = name; }
+		public String getName() { return iName; }
+		
+		public void setRole(String role) { iRole = role; }
+		public String getRole() { return iRole; }
+	}
+	
+	public static class UserInfoRpcRequest implements GwtRpcRequest<UserInfoInterface> {
+		@Override
+		public String toString() { return null; }
+	}
+	
+	public static class VersionInfoInterface implements GwtRpcResponse {
+		private String iVersion;
+		private String iBuildNumber;
+		private String iReleaseDate;
+		
+		public VersionInfoInterface() {}
+		
+		public String getVersion() { return iVersion; }
+		public void setVersion(String version) { iVersion = version; }
+
+		public String getBuildNumber() { return iBuildNumber; }
+		public void setBuildNumber(String buildNumber) { iBuildNumber = buildNumber; }
+
+		public String getReleaseDate() { return iReleaseDate; }
+		public void setReleaseDate(String releaseDate) { iReleaseDate = releaseDate; }
+
+		@Override
+		public String toString() { return iVersion; }
+	}
+	
+	public static class VersionInfoRpcRequest implements GwtRpcRequest<VersionInfoInterface> {
+		@Override
+		public String toString() { return null; }
+	}
+	
+	public static class SessionInfoInterface extends InfoInterface {
+		private String iSession = null;
+		
+		public String getSession() { return iSession; }
+		public void setSession(String session) { iSession = session; }
+	}
+	
+	public static class SessionInfoRpcRequest implements GwtRpcRequest<SessionInfoInterface> {
+		@Override
+		public String toString() { return null; }
+	}
+	
+	public static class SolverInfoInterface extends InfoInterface {
+		private String iSolver, iType, iUrl;
+		
+		public String getSolver() { return iSolver; }
+		public void setSolver(String solver) { iSolver = solver; }
+		public String getType() { return iType; }
+		public void setType(String type) { iType = type; }
+		public String getUrl() { return iUrl; }
+		public void setUrl(String url) { iUrl = url; }
+	}
+		
+	public static class SolverInfoRpcRequest implements GwtRpcRequest<SolverInfoInterface> {
+		private boolean iIncludeSolutionInfo = false;
+
+		public SolverInfoRpcRequest() {}
+		public SolverInfoRpcRequest(boolean includeSolutionInfo) {
+			iIncludeSolutionInfo = includeSolutionInfo;
+		}
+		
+		public boolean isIncludeSolutionInfo() { return iIncludeSolutionInfo; }
+		public void setIncludeSolutionInfo(boolean incldueSolutionInfo) { iIncludeSolutionInfo = incldueSolutionInfo; }
+	}
+	
+	public static class PageNameInterface implements GwtRpcResponse {
+		private String iHelpUrl, iName;
+		
+		public PageNameInterface() {}
+		
+		public String getHelpUrl() { return iHelpUrl; }
+		public void setHelpUrl(String url) { iHelpUrl = url; }
+		
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+	}
+	
+	public static class PageNameRpcRequest implements GwtRpcRequest<PageNameInterface> {
+		private String iName;
+		
+		public PageNameRpcRequest() {}
+		public PageNameRpcRequest(String name) { iName = name; }
+		
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+		
+		@Override
+		public String toString() { return iName; }
 	}
 }

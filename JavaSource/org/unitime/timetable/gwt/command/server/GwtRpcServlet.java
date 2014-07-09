@@ -127,22 +127,26 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 	public <T extends GwtRpcResponse> T execute(GwtRpcRequest<T> request) throws GwtRpcException {
 		// start time
 		long t0 = JProf.currentTimeMillis();
+		GwtRpcLogging logging = null;
 		// create helper
 		try {
 			// retrieve implementation from given request
 			GwtRpcImplementation<GwtRpcRequest<T>, T> implementation = getImplementation(request);
 			
+			// get logging
+			logging = implementation.getClass().getAnnotation(GwtRpcLogging.class);
+			
 			// execute request
 			T response = implementation.execute(request, getSessionContext());
 			
 			// log request
-			log(request, response, null, JProf.currentTimeMillis() - t0, getSessionContext());
+			log(request, response, null, JProf.currentTimeMillis() - t0, getSessionContext(), logging);
 			
 			// return response
 			return response;
 		} catch (Throwable t) {
 			// log exception
-			log(request, null, t, JProf.currentTimeMillis() - t0, getSessionContext());
+			log(request, null, t, JProf.currentTimeMillis() - t0, getSessionContext(), logging);
 			
 			// re-throw exception as GwtRpcException or IsSerializable runtime exception
 			if (t instanceof GwtRpcException) {
@@ -165,12 +169,19 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 		}
 	}
 	
-	private <T extends GwtRpcResponse> void log(GwtRpcRequest<T> request, T response, Throwable exception, long time, SessionContext context) {
+	private <T extends GwtRpcResponse> void log(GwtRpcRequest<T> request, T response, Throwable exception, long time, SessionContext context, GwtRpcLogging logging) {
 		try {
 			if (iSaver == null) return;
+			if (logging != null) {
+				switch (logging.value()) {
+				case DISABLED:
+					return;
+				case ON_EXCEPTION:
+					if (exception != null) return;
+				}
+			}
 			QueryLog q = new QueryLog();
-			String requestName = request.getClass().getName();
-			if (requestName.indexOf('.') >= 0) requestName = requestName.substring(requestName.lastIndexOf('.') + 1);
+			String requestName = request.getClass().getSimpleName();
 			q.setUri("RPC:" + requestName);
 			q.setType(QueryLog.Type.RPC.ordinal());
 			q.setTimeStamp(new Date());
@@ -290,20 +301,23 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			ApplicationProperties.setSessionId(iContext.getUser() == null ? null : iContext.getUser().getCurrentAcademicSessionId());
 			// start time
 			long t0 = JProf.currentTimeMillis();
+			GwtRpcLogging logging = null;
 			try {
 				// retrieve implementation from given request
 				GwtRpcImplementation<GwtRpcRequest<T>, T> implementation = getImplementation(iRequest);
+				
+				// get logging
+				logging = implementation.getClass().getAnnotation(GwtRpcLogging.class);
 				
 				// execute request
 				iResponse = implementation.execute(iRequest, iContext);
 				
 				// log request
-				log(iRequest, iResponse, null, JProf.currentTimeMillis() - t0, iContext);
+				log(iRequest, iResponse, null, JProf.currentTimeMillis() - t0, iContext, logging);
 			} catch (Throwable t) {
 				// log exception
-				log(iRequest, null, t, JProf.currentTimeMillis() - t0, iContext);
+				log(iRequest, null, t, JProf.currentTimeMillis() - t0, iContext, logging);
 				
-				// re-throw exception as GwtRpcException or IsSerializable runtime exception
 				// re-throw exception as GwtRpcException or IsSerializable runtime exception
 				if (t instanceof GwtRpcException) {
 					iException = (GwtRpcException)t;
