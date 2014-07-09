@@ -34,14 +34,25 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseLong;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.services.SavedHQLService;
-import org.unitime.timetable.gwt.services.SavedHQLServiceAsync;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLDeleteRpcRequest;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLExecuteRpcRequest;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLOptionsInterface;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLOptionsRpcRequest;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLQueriesRpcRequest;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLSetBackRpcRequest;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLStoreRpcRequest;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.Query;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.Table;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -70,7 +81,6 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class SavedHQLPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private final SavedHQLServiceAsync iService = GWT.create(SavedHQLService.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private SimpleForm iForm = null;
@@ -122,28 +132,25 @@ public class SavedHQLPage extends Composite {
 		iHeader.addButton("print", MESSAGES.buttonPrint(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				SavedHQLInterface.Query query = null;
+				HQLExecuteRpcRequest request = new HQLExecuteRpcRequest();
 				Long id = Long.valueOf(iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex()));
 				for (SavedHQLInterface.Query q: iQueries) {
 					if (id.equals(q.getId())) {
-						query = q; break;
+						request.setQuery(q); break;
 					}
 				}
-				if (query == null) {
+				if (request.getQuery() == null) {
 					iHeader.setErrorMessage(MESSAGES.errorNoReportSelected());
 					return;
 				}
 				final SimpleForm form = new SimpleForm();
-				form.addHeaderRow(query.getName());
-				if (!query.getDescription().isEmpty())
-					form.addRow(MESSAGES.propDescription(), new HTML(query.getDescription()));
+				form.addHeaderRow(request.getQuery().getName());
+				if (!request.getQuery().getDescription().isEmpty())
+					form.addRow(MESSAGES.propDescription(), new HTML(request.getQuery().getDescription()));
 				
-				List<SavedHQLInterface.IdValue> options = new ArrayList<SavedHQLInterface.IdValue>();
 				for (int i = 0; i < iOptions.size(); i++) {
 					SavedHQLInterface.Option option = iOptions.get(i);
-					if (query.getQuery().contains("%" + option.getType() + "%")) {
-						SavedHQLInterface.IdValue o = new SavedHQLInterface.IdValue();
-						o.setValue(option.getType());
+					if (request.getQuery().getQuery().contains("%" + option.getType() + "%")) {
 						ListBox list = ((UniTimeWidget<ListBox>)iForm.getWidget(3 + i, 1)).getWidget();
 						String value = "";
 						String values = "";
@@ -166,13 +173,13 @@ public class SavedHQLPage extends Composite {
 							iHeader.setErrorMessage(MESSAGES.errorItemNotSelected(option.getName()));
 							return;
 						}
-						o.setText(value);
+						request.addOption(option.getType(), value);
 						form.addRow(option.getName() + ":", new Label(values, true));
-						options.add(o);
 					}
 				}
-				LoadingWidget.getInstance().show(MESSAGES.waitExecuting(query.getName()));
-				iService.execute(query, options, 0, 10000, new AsyncCallback<List<String[]>>() {
+				LoadingWidget.getInstance().show(MESSAGES.waitExecuting(request.getQuery().getName()));
+				request.setFromRow(0); request.setMaxRows(10000);
+				RPC.execute(request, new AsyncCallback<Table>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						iTableHeader.setErrorMessage(caught.getMessage(), true);
@@ -180,7 +187,7 @@ public class SavedHQLPage extends Composite {
 					}
 
 					@Override
-					public void onSuccess(List<String[]> result) {
+					public void onSuccess(Table result) {
 						LoadingWidget.getInstance().hide();
 						if (result == null || result.size() <= 1) {
 							iTableHeader.setMessage(MESSAGES.errorNoResults());
@@ -347,18 +354,6 @@ public class SavedHQLPage extends Composite {
 		iHeader.setEnabled("print", false);
 		iHeader.setEnabled("export", false);
 
-		iService.editable(new AsyncCallback<Boolean>() {
-			@Override
-			public void onSuccess(Boolean result) {
-				if (result != null)
-					iHeader.setEnabled("add", result.booleanValue());
-			}
-			@Override
-			public void onFailure(Throwable caught) {
-				iHeader.setEnabled("add", false);
-			}
-		});
-
 		iForm.getColumnFormatter().setWidth(0, "120px");
 		iForm.getColumnFormatter().setWidth(1, "100%");
 
@@ -377,7 +372,7 @@ public class SavedHQLPage extends Composite {
 		iForm.getCellFormatter().setVerticalAlignment(2, 0, HasVerticalAlignment.ALIGN_TOP);
 		
 		LoadingWidget.getInstance().show(MESSAGES.waitLoadingReports());
-		iService.getFlags(new AsyncCallback<List<SavedHQLInterface.Flag>>() {
+		RPC.execute(new HQLOptionsRpcRequest(), new AsyncCallback<HQLOptionsInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(caught.getMessage());
@@ -386,82 +381,71 @@ public class SavedHQLPage extends Composite {
 			}
 
 			@Override
-			public void onSuccess(List<SavedHQLInterface.Flag> result) {
-				iFlags = result;
-				iService.getOptions(new AsyncCallback<List<SavedHQLInterface.Option>>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						iHeader.setErrorMessage(caught.getMessage());
-						LoadingWidget.getInstance().hide();
+			public void onSuccess(HQLOptionsInterface result) {
+				iFlags = result.getFlags();
+				iOptions = result.getOptions();
+				iHeader.setEnabled("add", result.isEditable());
+				for (int i = 0; i < iOptions.size(); i++) {
+					SavedHQLInterface.Option option = iOptions.get(i);
+					ListBox list = new ListBox(option.isMultiSelect());
+					if (!option.isMultiSelect())
+						list.addItem(MESSAGES.itemSelect(), "-1");
+					for (SavedHQLInterface.IdValue v: option.values())
+						list.addItem(v.getText(), v.getValue());
+					final UniTimeWidget<ListBox> u = new UniTimeWidget<ListBox>(list);
+					iForm.addRow(option.getName() + ":", u);
+					iForm.getCellFormatter().setVerticalAlignment(3 + i, 0, HasVerticalAlignment.ALIGN_TOP);
+					iForm.getRowFormatter().setVisible(3 + i, false);
+					if (list.isMultipleSelect()) {
+						for (int j = 0; j < list.getItemCount(); j++)
+							list.setItemSelected(j, true);
+						u.setPrintText(MESSAGES.itemAll());
+					} else if (list.getItemCount() == 2) {
+						list.setSelectedIndex(1);
+						u.setPrintText(list.getItemText(1));
 					}
-
-					@Override
-					public void onSuccess(List<SavedHQLInterface.Option> result) {
-						iOptions = result;
-						for (int i = 0; i < result.size(); i++) {
-							SavedHQLInterface.Option option = result.get(i);
-							ListBox list = new ListBox(option.isMultiSelect());
-							if (!option.isMultiSelect())
-								list.addItem(MESSAGES.itemSelect(), "-1");
-							for (SavedHQLInterface.IdValue v: option.values())
-								list.addItem(v.getText(), v.getValue());
-							final UniTimeWidget<ListBox> u = new UniTimeWidget<ListBox>(list);
-							iForm.addRow(option.getName() + ":", u);
-							iForm.getCellFormatter().setVerticalAlignment(3 + i, 0, HasVerticalAlignment.ALIGN_TOP);
-							iForm.getRowFormatter().setVisible(3 + i, false);
-							if (list.isMultipleSelect()) {
-								for (int j = 0; j < list.getItemCount(); j++)
-									list.setItemSelected(j, true);
-								u.setPrintText(MESSAGES.itemAll());
-							} else if (list.getItemCount() == 2) {
-								list.setSelectedIndex(1);
-								u.setPrintText(list.getItemText(1));
+					list.addChangeHandler(new ChangeHandler() {
+						@Override
+						public void onChange(ChangeEvent event) {
+							u.clearHint();
+							String selected = "";
+							boolean hasAll = true;
+							for (int i = 0; i < u.getWidget().getItemCount(); i++) {
+								if (u.getWidget().isItemSelected(i)) {
+									if (!selected.isEmpty()) selected += ",";
+									selected += u.getWidget().getItemText(i);
+								} else hasAll = false;
 							}
-							list.addChangeHandler(new ChangeHandler() {
-								@Override
-								public void onChange(ChangeEvent event) {
-									u.clearHint();
-									String selected = "";
-									boolean hasAll = true;
-									for (int i = 0; i < u.getWidget().getItemCount(); i++) {
-										if (u.getWidget().isItemSelected(i)) {
-											if (!selected.isEmpty()) selected += ",";
-											selected += u.getWidget().getItemText(i);
-										} else hasAll = false;
-									}
-									if (hasAll && u.getWidget().getItemCount() > 5)
-										selected = MESSAGES.itemAll();
-									if (selected.length() > 150)
-										selected = selected.substring(0, 147) + "...";
-									u.setPrintText(selected);
-									iHeader.clearMessage();
-								}
-							});
+							if (hasAll && u.getWidget().getItemCount() > 5)
+								selected = MESSAGES.itemAll();
+							if (selected.length() > 150)
+								selected = selected.substring(0, 147) + "...";
+							u.setPrintText(selected);
+							iHeader.clearMessage();
 						}
-						iTableHeader = new UniTimeHeaderPanel(MESSAGES.sectResults());
-						iTableHeader.addButton("previous", MESSAGES.buttonPrevious(), 75, new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent event) {
-								iFirstLine -= 100;
-								execute();
-							}
-						});
-						iTableHeader.addButton("next", MESSAGES.buttonNext(), 75, new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent event) {
-								iFirstLine += 100;
-								execute();
-							}
-						});
-						iTableHeader.setEnabled("previous", false);
-						iTableHeader.setEnabled("next", false);
-						iForm.addHeaderRow(iTableHeader);
-						iForm.addRow(iTable);
-						iForm.addBottomRow(iHeader.clonePanel(""));
-						loadQueries(null, true);
+					});
+				}
+				iTableHeader = new UniTimeHeaderPanel(MESSAGES.sectResults());
+				iTableHeader.addButton("previous", MESSAGES.buttonPrevious(), 75, new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						iFirstLine -= 100;
+						execute();
 					}
-					
 				});
+				iTableHeader.addButton("next", MESSAGES.buttonNext(), 75, new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						iFirstLine += 100;
+						execute();
+					}
+				});
+				iTableHeader.setEnabled("previous", false);
+				iTableHeader.setEnabled("next", false);
+				iForm.addHeaderRow(iTableHeader);
+				iForm.addRow(iTable);
+				iForm.addBottomRow(iHeader.clonePanel(""));
+				loadQueries(null, true);
 			}
 		});
 
@@ -561,16 +545,16 @@ public class SavedHQLPage extends Composite {
 						return;
 					}
 					iDialogQuery.setFlags(flags);
-					iService.store(iDialogQuery, new AsyncCallback<Long>() {
+					RPC.execute(new HQLStoreRpcRequest(iDialogQuery), new AsyncCallback<GwtRpcResponseLong>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							iDialogHeader.setErrorMessage(caught.getMessage());
 						}
 
 						@Override
-						public void onSuccess(Long result) {
+						public void onSuccess(GwtRpcResponseLong result) {
 							iDialog.hide();
-							loadQueries(result, false);
+							loadQueries(result.getValue(), false);
 						}
 					});
 				}
@@ -584,7 +568,11 @@ public class SavedHQLPage extends Composite {
 					}
 					iDialogQuery.setQuery(iDialogQueryArea.getText());
 					LoadingWidget.getInstance().show(MESSAGES.waitTestingQuery());
-					iService.execute(iDialogQuery, new ArrayList<SavedHQLInterface.IdValue>(), 0, 101, new AsyncCallback<List<String[]>>() {
+					HQLExecuteRpcRequest request = new HQLExecuteRpcRequest();
+					request.setQuery(iDialogQuery);
+					request.setFromRow(0);
+					request.setMaxRows(101);
+					RPC.execute(request, new AsyncCallback<Table>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							iDialogHeader.setErrorMessage(MESSAGES.failedTestNoReason());
@@ -593,7 +581,7 @@ public class SavedHQLPage extends Composite {
 						}
 
 						@Override
-						public void onSuccess(List<String[]> result) {
+						public void onSuccess(Table result) {
 							iDialogHeader.setMessage(result.size() <= 1 ? MESSAGES.infoTestSucceededNoResults() : result.size() > 101 ? MESSAGES.infoTestSucceededWith100OrMoreRows() : MESSAGES.infoTestSucceededWithRows(result.size() - 1));
 							LoadingWidget.getInstance().hide();
 						}
@@ -603,14 +591,14 @@ public class SavedHQLPage extends Composite {
 			iDialogHeader.addButton("delete", MESSAGES.opQueryDelete(), 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					iService.delete(iDialogQuery.getId(), new AsyncCallback<Boolean>() {
+					RPC.execute(new HQLDeleteRpcRequest(iDialogQuery.getId()), new AsyncCallback<GwtRpcResponseBoolean>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							iDialogHeader.setErrorMessage(caught.getMessage());
 						}
 
 						@Override
-						public void onSuccess(Boolean result) {
+						public void onSuccess(GwtRpcResponseBoolean result) {
 							iDialog.hide();
 							loadQueries(null, false);
 						}
@@ -643,14 +631,14 @@ public class SavedHQLPage extends Composite {
 	public void loadQueries(final Long select, final boolean reload) {
 		if (!LoadingWidget.getInstance().isShowing())
 			LoadingWidget.getInstance().show(MESSAGES.waitLoadingReports());
-		iService.queries(iAppearance, new AsyncCallback<List<SavedHQLInterface.Query>>() {
+		RPC.execute(new HQLQueriesRpcRequest(iAppearance), new AsyncCallback<GwtRpcResponseList<Query>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(caught.getMessage());
 				LoadingWidget.getInstance().hide();
 			}
 			@Override
-			public void onSuccess(List<SavedHQLInterface.Query> result) {
+			public void onSuccess(GwtRpcResponseList<Query> result) {
 				String selected = (select == null ? null : select.toString());
 				if (selected == null && iQuerySelector.getWidget().getSelectedIndex() >= 0) {
 					selected = iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex());
@@ -712,7 +700,7 @@ public class SavedHQLPage extends Composite {
 		return 0;
 	}
 	
-	public void populate(List<String[]> result) {
+	public void populate(Table result) {
 		if (result == null || result.size() <= 1) {
 			iTableHeader.setMessage(MESSAGES.errorNoResults());
 		} else {
@@ -786,23 +774,25 @@ public class SavedHQLPage extends Composite {
 	
 	public void setBack() {
 		if (iFirstField == null || !iFirstField.startsWith("__") || iTable.getRowCount() <= 1) return;
-		List<Long> ids = new ArrayList<Long>();
+		HQLSetBackRpcRequest request = new HQLSetBackRpcRequest();
 		for (int i = 1; i < iTable.getRowCount(); i++) {
 			String[] row = iTable.getData(i);
 			if (row != null) {
 				Long id = Long.valueOf(row[0]);
-				if (!ids.contains(id))
-					ids.add(id);
+				request.addId(id);
 			}
 		}
-		iService.setBack(iAppearance, History.getToken(), ids, iFirstField, new AsyncCallback<Boolean>() {
+		request.setAppearance(iAppearance);
+		request.setHistory(History.getToken());
+		request.setType(iFirstField);
+		RPC.execute(request, new AsyncCallback<GwtRpcResponseNull>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(caught.getMessage());
 			}
 
 			@Override
-			public void onSuccess(Boolean result) {
+			public void onSuccess(GwtRpcResponseNull result) {
 			}
 		});
 	}
@@ -854,25 +844,24 @@ public class SavedHQLPage extends Composite {
 	}
 	
 	private void execute() {
-		SavedHQLInterface.Query query = null;
+		HQLExecuteRpcRequest request = new HQLExecuteRpcRequest();
 		iHeader.setEnabled("print", false);
 		iHeader.setEnabled("export", false);
 
 		Long id = Long.valueOf(iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex()));
 		for (SavedHQLInterface.Query q: iQueries) {
 			if (id.equals(q.getId())) {
-				query = q; break;
+				request.setQuery(q); break;
 			}
 		}
-		if (query == null) {
+		if (request.getQuery() == null) {
 			iHeader.setErrorMessage(MESSAGES.errorNoReportSelected());
 			return;
 		}
-		List<SavedHQLInterface.IdValue> options = new ArrayList<SavedHQLInterface.IdValue>();
-		iLastHistory = query.getId().toString();
+		iLastHistory = request.getQuery().getId().toString();
 		for (int i = 0; i < iOptions.size(); i++) {
 			SavedHQLInterface.Option option = iOptions.get(i);
-			if (query.getQuery().contains("%" + option.getType() + "%")) {
+			if (request.getQuery().getQuery().contains("%" + option.getType() + "%")) {
 				SavedHQLInterface.IdValue o = new SavedHQLInterface.IdValue();
 				o.setValue(option.getType());
 				ListBox list = ((UniTimeWidget<ListBox>)iForm.getWidget(3 + i, 1)).getWidget();
@@ -893,18 +882,19 @@ public class SavedHQLPage extends Composite {
 					iHeader.setErrorMessage(MESSAGES.errorItemNotSelected(option.getName()));
 					return;
 				}
-				o.setText(value);
+				request.addOption(option.getType(), value);
 				iLastHistory += ":" + (list.isMultipleSelect() && allSelected ? "" : value);
-				options.add(o);
 			}
 		}
 		
 		iTable.clearTable(); iFirstField = null;
 		iTableHeader.clearMessage();
 		iHeader.clearMessage();
-		LoadingWidget.getInstance().show(MESSAGES.waitExecuting(query.getName()));
+		LoadingWidget.getInstance().show(MESSAGES.waitExecuting(request.getQuery().getName()));
 		History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort, false);
-		iService.execute(query, options, iFirstLine, 101, new AsyncCallback<List<String[]>>() {
+		request.setFromRow(iFirstLine);
+		request.setMaxRows(101);
+		RPC.execute(request, new AsyncCallback<Table>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iTableHeader.setErrorMessage(caught.getMessage(), true);
@@ -912,7 +902,7 @@ public class SavedHQLPage extends Composite {
 			}
 
 			@Override
-			public void onSuccess(List<String[]> result) {
+			public void onSuccess(Table result) {
 				populate(result);
 				LoadingWidget.getInstance().hide();
 			}
