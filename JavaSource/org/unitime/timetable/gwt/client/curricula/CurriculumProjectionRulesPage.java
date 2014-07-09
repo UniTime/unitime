@@ -34,16 +34,20 @@ import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
-import org.unitime.timetable.gwt.services.MenuService;
-import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculaException;
+import org.unitime.timetable.gwt.shared.UserDataInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
+import org.unitime.timetable.gwt.shared.UserDataInterface.GetUserDataRpcRequest;
+import org.unitime.timetable.gwt.shared.UserDataInterface.SetUserDataRpcRequest;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -80,8 +84,8 @@ import com.google.gwt.user.client.ui.Widget;
 public class CurriculumProjectionRulesPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
-	private final MenuServiceAsync iMenuService = GWT.create(MenuService.class);
 	private static NumberFormat NF = NumberFormat.getFormat("##0.0");
 
 	private MyFlexTable iTable;
@@ -217,14 +221,14 @@ public class CurriculumProjectionRulesPage extends Composite {
 			@Override
 			public void onSuccess(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> result) {
 				iRules = result;
-				Set<String> ordRequest = new HashSet<String>();
+				GetUserDataRpcRequest ordRequest = new GetUserDataRpcRequest();
 				ordRequest.add("CurProjRules.Order");
 				for (AcademicAreaInterface area: iRules.keySet())
 					ordRequest.add("CurProjRules.Order["+area.getAbbv()+"]");
 				iHeader.clearMessage();
-				iMenuService.getUserData(ordRequest, new AsyncCallback<HashMap<String,String>>() {
+				RPC.execute(ordRequest, new AsyncCallback<UserDataInterface>() {
 					@Override
-					public void onSuccess(HashMap<String, String> result) {
+					public void onSuccess(UserDataInterface result) {
 						iOrder = result;
 						refreshTableAndAll();
 					}
@@ -1040,17 +1044,17 @@ public class CurriculumProjectionRulesPage extends Composite {
 		    		area2majorOrd.put(r.getArea().getAbbv(), (majorOrd == null ? "" : majorOrd + "|") + r.getMajor().getCode());
 			    }
 			}
-			List<String[]> ord = new ArrayList<String[]>();
-			ord.add(new String[] {"CurProjRules.Order", areaOrd});
+			SetUserDataRpcRequest ord = new SetUserDataRpcRequest();
+			ord.put("CurProjRules.Order", areaOrd);
 			for (Map.Entry<String, String> e: area2majorOrd.entrySet()) {
-				ord.add(new String[] {"CurProjRules.Order[" + e.getKey() + "]", e.getValue()});
+				ord.put("CurProjRules.Order[" + e.getKey() + "]", e.getValue());
 			}
-			iMenuService.setUserData(ord, new AsyncCallback<Boolean>() {
+			RPC.execute(ord, new AsyncCallback<GwtRpcResponseNull>() {
 				@Override
 				public void onFailure(Throwable caught) {
 				}
 				@Override
-				public void onSuccess(Boolean result) {
+				public void onSuccess(GwtRpcResponseNull result) {
 					iHeader.clearMessage();
 				}
 			});

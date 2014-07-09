@@ -2219,6 +2219,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Not set")
 	String notSet();
 	
+	@DefaultMessage("Not Selected")
+	String notSelected();
+	
 	@DefaultMessage("All")
 	String itemAll();
 	
@@ -2549,9 +2552,36 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Additional Emails")
 	String fieldAdditionalEmails();
 	
+	@DefaultMessage("Session")
+	String fieldSession();
+
+	@DefaultMessage("Database")
+	String fieldDatabase();
+
+	@DefaultMessage("Status")
+	String fieldStatus();
+
 	@DefaultMessage("Manager")
 	String fieldManager();
 	
+	@DefaultMessage("Solver")
+	String fieldSolver();
+	
+	@DefaultMessage("Phase")
+	String fieldPhase();
+
+	@DefaultMessage("Progress")
+	String fieldProgress();
+
+	@DefaultMessage("Owner")
+	String fieldOwner();
+
+	@DefaultMessage("Host")
+	String fieldHost();
+
+	@DefaultMessage("Version")
+	String fieldVersion();
+
 	@DefaultMessage("Access")
 	String toggleAccess();
 	
@@ -2953,4 +2983,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("View")
 	String courseCatalogLink();
+	
+	@DefaultMessage("Student Sectioning Solver")
+	String solverStudent();
+	
+	@DefaultMessage("Examinations Solver")
+	String solverExamination();
+	
+	@DefaultMessage("Course Timetabling Solver")
+	String solverCourse();
 }
