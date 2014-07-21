@@ -689,7 +689,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							else
 								note += MSG.noteAllowedOverlapLast(n);
 						}
-						a.addNote(note);
+						a.setOverlapNote(note);
 					}
 					a.setBackToBackDistance(dist);
 					a.setBackToBackRooms(from);

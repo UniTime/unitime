@@ -240,6 +240,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Display the allowed time conflicts note (Overlaps with x) in red color.</line>
+				<line>There is also a warning icon next to each class that has a time conflict.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

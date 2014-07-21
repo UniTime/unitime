@@ -199,7 +199,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 										else
 											note += MSG.noteAllowedOverlapLast(n);
 									}
-									a.addNote(note);
+									a.setOverlapNote(note);
 								}
 								a.setBackToBackDistance(dist);
 								a.setBackToBackRooms(from);

@@ -603,6 +603,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							icons.add(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));
 						if (clazz.isOfHighDemand())
 							icons.add(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()));
+						if (clazz != null && clazz.hasOverlapNote())
+							icons.add(RESOURCES.overlap(), clazz.getOverlapNote());
 
 						if (clazz.isAssigned()) {
 							row = new WebTable.Row(
@@ -619,7 +621,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 								new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
-								new WebTable.NoteCell(clazz.getNote()),
+								new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 								new WebTable.AbbvTextCell(clazz.getCredit()),
 								icons);
 						} else {
@@ -634,7 +636,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
-									new WebTable.NoteCell(clazz.getNote()),
+									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
 									icons);
 						}
@@ -708,7 +710,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())).aria(clazz.getEndStringAria(CONSTANTS.useAmPm())),
 									new WebTable.Cell(clazz.getDatePattern()),
 									new WebTable.Cell(unassignedMessage, 3, null),
-									new WebTable.NoteCell(clazz.getNote()),
+									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
 									icons);
 							if (course.isFreeTime())
@@ -725,7 +727,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(clazz.getLimitString()),
 									new WebTable.Cell(MESSAGES.arrangeHours(), 4, null),
 									new WebTable.Cell(unassignedMessage, 3, null),
-									new WebTable.NoteCell(clazz.getNote()),
+									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
 									icons);
 							if (course.isFreeTime())
@@ -783,7 +785,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 										new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 										new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
-										new WebTable.NoteCell(clazz.getNote()),
+										new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 										new WebTable.AbbvTextCell(clazz.getCredit()),
 										icons);								
 							} else {
@@ -798,7 +800,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 										new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 										new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
-										new WebTable.NoteCell(clazz.getNote()),
+										new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 										new WebTable.AbbvTextCell(clazz.getCredit()),
 										icons);
 							}
@@ -844,7 +846,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
-									new WebTable.NoteCell(clazz.getNote()),
+									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
 									icons);
 						} else {
@@ -859,7 +861,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
-									new WebTable.NoteCell(clazz.getNote()),
+									new WebTable.NoteCell(clazz.getOverlapAndNote("text-red"), clazz.getOverlapAndNote(null)),
 									new WebTable.AbbvTextCell(clazz.getCredit()),
 									icons);
 						}
