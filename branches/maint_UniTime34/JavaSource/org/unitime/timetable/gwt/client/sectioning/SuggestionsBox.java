@@ -277,6 +277,8 @@ public class SuggestionsBox extends UniTimeDialogBox {
 										icons.add(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()));
 									if (clazz != null && clazz.hasNote())
 										icons.add(RESOURCES.note(), clazz.getNote());
+									if (clazz != null && clazz.hasOverlapNote())
+										icons.add(RESOURCES.overlap(), clazz.getOverlapNote());
 									
 									final WebTable.Row row = new WebTable.Row(
 											new WebTable.Cell(rows.size() == lastSize ? suggestionId + "." : ""),
