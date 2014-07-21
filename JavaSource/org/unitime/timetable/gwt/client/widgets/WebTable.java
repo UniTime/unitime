@@ -600,11 +600,11 @@ public class WebTable extends Composite {
 	public static class NoteCell extends Cell {
 		private P iNote = null;
 		
-		public NoteCell(String text) {
+		public NoteCell(String text, String title) {
 			super(null);
 			iNote = new P("unitime-Note");
-			iNote.setHTML(text == null ? "" : text.replace("\n", "<br>"));
-			if (text != null) iNote.setTitle(text);
+			iNote.setHTML(text);
+			if (title != null) iNote.setTitle(title);
 		}
 		
 		public String getValue() { return iNote.getHTML(); }

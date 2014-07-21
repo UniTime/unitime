@@ -198,6 +198,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iBackToBackRooms = null;
 		private boolean iSaved = false;
 		private Integer iExpected = null;
+		private String iOverlapNote = null;
 		private String iNote = null;
 		private String iCredit = null;
 		private String iError = null;
@@ -467,6 +468,22 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 				}
 				iNote += note;
 			}
+		}
+		
+		public void setOverlapNote(String note) { iOverlapNote = note; }
+		public boolean hasOverlapNote() { return iOverlapNote != null && !iOverlapNote.isEmpty(); }
+		public String getOverlapNote() { return iOverlapNote; }
+		
+		public String getOverlapAndNote(String overlapStyle) {
+			String ret = "";
+			if (hasOverlapNote()) {
+				ret += (overlapStyle != null ? "<span class='" + overlapStyle + "'>" + getOverlapNote() + "</span>" : getOverlapNote());
+			}
+			if (hasNote()) {
+				if (!ret.isEmpty()) ret += (overlapStyle == null ? "\n" : "<br>");
+				ret += (overlapStyle == null ? getNote() : getNote().replace("\n", "<br>"));
+			}
+			return ret;
 		}
 		
 		public boolean hasCredit() {
