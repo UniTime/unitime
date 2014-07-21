@@ -3645,9 +3645,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			
 			DatePattern pattern = null;
 			for (DatePattern p: (Set<DatePattern>)DatePattern.findAllUsed(iSessionId)) {
-				if (automaticHierarchicalConstraints.startsWith(p.getName().toLowerCase() + " ")
-					|| automaticHierarchicalConstraints.startsWith(p.getName().toLowerCase() + ",")
-					|| automaticHierarchicalConstraints.startsWith(p.getName().toLowerCase() + ";")) {
+				if (automaticHierarchicalConstraints.toLowerCase().startsWith(p.getName().toLowerCase() + " ")
+					|| automaticHierarchicalConstraints.toLowerCase().startsWith(p.getName().toLowerCase() + ",")
+					|| automaticHierarchicalConstraints.toLowerCase().startsWith(p.getName().toLowerCase() + ";")) {
 					automaticHierarchicalConstraints = automaticHierarchicalConstraints.substring(p.getName().length() + 1);
 					pattern = p;
 					break;
