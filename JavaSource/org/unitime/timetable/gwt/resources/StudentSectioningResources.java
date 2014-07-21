@@ -109,5 +109,7 @@ public interface StudentSectioningResources extends ClientBundle {
 
 	@Source("org/unitime/timetable/gwt/resources/icons/note.png")
 	ImageResource note();
-
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/overlap.png")
+	ImageResource overlap();
 }
