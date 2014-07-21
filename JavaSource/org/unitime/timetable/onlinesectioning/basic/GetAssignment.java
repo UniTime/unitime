@@ -45,6 +45,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl.EnrollmentSectionComparator;
@@ -64,12 +65,19 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Lock lock = server.readLock();
 		try {
+			OnlineSectioningLog.Action.Builder action = helper.getAction();
+			action.setStudent(OnlineSectioningLog.Entity.newBuilder().setUniqueId(iStudentId));
 			Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 			Student student = server.getStudent(iStudentId);
 			if (student == null) return null;
+			action.getStudentBuilder().setExternalId(student.getExternalId());
+			action.getStudentBuilder().setName(student.getName());
 	        ClassAssignmentInterface ret = new ClassAssignmentInterface();
 			int nrUnassignedCourses = 0, nrAssignedAlt = 0;
+			OnlineSectioningLog.Enrollment.Builder stored = OnlineSectioningLog.Enrollment.newBuilder();
+			stored.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
 			for (Request request: student.getRequests()) {
+				action.addRequest(OnlineSectioningHelper.toProto(request));
 				ClassAssignmentInterface.CourseAssignment ca = new ClassAssignmentInterface.CourseAssignment();
 				if (request instanceof CourseRequest) {
 					CourseRequest r = (CourseRequest)request;
@@ -158,6 +166,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 						}
 						for (Iterator<Section> i = sections.iterator(); i.hasNext();) {
 							Section section = (Section)i.next();
+							stored.addSection(OnlineSectioningHelper.toProto(section, r.getAssignment()));
 							ClassAssignmentInterface.ClassAssignment a = ca.addClassAssignment();
 							a.setAlternative(r.isAlternative());
 							a.setClassId(section.getId());
@@ -228,7 +237,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 										note += MSG.noteAllowedOverlapMiddle(n);
 									else
 										note += MSG.noteAllowedOverlapLast(n);
-								}								a.addNote(note);
+								}
+								a.setOverlapNote(note);
 							}
 							a.setBackToBackDistance(dist);
 							a.setBackToBackRooms(from);
@@ -276,6 +286,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 				}
 				ret.add(ca);
 			}
+			action.addEnrollment(stored);
 			return ret;
 		} finally {
 			lock.release();
