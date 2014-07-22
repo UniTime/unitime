@@ -143,6 +143,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private Progress iProgress = null;
     
     private StudentCourseDemands iStudentCourseDemands = null;
+    private boolean iUseAmPm = true;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -177,6 +178,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
 
         iProjections = "Projection".equals(model.getProperties().getProperty("StudentSctBasic.Mode", "Initial"));
+        iUseAmPm = model.getProperties().getPropertyBoolean("General.UseAmPm", iUseAmPm);
     }
     
     public void load() {
@@ -333,7 +335,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         Placement p = (Placement)lecture.getInitialAssignment();
         p.setAssignmentId(new Long(iMakeupAssignmentId++));
         lecture.setBestAssignment(p, 0l);
-        iProgress.trace("makup placement for "+c.getClassLabel()+": "+p.getLongName());
+        iProgress.trace("makup placement for "+c.getClassLabel()+": "+p.getLongName(iUseAmPm));
         return p;
     }
     
@@ -827,16 +829,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                				Section sectionx = j.next();
                				if (sectionx.getTime() == null) continue;
                				if (sectionx.isOverlapping(section)) {
-               					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + " " + section.getTime().getLongName() +
+               					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + " " + section.getTime().getLongName(iUseAmPm) +
                							" overlaps with " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
-               							sectionx.getName() + " " + sectionx.getTime().getLongName());
+               							sectionx.getName() + " " + sectionx.getTime().getLongName(iUseAmPm));
                					hasOverlap = true;
                				}
                			}
                		}
            		}
            		if (section.getLimit() >= 0 && section.getLimit() < 1 + section.getEnrollments(getAssignment()).size()) {
-    					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName()) +
+    					iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName(iUseAmPm)) +
     							" has no space available (limit is "+ section.getLimit() + ")");
     					if (iTweakLimits) {
     						section.setLimit(section.getEnrollments(getAssignment()).size() + 1);
@@ -845,7 +847,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     					}
            			hasLimit = true;
            		}
-    				iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName()));
+    				iProgress.info("  " + section.getSubpart().getName() + " " + section.getName() + (section.getTime() == null ? "" : " " + section.getTime().getLongName(iUseAmPm)));
            	}
            	if (enrl.getConfig().getLimit() >= 0 && enrl.getConfig().getLimit() < 1 + enrl.getConfig().getEnrollments(getAssignment()).size()) {
     				iProgress.info("  config " + enrl.getConfig().getName() + " has no space available (limit is "+ enrl.getConfig().getLimit() + ")");
@@ -870,7 +872,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
            			for (Iterator<Section> j = enrlx.getSections().iterator(); j.hasNext();) {
            				Section sectionx = j.next();
            				iProgress.info("    conflicts with " + sectionx.getSubpart().getConfig().getOffering().getName() + " " + sectionx.getSubpart().getName() + " " +
-       							sectionx.getName() + (sectionx.getTime() == null ? "" : " " + sectionx.getTime().getLongName()));
+       							sectionx.getName() + (sectionx.getTime() == null ? "" : " " + sectionx.getTime().getLongName(iUseAmPm)));
            			}
        				if (enrlx.getRequest().getStudent().getId() != student.getId())
        					iProgress.info("    of a different student");

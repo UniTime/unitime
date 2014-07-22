@@ -24,11 +24,13 @@ import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.CSVFile.CSVLine;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports.SectioningReportRpcRequest;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports.SectioningReportRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.GenerateSectioningReport;
@@ -43,6 +45,7 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
  */
 @GwtRpcImplements(SectioningReportRpcRequest.class)
 public class SectioningReportsBackend implements GwtRpcImplementation<SectioningReportRpcRequest, SectioningReportRpcResponse> {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
 	@Autowired SolverServerService solverServerService;
 
@@ -51,6 +54,7 @@ public class SectioningReportsBackend implements GwtRpcImplementation<Sectioning
 		DataProperties parameters = new DataProperties(request.getParameters());
 		CSVFile csv =  null;
 		boolean online = parameters.getPropertyBoolean("online", false);
+		parameters.setProperty("useAmPm", CONSTANTS.useAmPm() ? "true" : "false");
 
 		if (online) {
 			context.checkPermission(Right.SchedulingDashboard);

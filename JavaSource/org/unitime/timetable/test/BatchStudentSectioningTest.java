@@ -128,12 +128,12 @@ public class BatchStudentSectioningTest {
             outDir.mkdirs();
 
             CourseConflictTable cct = new CourseConflictTable((StudentSectioningModel)solution.getModel());
-            cct.createTable(assignment, true, false).save(new File(outDir, "conflicts-lastlike.csv"));
-            cct.createTable(assignment, false, true).save(new File(outDir, "conflicts-real.csv"));
+            cct.createTable(assignment, true, false, true).save(new File(outDir, "conflicts-lastlike.csv"));
+            cct.createTable(assignment, false, true, true).save(new File(outDir, "conflicts-real.csv"));
             
             DistanceConflictTable dct = new DistanceConflictTable((StudentSectioningModel)solution.getModel());
-            dct.createTable(assignment, true, false).save(new File(outDir, "distances-lastlike.csv"));
-            dct.createTable(assignment, false, true).save(new File(outDir, "distances-real.csv"));
+            dct.createTable(assignment, true, false, true).save(new File(outDir, "distances-lastlike.csv"));
+            dct.createTable(assignment, false, true, true).save(new File(outDir, "distances-real.csv"));
             
             if (cfg.getPropertyBoolean("Test.InevitableStudentConflictsCheck", false)) {
                 InevitableStudentConflicts ch = new InevitableStudentConflicts(model);

@@ -75,7 +75,7 @@ public class MakeEventsForAllCommitedAssignments {
                         Assignment a = (Assignment)j.next();
                         ClassEvent event = a.generateCommittedEvent(null,true);
                         if (event != null && !event.getMeetings().isEmpty()) {
-                            System.out.println("  "+a.getClassName()+" "+a.getPlacement().getLongName());
+                            System.out.println("  "+a.getClassName()+" "+a.getPlacement().getLongName(true));
                             hibSession.saveOrUpdate(event);
                         }
             		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)

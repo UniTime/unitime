@@ -38,9 +38,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamEditForm;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -68,7 +70,8 @@ import org.unitime.timetable.webutil.Navigation;
  */
 @Service("/examDetail")
 public class ExamDetailAction extends PreferencesAction {
-	
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+
 	@Autowired SessionContext sessionContext;
     
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -210,7 +213,7 @@ public class ExamDetailAction extends PreferencesAction {
                             type = "Class";
                             manager = clazz.getManagingDept().getShortLabel();
                             if (clazz.getCommittedAssignment()!=null)
-                                assignment = clazz.getCommittedAssignment().getPlacement().getLongName();
+                                assignment = clazz.getCommittedAssignment().getPlacement().getLongName(CONSTANTS.useAmPm());
                             title = clazz.getSchedulePrintNote();
                             if (title==null || title.length()==0) title=clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
                             break;

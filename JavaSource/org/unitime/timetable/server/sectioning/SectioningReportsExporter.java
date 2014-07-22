@@ -28,10 +28,12 @@ import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.CSVFile.CSVLine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.GenerateSectioningReport;
@@ -46,6 +48,7 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
  */
 @Service("org.unitime.timetable.export.Exporter:sct-report.csv")
 public class SectioningReportsExporter implements Exporter {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
 	@Autowired SolverServerService solverServerService;
@@ -62,6 +65,7 @@ public class SectioningReportsExporter implements Exporter {
 			String name = e.nextElement();
 			parameters.put(name, helper.getParameter(name));
 		}
+		parameters.put("useAmPm", CONSTANTS.useAmPm() ? "true" : "false");
 		
 		CSVFile csv = null;
 		boolean online = parameters.getPropertyBoolean("online", false);

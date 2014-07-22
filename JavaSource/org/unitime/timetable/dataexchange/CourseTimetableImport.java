@@ -34,7 +34,9 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.dom4j.Element;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.AssignmentInfo;
 import org.unitime.timetable.model.ClassEvent;
@@ -64,6 +66,8 @@ import org.unitime.timetable.util.DateUtils;
  * @author Tomas Muller
  */
 public class CourseTimetableImport extends BaseImport {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+
 	private DateFormat iDateFormat = null;
 	private DateFormat iTimeFormat = null;
 	private DateFormat iHHmm = new SimpleDateFormat("HHmm", Locale.US);
@@ -459,7 +463,7 @@ public class CourseTimetableImport extends BaseImport {
         for (ClassInstructor instr: clazz.getClassInstructors()) 
         	if (instr.isLead()) assignment.getInstructors().add(instr.getInstructor());
         
-        info(clazz.getClassLabel() + " := " + assignment.getPlacement().getLongName());
+        info(clazz.getClassLabel() + " := " + assignment.getPlacement().getLongName(CONSTANTS.useAmPm()));
 		
         getHibSession().saveOrUpdate(assignment);
         getHibSession().saveOrUpdate(clazz);

@@ -45,8 +45,10 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ListSolutionsForm.InfoComparator;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.base.BaseSolution;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.DivSecAssignmentComparator;
@@ -65,6 +67,8 @@ import org.unitime.timetable.util.Formats;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 public class Solution extends BaseSolution implements ClassAssignmentProxy {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+
 	private static final long serialVersionUID = 1L;
 	private static Log sLog = LogFactory.getLog(Solution.class);
 	public static DecimalFormat sSufixFormat = new DecimalFormat("000");
@@ -255,7 +259,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			Assignment a = (Assignment)o[1];
 			Assignment b = (Assignment)o[2];
 			if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
-				messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (room "+room.getLabel()+")");
+				messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName(CONSTANTS.useAmPm())+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName(CONSTANTS.useAmPm())+" (room "+room.getLabel()+")");
 				isOK=false;
 			}
 		}
@@ -277,7 +281,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			Assignment a = (Assignment)o[1];
 			Assignment b = (Assignment)o[2];
 			if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
-				messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (instructor "+instructor.nameLastNameFirst()+")");
+				messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName(CONSTANTS.useAmPm())+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName(CONSTANTS.useAmPm())+" (instructor "+instructor.nameLastNameFirst()+")");
 				isOK=false;
 			}
 		}
@@ -364,7 +368,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				note.setUser(contact == null ? "System" : contact.getName());
 				note.setUserId(sendNotificationPuid);
 				note.setTextNote(getOwner().getName() + " committed");
-				note.setMeetings(a.getPlacement().getLongName());
+				note.setMeetings(a.getPlacement().getLongName(CONSTANTS.useAmPm()));
 				event.getNotes().add(note);
 		        hibSession.saveOrUpdate(event);
 		    }
@@ -571,8 +575,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 							new CSVField(clazz.getDivSecNumber()),
 							new CSVField(clazz.effectiveDatePattern().getName()),
 							new CSVField(placement.getTimeLocation().getDayHeader()),
-							new CSVField(placement.getTimeLocation().getStartTimeHeader()),
-							new CSVField(placement.getTimeLocation().getEndTimeHeader()),
+							new CSVField(placement.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm())),
+							new CSVField(placement.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm())),
 							new CSVField(placement.getRoomName(",")),
 							new CSVField(leadsSb),
 							new CSVField(clazz.getSchedulePrintNote()==null?"":clazz.getSchedulePrintNote())
@@ -585,8 +589,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 							new CSVField(clazz.getSchedulingSubpart().getSchedulingSubpartSuffix()),
 							new CSVField(clazz.effectiveDatePattern().getName()),
 							new CSVField(placement.getTimeLocation().getDayHeader()),
-							new CSVField(placement.getTimeLocation().getStartTimeHeader()),
-							new CSVField(placement.getTimeLocation().getEndTimeHeader()),
+							new CSVField(placement.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm())),
+							new CSVField(placement.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm())),
 							new CSVField(placement.getRoomName(",")),
 							new CSVField(leadsSb),
 							new CSVField(clazz.getSchedulePrintNote()==null?"":clazz.getSchedulePrintNote())

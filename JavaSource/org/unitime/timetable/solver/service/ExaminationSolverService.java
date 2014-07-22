@@ -31,10 +31,12 @@ import org.cpsolver.ifs.extension.ConflictStatistics;
 import org.cpsolver.ifs.util.DataProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
@@ -51,6 +53,7 @@ import org.unitime.timetable.solver.jgroups.SolverContainer;
 @Service("examinationSolverService")
 public class ExaminationSolverService implements SolverService<ExamSolverProxy> {
 	protected static Log sLog = LogFactory.getLog(ExaminationSolverService.class);
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Autowired SessionContext sessionContext;
 	
@@ -123,6 +126,8 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy> 
         if (properties.getProperty("Parallel.NrSolvers") == null) {
         	properties.setProperty("Parallel.NrSolvers", String.valueOf(Math.max(1, Runtime.getRuntime().availableProcessors() / 2)));
         }
+        
+        properties.setProperty("General.UseAmPm", CONSTANTS.useAmPm() ? "true" : "false");
 
         properties.expand();
         
