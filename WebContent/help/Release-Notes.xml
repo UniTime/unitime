@@ -60,6 +60,14 @@
 				<line>Fixed import of travel times (location ids were not properly translated).</line>
 			</description>
 		</item>
+		<item>
+			<name>Add Instructor</name>
+			<description>
+				<line>Fixed a Tomcat issue (page fails to compile with NoSuchElementException when Apache Tomcat 7.0.50 or later is used).
+					<line>See https://issues.apache.org/bugzilla/show_bug.cgi?id=56529 for more details (NoSuchElementException for attribute with empty string in custom tag).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
