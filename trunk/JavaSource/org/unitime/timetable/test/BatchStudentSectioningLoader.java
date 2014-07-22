@@ -219,7 +219,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         Placement p = (Placement)lecture.getInitialAssignment();
         p.setAssignmentId(new Long(iMakeupAssignmentId++));
         lecture.setBestAssignment(p, 0l);
-        sLog.debug("        -- makup placement for "+c.getClassLabel()+": "+p.getLongName());
+        sLog.debug("        -- makup placement for "+c.getClassLabel()+": "+p.getLongName(true));
         return p;
     }
     

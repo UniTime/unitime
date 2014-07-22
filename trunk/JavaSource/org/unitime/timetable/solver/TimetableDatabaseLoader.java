@@ -199,6 +199,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private StudentCourseDemands iStudentCourseDemands = null;
     
     private ClassWeightProvider iClassWeightProvider = null;
+    private boolean iUseAmPm = true;
 
     public static enum CommittedStudentConflictsMode {
     		Ignore,
@@ -291,6 +292,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	iProgress.message(msglevel("badClassWeightProvider", Progress.MSGLEVEL_WARN), "Failed to load custom class weight provider, using the default one instead.",e);
         	iClassWeightProvider = new DefaultClassWeights(getModel().getProperties());
         }
+        
+        iUseAmPm = getModel().getProperties().getPropertyBoolean("General.UseAmPm", iUseAmPm);
     }
     
     public int msglevel(String type, int defaultLevel) {
@@ -1135,12 +1138,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             if (conflictConstraints.isEmpty()) {
                 getAssignment().assign(0,placement);
             } else {
-                String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+placement.getLongName();
+                String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+placement.getLongName(iUseAmPm);
             	warn+="<br>&nbsp;&nbsp;Reason:";
                 for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                 	Set<Placement> vals = conflictConstraints.get(c);
                     for (Placement v: vals) {
-                        warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName();
+                        warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName(iUseAmPm);
                     }
                     warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint "+c;
                     iProgress.message(msglevel("cannotAssignCommitted", Progress.MSGLEVEL_WARN), warn);
@@ -1157,7 +1160,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		if (lecture.values(getAssignment()).isEmpty()) {
 	            String warn = "Class "+getClassLabel(lecture)+" has no available placement (after enforcing consistency between the problem and committed solutions"+(iInteractiveMode?"":", class not loaded")+")."; 
     			for (Placement p: oldValues) {
-                    warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+p.getNotValidReason(getAssignment());
+                    warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+p.getNotValidReason(getAssignment(), iUseAmPm);
     			}
                 iProgress.message(msglevel("noPlacementAfterCommit", Progress.MSGLEVEL_WARN), warn);
     			if (!iInteractiveMode) {
@@ -1224,7 +1227,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	}
     	}
     	if (initialPlacement==null) {
-    		StringBuffer sb = new StringBuffer(assignment.getTimeLocation().getLongName()+" ");
+    		StringBuffer sb = new StringBuffer(assignment.getTimeLocation().getLongName(iUseAmPm)+" ");
     		for (Iterator<Location> i=rooms.iterator();i.hasNext();) {
     			sb.append(i.next().getLabel());
     			if (i.hasNext()) sb.append(", ");
@@ -1263,13 +1266,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     for (Placement p: vals) {
                         Lecture l = p.variable();
                         if (l.isCommitted())
-                        	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+getClassLabel(l)+" = "+p.getLongName()+" (in constraint "+c+")";
+                        	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+getClassLabel(l)+" = "+p.getLongName(iUseAmPm)+" (in constraint "+c+")";
                         if (p.equals(initialPlacement))
                         	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;constraint "+c;
                     }
                 }
             }
-	    	iProgress.message(msglevel("cannotAssign", Progress.MSGLEVEL_WARN), "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName()+(reason.length()==0?".":":"+reason));
+	    	iProgress.message(msglevel("cannotAssign", Progress.MSGLEVEL_WARN), "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName(iUseAmPm)+(reason.length()==0?".":":"+reason));
 		} else {
 			if (iMppAssignment) lecture.setInitialAssignment(initialPlacement);
 			getModel().weaken(getAssignment(), initialPlacement);
@@ -1277,12 +1280,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	if (conflictConstraints.isEmpty()) {
         		getAssignment().assign(0,initialPlacement);
 	        } else {
-                String warn = "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName();
+                String warn = "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName(iUseAmPm);
                 warn += "<br>&nbsp;&nbsp;Reason:";
                 for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                 	Set<Placement> vals = conflictConstraints.get(c);
                 	for (Placement v: vals) {
-                        warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName();
+                        warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName(iUseAmPm);
             	    }
                     warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint "+c;
                     iProgress.message(msglevel("cannotAssign", Progress.MSGLEVEL_WARN), warn);
@@ -2260,12 +2263,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	                if (conflictConstraints.isEmpty()) {
         	                	getAssignment().assign(0,committedPlacement);
         	                } else {
-        	                    String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+committedPlacement.getLongName();
+        	                    String warn = "Unable to assign committed class "+getClassLabel(lecture)+" &larr; "+committedPlacement.getLongName(iUseAmPm);
         	                	warn+="<br>&nbsp;&nbsp;Reason:";
         	                    for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
         	                    	Set<Placement> vals = conflictConstraints.get(c);
         	                        for (Placement v: vals) {
-        	                            warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName();
+        	                            warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(v.variable())+" = "+v.getLongName(iUseAmPm);
         	                        }
         	                        warn+="<br>&nbsp;&nbsp;&nbsp;&nbsp;    in constraint "+c;
         	                        iProgress.message(msglevel("cannotAssignCommitted", Progress.MSGLEVEL_WARN), warn);
@@ -3309,12 +3312,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	           		if (p1.canShareRooms(p2) && p1.sameRooms(p2)) continue;
         	           		if (p1.getTimeLocation().hasIntersection(p2.getTimeLocation())) {
         	           			iProgress.message(msglevel("reqInstructorOverlap", Progress.MSGLEVEL_WARN), "Same instructor and overlapping time required:"+
-        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName()+
-        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName());
+        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName(iUseAmPm)+
+        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName(iUseAmPm));
         	           		} else if (ic.getDistancePreference(p1,p2)==PreferenceLevel.sIntLevelProhibited && lecture.roomLocations().size()==1 && other.roomLocations().size()==1) {
         	           			iProgress.message(msglevel("reqInstructorBackToBack", Progress.MSGLEVEL_WARN), "Same instructor, back-to-back time and rooms too far (distance="+Math.round(10.0*Placement.getDistanceInMeters(getModel().getDistanceMetric(),p1,p2))+"m) required:"+
-        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName()+
-        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName());
+        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName(iUseAmPm)+
+        	           					"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName(iUseAmPm));
         	           		}
         				}
         			}
@@ -3328,8 +3331,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			Placement p2 = other.values(getAssignment()).get(0);
     			if (p1.shareRooms(p2) && p1.getTimeLocation().hasIntersection(p2.getTimeLocation()) && !p1.canShareRooms(p2)) {
     				iProgress.message(msglevel("reqRoomOverlap", Progress.MSGLEVEL_WARN), "Same room and overlapping time required:"+
-    						"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName()+
-    						"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName());
+    						"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName(iUseAmPm)+
+    						"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(other)+" &larr; "+p2.getLongName(iUseAmPm));
     			}
     		}
     		if (getAssignment().getValue(lecture)==null) {
@@ -3358,13 +3361,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	                    for (Placement p: vals) {
     	                        Lecture l = p.variable();
     	                        if (l.isCommitted())
-    	                        	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+getClassLabel(l)+" = "+p.getLongName()+" (in constraint "+c+")";
+    	                        	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+getClassLabel(l)+" = "+p.getLongName(iUseAmPm)+" (in constraint "+c+")";
     	                        if (p.equals(placement))
     	                        	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;constraint "+c;
     	                    }
     	                }
     	            }
-    		    	iProgress.message(msglevel("reqInvalidPlacement", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(lecture)+" requires an invalid placement "+placement.getLongName()+(reason.length()==0?".":":"+reason));
+    		    	iProgress.message(msglevel("reqInvalidPlacement", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(lecture)+" requires an invalid placement "+placement.getLongName(iUseAmPm)+(reason.length()==0?".":":"+reason));
     			} else if (iAssignSingleton && getModel().conflictValues(getAssignment(), placement).isEmpty())
     				getAssignment().assign(0, placement);
     		}

@@ -36,9 +36,11 @@ import org.apache.struts.action.ActionMessages;
 import org.cpsolver.ifs.util.DataProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.SolverForm;
 import org.unitime.timetable.form.SolverForm.LongIdValue;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -54,6 +56,7 @@ import org.unitime.timetable.util.ExportUtils;
  */
 @Service("/solver")
 public class SolverAction extends Action {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Autowired SessionContext sessionContext;
 	
@@ -208,7 +211,7 @@ public class SolverAction extends Action {
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	sessionContext.checkPermission(myForm.getOwner(), "SolverGroup", Right.SolverSolutionExportCsv);
         	
-        	ExportUtils.exportCSV(solver.export(), response, "solution");
+        	ExportUtils.exportCSV(solver.export(CONSTANTS.useAmPm()), response, "solution");
         	return null;
         }
 

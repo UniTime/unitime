@@ -30,9 +30,11 @@ import java.util.TreeSet;
 
 
 import org.cpsolver.coursett.model.TimeLocation;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
@@ -77,6 +79,7 @@ import org.unitime.timetable.util.Constants;
  */
 @GwtRpcImplements(EventDetailRpcRequest.class)
 public class EventDetailBackend extends EventAction<EventDetailRpcRequest, EventInterface> {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Override
 	public EventInterface execute(EventDetailRpcRequest request, EventContext context) {
@@ -210,7 +213,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		if (assignment != null) {
     			TimeLocation time = assignment.getTimeLocation();
     			if (time != null) {
-    				related.setTime(time.getDayHeader() + " " + time.getStartTimeHeader() + " - " + time.getEndTimeHeader());
+    				related.setTime(time.getDayHeader() + " " + time.getStartTimeHeader(CONSTANTS.useAmPm()) + " - " + time.getEndTimeHeader(CONSTANTS.useAmPm()));
     				related.setDate(time.getDatePatternName());
     			}
     			for (Location r: assignment.getRooms()) {
@@ -333,7 +336,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		if (assignment != null) {
 		    			TimeLocation time = assignment.getTimeLocation();
 		    			if (time != null) {
-		    				related.setTime(time.getDayHeader() + " " + time.getStartTimeHeader() + " - " + time.getEndTimeHeader());
+		    				related.setTime(time.getDayHeader() + " " + time.getStartTimeHeader(CONSTANTS.useAmPm()) + " - " + time.getEndTimeHeader(CONSTANTS.useAmPm()));
 		    				related.setDate(time.getDatePatternName());
 		    			}
 		    			for (Location r: assignment.getRooms()) {
@@ -427,7 +430,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		if (assignment != null) {
 		    			TimeLocation time = assignment.getTimeLocation();
 		    			if (time != null) {
-		    				related.setTime(time.getDayHeader() + " " + time.getStartTimeHeader() + " - " + time.getEndTimeHeader());
+		    				related.setTime(time.getDayHeader() + " " + time.getStartTimeHeader(CONSTANTS.useAmPm()) + " - " + time.getEndTimeHeader(CONSTANTS.useAmPm()));
 		    				related.setDate(time.getDatePatternName());
 		    			}
 		    			for (Location r: assignment.getRooms()) {

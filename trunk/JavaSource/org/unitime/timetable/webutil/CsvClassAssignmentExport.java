@@ -28,7 +28,9 @@ import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -42,6 +44,7 @@ import org.unitime.timetable.solver.ClassAssignmentProxy;
  * @author Tomas Muller
  */
 public class CsvClassAssignmentExport {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
 	public static CSVFile exportCsv(UserContext user, Collection classes, ClassAssignmentProxy proxy) {
 		CSVFile file = new CSVFile();
@@ -94,8 +97,8 @@ public class CsvClassAssignmentExport {
 						new CSVField(clazz.getClassLimit(proxy)),
 						new CSVField(assignment.getDatePattern().getName()),
 						new CSVField(placement.getTimeLocation().getDayHeader()),
-						new CSVField(placement.getTimeLocation().getStartTimeHeader()),
-						new CSVField(placement.getTimeLocation().getEndTimeHeader()),
+						new CSVField(placement.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm())),
+						new CSVField(placement.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm())),
 						new CSVField(placement.getRoomName(",")),
 						new CSVField(leadsSb),
 						new CSVField(clazz.getSchedulePrintNote()==null?"":clazz.getSchedulePrintNote())
@@ -235,7 +238,7 @@ public class CsvClassAssignmentExport {
                         new CSVField(titleSb),
                         new CSVField(assignment.getDatePattern().getName()),
                         new CSVField(placement.getTimeLocation().getDayHeader()),
-                        new CSVField(placement.getTimeLocation().getStartTimeHeader()+" - "+placement.getTimeLocation().getEndTimeHeader()),
+                        new CSVField(placement.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm())+" - "+placement.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm())),
                         new CSVField(bldgSb),
                         new CSVField(roomSb),
                         new CSVField(lastNameSb),

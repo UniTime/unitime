@@ -42,6 +42,7 @@ import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
 import org.unitime.timetable.model.base.BaseClass_;
@@ -72,7 +73,8 @@ import org.unitime.timetable.webutil.Navigation;
 public class Class_ extends BaseClass_ {
     private static final long serialVersionUID = 1L;
     private static ExternalClassNameHelperInterface externalClassNameHelper = null;
-    private static CourseMessages MSG = Localization.create(CourseMessages.class); 
+    private static CourseMessages MSG = Localization.create(CourseMessages.class);
+    protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
 	/* [CONSTRUCTOR MARKER BEGIN] */
 	public Class_ () {
@@ -1326,9 +1328,9 @@ public class Class_ extends BaseClass_ {
 					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
 				}
 				sb.append(" ");
-				sb.append(a.getTimeLocation().getStartTimeHeader());
+				sb.append(a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()));
 				sb.append("-");
-				sb.append(a.getTimeLocation().getEndTimeHeader());
+				sb.append(a.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm()));
 		} else {
 			if (getEffectiveTimePreferences().isEmpty()){
 	            if (getSchedulingSubpart().getMinutesPerWk().intValue()<=0) {

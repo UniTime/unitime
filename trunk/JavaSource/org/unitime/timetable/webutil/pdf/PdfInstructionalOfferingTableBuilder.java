@@ -922,9 +922,9 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
    					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
    				}
    				sb.append(" ");
-   				sb.append(a.getTimeLocation().getStartTimeHeader());
+   				sb.append(a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()));
    				sb.append("-");
-   				sb.append(a.getTimeLocation().getEndTimeHeader());
+   				sb.append(a.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm()));
    				addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, (p == null || !isEditable ? color : PreferenceLevel.int2awtColor(p.getTimePreference(), color)), true);
     		} 
     	}

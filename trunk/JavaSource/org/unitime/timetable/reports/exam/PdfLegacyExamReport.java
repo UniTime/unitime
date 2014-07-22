@@ -47,8 +47,10 @@ import org.apache.log4j.PropertyConfigurator;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.commons.Email;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
@@ -84,6 +86,7 @@ import com.lowagie.text.DocumentException;
  * @author Tomas Muller
  */
 public abstract class PdfLegacyExamReport extends PdfLegacyReport {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
     protected static Logger sLog = Logger.getLogger(PdfLegacyExamReport.class);
     
     public static Hashtable<String,Class> sRegisteredReports = new Hashtable();
@@ -367,7 +370,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             Date[] firstLast = (assignment == null ? null : firstLastDate(assignment.getTimeLocation()));
             if (assignment != null) {
                 TimeLocation t = assignment.getTimeLocation();
-                String meetingTime = rpad(t.getDayHeader(),5)+" "+lpad(t.getStartTimeHeader(),6)+" - "+lpad(t.getEndTimeHeader(),6) + " ";
+                String meetingTime = rpad(t.getDayHeader(),5)+" "+lpad(t.getStartTimeHeader(CONSTANTS.useAmPm()),6)+" - "+lpad(t.getEndTimeHeader(CONSTANTS.useAmPm()),6) + " ";
                 if (!iDispFullTermDates && isFullTerm(assignment.getDatePattern(), firstLast)) {
                     meetingTime += rpad("",14);
                 } else if (firstLast != null) {

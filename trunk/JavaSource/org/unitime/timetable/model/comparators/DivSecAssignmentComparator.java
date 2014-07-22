@@ -144,7 +144,7 @@ public class DivSecAssignmentComparator implements Comparator {
 		if (cmp!=0) return cmp;
 		cmp = (new DatePatternDAO()).get(t1.getDatePatternId()).compareTo((new DatePatternDAO()).get(t2.getDatePatternId()));
 		if (cmp!=0) return cmp;
-		cmp = t1.getLongName().compareTo(t2.getLongName());
+		cmp = t1.getLongName(false).compareTo(t2.getLongName(false));
 		if (cmp!=0) return cmp;
 		
 		if (c1.getSchedulingSubpart().equals(c2.getSchedulingSubpart()) && c1.getChildClasses().size()==1 && c2.getChildClasses().size()==1) { 

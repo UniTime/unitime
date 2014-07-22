@@ -491,7 +491,7 @@ public class StudentSectioningImport extends BaseImport {
         					free.setStartSlot(time.getStartSlot());
         					free.setLength(time.getLength());
         					free.setSession(student.getSession());
-        					free.setName(time.getLongName());
+        					free.setName(time.getLongName(true));
         					getHibSession().saveOrUpdate(free);
         					getHibSession().saveOrUpdate(cd);
                         } else warn("Request element "+requestElement.getName()+" not recognized.");

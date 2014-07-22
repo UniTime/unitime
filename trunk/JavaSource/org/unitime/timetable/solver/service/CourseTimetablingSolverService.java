@@ -42,10 +42,12 @@ import org.cpsolver.ifs.extension.ViolatedInitials;
 import org.cpsolver.ifs.util.DataProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverParameter;
@@ -66,6 +68,7 @@ import org.unitime.timetable.solver.jgroups.SolverContainer;
 @Service("courseTimetablingSolverService")
 public class CourseTimetablingSolverService implements SolverService<SolverProxy> {
 	protected static Log sLog = LogFactory.getLog(CourseTimetablingSolverService.class);
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Autowired SessionContext sessionContext;
 	
@@ -245,6 +248,8 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
         if (properties.getPropertyBoolean("OnFlySectioning.Enabled", false)) {
         	properties.setProperty("Parallel.NrSolvers", "1");
         }
+        
+        properties.setProperty("General.UseAmPm", CONSTANTS.useAmPm() ? "true" : "false");
 
         properties.expand();
                 

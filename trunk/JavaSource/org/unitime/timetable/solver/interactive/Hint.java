@@ -125,7 +125,7 @@ public class Hint implements Serializable {
 		Placement p = getPlacement((TimetableModel)solver.currentSolution().getModel(), false);
 		if (p==null) return "Selected placement is not valid (room or instructor not avaiable).";
 		if (p.isValid()) return "Selected placement is valid.";
-		String reason = p.getNotValidReason(solver.currentSolution().getAssignment());
+		String reason = p.getNotValidReason(solver.currentSolution().getAssignment(), solver.getProperties().getPropertyBoolean("General.UseAmPm", true));
 		return (reason==null?"Selected placement is not valid (room or instructor not avaiable).":"Selected placement is not valid ("+reason+")");
 	}
 	public Long getClassId() { return iClassId; }

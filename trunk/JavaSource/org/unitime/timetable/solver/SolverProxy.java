@@ -111,7 +111,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public StudentConflictsReport getStudentConflictsReport() throws Exception;
 	public SameSubpartBalancingReport getSameSubpartBalancingReport() throws Exception;
 	public PerturbationReport getPerturbationReport() throws Exception;
-	public CSVFile export() throws Exception;
+	public CSVFile export(boolean useAmPm) throws Exception;
 	
 	public Set getDepartmentIds() throws Exception;
 

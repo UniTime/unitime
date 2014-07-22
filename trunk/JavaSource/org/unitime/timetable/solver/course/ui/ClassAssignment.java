@@ -45,7 +45,7 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 		try {
 			info = (AssignmentPreferenceInfo)assignment.getAssignmentInfo("AssignmentInfo");
 		} catch (Exception e) {
-			Debug.info("Unable to retrieve assignment info for "+assignment.getPlacement().getLongName());
+			Debug.info("Unable to retrieve assignment info for "+assignment.getPlacement().getLongName(true));
 		}
 		if (info==null) info = new AssignmentPreferenceInfo();
 		for (Iterator i=assignment.getRooms().iterator();i.hasNext();) {

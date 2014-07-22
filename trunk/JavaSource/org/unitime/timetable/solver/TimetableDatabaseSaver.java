@@ -104,6 +104,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
 	private Progress iProgress = null;
 	
     private static int BATCH_SIZE = 100;
+    private boolean iUseAmPm = true;
     
 	public TimetableDatabaseSaver(org.cpsolver.ifs.solver.Solver solver) {
         super(solver);
@@ -114,6 +115,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         iCreateNew = getModel().getProperties().getPropertyBoolean("General.CreateNewSolution",iCreateNew);
         iCommitSolution = getModel().getProperties().getPropertyBoolean("General.CommitSolution",iCommitSolution);
         iStudentSectioning = getModel().getProperties().getPropertyBoolean("General.RunStudentSectioningOnSave", iStudentSectioning);
+        iUseAmPm = getModel().getProperties().getPropertyBoolean("General.UseAmPm", iUseAmPm);
     }
 	
 	public TimetableInfoFileProxy getFileProxy() {
@@ -351,7 +353,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				iProgress.trace("save "+lecture.getName()+" "+placement.getName());
     				Class_ clazz = (new Class_DAO()).get(lecture.getClassId(),hibSession);
     				if (clazz==null) {
-    					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName()+") -- class (id:"+lecture.getClassId()+") does not exist.");
+    					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName(iUseAmPm)+") -- class (id:"+lecture.getClassId()+") does not exist.");
     					continue;
     				}
         			HashSet rooms = new HashSet();
@@ -359,7 +361,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         				for (RoomLocation r: placement.getRoomLocations()) {
             				Location room = (new LocationDAO()).get(r.getId(), hibSession);
             				if (room==null) {
-               					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName()+") -- room (id:"+r.getId()+") does not exist.");
+               					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName(iUseAmPm)+") -- room (id:"+r.getId()+") does not exist.");
                					continue;
             				}
             				rooms.add(room);
@@ -369,7 +371,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         			} else {
         				Location room = (new LocationDAO()).get(placement.getRoomLocation().getId(), hibSession);
         				if (room==null) {
-           					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName()+") -- room (id:"+placement.getRoomLocation().getId()+") does not exist.");
+           					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName(iUseAmPm)+") -- room (id:"+placement.getRoomLocation().getId()+") does not exist.");
            					continue;
         				}
         				rooms.add(room);
@@ -388,12 +390,12 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				
     				TimePattern pattern = (new TimePatternDAO()).get(placement.getTimeLocation().getTimePatternId(),hibSession);
     				if (pattern==null) {
-       					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName()+") -- time pattern (id:"+placement.getTimeLocation().getTimePatternId()+") does not exist.");
+       					iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName(iUseAmPm)+") -- time pattern (id:"+placement.getTimeLocation().getTimePatternId()+") does not exist.");
        					continue;
     				}
     				Solution solution = getSolution(lecture, hibSession);
     				if (solution==null) {
-   						iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName()+") -- none or wrong solution group assigned to the class");
+   						iProgress.warn("Unable to save assignment for class "+lecture+" ("+placement.getLongName(iUseAmPm)+") -- none or wrong solution group assigned to the class");
    						continue;
     				}
         			Assignment assignment = new Assignment();
