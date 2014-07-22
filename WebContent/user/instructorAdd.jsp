@@ -39,7 +39,6 @@
 			<jsp:include page="instructor.jspf">
 				<jsp:param name="operation" value="add"/>
 				<jsp:param name="frmName" value="instructorEditForm"/>
-				<jsp:param value="" name="instructorId"/>
 			</jsp:include>
 		</logic:notEqual>
 	</TABLE>

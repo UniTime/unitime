@@ -29,7 +29,7 @@
 <TR>
 	<bean:parameter id="operation" name="operation"/>
 	<bean:parameter id="frmName" name="frmName"/>
-	<bean:parameter id="instructorId" name="instructorId"/>
+	<bean:parameter id="instructorId" name="instructorId" value=""/>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>		
 					<tt:section-title>&nbsp;</tt:section-title>
