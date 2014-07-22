@@ -45,6 +45,7 @@ import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.form.InstructionalOfferingListFormInterface;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
@@ -92,6 +93,7 @@ import org.unitime.timetable.util.Formats;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 public class WebInstructionalOfferingTableBuilder {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	protected static Formats.Format<Date> sDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 	protected static DecimalFormat sRoomRatioFormat = new DecimalFormat("0.00");
@@ -1064,9 +1066,9 @@ public class WebInstructionalOfferingTableBuilder {
    					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
    				}
    				sb.append(" ");
-   				sb.append(a.getTimeLocation().getStartTimeHeader());
+   				sb.append(a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()));
    				sb.append("-");
-   				sb.append(a.getTimeLocation().getEndTimeHeader());
+   				sb.append(a.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm()));
    				if (info!=null)
    					sb.append("</font>");
     			cell = initNormalCell(sb.toString(), isEditable);

@@ -709,7 +709,7 @@ public class SolutionReportAction extends Action {
     		cmp[idx++] = new Double(total[0]);
     		
     		line[idx] = "<i>Total</i>";
-    		cmp[idx++] = new DuoComparable("","");
+    		cmp[idx++] = new DuoComparable(null, null);
     		
     		line[idx] = "";
     		cmp[idx++] = null;
@@ -916,9 +916,9 @@ public class SolutionReportAction extends Action {
 		public int compareTo(Object o) {
 			if (o==null || !(o instanceof DuoComparable)) return -1;
 			DuoComparable d = (DuoComparable)o;
-			int cmp = iA.compareTo(d.iA);
+			int cmp = (iA == null ? (d.iA == null ? 0 : -1) : d.iA == null ? 1 : iA.compareTo(d.iA));
 			if (cmp!=0) return cmp;
-			return iB.compareTo(d.iB);
+			return (iB == null ? (d.iB == null ? 0 : -1) : d.iB == null ? 1 : iB.compareTo(d.iB));
 		}
 	}
 	public static class MultiComparable implements Comparable {

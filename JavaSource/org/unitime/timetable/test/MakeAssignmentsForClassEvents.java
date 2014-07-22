@@ -35,6 +35,8 @@ import java.util.Vector;
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
@@ -57,7 +59,9 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class MakeAssignmentsForClassEvents {
-    private Session iSession = null;
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+
+	private Session iSession = null;
     private Vector<Date> iWeekDate = null;
     private org.hibernate.Session iHibSession = null;
     private Hashtable<String,DatePattern> iDatePatterns = null;
@@ -297,7 +301,7 @@ public class MakeAssignmentsForClassEvents {
                         ClassEvent e = (ClassEvent)j.next();
                         Assignment a = m.createAssignment(e);
                         e.getClazz().setDatePattern(m.getDatePattern(e));
-                        System.out.println("  "+e.getEventName()+" -- "+(a==null?"Not Assigned":a.getPlacement().getLongName()));
+                        System.out.println("  "+e.getEventName()+" -- "+(a==null?"Not Assigned":a.getPlacement().getLongName(CONSTANTS.useAmPm())));
                     }
 
                     tx.commit();

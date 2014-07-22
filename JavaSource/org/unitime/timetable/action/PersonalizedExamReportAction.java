@@ -53,9 +53,11 @@ import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.commons.web.WebTable.WebTableTweakStyle;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.form.PersonalizedExamReportForm;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.model.Assignment;
@@ -100,6 +102,7 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/personalSchedule")
 public class PersonalizedExamReportAction extends Action {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
     public static ExternalUidTranslation sTranslation;
     private static Log sLog = LogFactory.getLog(PersonalizedExamReportAction.class);
     
@@ -568,7 +571,7 @@ public class PersonalizedExamReportAction extends Action {
                 meetingTime += " "+first.startTime()+" - "+first.stopTime();
             } else if (assignment!=null) {
                 TimeLocation t = assignment.getTimeLocation();
-                meetingTime += " "+t.getDayHeader()+" "+t.getStartTimeHeader()+" - "+t.getEndTimeHeader();
+                meetingTime += " "+t.getDayHeader()+" "+t.getStartTimeHeader(CONSTANTS.useAmPm())+" - "+t.getEndTimeHeader(CONSTANTS.useAmPm());
             }
         }
         return meetingTime;
@@ -1340,7 +1343,7 @@ public class PersonalizedExamReportAction extends Action {
             meetingTime += " "+first.startTime()+" - "+first.stopTime();
         } else if (assignment!=null) {
             TimeLocation t = assignment.getTimeLocation();
-            meetingTime += t.getDayHeader()+" "+t.getStartTimeHeader()+" - "+t.getEndTimeHeader();
+            meetingTime += t.getDayHeader()+" "+t.getStartTimeHeader(CONSTANTS.useAmPm())+" - "+t.getEndTimeHeader(CONSTANTS.useAmPm());
         } else {
             meetingTime += "Arr Hrs";
         }

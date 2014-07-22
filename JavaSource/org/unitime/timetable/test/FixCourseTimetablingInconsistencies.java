@@ -37,8 +37,10 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -72,7 +74,8 @@ import org.unitime.timetable.model.dao._RootDAO;
  * @author Tomas Muller
  */
 public class FixCourseTimetablingInconsistencies {
-    protected static Logger sLog = Logger.getLogger(FixCourseTimetablingInconsistencies.class);
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static Logger sLog = Logger.getLogger(FixCourseTimetablingInconsistencies.class);
 
     private Long iSessionId;
     private org.hibernate.Session iHibSession;
@@ -160,8 +163,8 @@ public class FixCourseTimetablingInconsistencies {
 												b.getClazz().getRoomRatio() * b.getClazz().getExpectedCapacity());
 										if (location.getCapacity() < minSize) {
 											sLog.info("Allowed overlap of classes in room " + location.getLabel() + ":\n" + 
-													"  " + a.getClazz().getClassLabel() + " " + a.getTimeLocation().getLongName() + "\n" +
-													"  " + b.getClazz().getClassLabel() + " " + b.getTimeLocation().getLongName());
+													"  " + a.getClazz().getClassLabel() + " " + a.getTimeLocation().getLongName(CONSTANTS.useAmPm()) + "\n" +
+													"  " + b.getClazz().getClassLabel() + " " + b.getTimeLocation().getLongName(CONSTANTS.useAmPm()));
 											sLog.warn("But the he room is too small (" + location.getCapacity() + " < " + minSize + ")");
 											float ratio = ((float)location.getCapacity()) / minSize;
 											a.getClazz().setRoomRatio(a.getClazz().getRoomRatio() * ratio);
@@ -175,8 +178,8 @@ public class FixCourseTimetablingInconsistencies {
 							}
 						}
 						sLog.warn("Overlapping classes in room " + location.getLabel() + ":\n" + 
-								"  " + a.getClazz().getClassLabel() + " " + a.getTimeLocation().getLongName() + "\n" +
-								"  " + b.getClazz().getClassLabel() + " " + b.getTimeLocation().getLongName());
+								"  " + a.getClazz().getClassLabel() + " " + a.getTimeLocation().getLongName(CONSTANTS.useAmPm()) + "\n" +
+								"  " + b.getClazz().getClassLabel() + " " + b.getTimeLocation().getLongName(CONSTANTS.useAmPm()));
 						/*
 						for (RoomPref p: (Set<RoomPref>)a.getClazz().effectivePreferences(RoomPref.class))
 							if (p.weakenHardPreferences())
@@ -244,8 +247,8 @@ public class FixCourseTimetablingInconsistencies {
 						}
 						if (ca != null && ca.isLead() && cb != null && cb.isLead()) {
 							sLog.warn("Overlapping classes for instructor " + instructorExternalId + ":\n" + 
-									"  " + a.getClazz().getClassLabel() + " " + a.getPlacement().getLongName() + "\n" +
-									"  " + b.getClazz().getClassLabel() + " " + b.getPlacement().getLongName());
+									"  " + a.getClazz().getClassLabel() + " " + a.getPlacement().getLongName(CONSTANTS.useAmPm()) + "\n" +
+									"  " + b.getClazz().getClassLabel() + " " + b.getPlacement().getLongName(CONSTANTS.useAmPm()));
 							ca.setLead(false);
 							iHibSession.saveOrUpdate(ca);
 						}
@@ -287,7 +290,7 @@ public class FixCourseTimetablingInconsistencies {
                         	if (PreferenceLevel.sRequired.equals(pref)) return false;
                     	} else {
                         	if (!PreferenceLevel.sProhibited.equals(pref)) return false;
-                        	sLog.warn("Clazz " + clazz.getClassLabel() + " prohibits assigned time " + time.getName());
+                        	sLog.warn("Clazz " + clazz.getClassLabel() + " prohibits assigned time " + time.getName(CONSTANTS.useAmPm()));
                         	pattern.setPreference(d, t, PreferenceLevel.sStronglyDiscouraged);
                         	p.setPreference(pattern.getPreferences());
                         	if (p.getOwner() == null) p.setOwner(clazz);
@@ -308,7 +311,7 @@ public class FixCourseTimetablingInconsistencies {
                     for (int d = 0; d < pattern.getNrDays(); d++) {
                         if (pattern.getDayCode(d) == assignment.getDays() && pattern.getStartSlot(t) == assignment.getStartSlot()) {
                         	sLog.warn("Clazz " + clazz.getClassLabel() + " requires a different time " + 
-                        			pattern.getDayHeader(d) + " " + pattern.getTimeHeaderShort(t) + " than assigned " + time.getName());
+                        			pattern.getDayHeader(d) + " " + pattern.getTimeHeaderShort(t) + " than assigned " + time.getName(CONSTANTS.useAmPm()));
                         	pattern.setPreference(d, t, PreferenceLevel.sRequired);
                         	found = true;
                         }
@@ -321,9 +324,9 @@ public class FixCourseTimetablingInconsistencies {
             if (found) return true;
         }
         if (timePrefs.isEmpty()) {
-        	sLog.warn("Clazz " + clazz.getClassLabel() + " has no time preferences but assigned time " + time.getLongName());
+        	sLog.warn("Clazz " + clazz.getClassLabel() + " has no time preferences but assigned time " + time.getLongName(CONSTANTS.useAmPm()));
         } else {
-        	sLog.warn("Clazz " + clazz.getClassLabel() + " has no time pattern for the assigned time " + time.getLongName());
+        	sLog.warn("Clazz " + clazz.getClassLabel() + " has no time pattern for the assigned time " + time.getLongName(CONSTANTS.useAmPm()));
         	if (nrExact == 1 && timePrefs.size() == 1) {
         		TimePref p = timePrefs.iterator().next();
             	TimePatternModel pattern = p.getTimePatternModel();
@@ -515,10 +518,10 @@ public class FixCourseTimetablingInconsistencies {
 				Assignment b = other.getClassInstructing().getCommittedAssignment();
 				if (b == null) continue;
 				if (b.getTimeLocation().hasIntersection(a.getTimeLocation())) {
-					sLog.info("Class " + clazz.getClassLabel() + " " + a.getTimeLocation().getName() + " " + a.getPlacement().getRoomName(",") + 
+					sLog.info("Class " + clazz.getClassLabel() + " " + a.getTimeLocation().getName(CONSTANTS.useAmPm()) + " " + a.getPlacement().getRoomName(",") + 
 							" has an instructor " + ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort)+ " overlapping with " + 
-							other.getClassInstructing().getClassLabel() + " " + b.getTimeLocation().getName() + "  " + b.getPlacement().getRoomName(",") + ".");
-					if (a.getTimeLocation().getLongName().equals(b.getTimeLocation().getLongName()) &&
+							other.getClassInstructing().getClassLabel() + " " + b.getTimeLocation().getName(CONSTANTS.useAmPm()) + "  " + b.getPlacement().getRoomName(",") + ".");
+					if (a.getTimeLocation().getLongName(CONSTANTS.useAmPm()).equals(b.getTimeLocation().getLongName(CONSTANTS.useAmPm())) &&
 						a.getPlacement().getRoomName(",").equals(b.getPlacement().getRoomName(","))) {
 						sLog.info("  checking meet with constraint...");
 						Set<DistributionPref> dist = a.getClazz().effectivePreferences(DistributionPref.class);
@@ -530,8 +533,8 @@ public class FixCourseTimetablingInconsistencies {
 												b.getClazz().getRoomRatio() * b.getClazz().getExpectedCapacity());
 										for (Location location: a.getRooms()) {
 											sLog.info("Allowed overlap of classes in room " + location.getLabel() + ":\n" + 
-													"  " + a.getClazz().getClassLabel() + " " + a.getTimeLocation().getLongName() + "\n" +
-													"  " + b.getClazz().getClassLabel() + " " + b.getTimeLocation().getLongName());
+													"  " + a.getClazz().getClassLabel() + " " + a.getTimeLocation().getLongName(CONSTANTS.useAmPm()) + "\n" +
+													"  " + b.getClazz().getClassLabel() + " " + b.getTimeLocation().getLongName(CONSTANTS.useAmPm()));
 											if (location.getCapacity() < minSize) {
 												sLog.warn("But the he room is too small (" + location.getCapacity() + " < " + minSize + ")");
 												float ratio = ((float)location.getCapacity()) / minSize;
@@ -581,9 +584,9 @@ public class FixCourseTimetablingInconsistencies {
 						iHibSession.saveOrUpdate(ci);
 					}
 				} else if (!ci.getInstructor().isIgnoreToFar() && isBackToBackTooFar(a.getPlacement(), b.getPlacement())) {
-					sLog.info("Class " + clazz.getClassLabel() + " " + a.getTimeLocation().getName() + " " + a.getPlacement().getRoomName(",") + 
+					sLog.info("Class " + clazz.getClassLabel() + " " + a.getTimeLocation().getName(CONSTANTS.useAmPm()) + " " + a.getPlacement().getRoomName(",") + 
 							" has an instructor " + ci.getInstructor().getName(DepartmentalInstructor.sNameFormatShort)+ " and is too far back-to-back with " + 
-							other.getClassInstructing().getClassLabel() + " " + b.getTimeLocation().getName() + "  " + b.getPlacement().getRoomName(",") + ".");
+							other.getClassInstructing().getClassLabel() + " " + b.getTimeLocation().getName(CONSTANTS.useAmPm()) + "  " + b.getPlacement().getRoomName(",") + ".");
 					ci.getInstructor().setIgnoreToFar(true);
 					iHibSession.saveOrUpdate(ci.getInstructor());
 				}
@@ -675,7 +678,7 @@ public class FixCourseTimetablingInconsistencies {
 				}
 			}
 			if (changed) {
-				sLog.info("Room sharing changed for room " + loc.getLabel() + " to allow class " + clazz.getClassLabel() + " " + a.getTimeLocation().getLongName() + " in.");
+				sLog.info("Room sharing changed for room " + loc.getLabel() + " to allow class " + clazz.getClassLabel() + " " + a.getTimeLocation().getLongName(CONSTANTS.useAmPm()) + " in.");
 				loc.setRoomSharingModel(m);
 				iHibSession.saveOrUpdate(loc);
 			}

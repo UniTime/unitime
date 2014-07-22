@@ -45,8 +45,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ClassesForm;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -73,6 +75,7 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/classes")
 public class ClassesAction extends Action {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Autowired AuthenticationManager authenticationManager;
 	
@@ -219,7 +222,7 @@ public class ClassesAction extends Action {
             meetingTime += " "+first.startTime()+" - "+first.stopTime();
         } else if (assignment!=null) {
             TimeLocation t = assignment.getTimeLocation();
-            meetingTime += t.getDayHeader()+" "+t.getStartTimeHeader()+" - "+t.getEndTimeHeader();
+            meetingTime += t.getDayHeader()+" "+t.getStartTimeHeader(CONSTANTS.useAmPm())+" - "+t.getEndTimeHeader(CONSTANTS.useAmPm());
         } else {
             meetingTime += "Arr Hrs";
         }

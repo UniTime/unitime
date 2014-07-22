@@ -39,8 +39,10 @@ import java.util.Vector;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
@@ -79,7 +81,9 @@ import com.lowagie.text.pdf.PdfWriter;
  * @author Tomas Muller
  */
 public class PdfWorksheet {
-    private boolean iUseCommitedAssignments = true;
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+
+	private boolean iUseCommitedAssignments = true;
     private static int sNrChars = 133;
     private static int sNrLines = 50;
     private OutputStream iOut = null;
@@ -239,7 +243,7 @@ public class PdfWorksheet {
                 }
             }
             if (onlyOneReq && req!=null)
-                return new String[] {req.getDayHeader()+" "+req.getStartTimeHeader()+" - "+req.getEndTimeHeader()+dpat};
+                return new String[] {req.getDayHeader()+" "+req.getStartTimeHeader(CONSTANTS.useAmPm())+" - "+req.getEndTimeHeader(CONSTANTS.useAmPm())+dpat};
             Vector t = new Vector();
             for (Iterator x=timePrefs.iterator();x.hasNext();) {
                 TimePref tp = (TimePref)x.next();
@@ -253,7 +257,7 @@ public class PdfWorksheet {
             return time;
         }
         TimeLocation t = assgn.getTimeLocation();
-        return new String[] {t.getDayHeader()+" "+t.getStartTimeHeader()+" - "+t.getEndTimeHeader()+dpat};
+        return new String[] {t.getDayHeader()+" "+t.getStartTimeHeader(CONSTANTS.useAmPm())+" - "+t.getEndTimeHeader(CONSTANTS.useAmPm())+dpat};
     }
     
     private String[] room(Class_ clazz) {

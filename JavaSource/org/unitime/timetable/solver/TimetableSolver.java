@@ -368,6 +368,10 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 
     protected void afterFinalSectioning() {
     }
+    
+    protected boolean useAmPm() {
+    	return getProperties().getPropertyBoolean("General.UseAmPm", true);
+    }
 
     public class ReloadingDoneCallback implements Callback {
     	Hashtable iCurrentAssignmentTable = new Hashtable();
@@ -402,7 +406,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     			}
     		}
     		if (time==null) {
-    			iProgress.warn("WARNING: Time "+placement.getTimeLocation().getLongName()+" is no longer valid for class "+lecture.getName());
+    			iProgress.warn("WARNING: Time "+placement.getTimeLocation().getLongName(useAmPm())+" is no longer valid for class "+lecture.getName());
     			return null;
     		}
     		Vector rooms = new Vector();
@@ -427,13 +431,13 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
                 if (conflictConstraints.isEmpty()) {
                 	currentSolution().getAssignment().assign(0, placement);
                 } else {
-                    iProgress.warn("Unable to assign "+placement.variable().getName()+" &larr; "+placement.getLongName());
+                    iProgress.warn("Unable to assign "+placement.variable().getName()+" &larr; "+placement.getLongName(useAmPm()));
                     iProgress.warn("&nbsp;&nbsp;Reason:");
                     for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                         Collection vals = (Collection)conflictConstraints.get(c);
                         for (Iterator j=vals.iterator();j.hasNext();) {
                             Placement v = (Placement) j.next();
-                            iProgress.warn("&nbsp;&nbsp;&nbsp;&nbsp;"+v.variable().getName()+" = "+v.getLongName());
+                            iProgress.warn("&nbsp;&nbsp;&nbsp;&nbsp;"+v.variable().getName()+" = "+v.getLongName(useAmPm()));
                         }
                         iProgress.debug("&nbsp;&nbsp;&nbsp;&nbsp;in constraint "+c);
                     }
@@ -463,13 +467,13 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
                         for (Placement p: vals) {
                             Lecture l = p.variable();
                             if (l.isCommitted())
-                            	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+l.getName()+" = "+p.getLongName()+" (in constraint "+c+")";
+                            	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;conflict with committed assignment "+l.getName()+" = "+p.getLongName(useAmPm())+" (in constraint "+c+")";
                             if (p.equals(placement))
                             	reason += "<br>&nbsp;&nbsp;&nbsp;&nbsp;constraint "+c;
                         }
                     }
                 }
-    	    	iProgress.warn("Unable to assign "+lecture.getName()+" &larr; "+placement.getLongName()+(reason.length()==0?".":":"+reason));
+    	    	iProgress.warn("Unable to assign "+lecture.getName()+" &larr; "+placement.getLongName(useAmPm())+(reason.length()==0?".":":"+reason));
     		}
     	}
     	private void unassignAll() {
@@ -825,7 +829,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 				if (p!=null) {
 					Placement ini = (Placement)initialAssignments.get(p.variable());
 					record.add(ini,p);
-					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+(ini==null?"not assigned":ini.getLongName())+" &rarr; "+p.getLongName());
+					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+(ini==null?"not assigned":ini.getLongName(useAmPm()))+" &rarr; "+p.getLongName(useAmPm()));
                     if (ini!=null) currentSolution().getAssignment().unassign(0, p.variable());
 				} else if (hint.getDays() == 0) {
 					Lecture lecture = null;
@@ -846,7 +850,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 				Placement p = (Placement)initialAssignments.get(lec);
 				if (p!=null) { 
 					record.add(p,null);
-					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+p.getLongName()+" &rarr; not assigned");
+					Progress.getInstance(currentSolution().getModel()).info(p.variable().getName()+": "+p.getLongName(useAmPm())+" &rarr; not assigned");
 				}
 			}
 			record.done();
@@ -1493,7 +1497,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		}
 	}
 	
-	public CSVFile export() {
+	public CSVFile export(boolean useAmPm) {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
@@ -1545,8 +1549,8 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 						new CSVField(suffix),
 						new CSVField(placement==null?"":placement.getTimeLocation().getDatePatternName()),
 						new CSVField(placement==null?"":placement.getTimeLocation().getDayHeader()),
-						new CSVField(placement==null?"":placement.getTimeLocation().getStartTimeHeader()),
-						new CSVField(placement==null?"":placement.getTimeLocation().getEndTimeHeader()),
+						new CSVField(placement==null?"":placement.getTimeLocation().getStartTimeHeader(useAmPm)),
+						new CSVField(placement==null?"":placement.getTimeLocation().getEndTimeHeader(useAmPm)),
 						new CSVField(placement==null?"":placement.getRoomName(",")),
 						new CSVField(lecture.getInstructorName()==null?"":lecture.getInstructorName())
 				});
