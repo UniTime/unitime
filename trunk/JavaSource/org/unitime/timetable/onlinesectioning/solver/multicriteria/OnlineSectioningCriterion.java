@@ -661,7 +661,7 @@ public class OnlineSectioningCriterion implements SelectionCriterion {
 		}
 		
 		public String toString() {
-			return iTime.getLongName() + " (" + iPriority + "/" + iPenalty + ")";
+			return iTime.getLongName(true) + " (" + iPriority + "/" + iPenalty + ")";
 		}
 	}
 }

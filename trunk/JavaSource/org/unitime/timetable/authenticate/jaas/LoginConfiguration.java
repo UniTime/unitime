@@ -34,6 +34,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
  *
  * @author Tomas Muller
  */
+@Deprecated
 public class LoginConfiguration extends Configuration {
 	private static AppConfigurationEntry[] sEntries = null;
 
