@@ -1034,6 +1034,7 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
                 while ((read=fis.read(buf, 0, buf.length))>0)
                     ret.write(buf,0,read);
                 ret.flush();ret.close();
+                fis.close();
             } catch (Exception e) {
                 sLog.error(e.getMessage(),e);
             }
