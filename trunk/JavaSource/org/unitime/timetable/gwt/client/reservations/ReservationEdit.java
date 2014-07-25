@@ -27,11 +27,11 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculaCourseSelectionBox;
-import org.unitime.timetable.gwt.client.curricula.CurriculaCourseSelectionBox.CourseSelectionChangeEvent;
-import org.unitime.timetable.gwt.client.curricula.CurriculaCourseSelectionBox.CourseSelectionChangeHandler;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.widgets.CourseSelectionEvent;
+import org.unitime.timetable.gwt.client.widgets.CourseSelectionHandler;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -217,7 +217,7 @@ public class ReservationEdit extends Composite {
 		
 		iPanel.addHeaderRow(iTitleAndButtons);
 		
-		iCourseBox = new CurriculaCourseSelectionBox("");
+		iCourseBox = new CurriculaCourseSelectionBox();
 		iCourseBox.setWidth("130px");
 		iPanel.addRow(MESSAGES.propInstructionalOffering(), iCourseBox);
 		iPanel.getCellFormatter().getElement(iPanel.getRowCount() - 1, 0).getStyle().setWidth(100, Unit.PX);
@@ -473,11 +473,11 @@ public class ReservationEdit extends Composite {
 			});
 		}
 		
-		iCourseBox.addCourseSelectionChangeHandler(new CourseSelectionChangeHandler() {
+		iCourseBox.addCourseSelectionHandler(new CourseSelectionHandler() {			
 			@Override
-			public void onChange(CourseSelectionChangeEvent evt) {
-				if (evt.isValid()) {
-					iReservationService.getOfferingByCourseName(evt.getCourse(), new AsyncCallback<Offering>() {
+			public void onCourseSelection(CourseSelectionEvent event) {
+				if (event.isValid()) {
+					iReservationService.getOfferingByCourseName(event.getCourse(), new AsyncCallback<Offering>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							iCourseBox.setError(caught.getMessage());
@@ -518,7 +518,7 @@ public class ReservationEdit extends Composite {
 		if (offeringId == null) {
 			iOffering = null;
 			iCourseBox.setEnabled(true);
-			iCourseBox.setCourse("", false);
+			iCourseBox.setValue("", false);
 			iLimit.getWidget().setValue("", true);
 			iExpirationDate.getWidget().setValue(null);
 			iStructure.clear(); iClasses.clear(); iConfigs.clear();
@@ -559,7 +559,7 @@ public class ReservationEdit extends Composite {
 		if (iOffering == null) return;
 
 		if (!iCourseBox.isEnabled())
-			iCourseBox.setCourse(iOffering.getAbbv(), false);
+			iCourseBox.setValue(iOffering.getAbbv(), false);
 
 		iStructure.clear(); iClasses.clear(); iConfigs.clear();
 		for (Config config: iOffering.getConfigs()) {

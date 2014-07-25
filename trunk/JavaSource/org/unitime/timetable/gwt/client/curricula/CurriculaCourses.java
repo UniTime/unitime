@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.curricula.CurriculaClassifications.NameChangedEvent;
+import org.unitime.timetable.gwt.client.widgets.CourseSelectionEvent;
+import org.unitime.timetable.gwt.client.widgets.CourseSelectionHandler;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -54,6 +56,9 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.HasOpenHandlers;
+import com.google.gwt.event.logical.shared.OpenEvent;
+import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
@@ -66,6 +71,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -99,7 +105,7 @@ public class CurriculaCourses extends Composite {
 	
 	private CurriculaClassifications iClassifications;
 	
-	private CurriculaCourseSelectionBox.CourseSelectionChangeHandler iCourseChangedHandler = null;
+	private CourseSelectionHandler iCourseChangedHandler = null;
 	
 	private GroupDialogBox iNewGroupDialog;
 	private boolean iEditable = true;
@@ -117,30 +123,31 @@ public class CurriculaCourses extends Composite {
 	public CurriculaCourses() {
 		iTable = new UniTimeTable<String>();
 		initWidget(iTable);
-		iCourseChangedHandler = new CurriculaCourseSelectionBox.CourseSelectionChangeHandler() {
+		iCourseChangedHandler = new CourseSelectionHandler() {
+			
 			@Override
-			public void onChange(CurriculaCourseSelectionBox.CourseSelectionChangeEvent evt) {
-				CurriculumStudentsInterface[] c = (iLastCourses == null ? null : iLastCourses.get(evt.getCourse()));
+			public void onCourseSelection(CourseSelectionEvent event) {
+				CurriculumStudentsInterface[] c = (iLastCourses == null ? null : iLastCourses.get(event.getCourse()));
 				for (int col = 0; col < iClassifications.getClassifications().size(); col ++) {
-					setEnrollmentAndLastLike(evt.getCourse(), col,
+					setEnrollmentAndLastLike(event.getCourse(), col,
 							c == null || c[col] == null ? null : c[col].getEnrollment(), 
 							c == null || c[col] == null ? null : c[col].getLastLike(),
 							c == null || c[col] == null ? null : c[col].getProjection(),
 							c == null || c[col] == null ? null : c[col].getRequested());
 				}
-				Element td = evt.getSource().getElement();
+				Element td = ((Widget)event.getSource()).getElement();
 				while (td != null && !DOM.getElementProperty(td, "tagName").equalsIgnoreCase("td")) {
 					td = DOM.getParent(td);
 				}
 				Element tr = DOM.getParent(td);
 			    Element body = DOM.getParent(tr);
 			    int row = DOM.getChildIndex(body, tr);
-			    if (evt.getCourse().isEmpty()) {
+			    if (event.getCourse().isEmpty()) {
 					iTable.getRowFormatter().addStyleName(row, "unitime-NoPrint");
 			    } else {
 					iTable.getRowFormatter().removeStyleName(row, "unitime-NoPrint");
 			    }
-			    if (row + 1 == iTable.getRowCount() && !evt.getCourse().isEmpty())
+			    if (row + 1 == iTable.getRowCount() && !event.getCourse().isEmpty())
 					addBlankLine();
 			}
 		};
@@ -263,7 +270,7 @@ public class CurriculaCourses extends Composite {
 			@Override
 			public void execute() {
 				for (int i = 1; i < iTable.getRowCount(); i++)
-					iTable.setSelected(i, !((CurriculaCourseSelectionBox)iTable.getWidget(i, 1)).getCourse().isEmpty());				
+					iTable.setSelected(i, !((CurriculaCourseSelectionBox)iTable.getWidget(i, 1)).getValue().isEmpty());				
 			}
 			@Override
 			public boolean isApplicable() {
@@ -283,7 +290,7 @@ public class CurriculaCourses extends Composite {
 			public void execute() {
 				for (int row = iTable.getRowCount() - 1; row > 0; row --) {
 					if (!iTable.isSelected(row)) continue;
-					String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+					String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
 					if (course.isEmpty() && row + 1 == iTable.getRowCount()) {
 						iTable.setSelected(row, false);
 						continue;
@@ -388,7 +395,7 @@ public class CurriculaCourses extends Composite {
 			public void execute() {
 				// boolean selectedOnly = (iTable.getSelectedCount() > 0);
 				rows: for (int row = iTable.getRowCount() - 1; row > 0; row --) {
-					String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+					String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
 					if (course.isEmpty() && row + 1 == iTable.getRowCount()) continue;
 					/*
 					if (selectedOnly && !iTable.isSelected(row)) {
@@ -586,13 +593,13 @@ public class CurriculaCourses extends Composite {
 			}
 		});
 		
-		CurriculaCourseSelectionBox.CourseFinderDialogHandler fx = new CurriculaCourseSelectionBox.CourseFinderDialogHandler() {
+		OpenHandler<PopupPanel> fx = new OpenHandler<PopupPanel>() {
 			@Override
-			public void onOpen(CurriculaCourseSelectionBox.CourseFinderDialogEvent e) {
+			public void onOpen(OpenEvent<PopupPanel> event) {
 				iTable.clearHover();
 			}
 		};
-		
+	
 		int col = 2;
 		for (final AcademicClassificationInterface clasf: iClassifications.getClassifications()) {
 			final UniTimeTableHeader hExp = new UniTimeTableHeader(clasf.getCode(), HasHorizontalAlignment.ALIGN_RIGHT);
@@ -929,11 +936,12 @@ public class CurriculaCourses extends Composite {
 					}
 				}
 				
-				CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(course.getId().toString());
-				cx.setCourse(course.getCourseName(), false);
+				CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox();
+				cx.setValue(course.getCourseName(), false);
 				cx.setWidth("130px");
-				cx.addCourseFinderDialogHandler(fx);
-				cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
+				if (cx.getCourseFinder() instanceof HasOpenHandlers)
+					((HasOpenHandlers<PopupPanel>)cx.getCourseFinder()).addOpenHandler(fx);
+				cx.addCourseSelectionHandler(iCourseChangedHandler);
 				if (!iEditable) cx.setEnabled(false);
 				line.add(cx);
 				
@@ -957,7 +965,7 @@ public class CurriculaCourses extends Composite {
 		HashMap<String, CurriculumCourseGroupInterface> groups = new HashMap<String, CurriculumCourseGroupInterface>();
 		if (c.hasCourses()) c.getCourses().clear();
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
 			if (course.isEmpty()) continue;
 			if (!courses.add(course)) {
 				((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setError(MESSAGES.errorDuplicateCourse(course));
@@ -1001,15 +1009,16 @@ public class CurriculaCourses extends Composite {
 		HorizontalPanel hp = new HorizontalPanel();
 		line.add(hp);
 
-		CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox(null);
+		CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox();
 		cx.setWidth("130px");
-		cx.addCourseSelectionChangeHandler(iCourseChangedHandler);
-		cx.addCourseFinderDialogHandler(new CurriculaCourseSelectionBox.CourseFinderDialogHandler() {
-			@Override
-			public void onOpen(CurriculaCourseSelectionBox.CourseFinderDialogEvent e) {
-				iTable.clearHover();
-			}
-		});
+		cx.addCourseSelectionHandler(iCourseChangedHandler);
+		if (cx.getCourseFinder() instanceof HasOpenHandlers)
+			((HasOpenHandlers<PopupPanel>)cx.getCourseFinder()).addOpenHandler(new OpenHandler<PopupPanel>() {
+				@Override
+				public void onOpen(OpenEvent<PopupPanel> event) {
+					iTable.clearHover();
+				}
+			});
 		if (!iEditable) cx.setEnabled(false);
 		line.add(cx);
 		
@@ -1030,8 +1039,8 @@ public class CurriculaCourses extends Composite {
 	}
 	
 	private int compareTwoRows(int column, int r0, int r1) {
-		boolean e1 = ((CurriculaCourseSelectionBox)iTable.getWidget(r0, 1)).getCourse().isEmpty();
-		boolean e2 = ((CurriculaCourseSelectionBox)iTable.getWidget(r1, 1)).getCourse().isEmpty();
+		boolean e1 = ((CurriculaCourseSelectionBox)iTable.getWidget(r0, 1)).getValue().isEmpty();
+		boolean e2 = ((CurriculaCourseSelectionBox)iTable.getWidget(r1, 1)).getValue().isEmpty();
 		if (e1 && !e2) return 1;
 		if (e2 && !e1) return -1;
 		if (column == 0) {
@@ -1052,7 +1061,7 @@ public class CurriculaCourses extends Composite {
 			return compareTwoRows(2, r0, r1);
 		}
 		if (column == 1)
-			return ((CurriculaCourseSelectionBox)iTable.getWidget(r0, 1)).getCourse().compareTo(((CurriculaCourseSelectionBox)iTable.getWidget(r1, 1)).getCourse());
+			return ((CurriculaCourseSelectionBox)iTable.getWidget(r0, 1)).getValue().compareTo(((CurriculaCourseSelectionBox)iTable.getWidget(r1, 1)).getValue());
 		if (column % 2 == 0) {
 			Float s0 = ((ShareTextBox)iTable.getWidget(r0, column)).getShare();
 			Float s1 = ((ShareTextBox)iTable.getWidget(r1, column)).getShare();
@@ -1069,7 +1078,7 @@ public class CurriculaCourses extends Composite {
 	
 	public int getCourseIndex(String course) {
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
 			if (course.equals(c)) return row - 1;
 		}
 		return -1;
@@ -1078,7 +1087,7 @@ public class CurriculaCourses extends Composite {
 	public boolean setEnrollmentAndLastLike(String course, int clasf, Integer enrollment, Integer lastLike, Integer projection, Integer requested) {
 		boolean changed = false;
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
 			if (!course.equals(c)) continue;
 			EnrollmentLabel note = ((EnrollmentLabel)iTable.getWidget(row, 3 + 2 * clasf));
 			note.iEnrollment = enrollment;
@@ -1105,7 +1114,7 @@ public class CurriculaCourses extends Composite {
 		}
 		HashSet<String> updated = new HashSet<String>();
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
 			if (c.isEmpty()) continue;
 			updated.add(c);
 			CurriculumStudentsInterface[] cc = courses.get(c);
@@ -1208,7 +1217,7 @@ public class CurriculaCourses extends Composite {
 				if (!iEditable) row++;
 				addBlankLine();
 				CurriculaCourseSelectionBox c = (CurriculaCourseSelectionBox)iTable.getWidget(row, 1);
-				c.setCourse(course.getKey(), false);
+				c.setValue(course.getKey(), false);
 				iTable.getRowFormatter().removeStyleName(row, "unitime-NoPrint");
 				for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
 					EnrollmentLabel note = ((EnrollmentLabel)iTable.getWidget(row, 3 + 2 * col));
@@ -1615,7 +1624,7 @@ public class CurriculaCourses extends Composite {
 		iVisibleCourses = new TreeSet<String>();
 		for (CourseInterface c: courses) iVisibleCourses.add(c.getCourseName());
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			String courseName = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+			String courseName = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
 			if (iVisibleCourses.contains(courseName)) {
 				((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setEnabled(false);
 				iTable.getRowFormatter().setVisible(row, true);
@@ -1628,7 +1637,7 @@ public class CurriculaCourses extends Composite {
 	public void showAllCourses() {
 		if (iVisibleCourses != null) {
 			for (int i = 1; i < iTable.getRowCount(); i++) {
-				String courseName = ((CurriculaCourseSelectionBox)iTable.getWidget(i, 1)).getCourse();
+				String courseName = ((CurriculaCourseSelectionBox)iTable.getWidget(i, 1)).getValue();
 				iTable.setSelected(i, iVisibleCourses.contains(courseName));
 			}
 		}
@@ -1642,7 +1651,7 @@ public class CurriculaCourses extends Composite {
 	public boolean canShowStudentsTable(int row) {
 		if (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.NONE) return false;
 		if (row < 1 || row >= iTable.getRowCount()) return false;
-		String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
+		String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
 		if (iLastCourses == null || !iLastCourses.containsKey(course)) return false;
 		int nrOther = 0;
 		for (int r = 1; r < iTable.getRowCount(); r ++) {
@@ -1665,7 +1674,7 @@ public class CurriculaCourses extends Composite {
 		private StudentsTable(int currentRow) {
 			super();
 			
-			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(currentRow, 1)).getCourse();
+			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(currentRow, 1)).getValue();
 			
 			iP.add(new Label(MESSAGES.hintComparingStudentsWithOtherCourses(course + " " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName().toLowerCase().replace(" enrollment", ""))));
 			iP.add(iT);
@@ -1694,7 +1703,7 @@ public class CurriculaCourses extends Composite {
 			List<CurriculumStudentsInterface[]> other = new ArrayList<CurriculumStudentsInterface[]>();
 			for (int r = 1; r < iTable.getRowCount(); r ++) {
 				if (r == currentRow || !iTable.isSelected(r)) continue;
-				String c = ((CurriculaCourseSelectionBox)iTable.getWidget(r, 1)).getCourse();
+				String c = ((CurriculaCourseSelectionBox)iTable.getWidget(r, 1)).getValue();
 				if (c.isEmpty()) continue;
 				other.add(iLastCourses.get(c));
 				iT.setText(6 + row, 0, MESSAGES.hinStudentsSharedWith(c));
