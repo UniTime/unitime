@@ -17,27 +17,32 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.client.sectioning;
+package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.ArrayList;
-import java.util.Vector;
+import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HasValue;
 
 /**
  * @author Tomas Muller
  */
-public class FreeTimePicker extends Composite {
+public class FreeTimePicker extends Composite implements HasValue<List<CourseRequestInterface.FreeTime>> {
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 
@@ -46,8 +51,6 @@ public class FreeTimePicker extends Composite {
 	private boolean[][] iSelected;
 	private long[][] iLastSelectedTime;
 	private long iTime = 0;
-	
-	private Vector<FreeTimeChangeHandler> iFreeTimeChangeHandlers = new Vector<FreeTimeChangeHandler>();
 	
 	public FreeTimePicker() {
 		iGrid = new CellSelectingGrid(1 + CONSTANTS.freeTimeDays().length, CONSTANTS.freeTimePeriods().length);
@@ -159,42 +162,6 @@ public class FreeTimePicker extends Composite {
 			}
 		}
 		return null;
-	}
-	
-	public ArrayList<CourseRequestInterface.FreeTime> getFreeTime() {
-		boolean[][] s = new boolean[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods().length - 1];
-		for (int d=0; d<CONSTANTS.freeTimeDays().length; d++) {
-			for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++)
-				s[d][p] = iSelected[d][p];
-		}
-		ArrayList<CourseRequestInterface.FreeTime> ret = new ArrayList<CourseRequestInterface.FreeTime>();
-		CourseRequestInterface.FreeTime ft = null;
-		while ((ft = generateOneFreeTime(s)) != null)
-			ret.add(ft);
-		return ret;
-	}
-
-	public void clearFreeTime() {
-		for (int d=0; d<CONSTANTS.freeTimeDays().length; d++)
-			for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++) {
-				iSelected[d][p] = false;
-				td(d, p).getStyle().setBackgroundColor(bg(d, p));
-				iGrid.setHTML(1 + d, 1 + p, "&nbsp;");
-			}
-	}
-	
-	public void setFreeTime(ArrayList<CourseRequestInterface.FreeTime> freeTimes, boolean clearFirst) {
-		if (clearFirst) clearFreeTime();
-		for (CourseRequestInterface.FreeTime f: freeTimes) {
-			for (int day: f.getDays()) {
-				if (day < CONSTANTS.freeTimeDays().length) {
-					for (int p = toPeriod(f.getStart()); p < toPeriod(f.getStart() + f.getLength()); p++)
-						iSelected[day][p] = true;
-				}
-			}
-		}
-		generatePriorities();
-		update();
 	}
 	
 	private boolean generateOnePriority(boolean[][] s, int priority) {
@@ -320,9 +287,7 @@ public class FreeTimePicker extends Composite {
 			}
 			iDownDay = -1; iDownPeriod = -1; iOverDay = -1; iOverPeriod = -1;
 			generatePriorities();
-			FreeTimeChangeEvent event = new FreeTimeChangeEvent();
-			for (FreeTimeChangeHandler handler: iFreeTimeChangeHandlers)
-				handler.onFreeTimeChange(event);
+			ValueChangeEvent.fire(this, getValue());
 			break;
 		case Event.ONMOUSEOVER:
 			iOverDay = day; iOverPeriod = period;
@@ -332,10 +297,6 @@ public class FreeTimePicker extends Composite {
 			break;
 		}
 		update();
-	}
-	
-	public void addFreeTimeChangeHandler(FreeTimeChangeHandler handler) {
-		iFreeTimeChangeHandlers.add(handler);
 	}
 	
 	private class CellSelectingGrid extends Grid {
@@ -360,13 +321,52 @@ public class FreeTimePicker extends Composite {
 		}
 	}
 	
-	public class FreeTimeChangeEvent {
-		public ArrayList<CourseRequestInterface.FreeTime> getFreeTime() {
-			return FreeTimePicker.this.getFreeTime();
-		}
+	@Override
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<List<FreeTime>> handler) {
+		return addHandler(handler, ValueChangeEvent.getType());
 	}
-	
-	public static interface FreeTimeChangeHandler {
-		public void onFreeTimeChange(FreeTimeChangeEvent event);
+
+	@Override
+	public List<FreeTime> getValue() {
+		boolean[][] s = new boolean[CONSTANTS.freeTimeDays().length][CONSTANTS.freeTimePeriods().length - 1];
+		for (int d=0; d<CONSTANTS.freeTimeDays().length; d++) {
+			for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++)
+				s[d][p] = iSelected[d][p];
+		}
+		ArrayList<CourseRequestInterface.FreeTime> ret = new ArrayList<CourseRequestInterface.FreeTime>();
+		CourseRequestInterface.FreeTime ft = null;
+		while ((ft = generateOneFreeTime(s)) != null)
+			ret.add(ft);
+		return ret;
+	}
+
+	@Override
+	public void setValue(List<FreeTime> value) {
+		setValue(value, false);
+	}
+
+	@Override
+	public void setValue(List<FreeTime> value, boolean fireEvents) {
+		if (value == null || value.isEmpty()) {
+			for (int d=0; d<CONSTANTS.freeTimeDays().length; d++)
+				for (int p=0; p<CONSTANTS.freeTimePeriods().length - 1; p++) {
+					iSelected[d][p] = false;
+					td(d, p).getStyle().setBackgroundColor(bg(d, p));
+					iGrid.setHTML(1 + d, 1 + p, "&nbsp;");
+				}
+		} else {
+			for (CourseRequestInterface.FreeTime f: value) {
+				for (int day: f.getDays()) {
+					if (day < CONSTANTS.freeTimeDays().length) {
+						for (int p = toPeriod(f.getStart()); p < toPeriod(f.getStart() + f.getLength()); p++)
+							iSelected[day][p] = true;
+					}
+				}
+			}
+			generatePriorities();
+			update();
+		}
+		if (fireEvents)
+			ValueChangeEvent.fire(this, getValue());
 	}
 }

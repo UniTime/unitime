@@ -1915,7 +1915,7 @@ public class CurriculaServlet implements CurriculaService {
                 		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
                 	}
                     if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
-					a.setLimit(new int[] {-1, limit});
+					a.setLimit(new int[] {clazz.getEnrollment(), limit});
 					
 					if (p != null && p.getTimeLocation() != null) {
 						for (DayCode d: DayCode.toDayCodes(p.getTimeLocation().getDayCode()))

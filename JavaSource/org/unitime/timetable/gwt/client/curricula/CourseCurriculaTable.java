@@ -451,18 +451,21 @@ public class CourseCurriculaTable extends Composite {
 
 	}
 	
-	private void init(final Command next) {
+	protected void ensureInitialized(final AsyncCallback<Boolean> callback) {
+		if (iClassifications != null)
+			callback.onSuccess(true);
 		iCurriculaService.loadAcademicClassifications(new AsyncCallback<TreeSet<AcademicClassificationInterface>>() {
 			@Override
 			public void onSuccess(TreeSet<AcademicClassificationInterface> result) {
 				iClassifications = result;
-				if (next != null) next.execute();
+				if (callback != null) callback.onSuccess(true);
 			}
 			
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(MESSAGES.failedToLoadClassifications(caught.getMessage()));
 				UniTimeNotifications.error(MESSAGES.failedToLoadClassifications(caught.getMessage()), caught);
+				if (callback != null) callback.onFailure(caught);
 			}
 		});
 	}
@@ -479,7 +482,7 @@ public class CourseCurriculaTable extends Composite {
 		iHint.setVisible(false);
 	}
 	
-	private void populate(TreeSet<CurriculumInterface> curricula) {
+	protected void populate(TreeSet<CurriculumInterface> curricula) {
 		// Create header
 		int col = 0;
 		final Label curriculumLabel = new Label(MESSAGES.colCurriculum(), false);
@@ -1069,21 +1072,20 @@ public class CourseCurriculaTable extends Composite {
 	}
 	
 	public void refresh() {
-		Command populate = new Command() {
+		ensureInitialized(new AsyncCallback<Boolean>() {
 			@Override
-			public void execute() {
+			public void onFailure(Throwable caught) {
+			}
+
+			@Override
+			public void onSuccess(Boolean result) {
 				clear(true);
 				if (iOfferingId != null)
 					iCurriculaService.findCurriculaForAnInstructionalOffering(iOfferingId, iCourseCurriculaCallback);
 				else
 					iCurriculaService.findCurriculaForACourse(iCourseName, iCourseCurriculaCallback);
 			}
-		};
-		if (iClassifications == null) {
-			init(populate);
-		} else {
-			populate.execute();
-		}
+		});
 	}
 	
 	public void insert(final RootPanel panel) {

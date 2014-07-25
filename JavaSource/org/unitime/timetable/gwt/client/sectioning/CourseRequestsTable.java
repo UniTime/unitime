@@ -26,7 +26,11 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.widgets.CourseSelection;
+import org.unitime.timetable.gwt.client.widgets.CourseSelectionEvent;
+import org.unitime.timetable.gwt.client.widgets.CourseSelectionHandler;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.Validator;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -65,7 +69,7 @@ public class CourseRequestsTable extends Composite {
 	private Label iTip;
 	private boolean iOnline;
 	
-	CourseSelectionBox.Validator iCheckForDuplicities;
+	Validator<CourseSelection> iCheckForDuplicities;
 
 	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean online) {
 		iOnline = online;
@@ -94,20 +98,20 @@ public class CourseRequestsTable extends Composite {
 		iCourses = new ArrayList<CourseSelectionBox[]>();
 		iAlternatives = new ArrayList<CourseSelectionBox[]>();
 		
-		iCheckForDuplicities = new CourseSelectionBox.Validator() {
-			public String validate(CourseSelectionBox source) {
-				if (source.getCourse().isEmpty() || source.isFreeTime()) return null;
-				String course = source.getCourse();
+		iCheckForDuplicities = new Validator<CourseSelection>() {
+			public String validate(CourseSelection source) {
+				if (source.getValue().isEmpty() || source.isFreeTime()) return null;
+				String course = source.getValue();
 				for (CourseSelectionBox[] c: iCourses) {
 					for (int i = 0; i < c.length; i++) {
 						if (c[i] == source) continue;
-						if (c[i].getCourse().equals(course)) return MESSAGES.validationMultiple(course);
+						if (c[i].getValue().equals(course)) return MESSAGES.validationMultiple(course);
 					}
 				}
 				for (CourseSelectionBox[] c: iAlternatives) {
 					for (int i = 0; i < c.length; i++) {
 						if (c[i] == source) continue;
-						if (c[i].getCourse().equals(course)) return MESSAGES.validationMultiple(course);
+						if (c[i].getValue().equals(course)) return MESSAGES.validationMultiple(course);
 					}
 				}
 				return null;
@@ -117,9 +121,9 @@ public class CourseRequestsTable extends Composite {
 		for (int i=0; i<CONSTANTS.numberOfCourses(); i++) {
 			iGrid.setText(idx, 0, MESSAGES.courseRequestsPriority(i+1));
 			final CourseSelectionBox[] c = new CourseSelectionBox[] {
-					new CourseSelectionBox(iSessionProvider, "c"+i, true, true),
-					new CourseSelectionBox(iSessionProvider, "c"+i+"a", false, false),
-					new CourseSelectionBox(iSessionProvider, "c"+i+"b", false, false)
+					new CourseSelectionBox(iSessionProvider, true, true),
+					new CourseSelectionBox(iSessionProvider, false, false),
+					new CourseSelectionBox(iSessionProvider, false, false)
 			};
 			c[0].setLabel(ARIA.titleRequestedCourse(1 + i), ARIA.altRequestedCourseFinder(1 + i));
 			c[1].setLabel(ARIA.titleRequestedCourseFirstAlternative(1 + i), ARIA.altRequestedCourseFirstAlternativeFinder(1 + i));
@@ -198,9 +202,9 @@ public class CourseRequestsTable extends Composite {
 		for (int i=0; i<CONSTANTS.numberOfAlternatives(); i++) {
 			iGrid.setText(idx, 0, MESSAGES.courseRequestsAlternative(i+1));
 			final CourseSelectionBox[] c = new CourseSelectionBox[] {
-					new CourseSelectionBox(iSessionProvider, "a"+i, true, false),
-					new CourseSelectionBox(iSessionProvider, "a"+i+"a", false, false),
-					new CourseSelectionBox(iSessionProvider, "a"+i+"b", false, false)
+					new CourseSelectionBox(iSessionProvider, true, false),
+					new CourseSelectionBox(iSessionProvider, false, false),
+					new CourseSelectionBox(iSessionProvider, false, false)
 			};
 			c[0].setLabel(ARIA.titleRequestedAlternate(1 + i, String.valueOf((char)((int)'a'+i))), ARIA.altRequestedAlternateFinder(1 + i));
 			c[1].setLabel(ARIA.titleRequestedAlternateFirstAlternative(1 + i), ARIA.altRequestedAlternateFirstFinder(1 + i));
@@ -274,9 +278,9 @@ public class CourseRequestsTable extends Composite {
 		iGrid.insertRow(idx);
 		iGrid.setText(idx, 0, MESSAGES.courseRequestsPriority(i+1));
 		final CourseSelectionBox[] c = new CourseSelectionBox[] {
-				new CourseSelectionBox(iSessionProvider, "c"+i, true, true),
-				new CourseSelectionBox(iSessionProvider, "c"+i+"a", false, false),
-				new CourseSelectionBox(iSessionProvider, "c"+i+"b", false, false)
+				new CourseSelectionBox(iSessionProvider, true, true),
+				new CourseSelectionBox(iSessionProvider, false, false),
+				new CourseSelectionBox(iSessionProvider, false, false)
 		};
 		c[0].setLabel(ARIA.titleRequestedCourse(1 + i), ARIA.altRequestedCourseFinder(1 + i));
 		c[1].setLabel(ARIA.titleRequestedCourseFirstAlternative(1 + i), ARIA.altRequestedCourseFirstAlternativeFinder(1 + i));
@@ -329,42 +333,45 @@ public class CourseRequestsTable extends Composite {
 		iCourses.add(c);
 		c[0].setWaitList(ch);
 		
-		c[0].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-			public void onChange(String course, boolean valid) {
-				if (valid) c[0].hideError();
+		c[0].addCourseSelectionHandler(new CourseSelectionHandler() {
+			@Override
+			public void onCourseSelection(CourseSelectionEvent event) {
+				if (event.isValid()) c[0].setError("");
 				if (!c[0].isFreeTime()) {
-					c[1].setEnabled(valid || !c[1].getCourse().isEmpty() || !c[2].getCourse().isEmpty());
-					if (valid && !c[0].getCourse().isEmpty())
-						c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getCourse()));
+					c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
+					if (event.isValid() && !c[0].getValue().isEmpty())
+						c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getValue()));
 					else
 						c[1].setHint("");
 				} else {
 					c[1].setHint("");
 				}
-				if (valid && c == iCourses.get(iCourses.size() - 1)) addCourseLine();
+				if (event.isValid() && c == iCourses.get(iCourses.size() - 1)) addCourseLine();
 			}
 		});
-		c[1].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-			public void onChange(String course, boolean valid) {
-				if (valid) c[1].hideError();
-				c[2].setEnabled(valid || !c[2].getCourse().isEmpty());
-				if (valid && !c[0].getCourse().isEmpty() && !c[1].getCourse().isEmpty())
-					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getCourse(), c[1].getCourse()));
+		c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
+			@Override
+			public void onCourseSelection(CourseSelectionEvent event) {
+				if (event.isValid()) c[1].setError("");
+				c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
+				if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
+					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
 				else
 					c[2].setHint("");
 			}
 		});
-		c[2].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-			public void onChange(String course, boolean valid) {
-				if (valid) c[2].hideError();
+		c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
+			@Override
+			public void onCourseSelection(CourseSelectionEvent event) {
+				if (event.isValid()) c[2].setError("");
 			}
 		});
-		c[1].addValidator(new CourseSelectionBox.Validator() {
-			public String validate(CourseSelectionBox source) {
-				if (!c[1].getCourse().isEmpty() && c[0].getCourse().isEmpty()) {
+		c[1].addValidator(new Validator<CourseSelection>() {
+			public String validate(CourseSelection source) {
+				if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
 					return MESSAGES.validationNoCourse();
 				}
-				if (!c[1].getCourse().isEmpty() && c[0].isFreeTime()) {
+				if (!c[1].getValue().isEmpty() && c[0].isFreeTime()) {
 					return MESSAGES.validationFreeTimeWithAlt();
 				}
 				if (c[1].isFreeTime()) {
@@ -373,12 +380,12 @@ public class CourseRequestsTable extends Composite {
 				return null;
 			}
 		});
-		c[2].addValidator(new CourseSelectionBox.Validator() {
-			public String validate(CourseSelectionBox source) {
-				if (!c[2].getCourse().isEmpty() && c[1].getCourse().isEmpty()) {
+		c[2].addValidator(new Validator<CourseSelection>() {
+			public String validate(CourseSelection source) {
+				if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
 					return MESSAGES.validationSecondAltWithoutFirst();
 				}
-				if (!c[2].getCourse().isEmpty() && c[0].isFreeTime()) {
+				if (!c[2].getValue().isEmpty() && c[0].isFreeTime()) {
 					return MESSAGES.validationFreeTimeWithAlt();
 				}
 				if (c[2].isFreeTime()) {
@@ -400,9 +407,9 @@ public class CourseRequestsTable extends Composite {
 		iGrid.insertRow(idx);
 		iGrid.setText(idx, 0, MESSAGES.courseRequestsAlternative(i+1));
 		final CourseSelectionBox[] c = new CourseSelectionBox[] {
-				new CourseSelectionBox(iSessionProvider, "a"+i, true, false),
-				new CourseSelectionBox(iSessionProvider, "a"+i+"a", false, false),
-				new CourseSelectionBox(iSessionProvider, "a"+i+"b", false, false)
+				new CourseSelectionBox(iSessionProvider, true, false),
+				new CourseSelectionBox(iSessionProvider, false, false),
+				new CourseSelectionBox(iSessionProvider, false, false)
 		};
 		c[0].setLabel(ARIA.titleRequestedAlternate(1 + i, String.valueOf((char)((int)'a'+i))), ARIA.altRequestedAlternateFinder(1 + i));
 		c[1].setLabel(ARIA.titleRequestedAlternateFirstAlternative(1 + i), ARIA.altRequestedAlternateFirstFinder(1 + i));
@@ -440,50 +447,53 @@ public class CourseRequestsTable extends Composite {
 		iGrid.getRowFormatter().setVerticalAlign(idx, HasVerticalAlignment.ALIGN_TOP);
 		iAlternatives.add(c);
 		
-		c[0].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-			public void onChange(String course, boolean valid) {
-				if (valid) c[0].hideError();
+		c[0].addCourseSelectionHandler(new CourseSelectionHandler() {
+			@Override
+			public void onCourseSelection(CourseSelectionEvent event) {
+				if (event.isValid()) c[0].setError("");
 				if (!c[0].isFreeTime()) {
-					c[1].setEnabled(valid || !c[1].getCourse().isEmpty() || !c[2].getCourse().isEmpty());
-					if (valid && !c[0].getCourse().isEmpty())
-						c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getCourse()));
+					c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
+					if (event.isValid() && !c[0].getValue().isEmpty())
+						c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getValue()));
 					else
 						c[1].setHint("");
 				} else {
 					c[1].setHint("");
 				}
-				if (valid && c == iAlternatives.get(iAlternatives.size() - 1)) addAlternativeLine();
+				if (event.isValid() && c == iAlternatives.get(iAlternatives.size() - 1)) addAlternativeLine();
 			}
 		});
-		c[1].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-			public void onChange(String course, boolean valid) {
-				if (valid) c[1].hideError();
-				c[2].setEnabled(valid || !c[2].getCourse().isEmpty());
-				if (valid && !c[0].getCourse().isEmpty() && !c[1].getCourse().isEmpty())
-					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getCourse(), c[1].getCourse()));
+		c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
+			@Override
+			public void onCourseSelection(CourseSelectionEvent event) {
+				if (event.isValid()) c[1].setError("");
+				c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
+				if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
+					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
 				else
 					c[2].setHint("");
 			}
 		});
-		c[2].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-			public void onChange(String course, boolean valid) {
-				if (valid) c[2].hideError();
+		c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
+			@Override
+			public void onCourseSelection(CourseSelectionEvent event) {
+				if (event.isValid()) c[2].setError("");
 			}
 		});
-		c[0].addValidator(new CourseSelectionBox.Validator() {
-			public String validate(CourseSelectionBox source) {
+		c[0].addValidator(new Validator<CourseSelection>() {
+			public String validate(CourseSelection source) {
 				if (c[0].isFreeTime()) {
 					return MESSAGES.validationAltFreeTime();
 				}
 				return null;
 			}
 		});
-		c[1].addValidator(new CourseSelectionBox.Validator() {
-			public String validate(CourseSelectionBox source) {
-				if (!c[1].getCourse().isEmpty() && c[0].getCourse().isEmpty()) {
+		c[1].addValidator(new Validator<CourseSelection>() {
+			public String validate(CourseSelection source) {
+				if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
 					return MESSAGES.validationNoCourse();
 				}
-				if (!c[1].getCourse().isEmpty() && c[0].isFreeTime()) {
+				if (!c[1].getValue().isEmpty() && c[0].isFreeTime()) {
 					return MESSAGES.validationFreeTimeWithAlt();
 				}
 				if (c[1].isFreeTime()) {
@@ -492,12 +502,12 @@ public class CourseRequestsTable extends Composite {
 				return null;
 			}
 		});
-		c[2].addValidator(new CourseSelectionBox.Validator() {
-			public String validate(CourseSelectionBox source) {
-				if (!c[2].getCourse().isEmpty() && c[1].getCourse().isEmpty()) {
+		c[2].addValidator(new Validator<CourseSelection>() {
+			public String validate(CourseSelection source) {
+				if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
 					return MESSAGES.validationSecondAltWithoutFirst();
 				}
-				if (!c[2].getCourse().isEmpty() && c[0].isFreeTime()) {
+				if (!c[2].getValue().isEmpty() && c[0].isFreeTime()) {
 					return MESSAGES.validationFreeTimeWithAlt();
 				}
 				if (c[2].isFreeTime()) {
@@ -515,42 +525,45 @@ public class CourseRequestsTable extends Composite {
 	
 	private void init() {
 		for (final CourseSelectionBox[] c: iCourses) {
-			c[0].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-				public void onChange(String course, boolean valid) {
-					if (valid) c[0].hideError();
+			c[0].addCourseSelectionHandler(new CourseSelectionHandler() {
+				@Override
+				public void onCourseSelection(CourseSelectionEvent event) {
+					if (event.isValid()) c[0].setError("");
 					if (!c[0].isFreeTime()) {
-						c[1].setEnabled(valid || !c[1].getCourse().isEmpty() || !c[2].getCourse().isEmpty());
-						if (valid && !c[0].getCourse().isEmpty())
-							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getCourse()));
+						c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
+						if (event.isValid() && !c[0].getValue().isEmpty())
+							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getValue()));
 						else
 							c[1].setHint("");
 					} else {
 						c[1].setHint("");
 					}
-					if (valid && c == iCourses.get(iCourses.size() - 1)) addCourseLine();
+					if (event.isValid() && c == iCourses.get(iCourses.size() - 1)) addCourseLine();
 				}
 			});
-			c[1].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-				public void onChange(String course, boolean valid) {
-					if (valid) c[1].hideError();
-					c[2].setEnabled(valid || !c[2].getCourse().isEmpty());
-					if (valid && !c[0].getCourse().isEmpty() && !c[1].getCourse().isEmpty())
-						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getCourse(), c[1].getCourse()));
+			c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
+				@Override
+				public void onCourseSelection(CourseSelectionEvent event) {
+					if (event.isValid()) c[1].setError("");
+					c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
+					if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
+						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
 					else
 						c[2].setHint("");
 				}
 			});
-			c[2].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-				public void onChange(String course, boolean valid) {
-					if (valid) c[2].hideError();
+			c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
+				@Override
+				public void onCourseSelection(CourseSelectionEvent event) {
+					if (event.isValid()) c[2].setError("");
 				}
 			});
-			c[1].addValidator(new CourseSelectionBox.Validator() {
-				public String validate(CourseSelectionBox source) {
-					if (!c[1].getCourse().isEmpty() && c[0].getCourse().isEmpty()) {
+			c[1].addValidator(new Validator<CourseSelection>() {
+				public String validate(CourseSelection source) {
+					if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
 						return MESSAGES.validationNoCourse();
 					}
-					if (!c[1].getCourse().isEmpty() && c[0].isFreeTime()) {
+					if (!c[1].getValue().isEmpty() && c[0].isFreeTime()) {
 						return MESSAGES.validationFreeTimeWithAlt();
 					}
 					if (c[1].isFreeTime()) {
@@ -559,12 +572,12 @@ public class CourseRequestsTable extends Composite {
 					return null;
 				}
 			});
-			c[2].addValidator(new CourseSelectionBox.Validator() {
-				public String validate(CourseSelectionBox source) {
-					if (!c[2].getCourse().isEmpty() && c[1].getCourse().isEmpty()) {
+			c[2].addValidator(new Validator<CourseSelection>() {
+				public String validate(CourseSelection source) {
+					if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
 						return MESSAGES.validationSecondAltWithoutFirst();
 					}
-					if (!c[2].getCourse().isEmpty() && c[0].isFreeTime()) {
+					if (!c[2].getValue().isEmpty() && c[0].isFreeTime()) {
 						return MESSAGES.validationFreeTimeWithAlt();
 					}
 					if (c[2].isFreeTime()) {
@@ -581,50 +594,53 @@ public class CourseRequestsTable extends Composite {
 		}
 		
 		for (final CourseSelectionBox[] c: iAlternatives) {
-			c[0].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-				public void onChange(String course, boolean valid) {
-					if (valid) c[0].hideError();
+			c[0].addCourseSelectionHandler(new CourseSelectionHandler() {
+				@Override
+				public void onCourseSelection(CourseSelectionEvent event) {
+					if (event.isValid()) c[0].setError("");
 					if (!c[0].isFreeTime()) {
-						c[1].setEnabled(valid || !c[1].getCourse().isEmpty() || !c[2].getCourse().isEmpty());
-						if (valid && !c[0].getCourse().isEmpty())
-							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getCourse()));
+						c[1].setEnabled(event.isValid() || !c[1].getValue().isEmpty() || !c[2].getValue().isEmpty());
+						if (event.isValid() && !c[0].getValue().isEmpty())
+							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getValue()));
 						else
 							c[1].setHint("");
 					} else {
 						c[1].setHint("");
 					}
-					if (valid && c == iAlternatives.get(iAlternatives.size() - 1)) addAlternativeLine();
+					if (event.isValid() && c == iAlternatives.get(iAlternatives.size() - 1)) addAlternativeLine();
 				}
 			});
-			c[1].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-				public void onChange(String course, boolean valid) {
-					if (valid) c[1].hideError();
-					c[2].setEnabled(valid || !c[2].getCourse().isEmpty());
-					if (valid && !c[0].getCourse().isEmpty() && !c[1].getCourse().isEmpty())
-						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getCourse(), c[1].getCourse()));
+			c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
+				@Override
+				public void onCourseSelection(CourseSelectionEvent event) {
+					if (event.isValid()) c[1].setError("");
+					c[2].setEnabled(event.isValid() || !c[2].getValue().isEmpty());
+					if (event.isValid() && !c[0].getValue().isEmpty() && !c[1].getValue().isEmpty())
+						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
 					else
 						c[2].setHint("");
 				}
 			});
-			c[2].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
-				public void onChange(String course, boolean valid) {
-					if (valid) c[2].hideError();
+			c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
+				@Override
+				public void onCourseSelection(CourseSelectionEvent event) {
+					if (event.isValid()) c[2].setError("");
 				}
 			});
-			c[0].addValidator(new CourseSelectionBox.Validator() {
-				public String validate(CourseSelectionBox source) {
+			c[0].addValidator(new Validator<CourseSelection>() {
+				public String validate(CourseSelection source) {
 					if (c[0].isFreeTime()) {
 						return MESSAGES.validationAltFreeTime();
 					}
 					return null;
 				}
 			});
-			c[1].addValidator(new CourseSelectionBox.Validator() {
-				public String validate(CourseSelectionBox source) {
-					if (!c[1].getCourse().isEmpty() && c[0].getCourse().isEmpty()) {
+			c[1].addValidator(new Validator<CourseSelection>() {
+				public String validate(CourseSelection source) {
+					if (!c[1].getValue().isEmpty() && c[0].getValue().isEmpty()) {
 						return MESSAGES.validationNoCourse();
 					}
-					if (!c[1].getCourse().isEmpty() && c[0].isFreeTime()) {
+					if (!c[1].getValue().isEmpty() && c[0].isFreeTime()) {
 						return MESSAGES.validationFreeTimeWithAlt();
 					}
 					if (c[1].isFreeTime()) {
@@ -633,12 +649,12 @@ public class CourseRequestsTable extends Composite {
 					return null;
 				}
 			});
-			c[2].addValidator(new CourseSelectionBox.Validator() {
-				public String validate(CourseSelectionBox source) {
-					if (!c[2].getCourse().isEmpty() && c[1].getCourse().isEmpty()) {
+			c[2].addValidator(new Validator<CourseSelection>() {
+				public String validate(CourseSelection source) {
+					if (!c[2].getValue().isEmpty() && c[1].getValue().isEmpty()) {
 						return MESSAGES.validationSecondAltWithoutFirst();
 					}
-					if (!c[2].getCourse().isEmpty() && c[0].isFreeTime()) {
+					if (!c[2].getValue().isEmpty() && c[0].isFreeTime()) {
 						return MESSAGES.validationFreeTimeWithAlt();
 					}
 					if (c[2].isFreeTime()) {
@@ -694,12 +710,12 @@ public class CourseRequestsTable extends Composite {
 		GWT.log(error);
 		for (CourseSelectionBox[] c: iCourses) {
 			for (int i = 0; i < c.length; i++) {
-				if (course.equals(c[i].getCourse()) && !c[i].hasError()) c[i].setError(error);			
+				if (course.equals(c[i].getValue()) && c[i].getError() == null) c[i].setError(error);			
 			}
 		}
 		for (CourseSelectionBox[] c: iAlternatives) {
 			for (int i = 0; i < c.length; i++) {
-				if (course.equals(c[i].getCourse()) && !c[i].hasError()) c[i].setError(error);			
+				if (course.equals(c[i].getValue()) && c[i].getError() == null) c[i].setError(error);			
 			}
 		}
 	}
@@ -712,9 +728,9 @@ public class CourseRequestsTable extends Composite {
 		for (CourseSelectionBox[] course: iCourses) {
 			CourseRequestInterface.Request req = new CourseRequestInterface.Request();
 			course[0].fillInFreeTime(req);
-			req.setRequestedCourse(course[0].getCourse());
-			req.setFirstAlternative(course[1].getCourse());
-			req.setSecondAlternative(course[2].getCourse());
+			req.setRequestedCourse(course[0].getValue());
+			req.setFirstAlternative(course[1].getValue());
+			req.setSecondAlternative(course[2].getValue());
 			req.setWaitList(course[0].getWaitList());
 			cr.getCourses().add(req);
 		}
@@ -723,9 +739,9 @@ public class CourseRequestsTable extends Composite {
 	public void fillInAlternatives(CourseRequestInterface cr) {
 		for (CourseSelectionBox[] course: iAlternatives) {
 			CourseRequestInterface.Request req = new CourseRequestInterface.Request();
-			req.setRequestedCourse(course[0].getCourse());
-			req.setFirstAlternative(course[1].getCourse());
-			req.setSecondAlternative(course[2].getCourse());
+			req.setRequestedCourse(course[0].getValue());
+			req.setFirstAlternative(course[1].getValue());
+			req.setSecondAlternative(course[2].getValue());
 			cr.getAlternatives().add(req);
 		}
 	}
@@ -741,30 +757,30 @@ public class CourseRequestsTable extends Composite {
 	public void setRequest(CourseRequestInterface request) {
 		while (iCourses.size() < request.getCourses().size()) addCourseLine();
 		for (int idx = 0; idx < request.getCourses().size(); idx++) {
-			iCourses.get(idx)[0].setCourse(request.getCourses().get(idx).getRequestedCourse(), true);
-			iCourses.get(idx)[1].setCourse(request.getCourses().get(idx).getFirstAlternative(), true);
-			iCourses.get(idx)[2].setCourse(request.getCourses().get(idx).getSecondAlternative(), true);
+			iCourses.get(idx)[0].setValue(request.getCourses().get(idx).getRequestedCourse(), true);
+			iCourses.get(idx)[1].setValue(request.getCourses().get(idx).getFirstAlternative(), true);
+			iCourses.get(idx)[2].setValue(request.getCourses().get(idx).getSecondAlternative(), true);
 			iCourses.get(idx)[0].setWaitList(request.getCourses().get(idx).isWaitList());
 		}
 		while (iAlternatives.size() < request.getAlternatives().size()) addAlternativeLine();
 		for (int idx = 0; idx < request.getAlternatives().size(); idx++) {
-			iAlternatives.get(idx)[0].setCourse(request.getAlternatives().get(idx).getRequestedCourse(), true);
-			iAlternatives.get(idx)[1].setCourse(request.getAlternatives().get(idx).getFirstAlternative(), true);
-			iAlternatives.get(idx)[2].setCourse(request.getAlternatives().get(idx).getSecondAlternative(), true);
+			iAlternatives.get(idx)[0].setValue(request.getAlternatives().get(idx).getRequestedCourse(), true);
+			iAlternatives.get(idx)[1].setValue(request.getAlternatives().get(idx).getFirstAlternative(), true);
+			iAlternatives.get(idx)[2].setValue(request.getAlternatives().get(idx).getSecondAlternative(), true);
 		}
 	}
 	
 	public Boolean getWaitList(String course) {
 		if (iSessionProvider != null && iSessionProvider.getAcademicSessionInfo() != null && iSessionProvider.getAcademicSessionInfo().isCanWaitListCourseRequests())
 			for (CourseSelectionBox[] line: iCourses)
-				if (course.equals(line[0].getCourse()) || course.equals(line[1].getCourse()) || course.equals(line[2].getCourse()))
+				if (course.equals(line[0].getValue()) || course.equals(line[1].getValue()) || course.equals(line[2].getValue()))
 					return line[0].getWaitList();
 		return null;
 	}
 	
 	public void setWaitList(String course, boolean waitList) {
 		for (CourseSelectionBox[] line: iCourses) {
-			if (course.equals(line[0].getCourse()) || course.equals(line[1].getCourse()) || course.equals(line[2].getCourse()))
+			if (course.equals(line[0].getValue()) || course.equals(line[1].getValue()) || course.equals(line[2].getValue()))
 				line[0].setWaitList(waitList);
 		}
 	}
@@ -773,7 +789,7 @@ public class CourseRequestsTable extends Composite {
 		iTip.setText(CONSTANTS.tips()[(int)(Math.random() * CONSTANTS.tips().length)]);
 		for (CourseSelectionBox[] c: iCourses) {
 			for (int i=0;i<3;i++) {
-				c[i].clear();
+				c[i].setValue("");
 				if (i>0) {
 					c[i].setEnabled(false);
 					c[i].setHint("");
@@ -783,7 +799,7 @@ public class CourseRequestsTable extends Composite {
 		}
 		for (CourseSelectionBox[] c: iAlternatives) {
 			for (int i=0;i<3;i++) {
-				c[i].clear();
+				c[i].setValue("");
 				if (i>0) {
 					c[i].setEnabled(false);
 					c[i].setHint("");
@@ -795,12 +811,12 @@ public class CourseRequestsTable extends Composite {
 	public String getFirstError() {
 		for (CourseSelectionBox[] c: iCourses) {
 			for (int i=0;i<3;i++) {
-				if (c[i].hasError()) return c[i].getError();
+				if (c[i].getError() != null) return c[i].getError();
 			}
 		}
 		for (CourseSelectionBox[] c: iAlternatives) {
 			for (int i=0;i<3;i++) {
-				if (c[i].hasError()) return c[i].getError();
+				if (c[i].getError() != null) return c[i].getError();
 			}
 		}
 		return null;
