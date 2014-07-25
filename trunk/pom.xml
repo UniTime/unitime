@@ -178,7 +178,7 @@
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
+			<artifactId>javax.servlet-api</artifactId>
 			<version>${servlet.version}</version>
 			<scope>provided</scope>
 		</dependency>
@@ -656,7 +656,8 @@
 									CDDL|CDDL 1.0|CDDL 1.0 license|
 									Common Development and Distribution License (CDDL) v1.0|
 									Common Development and Distribution License|
-									Common Development and Distribution License, Version 1.0
+									Common Development and Distribution License, Version 1.0|
+									CDDL + GPLv2 with classpath exception
 								</licenseMerge>
 								<licenseMerge>
 									Apache Software License (ASL), Version 2.0|
@@ -665,7 +666,7 @@
 									Apache 2|Apache 2.0|Apache 2.0 license|
 									Apache License|Apache License 2.0|Apache License, version 2.0|
 									ASF 2.0|ASL 2.0|AL 2.0|
-									Google Web Toolkit Terms
+									Google Web Toolkit Terms|GWT Terms
 								</licenseMerge>
 								<licenseMerge>
 									BSD or BSD-style License|
@@ -730,11 +731,11 @@
 		<struts.version>1.3.10</struts.version>
 		<layot.version>1.3</layot.version>
 		<protobuf.version>2.5.0</protobuf.version>
-		<gwt.version>2.5.1</gwt.version>
+		<gwt.version>2.6.1</gwt.version>
 		<spring.version>3.1.4.RELEASE</spring.version>
 		<spring-integration.version>2.2.4.RELEASE</spring-integration.version>
-		<servlet.version>2.5</servlet.version>
-		<jsp.version>2.1</jsp.version>
+		<servlet.version>3.0.1</servlet.version>
+		<jsp.version>2.2</jsp.version>
 		<validation.version>1.0.0.GA</validation.version>
 		<mail.version>1.4.7</mail.version>
 		<fileupload.version>1.3</fileupload.version>
