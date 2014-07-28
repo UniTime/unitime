@@ -21,8 +21,9 @@ package org.unitime.timetable.onlinesectioning.custom;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -35,7 +36,7 @@ public interface StudentEnrollmentProvider {
 
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, XStudent student) throws SectioningException;
 	
-	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Map<XCourse, List<XSection>> enrollments) throws SectioningException;
+	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses) throws SectioningException;
 	
 	public void dispose();
 	
@@ -62,6 +63,23 @@ public interface StudentEnrollmentProvider {
 		
 		public String toString() {
 			return getCourse().getCourseName() + " " + getSection().getSubpartName() + " " + getSection().getName(getCourse().getCourseId()) + ": " + getMessage() + (isEnrolled() ? " (e)" : "");
+		}
+	}
+	
+	public static class EnrollmentRequest implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private XCourse iCourse;
+		private List<XSection> iSections;
+		
+		public EnrollmentRequest(XCourse course, List<XSection> sections) {
+			iCourse = course; iSections = sections;
+		}
+		
+		public XCourse getCourse() { return iCourse; }
+		public List<XSection> getSections() { return iSections; }
+		
+		public String toString() {
+			return getCourse().getCourseName() + ": " + ToolBox.col2string(getSections(), 2);
 		}
 	}
 }
