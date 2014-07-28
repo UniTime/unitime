@@ -46,7 +46,7 @@ public class UniTimeVersion extends Composite {
 		RPC.execute(new MenuInterface.VersionInfoRpcRequest(), new AsyncCallback<VersionInfoInterface>() {
 			@Override
 			public void onSuccess(VersionInfoInterface result) {
-				iLabel.setText(MESSAGES.pageVersion(result.getBuildNumber(), result.getReleaseDate()));
+				iLabel.setText(MESSAGES.pageVersion(result.getVersion(), result.getReleaseDate()));
 			}
 			
 			@Override
