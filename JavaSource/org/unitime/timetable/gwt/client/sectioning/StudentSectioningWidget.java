@@ -607,12 +607,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						WebTable.IconsCell icons = new WebTable.IconsCell();
 						if (clazz.isSaved())
 							icons.add(RESOURCES.saved(), MESSAGES.saved(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
-						else if (clazz.hasError()) {
+						else if (!clazz.isFreeTime() && result.isCanEnroll())
+							icons.add(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
+						if (clazz.hasError()) {
 							icons.add(RESOURCES.error(), clazz.getError());
 							style += " text-red";
 							hasError = true;
-						} else if (!clazz.isFreeTime() && result.isCanEnroll())
-							icons.add(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
+						}
 						if (course.isLocked())
 							icons.add(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));
 						if (clazz.isOfHighDemand())

@@ -297,9 +297,14 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					
 					if (iMessages != null) {
 						XEnrollments enrollments = server.getEnrollments(offering.getOfferingId());
-						for (EnrollmentFailure f: iMessages) {
+						f: for (EnrollmentFailure f: iMessages) {
 							XSection section = f.getSection();
 							if (!f.getCourse().getCourseId().equals(ca.getCourseId())) continue;
+							for (ClassAssignmentInterface.ClassAssignment a: ca.getClassAssignments())
+								if (f.getSection().getSectionId().equals(a.getClassId())) {
+									a.setError(f.getMessage());
+									continue f;
+								}
 							ca.setAssigned(true);
 							ClassAssignmentInterface.ClassAssignment a = ca.addClassAssignment();
 							a.setAlternative(r.isAlternative());

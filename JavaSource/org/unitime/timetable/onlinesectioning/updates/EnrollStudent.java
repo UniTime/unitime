@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
 import org.cpsolver.studentsct.model.Enrollment;
@@ -41,6 +40,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.ClassWaitList;
@@ -61,6 +61,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
+import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentRequest;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -175,7 +176,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				for (OnlineSectioningLog.Request r: OnlineSectioningHelper.toProto(getRequest()))
 					action.addRequest(r);
 
-				Map<XCourse, List<XSection>> enrlCheck = server.createAction(CheckAssignmentAction.class).forStudent(getStudentId()).withAssignment(getAssignment()).check(server, helper);
+				List<EnrollmentRequest> enrlCheck = server.createAction(CheckAssignmentAction.class).forStudent(getStudentId()).withAssignment(getAssignment()).check(server, helper);
 				
 				Student student = (Student)helper.getHibSession().createQuery(
 						"select s from Student s " +
@@ -199,7 +200,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					.setName(oldStudent.getName());
 				
 				if (CustomStudentEnrollmentHolder.hasProvider()) {
-					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck);
+					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck, lockedCourses);
 					for (Iterator<ClassAssignmentInterface.ClassAssignment> i = getAssignment().iterator(); i.hasNext(); ) {
 						ClassAssignmentInterface.ClassAssignment ca = i.next();
 						if (ca == null || ca.isFreeTime() || ca.getClassId() == null) continue;
@@ -208,6 +209,15 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 								i.remove();
 							}
 						}
+					}
+					failures: for (EnrollmentFailure f: failures) {
+						if (!f.isEnrolled()) continue;
+						for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
+							if (ca != null && f.getSection().getSectionId().equals(ca.getClassId())) continue failures;
+						ClassAssignment ca = new ClassAssignment();
+						ca.setClassId(f.getSection().getSectionId());
+						ca.setCourseId(f.getCourse().getCourseId());
+						getAssignment().add(ca);
 					}
 				}
 				

@@ -37,7 +37,9 @@ import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.ClientResource;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -46,13 +48,16 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -67,6 +72,7 @@ import com.google.gson.stream.JsonReader;
 
 public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	private static Logger sLog = Logger.getLogger(XEStudentEnrollment.class);
+	private static StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
 	
 	private String iBannerApiUrl = ApplicationProperties.getProperty("banner.xe.site");
 	private String iBannerApiUser = ApplicationProperties.getProperty("banner.xe.user");
@@ -212,7 +218,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	}
 	
 	@Override
-	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, Map<XCourse, List<XSection>> enrollments) throws SectioningException {
+	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses) throws SectioningException {
 		if (enrollments == null || enrollments.isEmpty())
 			return new ArrayList<StudentEnrollmentProvider.EnrollmentFailure>();
 		
@@ -265,20 +271,60 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			Map<String, XCourse> id2course = new HashMap<String, XCourse>();
 			Set<String> added = new HashSet<String>();
 			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(getBannerTerm(session), student.getExternalId(), pin);
-			for (Map.Entry<XCourse, List<XSection>> entry: enrollments.entrySet()) {
-				XCourse course = entry.getKey();
-				for (XSection section: entry.getValue()) {
-					String id = section.getExternalId(course.getCourseId());
-					registered.remove(id);
-					if (added.add(id)) {
-						req.add(id);
-						id2section.put(id, section);
-						id2course.put(id, course);
+			List<EnrollmentFailure> fails = new ArrayList<EnrollmentFailure>();
+			Set<String> checked = new HashSet<String>();
+			for (EnrollmentRequest request: enrollments) {
+				XCourse course = request.getCourse();
+				if (lockedCourses.contains(course.getCourseId()) && !request.getSections().isEmpty()) {
+					// offering is locked, make no changes
+					for (XSection section: request.getSections()) {
+						String id = section.getExternalId(course.getCourseId());
+						if (registered.remove(id)) {
+							// no change to this section: keep the enrollment
+							if (added.add(id)) {
+								req.add(id);
+								id2section.put(id, section);
+								id2course.put(id, course);
+							}
+						} else {
+							// student had a different section: just put warning on the new enrollment
+							fails.add(new EnrollmentFailure(course, section, MESSAGES.courseLocked(course.getCourseName()), false));
+							checked.add(id);
+							id2section.put(id, section);
+							id2course.put(id, course);
+						}
+					}
+				} else {
+					// offering is not locked: propose the changes
+					for (XSection section: request.getSections()) {
+						String id = section.getExternalId(course.getCourseId());
+						registered.remove(id);
+						if (added.add(id)) {
+							req.add(id);
+							id2section.put(id, section);
+							id2course.put(id, course);
+						}
 					}
 				}
 			}
-			for (String id: registered)
+			// drop old sections
+			for (String id: registered) {
 				req.drop(id);
+				for (XRequest r: student.getRequests())
+					if (r instanceof XCourseRequest) {
+						for (XCourseId c: ((XCourseRequest)r).getCourseIds()) {
+							XOffering offering = server.getOffering(c.getOfferingId());
+							if (offering == null) continue;
+							for (XConfig f: offering.getConfigs())
+								for (XSubpart s: f.getSubparts())
+									for (XSection x: s.getSections())
+										if (id.equals(x.getExternalId(c.getCourseId()))) {
+											id2section.put(id, x);
+											id2course.put(id, offering.getCourse(c.getCourseId()));
+										}
+						}
+					}
+			}
 			
 			helper.debug("Request: " + gson.toJson(req));
 			helper.getAction().addOptionBuilder().setKey("request").setValue(gson.toJson(req));
@@ -303,28 +349,13 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			
 			
-			List<EnrollmentFailure> fails = new ArrayList<EnrollmentFailure>();
-			Set<String> checked = new HashSet<String>();
 			if (response.registrations != null) {
 				OnlineSectioningLog.Enrollment.Builder external = OnlineSectioningLog.Enrollment.newBuilder();
 				external.setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
 				for (XEInterface.Registration reg: response.registrations) {
 					String id = reg.courseReferenceNumber;
 					checked.add(id);
-					if ("R".equals(reg.statusIndicator)) {
-						// skip successfully registered enrollments
-						external.addSectionBuilder()
-							.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
-							.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
-							.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
-						continue;
-					}
-					if ("D".equals(reg.statusIndicator)) {
-						// skip deleted enrollments
-						continue;
-					}
-					XCourse course = id2course.get(id);
-					XSection section = id2section.get(id);
+					
 					String error = null;
 					if (reg.crnErrors != null)
 						for (XEInterface.CrnError e: reg.crnErrors) {
@@ -333,7 +364,22 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							else
 								error += "\n" + e.message;
 						}
-					fails.add(new EnrollmentFailure(course, section, error == null ? reg.statusDescription != null ? reg.statusDescription : "Enrollment failed." : error, false));
+					
+					if ("Registered".equals(reg.statusDescription) && added.contains(id)) {
+						// skip successfully registered enrollments
+						external.addSectionBuilder()
+							.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
+							.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
+							.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
+						if (error != null)
+							fails.add(new EnrollmentFailure(id2course.get(id), id2section.get(id), error, true));
+						continue;
+					}
+					if ("Deleted".equals(reg.statusDescription)) {
+						// skip deleted enrollments
+						continue;
+					}
+					fails.add(new EnrollmentFailure(id2course.get(id), id2section.get(id), error == null ? added.contains(id) ? "Enrollment failed." : "Drop failed." : error, "Registered".equals(reg.statusDescription)));
 				}
 				helper.getAction().addEnrollment(external);
 			}
@@ -358,9 +404,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					else
 						em += ", " + m;
 				}
-				for (Map.Entry<XCourse, List<XSection>> entry: enrollments.entrySet()) {
-					XCourse course = entry.getKey();
-					for (XSection section: entry.getValue()) {
+				for (EnrollmentRequest request: enrollments) {
+					XCourse course = request.getCourse();
+					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
 						if (!checked.contains(id))
 							fails.add(new EnrollmentFailure(course, section, em == null ? "Enrollment failed." : em, false));
