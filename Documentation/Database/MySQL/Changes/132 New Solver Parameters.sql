@@ -86,8 +86,8 @@ insert into solver_parameter_def
 	(@id + 41, 'Reservation.CanAssignOverTheLimit', 'true', 'Allow over limit for individual reservations', 'boolean', @osct, 1, @gsct),
 			
 	(@id + 42, 'Placement.FlexibleConstrPreferenceWeight1', '%Placement.ConstrPreferenceWeight1%', 'Flexible constraint preference weight (level 1)', 'double', @oval, 0, @gval),
-	(@id + 43, 'Placement.FlexibleConstrPreferenceWeight2', '%FlexibleConstraint.Weight%', 'Flexible constraint preference weight (level 1)', 'double', @oval + 1, 0, @gval),
-	(@id + 44, 'Placement.FlexibleConstrPreferenceWeight3', '%Placement.ConstrPreferenceWeight3%', 'Flexible constraint preference weight (level 1)', 'double', @oval + 2, 0, @gval),
+	(@id + 43, 'Placement.FlexibleConstrPreferenceWeight2', '%FlexibleConstraint.Weight%', 'Flexible constraint preference weight (level 2)', 'double', @oval + 1, 0, @gval),
+	(@id + 44, 'Placement.FlexibleConstrPreferenceWeight3', '%Placement.ConstrPreferenceWeight3%', 'Flexible constraint preference weight (level 3)', 'double', @oval + 2, 0, @gval),
 	(@id + 45, 'ClassWeightProvider.Class', 'Default Class Weights', 'Class Weights', 'enum(Default Class Weights,Average Hours A Week Class Weights)', @ogen + 6, 1, @ggen);
 
 

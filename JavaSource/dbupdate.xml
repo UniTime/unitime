@@ -9524,7 +9524,7 @@
 				 solver_parameter_def_seq.nextval as uniqueid,
 				'Placement.FlexibleConstrPreferenceWeight2' as name,
 				'%FlexibleConstraint.Weight%' as default_value,
-				'Flexible constraint preference weight (level 1)' as description,
+				'Flexible constraint preference weight (level 2)' as description,
 				'double' as type,
 				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Value') as ord,
 				0 as visible,
@@ -9536,7 +9536,7 @@
 				 solver_parameter_def_seq.nextval as uniqueid,
 				'Placement.FlexibleConstrPreferenceWeight3' as name,
 				'%Placement.ConstrPreferenceWeight3%' as default_value,
-				'Flexible constraint preference weight (level 1)' as description,
+				'Flexible constraint preference weight (level 3)' as description,
 				'double' as type,
 				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'Value') as ord,
 				0 as visible,
@@ -9624,8 +9624,8 @@
 			(%ID% + 41, 'Reservation.CanAssignOverTheLimit', 'true', 'Allow over limit for individual reservations', 'boolean', %OSCT%, 1, %GSCT%),
 			
 			(%ID% + 42, 'Placement.FlexibleConstrPreferenceWeight1', '%Placement.ConstrPreferenceWeight1%', 'Flexible constraint preference weight (level 1)', 'double', %OVAL%, 0, %GVAL%),
-			(%ID% + 43, 'Placement.FlexibleConstrPreferenceWeight2', '%FlexibleConstraint.Weight%', 'Flexible constraint preference weight (level 1)', 'double', %OVAL% + 1, 0, %GVAL%),
-			(%ID% + 44, 'Placement.FlexibleConstrPreferenceWeight3', '%Placement.ConstrPreferenceWeight3%', 'Flexible constraint preference weight (level 1)', 'double', %OVAL% + 2, 0, %GVAL%),
+			(%ID% + 43, 'Placement.FlexibleConstrPreferenceWeight2', '%FlexibleConstraint.Weight%', 'Flexible constraint preference weight (level 2)', 'double', %OVAL% + 1, 0, %GVAL%),
+			(%ID% + 44, 'Placement.FlexibleConstrPreferenceWeight3', '%Placement.ConstrPreferenceWeight3%', 'Flexible constraint preference weight (level 3)', 'double', %OVAL% + 2, 0, %GVAL%),
 			(%ID% + 45, 'ClassWeightProvider.Class', 'Default Class Weights', 'Class Weights', 'enum(Default Class Weights,Average Hours A Week Class Weights)', %OGEN% + 6, 1, %GGEN%)
 		</mysql>
 		<sql>update %SCHEMA%.solver_parameter_def set visible = 0, default_value = 'false', description = 'Load last-like course demands (deprecated)' where name = 'Load.IncludeLastLikeStudents'</sql>
