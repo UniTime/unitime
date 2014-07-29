@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE roomSharing PUBLIC "-//UniTime//UniTime Room Sharing DTD/EN" "http://www.unitime.org/interface/RoomSharing.dtd">
+
+<!-- 
+ * UniTime 3.5 (University Timetabling Application)
+ * Copyright (C) 2014, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<roomSharing campus="woebegon" year="2010" term="Fal" created="Tue Jul 29 19:37:04 CEST 2014">
+  <location building="EDUC" roomNbr="101">
+    <department id="Woebegon Dept 0101" code="0101"/>
+    <department code="0100" control="true"/>
+    <sharing>
+      <assigned days="M" start="0730" end="1830" code="0100"/>
+      <assigned days="TWThF" start="0730" end="1330" code="0100"/>
+      <assigned days="T" start="1330" end="1530" id="Woebegon Dept 0101" code="0101"/>
+      <assigned days="TWThF" start="1530" end="1830" code="0100"/>
+      <assigned days="W" start="1330" end="1530" code="0100"/>
+      <assigned days="Th" start="1330" end="1530" id="Woebegon Dept 0101" code="0101"/>
+      <assigned days="F" start="1330" end="1530" code="0100"/>
+    </sharing>
+  </location>
+  <location building="EDUC" roomNbr="102">
+    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+  </location>
+  <location building="EDUC" roomNbr="103">
+    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+  </location>
+  <location building="EDUC" roomNbr="104">
+    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+  </location>
+  <location building="EDUC" roomNbr="105">
+    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+  </location>
+  <location building="EDUC" roomNbr="106">
+    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+  </location>
+  <location building="EDUC" roomNbr="107">
+    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+  </location>
+  <location building="EDUC" roomNbr="108">
+    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+  </location>
+  <location building="THTR" roomNbr="101">
+    <department id="Woebegon Dept 0101" code="0101"/>
+    <department code="0100" control="true"/>
+    <sharing>
+      <unavailable days="MTWThF" start="0730" end="1300"/>
+      <assigned days="MTWThF" start="1300" end="1530" id="Woebegon Dept 0101" code="0101"/>
+      <assigned days="MTWThF" start="1530" end="1730" code="0100"/>
+      <unavailable days="MTWThF" start="1730" end="1830"/>
+    </sharing>
+  </location>
+  <location name="MALL">
+    <department code="0102" control="true"/>
+  </location>
+</roomSharing>
