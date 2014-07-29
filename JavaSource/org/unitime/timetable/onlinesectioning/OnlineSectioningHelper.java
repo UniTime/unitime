@@ -128,6 +128,12 @@ public class OnlineSectioningHelper {
     	for (MessageHandler h: iMessageHandlers)
     		h.onMessage(m);
     }
+    
+    public boolean isDebugEnabled() {
+    	for (MessageHandler h: iMessageHandlers)
+    		if (h.isDebugEnabled()) return true;
+    	return false;
+    }
 
     public void debug(String msg) {
         log(new Message(LogLevel.DEBUG, msg));
@@ -258,6 +264,7 @@ public class OnlineSectioningHelper {
     
     public interface MessageHandler {
     	public void onMessage(Message message);
+    	public boolean isDebugEnabled();
     }
     
     public void addMessageHandler(MessageHandler h) {
@@ -331,6 +338,11 @@ public class OnlineSectioningHelper {
 			default:
 				iLog.info(message.getMessage(), message.getThrowable());
 			}
+		}
+
+		@Override
+		public boolean isDebugEnabled() {
+			return iLog.isDebugEnabled();
 		}
     }
     

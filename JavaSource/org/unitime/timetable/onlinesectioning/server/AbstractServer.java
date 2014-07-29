@@ -339,7 +339,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		
 		try {
 			setCurrentHelper(h);
-			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(OnlineSectioningServer.class.getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
+			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(action.getClass().getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
 			h.addAction(action, getAcademicSession());
 			E ret = action.execute(this, h);
 			if (h.getAction() != null) {
@@ -388,7 +388,8 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 					}
 				}
 			}
-			iLog.debug("Executed: " + h.getLog() + " (" + h.getLog().toByteArray().length + " bytes)");
+			if (iLog.isDebugEnabled())
+				iLog.debug("Executed: " + h.getLog() + " (" + h.getLog().toByteArray().length + " bytes)");
 			OnlineSectioningLogger.getInstance().record(h.getLog());
 			releaseCurrentHelper();
 		}
