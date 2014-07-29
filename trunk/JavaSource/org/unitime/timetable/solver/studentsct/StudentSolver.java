@@ -76,7 +76,6 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
@@ -870,7 +869,7 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
 		long c0 = OnlineSectioningHelper.getCpuTime();
 		OnlineSectioningHelper h = new OnlineSectioningHelper(user);
 		try {
-			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(OnlineSectioningServer.class.getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
+			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(action.getClass().getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
 			h.addAction(action, getAcademicSession());
 			E ret = action.execute(this, h);
 			if (h.getAction() != null) {
