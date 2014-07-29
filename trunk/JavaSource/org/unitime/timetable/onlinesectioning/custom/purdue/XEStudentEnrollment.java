@@ -95,22 +95,22 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return session.getYear() + session.getTerm().toLowerCase();
 	}
 	
-	private Gson getGson() {
-		return new GsonBuilder()
-			.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
-				@Override
-				public JsonElement serialize(DateTime src, Type typeOfSrc, JsonSerializationContext context) {
-					return new JsonPrimitive(src.toString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-				}
-			})
-			.registerTypeAdapter(DateTime.class, new JsonDeserializer<DateTime>() {
-				@Override
-				public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-					return new DateTime(json.getAsJsonPrimitive().getAsString(), DateTimeZone.UTC);
-				}
-			})
-			// .setPrettyPrinting()
-			.create();
+	private Gson getGson(OnlineSectioningHelper helper) {
+		GsonBuilder builder = new GsonBuilder()
+		.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
+			@Override
+			public JsonElement serialize(DateTime src, Type typeOfSrc, JsonSerializationContext context) {
+				return new JsonPrimitive(src.toString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+			}
+		})
+		.registerTypeAdapter(DateTime.class, new JsonDeserializer<DateTime>() {
+			@Override
+			public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+				return new DateTime(json.getAsJsonPrimitive().getAsString(), DateTimeZone.UTC);
+			}
+		});
+		if (helper.isDebugEnabled()) builder.setPrettyPrinting();
+		return builder.create();
 	}
 	
 	@Override
@@ -122,7 +122,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		try {
 			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
-			helper.debug("Checking eligility for " + student.getName() + " (term: " + getBannerTerm(session) + ", id:" + student.getExternalId() + ", pin:" + pin + ")");
+			if (helper.isDebugEnabled())
+				helper.debug("Checking eligility for " + student.getName() + " (term: " + getBannerTerm(session) + ", id:" + student.getExternalId() + ", pin:" + pin + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(iBannerApiUrl);
@@ -139,10 +140,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			resource.get(MediaType.APPLICATION_JSON);
 			
 			// Check status, memorize enrolled sections
-			Gson gson = getGson();
+			Gson gson = getGson(helper);
 			List<XEInterface.RegisterResponse> current = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.TYPE_LIST);
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
-			helper.debug("Current registration: " + gson.toJson(current));
+			if (helper.isDebugEnabled())
+				helper.debug("Current registration: " + gson.toJson(current));
 			if (current == null || current.isEmpty() || !current.get(0).validStudent) {
 				String reason = null;
 				if (current != null && current.size() > 0 && current.get(0).failureReasons != null) {
@@ -226,7 +228,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		try {
 			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
-			helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + getBannerTerm(session) + ", id:" + student.getExternalId() + ", pin:" + pin + ")");
+			if (helper.isDebugEnabled())
+				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + getBannerTerm(session) + ", id:" + student.getExternalId() + ", pin:" + pin + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(iBannerApiUrl);
@@ -243,7 +246,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			resource.get(MediaType.APPLICATION_JSON);
 			
 			// Check status, memorize enrolled sections
-			Gson gson = getGson();
+			Gson gson = getGson(helper);
 			List<XEInterface.RegisterResponse> current = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.TYPE_LIST);
 			if (current == null || current.isEmpty() || !current.get(0).validStudent) {
 				String reason = null;
@@ -259,7 +262,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			Set<String> registered = new HashSet<String>();
 			helper.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(current));
-			helper.debug("Current registration: " + gson.toJson(current));
+			if (helper.isDebugEnabled())
+				helper.debug("Current registration: " + gson.toJson(current));
 			if (current.get(0).registrations != null)
 				for (XEInterface.Registration reg: current.get(0).registrations) {
 					if ("R".equals(reg.statusIndicator))
@@ -326,14 +330,16 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					}
 			}
 			
-			helper.debug("Request: " + gson.toJson(req));
+			if (helper.isDebugEnabled())
+				helper.debug("Request: " + gson.toJson(req));
 			helper.getAction().addOptionBuilder().setKey("request").setValue(gson.toJson(req));
 			
 			resource.post(new JsonRepresentation(gson.toJson(req)));
 			
 			// Finally, check the response
 			XEInterface.RegisterResponse response = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.class);
-			helper.debug("Response: " + gson.toJson(response));
+			if (helper.isDebugEnabled())
+				helper.debug("Response: " + gson.toJson(response));
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));
 			if (response == null || !response.validStudent) {
 				String reason = null;
@@ -414,7 +420,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 			}
 			
-			helper.debug("Return: " + fails);
+			if (helper.isDebugEnabled())
+				helper.debug("Return: " + fails);
 			if (!fails.isEmpty())
 				helper.getAction().addOptionBuilder().setKey("message").setValue(fails.toString());
 			return fails;
