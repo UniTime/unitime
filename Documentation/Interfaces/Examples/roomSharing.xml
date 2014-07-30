@@ -20,51 +20,67 @@
  * 
  -->
 
-<roomSharing campus="woebegon" year="2010" term="Fal" created="Tue Jul 29 19:37:04 CEST 2014">
-  <location building="EDUC" roomNbr="101">
-    <department id="Woebegon Dept 0101" code="0101"/>
+<roomSharing campus="woebegon" year="2010" term="Fal" created="Tue Jul 29 19:37:04 CEST 2014" timeFormat="HHmm">
+  <location building="EDUC" roomNbr="101" note="An example room sharing note.">
+    <department code="0101"/>
     <department code="0100" control="true"/>
     <sharing>
-      <assigned days="M" start="0730" end="1830" code="0100"/>
-      <assigned days="TWThF" start="0730" end="1330" code="0100"/>
-      <assigned days="T" start="1330" end="1530" id="Woebegon Dept 0101" code="0101"/>
-      <assigned days="TWThF" start="1530" end="1830" code="0100"/>
-      <assigned days="W" start="1330" end="1530" code="0100"/>
-      <assigned days="Th" start="1330" end="1530" id="Woebegon Dept 0101" code="0101"/>
-      <assigned days="F" start="1330" end="1530" code="0100"/>
+      <!-- no start/end times: all day -->
+      <!-- no days: all week -->
+      <assigned code="0100"/>
+      <!-- days: M for Monday, T for Tuesday, W for Wednesday, Th or R for Thursday, F for Friday, S for Saturday, Su or U for Sunday -->
+      <!-- start/end: start and end time of the block -->
+      <assigned days="TTh" start="1330" end="1530" code="0101"/>
+      <!-- elements are processed in the given order, potentially overriding previous settings -->
+      <!-- like in the above example where all times are assigned to 0100 except of TTh 1:30p - 3:30p window (which is assigned to 0101) -->
+      <!-- only departments listed under the location (department elements above) can be used in sharing -->
+      <!-- unavailabilities can be listed using unavailable elements  -->
+      <unavailable days="SSu"/>
+      <!-- all the remaining times are free for all -->
     </sharing>
   </location>
   <location building="EDUC" roomNbr="102">
-    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+    <department code="0101" control="true"/>
+    <!-- an external id can be used instead of department code  -->
+    <department id="D001" />
+    <!-- no sharing attribute: all times are free for all -->
+  </location>
+  <!-- an external id can be used to identify a room or a non-university location  -->
+  <location id="RM:EDC201" >
+  	<department id="D001" control="true"/>
   </location>
   <location building="EDUC" roomNbr="103">
-    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+    <department code="0101" control="true"/>
   </location>
   <location building="EDUC" roomNbr="104">
-    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+    <department code="0101" control="true"/>
   </location>
   <location building="EDUC" roomNbr="105">
-    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+    <department code="0101" control="true"/>
   </location>
   <location building="EDUC" roomNbr="106">
-    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+    <department code="0101" control="true"/>
   </location>
   <location building="EDUC" roomNbr="107">
-    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+    <department code="0101" control="true"/>
   </location>
   <location building="EDUC" roomNbr="108">
-    <department id="Woebegon Dept 0101" code="0101" control="true"/>
+    <department code="0101" control="true"/>
   </location>
-  <location building="THTR" roomNbr="101">
-    <department id="Woebegon Dept 0101" code="0101"/>
+  <!-- room's name can be used instead of building / roomNbr attributes -->
+  <location name="THTR 101">
+    <department code="0101"/>
     <department code="0100" control="true"/>
     <sharing>
+      <!-- time not available -->
       <unavailable days="MTWThF" start="0730" end="1300"/>
-      <assigned days="MTWThF" start="1300" end="1530" id="Woebegon Dept 0101" code="0101"/>
+      <!-- time assigned to a particular department -->
+      <assigned days="MTWThF" start="1300" end="1530" code="0101"/>
       <assigned days="MTWThF" start="1530" end="1730" code="0100"/>
       <unavailable days="MTWThF" start="1730" end="1830"/>
     </sharing>
   </location>
+  <!-- non-university locations use name instead of building / roomNbr attributes -->
   <location name="MALL">
     <department code="0102" control="true"/>
   </location>

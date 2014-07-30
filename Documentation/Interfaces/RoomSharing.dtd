@@ -21,13 +21,16 @@
 <!ATTLIST roomSharing campus CDATA #REQUIRED >
 <!ATTLIST roomSharing term CDATA #REQUIRED >
 <!ATTLIST roomSharing year CDATA #REQUIRED >
-<!ATTLIST roomSharing created CDATA #REQUIRED >
+<!ATTLIST roomSharing created CDATA #IMPLIED >
+<!ATTLIST roomSharing timeFormat CDATA #IMPLIED >
+<!ATTLIST roomSharing force (true | false) #IMPLIED >
 
 <!ELEMENT location ( department*, sharing? ) > 
 <!ATTLIST location id CDATA #IMPLIED >
 <!ATTLIST location building CDATA #IMPLIED >
 <!ATTLIST location roomNbr CDATA #IMPLIED >
 <!ATTLIST location name CDATA #IMPLIED >
+<!ATTLIST location note CDATA #IMPLIED >
 
 <!ELEMENT department EMPTY >
 <!ATTLIST department id CDATA #IMPLIED >
