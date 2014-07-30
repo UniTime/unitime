@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import net.sf.cpsolver.ifs.util.Progress;
@@ -76,6 +77,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -580,6 +582,22 @@ public class SessionRestore {
 				TravelTime tt = (TravelTime)getObject();
 				tt.setLocation1Id(((Location)get(Location.class, tt.getLocation1Id().toString())).getUniqueId());
 				tt.setLocation2Id(((Location)get(Location.class, tt.getLocation2Id().toString())).getUniqueId());
+			}
+			if (getObject() instanceof Location) {
+				Location loc = (Location)getObject();
+				if (loc.getManagerIds() != null) {
+					String managerIds = null;
+					for (StringTokenizer stk = new StringTokenizer(loc.getManagerIds(), ","); stk.hasMoreTokens();) {
+						Department dept = (Department)get(Department.class, stk.nextToken());
+						if (dept != null) {
+							if (managerIds == null)
+								managerIds = dept.getUniqueId().toString();
+							else
+								managerIds += "," + dept.getUniqueId();
+						}
+					}
+					loc.setManagerIds(managerIds);
+				}
 			}
 		}
 	}
