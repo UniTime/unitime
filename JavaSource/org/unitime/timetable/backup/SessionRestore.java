@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
-
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -616,6 +616,22 @@ public class SessionRestore {
 				Location l2 = (Location)get(Location.class, tt.getLocation2Id().toString());
 				if (l2 != null)
 					tt.setLocation2Id(l2.getUniqueId());
+			}
+			if (getObject() instanceof Location) {
+				Location loc = (Location)getObject();
+				if (loc.getManagerIds() != null) {
+					String managerIds = null;
+					for (StringTokenizer stk = new StringTokenizer(loc.getManagerIds(), ","); stk.hasMoreTokens();) {
+						Department dept = (Department)get(Department.class, stk.nextToken());
+						if (dept != null) {
+							if (managerIds == null)
+								managerIds = dept.getUniqueId().toString();
+							else
+								managerIds += "," + dept.getUniqueId();
+						}
+					}
+					loc.setManagerIds(managerIds);
+				}
 			}
 		}
 	}
