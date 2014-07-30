@@ -55,6 +55,8 @@ public class RoomSharingExport extends BaseExport {
 			root.addAttribute("year", session.getAcademicYear());
 			root.addAttribute("term", session.getAcademicTerm());
 			root.addAttribute("created", new Date().toString());
+			root.addAttribute("timeFormat", "HHmm");
+			
 
 			document.addDocType("roomSharing", "-//UniTime//UniTime Room Sharing DTD/EN", "http://www.unitime.org/interface/RoomSharing.dtd");
 
@@ -64,6 +66,8 @@ public class RoomSharingExport extends BaseExport {
 			for (Location location : locations) {
 				Element locEl = root.addElement("location");
 				fillLocationData(location, locEl);
+				if (location.getShareNote() != null)
+					locEl.addAttribute("note", location.getShareNote());
 				Map<Long, Department> id2dept = new HashMap<Long, Department>();
 				for (RoomDept rd : location.getRoomDepts()) {
 					Element deptEl = locEl.addElement("department");
