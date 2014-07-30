@@ -72,19 +72,25 @@ public class RoomSharingImport  extends BaseImport {
             }
 
             info("Loading rooms...");
+            Set<String> avoidRoomId = new HashSet<String>();
+            Set<String> avoidRoomName = new HashSet<String>();
             Map<String, Location> id2location = new HashMap<String, Location>();
             Map<String, Location> name2location = new HashMap<String, Location>();
             for (Location location: (List<Location>)getHibSession().createQuery("from Location where session.uniqueId = :sessionId").setLong("sessionId", session.getUniqueId()).list()) {
-            	if (location.getExternalUniqueId() != null) {
+            	if (location.getExternalUniqueId() != null && !avoidRoomId.contains(avoidRoomId)) {
             		Location old = id2location.put(location.getExternalUniqueId(), location);
             		if (old != null) {
-            			warn("There are two rooms with the same external id " + location.getExternalUniqueId() + ": " + location.getLabel() + " and " + old.getLabel() + ".");
+            			warn("There are two or more rooms with the same external id " + location.getExternalUniqueId() + ": " + location.getLabel() + " and " + old.getLabel() + ".");
+            			avoidRoomId.add(location.getExternalUniqueId());
             		}
             	}
-            	Location old = name2location.put(location.getLabel(), location);
-            	if (old != null) {
-        			warn("There are two rooms with the same name " + location.getLabel() + ".");
-        		}
+            	if (!avoidRoomName.contains(location.getLabel())) {
+                	Location old = name2location.put(location.getLabel(), location);
+                	if (old != null) {
+            			warn("There are two or more rooms with the same name " + location.getLabel() + ".");
+            			avoidRoomName.add(location.getLabel());
+            		}
+            	}
             }
             
             info("Loading departments...");
@@ -110,7 +116,7 @@ public class RoomSharingImport  extends BaseImport {
                 Location location = null;
 
                 String locId = locEl.attributeValue("id");
-                if (locId != null) {
+                if (locId != null && !avoidRoomId.contains(locId)) {
                 	location = id2location.get(locId);
                 	if (location == null) warn("Location of id " + locId + " does not exist.");
                 }
@@ -118,7 +124,7 @@ public class RoomSharingImport  extends BaseImport {
                 if (location == null) {
                 	String building = locEl.attributeValue("building") ;
                 	String roomNbr = locEl.attributeValue("roomNbr");
-                	if (building != null && roomNbr != null) {
+                	if (building != null && roomNbr != null && !avoidRoomName.contains(building + " " + roomNbr)) {
                 		location = name2location.get(building + " " + roomNbr);
                 		if (location == null) warn("Location of building " + building + " and room number " + roomNbr + " does not exist.");
                 	}
@@ -126,7 +132,7 @@ public class RoomSharingImport  extends BaseImport {
                 
                 if (location == null) {
                 	String name = locEl.attributeValue("name");
-                	if (name != null) {
+                	if (name != null && !avoidRoomName.contains(name)) {
                 		location = name2location.get(name);
             			if (location == null) warn("Location of name " + name + " does not exist.");
                 	}
@@ -362,11 +368,16 @@ public class RoomSharingImport  extends BaseImport {
 		
 		public Integer str2Slot(String timeString) {
 			try {
-				Date date = CalendarUtils.getDate(timeString, iTimeFormat);
-				int time = Integer.parseInt(sTimeFormat.format(date));
+				int time = 0;
+				if ("HHmm".equals(iTimeFormat)) {
+					time = Integer.parseInt(timeString);
+				} else {
+					Date date = CalendarUtils.getDate(timeString, iTimeFormat);
+					time = Integer.parseInt(sTimeFormat.format(date));
+				}
 				int hour = time / 100;
 				int min = time % 100;
-				if (hour >= 24) {
+				if (hour > 24 || (hour == 24 && min > 0)) {
 					error("Invalid time '"+timeString+"' -- hour (" + hour + ") must be between 0 and 23.");
 				}
 				if (min >= 60) {
