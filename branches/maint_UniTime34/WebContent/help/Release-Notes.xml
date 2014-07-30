@@ -68,6 +68,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Session Restore</name>
+			<description>
+				<line>Fix Location.managerIds during restore.
+					<line>It needs to list unique ids of the newly created departments, not the exported value.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
