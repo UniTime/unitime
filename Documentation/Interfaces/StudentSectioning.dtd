@@ -30,6 +30,7 @@
 <!ATTLIST alternative title CDATA #IMPLIED >
 
 <!ELEMENT cancelStudent EMPTY >
+<!ATTLIST cancelStudent delete ( true | false ) "false" >
 
 <!ELEMENT choice ( depends* ) >
 <!ATTLIST choice available ( false | true ) #IMPLIED >
@@ -43,11 +44,11 @@
 <!ATTLIST choice time CDATA #IMPLIED >
 
 <!ELEMENT class ( choice* ) >
-<!ATTLIST class assignmentId CDATA #REQUIRED >
+<!ATTLIST class assignmentId CDATA #IMPLIED >
 <!ATTLIST class date CDATA #IMPLIED >
 <!ATTLIST class days CDATA #IMPLIED >
 <!ATTLIST class endTime CDATA #IMPLIED >
-<!ATTLIST class id CDATA #REQUIRED >
+<!ATTLIST class id CDATA #IMPLIED >
 <!ATTLIST class instructor CDATA #IMPLIED >
 <!ATTLIST class location CDATA #IMPLIED >
 <!ATTLIST class name CDATA #IMPLIED >
@@ -103,7 +104,7 @@
 <!ELEMENT name EMPTY >
 <!ATTLIST name first CDATA #REQUIRED >
 <!ATTLIST name last CDATA #REQUIRED >
-<!ATTLIST name middle CDATA #REQUIRED >
+<!ATTLIST name middle CDATA #IMPLIED >
 
 <!ELEMENT notification ( student ) >
 <!ATTLIST notification campus CDATA #REQUIRED >
@@ -114,6 +115,7 @@
 <!ATTLIST request campus CDATA #REQUIRED >
 <!ATTLIST request year CDATA #REQUIRED >
 <!ATTLIST request term CDATA #REQUIRED >
+<!ATTLIST request enrollments ( update | nochange | delete | import ) #IMPLIED >
 
 <!ELEMENT requestSchedule ( courseOffering )* >
 <!ATTLIST requestSchedule type ( commit | query ) #REQUIRED >

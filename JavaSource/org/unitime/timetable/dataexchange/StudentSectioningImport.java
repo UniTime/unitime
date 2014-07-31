@@ -30,13 +30,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-
 import org.cpsolver.coursett.model.TimeLocation;
 import org.dom4j.Element;
+import org.unitime.timetable.dataexchange.StudentEnrollmentImport.Pair;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
@@ -61,6 +62,19 @@ import org.unitime.timetable.util.Constants;
 public class StudentSectioningImport extends BaseImport {
     public StudentSectioningImport() {}
     
+    public static enum EnrollmentMode {
+    	DELETE("Student enrollments will be deleted."),
+    	IMPORT("Student enrollments will be imported."),
+    	NOCHANGE("Student enrollments will be left unchanged"),
+    	UPDATE("Student enrollments will be updated (only enrollments that are no longer requested will be deleted)"),
+    	;
+    	private String iText;
+    	EnrollmentMode(String text) { iText = text; }
+    	
+    	@Override
+    	public String toString() { return iText; }
+    }
+    
     public void loadXml(Element rootElement) {
         try {
             beginTransaction();
@@ -71,7 +85,28 @@ public class StudentSectioningImport extends BaseImport {
 	        String year   = rootElement.attributeValue("year");
 	        String term   = rootElement.attributeValue("term");
 	        
-	        boolean keepEnrollments = "true".equals(rootElement.attributeValue("keepEnrollments", "false"));
+	        EnrollmentMode mode = null;
+	        if (rootElement.attributeValue("enrollments") != null) { 
+	        	mode = EnrollmentMode.valueOf(rootElement.attributeValue("enrollments").toUpperCase());
+	        } else {
+	        	mode = EnrollmentMode.UPDATE;
+	        	if ("true".equals(rootElement.attributeValue("keepEnrollments", "false")))
+	        		mode = EnrollmentMode.NOCHANGE;
+	        	mode: for (Iterator i = rootElement.elementIterator("student"); i.hasNext(); ) {
+	        		Element studentElement = (Element)i.next();
+	        		Element reqCoursesElement = studentElement.element("updateCourseRequests");
+	            	if (reqCoursesElement != null && "true".equals(reqCoursesElement.attributeValue("commit", "true")))
+	            		for (Iterator j = reqCoursesElement.elementIterator("courseOffering"); j.hasNext(); ) {
+	            			Element requestElement = (Element)j.next();
+	            			if (requestElement.element("class") != null) { mode = EnrollmentMode.IMPORT; break mode; }
+	            			for (Iterator k = requestElement.elementIterator("alternative"); k.hasNext(); ) {
+                                Element altElement = (Element)k.next();
+                                if (altElement.element("class") != null) { mode = EnrollmentMode.IMPORT; break mode; }
+	            			}
+	            		}
+	        	}
+	        }
+	        info("Enrollment mode set to " + mode.name() + ": " + mode.toString()); 
 
 	        Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
 	        if(session == null)
@@ -128,6 +163,33 @@ public class StudentSectioningImport extends BaseImport {
             	name2course.put(course.getCourseName(), course);
             }
             
+	    	HashMap<Long, Map<String, Class_>> course2extId2class = new HashMap<Long, Map<String,Class_>>();
+	    	HashMap<Long, Map<String, Class_>> course2name2class = new HashMap<Long, Map<String,Class_>>();
+	    	info("Loading classes...");
+	 		for (Object[] o: (List<Object[]>)getHibSession().createQuery(
+	 				"select c, co from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
+    				"c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :sessionId")
+    				.setLong("sessionId", session.getUniqueId()).list()) {
+	 			Class_ clazz = (Class_)o[0];
+	 			CourseOffering course = (CourseOffering)o[1];
+	 			
+	 			Map<String, Class_> extId2class = course2extId2class.get(course.getUniqueId());
+	 			if (extId2class == null) {
+	 				extId2class = new HashMap<String, Class_>();
+	 				course2extId2class.put(course.getUniqueId(), extId2class);
+	 			}
+	 			Map<String, Class_> name2class = course2name2class.get(course.getUniqueId());
+	 			if (name2class == null) {
+	 				name2class = new HashMap<String, Class_>();
+	 				course2name2class.put(course.getUniqueId(), name2class);
+	 			}
+				String extId = clazz.getExternalId(course);
+				if (extId != null && !extId.isEmpty())
+					extId2class.put(extId, clazz);
+				String name = clazz.getSchedulingSubpart().getItypeDesc().trim() + " " + clazz.getSectionNumberString();
+				name2class.put(name, clazz);
+			}
+            
             Set<Long> updatedStudents = new HashSet<Long>();
             
             for (Iterator i1 = rootElement.elementIterator("student"); i1.hasNext(); ) {
@@ -136,6 +198,36 @@ public class StudentSectioningImport extends BaseImport {
 	            String externalId = studentElement.attributeValue("key");
 	            if (externalId == null) continue;
 	            while (trimLeadingZerosFromExternalId && externalId.startsWith("0")) externalId = externalId.substring(1);
+	            
+	            Element cancelElement = studentElement.element("cancelStudent");
+	            if (cancelElement != null) {
+	            	Student student = students.remove(externalId);
+	            	if (student == null) continue;
+	            	
+            		for (Iterator<CourseDemand> i = student.getCourseDemands().iterator(); i.hasNext(); ) {
+            			CourseDemand cd = i.next();
+            			if (cd.getFreeTime() != null)
+            				getHibSession().delete(cd.getFreeTime());
+            			for (CourseRequest cr: cd.getCourseRequests())
+            				getHibSession().delete(cr);
+            			i.remove();
+            			getHibSession().delete(cd);
+            			updatedStudents.add(student.getUniqueId());
+            		}
+            		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
+	        			StudentClassEnrollment enrollment = i.next();
+	        			getHibSession().delete(enrollment);
+	        			i.remove();
+	     	        	updatedStudents.add(student.getUniqueId());
+	        		}
+
+            		boolean delete = "true".equals(cancelElement.attributeValue("delete", "false"));
+	            	if (delete) {
+	            		updatedStudents.add(student.getUniqueId());
+	            		getHibSession().delete(student);
+	            		continue;
+	            	}
+	            }
 	            
 	            Element demographicsElement = studentElement.element("updateDemographics");
 	            
@@ -374,6 +466,11 @@ public class StudentSectioningImport extends BaseImport {
             	
             	Element reqCoursesElement = studentElement.element("updateCourseRequests");
             	if (reqCoursesElement != null && "true".equals(reqCoursesElement.attributeValue("commit", "true"))) {
+                	Hashtable<Pair, StudentClassEnrollment> enrollments = new Hashtable<Pair, StudentClassEnrollment>();
+                	for (StudentClassEnrollment enrollment: student.getClassEnrollments()) {
+                		enrollments.put(new Pair(enrollment.getCourseOffering().getUniqueId(), enrollment.getClazz().getUniqueId()), enrollment);
+                	}
+                	
             		Set<CourseDemand> remaining = new TreeSet<CourseDemand>(student.getCourseDemands());
             		int priority = 0;
             		Date ts = new Date();
@@ -387,6 +484,7 @@ public class StudentSectioningImport extends BaseImport {
                         if (requestElement.getName().equals("courseOffering")) {
                         	List<CourseOffering> courses = new ArrayList<CourseOffering>();
                         	List<Integer> credits = new ArrayList<Integer>();
+                        	List<Element> elements = new ArrayList<Element>();
                         	
                         	CourseOffering course = name2course.get(requestElement.attributeValue("subjectArea") + " " + requestElement.attributeValue("courseNumber"));
                             if (course == null)
@@ -394,6 +492,7 @@ public class StudentSectioningImport extends BaseImport {
                             else {
                             	courses.add(course);
                             	credits.add(Integer.valueOf(requestElement.attributeValue("credit", "0")));
+                            	elements.add(requestElement);
                             }
                             
                             for (Iterator j = requestElement.elementIterator("alternative"); j.hasNext(); ) {
@@ -405,6 +504,7 @@ public class StudentSectioningImport extends BaseImport {
                                 else {
                                 	courses.add(altCourse);
                                 	credits.add(Integer.valueOf(altElement.attributeValue("credit", "0")));
+                                	elements.add(altElement);
                                 }
                             }
                             
@@ -458,6 +558,51 @@ public class StudentSectioningImport extends BaseImport {
             					requests.remove();
             				}
             				getHibSession().saveOrUpdate(cd);
+            				
+            				if (mode == EnrollmentMode.IMPORT) {
+                				for (int j = 0; j < courses.size(); j++) {
+                					CourseOffering co = courses.get(j);
+                					Element reqEl = elements.get(j);
+                					
+                    	 			Map<String, Class_> extId2class = course2extId2class.get(co.getUniqueId());
+                    	 			Map<String, Class_> name2class = course2name2class.get(co.getUniqueId());
+                                    for (Iterator k = reqEl.elementIterator("class"); k.hasNext(); ) {
+                                        Element classElement = (Element)k.next();
+                                        Class_ clazz = null;
+                                        
+                                		String classExternalId  = classElement.attributeValue("externalId");
+                                		if (classExternalId != null) {
+                                			clazz = extId2class.get(classExternalId);
+                                			if (clazz == null)
+                                    			clazz = name2class.get(classExternalId);
+                                		}
+                                		
+                                		if (clazz == null) {
+                                    		String type = classElement.attributeValue("type");
+                                    		String suffix = classElement.attributeValue("suffix");
+                                    		if (type != null && suffix != null)
+                                    			clazz = name2class.get(type.trim() + " " + suffix);
+                                		}
+                                		
+                                		if (clazz == null) {
+                                			warn(co.getCourseName() + ": Class " + (classExternalId != null ? classExternalId : classElement.attributeValue("type") + " " + classElement.attributeValue("suffix")) + " not found.");
+                                			continue;
+                                		}
+
+                                		StudentClassEnrollment enrollment = enrollments.remove(new Pair(co.getUniqueId(), clazz.getUniqueId()));
+                                		if (enrollment != null) continue; // enrollment already exists
+                                		
+                                		enrollment = new StudentClassEnrollment();
+                                		enrollment.setStudent(student);
+                                		enrollment.setClazz(clazz);
+                                		enrollment.setCourseOffering(co);
+                                		enrollment.setTimestamp(ts);
+                                		enrollment.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
+                                		enrollment.setCourseRequest(course2request.get(co.getUniqueId()));
+                                		student.getClassEnrollments().add(enrollment);
+                                    }
+                				}
+            				}
                         } else if (requestElement.getName().equals("freeTime")) {
                             String days = requestElement.attributeValue("days");
                             String startTime = requestElement.attributeValue("startTime");
@@ -497,33 +642,31 @@ public class StudentSectioningImport extends BaseImport {
                         } else warn("Request element "+requestElement.getName()+" not recognized.");
                     }
                     
-                    for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
-            			StudentClassEnrollment enrl = i.next();
-        				CourseRequest cr = course2request.get(enrl.getCourseOffering().getUniqueId());
-        				if (cr == null) {
-        					if (keepEnrollments) {
-        						// enrl.getCourseRequest().getClassEnrollments().remove(enrl);
-            					enrl.setCourseRequest(null);
+                    if (mode == EnrollmentMode.DELETE || mode == EnrollmentMode.IMPORT) {
+                    	for (StudentClassEnrollment enrl: enrollments.values()) {
+                			student.getClassEnrollments().remove(enrl);
+                			enrl.getClazz().getStudentEnrollments().remove(enrl);
+                			getHibSession().delete(enrl);
+                		}
+                    } else {
+                        for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
+                			StudentClassEnrollment enrl = i.next();
+            				CourseRequest cr = course2request.get(enrl.getCourseOffering().getUniqueId());
+            				if (cr == null) {
+            					if (mode == EnrollmentMode.NOCHANGE) {
+                					enrl.setCourseRequest(null);
+                					getHibSession().saveOrUpdate(enrl);
+            					} else {
+                    				enrl.getClazz().getStudentEnrollments().remove(enrl);
+                    				getHibSession().delete(enrl);
+                    				i.remove();
+            					}
+            				} else {
+            					enrl.setCourseRequest(cr);
             					getHibSession().saveOrUpdate(enrl);
-        					} else {
-                				enrl.getClazz().getStudentEnrollments().remove(enrl);
-                				/*
-                				if (enrl.getCourseRequest() != null)
-                					enrl.getCourseRequest().getClassEnrollments().remove(enrl);
-                					*/
-                				getHibSession().delete(enrl);
-                				i.remove();
-        					}
-        				} else {
-        					enrl.setCourseRequest(cr);
-        					/*
-        					if (cr.getClassEnrollments() == null)
-        						cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
-        					cr.getClassEnrollments().add(enrl);
-        					*/
-        					getHibSession().saveOrUpdate(enrl);
-        				}
-            		}
+            				}
+                		}
+                    }
             		
             		for (CourseRequest cr: unusedRequests)
             			getHibSession().delete(cr);
