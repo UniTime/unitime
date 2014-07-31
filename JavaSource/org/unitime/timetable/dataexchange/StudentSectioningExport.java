@@ -33,6 +33,8 @@ public class StudentSectioningExport extends BaseExport {
 	        root.addAttribute("year", session.getAcademicYear());
 	        root.addAttribute("term", session.getAcademicTerm());
 	        
+	        document.addDocType("request", "-//UniTime//UniTime Student Sectioning DTD/EN", "http://www.unitime.org/interface/StudentSectioning.dtd");
+	        
 	        for (Student student: (List<Student>)getHibSession().createQuery(
 	        		"select s from Student s where s.session.uniqueId = :sessionId")
 	        		.setLong("sessionId", session.getUniqueId()).list()) {
