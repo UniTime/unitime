@@ -16,6 +16,12 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  -->
+ 
+<!ELEMENT traveltimes (from*) >
+<!ATTLIST traveltimes campus CDATA #REQUIRED >
+<!ATTLIST traveltimes term CDATA #REQUIRED >
+<!ATTLIST traveltimes year CDATA #REQUIRED >
+<!ATTLIST traveltimes created CDATA #IMPLIED >
 
 <!ELEMENT from ( to+ ) >
 <!ATTLIST from id CDATA #IMPLIED >
