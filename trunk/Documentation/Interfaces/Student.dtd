@@ -56,5 +56,5 @@
 <!ATTLIST students campus CDATA #REQUIRED >
 <!ATTLIST students term CDATA #REQUIRED >
 <!ATTLIST students year CDATA #REQUIRED >
-
+<!ATTLIST students incremental ( false | true ) "false" > 
 
