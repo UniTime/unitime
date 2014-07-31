@@ -68,6 +68,7 @@ public class StudentEnrollmentImport extends BaseImport {
 	        String year   = rootElement.attributeValue("year");
 	        String term   = rootElement.attributeValue("term");
 	        String created = rootElement.attributeValue("created");
+	        boolean incremental = "true".equals(rootElement.attributeValue("incremental", "false"));
 			
 	        beginTransaction();
 	        
@@ -295,15 +296,16 @@ public class StudentEnrollmentImport extends BaseImport {
 
 	        }
  	        
- 	        for (Student student: students.values()) {
-        		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
-        			StudentClassEnrollment enrollment = i.next();
-        			getHibSession().delete(enrollment);
-        			i.remove();
-     	        	updatedStudents.add(student.getUniqueId());
-        		}
-        		getHibSession().update(student);
- 	        }
+	        if (!incremental)
+	 	        for (Student student: students.values()) {
+	        		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
+	        			StudentClassEnrollment enrollment = i.next();
+	        			getHibSession().delete(enrollment);
+	        			i.remove();
+	     	        	updatedStudents.add(student.getUniqueId());
+	        		}
+	        		getHibSession().update(student);
+	 	        }
  	        
             info(updatedStudents.size() + " students changed");
 
