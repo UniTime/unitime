@@ -58,10 +58,17 @@ public class StudentImport extends BaseImport {
 	        String campus = rootElement.attributeValue("campus");
 	        String year   = rootElement.attributeValue("year");
 	        String term   = rootElement.attributeValue("term");
+	        boolean incremental = "true".equals(rootElement.attributeValue("incremental", "false"));
 
 	        Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
 	        if(session == null)
 	           	throw new Exception("No session found for the given campus, year, and term.");
+	        
+	        if (incremental) {
+	        	info("Incremental mode enabled: only included students will be updated.");
+	        } else {
+	        	info("Incremental mode disabled: students not included in this file will be deleted.");
+	        }
 
 			beginTransaction();
             
@@ -312,17 +319,12 @@ public class StudentImport extends BaseImport {
             		getHibSession().update(student);
             	}
 	        }
-	            
-	            
- 	        for (Student student: students.values()) {
-        		for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
-        			StudentClassEnrollment enrollment = i.next();
-        			getHibSession().delete(enrollment);
-        			i.remove();
-     	        	updatedStudents.add(student.getUniqueId());
-        		}
-        		getHibSession().update(student);
- 	        }
+
+	        if (!incremental)
+	 	        for (Student student: students.values()) {
+	        		updatedStudents.add(student.getUniqueId());
+	        		getHibSession().delete(student);
+	 	        }
 	        
             info(updatedStudents.size() + " students changed");
 
