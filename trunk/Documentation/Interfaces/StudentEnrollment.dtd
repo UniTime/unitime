@@ -22,6 +22,7 @@
 <!ATTLIST studentEnrollments term CDATA #REQUIRED >
 <!ATTLIST studentEnrollments year CDATA #REQUIRED >
 <!ATTLIST studentEnrollments created CDATA #IMPLIED >
+<!ATTLIST studentEnrollments incremental ( false | true ) "false" >
 
 <!ELEMENT student ( class+ ) >
 <!ATTLIST student externalId CDATA #REQUIRED >
