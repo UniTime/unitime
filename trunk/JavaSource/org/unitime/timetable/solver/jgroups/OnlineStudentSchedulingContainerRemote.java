@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
@@ -48,6 +47,7 @@ import org.jgroups.blocks.locking.LockService;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
@@ -78,18 +78,24 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 	@Override
 	public void start() {
 		super.start();
-		GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
-				.transport().addProperty("channelLookup", "org.unitime.commons.jgroups.SectioningChannelLookup").clusterName("UniTime:sectioning")
-				.asyncTransportExecutor().addProperty("maxThreads", "50")
-				.globalJmxStatistics().cacheManagerName("OnlineSchedulingCacheManager").allowDuplicateDomains(true).disable()
-				.build();
-		Configuration config = new ConfigurationBuilder()
-				.clustering().cacheMode(CacheMode.REPL_ASYNC)
-				.async().useReplQueue(true).replQueueInterval(500, TimeUnit.MILLISECONDS).replQueueMaxElements(1000)
-				.invocationBatching().enable()
-				.storeAsBinary().enable()
-				.build();
-		iCacheManager = new DefaultCacheManager(global, config);
+		createCacheManagerIfNeeded();
+	}
+	
+	private synchronized void createCacheManagerIfNeeded() {
+		if (iCacheManager == null && ApplicationProperty.OnlineSchedulingServerReplicated.isTrue()) {
+			GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
+					.transport().addProperty("channelLookup", "org.unitime.commons.jgroups.SectioningChannelLookup").clusterName("UniTime:sectioning")
+					.asyncTransportExecutor().addProperty("maxThreads", "50")
+					.globalJmxStatistics().cacheManagerName("OnlineSchedulingCacheManager").allowDuplicateDomains(true).disable()
+					.build();
+			Configuration config = new ConfigurationBuilder()
+					.clustering().cacheMode(CacheMode.REPL_ASYNC)
+					.async().useReplQueue(true).replQueueInterval(500, TimeUnit.MILLISECONDS).replQueueMaxElements(1000)
+					.invocationBatching().enable()
+					.storeAsBinary().enable()
+					.build();
+			iCacheManager = new DefaultCacheManager(global, config);
+		}
 	}
 	
 	@Override
@@ -272,6 +278,7 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 	}
     
 	public EmbeddedCacheManager getCacheManager() {
+		createCacheManagerIfNeeded();
 		return iCacheManager;
 	}
 }
