@@ -224,10 +224,10 @@ public class InstructorDetailAction extends PreferencesAction {
 
 				WebTable classTable =
 			    	(hasTimetable? 
-			    			new WebTable( 8,
+			    			new WebTable( 9,
 			    					null,
-			    					new String[] {"Class", "Check Conflicts", "Share", "Limit", "Manager", "Time", "Date", "Room"},
-			    					new String[] {"left", "left","left", "left", "left", "left", "left", "left"},
+			    					new String[] {"Class", "Check Conflicts", "Share", "Limit", "Enrollment", "Manager", "Time", "Date", "Room"},
+			    					new String[] {"left", "left","left", "left", "left", "left", "left", "left", "left"},
 			    					null )
 			    	:
 		    			new WebTable( 5,
@@ -264,6 +264,13 @@ public class InstructorDetailAction extends PreferencesAction {
 			    				limitString = limitString + "-" + c.getMaxExpectedCapacity().toString();
 			    			}
 			    		}
+			    	}
+			    	
+			    	String enrollmentString = "";
+			    	if (c.getEnrollment() != null) {
+			    		enrollmentString = c.getEnrollment().toString();
+			    	} else {
+			    		enrollmentString = "0";
 			    	}
 			    	
 			    	String managingDept = null;
@@ -312,6 +319,7 @@ public class InstructorDetailAction extends PreferencesAction {
 									(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/tick.gif'>":""),
 									ci.getPercentShare()+"%",
 									limitString,
+									enrollmentString,
 									managingDept,
 									assignedTime,
 									assignedDate,
