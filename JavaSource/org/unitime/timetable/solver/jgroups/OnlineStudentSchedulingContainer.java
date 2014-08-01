@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
@@ -41,6 +40,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
+import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
 import org.unitime.timetable.onlinesectioning.server.ReplicatedServerWithMaster;
 
 /**
@@ -147,7 +147,10 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 			ApplicationProperties.setSessionId(academicSessionId);
 			String serverClassName = ApplicationProperty.OnlineSchedulingServerClass.value();
 			if (serverClassName == null)
-				serverClassName = ReplicatedServerWithMaster.class.getName();
+				if (ApplicationProperty.OnlineSchedulingServerReplicated.isTrue())
+					serverClassName = ReplicatedServerWithMaster.class.getName();
+				else
+					serverClassName = InMemoryServer.class.getName();
 			Class serverClass = Class.forName(serverClassName);
 			OnlineSectioningServer server = (OnlineSectioningServer)serverClass.getConstructor(OnlineSectioningServerContext.class).newInstance(getServerContext(academicSessionId));
 			iInstances.put(academicSessionId, server);

@@ -1425,7 +1425,7 @@ public enum ApplicationProperty {
 	OnlineSchedulingServerClass("unitime.enrollment.server.class"),
 
 	@Type(Boolean.class)
-	@DefaultValue("true")
+	@DefaultValue("false")
 	@Description("Online Student Scheduling: server support replications (it can be loaded on multiple machines of the cluster)")
 	OnlineSchedulingServerReplicated("unitime.enrollment.server.replicated"),
 
