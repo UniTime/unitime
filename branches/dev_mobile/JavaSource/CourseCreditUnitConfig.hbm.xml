@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class
+        name="CourseCreditUnitConfig"
+        table="course_credit_unit_config"
+        lazy="true">
+
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">crs_credit_unig_cfg_seq</param>
+            </generator>
+        </id>
+
+        <discriminator
+            column="credit_format"
+            type="java.lang.String"
+            not-null="true"
+            length="20"/>
+
+        <many-to-one
+            name="courseCreditFormat"
+            class="CourseCreditFormat"
+            column="credit_format"
+            property-ref="reference"
+            insert="false"
+            update="false"
+            not-null="true"/>
+
+        <many-to-one
+            name="creditType"
+            column="credit_type"
+            class="CourseCreditType"
+            not-null="true"/>
+
+        <many-to-one
+            name="creditUnitType"
+            column="credit_unit_type"
+            class="CourseCreditUnitType"
+            not-null="true"/>
+
+        <property
+            name="definesCreditAtCourseLevel"
+            column="defines_credit_at_course_level"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <many-to-one
+            name="subpartOwner"
+            class="SchedulingSubpart"
+            column="owner_id"
+            foreign-key="fk_crs_crdt_unit_cfg_owner"
+            unique="true"
+            update="true"/>
+
+		<!-- 
+        <many-to-one
+            name="instructionalOfferingOwner"
+            class="InstructionalOffering"
+            column="instr_offr_id"
+            foreign-key="fk_crs_crdt_unit_cfg_io_own"
+            unique="true"
+            update="true"/>
+       	 -->
+
+        <many-to-one
+            name="courseOwner"
+            class="CourseOffering"
+            column="course_id"
+            foreign-key="fk_crs_crdt_unit_cfg_crs_own"
+            unique="true"
+            update="true"/>
+
+        <subclass
+            name="ArrangeCreditUnitConfig"
+            extends="CourseCreditUnitConfig"
+            discriminator-value="arrangeHours"/>
+
+        <subclass
+            name="FixedCreditUnitConfig"
+            extends="CourseCreditUnitConfig"
+            discriminator-value="fixedUnit">
+            <property
+                name="fixedUnits"
+                column="fixed_units"
+                type="java.lang.Float"
+                not-null="false"/>
+
+        </subclass>
+
+        <subclass
+            name="VariableFixedCreditUnitConfig"
+            extends="CourseCreditUnitConfig"
+            discriminator-value="variableMinMax">
+            <property
+                name="minUnits"
+                column="min_units"
+                type="java.lang.Float"
+                not-null="false"/>
+
+            <property
+                name="maxUnits"
+                column="max_units"
+                type="java.lang.Float"
+                not-null="false"/>
+
+            <subclass
+                name="VariableRangeCreditUnitConfig"
+                extends="VariableFixedCreditUnitConfig"
+                discriminator-value="variableRange">
+                <property
+                    name="fractionalIncrementsAllowed"
+                    column="fractional_incr_allowed"
+                    type="java.lang.Boolean"
+                    not-null="false"/>
+
+            </subclass>
+
+        </subclass>
+
+    </class>
+
+</hibernate-mapping>

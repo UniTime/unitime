@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="urn:infinispan:config:6.0"
+            xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd">
+   <global>
+      <transport
+            transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport"
+            clusterName="UniTime:hibernate"
+            distributedSyncTimeout="50000"
+            strictPeerToPeer="false">
+         <properties>
+            <property name="channelLookup" value="org.unitime.commons.jgroups.HibernateChannelLookup"/>
+         </properties>
+      </transport>
+      <globalJmxStatistics allowDuplicateDomains="true" />
+   </global>
+
+   <default>
+      <jmxStatistics enabled="false"/>
+   </default>
+
+   <!-- Default configuration for entity caching. -->
+   <namedCache name="entity">
+      <clustering mode="invalidation">
+         <stateTransfer fetchInMemoryState="false" timeout="20000"/>
+         <sync replTimeout="20000"/>
+      </clustering>
+      <locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+      <eviction maxEntries="100000" strategy="LRU"/>
+      <expiration maxIdle="600000" lifespan="1200000" wakeUpInterval="5000"/>
+      <lazyDeserialization enabled="true"/>
+      <transaction transactionMode="TRANSACTIONAL" autoCommit="true" lockingMode="OPTIMISTIC"/>
+   </namedCache>
+
+   <!-- Default configuration for collection caching. -->
+   <namedCache name="collection">
+      <clustering mode="invalidation">
+         <stateTransfer fetchInMemoryState="false" timeout="20000"/>
+         <sync replTimeout="20000"/>
+      </clustering>
+      <locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+      <eviction maxEntries="100000" strategy="LRU"/>
+      <expiration maxIdle="600000" lifespan="1200000" wakeUpInterval="5000"/>
+      <lazyDeserialization enabled="true"/>
+      <transaction transactionMode="TRANSACTIONAL" autoCommit="true" lockingMode="OPTIMISTIC"/>
+   </namedCache>
+
+   <!-- Default configuration for query caching. -->
+   <namedCache name="query">
+      <clustering mode="invalidation">
+         <stateTransfer fetchInMemoryState="false" timeout="20000"/>
+         <sync replTimeout="20000"/>
+      </clustering>
+      <locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+      <eviction maxEntries="100000" strategy="LRU"/>
+      <expiration maxIdle="600000" lifespan="1200000" wakeUpInterval="5000"/>
+      <lazyDeserialization enabled="true"/>
+      <transaction transactionMode="TRANSACTIONAL" autoCommit="true" lockingMode="OPTIMISTIC"/>
+   </namedCache>
+
+   <!-- Optimized for timestamp caching. A clustered timestamp cache
+        is required if query caching is used, even if the query cache
+        itself is configured with CacheMode=LOCAL. -->
+   <namedCache name="timestamps">
+      <clustering mode="replication">
+         <async useReplQueue="true" replQueueInterval="1000"/>
+      </clustering>
+      <locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+      <lazyDeserialization enabled="true"/>
+      <eviction strategy="NONE"/>
+      <expiration wakeUpInterval="0"/>
+      <transaction transactionMode="NON_TRANSACTIONAL"/>
+      <persistence passivation="false">
+      	<cluster remoteCallTimeout="20000"/>
+      </persistence>
+   </namedCache>
+
+</infinispan>

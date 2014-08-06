@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="Location" abstract="true">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">room_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="permanentId"
+            column="permanent_id"
+            type="java.lang.Long"
+            not-null="true"
+            length="20"/>
+
+        <property
+            name="capacity"
+            column="capacity"
+            type="java.lang.Integer"
+            not-null="true"
+            length="6"/>
+
+        <property
+            name="coordinateX"
+            column="coordinate_x"
+            type="java.lang.Double"
+            not-null="false"/>
+
+        <property
+            name="coordinateY"
+            column="coordinate_y"
+            type="java.lang.Double"
+            not-null="false"/>
+
+        <property
+            name="ignoreTooFar"
+            column="ignore_too_far"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <property
+            name="ignoreRoomCheck"
+            column="ignore_room_check"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <property
+            name="area"
+            column="area"
+            type="java.lang.Double"
+            not-null="false"/>
+            
+        <property
+            name="eventStatus"
+            column="event_status"
+            type="java.lang.Integer"
+            not-null="false"/>
+
+        <property
+            name="note"
+            column="note"
+            type="java.lang.String"
+            length="2048"
+            not-null="false"/>
+            
+        <property
+            name="breakTime"
+            column="break_time"
+            type="java.lang.Integer"
+            not-null="false"/>
+
+        <set name="features" table="room_join_room_feature">
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="room_id"/>
+            <many-to-many
+                class="RoomFeature"
+                column="feature_id"
+                foreign-key="fk_room_feature"/>
+
+        </set>
+        <property
+            name="managerIds"
+            column="manager_ids"
+            type="java.lang.String"
+            not-null="false"
+            length="3000"/>
+
+        <property
+            name="pattern"
+            column="pattern"
+            type="java.lang.String"
+            not-null="false"
+            length="2016"/>
+            
+        <property
+            name="shareNote"
+            column="share_note"
+            type="java.lang.String"
+            length="2048"
+            not-null="false"/>
+
+        <property
+            name="eventAvailability"
+            column="availability"
+            type="java.lang.String"
+            not-null="false"
+            length="2016"/>
+
+        <set name="examTypes" table="room_exam_type">
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="location_id"/>
+            <many-to-many
+                class="ExamType"
+                column="exam_type_id"
+                foreign-key="fk_room_exam_type"/>
+        </set>
+
+        <property
+            name="examCapacity"
+            column="exam_capacity"
+            type="java.lang.Integer"
+            not-null="false"
+            length="10"/>
+
+        <set
+            name="examPreferences"
+            inverse="true"
+            lazy="true"
+            cascade="all"
+            table="exam_location_pref">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="location_id"/>
+            <one-to-many class="org.unitime.timetable.model.ExamLocationPref"/>
+        </set>
+
+        <property
+            name="displayName"
+            column="display_name"
+            type="java.lang.String"
+            not-null="false"
+            length="100"/>
+
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            not-null="true"
+            foreign-key="fk_room_session"/>
+
+        <set
+            name="assignments"
+            inverse="true"
+            table="assigned_rooms">
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="room_id"/>
+            <many-to-many
+                class="Assignment"
+                column="assignment_id"
+                foreign-key="fk_room_assignment"/>
+
+        </set>
+
+        <set name="roomGroups" table="room_group_room">
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="room_id"/>
+            <many-to-many
+                class="RoomGroup"
+                column="room_group_id"
+                foreign-key="fk_room_group"/>
+
+        </set>
+        <set
+            name="roomDepts"
+            inverse="true"
+            lazy="true"
+            cascade="all"
+            table="room_dept">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="room_id"/>
+            <one-to-many class="org.unitime.timetable.model.RoomDept"/>
+        </set>
+        
+        <many-to-one
+            name="eventDepartment"
+            class="Department"
+            column="event_dept_id"
+            not-null="false"/>
+            
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+
+        <union-subclass
+            name="Room"
+            table="room"
+            abstract="false">
+            <property
+                name="buildingAbbv"
+                type="java.lang.String"
+                formula=" (select b.abbreviation from %SCHEMA%.building b where b.uniqueid = building_id) "/>
+
+            <property
+                name="roomNumber"
+                column="room_number"
+                type="java.lang.String"
+                not-null="true"
+                length="10"/>
+
+            <many-to-one
+                name="roomType"
+                class="RoomType"
+                column="room_type"
+                foreign-key="fk_room_type"
+                not-null="true"/>
+
+            <property
+                name="classification"
+                column="classification"
+                type="java.lang.String"
+                not-null="false"
+                length="20"/>
+
+            <many-to-one
+                name="building"
+                class="Building"
+                column="building_id"
+                not-null="true"
+                foreign-key="fk_room_building"/>
+                
+            <set
+                name="pictures"
+                inverse="true"
+                lazy="true"
+                cascade="all"
+                table="room_picture">
+
+                <cache include="non-lazy" usage="transactional"/>
+                <key column="location_id"/>
+                <one-to-many class="RoomPicture"/>
+            </set>
+        </union-subclass>
+
+        <union-subclass
+            name="NonUniversityLocation"
+            table="non_university_location"
+            abstract="false">
+            <property
+                name="name"
+                column="name"
+                type="java.lang.String"
+                not-null="true"
+                length="20"/>
+
+            <many-to-one
+                name="roomType"
+                class="RoomType"
+                column="room_type"
+                foreign-key="fk_non_university_location_type"
+                not-null="true"/>
+
+            <set
+                name="pictures"
+                inverse="true"
+                lazy="true"
+                cascade="all"
+                table="location_picture">
+
+                <cache include="non-lazy" usage="transactional"/>
+                <key column="location_id"/>
+                <one-to-many class="NonUniversityLocationPicture"/>
+            </set>
+        </union-subclass>
+
+    </class>
+    <class name="ExamLocationPref" table="exam_location_pref">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one
+            name="location"
+            class="Location"
+            column="location_id"
+            not-null="true"/>
+
+        <many-to-one
+            name="prefLevel"
+            class="PreferenceLevel"
+            column="pref_level_id"
+            not-null="true"
+            foreign-key="fk_exam_location_pref_pref"/>
+
+        <many-to-one
+            name="examPeriod"
+            class="ExamPeriod"
+            column="period_id"
+            not-null="true"
+            foreign-key="fk_exam_location_pref_period"/>
+
+    </class>
+    
+    <class name="TravelTime" table="travel_time">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+        
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            not-null="true"
+            foreign-key="fk_trvltime_session"/>
+
+        <property
+            name="location1Id"
+            column="loc1_id"
+            type="java.lang.Long"
+            not-null="true"/>
+
+        <property
+            name="location2Id"
+            column="loc2_id"
+            type="java.lang.Long"
+            not-null="true"/>
+
+        <property
+            name="distance"
+            column="distance"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+    </class>
+    
+    <class name="LocationPicture" abstract="true">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">room_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="dataFile"
+            column="data_file"
+            type="byte[]"
+            not-null="true"/>
+            
+        <property
+            name="fileName"
+            column="file_name"
+            type="java.lang.String"
+            length="260"
+            not-null="true"/>
+
+        <property
+            name="contentType"
+            column="content_type"
+            type="java.lang.String"
+            length="260"
+            not-null="true"/>
+            
+        <property
+            name="timeStamp"
+            column="time_stamp"
+            type="java.util.Date"
+            not-null="true"/>
+
+        <union-subclass
+            name="RoomPicture"
+            table="room_picture"
+            abstract="false">
+
+            <many-to-one
+                name="location"
+                class="Room"
+                column="location_id"
+                foreign-key="fk_room_picture"
+                not-null="true"/>
+        </union-subclass>
+        
+        <union-subclass
+            name="NonUniversityLocationPicture"
+            table="location_picture"
+            abstract="false">
+
+            <many-to-one
+                name="location"
+                class="NonUniversityLocation"
+                column="location_id"
+                foreign-key="fk_location_picture"
+                not-null="true"/>
+        </union-subclass>
+    </class>
+</hibernate-mapping>

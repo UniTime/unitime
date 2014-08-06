@@ -1,0 +1,77 @@
+<!-- 
+ * UniTime 3.4 (University Timetabling Application)
+ * Copyright (C) 2012, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+ 
+<!--
+ - Student Scheduling XML interface
+   - this interface is to be used to synchronize student information with an external system during (online) student scheduling
+   - it also contains ability for the external system to approve / reject changes in student's schedule (an ability of a student to get into a course)
+ - See studentSchedulingSynchronization.xml for an example and a desription.
+ - Since UniTime 3.4
+-->
+ 
+<!ELEMENT message (student+) >
+<!ATTLIST message id CDATA #REQUIRED >
+<!ATTLIST message repliesTo CDATA #IMPLIED >
+<!ATTLIST message created CDATA #REQUIRED >
+<!ATTLIST message type ( student_change | approval_request | approval | consent | synchronization | schedule_change  ) #REQUIRED >
+<!ATTLIST message source ( assistant | waitlist | course_change | dashboard | synchronization | student_change )  #IMPLIED >
+<!ATTLIST message tsformat CDATA #IMPLIED >
+<!ATTLIST message campus CDATA #REQUIRED >
+<!ATTLIST message term CDATA #REQUIRED >
+<!ATTLIST message year CDATA #REQUIRED >
+
+<!ELEMENT student (curriculum*, group*, course*) >
+<!ATTLIST student id CDATA #REQUIRED >
+<!ATTLIST student first CDATA #IMPLIED >
+<!ATTLIST student middle CDATA #IMPLIED >
+<!ATTLIST student last CDATA #IMPLIED >
+<!ATTLIST student email CDATA #IMPLIED >
+<!ATTLIST student status CDATA #IMPLIED >
+<!ATTLIST student statusTimestamp CDATA #IMPLIED >
+
+<!ELEMENT curriculum EMPTY >
+<!ATTLIST curriculum area CDATA #REQUIRED >
+<!ATTLIST curriculum major CDATA #REQUIRED >
+<!ATTLIST curriculum minor CDATA #IMPLIED >
+<!ATTLIST curriculum classification CDATA #REQUIRED >
+
+<!ELEMENT group EMPTY >
+<!ATTLIST group code CDATA #REQUIRED >
+
+<!ELEMENT course (class*, reservation?) >
+<!ATTLIST course subject CDATA #REQUIRED >
+<!ATTLIST course number CDATA #REQUIRED >
+<!ATTLIST course status CDATA #IMPLIED >
+<!ATTLIST course statusTimestamp CDATA #IMPLIED >
+<!ATTLIST course message CDATA #IMPLIED >
+<!ATTLIST course consent CDATA #IMPLIED >
+<!ATTLIST course consentUserId CDATA #IMPLIED >
+<!ATTLIST course consentTimestamp CDATA #IMPLIED >
+<!ATTLIST course requestUserId CDATA #IMPLIED >
+<!ATTLIST course requestTimestamp CDATA #IMPLIED >
+
+<!ELEMENT reservation ( #PCDATA ) >
+<!ATTLIST reservation type ( Individual | Curriculum | Group | Course ) #REQUIRED >
+<!ATTLIST reservation allowOverLimit ( true | false ) #REQUIRED >
+<!ATTLIST reservation allowTimeOverlap ( true | false ) #REQUIRED >
+
+<!ELEMENT class ( #PCDATA ) >
+<!ATTLIST class id CDATA #IMPLIED >
+<!ATTLIST class allowTimeOverlap ( true | false ) #IMPLIED >
+<!ATTLIST class message CDATA #IMPLIED >

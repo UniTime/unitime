@@ -1,0 +1,720 @@
+UniTime 3.5 third-party dependencies:
+
+antlr-2.7.7.jar
+	AntLR Parser Generator
+	Maven: antlr:antlr:2.7.7
+	URL: http://www.antlr.org/
+	License: BSD or BSD-style License
+
+aopalliance-1.0.jar
+	AOP alliance
+	Maven: aopalliance:aopalliance:1.0
+	URL: http://aopalliance.sourceforge.net
+	License: Public Domain
+
+asm-3.3.1.jar
+	ASM Core
+	Maven: asm:asm:3.3.1
+	URL: http://asm.objectweb.org/asm/
+	License: BSD or BSD-style License
+
+cglib-2.2.2.jar
+	Code Generation Library
+	Maven: cglib:cglib:2.2.2
+	URL: http://cglib.sourceforge.net/
+	License: Apache Software License (ASL), Version 2.0
+
+gson-2.2.4.jar
+	Gson
+	Maven: com.google.code.gson:gson:2.2.4
+	URL: http://code.google.com/p/google-gson/
+	License: Apache Software License (ASL), Version 2.0
+
+gwt-dev-2.6.1.jar
+	gwt-dev
+	Maven: com.google.gwt:gwt-dev:2.6.1
+	URL: http://www.gwtproject.org/gwt-dev/
+	License: Apache Software License (ASL), Version 2.0
+
+gwt-servlet-2.6.1.jar
+	gwt-servlet
+	Maven: com.google.gwt:gwt-servlet:2.6.1
+	URL: http://www.gwtproject.org/gwt-servlet/
+	License: Apache Software License (ASL), Version 2.0
+
+gwt-user-2.6.1.jar
+	gwt-user
+	Maven: com.google.gwt:gwt-user:2.6.1
+	URL: http://www.gwtproject.org/gwt-user/
+	License: Apache Software License (ASL), Version 2.0
+
+protobuf-java-2.5.0.jar
+	Protocol Buffer Java API
+	Maven: com.google.protobuf:protobuf-java:2.5.0
+	URL: http://code.google.com/p/protobuf
+	License: BSD or BSD-style License
+
+itext-2.1.7.jar
+	iText, a Free Java-PDF library
+	Maven: com.lowagie:itext:2.1.7
+	URL: http://www.lowagie.com/iText/
+	License: GNU Lesser General Public License (LGPL), Version 2.1
+	License: Mozilla Public License (MPL), Version 1.1
+
+commons-beanutils-1.8.0.jar
+	Commons BeanUtils
+	Maven: commons-beanutils:commons-beanutils:1.8.0
+	URL: http://commons.apache.org/beanutils/
+	License: Apache Software License (ASL), Version 2.0
+
+commons-chain-1.2.jar
+	Commons Chain
+	Maven: commons-chain:commons-chain:1.2
+	URL: http://commons.apache.org/chain/
+	License: Apache Software License (ASL), Version 2.0
+
+commons-collections-2.1.jar
+	Collections
+	Maven: commons-collections:commons-collections:2.1
+	License: Apache Software License (ASL), Version 2.0
+
+commons-configuration-1.9.jar
+	Commons Configuration
+	Maven: commons-configuration:commons-configuration:1.9
+	URL: http://commons.apache.org/configuration/
+	License: Apache Software License (ASL), Version 2.0
+
+commons-dbcp-1.4.jar
+	Commons DBCP
+	Maven: commons-dbcp:commons-dbcp:1.4
+	URL: http://commons.apache.org/dbcp/
+	License: Apache Software License (ASL), Version 2.0
+
+commons-digester-1.8.jar
+	Digester
+	Maven: commons-digester:commons-digester:1.8
+	URL: http://jakarta.apache.org/commons/digester/
+	License: Apache Software License (ASL), Version 2.0
+
+commons-fileupload-1.3.jar
+	Commons FileUpload
+	Maven: commons-fileupload:commons-fileupload:1.3
+	URL: http://commons.apache.org/proper/commons-fileupload/
+	License: Apache Software License (ASL), Version 2.0
+
+commons-io-1.3.2.jar
+	Commons IO
+	Maven: commons-io:commons-io:1.3.2
+	URL: http://jakarta.apache.org/commons/io/
+	License: Apache Software License (ASL), Version 2.0
+
+commons-lang-2.6.jar
+	Commons Lang
+	Maven: commons-lang:commons-lang:2.6
+	URL: http://commons.apache.org/lang/
+	License: Apache Software License (ASL), Version 2.0
+
+commons-logging-1.0.4.jar
+	Logging
+	Maven: commons-logging:commons-logging:1.0.4
+	URL: http://jakarta.apache.org/commons/logging/
+	License: Apache Software License (ASL), Version 2.0
+
+commons-pool-1.5.4.jar
+	Commons Pool
+	Maven: commons-pool:commons-pool:1.5.4
+	URL: http://commons.apache.org/pool/
+	License: Apache Software License (ASL), Version 2.0
+
+commons-validator-1.3.1.jar
+	Validator
+	Maven: commons-validator:commons-validator:1.3.1
+	URL: http://jakarta.apache.org/commons/${pom.artifactId.substring(8)}/
+	License: Apache Software License (ASL), Version 2.0
+
+dom4j-1.6.1.jar
+	dom4j
+	Maven: dom4j:dom4j:1.6.1
+	URL: http://dom4j.org
+	License: BSD or BSD-style License
+
+activation-1.1.jar
+	JavaBeans Activation Framework (JAF)
+	Maven: javax.activation:activation:1.1
+	URL: http://java.sun.com/products/javabeans/jaf/index.jsp
+	License: Common Development and Distribution License (CDDL), Version 1.0
+
+mail-1.4.7.jar
+	JavaMail API (compat)
+	Maven: javax.mail:mail:1.4.7
+	URL: http://kenai.com/projects/javamail/mail
+	License: Common Development and Distribution License (CDDL), Version 1.0
+	License: GNU General Public License, Version 2 with the Classpath Exception
+
+javax.servlet-api-3.0.1.jar
+	Java Servlet API
+	Maven: javax.servlet:javax.servlet-api:3.0.1
+	URL: http://servlet-spec.java.net
+	License: Common Development and Distribution License (CDDL), Version 1.0
+
+jsp-api-2.2.jar
+	JavaServer Pages(TM) API
+	Maven: javax.servlet.jsp:jsp-api:2.2
+	URL: https://jsp.dev.java.net/jsp-api
+	License: Common Development and Distribution License (CDDL), Version 1.0
+
+validation-api-1.0.0.GA.jar
+	Bean Validation API
+	Maven: javax.validation:validation-api:1.0.0.GA
+	License: Apache Software License (ASL), Version 2.0
+
+joda-time-2.3.jar
+	Joda-Time
+	Maven: joda-time:joda-time:2.3
+	URL: http://www.joda.org/joda-time/
+	License: Apache Software License (ASL), Version 2.0
+
+jstl-1.2.jar
+	jstl
+	Maven: jstl:jstl:1.2
+	License: Common Development and Distribution License (CDDL), Version 1.0
+
+log4j-1.2.17.jar
+	Apache Log4j
+	Maven: log4j:log4j:1.2.17
+	URL: http://logging.apache.org/log4j/1.2/
+	License: Apache Software License (ASL), Version 2.0
+
+mysql-connector-java-5.1.26.jar
+	MySQL java connector
+	Maven: mysql:mysql-connector-java:5.1.26
+	URL: http://dev.mysql.com/usingmysql/java/
+	License: GNU General Public License (GPL), Version 2
+
+ehcache-core-2.6.6.jar
+	Ehcache Core
+	Maven: net.sf.ehcache:ehcache-core:2.6.6
+	URL: http://ehcache.org
+	License: Apache Software License (ASL), Version 2.0
+
+ehcache-jgroupsreplication-1.7.jar
+	JGroups Replication
+	Maven: net.sf.ehcache:ehcache-jgroupsreplication:1.7
+	URL: http://ehcache.org/ehcache-jgroupsreplication
+	License: Apache Software License (ASL), Version 2.0
+
+struts-core-1.3.10.jar
+	Struts Core
+	Maven: org.apache.struts:struts-core:1.3.10
+	URL: http://struts.apache.org
+	License: Apache Software License (ASL), Version 2.0
+
+struts-extras-1.3.10.jar
+	Struts Extras
+	Maven: org.apache.struts:struts-extras:1.3.10
+	URL: http://struts.apache.org
+	License: Apache Software License (ASL), Version 2.0
+
+struts-taglib-1.3.10.jar
+	Struts Taglib
+	Maven: org.apache.struts:struts-taglib:1.3.10
+	URL: http://struts.apache.org
+	License: Apache Software License (ASL), Version 2.0
+
+struts-tiles-1.3.10.jar
+	Struts Tiles
+	Maven: org.apache.struts:struts-tiles:1.3.10
+	URL: http://struts.apache.org
+	License: Apache Software License (ASL), Version 2.0
+
+aspectjrt-1.7.3.jar
+	AspectJ runtime
+	Maven: org.aspectj:aspectjrt:1.7.3
+	URL: http://www.aspectj.org
+	License: Eclipse Public License (EPL), Version 1.0
+
+freemarker-2.3.20.jar
+	FreeMarker
+	Maven: org.freemarker:freemarker:2.3.20
+	URL: http://freemarker.org/
+	License: BSD or BSD-style License
+
+hibernate-core-4.3.5.Final.jar
+	Core Hibernate O/RM functionality
+	Maven: org.hibernate:hibernate-core:4.3.5.Final
+	URL: http://hibernate.org
+	License: GNU Lesser General Public License (LGPL), Version 2.1
+
+hibernate-ehcache-4.3.5.Final.jar
+	Hibernate/Ehcache Integration
+	Maven: org.hibernate:hibernate-ehcache:4.3.5.Final
+	URL: http://hibernate.org
+	License: GNU Lesser General Public License (LGPL), Version 2.1
+
+hibernate-infinispan-4.3.5.Final.jar
+	Hibernate/Infinispan Integration
+	Maven: org.hibernate:hibernate-infinispan:4.3.5.Final
+	URL: http://hibernate.org
+	License: GNU Lesser General Public License (LGPL), Version 2.1
+
+hibernate-commons-annotations-4.0.4.Final.jar
+	Hibernate Commons Annotations
+	Maven: org.hibernate.common:hibernate-commons-annotations:4.0.4.Final
+	URL: http://hibernate.org
+	License: GNU Lesser General Public License (LGPL), Version 2.1
+
+hibernate-jpa-2.1-api-1.0.0.Final.jar
+	Java Persistence API, Version 2.1
+	Maven: org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final
+	URL: http://hibernate.org
+	License: Eclipse Distribution License (EDL), Version 1.0
+	License: Eclipse Public License (EPL), Version 1.0
+
+infinispan-commons-6.0.1.Final.jar
+	Infinispan Commons
+	Maven: org.infinispan:infinispan-commons:6.0.1.Final
+	URL: http://www.infinispan.org/infinispan-commons
+	License: Apache Software License (ASL), Version 2.0
+
+infinispan-core-6.0.1.Final.jar
+	Infinispan Core
+	Maven: org.infinispan:infinispan-core:6.0.1.Final
+	URL: http://www.infinispan.org/infinispan-core
+	License: Apache Software License (ASL), Version 2.0
+
+infinispan-spring-6.0.1.Final.jar
+	Infinispan Spring Integration
+	Maven: org.infinispan:infinispan-spring:6.0.1.Final
+	URL: http://www.infinispan.org/infinispan-spring
+	License: Apache Software License (ASL), Version 2.0
+
+cas-client-core-3.1.12.jar
+	JA-SIG CAS Client for Java - Core
+	Maven: org.jasig.cas.client:cas-client-core:3.1.12
+	URL: http://www.ja-sig.org/products/cas/cas-client-core/
+	License: JA-SIG License for Use
+
+javassist-3.18.0-GA.jar
+	Javassist
+	Maven: org.javassist:javassist:3.18.0-GA
+	URL: http://www.javassist.org/
+	License: Apache Software License (ASL), Version 2.0
+	License: GNU Lesser General Public License (LGPL), Version 2.1
+	License: Mozilla Public License (MPL), Version 1.1
+
+jandex-1.1.0.Final.jar
+	Java Annotation Indexer
+	Maven: org.jboss:jandex:1.1.0.Final
+	URL: http://www.jboss.org/jandex
+	License: Apache Software License (ASL), Version 2.0
+
+jbossjta-4.16.6.Final.jar
+	JBossTS jbossjta
+	Maven: org.jboss.jbossts:jbossjta:4.16.6.Final
+	URL: http://www.jboss.org/jbosstm/
+	License: GNU Lesser General Public License (LGPL), Version 2.1
+
+jboss-logging-3.1.3.GA.jar
+	JBoss Logging 3
+	Maven: org.jboss.logging:jboss-logging:3.1.3.GA
+	URL: http://www.jboss.org
+	License: Apache Software License (ASL), Version 2.0
+
+jboss-logging-annotations-1.2.0.Beta1.jar
+	JBoss Logging I18n Annotations
+	Maven: org.jboss.logging:jboss-logging-annotations:1.2.0.Beta1
+	URL: http://www.jboss.org/jboss-logging-tools-parent/jboss-logging-annotations
+	License: Public Domain
+
+jboss-marshalling-1.3.18.GA.jar
+	JBoss Marshalling API
+	Maven: org.jboss.marshalling:jboss-marshalling:1.3.18.GA
+	URL: http://www.jboss.org/jboss-marshalling-parent/jboss-marshalling
+	License: GNU Lesser General Public License (LGPL), Version 2.1
+	License: Public Domain
+
+jboss-marshalling-river-1.3.18.GA.jar
+	JBoss Marshalling River
+	Maven: org.jboss.marshalling:jboss-marshalling-river:1.3.18.GA
+	URL: http://www.jboss.org/jboss-marshalling-parent/jboss-marshalling-river
+	License: GNU Lesser General Public License (LGPL), Version 2.1
+	License: Public Domain
+
+jboss-transaction-api_1.2_spec-1.0.0.Final.jar
+	Java Transaction API
+	Maven: org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.0.0.Final
+	URL: http://www.jboss.org/jboss-transaction-api_1.2_spec
+	License: Common Development and Distribution License (CDDL), Version 1.0
+	License: GNU General Public License, Version 2 with the Classpath Exception
+
+jgroups-3.4.1.Final.jar
+	JGroups
+	Maven: org.jgroups:jgroups:3.4.1.Final
+	URL: http://www.jgroups.org
+	License: Apache Software License (ASL), Version 2.0
+
+json-20140107.jar
+	JSON in Java
+	Maven: org.json:json:20140107
+	URL: https://github.com/douglascrockford/JSON-java
+	License: Public Domain
+
+org.restlet-2.2.1.jar
+	Restlet Core - API and Engine
+	Maven: org.restlet.jse:org.restlet:2.2.1
+	URL: http://www.restlet.org/org.restlet
+	License: Apache Software License (ASL), Version 2.0
+	License: Common Development and Distribution License (CDDL), Version 1.0
+	License: Eclipse Public License (EPL), Version 1.0
+	License: GNU Lesser General Public License (LGPL), Version 2.1
+	License: GNU Lesser General Public License (LGPL), Version 3
+
+org.restlet.ext.json-2.2.1.jar
+	Restlet Extension - JSON
+	Maven: org.restlet.jse:org.restlet.ext.json:2.2.1
+	URL: http://www.restlet.org/org.restlet.ext.json
+	License: Apache Software License (ASL), Version 2.0
+	License: Common Development and Distribution License (CDDL), Version 1.0
+	License: Eclipse Public License (EPL), Version 1.0
+	License: GNU Lesser General Public License (LGPL), Version 2.1
+	License: GNU Lesser General Public License (LGPL), Version 3
+
+slf4j-api-1.7.5.jar
+	SLF4J API Module
+	Maven: org.slf4j:slf4j-api:1.7.5
+	URL: http://www.slf4j.org
+	License: MIT License
+
+slf4j-log4j12-1.7.5.jar
+	SLF4J LOG4J-12 Binding
+	Maven: org.slf4j:slf4j-log4j12:1.7.5
+	URL: http://www.slf4j.org
+	License: MIT License
+
+spring-aop-3.1.4.RELEASE.jar
+	spring-aop
+	Maven: org.springframework:spring-aop:3.1.4.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-asm-3.1.4.RELEASE.jar
+	spring-asm
+	Maven: org.springframework:spring-asm:3.1.4.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-beans-3.1.4.RELEASE.jar
+	spring-beans
+	Maven: org.springframework:spring-beans:3.1.4.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-context-3.1.4.RELEASE.jar
+	spring-context
+	Maven: org.springframework:spring-context:3.1.4.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-context-support-3.1.3.RELEASE.jar
+	spring-context-support
+	Maven: org.springframework:spring-context-support:3.1.3.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-core-3.1.4.RELEASE.jar
+	spring-core
+	Maven: org.springframework:spring-core:3.1.4.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-expression-3.1.4.RELEASE.jar
+	spring-expression
+	Maven: org.springframework:spring-expression:3.1.4.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-jdbc-3.1.4.RELEASE.jar
+	spring-jdbc
+	Maven: org.springframework:spring-jdbc:3.1.4.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-struts-3.1.4.RELEASE.jar
+	spring-struts
+	Maven: org.springframework:spring-struts:3.1.4.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-tx-3.1.4.RELEASE.jar
+	spring-tx
+	Maven: org.springframework:spring-tx:3.1.4.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-web-3.1.4.RELEASE.jar
+	spring-web
+	Maven: org.springframework:spring-web:3.1.4.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-webmvc-3.1.4.RELEASE.jar
+	spring-webmvc
+	Maven: org.springframework:spring-webmvc:3.1.4.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-integration-core-2.2.4.RELEASE.jar
+	Spring Integration Core
+	Maven: org.springframework.integration:spring-integration-core:2.2.4.RELEASE
+	URL: https://github.com/SpringSource/spring-integration
+	License: Apache Software License (ASL), Version 2.0
+
+spring-integration-file-2.2.4.RELEASE.jar
+	Spring Integration File Support
+	Maven: org.springframework.integration:spring-integration-file:2.2.4.RELEASE
+	URL: https://github.com/SpringSource/spring-integration
+	License: Apache Software License (ASL), Version 2.0
+
+spring-integration-mail-2.2.4.RELEASE.jar
+	Spring Integration Mail Support
+	Maven: org.springframework.integration:spring-integration-mail:2.2.4.RELEASE
+	URL: https://github.com/SpringSource/spring-integration
+	License: Apache Software License (ASL), Version 2.0
+
+spring-ldap-core-1.3.1.RELEASE.jar
+	Spring LDAP Core
+	Maven: org.springframework.ldap:spring-ldap-core:1.3.1.RELEASE
+	License: Apache Software License (ASL), Version 2.0
+
+spring-retry-1.0.2.RELEASE.jar
+	Spring Retry
+	Maven: org.springframework.retry:spring-retry:1.0.2.RELEASE
+	URL: http://www.springsource.org
+	License: Apache Software License (ASL), Version 2.0
+
+spring-security-acl-3.1.4.RELEASE.jar
+	spring-security-acl
+	Maven: org.springframework.security:spring-security-acl:3.1.4.RELEASE
+	URL: http://springsource.org/spring-security
+	License: Apache Software License (ASL), Version 2.0
+
+spring-security-aspects-3.1.4.RELEASE.jar
+	spring-security-aspects
+	Maven: org.springframework.security:spring-security-aspects:3.1.4.RELEASE
+	URL: http://springsource.org/spring-security
+	License: Apache Software License (ASL), Version 2.0
+
+spring-security-cas-3.1.4.RELEASE.jar
+	spring-security-cas
+	Maven: org.springframework.security:spring-security-cas:3.1.4.RELEASE
+	URL: http://springsource.org/spring-security
+	License: Apache Software License (ASL), Version 2.0
+
+spring-security-config-3.1.4.RELEASE.jar
+	spring-security-config
+	Maven: org.springframework.security:spring-security-config:3.1.4.RELEASE
+	URL: http://springsource.org/spring-security
+	License: Apache Software License (ASL), Version 2.0
+
+spring-security-core-3.1.4.RELEASE.jar
+	spring-security-core
+	Maven: org.springframework.security:spring-security-core:3.1.4.RELEASE
+	URL: http://springsource.org/spring-security
+	License: Apache Software License (ASL), Version 2.0
+
+spring-security-ldap-3.1.4.RELEASE.jar
+	spring-security-ldap
+	Maven: org.springframework.security:spring-security-ldap:3.1.4.RELEASE
+	URL: http://springsource.org/spring-security
+	License: Apache Software License (ASL), Version 2.0
+
+spring-security-taglibs-3.1.4.RELEASE.jar
+	spring-security-taglibs
+	Maven: org.springframework.security:spring-security-taglibs:3.1.4.RELEASE
+	URL: http://springsource.org/spring-security
+	License: Apache Software License (ASL), Version 2.0
+
+spring-security-web-3.1.4.RELEASE.jar
+	spring-security-web
+	Maven: org.springframework.security:spring-security-web:3.1.4.RELEASE
+	URL: http://springsource.org/spring-security
+	License: Apache Software License (ASL), Version 2.0
+
+cpsolver-1.3-SNAPSHOT.jar
+	CPSolver
+	Maven: org.unitime:cpsolver:1.3-SNAPSHOT
+	URL: http://code.google.com/p/cpsolver
+	License: GNU Lesser General Public License (LGPL), Version 3
+
+oro-2.0.8.jar
+	oro
+	Maven: oro:oro:2.0.8
+	License: Apache Software License (ASL), Version 2.0
+
+struts-layout-1.3.jar
+	Struts-Layout
+	Maven: struts-layout:struts-layout:1.3
+	URL: http://struts.improve-technologies.com
+	License: Apache Software License (ASL), Version 2.0
+
+xml-apis-1.0.b2.jar
+	XML Commons External Components XML APIs
+	Maven: xml-apis:xml-apis:1.0.b2
+	URL: http://xml.apache.org/commons/#external
+	License: Apache Software License (ASL), Version 2.0
+
+----
+List of third-party dependencies grouped by their license type:
+
+Apache Software License (ASL), Version 2.0
+	Apache Log4j (log4j:log4j:1.2.17)
+	Bean Validation API (javax.validation:validation-api:1.0.0.GA)
+	Code Generation Library (cglib:cglib:2.2.2)
+	Collections (commons-collections:commons-collections:2.1)
+	Commons BeanUtils (commons-beanutils:commons-beanutils:1.8.0)
+	Commons Chain (commons-chain:commons-chain:1.2)
+	Commons Configuration (commons-configuration:commons-configuration:1.9)
+	Commons DBCP (commons-dbcp:commons-dbcp:1.4)
+	Commons FileUpload (commons-fileupload:commons-fileupload:1.3)
+	Commons IO (commons-io:commons-io:1.3.2)
+	Commons Lang (commons-lang:commons-lang:2.6)
+	Commons Pool (commons-pool:commons-pool:1.5.4)
+	Digester (commons-digester:commons-digester:1.8)
+	Ehcache Core (net.sf.ehcache:ehcache-core:2.6.6)
+	Gson (com.google.code.gson:gson:2.2.4)
+	Infinispan Commons (org.infinispan:infinispan-commons:6.0.1.Final)
+	Infinispan Core (org.infinispan:infinispan-core:6.0.1.Final)
+	Infinispan Spring Integration (org.infinispan:infinispan-spring:6.0.1.Final)
+	JBoss Logging 3 (org.jboss.logging:jboss-logging:3.1.3.GA)
+	JGroups (org.jgroups:jgroups:3.4.1.Final)
+	JGroups Replication (net.sf.ehcache:ehcache-jgroupsreplication:1.7)
+	Java Annotation Indexer (org.jboss:jandex:1.1.0.Final)
+	Javassist (org.javassist:javassist:3.18.0-GA)
+	Joda-Time (joda-time:joda-time:2.3)
+	Logging (commons-logging:commons-logging:1.0.4)
+	Restlet Core - API and Engine (org.restlet.jse:org.restlet:2.2.1)
+	Restlet Extension - JSON (org.restlet.jse:org.restlet.ext.json:2.2.1)
+	Spring Integration Core (org.springframework.integration:spring-integration-core:2.2.4.RELEASE)
+	Spring Integration File Support (org.springframework.integration:spring-integration-file:2.2.4.RELEASE)
+	Spring Integration Mail Support (org.springframework.integration:spring-integration-mail:2.2.4.RELEASE)
+	Spring LDAP Core (org.springframework.ldap:spring-ldap-core:1.3.1.RELEASE)
+	Spring Retry (org.springframework.retry:spring-retry:1.0.2.RELEASE)
+	Struts Core (org.apache.struts:struts-core:1.3.10)
+	Struts Extras (org.apache.struts:struts-extras:1.3.10)
+	Struts Taglib (org.apache.struts:struts-taglib:1.3.10)
+	Struts Tiles (org.apache.struts:struts-tiles:1.3.10)
+	Struts-Layout (struts-layout:struts-layout:1.3)
+	Validator (commons-validator:commons-validator:1.3.1)
+	XML Commons External Components XML APIs (xml-apis:xml-apis:1.0.b2)
+	gwt-dev (com.google.gwt:gwt-dev:2.6.1)
+	gwt-servlet (com.google.gwt:gwt-servlet:2.6.1)
+	gwt-user (com.google.gwt:gwt-user:2.6.1)
+	oro (oro:oro:2.0.8)
+	spring-aop (org.springframework:spring-aop:3.1.4.RELEASE)
+	spring-asm (org.springframework:spring-asm:3.1.4.RELEASE)
+	spring-beans (org.springframework:spring-beans:3.1.4.RELEASE)
+	spring-context (org.springframework:spring-context:3.1.4.RELEASE)
+	spring-context-support (org.springframework:spring-context-support:3.1.3.RELEASE)
+	spring-core (org.springframework:spring-core:3.1.4.RELEASE)
+	spring-expression (org.springframework:spring-expression:3.1.4.RELEASE)
+	spring-jdbc (org.springframework:spring-jdbc:3.1.4.RELEASE)
+	spring-security-acl (org.springframework.security:spring-security-acl:3.1.4.RELEASE)
+	spring-security-aspects (org.springframework.security:spring-security-aspects:3.1.4.RELEASE)
+	spring-security-cas (org.springframework.security:spring-security-cas:3.1.4.RELEASE)
+	spring-security-config (org.springframework.security:spring-security-config:3.1.4.RELEASE)
+	spring-security-core (org.springframework.security:spring-security-core:3.1.4.RELEASE)
+	spring-security-ldap (org.springframework.security:spring-security-ldap:3.1.4.RELEASE)
+	spring-security-taglibs (org.springframework.security:spring-security-taglibs:3.1.4.RELEASE)
+	spring-security-web (org.springframework.security:spring-security-web:3.1.4.RELEASE)
+	spring-struts (org.springframework:spring-struts:3.1.4.RELEASE)
+	spring-tx (org.springframework:spring-tx:3.1.4.RELEASE)
+	spring-web (org.springframework:spring-web:3.1.4.RELEASE)
+	spring-webmvc (org.springframework:spring-webmvc:3.1.4.RELEASE)
+
+BSD or BSD-style License
+	ASM Core (asm:asm:3.3.1)
+	AntLR Parser Generator (antlr:antlr:2.7.7)
+	FreeMarker (org.freemarker:freemarker:2.3.20)
+	Protocol Buffer Java API (com.google.protobuf:protobuf-java:2.5.0)
+	dom4j (dom4j:dom4j:1.6.1)
+
+Common Development and Distribution License (CDDL), Version 1.0
+	Java Servlet API (javax.servlet:javax.servlet-api:3.0.1)
+	Java Transaction API (org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.0.0.Final)
+	JavaBeans Activation Framework (JAF) (javax.activation:activation:1.1)
+	JavaMail API (compat) (javax.mail:mail:1.4.7)
+	JavaServer Pages(TM) API (javax.servlet.jsp:jsp-api:2.2)
+	Restlet Core - API and Engine (org.restlet.jse:org.restlet:2.2.1)
+	Restlet Extension - JSON (org.restlet.jse:org.restlet.ext.json:2.2.1)
+	jstl (jstl:jstl:1.2)
+
+Eclipse Distribution License (EDL), Version 1.0
+	Java Persistence API, Version 2.1 (org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final)
+
+Eclipse Public License (EPL), Version 1.0
+	AspectJ runtime (org.aspectj:aspectjrt:1.7.3)
+	Java Persistence API, Version 2.1 (org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final)
+	Restlet Core - API and Engine (org.restlet.jse:org.restlet:2.2.1)
+	Restlet Extension - JSON (org.restlet.jse:org.restlet.ext.json:2.2.1)
+
+GNU General Public License (GPL), Version 2
+	MySQL java connector (mysql:mysql-connector-java:5.1.26)
+
+GNU General Public License, Version 2 with the Classpath Exception
+	Java Transaction API (org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.0.0.Final)
+	JavaMail API (compat) (javax.mail:mail:1.4.7)
+
+GNU Lesser General Public License (LGPL), Version 2.1
+	Core Hibernate O/RM functionality (org.hibernate:hibernate-core:4.3.5.Final)
+	Hibernate Commons Annotations (org.hibernate.common:hibernate-commons-annotations:4.0.4.Final)
+	Hibernate/Ehcache Integration (org.hibernate:hibernate-ehcache:4.3.5.Final)
+	Hibernate/Infinispan Integration (org.hibernate:hibernate-infinispan:4.3.5.Final)
+	JBoss Marshalling API (org.jboss.marshalling:jboss-marshalling:1.3.18.GA)
+	JBoss Marshalling River (org.jboss.marshalling:jboss-marshalling-river:1.3.18.GA)
+	JBossTS jbossjta (org.jboss.jbossts:jbossjta:4.16.6.Final)
+	Javassist (org.javassist:javassist:3.18.0-GA)
+	Restlet Core - API and Engine (org.restlet.jse:org.restlet:2.2.1)
+	Restlet Extension - JSON (org.restlet.jse:org.restlet.ext.json:2.2.1)
+	iText, a Free Java-PDF library (com.lowagie:itext:2.1.7)
+
+GNU Lesser General Public License (LGPL), Version 3
+	CPSolver (org.unitime:cpsolver:1.3-SNAPSHOT)
+	Restlet Core - API and Engine (org.restlet.jse:org.restlet:2.2.1)
+	Restlet Extension - JSON (org.restlet.jse:org.restlet.ext.json:2.2.1)
+
+JA-SIG License for Use
+	JA-SIG CAS Client for Java - Core (org.jasig.cas.client:cas-client-core:3.1.12)
+
+MIT License
+	SLF4J API Module (org.slf4j:slf4j-api:1.7.5)
+	SLF4J LOG4J-12 Binding (org.slf4j:slf4j-log4j12:1.7.5)
+
+Mozilla Public License (MPL), Version 1.1
+	Javassist (org.javassist:javassist:3.18.0-GA)
+	iText, a Free Java-PDF library (com.lowagie:itext:2.1.7)
+
+Public Domain
+	AOP alliance (aopalliance:aopalliance:1.0)
+	JBoss Logging I18n Annotations (org.jboss.logging:jboss-logging-annotations:1.2.0.Beta1)
+	JBoss Marshalling API (org.jboss.marshalling:jboss-marshalling:1.3.18.GA)
+	JBoss Marshalling River (org.jboss.marshalling:jboss-marshalling-river:1.3.18.GA)
+	JSON in Java (org.json:json:20140107)
+
+----
+For the appropriate license, see
+
+Apache Software License (ASL), Version 2.0 
+	http://www.apache.org/licenses/LICENSE-2.0
+	http://www.gwtproject.org/terms.html (GWT)
+BSD or BSD-style Licenses
+	http://asm.ow2.org/license.html (ASM Core)
+	http://www.antlr.org/license.html (AntLR Parser Generator)
+	http://freemarker.org/docs/app_license.html (FreeMaker)
+	http://opensource.org/licenses/BSD-3-Clause (Protocol Buffer Java API)
+	http://dom4j.sourceforge.net/dom4j-1.6.1/license.html (dom4j)
+Common Development and Distribution License (CDDL), Version 1.0
+	http://opensource.org/licenses/CDDL-1.0
+Eclipse Public License (EPL), Version 1.0
+	http://www.eclipse.org/legal/epl-v10.html
+GNU General Public License (GPL), Version 2
+	http://www.gnu.org/licenses/gpl-2.0.html
+GNU General Public License, Version 2 with the Classpath Exception
+	http://openjdk.java.net/legal/gplv2+ce.html
+GNU Lesser General Public License (LGPL), Version 2.1
+	https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+GNU Lesser General Public License (LGPL), Version 3
+	https://www.gnu.org/licenses/lgpl.html
+Public Domain
+	http://www.json.org/license.html (JSON)
+MIT License
+	http://www.slf4j.org/license.html (SLF4J)
+Mozilla Public License (MPL), Version 1.1
+	http://www.mozilla.org/MPL/1.1

@@ -1,0 +1,103 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
+doc-title {
+	color: #35526f;
+	font-weight: bold;
+	font-size: 150%;
+	border-bottom: #35526f 1px solid;
+	margin-top: 10px;
+	margin-bottom: 20px;
+	margin-left: 5px;
+}
+
+release {
+	display: block;
+	margin-top: 15px;
+	margin-bottom: 5px;
+	border-bottom: #ababab 12px solid;
+	margin-left: 10px;
+}
+
+version {
+	font-size: 110%;
+	display: inline;
+	font-weight: bold;
+	text-decoration: underline;
+	margin-top: 15px;
+	margin-bottom: 10px;
+}
+
+release-date {
+	font-size: 110%;
+	display: inline;
+	font-weight: bold;
+	text-decoration: underline;
+	margin-left: 10px;
+	margin-bottom: 10px;
+}
+
+release-description {
+	font-size: 105%;
+	display: block;
+	margin-left: 70px;
+	margin-bottom: 10px;
+	color: navy;
+}
+
+category {
+	display: block;
+	margin-left: 30px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	list-style-type: disc;
+}
+
+category title {
+	display: list-item;
+	font-variant: small-caps;
+	color: navy;
+}
+
+item {
+	display: block;
+	margin-left: 30px;
+	list-style-type: square;
+}
+
+item name {
+	display: list-item;
+	font-style: italic;
+	font-size: 105%;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	color: maroon;
+}
+
+description {
+	display: block;
+	margin-left: 30px;
+	list-style-type: circle;
+	color: black;
+}
+
+description line {
+	display: list-item;
+	color: black;
+	margin-left: 30px;
+}

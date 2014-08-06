@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="ClassInstructor" table="class_instructor">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long"
+            length="20">
+
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">class_instructor_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="percentShare"
+            column="percent_share"
+            type="java.lang.Integer"
+            not-null="true"
+            length="3"/>
+
+        <property
+            name="lead"
+            type="java.lang.Boolean"
+            column="is_lead"
+            not-null="true"/>
+
+        <many-to-one
+            name="classInstructing"
+            class="Class_"
+            column="class_id"
+            not-null="true"
+            insert="true"
+            update="true"
+            foreign-key="fk_class_instr_class_"/>
+
+        <many-to-one
+            name="instructor"
+            class="DepartmentalInstructor"
+            column="instructor_id"
+            not-null="true"
+            insert="true"
+            update="true"
+            foreign-key="fk_class_instr_instr"/>
+
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,293 @@
+<%--
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+--%>
+<%@ page import="org.unitime.timetable.model.PositionType"%>
+<%@ page import="org.unitime.timetable.util.Constants"%>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+
+<loc:bundle name="CourseMessages">
+<TR>
+	<bean:parameter id="operation" name="operation"/>
+	<bean:parameter id="frmName" name="frmName"/>
+	<bean:parameter id="instructorId" name="instructorId" value=""/>
+			<TD valign="middle" colspan='2'>
+				<tt:section-header>		
+					<tt:section-title>&nbsp;</tt:section-title>
+
+					<% if (operation.equals("add")) { %>
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessSaveInstructor() %>" 
+								title="<%= MSG.titleSaveInstructor(MSG.accessSaveInstructor()) %>" >
+							<loc:message name="actionSaveInstructor" />
+						</html:submit> 
+					<% } %>
+
+					<% if (operation.equals("update")) { %>
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessUpdateInstructor() %>" 
+								title="<%= MSG.titleUpdateInstructor(MSG.accessUpdateInstructor())%>" >
+							<loc:message name="actionUpdateInstructor" />
+						</html:submit> 	
+						<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorDelete')">			
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessDeleteInstructor() %>" 
+								title="<%= MSG.titleDeleteInstructor(MSG.accessDeleteInstructor())%>" 
+								onclick="return(confirmDelete());">
+							<loc:message name="actionDeleteInstructor" />
+						</html:submit> 
+						</sec:authorize>
+					<% } %>
+					
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%= MSG.accessLookupInstructor() %>" 
+							title="<%= MSG.titleLookupInstructor(MSG.accessLookupInstructor()) %>" >
+						<loc:message name="actionLookupInstructor" />
+					</html:submit> 
+					<logic:notEmpty name="<%=frmName%>" property="previousId">
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessPreviousInstructor() %>" 
+								title="<%= MSG.titlePreviousInstructorWithUpdate(MSG.accessPreviousInstructor()) %>">
+							<loc:message name="actionPreviousInstructor" />
+						</html:submit> 
+					</logic:notEmpty>
+					<logic:notEmpty name="<%=frmName%>" property="nextId">
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessNextInstructor() %>" 
+								title="<%= MSG.titleNextInstructorWithUpdate(MSG.accessNextInstructor())%>">
+							<loc:message name="actionNextInstructor" />
+						</html:submit> 
+					</logic:notEmpty>
+					<% if (operation.equals("add")) { %>
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%= MSG.accessBackToInstructors() %>" 
+							title="<%= MSG.titleBackToInstructors(MSG.accessBackToInstructors())%>">
+						<loc:message name="actionBackToInstructors" />
+					</html:submit>
+					<% } %>
+					<% if (operation.equals("update")) { %>
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%= MSG.accessBackToDetail() %>" 
+							title="<%= MSG.titleBackToDetail(MSG.accessBackToDetail())%>">
+						<loc:message name="actionBackToDetail" />
+					</html:submit>
+					<% } %>
+				</tt:section-header>
+			</TD>
+		</TR>
+
+		<logic:messagesPresent>
+		<TR>
+			<TD colspan="2" align="left" class="errorCell">
+					<B><U><loc:message name="errors"/></U></B><BR>
+				<BLOCKQUOTE>
+				<UL>
+				    <html:messages id="error">
+				      <LI>
+						${error}
+				      </LI>
+				    </html:messages>
+			    </UL>
+			    </BLOCKQUOTE>
+			</TD>
+		</TR>
+		</logic:messagesPresent>
+		
+		<TR>
+			<TD><loc:message name="propertyExternalId"/></TD>
+			<TD>
+				<tt:propertyEquals name="tmtbl.instructor.allowExternalIdEdit" value="true">
+					<html:text property="puId" maxlength="40" size="10" styleId="uid"/> 
+				</tt:propertyEquals>
+				<tt:propertyNotEquals name="tmtbl.instructor.allowExternalIdEdit" value="true">
+					<bean:write name="<%=frmName%>"  property="puId"/>	
+					<html:hidden name="<%=frmName%>"  property="puId" styleId="uid"/>
+				</tt:propertyNotEquals>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD><loc:message name="propertyAccountName"/></TD>
+			<TD>
+				<html:text property="careerAcct" maxlength="20" size="20"/> 
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD><loc:message name="propertyFirstName"/></TD>
+			<TD>
+				<html:text property="fname" maxlength="100" size="30" styleId="fname" />
+				<input type='button' value="<%= MSG.actionLookupInstructor() %>" onclick="lookup();" style="btn">
+			</TD>
+		</TR>	
+		
+		<TR>
+			<TD><loc:message name="propertyMiddleName"/></TD>
+			<TD>
+				<html:text property="mname" maxlength="100" size="30" styleId="mname" />
+			</TD>
+		</TR>	
+		
+		<TR>
+			<TD> <loc:message name="propertyLastName"/> <font class="reqField">*</font></TD>
+			<TD>
+				<html:text property="lname" maxlength="100" size="30" styleId="lname" />
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD><loc:message name="propertyEmail"/></TD>
+			<TD>
+				<html:text property="email" maxlength="200" size="50" styleId="email" /> 
+			</TD>
+		</TR>
+
+		<TR>
+			<TD><loc:message name="propertyDepartment"/></TD>
+			<TD>
+				<bean:write name="<%=frmName%>" property="deptName" />
+			</TD>
+		</TR>
+				
+		<TR>
+			<TD><loc:message name="propertyInstructorPosition"/></TD>
+			<TD>
+				<html:select property="posType" size="1">  
+					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+					<html:options collection="<%=PositionType.POSTYPE_ATTR_NAME%>" 
+						property="value" labelProperty="label"/>
+				</html:select>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD valign="top"><loc:message name="propertyNotes"/></TD>
+			<TD>
+				<html:textarea property="note" rows="5" cols="70"/>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD><loc:message name="propertyIgnoreTooFar"/></TD>
+			<TD>
+				<html:checkbox property="ignoreDist" />
+			</TD>
+		</TR>
+
+		<TR>
+			<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+			&nbsp;
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD valign="middle" colspan='2' align='right'>
+					<% if (operation.equals("add")) { %>
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessSaveInstructor() %>" 
+								title="<%= MSG.titleSaveInstructor(MSG.accessSaveInstructor()) %>" >
+							<loc:message name="actionSaveInstructor" />
+						</html:submit> 
+					<% } %>
+
+					<% if (operation.equals("update")) { %>
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessUpdateInstructor() %>" 
+								title="<%= MSG.titleUpdateInstructor(MSG.accessUpdateInstructor())%>" >
+							<loc:message name="actionUpdateInstructor" />
+						</html:submit> 	
+						<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorDelete')">			
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessDeleteInstructor() %>" 
+								title="<%= MSG.titleDeleteInstructor(MSG.accessDeleteInstructor())%>" 
+								onclick="return(confirmDelete());">
+							<loc:message name="actionDeleteInstructor" />
+						</html:submit> 
+						</sec:authorize>
+					<% } %>
+					
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%= MSG.accessLookupInstructor() %>" 
+							title="<%= MSG.titleLookupInstructor(MSG.accessLookupInstructor()) %>" >
+						<loc:message name="actionLookupInstructor" />
+					</html:submit> 
+					<logic:notEmpty name="<%=frmName%>" property="previousId">
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessPreviousInstructor() %>" 
+								title="<%= MSG.titlePreviousInstructorWithUpdate(MSG.accessPreviousInstructor()) %>">
+							<loc:message name="actionPreviousInstructor" />
+						</html:submit> 
+					</logic:notEmpty>
+					<logic:notEmpty name="<%=frmName%>" property="nextId">
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%= MSG.accessNextInstructor() %>" 
+								title="<%= MSG.titleNextInstructorWithUpdate(MSG.accessNextInstructor())%>">
+							<loc:message name="actionNextInstructor" />
+						</html:submit> 
+					</logic:notEmpty>
+					<% if (operation.equals("add")) { %>
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%= MSG.accessBackToInstructors() %>" 
+							title="<%= MSG.titleBackToInstructors(MSG.accessBackToInstructors())%>">
+						<loc:message name="actionBackToInstructors" />
+					</html:submit>
+					<% } %>
+					<% if (operation.equals("update")) { %>
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%= MSG.accessBackToDetail() %>" 
+							title="<%= MSG.titleBackToDetail(MSG.accessBackToDetail())%>">
+						<loc:message name="actionBackToDetail" />
+					</html:submit>
+					<% } %>			</TD>
+		</TR>
+		
+<script language="javascript">
+	function lookup() {
+		peopleLookup((document.getElementById('fname').value + ' ' + document.getElementById('lname').value).trim(), function(person) {
+			if (person) {
+				document.getElementById('uid').value = (person[0] == null ? '' : person[0]);
+				document.getElementById('fname').value = (person[1] == null ? '' : person[1]);
+				document.getElementById('mname').value = (person[2] == null ? '' : person[2]);
+				document.getElementById('lname').value = (person[3] == null ? '' : person[3]);
+				document.getElementById('email').value = (person[4] == null ? '' : person[4]);
+			}
+		}, "mustHaveExternalId");
+	}
+</script>
+
+</loc:bundle>

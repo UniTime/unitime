@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<web-app 
+	version="2.4"
+	xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+	<display-name>
+		UniTime
+	</display-name>
+	
+	<description>
+		University Timetabling Application
+	</description>
+	
+	<welcome-file-list>
+		<welcome-file>
+			index.jsp
+		</welcome-file>
+	</welcome-file-list>
+	
+	
+	<!-- Error Pages -->
+	<error-page>
+		<exception-type>java.lang.Exception</exception-type>
+		<location>/error.jsp</location>
+	</error-page>
+
+    <session-config>
+        <session-timeout>45</session-timeout>
+    </session-config>
+
+	<!-- App Servlets -->
+	<servlet>
+		<servlet-name>InitServlet</servlet-name>
+		<servlet-class>
+			org.unitime.timetable.InitServlet
+		</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<!-- Struts Action Servlet -->
+	<servlet>
+		<servlet-name>action</servlet-name>
+		<servlet-class>
+			org.apache.struts.action.ActionServlet
+		</servlet-class>
+		<init-param>
+			<param-name>config</param-name>
+			<param-value>/WEB-INF/struts-config.xml</param-value>
+		</init-param>
+		<init-param>
+			<param-name>debug</param-name>
+			<param-value>3</param-value>
+		</init-param>
+		<init-param>
+			<param-name>detail</param-name>
+			<param-value>3</param-value>
+		</init-param>
+		<load-on-startup>0</load-on-startup>
+	</servlet>
+	
+	<!-- Sprint Servlets -->
+	<servlet>
+		<servlet-name>gwt-dispatcher</servlet-name>
+		<servlet-class>org.unitime.timetable.spring.gwt.GwtDispatcherServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+
+	<servlet>
+    	<servlet-name>calendarServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.CalendarServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+    	<servlet-name>patternServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.PatternServlet</servlet-class>
+    </servlet>
+    
+    <servlet>
+    	<servlet-name>gwtRpcServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.command.server.GwtRpcServlet</servlet-class>
+    </servlet>
+    
+    <servlet>
+    	<servlet-name>uploadServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.UploadServlet</servlet-class>
+    </servlet>
+    
+    <servlet>
+    	<servlet-name>exportServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.export.ExportServlet</servlet-class>
+    </servlet>
+    
+    <servlet>
+    	<servlet-name>remoteLogging</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.UniTimeRemoteLoggingService</servlet-class>
+    </servlet>
+    
+    <servlet>
+    	<servlet-name>roomPictureServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.server.rooms.RoomPictureServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>gwt-dispatcher</servlet-name>
+        <url-pattern>*.gwt</url-pattern>
+    </servlet-mapping>
+  
+    <servlet-mapping>
+      <servlet-name>calendarServlet</servlet-name>
+      <url-pattern>/calendar</url-pattern>
+    </servlet-mapping>
+	
+    <servlet-mapping>
+    	<servlet-name>gwtRpcServlet</servlet-name>
+    	<url-pattern>/unitime/gwt.rpc</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+      <servlet-name>patternServlet</servlet-name>
+      <url-pattern>/pattern</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+    	<servlet-name>roomPictureServlet</servlet-name>
+    	<url-pattern>/picture</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+      <servlet-name>uploadServlet</servlet-name>
+      <url-pattern>/upload</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+      <servlet-name>exportServlet</servlet-name>
+      <url-pattern>/export</url-pattern>
+    </servlet-mapping>
+
+	<!-- Servlet Mappings -->
+	<servlet-mapping>
+		<servlet-name>action</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>remoteLogging</servlet-name>
+		<url-pattern>/unitime/remote_logging</url-pattern>
+	</servlet-mapping> 
+
+	<!-- Filter to automatically close any open hibernate sessions -->
+	<filter>
+		<filter-name>
+			Hibernate Session Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.HibSessionFilter
+		</filter-class>
+	</filter>
+	
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	
+	<filter>
+		<filter-name>
+			Page Access Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.PageAccessFilter
+		</filter-class>
+		<init-param>
+			<param-name>config</param-name>
+			<param-value>/WEB-INF/struts-config.xml</param-value>
+		</init-param>
+	</filter>
+
+	<filter>
+		<filter-name>
+			Encoding Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.EncodingFilter
+		</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
+
+	<filter>
+		<filter-name>
+			Query Log Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.QueryLogFilter
+		</filter-class>
+		<init-param>
+			<param-name>exclude</param-name>
+			<param-value>menu.gwt: MenuService#getSolverInfo,sectioning.gwt: SectioningService#logIn</param-value>
+		</init-param>
+	</filter>
+	
+	<filter>
+		<filter-name>
+			Message Log Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.MessageLogFilter
+		</filter-class>
+	</filter>
+	
+	<filter>
+		<filter-name>
+			Google Chrome Frame No Cache Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.NoCacheFilter
+		</filter-class>
+		<init-param>
+			<param-name>user-agent</param-name>
+			<param-value>chromeframe</param-value>
+		</init-param>
+	</filter>
+	
+		<filter>
+		<filter-name>
+			Locale Filter
+		</filter-name>
+		<filter-class>
+			org.unitime.timetable.filter.LocaleFilter
+		</filter-class>
+		<init-param>
+			<param-name>use-browser-settings</param-name>
+			<param-value>false</param-value>
+		</init-param>
+	</filter>
+	
+	<filter>
+		<filter-name>Cache Disabling Filter</filter-name>
+		<filter-class>org.unitime.timetable.filter.CacheDisablingFilter</filter-class>
+	</filter>
+
+	<!-- Filter Mappings -->
+	<filter-mapping>
+		<filter-name>Encoding Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Hibernate Session Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Message Log Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Page Access Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
+		<url-pattern>*.gwt</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
+		<url-pattern>/calendar</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Google Chrome Frame No Cache Filter</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Locale Filter</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Locale Filter</filter-name>
+		<url-pattern>*.jsp</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Locale Filter</filter-name>
+		<url-pattern>*.gwt</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Locale Filter</filter-name>
+		<url-pattern>*.rpc</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Locale Filter</filter-name>
+		<url-pattern>/export</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Cache Disabling Filter</filter-name>
+		<url-pattern>/unitime/unitime.nocache.js</url-pattern>
+	</filter-mapping>
+
+	<jsp-config>
+		<jsp-property-group>
+			<url-pattern>*.jspf</url-pattern>
+		</jsp-property-group>
+	</jsp-config>
+	
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/applicationContext.xml /WEB-INF/securityContext.xml /WEB-INF/integration.xml</param-value>
+	</context-param>
+	
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<listener>
+		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+	</listener>
+	<!-- CAS Authentication (uncomment the following filter)
+	<listener>
+		<listener-class>org.jasig.cas.client.session.SingleSignOutHttpSessionListener</listener-class>
+	</listener>
+	-->
+</web-app>

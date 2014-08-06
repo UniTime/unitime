@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type="text/css" href="Release-Notes.css"?>
+<!DOCTYPE release-history PUBLIC "-//UniTime//UniTime Release Notes DTD/EN" "Release-Notes.dtd">
+<!-- 
+ * UniTime 3.5 (University Timetabling Application)
+ * Copyright (C) 2008 - 2013, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<release-history>
+
+<doc-title>UniTime 3.5 Release Notes</doc-title>
+
+<release>
+	<version>3.5.${build.number}</version>
+	<release-date>${build.date}</release-date>
+	<category>
+		<title>Technology Update</title>
+		<item>
+			<name>Clustering</name>
+			<description>
+				<line>Improved ability for UniTime to run in a cluster.
+					<line>Remote solver servers connect to each other and the web server(s) using JGroups.</line>
+					<line>Hibernate L2 cache is now replicated across the cluster.
+						<line>However, L2 cache is disabled when Hibernate is used outside of Tomcat (e.g., on a remote solver server).</line>
+					</line>
+				</line>
+				<line>Clustering can be disabled by setting application properties unitime.hibernate.cluster (Hibernate L2 cache) and unitime.solver.cluster (remove solver servers) to false.</line>
+				<line>Online student scheduling server can now run on multiple machines at once, with the data asynchronously replicated (using infinispan) and one machine being the master (responsible for all the updates).</line>
+			</description>
+		</item>
+		<item>
+			<name>Constraint Solver</name>
+			<description>
+				<line>Using the latest version of CPSolver 1.3</line>
+				<line>This update contains a new assignment model and multi-core capabilities.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Over-Expected Criterion</name>
+			<description>
+				<line>Added ability to provide a custom criterion that decides whether a class is over-expected or not.</line>
+				<line>Default implementation now falls back to section balancing when there are no expectations.
+					<line>I.e., students can be only allowed into sections that are (or will become) dis-balanced by more than 10% if there are no other sections meeting their schedule.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Reports</name>
+			<description>
+				<line>Added an interface that is implemented by all the reports.</line>
+				<line>Added time / availability conflicts report: unlike the existing course conflict report, conflicts are counted between individual classes.</line>
+				<line>Distance conflict report: changed to compute conflicts between individual classes.</line>
+				<line>Unbalanced sections report: list sections that are dis-balanced by more than 10%.</line>
+				<line>Time-overlaps report: list time conflicts between classes (that do allow for time overlaps).</line>
+				<line>Added a page through which various student sectioning solver reports can be displayed:
+					<line>Works for both batch (page  Student Sectioning Solver Reports, menu Students > Solver Reports) and online (page Online Student Scheduling Reports, menu Students > Online Scheduling Reports).</line>
+					<line>All the existing current reports are available (time conflicts, availability conflicts, unbalanced classes, distance conflicts, time overlaps).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboard</name>
+			<description>
+				<line>Display Not-Enrolled student requests instead of just the wait-listed ones.</line>
+				<line>Distinguish wait-listed unassigned request with the w) hint.
+					<line>This is done in the same way as there is the r) hint for enrollments using reservations or for reserved space.</line>
+				</line>
+				<line>Filter text field was replaced by the new filter box component (which is used on the events page, e.g., as Event Filter or Room Filter).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Added ability to wait-list an unassigned course request in the List of Classes table.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Instructor Preferences</name>
+			<description>
+				<line>Added ability to automatically inherit instructor preferences to externally managed classes.</line>
+				<line>There is a new toggle (inherit instructor preferences) on a department which controls whether instructor preferences are to be inherited or not.</line>
+				<line>Applicable room and building preferences, global room features and groups can now be inherited onto an externally managed class as well.</line>
+				<line>If the externally managed department does not allow required time and/or room preferences, the instructor preferences are weakened accordingly.</line>
+			</description>
+		</item>
+		<item>
+			<name>Hierarchical Preference Inheritance</name>
+			<description>
+				<line>If there are two or more scheduling subparts in a parent-child relation with the same instructional type (e.g., Lec - Lec a - Lec b stacked underneath), inherit preferences and the date pattern from the parent subpart whenever possible.</line>
+				<line>This behavior can be enabled by setting application property unitime.preferences.hierarchicalInheritance to true.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructor Unavailability</name>
+			<description>
+				<line>Instructor unavailabilty can include special and course-related events that are approved.
+					<line>These are events for which the instructor is the main contact or he/she is present in the additional contacts of the event.</line>
+					<line>This feature can be enabled by setting the application property unitime.events.instructorUnavailability to true (default is false).</line>
+				</line>
+				<line>If enabled, the unavailabilities will also show:
+					<line>in the Timetable Grid (in the same way as blocking events are displayed for rooms now)</line>
+					<line>on the Instructor Detail page (there is a new section called Instructor Unavailability, only visible when there is at least one such blocking event for the instructor).</line>
+				</line>
+				<line>The RoomAvailabilityInterface has been extended to provide instructor availability, the default room availability service has been extended to provide instructor availability from the events as described above.</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Credit</name>
+			<description>
+				<line>Course credit moved from instructional offering to course offering.
+					<line>That is, each course of a cross-list can have a different credit information.</line>
+					<line>This allows for variable credit courses where a student can pick the proper number of credits by selecting the appropriate course offering in the cross-list.</line>
+				</line>
+				<line>Course credit information is now also visible in the Course Finder dialog of the Student Scheduling Assistant page.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Other Changes</title>
+		<item>
+			<name>Event Management: No Room Check</name>
+			<description>
+				<line>Rooms that have the Ignore Room Check toggle enabled can be overbooked.
+					<line>To easily identify such a room, there is a No Room Check note in the room's tooltip and the room name is in italic in the Meetings table on the Add / Edit Event pages.</line>
+				</line>
+				<line>Meetings that are in a room with no room check never show any conflicts and such meetings also never show among conflicting events.</line>
+			</description>
+		</item>
+		<item>
+			<name>Rooms</name>
+			<description>
+				<line>Added ability to provide room pictures.</line>
+				<line>Pictures (of a room) can be updated for
+					<line>the current academic session only,</line>
+					<line>the current academic session and all future academic sessions, or</line>
+					<line>all academic sessions.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Application Properties</name>
+			<description>
+				<line>All (or most of) application properties are now registered and used through the ApplicationProperty enum.
+					<line>This allows for an easy place to see all configuration properties, define their default values and short descriptions.</line>
+				</line>
+				<line>Application Configuration page modified to include all registered properties, including their defaults and descriptions.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Constraint Solver</title>
+		<item>
+			<name>Course Timetabling: Deterministic Student Sectioning Customization</name>
+			<description>
+				<line>This custom sectioning assign students to groups in a deterministic way.
+					<line>Students are ordered by their academic information (curriculum) and unique ids and assigned in this order to the first available group (configuration or lecture).</line>
+				</line>
+				<line>To enable this customization set the following parameter:
+					<line>StudentSectioning.Class=net.sf.cpsolver.coursett.custom.DeterministicStudentSectioning</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Group Constraint</name>
+			<description>
+				<line>Forward checking extended to all hard group constraints (not only meet-together).</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: MaxBreaks constraint</name>
+			<description>
+				<line>MaxBreaks constraint limits the number of blocks of non back-to-back classes of an instructor on a day.</line>
+				<line>It has two parameters: a maximal number of breaks and a minimal length of a break between two classes not to be considered in the same block.
+					<line>For example, reference _MaxBreaks:1:30_ translates to a maximum number of one break (two blocks) on a day of classes not more than 30 minutes a part.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Class Weights</name>
+			<description>
+				<line>Added an ability to provide each class with a weight.
+					<line>This weight is used in the time and room preferences (the preference is weighted by the "importance" of the class).</line>
+				</line>
+				<line>For instance, this can be used for classes that are only offered once in a semester to have a lower weight.
+					<line>So that there is an incentive to put a class that is taught every week in a preferred time even if it bumps two classes (that only meet once) from their preferred times.</line>
+				</line>
+				<line>This also allows for things like giving compulsory or elective courses more weight over optional courses in the curriculum timetabling, if ever needed.</line>
+				<line>This feature can be enabled by the solver parameter Class Weights, two implementations are now available:
+					<line>Default Class Weights (default): all class weights are 1.0 (so, all works as before).</line>
+					<line>Average Hours A Week Class Weights: a weight of a class is estimated by the average number of hours it takes during the academic session.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>IFS: Neighborhood Search Algorithms</name>
+			<description>
+				<line>Added a general versions of Hill Climber, Great Deluge, and Simulated Annealing to the solver, with three problem independent neighboorhoods:
+					<line>Random move just picks a random unconflicting value to a variable.</line>
+					<line>Random swap tries to resolve all possible conflicts (unlike with suggestions there is no limit on depth, however, no new conflict can be created by resolving an existing one).</line>
+					<line>Suggestion move: a variable is selected randomly, a limited depth backtracking is used to find a possible change.
+						<line>Unlike in NeighbourSelectionWithSuggestions, the very first found suggestion is returned.</line>
+					</line>
+				</line>
+				<line>Added a "simple search" algorithm that combines the ifs, hill climber, and great deluge or simulated annealing in a similar way as the examination solver (or the ITC competition solver) does.</line>
+				<line>This algorithm is enabled by setting the Search Algorithm solver parameter to Experimental.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling: Required Reservation Constraint</name>
+			<description>
+				<line>This global constraint ensures that reservations that must be used are used.
+					<line>That is, an enrollment is conflicting when there is a reservation for the student that must be used, but the given enrollment does not use it.</line>
+				</line>
+				<line>While the domain of the course request already does not allow for such enrollments, such an enrollment can be loaded in from the database or XML.
+					<line>This constraint is to prevent assignment of such invalid enrollments.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+</release-history>

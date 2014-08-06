@@ -1,0 +1,877 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    $Id: struts-faces.tld,v 1.2 2010-12-01 11:10:51 tomas13 Exp $
+
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+   
+         http://www.apache.org/licenses/LICENSE-2.0
+   
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<!DOCTYPE taglib PUBLIC "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN" "http://java.sun.com/dtd/web-jsptaglibrary_1_2.dtd">
+<taglib>
+  <tlib-version>1.3</tlib-version>
+  <jsp-version>1.2</jsp-version>
+  <short-name>Struts-Faces</short-name>
+  <uri>http://struts.apache.org/tags-faces</uri>
+  <description><![CDATA[
+      <p>This tag library provides custom action functionality that is
+    similar to that provided by the Struts 1.1 tag libraries, but
+    is built on top of the JavaServer Faces rendering architecture.</p>
+<p>This tag library includes the following tags:</p>
+      ]]>
+      </description>
+  <tag>
+    <name>base</name>
+    <tag-class>org.apache.struts.faces.taglib.BaseTag</tag-class>
+    <description><![CDATA[
+      <p>Renders an HTML <code>&lt;base&gt;</code> element with an
+      <code>href</code> attribute pointing to the absolute location
+      of the enclosing JSP page.  This tag is valid only when nested
+      inside an HTML <code>&lt;head&gt;</code> element.  This tag is
+      useful because it allows you to use relative URL references that
+      are based on the URL of the page itself, rather than the URL to
+      which the most recent submit took place.</p>
+      ]]>
+      </description>
+    <attribute>
+      <name>binding</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Value binding expression to bind this component to
+        a backing bean property.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Component id of this component.
+      </description>
+    </attribute>
+    <attribute>
+      <name>rendered</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Boolean attribute indicating whether this component should be
+        rendered or not.
+      </description>
+    </attribute>
+    <attribute>
+      <name>target</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Target frame for this base reference.
+      </description>
+    </attribute>
+  </tag>
+  <tag>
+    <name>commandLink</name>
+    <tag-class>org.apache.struts.faces.taglib.CommandLinkTag</tag-class>
+    <description><![CDATA[
+      <p>Renders an HTML <code>&lt;a&gt;</code> element defining a
+      hyperlink that submits the current form.  This component is
+      required because the JSF 1.0 and 1.1 specifications require
+      interoperability between the renderers for the form element
+      and the command link element, without providing a portable
+      mechanism to allow intermixed libraries.</p>
+      ]]>
+      </description>
+    <attribute>
+      <name>action</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>actionListener</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>immediate</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>rendered</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>value</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>accesskey</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>charset</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>dir</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>hreflang</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>lang</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>onblur</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>onclick</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>ondblclick</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>onfocus</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>onkeydown</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>onkeypress</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>onkeyup</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>onmousedown</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>onmousemove</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>onmouseout</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>onmouseover</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>onmouseup</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>rel</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>rev</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>style</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>styleClass</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>tabindex</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>target</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>title</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+    <attribute>
+      <name>type</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+    </attribute>
+  </tag>
+  <tag>
+    <name>errors</name>
+    <tag-class>org.apache.struts.faces.taglib.ErrorsTag</tag-class>
+    <description><![CDATA[
+      <p>Displays a list of error messages prepared by form bean
+      or business logic validation processing.</p>
+      <p>In order to use this component successfully, you must have
+      defined an application scope <code>MessageResources</code> bean
+      under the specified attribute name, with optinal definitions for
+      the following message keys:</p>
+      ]]>
+      </description>
+    <attribute>
+      <name>binding</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Value binding expression to bind this component to
+        a backing bean property.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>bundle</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Name of the servlet context attribute under which the desired
+        <code>MessageResources</code> bundle is stored.  If not specified,
+        the default bundle for this sub-application will be used.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Component id of this component.
+      </description>
+    </attribute>
+    <attribute>
+      <name>property</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Component of the component for which to render errors.  If not
+        specified, all messages (regardless of property) are displayed.
+      </description>
+    </attribute>
+    <attribute>
+      <name>rendered</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Boolean attribute indicating whether this component should be
+        rendered or not.
+      </description>
+    </attribute>
+  </tag>
+  <tag>
+    <name>form</name>
+    <tag-class>org.apache.struts.faces.taglib.FormTag</tag-class>
+    <description><![CDATA[
+      <p>Render an HTML form element containing the nested components to
+      present the appropriate label and input field elements.  This tag is
+      distinguished from the tag in the standard HTML RenderKit because it
+      accepts a Struts <code>&lt;action&gt;</code> path as a parameter,
+      and triggers the creation of a Struts form bean if needed.</p>
+      ]]>
+      </description>
+    <attribute>
+      <name>action</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Struts <code>Action</code> to which this form should be
+        submitted.  This value must exactly match the <code>path</code>
+        attribute of the corresponding <code>&lt;action&gt;</code>
+        element in the <code>struts-config.xml</code> configuration
+        file for this application module.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>binding</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Value binding expression to bind this component to
+        a backing bean property.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>enctype</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>The content encoding to be used to submit this form, if the
+        method is <code>POST</code>.  This must be set to
+        "<code>multipart/form-data</code>" if your form includes file upload
+        field(s).  If not specified, the browser default
+        ("<code>application/x-www-form-urlencoded</code>") is used.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>focus</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>The identifier of the form field that should receive focus
+        when this form is rendered.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>focusIndex</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>If the focus field is an array, such as a radio button group,
+        you can specify the index of the array element to receive focus.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Component id of this component.
+      </description>
+    </attribute>
+    <attribute>
+      <name>onreset</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>JavaScript event handler executed if this form is reset.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>onsubmit</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>JavaScript event handler executed if this form is submitted.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>rendered</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Boolean attribute indicating whether this component should be
+        rendered or not.
+      </description>
+    </attribute>
+    <attribute>
+      <name>style</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>CSS styles to be applied to this HTML element.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>styleClass</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        CSS style class to use when rendering this component.
+      </description>
+    </attribute>
+    <attribute>
+      <name>target</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Window target to which this form is submitted, such as for use
+        in framed presentations.</p>
+      ]]>
+      </description>
+    </attribute>
+  </tag>
+  <tag>
+    <name>html</name>
+    <tag-class>org.apache.struts.faces.taglib.HtmlTag</tag-class>
+    <body-content>JSP</body-content>
+    <description><![CDATA[
+      <p>Renders an HTML <code>&lt;html&gt;</code> element with language
+      attributes extracted from the user's current Locale object, if there
+      is one.</p>
+      ]]>
+      </description>
+    <attribute>
+      <name>binding</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Value binding expression to bind this component to
+        a backing bean property.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Component id of this component.
+      </description>
+    </attribute>
+    <attribute>
+      <name>locale</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Set to <code>true</code> in order to record a <code>Locale</code>
+        based on the current request's <code>Accept-Language</code> header
+        (if any), if none has currently been set.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>rendered</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Boolean attribute indicating whether this component should be
+        rendered or not.
+      </description>
+    </attribute>
+    <attribute>
+      <name>xhtml</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Set to <code>true</code> to render an <code>xml:lang</code>
+        element on the generated <code>html</code> element.  It also causes
+        nested Struts HTML tags (although not JavaServer Faces component
+        tags) to render themselves as xhtml.</p>
+      ]]>
+      </description>
+    </attribute>
+  </tag>
+  <tag>
+    <name>javascript</name>
+    <tag-class>org.apache.struts.faces.taglib.JavascriptValidatorTag
+    </tag-class>
+    <description><![CDATA[
+      <p>
+<strong>IMPLEMENTATION NOTE</strong> - Unlike other tags in this
+      tag library, this does not correspond to a JavaServer Faces
+      user interface component.  It is based on the tag implementation
+      class used in the <code>struts-html</code> tag library.</p>
+<p>Render JavaScript validation based on the
+      validation rules loaded by the <code>ValidatorPlugIn</code>.
+      The set of validation rules that should be generated is based
+      on the formName attribute passed in, which should match
+      the name attribute of the form element in the xml file.</p>
+<p>The dynamicJavascript and staticJavascript attributes
+      default to true, but if dynamicJavascript is set to <code>true</code>
+      and staticJavascript is set to <code>false</code> then only
+      the dynamic JavaScript will be rendered.  If dynamicJavascript
+      is set to <code>false</code>
+      and staticJavascript is set to <code>true</code> then only
+      the static JavaScript will be rendered which can then be put in
+      separate JSP page so the browser can cache the static JavaScript.</p>
+      ]]>
+      </description>
+    <attribute>
+      <name>cdata</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+      <description><![CDATA[
+      <p>If set to "true" and XHTML has been enabled, the JavaScript will
+        be wrapped in a CDATA section to prevent XML parsing. The default is
+        "true" to comply with the W3C's recommendation.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>dynamicJavascript</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Whether or not to render the dynamic JavaScript.
+        Defaults to <code>true</code>.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>formName</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+      <description><![CDATA[
+      <p>The key (form name) to retrieve a specific
+        set of validation rules.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>htmlComment</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+      <description><![CDATA[
+      <p>Whether or not to enclose the javascript
+        with HTML comments.  This attribute is ignored in XHTML
+        mode because the script would be deleted by the XML parser.  See
+        the cdata attribute for details on hiding scripts from XML
+        parsers.  Defaults to <code>true</code>.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>method</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+      <description><![CDATA[
+      <p>The alternate JavaScript method name to be used
+        instead of the of the default.  The default is
+        'validate' concatenated in front of
+        the key (form name) passed in (ex: validateRegistrationForm).</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>page</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+      <description><![CDATA[
+      <p>The current page of a set of validation rules
+        if the page attribute for the field element
+        in the xml file is in use.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>src</name>
+      <required>false</required>
+      <rtexprvalue>true</rtexprvalue>
+      <description><![CDATA[
+      <p>The src attribute's value when defining
+        the html script element.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>staticJavascript</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Whether or not to render the static JavaScript.
+        Defaults to <code>true</code>.</p>
+      ]]>
+      </description>
+    </attribute>
+  </tag>
+  <tag>
+    <name>loadMessages</name>
+    <tag-class>org.apache.struts.faces.taglib.LoadMessagesTag</tag-class>
+    <body-content>empty</body-content>
+    <description><![CDATA[
+      <p>Create a Map wrapping the specified MessageResources instance, which
+      will return localized messages based on the Locale stored in the
+      view root component of the current view.</p>
+      ]]>
+      </description>
+    <attribute>
+      <name>messages</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Application scope key containing the MessageResources instance
+        to be exposed.  If not specified, the default MessageResources
+        instance for the current application module is exposed.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>var</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Request scope key under which the Map will be stored.</p>
+      ]]>
+      </description>
+    </attribute>
+  </tag>
+  <tag>
+    <name>message</name>
+    <tag-class>org.apache.struts.faces.taglib.MessageTag</tag-class>
+    <body-content>JSP</body-content>
+    <description><![CDATA[
+      <p>Render the message text looked up from a message resources bundle,
+      based on our current locale.  The message key must be specified by
+      exactly one of the following attributes:</p>
+<p>The <code>MessageResources</code> bundle to be used is specified
+      by the <code>bundle</code> attribute, as follows:</p>
+<p>Substitution parameters for the message may be nested inside this
+      tag by using the <code>parameter</code> tag from the standard
+      HTML RenderKit tag library.</p>
+<p>Additional control over the rendering process is specified by the
+      following optional attributes, with default values as indicated:</p>
+      ]]>
+      </description>
+    <attribute>
+      <name>binding</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Value binding expression to bind this component to
+        a backing bean property.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>bundle</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Name of the servlet context attribute under which the desired
+        <code>MessageResources</code> bundle is stored.  If not specified,
+        the default bundle for this sub-application will be used.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>filter</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Should we filter the output for characters that are sensitive
+        in HTML?  The default value is <code>true</code>.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Component identifier of the component corresponding to this tag.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>key</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Literal value of the message key to look up.  Exactly one of
+        <code>key</code> and <code>value</code> must be specified.
+        </p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>rendered</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Boolean attribute indicating whether this component should be
+        rendered or not.
+      </description>
+    </attribute>
+    <attribute>
+      <name>style</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>CSS styles used to render this component.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>styleClass</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Name of the CSS style class used to render this component.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>value</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Value reference expression used to retrieve a dynamic value for
+        the message key to look up.  Exactly one of <code>key</code> and
+        <code>value</code> must be specified.</p>
+      ]]>
+      </description>
+    </attribute>
+  </tag>
+  <tag>
+    <name>stylesheet</name>
+    <tag-class>org.apache.struts.faces.taglib.StylesheetTag</tag-class>
+    <description><![CDATA[
+      <p>Renders an HTML <code>&lt;link&gt;</code> element with a
+      relative reference to a <code>text/css</code> stylesheet at
+      the specified context-relative path.</p>
+      ]]>
+      </description>
+    <attribute>
+      <name>binding</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Value binding expression to bind this component to
+        a backing bean property.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Component id of this component.
+      </description>
+    </attribute>
+    <attribute>
+      <name>path</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Context-relative path to the resource for this relative link.
+      </description>
+    </attribute>
+    <attribute>
+      <name>rendered</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Boolean attribute indicating whether this component should be
+        rendered or not.
+      </description>
+    </attribute>
+  </tag>
+  <tag>
+    <name>write</name>
+    <tag-class>org.apache.struts.faces.taglib.WriteTag</tag-class>
+    <body-content>empty</body-content>
+    <description><![CDATA[
+      <p>Render the text associated with the specified model object or
+      text string, optionally performing filtering and formatting tasks
+      described by the optional attributes described below.  The text to be
+      rendered is specified in exactly one of the following attributes:</p>
+<p>Additional control over the rendering process is specified by the
+      following optional attributes, with default values as indicated:</p>
+      ]]>
+      </description>
+    <attribute>
+      <name>binding</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Value binding expression to bind this component to
+        a backing bean property.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>filter</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Should we filter the output for characters that are sensitive
+        in HTML?  The default value is <code>true</code>.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>id</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Component identifier of the component corresponding to this tag.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>rendered</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description>
+        Boolean attribute indicating whether this component should be
+        rendered or not.
+      </description>
+    </attribute>
+    <attribute>
+      <name>style</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>CSS styles used to render this component.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>styleClass</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Name of the CSS style class used to render this component.</p>
+      ]]>
+      </description>
+    </attribute>
+    <attribute>
+      <name>value</name>
+      <required>false</required>
+      <rtexprvalue>false</rtexprvalue>
+      <description><![CDATA[
+      <p>Literal text to be rendered, or value reference expression
+        to retrieve the text to be rendered.</p>
+      ]]>
+      </description>
+    </attribute>
+  </tag>
+</taglib>

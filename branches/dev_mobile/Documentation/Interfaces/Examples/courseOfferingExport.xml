@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE offerings PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/CourseOfferingExport.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<offerings campus="PuWL" year="2006" term="Fall">
+	<offering id="10234" offered="true" action="update|delete|insert">
+		<courseCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="3"/>
+		<course subject="A&amp;AE" courseNbr="101" controlling="true" title="" scheduleBookNote="">
+			<!-- Since UniTime 3.4, consent is on courses not on offerings -->
+			<!-- DP for department, IN for instructor -->
+			<consent type="DP|IN"/>
+		</course>
+		<course subject="A&amp;AE" courseNbr="101H" controlling="false" title="" scheduleBookNote="">
+			<!-- Since UniTime 3.5, course credit is on courses not on offerings -->
+			<!-- It is still allowed to have course credit on the offering (it acts as a default for all the courses of the offering) -->
+			<courseCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="2"/>
+		</course>
+		<config name="1" limit="20">
+			<subpart type="Lec" suffix="" minPerWeek="50">
+			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
+				<subpart type="Rec" suffix="" minPerWeek="100">
+			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
+					<subpart type="Rec" suffix="a" minPerWeek="50"/>
+				</subpart>
+				<subpart type="Lab" suffix="" minPerWeek="100">
+ 			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
+				</subpart>
+			</subpart>
+			<subpart type="Lab" suffix="" minPerWeek="150"/>
+			<class id="" type="Lec" suffix="1" limit="20" scheduleNote="" studentScheduling="true">
+				<class id="" type="Rec" suffix="1" limit="10">
+					<class id="" type="Rec" suffix="1a" limit="10"/>
+				</class>
+				<class id="" type="Rec" suffix="2" limit="10">
+					<class id="" type="Rec" suffix="2a" limit="10"/>
+				</class>
+				<date startDate="08/20" endDate="09/22"/> <!-- non-default date pattern -->
+				<time days="MWF" startTime="0730" endTime="0820"/>
+				<room id="" building="REC" roomNbr="101"/>
+				<room id="" building="REC" roomNbr="102"/>
+				<instructor id="23344" lname="" mname="" fname="" share="80" lead="true"/> <!-- only instructors that are allowed to be printed are included -->
+				<instructor id="23435" lname="" mname="" fname="" share="20"/>
+			</class>
+			<class id="" type="Lab" suffix="1" limit="15"/>
+			<class id="" type="Lab" suffix="2" limit="5"/>
+		</config>
+		<config name="2" limit="inf">
+			<subpart type="Lec" suffix="" minPerWeek="100">
+			  		<subpartCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
+			</subpart>
+			<class id="" type="Lec" suffix="2">
+				<!-- arrange hours class: no time element-->
+				<location name="PIZZA HUT"/> <!-- non-university location -->
+			</class>
+		</config>
+	</offering>
+</offerings>

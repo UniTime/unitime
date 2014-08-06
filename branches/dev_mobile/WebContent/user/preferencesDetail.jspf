@@ -1,0 +1,283 @@
+<%--
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+--%>
+<%@page import="org.unitime.timetable.util.IdValue"%>
+<%@ page language="java" autoFlush="true"%>
+<%@ page import="org.unitime.timetable.action.PreferencesAction" %>
+<%@ page import="org.unitime.timetable.model.Building" %>
+<%@ page import="org.unitime.timetable.model.Room" %>
+<%@ page import="org.unitime.timetable.model.DatePattern" %>
+<%@ page import="org.unitime.timetable.model.RoomFeature" %>
+<%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
+<%@ page import="org.unitime.timetable.model.DistributionPref" %>
+<%@ page import="org.unitime.timetable.model.RoomGroup" %>
+<%@ page import="org.unitime.timetable.model.ExamPeriod" %>
+<%@ page import="org.unitime.commons.Debug" %>
+<%@ page import="org.unitime.timetable.model.Location" %>
+<%@ page import="org.unitime.timetable.model.DistributionType" %>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+
+<% try { %>
+	<bean:parameter id="frmName" name="frmName"/>
+	<loc:bundle name="CourseMessages">
+
+<!-- Time Preferences -->
+	<logic:notEmpty name="<%=frmName%>" property="timePatterns">
+		<TR>
+		<TD valign="top"><loc:message name="propertyTime"/> </TD>
+		<TD>
+		<% int idx = 0; %>
+			<logic:iterate name="<%=frmName%>" property="timePatterns" id="timePattern" indexId="ctr">
+					<INPUT type="hidden" name='<%= "timePatterns[" + ctr + "]" %>' value="<%=timePattern%>" />
+					<table border='0' width='100%'>
+						<tr>
+							<td align='left'>
+							<%=request.getAttribute(PreferencesAction.TIME_PATTERN_GRID_ATTR + "_" + idx)%>							
+							</td>
+						</tr>
+					</table>
+			<% idx++; %>
+			</logic:iterate>
+		</TD>
+		</TR>
+	</logic:notEmpty>
+	<logic:notEmpty name="<%=frmName%>" property="availability">
+		<tr>
+			<td valign="top"><loc:message name="propertyTime"/></td>
+			<td>
+				<div id='UniTimeGWT:InstructorAvailability' style="display: none;"><bean:write name="<%=frmName%>" property="availability"/></div>
+			</td>
+		</tr>
+	</logic:notEmpty>
+	
+<!--  Period Preferences -->
+	<logic:notEmpty scope="request" name="ExamPeriodGrid">
+		<TR>
+			<TD valign="top"><loc:message name="propertyExaminationPeriods"/> </TD>
+			<TD>
+				<bean:write scope="request" name="ExamPeriodGrid" filter="false"/>
+			</TD>
+		</TR>
+	</logic:notEmpty>
+<!-- date Pattern Preferences -->
+	<logic:notEqual value="false" parameter="datePatternPref">
+		<logic:notEmpty name="<%=frmName%>" property="datePatternPrefs">
+		<TR>
+			<TD valign="top"><loc:message name="propertyDatePatterns"/> </TD>
+			<TD>
+				<% String patterns = ""; boolean hasReq = false; %>
+				<logic:iterate name="<%=frmName%>" property="datePatternPrefs" id="datePatternPref" indexId="ctr">
+					<% PreferenceLevel preference = null; %>
+					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<logic:equal name="<%=frmName%>" property='<%="datePatternPrefLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
+							<% preference = (PreferenceLevel)prLevel; %>
+						</logic:equal>
+					</logic:iterate>
+					<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp">
+						<logic:equal name="dp" property="id" value="<%=(String)datePatternPref%>">
+							<%
+								if (PreferenceLevel.sRequired.equals(preference.getPrefProlog()) && !hasReq) { hasReq = true; patterns = ""; }
+								if (!PreferenceLevel.sProhibited.equals(preference.getPrefProlog()) && (!hasReq || PreferenceLevel.sRequired.equals(preference.getPrefProlog()))) {
+									IdValue idVal = (IdValue)dp;
+									String color =  preference.prefcolor();
+									String name = "<b>" + idVal.getValue() + "</b>";
+									if (PreferenceLevel.sNeutral.equals(preference.getPrefProlog())) {
+										color = "black"; name = idVal.getValue();
+									}
+									String onClick = "showGwtDialog('Preview of " + idVal.getValue() + "', 'user/dispDatePattern.jsp?id=" + idVal.getId() + "','840','520');";
+									patterns += (patterns.isEmpty() ? "" : ", ") +
+										"<span style='color:" + color + ";cursor:pointer;' title='" + preference.getPrefName() + ": " + idVal.getValue() + "' " +
+										"onClick=\"" + onClick + "\">" + name + "</span>";
+								}
+							%>
+						</logic:equal>
+					</logic:iterate>
+	   			</logic:iterate>
+	   			<%=patterns%>
+		   	</TD>
+	   	</TR>
+	   	</logic:notEmpty>
+	</logic:notEqual>	
+<!-- Room Group -->
+	<logic:notEqual value="false" parameter="roomGroupPref">
+		<logic:notEmpty name="<%=frmName%>" property="roomGroups">
+		<TR>
+			<TD valign="top"><loc:message name="propertyRoomGroups"/> </TD>
+			<TD>
+				<logic:iterate name="<%=frmName%>" property="roomGroups" id="roomGroup" indexId="ctr">
+					<% PreferenceLevel preference = null; %>
+					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<logic:equal name="<%=frmName%>" property='<%="roomGroupLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
+							<% preference = (PreferenceLevel)prLevel; %>
+						</logic:equal>
+					</logic:iterate>
+					<logic:iterate scope="request" name="<%=RoomGroup.GROUP_LIST_ATTR_NAME%>" id="gr">
+						<logic:equal name="gr" property="uniqueId" value="<%=(String)roomGroup%>">
+							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((RoomGroup)gr).getNameWithTitle()%>'><B><%=((RoomGroup)gr).getNameWithTitle()%></B></div>
+						</logic:equal>
+					</logic:iterate>
+	   			</logic:iterate>
+		   	</TD>
+	   	</TR>
+	   	</logic:notEmpty>
+	</logic:notEqual>
+
+<!-- Room Preferences -->
+	<% PreferenceLevel pr = null; %>
+	<logic:notEqual value="false" parameter="roomPref">
+		<logic:notEmpty name="<%=frmName%>" property="roomPrefs">
+		<TR>
+			<TD valign="top"><loc:message name="propertyRooms"/> </TD>
+			<TD>
+				<logic:iterate name="<%=frmName%>" property="roomPrefs" id="roomPref" indexId="ctr">
+					<% PreferenceLevel preference = null; %>
+					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<logic:equal name="<%=frmName%>" property='<%="roomPrefLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
+							<% preference = (PreferenceLevel)prLevel; %>
+						</logic:equal>
+					</logic:iterate>
+					<logic:iterate scope="request" name="<%=Room.ROOM_LIST_ATTR_NAME%>" id="r">
+						<logic:equal name="r" property="uniqueId" value="<%=(String)roomPref%>">
+							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((Location)r).getLabel()%> (<%=((Location)r).getCapacity()%> seats)'><B><%=((Location)r).getLabel()%></B></div>
+						</logic:equal>
+					</logic:iterate>
+	   			</logic:iterate>
+		   	</TD>
+	   	</TR>
+	   	</logic:notEmpty>
+	</logic:notEqual>
+
+<!-- Building Preferences -->
+	<logic:notEqual value="false" parameter="bldgPref">
+		<logic:notEmpty name="<%=frmName%>" property="bldgPrefs">
+		<TR>
+			<TD valign="top"><loc:message name="propertyBuildings"/> </TD>
+			<TD>
+				<logic:iterate name="<%=frmName%>" property="bldgPrefs" id="bldgPref" indexId="ctr">
+					<% PreferenceLevel preference = null; %>
+					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<logic:equal name="<%=frmName%>" property='<%="bldgPrefLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
+							<% preference = (PreferenceLevel)prLevel; %>
+						</logic:equal>
+					</logic:iterate>
+					<logic:iterate scope="request" name="<%=Building.BLDG_LIST_ATTR_NAME%>" id="b">
+						<logic:equal name="b" property="uniqueId" value="<%=(String)bldgPref%>">
+							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((Building)b).getAbbrName()%>'><B><%=((Building)b).getAbbrName()%></B></div>
+						</logic:equal>
+					</logic:iterate>
+	   			</logic:iterate>
+		   	</TD>
+	   	</TR>
+	   	</logic:notEmpty>
+	</logic:notEqual>
+
+<!-- Room Feature Preferences -->
+	<logic:notEqual value="false" parameter="roomFeaturePref">
+		<logic:notEmpty name="<%=frmName%>" property="roomFeaturePrefs">
+		<TR>
+			<TD valign="top"><loc:message name="propertyRoomFeatures"/></TD>
+			<TD>
+				<logic:iterate name="<%=frmName%>" property="roomFeaturePrefs" id="roomFeaturePref" indexId="ctr">
+					<% PreferenceLevel preference = null; %>
+					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<logic:equal name="<%=frmName%>" property='<%="roomFeaturePrefLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
+							<% preference = (PreferenceLevel)prLevel; %>
+						</logic:equal>
+					</logic:iterate>
+					<logic:iterate scope="request" name="<%=RoomFeature.FEATURE_LIST_ATTR_NAME%>" id="rf">
+						<logic:equal name="rf" property="uniqueId" value="<%=(String)roomFeaturePref%>">
+							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((RoomFeature)rf).getLabelWithType()%>'><B><%=((RoomFeature)rf).getLabelWithType()%></B></div>
+						</logic:equal>
+					</logic:iterate>
+	   			</logic:iterate>
+		   	</TD>
+	   	</TR>
+	   	</logic:notEmpty>
+	</logic:notEqual>
+
+	<logic:notEqual value="false" parameter="distPref">
+		<logic:empty name="<%=DistributionPref.DIST_PREF_REQUEST_ATTR%>" scope="request">
+		<logic:notEmpty name="<%=frmName%>" property="distPrefs">
+		<TR>
+			<TD valign="top"><loc:message name="propertyDistribution"/> </TD>
+			<TD>
+				<logic:iterate name="<%=frmName%>" property="distPrefs" id="distPref" indexId="ctr">
+					<% PreferenceLevel preference = null; %>
+					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<logic:equal name="<%=frmName%>" property='<%="distPrefLevels["+ctr+"]"%>' value="<%=((PreferenceLevel)prLevel).getUniqueId().toString()%>">
+							<% preference = (PreferenceLevel)prLevel; %>
+						</logic:equal>
+					</logic:iterate>
+					<logic:iterate scope="request" name="<%=DistributionType.DIST_TYPE_ATTR_NAME%>" id="dp">
+						<logic:equal name="dp" property="uniqueId" value="<%=(String)distPref%>">
+							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((DistributionType)dp).getLabel()%>'><B><%=((DistributionType)dp).getLabel()%></B></div>
+						</logic:equal>
+					</logic:iterate>
+	   			</logic:iterate>
+		   	</TD>
+	   	</TR>
+	   	</logic:notEmpty>
+	   	</logic:empty>
+	</logic:notEqual>
+	
+	<logic:notEmpty name="<%=Location.AVAILABLE_LOCATIONS_ATTR%>" scope="request">
+		<TR>
+			<TD valign="top"><loc:message name="propertyAvailableRooms"/></TD>
+			<TD>
+				<bean:write name="<%=Location.AVAILABLE_LOCATIONS_ATTR%>" scope="request" filter="false"/>
+			</TD>
+		</TR>
+	</logic:notEmpty>
+	
+		<TR>
+			<TD valign="middle" colspan='3' align='left'>
+				<logic:equal name="<%=frmName%>" property="hasNotAvailable" value="false">
+					<tt:displayPrefLevelLegend/>
+				</logic:equal>
+				<logic:equal name="<%=frmName%>" property="hasNotAvailable" value="true">
+					<tt:displayPrefLevelLegend notAvailable="true"/>
+				</logic:equal>
+			</TD>
+		</TR>
+
+<!-- Distribution Preferences -->
+	<logic:notEqual value="false" parameter="distPref">
+		<logic:notEmpty name="<%=DistributionPref.DIST_PREF_REQUEST_ATTR%>" scope="request">
+		<logic:notMatch value="No preferences found" name="<%=DistributionPref.DIST_PREF_REQUEST_ATTR%>" scope="request">
+		<TR>
+			<TD colspan="2" align="right">
+				&nbsp;<BR>
+				<TABLE align="left" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0;">
+					<bean:write name="<%=DistributionPref.DIST_PREF_REQUEST_ATTR%>" scope="request" filter="false"/>
+				</TABLE>
+			</TD>
+		</TR>
+		</logic:notMatch>
+		</logic:notEmpty>
+	</logic:notEqual>
+	
+
+
+	</loc:bundle>		
+<% } catch (Exception e) { 
+	 Debug.error(e);
+	 throw e;
+   } %>	   	

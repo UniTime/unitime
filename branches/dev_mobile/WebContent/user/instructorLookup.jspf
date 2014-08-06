@@ -1,0 +1,186 @@
+<%--
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+--%>
+<%@ page import="org.unitime.timetable.model.Session" %>
+<%@ page import="org.unitime.timetable.model.Staff" %>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+
+<loc:bundle name="CourseMessages">
+<tt:session-context/>
+<bean:parameter id="frmName" name="frmName"/>
+<logic:notEmpty name="<%=frmName%>" property="matchFound">
+			<logic:equal name="<%=frmName%>" property="matchFound" value="true">
+
+				<TR>
+					<TD valign="middle" colspan='2' align='right'>
+						<tt:section-header>		
+							<tt:section-title>	
+								<loc:message name="sectionTitleSearchResults"/>	
+							</tt:section-title>
+							<html:submit property="op" 
+									styleClass="btn" 
+									accesskey="<%=MSG.accessSelectInstructor() %>" 
+									title="<%=MSG.titleSelectInstructor(MSG.accessSelectInstructor()) %>" >
+								<loc:message name="actionSelectInstructor" />
+							</html:submit> 
+							<html:submit property="op" 
+									styleClass="btn" 
+									accesskey="<%=MSG.accessCancel() %>" 
+									title="<%=MSG.titleCancel(MSG.accessCancel()) %>" >
+								<loc:message name="actionCancel" />
+							</html:submit> 
+						</tt:section-header>		
+					</TD>
+				</TR>
+				
+				<logic:notEmpty name="<%=frmName%>" property="i2a2Match">
+				<bean:define id="i2a2" name="<%=frmName%>" property="i2a2Match" />
+				<TR>
+					<TD valign="middle" colspan='2'>
+					&nbsp;
+					</TD>
+				</TR>
+				<TR>
+					<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+					<loc:message name="sectionTitleExternalLookupMatch"/>
+					</TD>
+				</TR>				
+				<TR>
+					<TD valign="middle" colspan='2'>
+						<table align='left' border='0'>
+							<tr>
+								<td></td>
+								<td><i><loc:message name="columnExternalId"/></i></td>
+								<td><i><loc:message name="columnInstructorName"/></i></td>
+								<td><i><loc:message name="columnLogin"/></i></td>
+							</tr>
+							<tr>
+								<td>
+									<html:radio property="searchSelect" value="i2a2"/>
+								</td>
+								<td>
+									<bean:write name="i2a2" property="externalId" /> &nbsp;
+								</td>
+								<td>
+									<bean:write name="i2a2" property="name" /> &nbsp;
+								</td>
+								<td>
+									<bean:write name="i2a2" property="userName" />  
+								</td>
+							</tr>
+						</table>
+					</TD>
+				</TR>
+				</logic:notEmpty>
+				
+				<logic:notEmpty name="<%=frmName%>" property="staffMatch">
+				<TR>
+					<TD valign="middle" colspan='2'>
+					&nbsp;
+					</TD>
+				</TR>
+				<TR>
+					<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+					<loc:message name="sectionTitleStaffFileMatches"/>
+					</TD>
+				</TR>
+				
+				<% 
+					Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
+				 %>
+
+				<TR>
+					<TD valign="middle" colspan='2' class='BottomBorderGray'>
+						<table align='left' border='0'>
+							<tr>
+								<td></td>
+								<td><i><loc:message name="columnExternalId"/></i></td>
+								<td><i><loc:message name="columnInstructorName"/></i></td>
+								<td><i><loc:message name="columnDepartment"/></i></td>
+								<td><i><loc:message name="columnInstructorPosition"/></i></td>
+							</tr>
+							<logic:iterate id="staff" name="<%=frmName%>" property="staffMatch">
+								<bean:define id="staffUid" name="staff" property="uniqueId" />
+								<tr>
+									<td>
+										<html:radio property="searchSelect" value="${staffUid}"/>
+									</td>
+									<td>
+										<bean:write name="staff" property="externalUniqueId" /> &nbsp;
+									</td>
+									<td>
+										<bean:write name="staff" property="name" /> &nbsp;
+									</td>
+									<td>
+										<%=((Staff)staff).getDeptName(sessionId)%> &nbsp;
+									</td>
+									<td>
+										<logic:notEmpty name="staff" property="positionType">
+											<bean:define id="positionType" name="staff" property="positionType" />
+											<bean:write name="positionType" property="label" />
+										</logic:notEmpty>
+										<logic:empty name="staff" property="positionType">
+											N/A
+										</logic:empty>
+									</td>
+								</tr>
+							</logic:iterate>
+						</table>
+					</TD>
+				</TR>
+				</logic:notEmpty>
+				
+				<TR>
+					<TD valign="middle" colspan='2' class='WelcomeRowHead'>
+					&nbsp;
+					</TD>
+				</TR>
+				
+				<TR>
+					<TD valign="middle" colspan='2' align='right'>
+						<html:hidden name="<%=frmName%>" property="careerAcct" />
+						<html:hidden name="<%=frmName%>" property="fname" />
+						<html:hidden name="<%=frmName%>" property="mname" />
+						<html:hidden name="<%=frmName%>" property="lname" />
+						<html:hidden name="<%=frmName%>" property="posType" />
+						<html:hidden name="<%=frmName%>" property="note" />
+						<html:hidden name="<%=frmName%>" property="deptName" />
+						<html:hidden name="<%=frmName%>" property="puId" />
+						
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%=MSG.accessSelectInstructor() %>" 
+								title="<%=MSG.titleSelectInstructor(MSG.accessSelectInstructor()) %>" >
+							<loc:message name="actionSelectInstructor" />
+						</html:submit> 
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey="<%=MSG.accessCancel() %>" 
+								title="<%=MSG.titleCancel(MSG.accessCancel()) %>" >
+							<loc:message name="actionCancel" />
+						</html:submit> 
+					</TD>
+				</TR>
+				
+			</logic:equal>
+		</logic:notEmpty>
+</loc:bundle>

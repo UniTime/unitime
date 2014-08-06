@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="Script" table="script">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            not-null="true"
+            length="128"/>
+            
+        <property
+            name="description"
+            column="description"
+            type="java.lang.String"
+            not-null="false"
+            length="1024"/>
+            
+        <property
+            name="engine"
+            column="engine"
+            type="java.lang.String"
+            not-null="true"
+            length="32"/>
+        
+        <property
+            name="permission"
+            column="permission"
+            type="java.lang.String"
+            not-null="false"
+            length="128"/>
+
+        <property
+            name="script"
+            column="script"
+            type="java.lang.String"
+            not-null="true"
+            />
+
+		<set
+            name="parameters"
+            cascade="all"
+            inverse="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="script_id"/>
+            <one-to-many class="ScriptParameter"/>
+        </set>
+    </class>
+    
+    <class name="ScriptParameter" table="script_parameter">
+        <cache include="non-lazy" usage="transactional"/>
+        
+        <composite-id>
+        	<key-many-to-one
+        		name="script"
+        		class="Script"
+        		column="script_id"
+        		foreign-key="fk_script_parameter"
+        	/>
+            <key-property
+                name="name"
+                column="name"
+                type="java.lang.String"
+                length="128"/>
+        </composite-id>
+
+        <property
+            name="label"
+            column="label"
+            type="java.lang.String"
+            not-null="false"
+            length="256"/>
+
+        <property
+            name="type"
+            column="type"
+            type="java.lang.String"
+            not-null="true"
+            length="2048"/>
+
+       	<property
+            name="defaultValue"
+            column="default_value"
+            type="java.lang.String"
+            not-null="false"
+            length="2048"/>
+   	</class>
+</hibernate-mapping>

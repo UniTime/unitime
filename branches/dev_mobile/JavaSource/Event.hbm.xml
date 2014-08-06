@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.1 (University Course Timetabling & Student Sectioning Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class
+        name="Event"
+        abstract="true"
+        table="event"
+        discriminator-value="-1">
+
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <discriminator column="event_type" type="java.lang.Integer"/>
+        <property
+            name="eventName"
+            column="event_name"
+            type="java.lang.String"
+            length="100"
+            not-null="false"/>
+
+        <property
+            name="minCapacity"
+            column="min_capacity"
+            type="java.lang.Integer"
+            not-null="false"
+            length="10"/>
+
+        <property
+            name="maxCapacity"
+            column="max_capacity"
+            type="java.lang.Integer"
+            not-null="false"
+            length="10"/>
+
+        <property
+            name="email"
+            column="email"
+            type="java.lang.String"
+            not-null="false"
+            length="1000"/>
+
+        <many-to-one
+            name="mainContact"
+            class="EventContact"
+            column="main_contact_id"
+            foreign-key="fk_event_main_contact"
+            not-null="false"/>
+
+        <set
+            name="additionalContacts"
+            table="event_join_event_contact"
+            inverse="false">
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="event_id"/>
+            <many-to-many class="EventContact" column="event_contact_id"/>
+        </set>
+
+        <set
+            name="notes"
+            inverse="true"
+            lazy="true"
+            cascade="all-delete-orphan"
+            order-by="uniqueid">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="event_id"/>
+            <one-to-many class="EventNote"/>
+        </set>
+
+        <set
+            name="meetings"
+            lazy="true"
+            cascade="all-delete-orphan"
+            inverse="true">
+
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="event_id" foreign-key="fk_meeting_event"/>
+            <one-to-many class="Meeting"/>
+        </set>
+
+        <many-to-one
+            name="sponsoringOrganization"
+            class="SponsoringOrganization"
+            column="sponsor_org_id"
+            foreign-key="fk_event_sponsor_org"
+            not-null="false"/>
+        
+        <property
+            name="expirationDate"
+            column="expiration_date"
+            type="java.util.Date"
+            not-null="false"/>
+
+        <subclass
+            name="ClassEvent"
+            abstract="false"
+            discriminator-value="0">
+            <many-to-one
+                name="clazz"
+                class="Class_"
+                column="class_id"
+                foreign-key="fk_event_class"
+                not-null="true"
+                unique="true"/>
+
+        </subclass>
+
+        <subclass
+            name="ExamEvent"
+            abstract="true"
+            discriminator-value="-2">
+            <many-to-one
+                name="exam"
+                class="Exam"
+                column="exam_id"
+                foreign-key="fk_event_exam"
+                not-null="true"
+                unique="true"/>
+
+            <subclass
+                name="FinalExamEvent"
+                abstract="false"
+                discriminator-value="1"/>
+
+            <subclass
+                name="MidtermExamEvent"
+                abstract="false"
+                discriminator-value="2"/>
+
+        </subclass>
+
+        <subclass
+            name="CourseEvent"
+            abstract="false"
+            discriminator-value="3">
+            <property
+                name="reqAttendance"
+                type="java.lang.Boolean"
+                column="req_attd"
+                not-null="true"/>
+
+            <set
+                name="relatedCourses"
+                lazy="true"
+                cascade="all-delete-orphan"
+                inverse="true">
+
+                <cache include="non-lazy" usage="transactional"/>
+                <key column="event_id" foreign-key="fk_event_owner_event"/>
+                <one-to-many class="RelatedCourseInfo"/>
+            </set>
+
+        </subclass>
+
+        <subclass
+            name="SpecialEvent"
+            abstract="false"
+            discriminator-value="4">
+
+	        <subclass
+    	        name="UnavailableEvent"
+        	    abstract="false"
+            	discriminator-value="5"/>
+
+        </subclass>
+
+
+    </class>
+
+</hibernate-mapping>

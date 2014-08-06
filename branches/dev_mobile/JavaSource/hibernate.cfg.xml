@@ -1,0 +1,212 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration
+    PUBLIC "-//Hibernate/Hibernate Configuration DTD//EN"
+    "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd" >
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<hibernate-configuration>
+<session-factory name="unitime:hibernate/SessionFactory">
+
+	<!-- MySQL Configuration -->
+	<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+	<property name="connection.url">jdbc:mysql://localhost:3306/timetable</property>
+	<property name="connection.username">timetable</property>
+	<property name="connection.password">unitime</property>
+	<property name="connection.autocommit">true</property>
+	<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
+	<property name="tmtbl.uniqueid.generator">org.hibernate.id.TableHiLoGenerator</property>
+	<property name="hibernate.connection.useUnicode">true</property>
+	<property name="hibernate.connection.characterEncoding">utf8</property>
+	<!-- End of MySQL Configuration -->
+	
+	<!-- Oracle Configuration -->
+	<!-- 
+	<property name="connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
+	<property name="connection.url">jdbc:oracle:thin:@localhost:1521:xe</property>
+	<property name="connection.username">timetable</property>
+	<property name="connection.password">unitime</property>
+	<property name="dialect">org.hibernate.dialect.Oracle10gDialect</property>
+	<property name="tmtbl.uniqueid.generator">org.hibernate.id.SequenceGenerator</property>
+	-->
+	<!-- End of Oracle Configuration -->
+	
+	<!-- Connect database using Apache DBCP -->
+	<property name="hibernate.connection.provider_class">org.unitime.commons.hibernate.connection.LoggingDBCPConnectionProvider</property>
+	<property name="hibernate.dbcp.maxIdle">5</property>
+	<property name="hibernate.dbcp.maxActive">20</property>
+	<property name="hibernate.dbcp.whenExhaustedAction">1</property>
+	<property name="hibernate.dbcp.maxWait">180000</property>
+	<property name="hibernate.dbcp.testOnBorrow">true</property>
+	<property name="hibernate.dbcp.testOnReturn">false</property>
+	<property name="hibernate.dbcp.validationQuery">select 1 from dual</property>
+	<!-- End of connect database using Apache DBCP -->
+
+	<!-- If true, class LobCleanUpInterceptor will print some audit information -->
+	<property name="tmtbl.hibernate.audit">false</property>
+
+	<property name="default_schema">timetable</property>
+
+	<property name="show_sql">false</property>
+
+	<!-- Generate comments inside the SQL, for easier debugging, defaults -->
+	<property name="hibernate.use_sql_comments">true</property>
+
+	<!-- 
+		Set a maximum "depth" for the outer join fetch tree for single-ended 
+		associations (one-to-one, many-to-one) 
+	-->
+	<property name="hibernate.max_fetch_depth">2</property>
+
+	<property name="hibernate.jdbc.fetch_size">1000</property>
+
+	<property name="hibernate.jdbc.batch_size">20</property>
+
+	<property name="hibernate.connection.release_mode">auto</property>
+
+	<property name="hibernate.default_batch_fetch_size">100</property>
+
+	<!-- Use Second Level Cache -->
+	<property name="hibernate.cache.use_second_level_cache">true</property>
+
+	<!-- Cache Provider - EhCache -->
+	<property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
+	
+	<!-- Cache Provider - Infinispan -->
+	<!-- 
+	<property name="hibernate.cache.region.factory_class">org.hibernate.cache.infinispan.InfinispanRegionFactory</property>
+	<property name="hibernate.transaction.factory_class">org.hibernate.engine.transaction.internal.jta.JtaTransactionFactory</property>
+	<property name="hibernate.transaction.jta.platform">org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform</property>
+	<property name="hibernate.cache.infinispan.cfg">hibernate-infinispan.xml</property>
+	 -->
+
+	<!-- Keep the cache entries in a more human-understandable format -->
+	<property name="hibernate.cache.use_structured_entries">true</property>
+
+	<!-- Enable the query cache, individual queries still have to be set cachable -->
+	<property name="hibernate.cache.use_query_cache">true</property>
+
+	<!-- 
+		Force Hibernate to order SQL updates by the primary key value of the items being updates. 
+		This will result in fewer transaction deadlocks in highly concurrent systems.		
+	-->
+	<property name="hibernate.order_updates">true</property>
+
+	<!-- Collect statistics useful for performance tuning -->
+	<property name="hibernate.generate_statistics">false</property>
+
+	<!-- Enables use of CGLIB instead of runtime reflection (useful when troubleshooting) -->
+	<!-- property name="hibernate.cglib.use_reflection_optimizer">
+		true
+		</property -->
+		
+	<property name="SetBigStringTryClob">true</property>
+
+	<!-- Mapping files -->
+	<mapping resource="Building.hbm.xml" />
+	<mapping resource="Roles.hbm.xml" />
+	<mapping resource="SubjectArea.hbm.xml" />
+	<mapping resource="RefTableEntry.hbm.xml" />
+	<mapping resource="Room.hbm.xml" />
+	<mapping resource="RoomFeature.hbm.xml" />
+	<mapping resource="RoomGroup.hbm.xml" />
+	<mapping resource="RoomDept.hbm.xml" />
+	<mapping resource="CourseOffering.hbm.xml" />
+	<mapping resource="InstructionalOffering.hbm.xml" />
+	<mapping resource="InstrOfferingConfig.hbm.xml" />
+	<mapping resource="TimePattern.hbm.xml" />
+	<mapping resource="PreferenceLevel.hbm.xml" />
+	<mapping resource="Preference.hbm.xml" />
+	<mapping resource="DistributionObject.hbm.xml" />
+	<mapping resource="PreferenceGroup.hbm.xml" />
+	<mapping resource="ClassInstructor.hbm.xml" />
+	<mapping resource="SolverParameterDef.hbm.xml" />
+	<mapping resource="ItypeDesc.hbm.xml" />
+	<mapping resource="Settings.hbm.xml" />
+	<mapping resource="ManagerSettings.hbm.xml" />
+	<mapping resource="TimetableManager.hbm.xml" />
+	<mapping resource="ManagerRole.hbm.xml" />
+	<mapping resource="SolverParameter.hbm.xml" />
+	<mapping resource="SolverParameterGroup.hbm.xml" />
+	<mapping resource="SolverPredefinedSetting.hbm.xml" />
+	<mapping resource="SolverInfoDef.hbm.xml" />
+	<mapping resource="SolverInfo.hbm.xml" />
+	<mapping resource="Solution.hbm.xml" />
+	<mapping resource="Assignment.hbm.xml" />
+	<mapping resource="StudentEnrollment.hbm.xml" />
+	<mapping resource="JointEnrollment.hbm.xml" />
+	<mapping resource="UserData.hbm.xml" />
+	<mapping resource="DatePattern.hbm.xml" />
+	<mapping resource="SolverGroup.hbm.xml" />
+	<mapping resource="CourseCreditUnitConfig.hbm.xml" />
+	<mapping resource="AcademicArea.hbm.xml" />
+	<mapping resource="AcademicClassification.hbm.xml" />
+	<mapping resource="Staff.hbm.xml" />
+	<mapping resource="PosMajor.hbm.xml" />
+	<mapping resource="PosMinor.hbm.xml" />
+	<mapping resource="Reservation.hbm.xml" />
+	<mapping resource="StudentGroup.hbm.xml" />
+	<mapping resource="ApplicationConfig.hbm.xml" />
+	<mapping resource="History.hbm.xml" />
+	<mapping resource="AcademicAreaClassification.hbm.xml" />
+	<mapping resource="CourseDemand.hbm.xml" />
+	<mapping resource="CourseRequest.hbm.xml" />
+	<mapping resource="FreeTime.hbm.xml" />
+	<mapping resource="LastLikeCourseDemand.hbm.xml" />
+	<mapping resource="Student.hbm.xml" />
+	<mapping resource="StudentAccomodation.hbm.xml" />
+	<mapping resource="StudentClassEnrollment.hbm.xml" />
+	<mapping resource="StudentEnrollmentMessage.hbm.xml" />
+	<mapping resource="StudentSectHistory.hbm.xml" />
+	<mapping resource="WaitList.hbm.xml" />
+	<mapping resource="SectioningInfo.hbm.xml" />
+	<mapping resource="CourseRequestOption.hbm.xml" />
+	<mapping resource="ExactTimeMins.hbm.xml" />
+	<mapping resource="User.hbm.xml" />
+	<mapping resource="ChangeLog.hbm.xml" />
+	<mapping resource="ClassWaitList.hbm.xml" />
+	<mapping resource="CourseCatalog.hbm.xml" />
+	<mapping resource="CourseSubpartCredit.hbm.xml" />
+	<mapping resource="ExternalBuilding.hbm.xml" />
+	<mapping resource="ExternalRoom.hbm.xml" />
+	<mapping resource="ExternalRoomDepartment.hbm.xml" />
+	<mapping resource="ExternalRoomFeature.hbm.xml" />
+	<mapping resource="ExamPeriod.hbm.xml" />
+	<mapping resource="ExamOwner.hbm.xml" />
+	<mapping resource="ExamConflict.hbm.xml" />
+	<mapping resource="StandardEventNote.hbm.xml" />
+	<mapping resource="EventNote.hbm.xml" />
+	<mapping resource="EventContact.hbm.xml" />
+	<mapping resource="Event.hbm.xml" />
+	<mapping resource="RelatedCourseInfo.hbm.xml" />
+	<mapping resource="Meeting.hbm.xml" />
+	<mapping resource="RoomTypeOption.hbm.xml" />
+	<mapping resource="SponsoringOrganization.hbm.xml" />
+	<mapping resource="Curriculum.hbm.xml" />
+	<mapping resource="StudentSectQueue.hbm.xml" />
+	<mapping resource="QueryLog.hbm.xml"/>
+	<mapping resource="OnlineSectioningLog.hbm.xml"/>
+	<mapping resource="SavedHQL.hbm.xml"/>
+	<mapping resource="EventDateMapping.hbm.xml"/>
+	<mapping resource="MessageLog.hbm.xml"/>
+	<mapping resource="Script.hbm.xml"/>
+	<mapping resource="ClusterDiscovery.hbm.xml"/>
+</session-factory>
+</hibernate-configuration>

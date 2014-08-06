@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE request PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/StudentSectioning.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<request campus='puWestLafayetteTrdtn' year='2007' term='Fal'>
+	<student key='123456'>
+		<updateDemographics> <!-- 0..1 -->
+			<name first='Joe' middle='B' last='Doe'/>
+			<email value='joe.doe@purdue.edu'/>
+			<acadArea abbv='CFS' classification='X'> <!-- 1..* -->
+				<major code='ABC'/> <!-- 0..* -->
+				<minor code='DDD'/> <!-- 0..* -->
+			</acadArea>
+			<major code='ABC'/>  <!--  0..*, when there is no relation between academic areas and majors  -->
+			<minor code='DDD'/> <!--  0..*, when there is no relation between academic areas and minors -->
+			<disability code=''/> <!-- 0..* -->
+			<groupAffiliation code='YngExp'/> <!-- 0..* -->
+		</updateDemographics>
+		<updateCourseRequests commit='true' distribution='dense'> <!-- 0..1 -->
+			<!-- distribution is either dense or spread -->
+			<!-- (course offering, free time) requests in the order of priorities -->
+			<courseOffering subjectArea='MA' courseNumber='101' waitlist='false' credit='4'>
+				<alternative subjectArea='MA' courseNumber='102'/>
+				<alternative subjectArea='MA' courseNumber='103'/>
+			</courseOffering>
+			<!-- FREE TIME REQUESTS -->
+			<freeTime days='MWF' startTime='0730' endTime='0820' length='60'/>
+			<!-- alternative course requests -->
+			<courseOffering subjectArea='STAT' courseNumber='101' waitlist='false' alternative='true'>
+				<alternative subjectArea='STAT' courseNumber='102'/>
+				<!-- ... -->
+			</courseOffering>
+			<!-- ... -->
+		</updateCourseRequests>
+		<requestSchedule type='query'>
+			<!--  type is either query or commit -->
+			<courseOffering subjectArea='MA' courseNumber='101'>
+				<class id='1' assignmentId='1'>
+					<choice id='1:2' selection='select'/>
+					<choice id='1:3' selection='wait'/>
+				</class>
+				<class id='2' assignmentId='2'>
+					<choice id='2:2' selection='select'/>
+					<choice id='2:2' selection='wait'/>
+				</class>
+				<class id='3' assignmentId='3'>
+					<choice id='3:1' selection='select'/> <!--  0..1 choice selected, 0..* choice wait-listed -->
+					<choice id='3:2' selection='wait'/>
+					<choice id='3:3' selection='wait'/>
+				</class>
+				<!-- selection for MA 101 (see the example below):
+					Lecture MWF 7:30a - 8:20a WTHR 200 Doe, Joe
+						Sel Que Time              Instructor
+						( )     MWF 7:30a - 8:20a Doe, Joe
+						(.)     MWF 8:30a - 9:20a Doe, Joe
+						    [x] MWF 8:30a - 9:20a Simpson, Bart
+					Recitation TTh 7:30a - 8:20a WTHR 202, WTHR 203
+						Sel Que Time
+						( )     TTh 7:30a - 8:20a
+						(.) [x] TTh 8:30a - 9:20a
+					Laboratory F 10:30a - 12:20p ENAD 402
+						Sel Que Time
+						(.) [ ] F 10:30a - 12:20p
+						    [x] F 12:30p -  2:20p
+						    [x] F  2:30p -  4:20p
+				 -->
+			</courseOffering>
+			<courseOffering subjectArea='MA' courseNumber='105' waitlist='true'/>
+			<!-- ... -->
+		</requestSchedule>
+		<retrieveCourseRequests/>
+		<cancelStudent/>
+	</student>
+</request>

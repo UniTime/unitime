@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE availability PUBLIC "-//UniTime//UniTime Room Availability DTD/EN" "http://www.unitime.org/interface/RoomAvailability.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2011, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+ 
+<availability created="Tue Sep 27 14:47:54 CEST 2011" dateFormat="MM/dd/yyyy" timeFormat="H:mm">
+	<room externalId="T101" building="THTR" roomNbr="101">
+		<event name="Performances" type="Special" date="12/13/2010" startTime="8:00" endTime="10:00"/>
+		<event name="Performances" type="Special" date="12/15/2010" startTime="8:00" endTime="10:00"/>
+	</room>
+	<room externalId="E102" building="EDUC" roomNbr="102">
+		<event name="Meeting" type="Special" date="12/15/2010" startTime="9:00" endTime="10:20"/>
+		<event name="Room Not Available" type="Maintenance" date="12/16/2010" startTime="12:00" endTime="16:00"/>
+	</room>
+	<room building="EDUC" roomNbr="103">
+		<event name="Joe's Birthday" type="Special" date="12/15/2010" startTime="15:00" endTime="20:00"/>
+	</room>
+	<room building="EDUC" roomNbr="104">
+		<event name="Staff Lunch" type="Special" date="12/13/2010" startTime="12:00" endTime="12:30"/>
+		<event name="Staff Lunch" type="Special" date="12/14/2010" startTime="12:00" endTime="12:30"/>
+		<event name="Staff Lunch" type="Special" date="12/15/2010" startTime="12:00" endTime="12:30"/>
+		<event name="Staff Lunch" type="Special" date="12/16/2010" startTime="12:00" endTime="12:30"/>
+	</room>
+</availability>

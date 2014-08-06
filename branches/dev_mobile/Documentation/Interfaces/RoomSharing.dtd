@@ -1,0 +1,52 @@
+<!-- 
+ * UniTime 3.5 (University Timetabling Application)
+ * Copyright (C) 2014, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<!ELEMENT roomSharing ( location* ) >
+<!ATTLIST roomSharing campus CDATA #REQUIRED >
+<!ATTLIST roomSharing term CDATA #REQUIRED >
+<!ATTLIST roomSharing year CDATA #REQUIRED >
+<!ATTLIST roomSharing created CDATA #IMPLIED >
+<!ATTLIST roomSharing timeFormat CDATA #IMPLIED >
+<!ATTLIST roomSharing force (true | false) #IMPLIED >
+
+<!ELEMENT location ( department*, sharing? ) > 
+<!ATTLIST location id CDATA #IMPLIED >
+<!ATTLIST location building CDATA #IMPLIED >
+<!ATTLIST location roomNbr CDATA #IMPLIED >
+<!ATTLIST location name CDATA #IMPLIED >
+<!ATTLIST location note CDATA #IMPLIED >
+
+<!ELEMENT department EMPTY >
+<!ATTLIST department id CDATA #IMPLIED >
+<!ATTLIST department code CDATA #IMPLIED >
+<!ATTLIST department control (true | false) #IMPLIED >
+
+<!ELEMENT sharing ( (unavailable | assigned)* ) >
+
+<!ELEMENT unavailable EMPTY>
+<!ATTLIST unavailable days CDATA #IMPLIED >
+<!ATTLIST unavailable start CDATA #IMPLIED >
+<!ATTLIST unavailable end CDATA #IMPLIED >
+
+<!ELEMENT assigned EMPTY>
+<!ATTLIST assigned days CDATA #IMPLIED >
+<!ATTLIST assigned start CDATA #IMPLIED >
+<!ATTLIST assigned end CDATA #IMPLIED >
+<!ATTLIST assigned id CDATA #IMPLIED >
+<!ATTLIST assigned code CDATA #IMPLIED >

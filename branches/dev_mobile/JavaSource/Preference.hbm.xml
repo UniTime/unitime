@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="Preference" abstract="true">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one
+            name="owner"
+            class="PreferenceGroup"
+            column="owner_id"
+            not-null="true"
+            insert="true"
+            lazy="false"
+            update="true"/>
+
+        <many-to-one
+            name="prefLevel"
+            class="PreferenceLevel"
+            column="pref_level_id"
+            not-null="true"
+            insert="true"
+            update="true"/>
+
+        <union-subclass
+            name="RoomPref"
+            table="room_pref"
+            abstract="false">
+            <many-to-one
+                name="room"
+                class="Location"
+                column="room_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                lazy="false"
+                fetch="join"/>
+
+        </union-subclass>
+
+        <union-subclass
+            name="RoomFeaturePref"
+            table="room_feature_pref"
+            abstract="false">
+            <many-to-one
+                name="roomFeature"
+                class="RoomFeature"
+                column="room_feature_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                lazy="false"
+                fetch="join"
+                foreign-key="fk_room_feat_pref_room_feat"/>
+
+        </union-subclass>
+
+        <union-subclass
+            name="BuildingPref"
+            table="building_pref"
+            abstract="false">
+            <many-to-one
+                name="building"
+                class="Building"
+                column="bldg_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                foreign-key="fk_bldg_pref_bldg"
+                lazy="false"
+                fetch="join"/>
+
+            <property
+                name="distanceFrom"
+                column="distance_from"
+                type="java.lang.Integer"
+                not-null="false"/>
+
+        </union-subclass>
+
+        <union-subclass
+            name="TimePref"
+            table="time_pref"
+            abstract="false">
+            <property
+                name="preference"
+                column="preference"
+                type="java.lang.String"
+                not-null="false"
+                length="2048"
+                lazy="true"/>
+
+            <many-to-one
+                name="timePattern"
+                class="TimePattern"
+                column="time_pattern_id"
+                not-null="false"
+                insert="true"
+                update="true"
+                foreign-key="fk_time_pref_time_ptrn"
+                lazy="false"/>
+
+        </union-subclass>
+        
+        <union-subclass
+            name="DatePatternPref"
+            table="date_pattern_pref"
+            abstract="false">
+            
+            <many-to-one
+                name="datePattern"
+                class="DatePattern"
+                column="date_pattern_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                foreign-key="fk_date_pref_date_ptrn"
+                lazy="false"/>
+        </union-subclass>
+
+        <union-subclass
+            name="DistributionPref"
+            table="distribution_pref"
+            abstract="false">
+            <property
+                name="grouping"
+                column="grouping"
+                type="java.lang.Integer"
+                length="4"
+                not-null="false"/>
+
+            <many-to-one
+                name="distributionType"
+                class="DistributionType"
+                column="dist_type_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                foreign-key="fk_dist_pref_dist_type"
+                lazy="false"
+                fetch="join"/>
+
+            <set
+                name="distributionObjects"
+                inverse="true"
+                lazy="true"
+                cascade="all-delete-orphan">
+
+                <cache include="non-lazy" usage="transactional"/>
+                <key column="dist_pref_id"/>
+                <one-to-many class="DistributionObject"/>
+            </set>
+
+            <property
+                name="uniqueIdRolledForwardFrom"
+                column="uid_rolled_fwd_from"
+                type="java.lang.Long"
+                not-null="false"
+                length="20"/>
+
+        </union-subclass>
+
+        <union-subclass
+            name="RoomGroupPref"
+            table="room_group_pref"
+            abstract="false">
+            <many-to-one
+                name="roomGroup"
+                class="RoomGroup"
+                column="room_group_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                foreign-key="fk_room_grp_pref_room_grp"
+                lazy="false"
+                fetch="join"/>
+
+        </union-subclass>
+
+        <union-subclass
+            name="ExamPeriodPref"
+            table="exam_period_pref"
+            abstract="false">
+            <many-to-one
+                name="examPeriod"
+                class="ExamPeriod"
+                column="period_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                lazy="false"
+                fetch="join"
+                foreign-key="fk_exam_period_pref_period"/>
+
+        </union-subclass>
+
+    </class>
+</hibernate-mapping>
