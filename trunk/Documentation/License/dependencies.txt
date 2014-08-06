@@ -54,12 +54,6 @@ protobuf-java-2.5.0.jar
 	URL: http://code.google.com/p/protobuf
 	License: BSD or BSD-style License
 
-mgwt-2.0.0-beta2.jar
-	mgwt
-	Maven: com.googlecode.mgwt:mgwt:2.0.0-beta2
-	URL: http://code.google.com/p/mgwt/
-	License: Apache Software License (ASL), Version 2.0
-
 itext-2.1.7.jar
 	iText, a Free Java-PDF library
 	Maven: com.lowagie:itext:2.1.7
@@ -603,7 +597,6 @@ Apache Software License (ASL), Version 2.0
 	gwt-dev (com.google.gwt:gwt-dev:2.6.1)
 	gwt-servlet (com.google.gwt:gwt-servlet:2.6.1)
 	gwt-user (com.google.gwt:gwt-user:2.6.1)
-	mgwt (com.googlecode.mgwt:mgwt:2.0.0-beta2)
 	oro (oro:oro:2.0.8)
 	spring-aop (org.springframework:spring-aop:3.1.4.RELEASE)
 	spring-asm (org.springframework:spring-asm:3.1.4.RELEASE)
