@@ -23,7 +23,6 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
     <meta charset="UTF-8"/>
 	<style type="text/css">@import url(scripts/jscalendar/calendar-blue.css);</style>
@@ -66,31 +65,6 @@
 	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-PageWarn"/>
 	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage"/>
 	<tt:offering-locks/>
-
-	<tt:propertyNotEquals name="unitime.warn.chromeframe" value="false">
-	<!--[if IE]>
-    <script type="text/javascript" src="scripts/CFInstall.min.js"></script>
-    
-  	<div class='unitime-PageMessage' style='display:none;' id='__ie_no_chrome'>
-    	<a class='noFancyLinks' href="http://google.com/chromeframe">The UniTime application may run very slow in Internet Explorer. To speed it up, please click here and install Google Chrome Frame plug-in.</a>
-    </div>
-    
-    <div style='display:none;'><div id='__ie_chrome_plugin'></div></div>
-    
-    <script>
-     function ie_no_chrome() {
-       document.getElementById('__ie_no_chrome').style.display = 'block';
-     }
-     window.attachEvent("onload", function() {
-       CFInstall.check({
-         mode: "inline",
-         node: "__ie_chrome_plugin",
-         onmissing: ie_no_chrome
-       });
-     });
-    </script>
-  	<![endif]-->
-  	</tt:propertyNotEquals>
   	
 <tt:form-factor value="mobile">
 	<span class="unitime-MobilePage">

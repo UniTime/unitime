@@ -46,7 +46,6 @@
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
 	<meta http-equiv="expires" content="0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
     <meta charset="UTF-8"/>
 	<style type="text/css">@import url(scripts/jscalendar/calendar-blue.css);</style>

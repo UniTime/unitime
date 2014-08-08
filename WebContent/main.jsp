@@ -25,7 +25,6 @@
 
 <HTML>
 <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta charset="UTF-8"/>
 	<title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
 	<link rel="shortcut icon" href="images/timetabling.ico" />
@@ -60,31 +59,6 @@
     	<div class='unitime-PageWarn'><tt:property name="tmtbl.global.warn"/></div>
 	</tt:hasProperty>
 	<tt:offering-locks/>
-	
-	<tt:propertyNotEquals name="unitime.warn.chromeframe" value="false">
-	<!--[if IE]>
-    <script type="text/javascript" src="scripts/CFInstall.min.js"></script>
-    
-  	<div class='unitime-PageMessage' style='display:none;' id='__ie_no_chrome'>
-    	<a class='noFancyLinks' href="http://google.com/chromeframe">The UniTime application may run very slow in Internet Explorer. To speed it up, please click here and install Google Chrome Frame plug-in.</a>
-    </div>
-    
-    <div style='display:none;'><div id='__ie_chrome_plugin'></div></div>
-    
-    <script>
-     function ie_no_chrome() {
-       document.getElementById('__ie_no_chrome').style.display = 'block';
-     }
-     window.attachEvent("onload", function() {
-       CFInstall.check({
-         mode: "inline",
-         node: "__ie_chrome_plugin",
-         onmissing: ie_no_chrome
-       });
-     });
-    </script>
-  	<![endif]-->
-  	</tt:propertyNotEquals>
   	
 <tt:form-factor value="mobile">
 	<span class="unitime-MobilePage">
