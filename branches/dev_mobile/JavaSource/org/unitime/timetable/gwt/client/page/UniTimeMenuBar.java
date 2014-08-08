@@ -225,7 +225,7 @@ public class UniTimeMenuBar extends UniTimeMenu {
 			for (Pages p: Pages.values()) {
 				if (p.name().equals(page)) {
 					LoadingWidget.getInstance().setMessage(MESSAGES.waitLoading(p.name(MESSAGES)));
-					UniTimePageLabel.getInstance().setTitle(p.name(MESSAGES));
+					UniTimePageLabel.getInstance().setPageName(p.name(MESSAGES));
 					RootPanel.get("UniTimeGWT:Body").add(p.widget());
 					return;
 				}

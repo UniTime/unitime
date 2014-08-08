@@ -29,13 +29,13 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
@@ -699,7 +699,7 @@ public class WebTable extends Composite {
 						p.setStyleName("instructor");
 						Anchor a = new Anchor();
 						a.setHref("mailto:" + email);
-						a.setHTML(DOM.toString(new Image(RESOURCES.email()).getElement()));
+						a.setHTML(new Image(RESOURCES.email()).getElement().getString());
 						a.setTitle(MESSAGES.sendEmail(names.get(i)));
 						a.setStyleName("unitime-SimpleLink");
 						a.addClickHandler(new ClickHandler() {

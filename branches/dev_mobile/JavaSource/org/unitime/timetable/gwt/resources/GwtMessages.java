@@ -2992,4 +2992,16 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Course Timetabling Solver")
 	String solverCourse();
+	
+	@DefaultMessage("Navigation")
+	String navigation();
+	
+	@DefaultMessage("Click here to change the session / role.")
+	String hintClickToChangeSession();
+	
+	@DefaultMessage("Page generated in {0} sec.")
+	String pageGeneratedIn(String seconds);
+	
+	@DefaultMessage("If the pop-up window was blocked, you can follow this link to retrieve the exported file.")
+	String pageBlockedPopup();
 }

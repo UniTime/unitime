@@ -33,8 +33,6 @@ import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -125,10 +123,10 @@ public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<U
     @Override
 	protected void onPreviewNativeEvent(NativePreviewEvent event) {
 		super.onPreviewNativeEvent(event);
-		if (isEscapeToHide() && DOM.eventGetKeyCode((Event)event.getNativeEvent()) == KeyCodes.KEY_ESCAPE) {
+		if (isEscapeToHide() && event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
 			AriaStatus.getInstance().setText(ARIA.dialogClosed(getText()));
 			hide();
-		} if (isEnterToSubmit() && DOM.eventGetKeyCode((Event)event.getNativeEvent()) == KeyCodes.KEY_ENTER)
+		} if (isEnterToSubmit() && event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER)
 	    	iSubmitHandler.execute();
 	}
 }

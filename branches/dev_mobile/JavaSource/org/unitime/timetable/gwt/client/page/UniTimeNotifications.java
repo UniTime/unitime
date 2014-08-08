@@ -37,7 +37,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ScrollEvent;
@@ -124,8 +123,8 @@ public class UniTimeNotifications {
 		iAnimation.cancel();
 		for (HTML notification: iNotifications) {
 			height += notification.getElement().getClientHeight() + 10;
-			DOM.setStyleAttribute(notification.getElement(), "left", (Window.getScrollLeft() + Window.getClientWidth() - 445) + "px");
-			DOM.setStyleAttribute(notification.getElement(), "top", (Window.getScrollTop() + Window.getClientHeight() - height) + "px");
+			notification.getElement().getStyle().setProperty("left", (Window.getScrollLeft() + Window.getClientWidth() - 445) + "px");
+			notification.getElement().getStyle().setProperty("top", (Window.getScrollTop() + Window.getClientHeight() - height) + "px");
 		}
 	}
 	
@@ -182,8 +181,8 @@ public class UniTimeNotifications {
 			int height = - (int) Math.round((1.0 - progress) * (iNotifications.get(0).getElement().getClientHeight() + 10));
 			for (Notification notification: iNotifications) {
 				height += notification.getElement().getClientHeight() + 10;
-				DOM.setStyleAttribute(notification.getElement(), "left", (Window.getScrollLeft() + Window.getClientWidth() - 445) + "px");
-				DOM.setStyleAttribute(notification.getElement(), "top", (Window.getScrollTop() + Window.getClientHeight() - height) + "px");
+				notification.getElement().getStyle().setProperty("left", (Window.getScrollLeft() + Window.getClientWidth() - 445) + "px");
+				notification.getElement().getStyle().setProperty("top", (Window.getScrollTop() + Window.getClientHeight() - height) + "px");
 			}
 		}
 	}

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module>
+<!-- 
+ * UniTime 3.5 (University Timetabling Application)
+ * Copyright (C) 2014, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+ <module>
+ 	<inherits name='com.googlecode.mgwt.MGWT'/>
+ 
+	<set-property name="mgwt.mainresource.inject" value="no" />
+
+ 	<replace-with class="org.unitime.timetable.gwt.mobile.resources.standard.MobileResourceStandardAppearance">
+ 		<when-type-is class="org.unitime.timetable.gwt.mobile.resources.MobileResourceHolder.MobileResourceAppearance" />
+ 	</replace-with>
+ 	
+ 	<replace-with class="org.unitime.timetable.gwt.mobile.resources.high.MobileResourceHighAppearance">
+ 		<when-type-is class="org.unitime.timetable.gwt.mobile.resources.MobileResourceHolder.MobileResourceAppearance" />
+ 		<any>
+ 			<when-property-is name="mgwt.density" value="high" />
+ 		</any>
+ 	</replace-with>
+ 	
+ 	<replace-with class="org.unitime.timetable.gwt.mobile.resources.xhigh.MobileResourceXHighAppearance">
+ 		<when-type-is class="org.unitime.timetable.gwt.mobile.resources.MobileResourceHolder.MobileResourceAppearance" />
+ 		<any>
+ 			<when-property-is name="mgwt.density" value="xhigh" />
+ 		</any>
+ 	</replace-with>
+ 	
+	<replace-with class="org.unitime.timetable.gwt.mobile.client.MobileClient">
+  		<when-type-is class="org.unitime.timetable.gwt.client.Client" />
+  		<any>
+  			<when-property-is name="mgwt.formfactor" value="tablet" />
+  			<when-property-is name="mgwt.formfactor" value="phone" />
+  		</any>
+	</replace-with>
+	
+ 	<replace-with class="org.unitime.timetable.gwt.mobile.client.page.MobilePageLabelImpl">
+ 		<when-type-is class="org.unitime.timetable.gwt.client.page.PageLabelDisplay" />
+ 		<any>
+  			<when-property-is name="mgwt.formfactor" value="tablet" />
+  			<when-property-is name="mgwt.formfactor" value="phone" />
+ 		</any>
+ 	</replace-with>
+
+ 	<source path="client"/>
+ 	<source path="resources"/>
+</module>

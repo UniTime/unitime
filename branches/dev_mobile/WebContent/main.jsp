@@ -31,6 +31,7 @@
 	<link rel="shortcut icon" href="images/timetabling.ico" />
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
+    <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
     <link type="text/css" rel="stylesheet" href="styles/timetabling.css">
     <tt:hasProperty name="tmtbl.custom.css">
 		<LINK rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
@@ -39,10 +40,11 @@
     <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 </head>
 <BODY class="unitime-Body">
-
+	<tt:form-factor value="unknown"><span id='UniTimeGWT:DetectFormFactor' style="display: none;"></span></tt:form-factor>
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
-    
+
+	<tt:form-factor value="desktop">    
     <tt:notHasProperty name="unitime.menu.style" user="true">
 	   	<span id='UniTimeGWT:DynamicTopMenu' style="display: block; height: 23px;" ></span>
     </tt:notHasProperty>
@@ -52,11 +54,10 @@
     <tt:propertyEquals name="unitime.menu.style" user="true" value="Static On Top">
     	<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;" ></span>
     </tt:propertyEquals>
+    </tt:form-factor>
 
-	<tt:hasProperty name="tmtbl.global.warn">
-		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqGlobalWarn" style='padding-left:10px;'>
-			<tt:property name="tmtbl.global.warn"/>
-		</td></tr></table>
+    <tt:hasProperty name="tmtbl.global.warn">
+    	<div class='unitime-PageWarn'><tt:property name="tmtbl.global.warn"/></div>
 	</tt:hasProperty>
 	<tt:offering-locks/>
 	
@@ -64,18 +65,15 @@
 	<!--[if IE]>
     <script type="text/javascript" src="scripts/CFInstall.min.js"></script>
     
-    <table width='100%' border='0' cellpadding='3' cellspacing='0' style='display:none;' id='__ie_no_chrome'>
-      <tr><td class="reqMsg" width='5'>&nbsp;</td>
-      	  <td class="reqMsg">
-      	  	<a class='noFancyLinks' href="http://google.com/chromeframe">The UniTime application may run very slow in Internet Explorer. To speed it up, please click here and install Google Chrome Frame plug-in.</a></td>
-      </tr>
-    </table>
+  	<div class='unitime-PageMessage' style='display:none;' id='__ie_no_chrome'>
+    	<a class='noFancyLinks' href="http://google.com/chromeframe">The UniTime application may run very slow in Internet Explorer. To speed it up, please click here and install Google Chrome Frame plug-in.</a>
+    </div>
     
     <div style='display:none;'><div id='__ie_chrome_plugin'></div></div>
     
     <script>
      function ie_no_chrome() {
-       document.getElementById('__ie_no_chrome').style.display = 'table';
+       document.getElementById('__ie_no_chrome').style.display = 'block';
      }
      window.attachEvent("onload", function() {
        CFInstall.check({
@@ -87,61 +85,27 @@
     </script>
   	<![endif]-->
   	</tt:propertyNotEquals>
-
-<div id="contentMain">
-	<table align="center" width="900px">
-    <tr>
-    <td valign="top" rowspan="2" id="unitime-SideMenu">
-    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Stack On Side">
-    		<span id='UniTimeGWT:SideStackMenu' style="display: block;" ></span>
-	    </tt:propertyEquals>
-    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Tree On Side">
-    		<span id='UniTimeGWT:SideTreeMenu' style="display: block;" ></span>
-	    </tt:propertyEquals>
-    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Static Stack On Side">
-    		<span id='UniTimeGWT:StaticSideStackMenu' style="display: block;" ></span>
-	    </tt:propertyEquals>
-    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Static Tree On Side">
-    		<span id='UniTimeGWT:StaticSideTreeMenu' style="display: block;" ></span>
-	    </tt:propertyEquals>
-    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Stack On Side">
-    		<span id='UniTimeGWT:SideStackMenu' style="display: block;" ></span>
-	    </tt:propertyEquals>
-    	<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Tree On Side">
-    		<span id='UniTimeGWT:SideTreeMenu' style="display: block;" ></span>
-	    </tt:propertyEquals>
-    </td>
-    <script language="JavaScript" type="text/javascript">
-    	var sideMenu = document.getElementById("unitime-SideMenu").getElementsByTagName("span");
-    	if (sideMenu.length > 0) {
-    		var c = unescape(document.cookie);
-    		var c_start = c.indexOf("UniTime:SideBar=");
-    		if (c_start >= 0) {
-    			c_start = c.indexOf("|W:", c_start) + 3;
-    			var c_end = c.indexOf(";", c_start);
-    			if (c_end < 0) c_end=c.length;
-    			var width = c.substring(c_start, c_end);
-    			sideMenu[0].style.width = width + "px";
-    			// alert(c.substring(c.indexOf("UniTime:SideBar=") + 16, c_end));
-    		} else {
-    			sideMenu[0].style.width = (sideMenu[0].id.indexOf("StackMenu") >= 0 ? "172px" : "152px");
-    		}
-    	}
-    </script>
-    <td valign="top" >
-	    <table class="unitime-Page" width="100%" background="images/logofaded.jpg" style="background-repeat:no-repeat;background-position: center;">
-	    <tr><td>
-    		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
-		   		<tr><td rowspan="2"><a href='http://www.unitime.org' tabindex="-1"><img src="images/unitime.png" border="0"/></a></td>
-		   			<td nowrap="nowrap" width="100%" align="right" valign="middle" class="unitime-Title" style="padding-right: 20px; padding-top: 5px; height: 55px;">
-		   				<span class='unitime-Title'>University Timetabling Application</span>
-		   			</td>
-	    		</tr>
-	    		<tr><td width="100%" align="right" valign="middle" nowrap="nowrap" style="height: 34px;">
-	    			<span id='UniTimeGWT:Header'></span>
-	    		</td></tr>
-	    	</table>
-	    </td></tr><tr><td>
+  	
+<tt:form-factor value="mobile">
+	<span class="unitime-MobilePage">
+	<span style="display:block;background-image:url('images/logofaded.jpg');backbackground-repeat:no-repeat;background-position: center;">
+	<span class="unitime-MobilePageHeader">
+		<span class="row">
+			<span id='UniTimeGWT:MobileMenu' class="menu"></span>
+			<span class="logo"><a href='main.jsp' tabIndex="-1">
+				<tt:form-factor value="phone"><img src="images/unitime-phone.png" border="0"/></tt:form-factor>
+				<tt:form-factor value="tablet"><img src="images/unitime-tablet.png" border="0"/></tt:form-factor>
+			</a></span>
+			<span class="title">University Timetabling Application</span>
+		</span>
+	</span>
+	<span class='unitime-MobileHeader'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
+	<span id='UniTimeGWT:Content'>
+		<tiles:insert attribute="body">
+			<tiles:put name="body2" value="${body2}"/>
+			<tiles:put name="action2" value="${action2}"/>
+		</tiles:insert>
+	</span>
 <TABLE width="100%" height="600px" align="center" >
 	<TR>
 	<% 
@@ -192,36 +156,143 @@
 		</TD>
 	</TR>
 </TABLE>
-	    </td></tr></table>
-    </td></tr><tr><td valign="top">
-    	<table class="unitime-Footer" cellpadding="0" cellspacing="0">
-    		<tr>
-    			<td width="33%" align="left" class="unitime-FooterText"><span id="UniTimeGWT:Version"></span></td>
-    			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
-    			<td width="34%" align="center" class="unitime-FooterText"><tt:copy/></td>
-    			<td width="33%" align="right" class="unitime-FooterText"><tt:registration update="true"/></td>
-    		</tr>
-    		<tt:hasProperty name="tmtbl.page.disclaimer">
-    			<tr>
-    				<td colspan="3" class="unitime-Disclaimer">
-    					<tt:property name="tmtbl.page.disclaimer"/>
-    				</td>
-    			</tr>
-    		</tt:hasProperty>
-    	</table>
-	</td></tr></table>
-</div>
-
-<div id="loadingMain" style="visibility:hidden;display:none">
-<TABLE width="100%" height="100%" align="center" cellpadding="0" cellspacing="0" border="0">
+	</span>
+	<span class="unitime-MobileFooter">
+		<span class="row">
+			<span class="cell left">
+				<span id='UniTimeGWT:Version'></span>
+				<tt:time-stamp/>
+			</span>
+    		<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
+			<span class="cell middle"><tt:copy/></span>
+			<span class="cell right"><tt:registration/></span>
+		</span>
+	</span>
+	<tt:hasProperty name="tmtbl.page.disclaimer">
+		<span class='unitime-MobileDisclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
+	</tt:hasProperty>
+	</span>
+</tt:form-factor>
+<tt:form-factor value="desktop">
+	<span class="unitime-Page"><span class='row'>
+	<span class='sidebar' id="unitime-SideMenu">
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Stack On Side">
+    			<span id='UniTimeGWT:SideStackMenu' style="display: block;" ></span>
+	    	</tt:propertyEquals>
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Tree On Side">
+    			<span id='UniTimeGWT:SideTreeMenu' style="display: block;" ></span>
+	    	</tt:propertyEquals>
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Static Stack On Side">
+    			<span id='UniTimeGWT:StaticSideStackMenu' style="display: block;" ></span>
+		    </tt:propertyEquals>
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Static Tree On Side">
+    			<span id='UniTimeGWT:StaticSideTreeMenu' style="display: block;" ></span>
+		    </tt:propertyEquals>
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Stack On Side">
+    			<span id='UniTimeGWT:SideStackMenu' style="display: block;" ></span>
+		    </tt:propertyEquals>
+    		<tt:propertyEquals name="unitime.menu.style" user="true" value="Dynamic Tree On Side">
+    			<span id='UniTimeGWT:SideTreeMenu' style="display: block;" ></span>
+		    </tt:propertyEquals>
+    <script language="JavaScript" type="text/javascript">
+    	var sideMenu = document.getElementById("unitime-SideMenu").getElementsByTagName("span");
+    	if (sideMenu.length > 0) {
+    		var c = unescape(document.cookie);
+    		var c_start = c.indexOf("UniTime:SideBar=");
+    		if (c_start >= 0) {
+    			c_start = c.indexOf("|W:", c_start) + 3;
+    			var c_end = c.indexOf(";", c_start);
+    			if (c_end < 0) c_end=c.length;
+    			var width = c.substring(c_start, c_end);
+    			sideMenu[0].style.width = width + "px";
+    			// alert(c.substring(c.indexOf("UniTime:SideBar=") + 16, c_end));
+    		} else {
+    			sideMenu[0].style.width = (sideMenu[0].id.indexOf("StackMenu") >= 0 ? "172px" : "152px");
+    		}
+    	}
+    </script>
+	</span>
+    <span class='main'><span class='body' id="unitime-Page" style="background-image:url('images/logofaded.jpg');backbackground-repeat:no-repeat;background-position: center;">
+    	<span class="unitime-PageHeader" id="unitime-Header">
+    		<span class="row">
+    			<span class="logo"><a href='http://www.unitime.org' tabIndex="-1"><img src="images/unitime.png" border="0"/></a></span>
+    			<span class="content">
+					<span class="title">University Timetabling Application</span>
+					<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
+				</span>
+			</span>
+		</span>
+        	<span id='UniTimeGWT:Content'>
+<TABLE width="100%" height="600px" align="center" >
 	<TR>
-		<TD valign="middle" align="center">
-			<font class="WelcomeRowHeadNoLine">Loading</font><br>&nbsp;<br>
-			<IMG align="middle" vspace="5" border="0" src="images/loading.gif">
+	<% 
+	String sysMessage = ApplicationProperties.getProperty("tmtbl.system_message");
+	boolean showBackground = (sysMessage == null || sysMessage.trim().isEmpty());
+	if ("cas-logout".equals(request.getParameter("op"))) {
+		sysMessage = "You have been successfully logged out of UniTime, click <a href='j_spring_cas_security_logout'>here</a> to log out of all other applications as well."; 
+	}
+	%>
+	<tt:registration method="hasMessage">
+	<% showBackground = false; %>
+	</tt:registration>
+		<TD align="center" valign="top" width="100%" height="100%" <%=(showBackground ? "background=\"images/logo.jpg\"" : "" )%> style="background-repeat:no-repeat;background-position: center;">
+		<TABLE width="100%" cellspacing="2" cellpadding="2" border="0">
+			<% 
+				if (sysMessage != null && !sysMessage.trim().isEmpty()) {
+			%>
+			<TR>
+				<TD class="WelcomeRowHead" align="left">System Messages</TD>
+			</TR>
+			<TR>
+				<TD align="left">
+					&nbsp;<BR>
+					<FONT class="normalBlack">
+						<%= sysMessage %>
+					</FONT>
+					<BR>&nbsp;
+				</TD>
+			</TR>
+			<%
+				}
+			%>
+			<tt:registration method="hasMessage">
+				<TR>
+					<TD class="WelcomeRowHead" align="left">Messages from UniTime</TD>
+				</TR>
+				<TR>
+					<TD align="left">
+						&nbsp;<BR>
+						<FONT class="normalBlack">
+							<tt:registration method="message"/>
+						</FONT>
+						<BR>&nbsp;
+					</TD>
+				</TR>
+			</tt:registration>
+		</TABLE>
 		</TD>
 	</TR>
-</TABLE>		
-</div>				
+</TABLE>
+        	</span>
+    </span><span class='footer' id="unitime-Footer">
+		<span class="unitime-Footer">
+			<span class="row">
+				<span class="cell left">
+					<span id='UniTimeGWT:Version'></span>
+					<tt:time-stamp/>
+				</span>
+    			<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
+				<span class="cell middle"><tt:copy/></span>
+				<span class="cell right"><tt:registration/></span>
+			</span>
+		</span>
+		<tt:hasProperty name="tmtbl.page.disclaimer">
+			<span class='unitime-Disclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
+		</tt:hasProperty>
+	</span>
+</span></span></span>
+	
+</tt:form-factor>
 	
 </BODY>
 <script language="JavaScript" type="text/javascript">

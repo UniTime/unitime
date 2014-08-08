@@ -31,7 +31,7 @@
 	<extend-property name="locale" values="en_UK"/>
 	<extend-property name="locale" values="cs"/>
 	<set-property-fallback name="locale" value="en"/>
-
+	
 	<!-- Logging -->
 	<inherits name="com.google.gwt.logging.Logging" />
 	<set-property name="gwt.logging.logLevel" value="INFO"/>
@@ -52,10 +52,12 @@
 
 	<!-- Other module inherits                                      -->
 	<inherits name='org.unitime.timetable.gwt.command.GwtRpcCommandPattern' />
+	<inherits name='org.unitime.timetable.gwt.client.page.PageWidgets'/>
+	<inherits name='org.unitime.timetable.gwt.mobile.UniTimeMobile' />
 
 	<!-- Specify the app entry point class.                         -->
 	<entry-point class='org.unitime.timetable.gwt.client.Client' />
-
+	
 	<!-- Specify the paths for translatable code                    -->
 	<source path='client' />
 	<source path='shared' />

@@ -425,7 +425,7 @@
 			<classpath refid="build.classpath" />
 			<classpath path="JavaSource"/>
 			<classpath path="${env.TOMCAT_HOME}/webapps/UniTime/WEB-INF/classes"/>
-			<jvmarg value="-Xmx600M"/>
+			<jvmarg value="-Xmx1g"/>
 			<jvmarg value="${macJvmArgs}"/>
 			<arg value="-war"/>
 			<arg value="${env.TOMCAT_HOME}/webapps/UniTime"/>
@@ -447,7 +447,7 @@
 			<classpath refid="build.classpath" />
 			<classpath path="JavaSource"/>
 			<classpath path="${env.TOMCAT_HOME}/webapps/UniTime/WEB-INF/classes"/>
-			<jvmarg value="-Xmx600M"/>
+			<jvmarg value="-Xmx1g"/>
 			<jvmarg value="${macJvmArgs}"/>
 			<arg value="-war"/>
 			<arg value="${env.TOMCAT_HOME}/webapps/UniTime"/>
