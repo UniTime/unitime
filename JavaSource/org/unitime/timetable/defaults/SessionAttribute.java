@@ -45,6 +45,7 @@ public enum SessionAttribute {
 	TableOrder("OrderInfo", "WebTable order info"),
 	
 	ExamType("Exam.Type", "Examination type"),
+	FormFactor("mgwt.formfactor", "Device from factor"),
 	;
 
 	String iKey, iDefault, iDescription;

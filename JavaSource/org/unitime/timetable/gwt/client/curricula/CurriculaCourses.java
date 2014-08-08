@@ -51,6 +51,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumStudentsIn
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -62,7 +63,6 @@ import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -136,7 +136,7 @@ public class CurriculaCourses extends Composite {
 							c == null || c[col] == null ? null : c[col].getRequested());
 				}
 				Element td = ((Widget)event.getSource()).getElement();
-				while (td != null && !DOM.getElementProperty(td, "tagName").equalsIgnoreCase("td")) {
+				while (td != null && !td.getPropertyString("tagName").equalsIgnoreCase("td")) {
 					td = DOM.getParent(td);
 				}
 				Element tr = DOM.getParent(td);
@@ -1474,7 +1474,7 @@ public class CurriculaCourses extends Composite {
 			iOperation = new Operation() {
 				@Override
 				public String getName() {
-					return DOM.toString(getElement());
+					return getElement().getString();
 				}
 				@Override
 				public boolean hasSeparator() {

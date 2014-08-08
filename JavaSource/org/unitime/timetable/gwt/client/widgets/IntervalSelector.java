@@ -224,7 +224,7 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		
 		Roles.getTextboxRole().setAriaAutocompleteProperty(iFilter.getElement(), AutocompleteValue.NONE);
 		
-		DOM.setElementAttribute(iPopup.getElement(), "id", DOM.createUniqueId());
+		iPopup.getElement().setAttribute("id", DOM.createUniqueId());
 		Roles.getTextboxRole().setAriaOwnsProperty(iFilter.getElement(), Id.of(iPopup.getElement()));
 	}
 	
@@ -704,7 +704,7 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		private IntervalMenuItem(Interval interval) {
 			super(getDisplayString(interval), true, new IntervalCommand(interval));
 			setStyleName("item");
-			DOM.setStyleAttribute(getElement(), "whiteSpace", "nowrap");
+			getElement().setAttribute("whiteSpace", "nowrap");
 			iInterval = interval;
 		}
 		

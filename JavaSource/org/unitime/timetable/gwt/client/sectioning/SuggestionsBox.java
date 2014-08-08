@@ -43,6 +43,7 @@ import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -53,7 +54,6 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -623,10 +623,10 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		super.onPreviewNativeEvent(event);
 	    switch (DOM.eventGetType((Event) event.getNativeEvent())) {
 	    case Event.ONKEYUP:
-			if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_ESCAPE) {
+			if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
 				hide();
 			}
-			if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_DOWN) {
+			if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN) {
 				if (iSuggestions.getRowsCount() > 0) {
 					String id = (iSuggestions.getSelectedRow() < 0 ? null : iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId());
 					int row = iSuggestions.getSelectedRow() + 1;
@@ -637,7 +637,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					AriaStatus.getInstance().setText(ARIA.showingAlternative(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()), Integer.parseInt(iSuggestions.getRows()[iSuggestions.getRows().length - 1].getId()), toString(suggestion)));
 				}
 			}
-			if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_UP) {
+			if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_UP) {
 				if (iSuggestions.getRowsCount() > 0) {
 					int row = iSuggestions.getSelectedRow() <= 0 ? iSuggestions.getRowsCount() - 1 : iSuggestions.getSelectedRow() - 1;
 					String id = iSuggestions.getRows()[row % iSuggestions.getRowsCount()].getId();
@@ -648,7 +648,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					AriaStatus.getInstance().setText(ARIA.showingAlternative(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()), Integer.parseInt(iSuggestions.getRows()[iSuggestions.getRows().length - 1].getId()), toString(suggestion)));
 				}
 			}
-			if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_ENTER) {
+			if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
 				if (iSuggestions.getSelectedRow() >= 0) {
 					ClassAssignmentInterface suggestion = iResult.get(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()));
 					

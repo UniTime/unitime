@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.Client;
-import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.ToolBox.Page;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
@@ -81,8 +80,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth.Flag;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -90,10 +88,8 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.TakesValue;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -103,7 +99,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -183,24 +178,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			@Override
 			protected void onInitializationSuccess(List<AcademicSession> sessions) {
 				iFilter.setVisible(sessions != null && !sessions.isEmpty());
-				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-					@Override
-					public void execute() {
-						try {
-							((UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0)).hideSessionInfo();
-						} catch (Exception e) {
-							// Try one more time in 5 seconds
-							new Timer() {
-								@Override
-								public void run() {
-									try {
-										((UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0)).hideSessionInfo();
-									} catch (Exception e) {}
-								}
-							}.schedule(5000);
-						}
-					}
-				});
+				UniTimePageHeader.getInstance().getRight().setVisible(false);
 			}
 			
 			@Override

@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.aria;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.HasHTML;
 import com.google.gwt.user.client.ui.HasText;
@@ -30,7 +31,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class AriaHiddenLabel extends Widget implements HasHTML, HasText {
 
 	public AriaHiddenLabel(String text, boolean asHtml) {
-		setElement(DOM.createSpan());
+		setElement((Element)DOM.createSpan());
 		setStyleName("unitime-AriaHiddenLabel");
 		if (text != null) {
 			if (asHtml)

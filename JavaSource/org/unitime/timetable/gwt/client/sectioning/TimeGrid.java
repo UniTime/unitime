@@ -395,7 +395,7 @@ public class TimeGrid extends Composite {
 						il.setTitle(MESSAGES.sendEmail(row.getInstructors().get(i)));
 						il.setStyleName("A.unitime-SimpleLink");
 						il.getElement().getStyle().setMarginRight(1, Unit.PX);
-						instructors += DOM.toString(il.getElement()) + row.getInstructors().get(i) + (i + 1 < row.getInstructors().size() ? ", " : "");
+						instructors += il.getElement().getString() + row.getInstructors().get(i) + (i + 1 < row.getInstructors().size() ? ", " : "");
 					} else {
 						instructors += row.getInstructors().get(i) + (i + 1 < row.getInstructors().size() ? ", " : "");
 					}
@@ -580,10 +580,10 @@ public class TimeGrid extends Composite {
 		
 		public void onBrowserEvent(Event event) {
 			if (iDummy) return;
-		    com.google.gwt.user.client.Element target = DOM.eventGetTarget(event);
+		    Element target = DOM.eventGetTarget(event);
 		    boolean anchor = false;
 		    for (; target != null; target = DOM.getParent(target)) {
-		    	String tag = DOM.getElementProperty(target, "tagName");
+		    	String tag = target.getPropertyString("tagName");
 		    	if (tag.equalsIgnoreCase("a")) {
 		    		anchor = true;
 		    		break;
@@ -669,7 +669,7 @@ public class TimeGrid extends Composite {
 		}
 		
 		public void add(Widget w) {
-            super.add(w, getElement());
+            super.add(w, (Element)getElement());
         }
 		
 		public void setDummy() {

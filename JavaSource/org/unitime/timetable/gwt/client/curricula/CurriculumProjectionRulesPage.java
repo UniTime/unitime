@@ -50,6 +50,7 @@ import org.unitime.timetable.gwt.shared.UserDataInterface.GetUserDataRpcRequest;
 import org.unitime.timetable.gwt.shared.UserDataInterface.SetUserDataRpcRequest;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -60,7 +61,6 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -704,7 +704,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 		public void onBrowserEvent(final Event event) {
 			Element tr = getElement();
 		    for (; tr != null; tr = DOM.getParent(tr)) {
-		        if (DOM.getElementProperty(tr, "tagName").equalsIgnoreCase("tr"))
+		        if (tr.getPropertyString("tagName").equalsIgnoreCase("tr"))
 		        break;
 		    }
 		    final Element e = tr;
@@ -1025,7 +1025,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 		
 		private void moveRow(Element tr, Element before) {
 			Element body = DOM.getParent(tr);
-			DOM.removeChild(body, tr);
+			body.removeChild(tr);
 			DOM.insertBefore(body, tr, before);
 		}
 		
@@ -1085,9 +1085,9 @@ public class CurriculumProjectionRulesPage extends Composite {
 			    if (r == null) break;
 				if (r.getMajor() != null) break;
 				Element element = DOM.eventGetTarget(event);
-				while (DOM.getElementProperty(element, "tagName").equalsIgnoreCase("div"))
+				while (element.getPropertyString("tagName").equalsIgnoreCase("div"))
 					element = DOM.getParent(element);
-				if (DOM.getElementProperty(element, "tagName").equalsIgnoreCase("td")) {
+				if (element.getPropertyString("tagName").equalsIgnoreCase("td")) {
 					if (r.getMajor() == null) {
 						boolean canCollapse = false;
 						for (int rx = row + 1; rx < getRowCount() - 1; rx++) {
