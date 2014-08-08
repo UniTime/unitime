@@ -551,8 +551,8 @@
 					<execution>
 						<configuration>
 							<module>org.unitime.timetable.gwt.UniTime</module>
-							<extraJvmArgs>-Xmx600M</extraJvmArgs>
-							<localWorkers>2</localWorkers>
+							<extraJvmArgs>-Xmx1g</extraJvmArgs>
+							<localWorkers>8</localWorkers>
 							<webappDirectory>${project.build.directory}/gwt</webappDirectory>
 						</configuration>
 						<goals>
