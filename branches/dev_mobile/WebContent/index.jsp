@@ -24,7 +24,6 @@
 <tt:session-context/>
 <HTML>
 	<HEAD>
-    	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	    <meta charset="UTF-8"/>
 		<% if (!sessionContext.isAuthenticated()) {%>
 		<META http-equiv="Refresh" content="1; url=login.do">	

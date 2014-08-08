@@ -27,7 +27,6 @@
 
 <HTML>
 	<HEAD>
-    	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	    <meta charset="UTF-8"/>
  	   <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
  	   <link type="text/css" rel="stylesheet" href="styles/unitime.css">
