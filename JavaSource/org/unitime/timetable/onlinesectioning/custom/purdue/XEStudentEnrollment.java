@@ -158,6 +158,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					for (String m: current.get(0).failureReasons) {
 						if ("Your PIN is invalid.".equals(m)) {
 							check.setFlag(EligibilityFlag.PIN_REQUIRED, true);
+							check.setFlag(EligibilityFlag.CAN_ENROLL, false);
 							if (pin == null || pin.isEmpty()) return;
 						}
 						if (reason == null)
