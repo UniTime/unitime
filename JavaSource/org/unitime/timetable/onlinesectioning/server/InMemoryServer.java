@@ -60,16 +60,14 @@ public class InMemoryServer extends AbstractLockingServer {
 		if (matcher != null) matcher.setServer(this);
 		Lock lock = readLock();
 		try {
-			Set<XCourseId> ret = new TreeSet<XCourseId>();
+			SubSet<XCourseId> ret = new SubSet<XCourseId>(limit);
 			String queryInLowerCase = query.toLowerCase();
 			for (XCourseId c : iCourseForId.values()) {
 				if (c.matchCourseName(queryInLowerCase) && (matcher == null || matcher.match(c))) ret.add(c);
-				if (limit != null && ret.size() == limit) return ret;
 			}
-			if (queryInLowerCase.length() > 2) {
+			if (!ret.isLimitReached() && queryInLowerCase.length() > 2) {
 				for (XCourseId c : iCourseForId.values()) {
 					if (c.matchTitle(queryInLowerCase) && (matcher == null || matcher.match(c))) ret.add(c);
-					if (limit != null && ret.size() == limit) return ret;
 				}
 			}
 			return ret;
