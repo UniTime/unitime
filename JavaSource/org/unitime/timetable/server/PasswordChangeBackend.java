@@ -21,8 +21,6 @@ package org.unitime.timetable.server;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +32,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.unitime.commons.Base64;
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -186,7 +184,7 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 				hibSession.flush();
 					
 
-			} catch (NoSuchAlgorithmException e) {
+			} catch (IllegalArgumentException e) {
 				throw new GwtRpcException(MESSAGES.failedToChangePassword(e.getMessage()), e);
 			}
 		}
@@ -194,10 +192,8 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 		return new PasswordChangeResponse();
 	}
 	
-	private static String encode(String password) throws NoSuchAlgorithmException {
-		MessageDigest md = MessageDigest.getInstance("MD5");
-		md.update(password.getBytes());
-		return Base64.encodeBytes(md.digest());
+	private static String encode(String password) {
+		return new MessageDigestPasswordEncoder("MD5", true).encodePassword(password, null);
 	}
 	
 }
