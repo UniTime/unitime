@@ -19,16 +19,13 @@
 */
 package org.unitime.timetable.form;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.Base64;
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.unitime.timetable.model.User;
 
 /** 
@@ -94,12 +91,9 @@ public class UserEditForm extends ActionForm {
         }
     }
     
-	public static String encodePassword(String clearTextPassword) throws NoSuchAlgorithmException {
-		MessageDigest md = MessageDigest.getInstance("MD5");
-		md.update(clearTextPassword.getBytes());
-		return Base64.encodeBytes(md.digest());
+	public static String encodePassword(String clearTextPassword) {
+		return new MessageDigestPasswordEncoder("MD5", true).encodePassword(clearTextPassword, null);
 	}
-
     
     public void saveOrUpdate(org.hibernate.Session hibSession) throws Exception {
         if ("Update".equals(getOp())) {
