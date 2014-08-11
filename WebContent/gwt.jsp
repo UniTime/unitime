@@ -88,7 +88,6 @@
 		<span class="row">
 			<span class="cell left">
 				<span id='UniTimeGWT:Version'></span>
-				<tt:time-stamp/>
 			</span>
     		<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
 			<span class="cell middle"><tt:copy/></span>
@@ -161,7 +160,6 @@
 			<span class="row">
 				<span class="cell left">
 					<span id='UniTimeGWT:Version'></span>
-					<tt:time-stamp/>
 				</span>
     			<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
 				<span class="cell middle"><tt:copy/></span>
