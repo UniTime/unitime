@@ -20,20 +20,16 @@
 <%@page import="org.unitime.timetable.InitServlet"%>
 <%@page import="org.unitime.timetable.util.Constants"%>
 <% if (InitServlet.getInitializationException() != null) { %>
-	<table align="center" class="unitime-Footer" style="margin-top: 50px; padding-left: 100px;">
-		<tr>
-			<td align="center" style="color:red;">
-				UniTime <%=Constants.getVersion()%> failed to start up properly, please check the application log for more details.<br/>
-				<%
-				Throwable t = InitServlet.getInitializationException();
-				while (t != null) {
-					String clazz = t.getClass().getName();
-					if (clazz.indexOf('.') >= 0) clazz = clazz.substring(1 + clazz.lastIndexOf('.'));
-					out.println("<br>" + clazz + ": " + t.getMessage() + (t.getStackTrace() != null && t.getStackTrace().length > 0 ? " (at " + t.getStackTrace()[0].getFileName() + ":" + t.getStackTrace()[0].getLineNumber() + ")": ""));
-					t = t.getCause();
-				}
-				 %>
-			</td>
-		</tr>
-	</table>
+<div class='unitime-InitializationError'>
+	UniTime <%=Constants.getVersion()%> failed to start up properly, please check the application log for more details.<br/>
+	<%
+	Throwable t = InitServlet.getInitializationException();
+	while (t != null) {
+		String clazz = t.getClass().getName();
+		if (clazz.indexOf('.') >= 0) clazz = clazz.substring(1 + clazz.lastIndexOf('.'));
+		out.println("<br>" + clazz + ": " + t.getMessage() + (t.getStackTrace() != null && t.getStackTrace().length > 0 ? " (at " + t.getStackTrace()[0].getFileName() + ":" + t.getStackTrace()[0].getLineNumber() + ")": ""));
+		t = t.getCause();
+	}
+	%>
+</div>	
 <% } %>

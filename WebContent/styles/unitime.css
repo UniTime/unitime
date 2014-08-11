@@ -3464,3 +3464,58 @@ unitime-RoomSharingWidget .legend .blank {
 	display: block;	
 	text-align: right;
 }
+
+.unitime-Login {
+	margin: 20px 5px 20px 5px;
+	display: block;
+	text-align: center;
+}
+
+.unitime-Login .header {
+	display: inline-block;
+	padding: 5px 0px 5px 10px;
+}
+
+.unitime-Login .header .h1 {
+	color: #35526F;
+	font-size: xx-large;
+}
+
+.unitime-Login .header .h2 {
+	color: #35526F;
+	font-size: large;
+}
+
+.unitime-Login .error {
+	display: block;
+	color: red;
+	font-size: medium;
+	font-weight: bold;
+	margin-top: 20px;
+}
+
+.unitime-Login .logo {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.unitime-Login .login {
+	display: block;
+	padding: 10px 0px 10px 0px;
+}
+
+.unitime-Login .forgot {
+	display: block;
+}
+
+.unitime-Login .menu {
+	display: inline-block;
+	vertical-align: top;
+	padding-right: 5px;
+}
+
+.unitime-InitializationError {
+	color: red;
+	text-align: center;
+	margin-bottom: 20px;
+}
