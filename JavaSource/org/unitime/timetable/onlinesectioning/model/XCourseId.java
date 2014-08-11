@@ -143,7 +143,7 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 	
 	public boolean matchTitle(String queryInLowerCase) {
 		if (getTitle() == null) return false;
-		if (!matchCourseName(queryInLowerCase) && getTitle().toLowerCase().contains(queryInLowerCase)) return true;
+		if (!matchCourseName(queryInLowerCase) && (getTitle().toLowerCase().startsWith(queryInLowerCase) || getTitle().toLowerCase().contains(" " + queryInLowerCase))) return true;
 		return false;
 	}
 	
