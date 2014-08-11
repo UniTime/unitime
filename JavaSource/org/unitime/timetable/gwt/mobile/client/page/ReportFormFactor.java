@@ -25,7 +25,9 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.googlecode.mgwt.ui.client.MGWT;
 
 /**
@@ -34,14 +36,17 @@ import com.googlecode.mgwt.ui.client.MGWT;
 public class ReportFormFactor {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
-	public static void report() {
+	public static void report(RootPanel panel) {
+		final boolean reload = "true".equals(panel.getElement().getInnerText()); 
 		ReportFormFactorRequest req = new ReportFormFactorRequest();
 		req.setFormFactor(MGWT.getFormFactor().isDesktop() ? "desktop" : MGWT.getFormFactor().isPhone() ? "phone" : "tablet");
 		RPC.execute(req, new AsyncCallback<GwtRpcResponseNull>() {
 			@Override
 			public void onFailure(Throwable caught) { }
 			@Override
-			public void onSuccess(GwtRpcResponseNull result) { }
+			public void onSuccess(GwtRpcResponseNull result) {
+				if (reload && !MGWT.getFormFactor().isDesktop()) Window.Location.reload();
+			}
 		});
 	}
 

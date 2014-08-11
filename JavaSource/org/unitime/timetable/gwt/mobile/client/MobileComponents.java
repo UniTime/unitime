@@ -28,7 +28,7 @@ import com.google.gwt.user.client.ui.RootPanel;
  * @author Tomas Muller
  */
 public enum MobileComponents {
-	detectFormFactor("UniTimeGWT:DetectFormFactor", new ComponentFactory() { public void insert(RootPanel panel) { ReportFormFactor.report(); } }),
+	detectFormFactor("UniTimeGWT:DetectFormFactor", new ComponentFactory() { public void insert(RootPanel panel) { ReportFormFactor.report(panel); } }),
 	menubar_mobile("UniTimeGWT:MobileMenu", new ComponentFactory() { public void insert(RootPanel panel) { new MobileMenu().insert(panel); } }),
 	;
 	private String iId;
