@@ -95,6 +95,12 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return session.getYear() + session.getTerm().toLowerCase();
 	}
 	
+	private String getBannerId(XStudent student) {
+		String id = student.getExternalId();
+		while (id.length() < 9) id = "0" + id;
+		return id;
+	}
+	
 	private Gson getGson(OnlineSectioningHelper helper) {
 		GsonBuilder builder = new GsonBuilder()
 		.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
@@ -123,14 +129,15 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
 			if (helper.isDebugEnabled())
-				helper.debug("Checking eligility for " + student.getName() + " (term: " + getBannerTerm(session) + ", id:" + student.getExternalId() + ", pin:" + pin + ")");
+				helper.debug("Checking eligility for " + student.getName() + " (term: " + getBannerTerm(session) + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(iBannerApiUrl);
 			resource.setNext(iClient);
 			resource.addQueryParameter("term", getBannerTerm(session));
-			resource.addQueryParameter("bannerId", student.getExternalId());
+			resource.addQueryParameter("bannerId", getBannerId(student));
 			helper.getAction().addOptionBuilder().setKey("term").setValue(getBannerTerm(session));
+			helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 			if (pin != null && !pin.isEmpty()) {
 				resource.addQueryParameter("altPin", pin);
 				helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
@@ -229,14 +236,15 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
 			if (helper.isDebugEnabled())
-				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + getBannerTerm(session) + ", id:" + student.getExternalId() + ", pin:" + pin + ")");
+				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + getBannerTerm(session) + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(iBannerApiUrl);
 			resource.setNext(iClient);
 			resource.addQueryParameter("term", getBannerTerm(session));
-			resource.addQueryParameter("bannerId", student.getExternalId());
+			resource.addQueryParameter("bannerId", getBannerId(student));
 			helper.getAction().addOptionBuilder().setKey("term").setValue(getBannerTerm(session));
+			helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 			if (pin != null && !pin.isEmpty()) {
 				resource.addQueryParameter("altPin", pin);
 				helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
@@ -274,7 +282,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			Map<String, XSection> id2section = new HashMap<String, XSection>();
 			Map<String, XCourse> id2course = new HashMap<String, XCourse>();
 			Set<String> added = new HashSet<String>();
-			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(getBannerTerm(session), student.getExternalId(), pin);
+			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(getBannerTerm(session), getBannerId(student), pin);
 			List<EnrollmentFailure> fails = new ArrayList<EnrollmentFailure>();
 			Set<String> checked = new HashSet<String>();
 			for (EnrollmentRequest request: enrollments) {
