@@ -101,8 +101,7 @@
   		<TD width="10%" nowrap valign='top'>Subject Areas:</TD>
 		<TD>
 			<html:checkbox property="all" onclick="selectionChanged();"/>All Subject Areas (on one report)<br>
-			<html:select property="subjects" multiple="true" size="7"
-				onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+			<html:select property="subjects" multiple="true" size="7">
 				<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
 			</html:select>
 		</TD>
