@@ -76,15 +76,10 @@
 	
 </html:form>
 
-<SCRIPT type="text/javascript" language="javascript" src="scripts/smooth_scroll.js"></SCRIPT>
 <SCRIPT type="text/javascript" language="javascript">
-	
 	function jumpToAnchor() {
     <% if (request.getAttribute(Constants.JUMP_TO_ATTR_NAME) != null) { %>
-  		//location.hash = "<%=request.getAttribute(Constants.JUMP_TO_ATTR_NAME)%>";  		
-  		ss.STEPS=100;
-  		ss.INTERVAL=50;
-  		ss.smoothScroll("<%=request.getAttribute(Constants.JUMP_TO_ATTR_NAME)%>");
+  		location.hash = "<%=request.getAttribute(Constants.JUMP_TO_ATTR_NAME)%>";
 	<% } %>
 	    self.focus();
   	}

@@ -324,13 +324,6 @@
 		else
 			return false;
 	}
-	/*
-	var frmvalidator  = new Validator("instructionalOfferingConfigEditForm");
-	frmvalidator.addValidation("limit","maxlen=4");
- 	frmvalidator.addValidation("limit","numeric");
- 	frmvalidator.addValidation("limit","gt=-1");
-	frmvalidator.setAddnlValidationFunction("checkClick"); 
-	*/
 	// -->
 </SCRIPT>
 

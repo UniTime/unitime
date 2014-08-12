@@ -584,12 +584,6 @@
 	</script>
 </tt:propertyNotEquals>
 
-<script type="text/javascript" language="javascript">
-	// Validator
-	var frmvalidator  = new Validator("editRoomForm");
-	frmvalidator.addValidation("capacity","numeric");	
-</script>
-
 <SCRIPT type="text/javascript" language="javascript">
 
 	function buldingChanged(id) {

@@ -316,9 +316,3 @@
 		function setMarker() {}
 	</script>
 </tt:propertyNotEquals>
-
-<script type="text/javascript" language="javascript">
-	// Validator
-	var frmvalidator  = new Validator("nonUnivLocationForm");
-	frmvalidator.addValidation("capacity","numeric");	
-</script>
