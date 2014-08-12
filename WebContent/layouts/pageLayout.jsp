@@ -61,8 +61,6 @@
     <link rel="shortcut icon" href="images/timetabling.ico" />
 	<title>UniTime <%=Constants.VERSION%>| <tiles:getAsString name="title" /></title>
     <script language="JavaScript" type="text/javascript" src="scripts/loading.js"></script>
-    <script language="JavaScript" type="text/javascript" src="scripts/validator.js"></script>
-	<script language="JavaScript" type="text/javascript" src="scripts/select.js"></script>
 	<script language="JavaScript" type="text/javascript" src="scripts/rtt.js"></script>
 	<script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 </head>
