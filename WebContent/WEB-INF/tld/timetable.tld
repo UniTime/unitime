@@ -518,10 +518,45 @@
 		<body-content>JSP</body-content>
 	</tag>
 	
-		<tag>
+	<tag>
 		<name>page-file</name>
 		<tag-class>org.unitime.timetable.tags.PageFile</tag-class>
 		<body-content>JSP</body-content>
 	</tag>
 	
+	<tag>
+		<name>calendar</name>
+		<tag-class>org.unitime.timetable.tags.Calendar</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<name>property</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+		<attribute>
+			<name>outerStyle</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+		<attribute>
+			<name>format</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+		<attribute>
+			<name>onchange</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+	</tag>
 </taglib>

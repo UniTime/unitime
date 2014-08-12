@@ -48,7 +48,6 @@
 	<meta http-equiv="expires" content="0">
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
     <meta charset="UTF-8"/>
-	<style type="text/css">@import url(scripts/jscalendar/calendar-blue.css);</style>
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
@@ -63,9 +62,6 @@
 	<title>UniTime <%=Constants.VERSION%>| <tiles:getAsString name="title" /></title>
     <script language="JavaScript" type="text/javascript" src="scripts/loading.js"></script>
     <script language="JavaScript" type="text/javascript" src="scripts/validator.js"></script>
-	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/calendar.js"></script>
-	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/lang/calendar-en.js"></script>
-	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/calendar-setup.js"></script>
 	<script language="JavaScript" type="text/javascript" src="scripts/select.js"></script>
 	<script language="JavaScript" type="text/javascript" src="scripts/rtt.js"></script>
 	<script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>

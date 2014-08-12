@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
@@ -67,6 +68,7 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.datepicker.client.CalendarUtil;
 
 /**
@@ -91,15 +93,19 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	private boolean iHint;
 	
 	public SingleDateSelector() {
-		this(null, true);
+		this(new AriaTextBox(), null, true);
 	}
 	
 	public SingleDateSelector(AcademicSessionProvider session) {
-		this(session, true);
+		this(new AriaTextBox(), session, true);
 	}
 	
 	public SingleDateSelector(AcademicSessionProvider session, boolean hint) {
-		super(new AriaTextBox());
+		this(new AriaTextBox(), session, hint);
+	}
+	
+	private SingleDateSelector(AriaTextBox text, AcademicSessionProvider session, boolean hint) {
+		super(text);
 		iPicker = getWidget();
 		iAcademicSession = session;
 		iHint = hint;
@@ -848,5 +854,31 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	
 	public Date today() {
 		return iFormat.parse(iFormat.format(new Date()));
+	}
+	
+	public static SingleDateSelector insert(RootPanel panel) {
+		String format = panel.getElement().getAttribute("format");
+		final String onchange = panel.getElement().getAttribute("onchange");
+		String error = panel.getElement().getAttribute("error");
+		AriaTextBox text = new AriaTextBox(panel.getElement().getFirstChildElement());
+		SingleDateSelector selector = new SingleDateSelector(text, null, false);
+		if (format != null)
+			selector.iFormat = DateTimeFormat.getFormat(format);
+		if (onchange != null)
+			selector.addValueChangeHandler(new ValueChangeHandler<Date>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Date> event) {
+					ToolBox.eval(onchange);
+				}
+			});
+		if (text.getText() != null && !text.getText().isEmpty()) {
+			Date date = selector.iFormat.parse(text.getText());
+			if (date != null)
+				selector.setValue(date);
+		}
+		if (error != null && !error.isEmpty())
+			selector.setErrorHint(error);
+		panel.add(selector);
+		return selector;
 	}
 }

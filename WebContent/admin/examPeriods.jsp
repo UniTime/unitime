@@ -297,9 +297,7 @@
 			<TD>Date:</TD>
 			<TD>
 				<logic:equal name="examPeriodEditForm" property="editable" value="true">
-					<html:text property="date" size="10" maxlength="10" styleId="date"/>
-					<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_date">
-					&nbsp;<html:errors property="date"/>
+					<tt:calendar property="date" format="MM/dd/yyyy"/>
 				</logic:equal>
 				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
 					<bean:write name="examPeriodEditForm" property="date"/>
@@ -394,21 +392,6 @@
 			</TD>
 		</TR>
 	</TABLE>
-	<logic:equal name="examPeriodEditForm" property="editable" value="true">
-	<script type="text/javascript" language="javascript">
-	
-	Calendar.setup( {
-		cache      : true, 					// Single object used for all calendars
-		electric   : false, 				// Changes date only when calendar is closed
-		inputField : "date",		// ID of the input field
-	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
-	    showOthers : true,					// Show overlap of dates from other months	    
-	    date		: <%=request.getParameter("date") != null && request.getParameter("date").length() >= 10 ? request.getParameter("date") : null%>,
-		button     : "show_date"	// ID of the button
-	} );
-
-	</script>
-	</logic:equal>
 	</logic:equal>
 <BR>
 </logic:notEqual>
