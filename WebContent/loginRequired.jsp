@@ -21,8 +21,6 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <DIV align="center" class="H1">
-	<BR> 
-	<IMG src="images/timetabling-nocopy.jpg" alt="Timetabling" title="Timetabling Log In">
 	<BR>
 	<BR>
 	<logic:notEmpty name="message" scope="request">
