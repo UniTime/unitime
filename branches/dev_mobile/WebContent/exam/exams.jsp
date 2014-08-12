@@ -50,7 +50,7 @@
 				</logic:equal>
 				<html:options property="subjectAreas"/>
 			</html:select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<html:submit onclick="op.value='Apply'; this.disabled=true; document.getElementById('s2').disabled=true; displayLoading();form.submit()" styleId="s1" accesskey="A" value="Apply" title="Apply (Alt+A)"/>
+			<html:submit onclick="op.value='Apply'; this.disabled=true; if (document.getElementById('s2')) document.getElementById('s2').disabled=true; displayLoading();form.submit()" styleId="s1" accesskey="A" value="Apply" title="Apply (Alt+A)"/>
 		</TD>
 	</TR>
 	</TABLE>

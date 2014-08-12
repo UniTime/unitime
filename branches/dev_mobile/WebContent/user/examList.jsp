@@ -22,7 +22,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles"%>
-<%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout"%>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tiles:importAttribute />
@@ -37,10 +37,7 @@
 			</TD>
 			<TH valign="middle">Subject:</TH>
 			<TD valign="middle">
-				<html:select name="examListForm" property="subjectAreaId"
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="return checkKey(event, this);" >
+				<html:select name="examListForm" property="subjectAreaId" styleId="subjectId" >
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<sec:authorize access="hasPermission(null, null, 'DepartmentIndependent')">
 						<html:option value="<%=Constants.ALL_OPTION_VALUE%>"><%=Constants.ALL_OPTION_LABEL%></html:option>
@@ -50,12 +47,8 @@
 			</TD>
 			<TH valign="middle">Course Number:</TH>
 			<TD valign="middle">
-				<layout:suggest 
-					suggestAction="/getCourseNumbers" property="courseNbr" styleId="courseNbrText" 
-					suggestCount="15" size="10" maxlength="10" layout="false" all="true"
-					minWordLength="2" 
-					tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
-					onblur="blurSuggestionList('courseNbrText');" />
+				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="10"
+					title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
 			</TD>
 			<TD valign="middle" nowrap>
 				&nbsp;&nbsp;&nbsp;

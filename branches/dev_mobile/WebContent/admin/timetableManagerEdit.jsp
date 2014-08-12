@@ -181,10 +181,7 @@
 		<TR>
 			<TD>&nbsp;</TD>
 			<TD>
-				<html:select property="dept"									
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="return checkKey(event, this);" >														
+				<html:select property="dept">														
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
 				</html:select>
@@ -231,10 +228,7 @@
 		<TR>
 			<TD>&nbsp;</TD>
 			<TD>
-				<html:select property="solverGr"									
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="return checkKey(event, this);" >														
+				<html:select property="solverGr">														
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:options collection="solverGroupList" property="uniqueId" labelProperty="name" />
 				</html:select>

@@ -151,7 +151,7 @@
 			<td valign="middle">
 			<table style="margin-left: 50px;"><tr>
 			    <td valign="top">For Subject Areas:</td>
-			    <td><html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardSubjectAreaIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+			    <td><html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardSubjectAreaIds" multiple="true">
 					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			    </td></tr>
@@ -171,7 +171,7 @@
 			<td valign="middle">
 			<table><tr>	<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardClassInstructors"/> Roll Forward Class Instructors For Subject Areas: 
 				</td><td>
-				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardClassInstrSubjectIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardClassInstrSubjectIds" multiple="true">
 					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			</td></tr></table>
@@ -184,7 +184,7 @@
 					<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="addNewCourseOfferings"/>Add New Course Offerings For Subject Areas:
 					<div style="margin-left: 20px;"><i>Note: Only use this after all existing course<br> offerings have been rolled forward to avoid<br> errors with cross lists.</i></div>
 				</td><td>
-				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="addNewCourseOfferingsSubjectIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="addNewCourseOfferingsSubjectIds" multiple="true">
 					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			</td></tr></table>
@@ -242,7 +242,7 @@
 			<td valign="middle">
 			<table style="margin-left: 50px;"><tr>
 			    <td valign="top" nowrap width="20%">For Subject Areas:</td>
-			    <td><html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardReservationsSubjectIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+			    <td><html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardReservationsSubjectIds" multiple="true">
 					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			    </td></tr>

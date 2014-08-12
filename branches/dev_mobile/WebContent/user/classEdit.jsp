@@ -429,9 +429,7 @@
 								<html:select style="width:250px;" 
 									styleId='<%= "instructors" + ctr %>' 
 									property='<%= "instructors[" + ctr + "]" %>'
-									onchange='<%= "instructorChanged("+ctr+", this);"%>'
-									onkeypress="return selectSearch(event, this);" 
-									onkeydown="return checkKey(event, this);" >														
+									onchange='<%= "instructorChanged("+ctr+", this);"%>'>														
 									<html:option value="-">-</html:option>
 									<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME + ctr%>" property="value" labelProperty="label" />
 								</html:select>

@@ -80,8 +80,12 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 	private String iCurrentText = null;
 	
 	public AriaSuggestBox(SuggestOracle oracle) {
+		this(new AriaTextBox(), oracle);
+	}
+	
+	public AriaSuggestBox(AriaTextBox box, SuggestOracle oracle) {
 		iOracle = oracle;
-		iText = new AriaTextBox();
+		iText = box;
 		iText.setStyleName("gwt-SuggestBox");
 		initWidget(iText);
 		

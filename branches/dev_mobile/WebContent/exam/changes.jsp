@@ -47,10 +47,7 @@
 	<TR>
 		<TD width="10%" nowrap>Subject Areas:</TD>
 		<TD>
-			<html:select name="examChangesForm" property="subjectArea"
-				onfocus="setUp();" 
-				onkeypress="return selectSearch(event, this);" 
-				onkeydown="return checkKey(event, this);" >
+			<html:select name="examChangesForm" property="subjectArea">
 				<html:option value="">Select...</html:option>
 				<html:option value="-1">All</html:option>
 				<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />

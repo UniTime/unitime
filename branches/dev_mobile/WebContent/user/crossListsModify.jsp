@@ -177,10 +177,7 @@
 				<table border="0" cellpadding="0" cellspacing="0"><tr><td>
 				<html:select
 					name="crossListsModifyForm"									
-					property="addCourseOfferingId"			
-					onfocus="setUp(); "
-					onkeypress="return selectSearch(event, this);"
-					onkeydown="return checkKey(event, this);" >
+					property="addCourseOfferingId">
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:options collection="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="courseNameWithTitle" />
 				</html:select>

@@ -43,10 +43,7 @@
 			<tt:section-title>
 				<B><loc:message name="propertyDepartment"/></B>
 				<html:select property="deptUniqueId"
-					onchange="displayLoading(); submit()"
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="return checkKey(event, this);" >
+					onchange="displayLoading(); submit()">
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" 
 						property="value" labelProperty="label"/>
