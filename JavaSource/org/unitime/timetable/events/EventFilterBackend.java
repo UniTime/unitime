@@ -235,12 +235,17 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		Integer after = null;
 		if (request.hasOption("after")) {
 			after = TimeSelector.TimeUtils.parseTime(CONSTANTS, request.getOption("after"), null);
-			query.addWhere("after", "m.stopPeriod > :Xafter");
-			query.addParameter("after", "Xafter", after);
+			if (after != null) {
+				query.addWhere("after", "m.stopPeriod > :Xafter");
+				query.addParameter("after", "Xafter", after);
+			}
 		}
 		if (request.hasOption("before")) {
-			query.addWhere("before", "m.startPeriod < :Xbefore");
-			query.addParameter("before", "Xbefore", TimeSelector.TimeUtils.parseTime(CONSTANTS, request.getOption("before"), after));
+			Integer before = TimeSelector.TimeUtils.parseTime(CONSTANTS, request.getOption("before"), after);
+			if (before != null) {
+				query.addWhere("before", "m.startPeriod < :Xbefore");
+				query.addParameter("before", "Xbefore", before);
+			}
 		}
 		if (request.hasOptions("day")) {
 			String dow = "";
