@@ -63,7 +63,7 @@ public class SpringLdapExternalUidTranslation implements ExternalUidTranslation 
     }
     
     public String ext2uid(String externalUserId) {
-    	String externalIdAttribute = ApplicationProperty.AuthenticationLdapLogin2UserId.value();
+    	String externalIdAttribute = ApplicationProperty.AuthenticationLdapIdAttribute.value();
     	if ("uid".equals(externalIdAttribute)) return externalUserId; // Nothing to translate
         try {
         	
