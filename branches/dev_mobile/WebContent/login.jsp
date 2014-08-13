@@ -36,7 +36,7 @@
 		<TITLE>UniTime <%=Constants.VERSION%>| Log In</TITLE>
 	</HEAD>
 	<BODY class="bodyMain" onload="document.forms[0].j_username.focus();">
-	<tt:form-factor value="unknown"><span id='UniTimeGWT:DetectFormFactor' style="display: none;">true</span></tt:form-factor>
+	<tt:form-factor value="unknown"><span id='UniTimeGWT:DetectFormFactor' style="display: none;"></span></tt:form-factor>
 	
 	<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
 	<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
@@ -68,9 +68,7 @@
 	<INPUT type="hidden" name="menu" value="<%=request.getParameter("menu") == null ? "" : request.getParameter("menu") %>">
 			
 	<span class='unitime-Login'>
-		<tt:form-factor value="mobile">
-			<span class='menu'><span id='UniTimeGWT:MobileMenu'></span></span>
-		</tt:form-factor>
+		<span class='menu'><span id='UniTimeGWT:MobileMenu'></span></span>
 		<span class='logo'><img src="images/unitime.png" border="0" alt="UniTime"></span>
 		<span class='header'>
 			<div class='h1'>University Timetabling</div>
