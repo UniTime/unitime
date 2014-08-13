@@ -229,6 +229,12 @@ public class MobileMenu extends UniTimeMenu {
 						});
 						iAnimationHelper.goTo(m, Animations.SLIDE);
 					} else if (item.hasPage()) {
+						iAnimationHelper.goTo(null, Animations.SLIDE_REVERSE, new AnimationEndCallback() {
+							@Override
+							public void onAnimationEnd() {
+								RootPanel.get().remove(iAnimationHelper);
+							}
+						});						
 						openUrl(item.getName(), item.getURL(encoder), item.getTarget());
 					}
 				}
