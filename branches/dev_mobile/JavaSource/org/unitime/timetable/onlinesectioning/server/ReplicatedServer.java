@@ -159,7 +159,7 @@ public class ReplicatedServer extends AbstractServer {
 		Lock lock = readLock();
 		try {
 			DistributedExecutorService ex = new DefaultExecutorService(iCourseForId);
-			Set<XCourseId> ret = new TreeSet<XCourseId>();
+			SubSet<XCourseId> ret = new SubSet<XCourseId>(limit);
 			String queryInLowerCase = query.toLowerCase();
 			
 			List<Future<Collection<XCourseId>>> futures = ex.submitEverywhere(new FindCoursesCallable(getAcademicSession().getUniqueId(), queryInLowerCase, limit, matcher));
@@ -170,17 +170,15 @@ public class ReplicatedServer extends AbstractServer {
 				for (Future<Collection<XCourseId>> future: futures) {
 					for (XCourseId c: future.get()) {
 						if (c.matchCourseName(queryInLowerCase)) ret.add(c);
-						if (ret.size() == limit) return ret;
 					}
 				}
-				if (queryInLowerCase.length() > 2) {
+				if (!ret.isLimitReached() && queryInLowerCase.length() > 2) {
 					for (Future<Collection<XCourseId>> future: futures) {
 						for (XCourseId c: future.get()) {
 							ret.add(c);
-							if (ret.size() == limit) return ret;
 						}
 					}
-				}				
+				}
 			}
 			return ret;
 		} catch (InterruptedException e) {
@@ -610,14 +608,13 @@ public class ReplicatedServer extends AbstractServer {
 		@Override
 		public Collection<XCourseId> call() throws Exception {
 			if (iMatcher != null) iMatcher.setServer(getLocalServer(iSessionId));
-			Set<XCourseId> ret = new TreeSet<XCourseId>();
+			SubSet<XCourseId> ret = new SubSet<XCourseId>(iLimit);
 			for (XCourseId c : iCache.values()) {
 				if (iQuery != null && !c.matchCourseName(iQuery)) continue;
 				if (iMatcher != null && !iMatcher.match(c)) continue;
 				ret.add(c);
-				if (iLimit != null && ret.size() == iLimit) return ret;
 			}
-			if (iQuery != null && iQuery.length() > 2) {
+			if (!ret.isLimitReached() && iQuery != null && iQuery.length() > 2) {
 				for (XCourseId c : iCache.values()) {
 					if (!c.matchTitle(iQuery)) continue;
 					if (iMatcher != null && !iMatcher.match(c)) continue;
