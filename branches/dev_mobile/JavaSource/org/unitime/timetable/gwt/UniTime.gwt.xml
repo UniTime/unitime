@@ -53,7 +53,9 @@
 	<!-- Other module inherits                                      -->
 	<inherits name='org.unitime.timetable.gwt.command.GwtRpcCommandPattern' />
 	<inherits name='org.unitime.timetable.gwt.client.page.PageWidgets'/>
+	
 	<inherits name='org.unitime.timetable.gwt.mobile.UniTimeMobile' />
+	<set-property name="mgwt.density" value="xhigh"/>
 
 	<!-- Specify the app entry point class.                         -->
 	<entry-point class='org.unitime.timetable.gwt.client.Client' />
