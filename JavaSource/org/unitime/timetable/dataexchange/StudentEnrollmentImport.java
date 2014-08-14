@@ -160,7 +160,7 @@ public class StudentEnrollmentImport extends BaseImport {
             	for (CourseDemand cd: student.getCourseDemands())
             		if (!cd.isAlternative() && cd.getPriority() >= nextPriority)
             			nextPriority = cd.getPriority() + 1;
-            	Set<CourseDemand> remaining = new TreeSet<CourseDemand>(student.getCourseDemands());
+            	Set<CourseDemand> remaining = new HashSet<CourseDemand>(student.getCourseDemands());
             	
             	for (Iterator j = studentElement.elementIterator("class"); j.hasNext(); ) {
             		Element classElement = (Element) j.next();
@@ -217,23 +217,25 @@ public class StudentEnrollmentImport extends BaseImport {
             		}
             		
             		StudentClassEnrollment enrollment = enrollments.remove(new Pair(course.getUniqueId(), clazz.getUniqueId()));
-            		if (enrollment != null) continue; // enrollment already exists
-            		
-            		enrollment = new StudentClassEnrollment();
-            		enrollment.setStudent(student);
-            		enrollment.setClazz(clazz);
-            		enrollment.setCourseOffering(course);
-            		enrollment.setTimestamp(ts);
-            		enrollment.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
-            		student.getClassEnrollments().add(enrollment);
-            		
-            		demands: for (CourseDemand d: student.getCourseDemands()) {
-            			for (CourseRequest r: d.getCourseRequests()) {
-            				if (r.getCourseOffering().equals(course)) {
-            					enrollment.setCourseRequest(r);
-            					break demands;
-            				}
-            			}
+            		if (enrollment == null) {
+                		enrollment = new StudentClassEnrollment();
+                		enrollment.setStudent(student);
+                		enrollment.setClazz(clazz);
+                		enrollment.setCourseOffering(course);
+                		enrollment.setTimestamp(ts);
+                		enrollment.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
+                		student.getClassEnrollments().add(enrollment);
+                		
+                		demands: for (CourseDemand d: student.getCourseDemands()) {
+                			for (CourseRequest r: d.getCourseRequests()) {
+                				if (r.getCourseOffering().equals(course)) {
+                					enrollment.setCourseRequest(r);
+                					break demands;
+                				}
+                			}
+                		}
+                		
+                		if (student.getUniqueId() != null) updatedStudents.add(student.getUniqueId());
             		}
             		
             		if (enrollment.getCourseRequest() != null) {
@@ -258,9 +260,8 @@ public class StudentEnrollmentImport extends BaseImport {
 						enrollment.setCourseRequest(cr);
 						cr.getClassEnrollments().add(enrollment);
 						fixCourseDemands = true;
+						if (student.getUniqueId() != null) updatedStudents.add(student.getUniqueId());
             		}
-            		
-            		if (student.getUniqueId() != null) updatedStudents.add(student.getUniqueId());
             	}
             	
             	if (!enrollments.isEmpty()) {
