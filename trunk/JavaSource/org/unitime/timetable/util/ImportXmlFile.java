@@ -45,7 +45,7 @@ public class ImportXmlFile {
 	public static void main(String[] args) {
 		try {
 			// Configure logging
-	        org.apache.log4j.BasicConfigurator.configure();
+	        org.apache.log4j.PropertyConfigurator.configure(ApplicationProperties.getProperties());
 	        
 	        // Configure hibernate
 	        HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
