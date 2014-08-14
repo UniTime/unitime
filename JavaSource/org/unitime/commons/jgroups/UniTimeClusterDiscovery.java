@@ -135,12 +135,12 @@ public class UniTimeClusterDiscovery extends Discovery {
 				if (cluster.getTimeStamp().getTime() >= deadline)
 					members.add(deserialize(cluster.getPingData()));
 			}
-            if (tx != null && tx.isActive()) tx.commit();
+            if (tx != null) tx.commit();
 		} catch (IllegalStateException e) {
 			log.info("Failed to read  all members of cluster " + group_addr + ": " + e.getMessage());
-			if (tx!=null && tx.isActive()) tx.rollback();
+			if (tx!=null) tx.rollback();
 		} catch (Exception e) {
-			if (tx!=null && tx.isActive()) tx.rollback();
+			if (tx!=null) tx.rollback();
 		} finally {
 			hibSession.close();
 		}
@@ -184,12 +184,12 @@ public class UniTimeClusterDiscovery extends Discovery {
 			cluster.setTimeStamp(new Date());
 			hibSession.saveOrUpdate(cluster);
 			hibSession.flush();
-            if (tx != null && tx.isActive()) tx.commit();
+            if (tx != null) tx.commit();
 		} catch (IllegalStateException e) {
-			if (tx!=null && tx.isActive()) tx.rollback();
+			if (tx!=null) tx.rollback();
 			log.info("Failed to update my data for cluster " + group_addr + ": " + e.getMessage());
 		} catch (Exception e) {
-			if (tx!=null && tx.isActive()) tx.rollback();
+			if (tx!=null) tx.rollback();
 		} finally {
 			hibSession.close();
 		}
@@ -236,9 +236,9 @@ public class UniTimeClusterDiscovery extends Discovery {
 				}
 			}
 			hibSession.flush();
-            if (tx != null && tx.isActive()) tx.commit();
+            if (tx != null) tx.commit();
 		} catch (Exception e) {
-			if (tx!=null && tx.isActive()) tx.rollback();
+			if (tx!=null) tx.rollback();
 		} finally {
 			hibSession.close();
 		}
@@ -254,9 +254,9 @@ public class UniTimeClusterDiscovery extends Discovery {
         	if (cluster != null)
         		hibSession.delete(cluster);
         	hibSession.flush();
-            if (tx != null && tx.isActive()) tx.commit();
+            if (tx != null) tx.commit();
 		} catch (Exception e) {
-			if (tx!=null && tx.isActive()) tx.rollback();
+			if (tx!=null) tx.rollback();
 		} finally {
 			hibSession.close();
 		}
