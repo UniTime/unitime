@@ -58,7 +58,7 @@ public class ImportMessages {
 			PrintStream out = new PrintStream(System.out, true, "UTF-8");
 			
 			out.println("# UniTime 3.4 (University Timetabling Application)");
-			out.println("# Copyright (C) 2012 - 2013, UniTime LLC, and individual contributors");
+			out.println("# Copyright (C) 2012 - 2014, UniTime LLC, and individual contributors");
 			out.println("# as indicated by the @authors tag.");
 			out.println("# ");
 			out.println("# This program is free software; you can redistribute it and/or modify");
