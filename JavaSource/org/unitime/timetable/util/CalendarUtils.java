@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.util;
 
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -35,26 +33,11 @@ public class CalendarUtils {
 	 * @param date String to be checked
 	 * @param dateFormat format of the date e.g. MM/dd/yyyy - see SimpleDateFormat
 	 * @return true if it is a valid date
+	 * Use {@link Formats.Format.isValid(boolean)} instead.
 	 */
+	@Deprecated
 	public static boolean isValidDate(String date, String dateFormat) {
-		
-		if (date==null || dateFormat==null || date.trim().length()==0 || dateFormat.trim().length()==0)
-			return false;
-		
-		SimpleDateFormat df = new SimpleDateFormat(dateFormat);
-		df.setLenient(false);
-		ParsePosition pos = new ParsePosition(0);
-		
-		try {
-			Date d = df.parse(date, pos);
-			if (d==null || pos.getErrorIndex()!=-1 || pos.getIndex()!=date.length())
-				return false;			
-		}
-		catch (Exception e) {
-			return false;
-		}
-		
-		return true;
+		return Formats.getDateFormat(dateFormat).isValid(date);
 	}
 	
 	/**
@@ -62,15 +45,15 @@ public class CalendarUtils {
 	 * @param date
 	 * @param dateFormat format of the date e.g. MM/dd/yyyy - see SimpleDateFormat
 	 * @return null if not a valid date
+	 * Use {@link Formats.Format.parse(String)} instead.
 	 */
+	@Deprecated
 	public static Date getDate(String date, String dateFormat) {
 		try {
-			if (isValidDate(date, dateFormat))
-				return new SimpleDateFormat(dateFormat).parse(date);
+			return Formats.getDateFormat(dateFormat).parse(date);
+		} catch (Exception e) {
+			return null;
 		}
-		catch (Exception e) { }
-		
-		return null;
 	}
 	
 	public static int date2dayOfYear(int sessionYear, Date meetingDate) {

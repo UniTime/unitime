@@ -137,9 +137,6 @@
 				<html:select
 					name="courseOfferingEditForm"
 					property="subjectAreaId"
-					onfocus="setUp();"
-					onkeypress="return selectSearch(event, this);"
-					onkeydown="return checkKey(event, this);"
 					onchange="submit();"
 					styleId="subjectId"
 					>
@@ -190,10 +187,7 @@
 				<TD>
 					<html:select
 						name="courseOfferingEditForm"
-						property="courseTypeId"
-						onfocus="setUp();"
-						onkeypress="return selectSearch(event, this);"
-						onkeydown="return checkKey(event, this);" >
+						property="courseTypeId">
 						<html:option value=""></html:option>
 						<html:options collection="courseTypes" property="uniqueId" labelProperty="label" />
 					</html:select>
@@ -316,10 +310,7 @@
 				<TD>
 					<html:select
 						name="courseOfferingEditForm"
-						property="demandCourseOfferingId"
-						onfocus="setUp();"
-						onkeypress="return selectSearch(event, this);"
-						onkeydown="return checkKey(event, this);" >
+						property="demandCourseOfferingId">
 						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"> </html:option>
 						<html:options collection="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="courseNameWithTitle" />
 					</html:select>
@@ -408,10 +399,7 @@
 				<logic:iterate name="courseOfferingEditForm" property="instructors" id="instructor" indexId="ctr">
 					<tr><td>
 					<html:select style="width:200px;"
-						property='<%= "instructors[" + ctr + "]" %>'
-						onfocus="setUp();" 
-						onkeypress="return selectSearch(event, this);"
-					>
+						property='<%= "instructors[" + ctr + "]" %>'>
 						<html:option value="-">-</html:option>
 						<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" property="value" labelProperty="label" />
 					</html:select>

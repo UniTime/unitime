@@ -490,11 +490,6 @@ A.submenuLink {
 	padding: 15px 2px 4px 2px;
 }
 
-.bkrndhome {
-	background-image: url(../images/bkrnd.gif);
-	background-repeat: repeat-x
-}
-
 .purduelinks {
 	font-weight: normal;
 	font-size: 70%;
@@ -728,7 +723,6 @@ A.submenuLink {
 	text-align: right;
 	font-size: 140%;
 	font-family: sans-serif, verdana, arial;
-	background-image: url(../images/bkrnd3.jpg);
 }
 
 .WelcomeRowHead {

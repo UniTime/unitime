@@ -20,12 +20,21 @@
 package org.unitime.timetable.gwt.client.aria;
 
 import com.google.gwt.aria.client.Roles;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.TextBox;
 
 /**
  * @author Tomas Muller
  */
 public class AriaTextBox extends TextBox implements HasAriaLabel {
+	
+	public AriaTextBox() {
+		super();
+	}
+	
+	public AriaTextBox(Element element) {
+		super(element);
+	}
 
 	@Override
 	public void setAriaLabel(String text) {

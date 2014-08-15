@@ -35,10 +35,7 @@
 		<tr><td>
 				<b>Department:</b>
 				<html:select property="deptCodeX"
-					onchange="if (blIsColapsed('dispRoomFilter')) {displayLoading(); submit();}"
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="return checkKey(event, this);" >
+					onchange="if (blIsColapsed('dispRoomFilter')) {displayLoading(); submit();}">
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:option value="<%=Constants.ALL_OPTION_VALUE%>">All Managed</html:option>
 					<tt:canSeeExams>

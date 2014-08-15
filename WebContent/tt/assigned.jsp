@@ -46,10 +46,7 @@ try {
 		<TR>
 			<TD width="10%" nowrap>Subject Area:</TD>
 			<TD>
-				<html:select name="assignedClassesForm" property="subjectArea"
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="return checkKey(event, this);" >
+				<html:select name="assignedClassesForm" property="subjectArea">
 					<html:option value="">Select...</html:option>
 					<html:option value="-1">All</html:option>
 					<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />

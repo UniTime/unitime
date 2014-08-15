@@ -72,7 +72,7 @@ public class ClassDateInfo implements Serializable, Comparable<ClassDateInfo> {
 	public String toHtml() { return "<span style='color:" + PreferenceLevel.int2color(getPreference()) + "'>" + getName() + "</span>"; }
 	public String toLongHtml() {
 		return "<span style='color:" + PreferenceLevel.int2color(getPreference()) + "'>" + getName() + "</span>" +
-				" <img style=\"cursor: pointer;\" src=\"scripts/jscalendar/calendar_1.gif\" border=\"0\" " +
+				" <img style=\"cursor: pointer;\" src=\"images/calendar.png\" border=\"0\" " +
 					"onclick=\"showGwtDialog('Preview of " + getName() + "', 'user/dispDatePattern.jsp?id=" + getId() + "&class=" + getClassId() + "','840','520');\">";
 	}
 
