@@ -26,8 +26,8 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles"%>
-<%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout"%>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 <%
@@ -273,11 +273,11 @@
 			</TD>
 			<TD>
 				<% if (frm.getSubjectAreas().size()==1) { %>
-					<html:select property="subjectAreaIds" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+					<html:select property="subjectAreaIds" styleId="subjectId">
 						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 					</html:select>
 				<% } else { %>
-					<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" property="subjectAreaIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+					<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" property="subjectAreaIds" multiple="true" styleId="subjectId">
 						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 					</html:select>
 				<% } %>
@@ -286,12 +286,9 @@
 				<B><loc:message name="filterCourseNumber"/></B>
 			</TD>
 			<TD valign="top">
+				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="10"
+					title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
 				<!-- html:text property="courseNbr" size="10" maxlength="10" / -->
-				<layout:suggest 
-					suggestAction="/getCourseNumbers" property="courseNbr" styleId="courseNbrText" 
-					suggestCount="15" size="10" maxlength="10" layout="false" all="true" 
-				 	tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
-					onblur="blurSuggestionList('courseNbrText');" />
 			</TD>
 			<TD valign="top" nowrap>
 				&nbsp;&nbsp;&nbsp;

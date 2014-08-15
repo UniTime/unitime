@@ -206,9 +206,6 @@
 						}
 					%>
 					<html:select style="width:350px;" property='<%= "roomGroups[" + ctr + "]" %>'
-						onfocus="setUp();" 
-						onkeypress="return selectSearch(event, this);" 
-						onkeydown="return checkKey(event, this);" 
 						disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
 						<html:options collection="<%=RoomGroup.GROUP_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="nameWithTitle" />
@@ -269,9 +266,6 @@
 						}
 					%>
 					<html:select style="width:350px;" property='<%= "roomPrefs[" + ctr + "]" %>'
-						onfocus="setUp();" 
-						onkeypress="return selectSearch(event, this);" 
-						onkeydown="return checkKey(event, this);" 
 						disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
 						<html:options collection="<%=Room.ROOM_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="labelWithCapacity" />
@@ -331,9 +325,6 @@
 						}
 					%>
 					<html:select style="width:350px;" property='<%= "bldgPrefs[" + ctr + "]" %>'
-						onfocus="setUp();" 
-						onkeypress="return selectSearch(event, this);" 
-						onkeydown="return checkKey(event, this);" 
 						disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
 						<html:options collection="<%=Building.BLDG_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="abbrName" />
@@ -393,9 +384,6 @@
 						}
 					%>
 					<html:select style="width:350px;" property='<%= "roomFeaturePrefs[" + ctr + "]" %>'
-						onfocus="setUp();" 
-						onkeypress="return selectSearch(event, this);" 
-						onkeydown="return checkKey(event, this);" 
 						disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
 						<html:options collection="<%=RoomFeature.FEATURE_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="labelWithType" />
@@ -455,9 +443,6 @@
 						}
 					%>
 					<html:select style="width:350px;" property='<%= "distPrefs[" + ctr + "]" %>'
-						onfocus="setUp();" 
-						onkeypress="return selectSearch(event, this);" 
-						onkeydown="return checkKey(event, this);" 
 						disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
 						<html:options collection="<%=DistributionType.DIST_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />

@@ -60,10 +60,7 @@
 		<TR>
 			<TD width="200">Timetable Manager</TD>
 			<TD>
-				<html:select name="chameleonForm" property="puid"
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="return checkKey(event, this);" >
+				<html:select name="chameleonForm" property="puid">
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:options collection="<%= TimetableManager.MGR_LIST_ATTR_NAME %>" 
 						property="externalUniqueId" labelProperty="name"/>

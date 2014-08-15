@@ -63,10 +63,7 @@
 	<TR>
 		<TD width="10%" nowrap>Subject Areas:</TD>
 		<TD>
-			<html:select name="examAssignmentReportForm" property="subjectArea"
-				onfocus="setUp();" 
-				onkeypress="return selectSearch(event, this);" 
-				onkeydown="return checkKey(event, this);" >
+			<html:select name="examAssignmentReportForm" property="subjectArea">
 				<html:option value="">Select...</html:option>
 				<logic:equal name="examAssignmentReportForm" property="canSeeAll" value="true">
 					<html:option value="-1">All</html:option>

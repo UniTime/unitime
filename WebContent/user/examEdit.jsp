@@ -158,10 +158,7 @@
 				<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
 					<tr><td nowrap>
 					<html:select style="width:200px;"
-						property='<%= "instructors[" + ctr + "]" %>'
-						onfocus="setUp();" 
-						onkeypress="return selectSearch(event, this);"
-					>
+						property='<%= "instructors[" + ctr + "]" %>'>
 						<html:option value="-">-</html:option>
 						<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME + ctr%>" property="value" labelProperty="label" />
 					</html:select>
@@ -217,16 +214,12 @@
 				<logic:iterate name="<%=frmName%>" property="subjectAreaList" id="m" indexId="idx">
 					<tr><td>
 					<html:select style="width:90px;" property='<%="subjectArea["+idx+"]"%>' styleId='<%="subjectArea"+idx%>' 
-						onfocus="setUp();" 
-						onkeypress="return selectSearch(event, this);"
 						onchange="<%= \"javascript: doAjax('subjectArea', '\"+idx+\"');\" %>" >
 						<html:option value="-1">-</html:option>
 						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId"/>
 					</html:select>
 					</td><td>
 					<html:select style="width:340px;" property='<%="courseNbr["+idx+"]"%>' styleId='<%="courseNbr"+idx%>'
-						onfocus="setUp();"
-						onkeypress="return selectSearch(event, this);"
 						onchange="<%= \"javascript: doAjax('courseNbr', '\"+idx+\"');\" %>" >
 						<html:optionsCollection property='<%="courseNbrs["+idx+"]"%>' label="value" value="id"/>
 					</html:select>

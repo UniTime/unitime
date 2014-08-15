@@ -26,7 +26,6 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
-<%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
@@ -170,9 +169,6 @@
 				<html:select style="width:90px;" 
 					property='<%= "subjectArea[" + ctr + "]" %>' 
 					onchange="<%= \"javascript: doReload('subjectArea', '\" + ctr + \"');\" %>"
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="<%= \"var y=checkKey(event, this); if(y && isModified()) { doReload('subjectArea', '\" + ctr + \"'); }return y;\" %>" 
 					styleId='<%="subjectArea"+ctr%>' >
 					<html:option value="-">-</html:option>
 					<html:optionsCollection property="filterSubjectAreas" label="subjectAreaAbbreviation" value="uniqueId"/>
@@ -181,9 +177,6 @@
 				<html:select style="width:290px;" 
 					property='<%= "courseNbr[" + ctr + "]" %>' 
 					onchange="<%= \"javascript: doReload('courseNbr[', '\" + ctr + \"]');\" %>"
-					onfocus='setUp();'
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="<%= \"var y=checkKey(event, this); if(y && isModified()) { doReload('exam', '\" + ctr + \"'); }return y;\" %>" 
 					styleId='<%="courseNbr"+ctr%>' >
 					<html:optionsCollection property='<%="courseNbrs["+ctr+"]"%>' label="value" value="id"/>
 				</html:select>
@@ -288,10 +281,7 @@
 						<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
 					</html:select>
 					<B>Subject: </B>
-					<html:select name="examDistributionPrefsForm" property="filterSubjectAreaId"
-						onfocus="setUp();" 
-						onkeypress="return selectSearch(event, this);" 
-						onkeydown="return checkKey(event, this);" >
+					<html:select name="examDistributionPrefsForm" property="filterSubjectAreaId" styleId="subjectId">
 						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 						<sec:authorize access="hasPermission(null, null, 'DepartmentIndependent')">
 							<html:option value="<%=Constants.ALL_OPTION_VALUE%>"><%=Constants.ALL_OPTION_LABEL%></html:option>
@@ -299,11 +289,7 @@
 						<html:optionsCollection property="filterSubjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 					</html:select>
 					<B>Course Number: </B>
-					<layout:suggest 
-						suggestAction="/getCourseNumbers" property="filterCourseNbr" styleId="courseNbr" 
-						suggestCount="15" size="10" maxlength="10" layout="false" all="true"
-						minWordLength="2"
-						onblur="blurSuggestionList('courseNbr');" />
+					<tt:course-number property="filterCourseNbr" configuration="subjectId=\${subjectId};notOffered=exclude" size="10"/>
 					&nbsp;&nbsp;&nbsp;
 					<html:submit property="op" 
 						onclick="displayLoading();"

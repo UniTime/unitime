@@ -27,7 +27,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -39,7 +38,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class UniTimeWidget<T extends Widget> extends Composite implements HasAriaLabel {
 	private T iWidget;
 	private HTML iReadOnly = null, iPrint = null;
-	private Label iHint;
+	private HTML iHint;
 	private VerticalPanel iPanel;
 	private Element iAriaLabel = null;
 	
@@ -49,7 +48,7 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 		iWidget = widget;
 		iPanel.add(iWidget);
 		
-		iHint = new Label(hint == null ? "" : hint, false);
+		iHint = new HTML(hint == null ? "" : hint, false);
 		iHint.setStyleName("unitime-NotClickableHint");
 		if (hint == null || hint.isEmpty())
 			iHint.setVisible(false);
@@ -119,7 +118,7 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 	}
 	
 	public void clearHint() {
-		iHint.setText("");
+		iHint.setHTML("");
 		iHint.setVisible(false);
 		setAriaLabel("");
 	}
@@ -129,7 +128,7 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 			clearHint();
 		} else {
 			iHint.setStyleName("unitime-ErrorHint");
-			iHint.setText(error);
+			iHint.setHTML(error);
 			iHint.setVisible(true);
 			setAriaLabel(error);
 		}
@@ -140,7 +139,7 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 			clearHint();
 		} else {
 			iHint.setStyleName("unitime-NotClickableHint");
-			iHint.setText(hint);
+			iHint.setHTML(hint);
 			iHint.setVisible(true);
 			setAriaLabel(hint);
 		}

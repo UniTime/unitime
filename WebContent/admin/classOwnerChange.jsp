@@ -69,10 +69,7 @@
 		<TR>
 			<TD>Owner:</TD>
 			<TD>
-				<html:select style="width:300;" property="owner"
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="return checkKey(event, this);" >	
+				<html:select style="width:300;" property="owner">	
 					<html:options collection="ownerList" property="value" labelProperty="label" />
 				</html:select>
 			</TD>

@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -46,6 +47,7 @@ public abstract class QueueItem {
 	private String iStatus = "Waiting...";
 	private Date iCreated = new Date(), iStarted = null, iFinished = null;
 	private Throwable iException = null;
+	private String iLocale = null;
 	
 	private Long iId = null;
 	
@@ -54,6 +56,7 @@ public abstract class QueueItem {
 		iOwnerId = owner.getExternalUserId();
 		iOwnerName = owner.getName();
 		iOwnerEmail = owner.getEmail();
+		iLocale = Localization.getLocale();
 	}
 	
 	public QueueItem(Session session, UserContext owner) {
@@ -70,6 +73,7 @@ public abstract class QueueItem {
 	public String getOwnerName() { return iOwnerName; }
 	public boolean hasOwnerEmail() { return iOwnerEmail != null && !iOwnerEmail.isEmpty(); }
 	public String getOwnerEmail() { return iOwnerEmail; }
+	public String getLocale() { return iLocale; }
 	
 	public abstract String type();
 	public abstract String name();
@@ -79,6 +83,7 @@ public abstract class QueueItem {
 	public void executeItem() {
 		iStarted = new Date();
 		ApplicationProperties.setSessionId(getSessionId());
+		Localization.setLocale(getLocale());
 		try {
 			execute();
 		} catch (Exception e) {
@@ -87,6 +92,7 @@ public abstract class QueueItem {
 		} finally {
 			ApplicationProperties.setSessionId(null);
 			_RootDAO.closeCurrentThreadSessions();
+			Localization.removeLocale();
 		}
 		iFinished = new Date();
 		iStatus = "All done.";

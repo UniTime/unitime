@@ -43,6 +43,7 @@ import org.unitime.timetable.reports.exam.ScheduleByPeriodReport;
 import org.unitime.timetable.reports.exam.ScheduleByRoomReport;
 import org.unitime.timetable.reports.exam.StudentExamReport;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.util.Formats;
 
 /*
  * @author Tomas Muller
@@ -104,6 +105,10 @@ public class ExamPdfReportForm extends ExamReportForm {
         
         if (!iAll && (iSubjects==null || iSubjects.length==0))
             errors.add("subjects", new ActionMessage("errors.generic", "No subject area selected."));
+        
+        if (iSince != null && !iSince.isEmpty() && !Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT).isValid(iSince)) {
+        	errors.add("since", new ActionMessage("errors.invalidDate", iSince));
+        }
         
         return errors;
     }

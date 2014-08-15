@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.form;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,9 +47,9 @@ import org.unitime.timetable.model.dao.PreferenceLevelDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
-import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.Formats;
 
 
 /** 
@@ -93,8 +92,15 @@ public class ExamPeriodEditForm extends ActionForm {
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 	    ActionErrors errors = new ActionErrors();
 	    
-	    if (!iAutoSetup && !CalendarUtils.isValidDate(iDate, "MM/dd/yyyy"))
-	        errors.add("date", new ActionMessage("errors.invalidDate", "Examination Date"));
+	    if (!iAutoSetup) {
+		    Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
+		    Date date = null;
+		    try {
+		    	date = df.parse(iDate);
+		    } catch (Exception e) {}
+		    if (date == null)
+		    	errors.add("date", new ActionMessage("errors.invalidDate", "Examination Date"));
+	    }
 
         if (iType==null || iType < 0)
         	errors.add("examType", new ActionMessage("errors.required", ""));
@@ -262,7 +268,8 @@ public class ExamPeriodEditForm extends ActionForm {
 	    try {
 	        if (errors.isEmpty()) {
 	            Session session = SessionDAO.getInstance().get(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
-	            Date startDate = new SimpleDateFormat("MM/dd/yyyy").parse(iDate);
+	            Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
+	            Date startDate = df.parse(iDate);
 	            long diff = startDate.getTime()-session.getExamBeginDate().getTime();
 	            int dateOffset = (int)Math.round(diff/(1000.0 * 60 * 60 * 24)); 
 	            int hour = iStart / 100;
@@ -294,10 +301,11 @@ public class ExamPeriodEditForm extends ActionForm {
 	}
 	
 	public void load(ExamPeriod ep, SessionContext context) throws Exception {
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
 		if (ep==null) {
 			reset(null, null);
 			Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
-			iDate = new SimpleDateFormat("MM/dd/yyyy").format(session.getExamBeginDate());
+			iDate = df.format(session.getExamBeginDate());
 			iLength = 120;
 			iType = (Long)context.getAttribute("Exam.Type");
 			TreeSet periods = ExamPeriod.findAll(context.getUser().getCurrentAcademicSessionId(), iType);
@@ -320,9 +328,9 @@ public class ExamPeriodEditForm extends ActionForm {
 				        	int time = Constants.SLOT_LENGTH_MIN*start+Constants.FIRST_SLOT_TIME_MIN;
 			        		iStart = 100*(time/60)+(time%60);
 				        	Calendar cal = Calendar.getInstance(); cal.setTime(((ExamPeriod)periods.last()).getStartDate()); cal.add(Calendar.DAY_OF_YEAR, 1);
-						    iDate = new SimpleDateFormat("MM/dd/yyyy").format(cal.getTime());
+						    iDate = df.format(cal.getTime());
 			        	} else {
-			        		iDate = new SimpleDateFormat("MM/dd/yyyy").format(((ExamPeriod)periods.last()).getStartDate());
+			        		iDate = df.format(((ExamPeriod)periods.last()).getStartDate());
 			        	}
 			        	iLength = Constants.SLOT_LENGTH_MIN*times.get(start);
 			        }
@@ -331,7 +339,7 @@ public class ExamPeriodEditForm extends ActionForm {
 			            int time = Constants.SLOT_LENGTH_MIN*slot+Constants.FIRST_SLOT_TIME_MIN;
 			            iStart = 100*(time/60)+(time%60);
 			            iLength = Constants.SLOT_LENGTH_MIN*times.get(slot);
-					    iDate = new SimpleDateFormat("MM/dd/yyyy").format(((ExamPeriod)periods.last()).getStartDate());
+					    iDate = df.format(((ExamPeriod)periods.last()).getStartDate());
 			            break;
 			        }
 			    }
@@ -344,7 +352,7 @@ public class ExamPeriodEditForm extends ActionForm {
 			iEditable = true;
 		} else {
 		    iUniqueId = ep.getUniqueId();
-			iDate = new SimpleDateFormat("MM/dd/yyyy").format(ep.getStartDate());
+			iDate = df.format(ep.getStartDate());
 			iStart = ep.getStartHour()*100 + ep.getStartMinute();
 			iLength = ep.getLength() * Constants.SLOT_LENGTH_MIN;
 			iStartOffset = ep.getEventStartOffset() * Constants.SLOT_LENGTH_MIN;
@@ -358,7 +366,8 @@ public class ExamPeriodEditForm extends ActionForm {
 	}
 	
 	public void update(ExamPeriod ep, SessionContext context, org.hibernate.Session hibSession) throws Exception {
-	    ep.setStartDate(new SimpleDateFormat("MM/dd/yyyy").parse(iDate));
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
+		ep.setStartDate(df.parse(iDate));
 	    int hour = iStart / 100;
 	    int min = iStart % 100;
 	    int slot = (hour*60 + min - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
@@ -375,7 +384,8 @@ public class ExamPeriodEditForm extends ActionForm {
 	    ExamPeriod ep = new ExamPeriod();
         Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
         ep.setSession(session);
-        ep.setStartDate(new SimpleDateFormat("MM/dd/yyyy").parse(iDate));
+        Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
+        ep.setStartDate(df.parse(iDate));
         int hour = iStart / 100;
         int min = iStart % 100;
         int slot = (hour*60 + min - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;

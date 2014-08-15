@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -64,6 +63,7 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 /**
  * 
@@ -331,7 +331,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                     report.setLimit(iForm.getLimit()==null || iForm.getLimit().length()==0?-1:Integer.parseInt(iForm.getLimit()));
                     report.setRoomCode(iForm.getRoomCodes());
                     report.setDispLimits(iForm.getDispLimit());
-                    report.setSince(iForm.getSince()==null || iForm.getSince().length()==0?null:new SimpleDateFormat("MM/dd/yyyy").parse(iForm.getSince()));
+                    report.setSince(iForm.getSince()==null || iForm.getSince().length()==0?null:Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT).parse(iForm.getSince()));
                     report.setItype(iForm.getItype());
                     report.setClassSchedule(iForm.getClassSchedule());
                     report.printReport();

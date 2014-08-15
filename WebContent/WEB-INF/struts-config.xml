@@ -132,18 +132,6 @@
 
    <action-mappings >
 
-	  <action 
-	     path="/sort"
-		 type="fr.improve.struts.taglib.layout.sort.SortAction"
-		 scope="request"
-		 validate="false" />
-		    
-	  <action 
-	     path="/treeview"
-		 type="fr.improve.struts.taglib.layout.treeview.TreeviewAction"
-		 scope="request"
-		 validate="false" />
-
 	  <action
          path="/getCourseNumbers"
          type="org.springframework.web.struts.DelegatingActionProxy"
@@ -2059,24 +2047,16 @@
 
     </action-mappings>
 
-	<!-- Struts Layout Controller -->
-	<controller 
-		processorClass = "fr.improve.struts.taglib.layout.workflow.LayoutRequestProcessor" />
+	<!-- Tiles Request Processor -->	
+	<controller processorClass="org.apache.struts.tiles.TilesRequestProcessor"/>
 
 	<!-- Message Resource Keys -->
-    <message-resources 
-   		parameter="messages" 
-   	/>
+    <message-resources parameter="messages"/>
    		
 	<!-- Add the following line to tag above in development to avoid reloading of application. -->
 	<!-- 
    		factory="org.unitime.timetable.util.MessageResourcesFactory" 
 	-->
-	
-	<!-- Struts Layout Skin Plugin -->
-	<plug-in className="fr.improve.struts.taglib.layout.workflow.LayoutPlugin">
-	 	<set-property property="skinResources" value="struts-layout"/>
- 	</plug-in>
  
 	<!-- Tiles Plugin -->
 	<plug-in className="org.apache.struts.tiles.TilesPlugin" >

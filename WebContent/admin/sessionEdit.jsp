@@ -165,43 +165,37 @@
 		<TR>
 			<TD>Session Start Date:</TD>
 			<TD colspan='2'>
-				<html:text property="sessionStart" onchange="doRefresh();" style="border: #660000 2px solid;" styleId="session_start" maxlength="10" size="10"/>
-				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_session_start">
+				<tt:calendar property="sessionStart" onchange="$wnd.doRefresh();" style="border: #660000 2px solid;"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD>Classes End Date:</TD>
 			<TD colspan='2'>
-				<html:text property="classesEnd" onchange="doRefresh();" style="border: #339933 2px solid;" styleId="classes_end" maxlength="10" size="10"/>
-				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_classes_end">
+				<tt:calendar property="classesEnd" onchange="$wnd.doRefresh();" style="border: #660000 2px solid;"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD>Examination Start Date:</TD>
 			<TD colspan='2'>
-				<html:text property="examStart" onchange="doRefresh();" style="border: #999933 2px solid;" styleId="exam_start" maxlength="10" size="10"/>
-				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_exam_start">
+				<tt:calendar property="examStart" onchange="$wnd.doRefresh();" style="border: #999933 2px solid;"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD>Session End Date:</TD>
 			<TD colspan='2'>
-				<html:text property="sessionEnd" onchange="doRefresh();" style="border: #333399 2px solid;" styleId="session_end" maxlength="10" size="10"/>
-				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_session_end">
+				<tt:calendar property="sessionEnd" onchange="$wnd.doRefresh();" style="border: #333399 2px solid;"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD>Event Start Date:</TD>
 			<TD colspan='2'>
-				<html:text property="eventStart" onchange="doRefresh();" style="border: yellow 2px solid;" styleId="event_start" maxlength="10" size="10"/>
-				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_event_start">
+				<tt:calendar property="eventStart" onchange="$wnd.doRefresh();" style="border: 2px solid yellow;"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD>Event End Date:</TD>
 			<TD colspan='2'>
-				<html:text property="eventEnd" onchange="doRefresh();" style="border: red 2px solid;" styleId="event_end" maxlength="10" size="10"/>
-				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_event_end">
+				<tt:calendar property="eventEnd" onchange="$wnd.doRefresh();" style="border: 2px solid red;"/>
 			</TD>
 		</TR>
 
@@ -310,67 +304,3 @@
 	
 	<html:hidden property="sessionId" />
 </html:form>
-
-<script type="text/javascript" language="javascript">
-	
-	Calendar.setup( {
-		cache      : true, 					// Single object used for all calendars
-		electric   : false, 				// Changes date only when calendar is closed
-		inputField : "session_start",		// ID of the input field
-	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
-	    showOthers : true,					// Show overlap of dates from other months	    
-	    date		: <%=request.getParameter("sessionStart") != null && request.getParameter("sessionStart").length() >= 10 ? request.getParameter("sessionStart") : null%>,
-		button     : "show_session_start"	// ID of the button
-	} );
-
-	Calendar.setup( {
-		cache      : true, 					// Single object used for all calendars
-		electric   : false, 				// Changes date only when calendar is closed
-		inputField : "session_end",			// ID of the input field
-	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
-	    showOthers : true,					// Show overlap of dates from other months	    
-	    date		: <%=request.getParameter("sessionEnd") != null && request.getParameter("sessionEnd").length() >= 10 ? request.getParameter("sessionEnd") : null%>,
-		button     : "show_session_end" 	// ID of the button
-	} );
-	
-	Calendar.setup( {
-		cache      : true, 					// Single object used for all calendars
-		electric   : false, 				// Changes date only when calendar is closed
-		inputField : "classes_end",			// ID of the input field
-	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
-	    showOthers : true,					// Show overlap of dates from other months	    
-	    date		: <%=request.getParameter("classesEnd") != null && request.getParameter("classesEnd").length() >= 10 ? request.getParameter("classesEnd") : null%>,
-		button     : "show_classes_end" 	// ID of the button
-	} );
-
-	Calendar.setup( {
-		cache      : true, 					// Single object used for all calendars
-		electric   : false, 				// Changes date only when calendar is closed
-		inputField : "exam_start",		// ID of the input field
-	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
-	    showOthers : true,					// Show overlap of dates from other months	    
-	    date		: <%=request.getParameter("examStart") != null && request.getParameter("examStart").length() >= 10 ? request.getParameter("examStart") : null%>,
-		button     : "show_exam_start"	// ID of the button
-	} );
-
-	Calendar.setup( {
-		cache      : true, 					// Single object used for all calendars
-		electric   : false, 				// Changes date only when calendar is closed
-		inputField : "event_start",		// ID of the input field
-	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
-	    showOthers : true,					// Show overlap of dates from other months	    
-	    date		: <%=request.getParameter("eventStart") != null && request.getParameter("eventStart").length() >= 10 ? request.getParameter("eventStart") : null%>,
-		button     : "show_event_start"	// ID of the button
-	} );
-
-	Calendar.setup( {
-		cache      : true, 					// Single object used for all calendars
-		electric   : false, 				// Changes date only when calendar is closed
-		inputField : "event_end",		// ID of the input field
-	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
-	    showOthers : true,					// Show overlap of dates from other months	    
-	    date		: <%=request.getParameter("eventEnd") != null && request.getParameter("eventEnd").length() >= 10 ? request.getParameter("eventEnd") : null%>,
-		button     : "show_event_end"	// ID of the button
-	} );
-
-</script>

@@ -334,7 +334,7 @@
 				<html:select style="width:200px;" property="datePattern" onchange='<%= "datePatternChanged();"%>'>
 					<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
 				</html:select>
-				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="showGwtDialog('Preview of '+ClassEditForm.datePattern.options[ClassEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+ClassEditForm.datePattern.value+'&class='+ClassEditForm.classId.value,'840','520');">
+				<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of '+ClassEditForm.datePattern.options[ClassEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+ClassEditForm.datePattern.value+'&class='+ClassEditForm.classId.value,'840','520');">
 			</TD>
 		</TR>
 
@@ -429,9 +429,7 @@
 								<html:select style="width:250px;" 
 									styleId='<%= "instructors" + ctr %>' 
 									property='<%= "instructors[" + ctr + "]" %>'
-									onchange='<%= "instructorChanged("+ctr+", this);"%>'
-									onkeypress="return selectSearch(event, this);" 
-									onkeydown="return checkKey(event, this);" >														
+									onchange='<%= "instructorChanged("+ctr+", this);"%>'>														
 									<html:option value="-">-</html:option>
 									<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME + ctr%>" property="value" labelProperty="label" />
 								</html:select>

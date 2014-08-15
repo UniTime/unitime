@@ -188,7 +188,7 @@
 				<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" id="dp">
 					<logic:equal name="<%=frmName%>" property="datePattern" value="<%=((IdValue)dp).getId().toString()%>">
 						<bean:write name="dp" property="value" />
-						<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="showGwtDialog('Preview of <%=((IdValue)dp).getValue()%>', 'user/dispDatePattern.jsp?id=<%=((IdValue)dp).getId()%>&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'840','520');">
+						<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of <%=((IdValue)dp).getValue()%>', 'user/dispDatePattern.jsp?id=<%=((IdValue)dp).getId()%>&subpart='+SchedulingSubpartEditForm.schedulingSubpartId.value,'840','520');">
 					</logic:equal>
 				</logic:iterate>
 			</TD>

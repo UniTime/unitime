@@ -25,7 +25,6 @@
   <head>
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
     <meta charset="UTF-8"/>
-	<style type="text/css">@import url(scripts/jscalendar/calendar-blue.css);</style>
     <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
@@ -37,9 +36,6 @@
     </tt:hasProperty>
     <link rel="shortcut icon" href="images/timetabling.ico">
     <title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
-	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/calendar.js"></script>
-	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/lang/calendar-en.js"></script>
-	<script language="JavaScript" type="text/javascript" src="scripts/jscalendar/calendar-setup.js"></script>
   </head>
   <body class="unitime-Body">
   	<tt:form-factor value="unknown"><span id='UniTimeGWT:DetectFormFactor' style="display: none;"></span></tt:form-factor>
