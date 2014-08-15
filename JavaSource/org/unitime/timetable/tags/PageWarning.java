@@ -60,10 +60,9 @@ public class PageWarning extends TagSupport {
 		try {
 			String warning = getPageWarning(pageContext.getRequest());
 			if (warning != null) {
-				pageContext.getOut().println("<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr>");
-				pageContext.getOut().println("<td class=\"" + getStyle() + "\" style='padding-left:10px;'>");
+				pageContext.getOut().println("<div class=\"" + getStyle() + "\">");
 				pageContext.getOut().println(warning);
-				pageContext.getOut().println("</td></tr></table>");
+				pageContext.getOut().println("</div>");
 			}
 			return SKIP_BODY;
 		} catch (Exception e) {

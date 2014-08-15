@@ -28,7 +28,7 @@ import org.unitime.timetable.gwt.client.aria.AriaDialogBox;
 import org.unitime.timetable.gwt.client.aria.AriaPasswordTextBox;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
-import org.unitime.timetable.gwt.client.aria.ClickableHint;
+import org.unitime.timetable.gwt.client.page.InfoPanel;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -52,25 +52,22 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * @author Tomas Muller
  */
-public class UserAuthentication extends Composite implements UserAuthenticationProvider {
+public class UserAuthentication implements UserAuthenticationProvider {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 
-	private Label iUserLabel;
-	private ClickableHint iHint;
+	private InfoPanel iPanel;
 	
 	private AriaButton iLogIn, iSkip, iLookup;
 	
@@ -97,17 +94,15 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 	
 	private Lookup iLookupDialog = null;
 
-	public UserAuthentication(boolean allowGuest) {
+	public UserAuthentication(InfoPanel panel, boolean allowGuest) {
 		iAllowGuest = allowGuest;
-		iUserLabel = new Label(MESSAGES.userNotAuthenticated(), false);
-		iUserLabel.setStyleName("unitime-SessionSelector");
-		
-		VerticalPanel vertical = new VerticalPanel();
-		vertical.add(iUserLabel);
-		
-		iHint = new ClickableHint(MESSAGES.userHint());
-		iHint.setAriaLabel(ARIA.userNotAuthenticated());
-		vertical.add(iHint);
+		iPanel = panel;
+		iPanel.setPreventDefault(true);
+		iPanel.setVisible(true);
+		iPanel.setText(MESSAGES.userNotAuthenticated());
+		iPanel.setHint(MESSAGES.userHint());
+		iPanel.setAriaLabel(ARIA.userNotAuthenticated());
+		iPanel.setInfo(null);
 		
 		iDialog = new AriaDialogBox();
 		iDialog.setText(MESSAGES.dialogAuthenticate());
@@ -247,10 +242,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 			}
 		};
 		
-		iUserLabel.addClickHandler(ch);
-		iHint.addClickHandler(ch);
-		
-		initWidget(vertical);
+		iPanel.setClickHandler(ch);
 		
 		sAuthenticateCallback = new AsyncCallback<String>() {
 			public void onFailure(Throwable caught) {
@@ -280,10 +272,10 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 				iSkip.setEnabled(true);
 				iError.setVisible(false);
 				iDialog.hide();
-				iUserLabel.setText(MESSAGES.userLabel(result));
+				iPanel.setText(MESSAGES.userLabel(result));
 				iLastUser = result;
-				iHint.setText(MESSAGES.userHintLogout());
-				iHint.setAriaLabel(ARIA.userAuthenticated(result));
+				iPanel.setHint(MESSAGES.userHintLogout());
+				iPanel.setAriaLabel(ARIA.userAuthenticated(result));
 				iLoggedIn = true;
 				iGuest = false;
 				UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
@@ -322,10 +314,10 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 		if (iDialog.isShowing()) iDialog.hide();
 		iLoggedIn = true;
 		iGuest = MESSAGES.userGuest().equals(user);
-		iUserLabel.setText(MESSAGES.userLabel(user));
+		iPanel.setText(MESSAGES.userLabel(user));
 		iLastUser = user;
-		iHint.setText(iGuest ? MESSAGES.userHintLogin() : MESSAGES.userHintLogout());
-		iHint.setAriaLabel(iGuest ? ARIA.userGuest() : ARIA.userAuthenticated(user));
+		iPanel.setHint(iGuest ? MESSAGES.userHintLogin() : MESSAGES.userHintLogout());
+		iPanel.setAriaLabel(iGuest ? ARIA.userGuest() : ARIA.userAuthenticated(user));
 	}
 	
 	private void logIn(boolean guest) {
@@ -336,9 +328,9 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 				public void onSuccess(Boolean result) {
 					iLoggedIn = true; iGuest = true;
 					iDialog.hide();
-					iUserLabel.setText(MESSAGES.userLabel(MESSAGES.userGuest()));
-					iHint.setText(MESSAGES.userHintLogin());
-					iHint.setAriaLabel(ARIA.userGuest());
+					iPanel.setText(MESSAGES.userLabel(MESSAGES.userGuest()));
+					iPanel.setHint(MESSAGES.userHintLogin());
+					iPanel.setAriaLabel(ARIA.userGuest());
 					iLastUser = MESSAGES.userGuest();
 					UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
 					for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
@@ -364,9 +356,9 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 			public void onSuccess(Boolean result) {
 				if (result) {
 					UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
-					iHint.setText(MESSAGES.userHintClose());
-					iUserLabel.setText(MESSAGES.userNotAuthenticated());
-					iHint.setAriaLabel(ARIA.userNotAuthenticated());
+					iPanel.setHint(MESSAGES.userHintClose());
+					iPanel.setText(MESSAGES.userNotAuthenticated());
+					iPanel.setAriaLabel(ARIA.userNotAuthenticated());
 					iLastUser = null;
 					for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 						h.onLogOut(e);
@@ -377,9 +369,9 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 						@Override
 						public void onFailure(Throwable caught) {
 							UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
-							iHint.setText(MESSAGES.userHintClose());
-							iUserLabel.setText(MESSAGES.userNotAuthenticated());
-							iHint.setAriaLabel(ARIA.userNotAuthenticated());
+							iPanel.setHint(MESSAGES.userHintClose());
+							iPanel.setText(MESSAGES.userNotAuthenticated());
+							iPanel.setAriaLabel(ARIA.userNotAuthenticated());
 							iLastUser = null;
 							for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 								h.onLogOut(e);
@@ -421,8 +413,8 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 					callback.onSuccess(user.equals(getUser()));
 				}
 			};
-			iUserLabel.setText(user);
-			iHint.setAriaLabel(ARIA.userAuthenticated(user));
+			iPanel.setText(user);
+			iPanel.setAriaLabel(ARIA.userAuthenticated(user));
 			authenticate();
 		}
 	}

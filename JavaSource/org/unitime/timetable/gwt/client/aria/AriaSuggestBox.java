@@ -141,7 +141,7 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 		
 		Roles.getTextboxRole().setAriaAutocompleteProperty(iText.getElement(), AutocompleteValue.NONE);
 		
-		DOM.setElementAttribute(iSuggestionPopup.getElement(), "id", DOM.createUniqueId());
+		iSuggestionPopup.getElement().setAttribute("id", DOM.createUniqueId());
 		Roles.getTextboxRole().setAriaOwnsProperty(iText.getElement(), Id.of(iSuggestionPopup.getElement()));
 	}
 	
@@ -349,7 +349,7 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 				}
 			});
 			setStyleName("item");
-			DOM.setStyleAttribute(getElement(), "whiteSpace", "nowrap");
+			getElement().setAttribute("whiteSpace", "nowrap");
 			iSuggestion = suggestion;
 		}
 		

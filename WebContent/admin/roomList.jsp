@@ -113,9 +113,7 @@
 					&nbsp;<A name="<%=(String)ref%>"></A>
 				</TD>
 			</TR>
-			<TR>
-				<bean:write name="<%=(String)ref%>" scope="request" filter="false"/>
-			</TR>
+			<bean:write name="<%=(String)ref%>" scope="request" filter="false"/>
 		</logic:notEmpty>
 	</logic:iterate>
 
@@ -200,7 +198,6 @@
 <%}%>
 
 </TABLE>
-
 <SCRIPT type="text/javascript" language="javascript">
     <% if (request.getAttribute("hash") != null) { %>
   		location.hash = "<%=request.getAttribute("hash")%>";

@@ -19,210 +19,133 @@
 */
 package org.unitime.timetable.gwt.client.page;
 
-import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.sectioning.AcademicSessionSelector;
+import org.unitime.timetable.gwt.client.page.InfoPanelDisplay.Callback;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.MenuInterface;
-import org.unitime.timetable.gwt.shared.MenuInterface.InfoInterface;
-import org.unitime.timetable.gwt.shared.MenuInterface.InfoPairInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.SessionInfoInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.SolverInfoInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.UserInfoInterface;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Anchor;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
  */
-public class UniTimePageHeader extends Composite {
+public class UniTimePageHeader implements PageHeaderDisplay {
 	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 
-	private HorizontalPanel iPanel = new HorizontalPanel();
-	private VerticalPanelWithHint iSolverInfo, iSessionInfo, iUserInfo;
+	private PageHeader iHeader;
+	private static UniTimePageHeader sInstance = null;
 	
-	public UniTimePageHeader() {
-		iSolverInfo = new VerticalPanelWithHint(new Callback() {
+	private UniTimePageHeader() {
+		iHeader = new PageHeader();
+
+		getLeft().setCallback(new Callback() {
+			@Override
 			public void execute(Callback callback) {
 				reloadSolverInfo(true, callback);
 			}
 		});
-		iPanel.add(iSolverInfo);
-		iPanel.setCellHorizontalAlignment(iSolverInfo, HasHorizontalAlignment.ALIGN_LEFT);
-		iSolverInfo.getElement().getStyle().setPaddingRight(30, Unit.PX);
-		
-		iUserInfo = new VerticalPanelWithHint(new Callback() {
-			public void execute(Callback callback) {
-				if (callback != null) callback.execute(null);
-			}
-		});
-		iPanel.add(iUserInfo);
-		iPanel.setCellHorizontalAlignment(iUserInfo, HasHorizontalAlignment.ALIGN_CENTER);
-		iUserInfo.getElement().getStyle().setPaddingRight(30, Unit.PX);
-		
-		iSessionInfo = new VerticalPanelWithHint(new Callback() {
-			public void execute(Callback callback) {
-				if (callback != null) callback.execute(null);
-			}
-		});
-		iPanel.add(iSessionInfo);
-		iPanel.setCellHorizontalAlignment(iSessionInfo, HasHorizontalAlignment.ALIGN_RIGHT);
-		
-		initWidget(iPanel);
-		
+
 		reloadSessionInfo();
 		reloadUserInfo();
 		reloadSolverInfo(false, null);
 	}
 	
-	public void setSessionSelector(AcademicSessionSelector selector) {
-		iPanel.remove(iSessionInfo);
-		iPanel.add(selector);
-		iPanel.setCellHorizontalAlignment(iSessionInfo, HasHorizontalAlignment.ALIGN_RIGHT);
-	}
-	
 	public void insert(final RootPanel panel) {
 		if (panel.getWidgetCount() > 0) return;
-		panel.add(this);
+		panel.add(iHeader);
 		panel.setVisible(true);
 	}
 	
-	public void hideSessionInfo() {
-		iSessionInfo.setVisible(false);
+	public static synchronized UniTimePageHeader getInstance() {
+		if (sInstance == null) sInstance = new UniTimePageHeader();
+		return sInstance;
 	}
 	
 	public void reloadSessionInfo() {
+		if (getRight().isPreventDefault()) return;
 		RPC.execute(new MenuInterface.SessionInfoRpcRequest(), new AsyncCallback<SessionInfoInterface>() {
 			@Override
 			public void onSuccess(SessionInfoInterface result) {
-				iSessionInfo.clear();
-				iSessionInfo.setHint(result);
-				if (result == null) return;
-				HTML sessionLabel = new HTML(result.getSession(), false);
-				sessionLabel.setStyleName("unitime-SessionSelector");
-				iSessionInfo.add(sessionLabel);
-				Anchor hint = new Anchor("Click here to change the session / role.", true);
-				hint.setStyleName("unitime-Hint");
-				iSessionInfo.add(hint);
-				ClickHandler c = new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						ToolBox.open(GWT.getHostPageBaseURL() + "selectPrimaryRole.do?list=Y");
-					}
-				};
-				sessionLabel.addClickHandler(c);
-				hint.addClickHandler(c);
+				if (getRight().isPreventDefault()) return;
+				getRight().setText(result.getSession());
+				getRight().setInfo(result);
+				getRight().setHint(MESSAGES.hintClickToChangeSession());
+				getRight().setUrl("selectPrimaryRole.do?list=Y");
 			}
 			@Override
 			public void onFailure(Throwable caught) {
-				iSessionInfo.clear();
-				iSessionInfo.setHint(null);
+				if (getRight().isPreventDefault()) return;
+				getRight().setVisible(false);
 			}
 		});
 	}
 
 	public void reloadUserInfo() {
+		if (getMiddle().isPreventDefault()) return;
 		RPC.execute(new MenuInterface.UserInfoRpcRequest(), new AsyncCallback<UserInfoInterface>() {
 			@Override
 			public void onSuccess(UserInfoInterface result) {
-				iUserInfo.clear();
-				iUserInfo.setHint(result);
-				if (result == null) return;
-				HTML userLabel = new HTML(result.getName(), false);
-				userLabel.setStyleName("unitime-SessionSelector");
-				iUserInfo.add(userLabel);
-				HTML hint = new HTML(result.getRole(), false);
-				hint.setStyleName(result.isChameleon() ? "unitime-Hint" : "unitime-NotClickableHint");
-				iUserInfo.add(hint);
+				if (getMiddle().isPreventDefault()) return;
+				getMiddle().setText(result.getName());
+				getMiddle().setHint(result.getRole());
+				getMiddle().setInfo(result);
 				if (result.isChameleon()) {
-					ClickHandler c = new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							ToolBox.open(GWT.getHostPageBaseURL() + "chameleon.do");
-						}
-					};
-					userLabel.addClickHandler(c);
-					hint.addClickHandler(c);
+					getMiddle().setUrl("chameleon.do");
 				} else {
-					ClickHandler c = new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							ToolBox.open(GWT.getHostPageBaseURL() + "selectPrimaryRole.do?list=Y");
-						}
-					};
-					userLabel.addClickHandler(c);
-					hint.addClickHandler(c);
+					getMiddle().setUrl("selectPrimaryRole.do?list=Y");
 				}
 			}
 			@Override
 			public void onFailure(Throwable caught) {
-				iUserInfo.clear();
-				iUserInfo.setHint(null);
+				if (getMiddle().isPreventDefault()) return;
+				getMiddle().setVisible(false);
 			}
 		});
 	}
 	
 	public void reloadSolverInfo(boolean includeSolutionInfo, final Callback callback) {
+		if (getLeft().isPreventDefault()) return;
 		RPC.execute(new MenuInterface.SolverInfoRpcRequest(includeSolutionInfo), new AsyncCallback<SolverInfoInterface>() {
 			@Override
 			public void onSuccess(SolverInfoInterface result) {
-				iSolverInfo.clear();
-				boolean hasSolver = false;
+				if (getLeft().isPreventDefault()) return;
 				try {
-					iSolverInfo.setHint(result);
 					if (result != null) {
-						HTML userLabel = new HTML(result.getSolver(), false);
-						userLabel.setStyleName("unitime-SessionSelector");
-						iSolverInfo.add(userLabel);
-						HTML hint = new HTML(result.getType(), false);
-						hint.setStyleName("unitime-Hint");
-						iSolverInfo.add(hint);
-						if (result.getUrl() != null) {
-							final String url = result.getUrl();
-							ClickHandler c = new ClickHandler() {
-								@Override
-								public void onClick(ClickEvent event) {
-									ToolBox.open(GWT.getHostPageBaseURL() + url);
-								}
-							};
-							userLabel.addClickHandler(c);
-							hint.addClickHandler(c);
-						}
-						hasSolver = true;
+						getLeft().setText(result.getSolver());
+						getLeft().setHint(result.getType());
+						getLeft().setInfo(result);
+						getLeft().setUrl(result.getUrl());
+						getLeft().setVisible(true);
+					} else {
+						getLeft().setVisible(false);
 					}
 				} catch (Exception e) {}
 				Timer t = new Timer() {
 					@Override
 					public void run() {
-						reloadSolverInfo(iSolverInfo.iHintPanel.isShowing(), null);
+						reloadSolverInfo(getLeft().isPopupShowing(), null);
 					}
 				};
-				t.schedule(hasSolver ? 1000 : 60000);
+				t.schedule(result != null ? 1000 : 60000);
 				if (callback != null) 
 					callback.execute(null);
 			}
 			@Override
 			public void onFailure(Throwable caught) {
+				if (getLeft().isPreventDefault()) return;
 				Timer t = new Timer() {
 					@Override
 					public void run() {
-						reloadSolverInfo(iSolverInfo.iHintPanel.isShowing(), null);
+						reloadSolverInfo(getLeft().isPopupShowing(), null);
 					}
 				};
 				t.schedule(5000);
@@ -231,91 +154,24 @@ public class UniTimePageHeader extends Composite {
 			}
 		});
 	}
-	
-	public static interface Callback {
-		public void execute(Callback callback);
+
+	@Override
+	public InfoPanel getLeft() {
+		return iHeader.getLeft();
 	}
-	
-	public static class VerticalPanelWithHint extends VerticalPanel {
-		private PopupPanel iHintPanel = null;
-		private Timer iShowHint, iHideHint = null;
-		private HTML iHint = null;
-		private int iX, iY;
-		private Callback iUpdateInfo = null;
-		
-		public VerticalPanelWithHint(Callback updateInfo) {
-			super();
-			iUpdateInfo = updateInfo;
-			iHint = new HTML("", false);
-			iHintPanel = new PopupPanel();
-			iHintPanel.setWidget(iHint);
-			iHintPanel.setStyleName("unitime-PopupHint");
-			sinkEvents(Event.ONMOUSEOVER);
-			sinkEvents(Event.ONMOUSEOUT);
-			sinkEvents(Event.ONMOUSEMOVE);
-			iShowHint = new Timer() {
-				@Override
-				public void run() {
-					iUpdateInfo.execute(new Callback() {
-						public void execute(Callback callback) {
-							iHintPanel.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
-								@Override
-								public void setPosition(int offsetWidth, int offsetHeight) {
-									int maxX = Window.getScrollLeft() + Window.getClientWidth() - offsetWidth - 10;
-									iHintPanel.setPopupPosition(Math.min(iX, maxX), iY);
-								}
-							});		
-							if (callback != null) callback.execute(null);
-						}
-					});
-				}
-			};
-			iHideHint = new Timer() {
-				@Override
-				public void run() {
-					iHintPanel.hide();
-				}
-			};
-		}
-		
-		public void setHint(InfoInterface hint) {
-			String html = "";
-			if (hint != null && !hint.isEmpty()) {
-				html += "<table cellspacing=\"0\" cellpadding=\"3\">";
-				for (InfoPairInterface pair: hint.getPairs()) {
-					if (pair.getValue() == null || pair.getValue().isEmpty()) continue;
-					if (pair.hasSeparator())
-						html += "<tr><td style=\"border-bottom: 1px dashed #AB8B00;\">" + pair.getName() + ":</td><td style=\"border-bottom: 1px dashed #AB8B00;\">" + pair.getValue() + "</td></tr>";
-					else
-						html += "<tr><td>" + pair.getName() + ":</td><td>" + pair.getValue() + "</td></tr>";
-				}
-				html += "</table>";
-			}
-			iHint.setHTML(html);
-		}
-		
-		public void onBrowserEvent(Event event) {
-			if (iHint.getText().isEmpty()) return;
-			iX = 10 + event.getClientX() + getElement().getOwnerDocument().getScrollLeft();
-			iY = 10 + event.getClientY() + getElement().getOwnerDocument().getScrollTop();
-			
-			switch (DOM.eventGetType(event)) {
-			case Event.ONMOUSEMOVE:
-				if (iHintPanel.isShowing()) {
-					int maxX = Window.getScrollLeft() + Window.getClientWidth() - iHintPanel.getOffsetWidth() - 10;
-					iHintPanel.setPopupPosition(Math.min(iX, maxX), iY);
-				} else {
-					iShowHint.cancel();
-					iShowHint.schedule(1000);
-				}
-				break;
-			case Event.ONMOUSEOUT:
-				iShowHint.cancel();
-				if (iHintPanel.isShowing())
-					iHideHint.schedule(1000);
-				break;
-			}
-		}		
-		
+
+	@Override
+	public InfoPanel getMiddle() {
+		return iHeader.getMiddle();
+	}
+
+	@Override
+	public InfoPanel getRight() {
+		return iHeader.getRight();
+	}
+
+	@Override
+	public Widget asWidget() {
+		return iHeader;
 	}
 }

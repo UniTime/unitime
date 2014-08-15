@@ -29,7 +29,6 @@ import org.unitime.timetable.gwt.resources.GwtResources;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -68,16 +67,16 @@ public class LoadingWidget extends Composite {
 			@Override
 			public void onWindowScroll(Window.ScrollEvent event) {
 				if (iCount > 0) {
-					DOM.setStyleAttribute(iPanel.getElement(), "left", String.valueOf(event.getScrollLeft()));
-					DOM.setStyleAttribute(iPanel.getElement(), "top", String.valueOf(event.getScrollTop()));
-					DOM.setStyleAttribute(iImage.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2));
-					DOM.setStyleAttribute(iImage.getElement(), "top", String.valueOf(event.getScrollTop() + Window.getClientHeight() / 2));
-					DOM.setStyleAttribute(iWarning.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 225));
-					DOM.setStyleAttribute(iWarning.getElement(), "top", String.valueOf(event.getScrollTop() + 5 * Window.getClientHeight() / 12));
-					DOM.setStyleAttribute(iMessage.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 225));
-					DOM.setStyleAttribute(iMessage.getElement(), "top", String.valueOf(event.getScrollTop() + Window.getClientHeight() / 3));
-					DOM.setStyleAttribute(iCancel.getElement(), "left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 225));
-					DOM.setStyleAttribute(iCancel.getElement(), "top", String.valueOf(event.getScrollTop() + 5 * Window.getClientHeight() / 12));
+					iPanel.getElement().getStyle().setProperty("left", String.valueOf(event.getScrollLeft()));
+					iPanel.getElement().getStyle().setProperty("top", String.valueOf(event.getScrollTop()));
+					iImage.getElement().getStyle().setProperty("left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2));
+					iImage.getElement().getStyle().setProperty("top", String.valueOf(event.getScrollTop() + Window.getClientHeight() / 2));
+					iWarning.getElement().getStyle().setProperty("left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 225));
+					iWarning.getElement().getStyle().setProperty("top", String.valueOf(event.getScrollTop() + 5 * Window.getClientHeight() / 12));
+					iMessage.getElement().getStyle().setProperty("left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 225));
+					iMessage.getElement().getStyle().setProperty("top", String.valueOf(event.getScrollTop() + Window.getClientHeight() / 3));
+					iCancel.getElement().getStyle().setProperty("left", String.valueOf(event.getScrollLeft() + Window.getClientWidth() / 2 - 225));
+					iCancel.getElement().getStyle().setProperty("top", String.valueOf(event.getScrollTop() + 5 * Window.getClientHeight() / 12));
 				}
 			}
 		});

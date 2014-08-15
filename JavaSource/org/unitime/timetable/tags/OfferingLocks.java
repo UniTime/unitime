@@ -82,11 +82,9 @@ public class OfferingLocks extends TagSupport {
 			if (acadSession==null) return SKIP_BODY;
 			String warns = getOfferingLocksWarning(getSessionContext(), acadSession);
 			if (warns!=null) {
-				pageContext.getOut().println("<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr>");
-				pageContext.getOut().println("<td class=\"unitime-MessageYellow\" width='5'>&nbsp;</td>");
-				pageContext.getOut().println("<td class=\"unitime-MessageYellow\" >");
+				pageContext.getOut().println("<div class='unitime-PageWarn'>");
 				pageContext.getOut().println(warns);
-				pageContext.getOut().println("</td></tr></table>");
+				pageContext.getOut().println("</div>");
 			}
 			return SKIP_BODY;
 		} catch (Exception e) {

@@ -499,4 +499,29 @@
 		<tei-class>org.unitime.timetable.spring.tags.SessionContextTei</tei-class>
 		<body-content>empty</body-content>
 	</tag>
+	
+	<tag>
+		<name>form-factor</name>
+		<tag-class>org.unitime.timetable.tags.FormFactor</tag-class>
+		<body-content>JSP</body-content>
+		<attribute>
+			<name>value</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+	</tag>
+	
+	<tag>
+		<name>time-stamp</name>
+		<tag-class>org.unitime.timetable.tags.TimeStamp</tag-class>
+		<body-content>JSP</body-content>
+	</tag>
+	
+		<tag>
+		<name>page-file</name>
+		<tag-class>org.unitime.timetable.tags.PageFile</tag-class>
+		<body-content>JSP</body-content>
+	</tag>
+	
 </taglib>
