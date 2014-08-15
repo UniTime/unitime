@@ -19,9 +19,9 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.TreeSet;
 
@@ -37,7 +37,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.security.rights.Right;
-
+import org.unitime.timetable.util.Formats;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -91,7 +91,7 @@ public class SessionListAction extends Action {
 				new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true, true, true, true });
 		
 		DecimalFormat df5 = new DecimalFormat("####0");
-		DateFormat df = DateFormat.getDateInstance();
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.SESSION_DATE);
 		
 		TreeSet<Session> sessions = new TreeSet<Session>(SessionDAO.getInstance().findAll());
 		Session defaultSession = UniTimeUserContext.defaultSession(sessions, sessionContext.getUser().getCurrentAuthority());

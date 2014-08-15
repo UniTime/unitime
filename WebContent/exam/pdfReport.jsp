@@ -170,7 +170,7 @@
 			<span style="display: table;">
 				<span style="display: table-row;">
 					<span style="display: table-cell; vertical-align: middle; padding-right: 5px;">Date: </span>
-					<tt:calendar property="since" format="MM/dd/yyyy" outerStyle="display: table-cell;"/>
+					<tt:calendar property="since" outerStyle="display: table-cell;"/>
 					<span style="display: table-cell; font-style: italic; padding-left: 5px; vertical-align: middle;">(Only email instructors/students that have a change in their schedule since this date, email all when empty)
 				</span>
 			</span>

@@ -20,7 +20,6 @@
 package org.unitime.timetable.util;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -2575,7 +2574,7 @@ public class SessionRollForward {
 	}
 
 	public void rollReservationsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
-		SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
 		List<SubjectArea> subjects = new ArrayList<SubjectArea>();
 		for (String subjectId: rollForwardSessionForm.getRollForwardReservationsSubjectIds()) {
 			subjects.add(SubjectAreaDAO.getInstance().get(Long.valueOf(subjectId)));

@@ -38,7 +38,7 @@ public class Calendar extends TextTag {
 	private static final long serialVersionUID = 1L;
 	private static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
-	private String iFormat = CONSTANTS.eventDateFormat();
+	private String iFormat = CONSTANTS.dateEntryFormat();
 	private String iOuterStyle = null;
 	
 	public String getFormat() { return iFormat; }

@@ -165,37 +165,37 @@
 		<TR>
 			<TD>Session Start Date:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="sessionStart" onchange="$wnd.doRefresh();" style="border: #660000 2px solid;" format="MM/dd/yyyy"/>
+				<tt:calendar property="sessionStart" onchange="$wnd.doRefresh();" style="border: #660000 2px solid;"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD>Classes End Date:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="classesEnd" onchange="$wnd.doRefresh();" style="border: #660000 2px solid;" format="MM/dd/yyyy"/>
+				<tt:calendar property="classesEnd" onchange="$wnd.doRefresh();" style="border: #660000 2px solid;"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD>Examination Start Date:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="examStart" onchange="$wnd.doRefresh();" style="border: #999933 2px solid;" format="MM/dd/yyyy"/>
+				<tt:calendar property="examStart" onchange="$wnd.doRefresh();" style="border: #999933 2px solid;"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD>Session End Date:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="sessionEnd" onchange="$wnd.doRefresh();" style="border: #333399 2px solid;" format="MM/dd/yyyy"/>
+				<tt:calendar property="sessionEnd" onchange="$wnd.doRefresh();" style="border: #333399 2px solid;"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD>Event Start Date:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="eventStart" onchange="$wnd.doRefresh();" style="border: 2px solid yellow;" format="MM/dd/yyyy"/>
+				<tt:calendar property="eventStart" onchange="$wnd.doRefresh();" style="border: 2px solid yellow;"/>
 			</TD>
 		</TR>
 		<TR>
 			<TD>Event End Date:</TD>
 			<TD colspan='2'>
-				<tt:calendar property="eventEnd" onchange="$wnd.doRefresh();" style="border: 2px solid red;" format="MM/dd/yyyy"/>
+				<tt:calendar property="eventEnd" onchange="$wnd.doRefresh();" style="border: 2px solid red;"/>
 			</TD>
 		</TR>
 

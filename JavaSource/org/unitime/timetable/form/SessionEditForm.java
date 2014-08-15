@@ -37,7 +37,7 @@ import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
-import org.unitime.timetable.util.CalendarUtils;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.util.ReferenceList;
 
@@ -125,58 +125,77 @@ public class SessionEditForm extends ActionForm {
 	 * @param errors
 	 */
 	public void validateDates(ActionErrors errors) {
-		String df = "MM/dd/yyyy";
-		if (!CalendarUtils.isValidDate(sessionStart, df))
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
+		Date dStart = null;
+		try {
+			dStart = df.parse(sessionStart);
+		} catch (Exception e) {}
+		if (dStart == null)
 			errors.add("sessionStart", new ActionMessage("errors.invalidDate", "Session Start Date"));
 		else {
-			Date d1 = CalendarUtils.getDate(sessionStart, df);
-			
-			if (!CalendarUtils.isValidDate(sessionEnd, df))
+			Date dEnd = null;
+			try {
+				dEnd = df.parse(sessionEnd);
+			} catch (Exception e) {}
+			if (dEnd == null)
 				errors.add("sessionEnd", new ActionMessage("errors.invalidDate", "Session End Date"));
 			else {
-				Date d2 = CalendarUtils.getDate(sessionEnd, df);
-				if (!d2.after(d1)) 
+				if (!dEnd.after(dStart)) 
 					errors.add("sessionEnd", new ActionMessage("errors.generic", "Session End Date must occur AFTER Session Start Date"));
 				else {
-					if (!CalendarUtils.isValidDate(classesEnd, df))
+					Date dClassEnd = null;
+					try {
+						dClassEnd = df.parse(classesEnd);
+					} catch (Exception e) {}
+					if (dClassEnd == null)
 						errors.add("classesEnd", new ActionMessage("errors.invalidDate", "Classes End Date"));
 					else {
-						Date d3 = CalendarUtils.getDate(classesEnd, df);
-						if (!d3.after(d1)) {
+						if (!dClassEnd.after(dStart)) {
 							errors.add("classesEnd", new ActionMessage("errors.generic", "Classes End Date must occur AFTER Session Start Date"));
-						} else if (!(d3.before(d2) || d3.equals(d2))) { 
+						} else if (!(dClassEnd.before(dEnd) || dClassEnd.equals(dEnd))) { 
 							errors.add("classesEnd", new ActionMessage("errors.generic", "Classes End Date must occur ON or BEFORE Session End Date"));
 						} else {
-						    if (!CalendarUtils.isValidDate(examStart, df))
+							Date dExamStart = null;
+							try {
+								dExamStart = df.parse(examStart);
+							} catch (Exception e) {}
+							if (dExamStart == null)
 						        errors.add("examStart", new ActionMessage("errors.invalidDate", "Examinations Start Date"));
-                            if (!CalendarUtils.isValidDate(eventStart, df))
+
+							Date dEventStart = null;
+							try {
+								dEventStart = df.parse(eventStart);
+							} catch (Exception e) {}
+							Date dEventEnd = null;
+							try {
+								dEventEnd = df.parse(eventEnd);
+							} catch (Exception e) {}
+							if (dEventStart == null)
                                 errors.add("eventStart", new ActionMessage("errors.invalidDate", "Event Start Date"));
-                            else if (!CalendarUtils.isValidDate(eventEnd, df))
+                            else if (dEventEnd == null)
                                 errors.add("eventEnd", new ActionMessage("errors.invalidDate", "Event End Date"));
-                            Date d4 = CalendarUtils.getDate(eventStart, df);
-                            Date d5 = CalendarUtils.getDate(eventEnd, df);
-                            if (errors.isEmpty() && !d4.before(d5)) {
+                            if (errors.isEmpty() && !dEventStart.before(dEventEnd)) {
                                 errors.add("eventEnd", new ActionMessage("errors.generic", "Event End Date must occur AFTER Event Start Date"));
                             }
                             Calendar start = Calendar.getInstance(Locale.US);
-                            if (d4 != null){
-	                            if (d4.before(d1)){
-	                            	start.setTime(d4);
+                            if (dEventStart != null){
+	                            if (dEventStart.before(dStart)){
+	                            	start.setTime(dEventStart);
 	                            } else {
-	                            	start.setTime(d1);
+	                            	start.setTime(dStart);
 	                            }
                             } else {
-                            	start.setTime(d1);
+                            	start.setTime(dStart);
                             }
                             Calendar end = Calendar.getInstance(Locale.US);
-                            if(d5 != null){
-	                            if (d5.after(d2)){
-	                            	end.setTime(d5);
+                            if(dEventEnd != null){
+	                            if (dEventEnd.after(dEnd)){
+	                            	end.setTime(dEventEnd);
 	                            } else {
-	                            	end.setTime(d2);
+	                            	end.setTime(dEnd);
 	                            }
                             } else {
-                            	end.setTime(d2);
+                            	end.setTime(dEnd);
                             }
                             int startYear = start.get(Calendar.YEAR);
                             int endYear = end.get(Calendar.YEAR);

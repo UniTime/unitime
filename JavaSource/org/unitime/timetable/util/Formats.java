@@ -89,6 +89,12 @@ public class Formats {
 		TIME_SHORT(new PatternHolder() {
 			public String getPattern() { return GWT_CONSTANTS.timeFormatShort(); }
 		}),
+		SESSION_DATE(new PatternHolder() {
+			public String getPattern() { return GWT_CONSTANTS.sessionDateFormat(); }
+		}),
+		DATE_ENTRY_FORMAT(new PatternHolder() {
+			public String getPattern() { return GWT_CONSTANTS.dateEntryFormat(); }
+		}),
 		;
 		
 		
@@ -128,6 +134,15 @@ public class Formats {
 			public String toPattern() {
 				return pattern;
 			}
+
+			@Override
+			public boolean isValid(String source) {
+				try {
+					return parse(source) != null;
+				} catch (Throwable t) {
+					return false;
+				}
+			}
 		};
 	}
 	
@@ -152,6 +167,15 @@ public class Formats {
 			@Override
 			public String toPattern() {
 				return pattern;
+			}
+
+			@Override
+			public boolean isValid(String source) {
+				try {
+					return parse(source) != null;
+				} catch (Throwable t) {
+					return false;
+				}
 			}
 		};
 	}
@@ -178,6 +202,15 @@ public class Formats {
 			public String toPattern() {
 				return pattern.toPattern();
 			}
+
+			@Override
+			public boolean isValid(String source) {
+				try {
+					return parse(source) != null;
+				} catch (Throwable t) {
+					return false;
+				}
+			}
 		};
 	}
 	
@@ -202,6 +235,15 @@ public class Formats {
 			@Override
 			public String toPattern() {
 				return pattern.toPattern();
+			}
+
+			@Override
+			public boolean isValid(String source) {
+				try {
+					return parse(source) != null;
+				} catch (Throwable t) {
+					return false;
+				}
 			}
 		};
 	}
@@ -244,6 +286,7 @@ public class Formats {
 		public String format(T t);
 		public T parse(String source) throws ParseException;
 		public String toPattern();
+		public boolean isValid(String source);
 	}
 		
 	protected interface PatternHolder {
