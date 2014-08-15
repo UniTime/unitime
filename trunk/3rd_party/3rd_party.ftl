@@ -36,6 +36,18 @@ ${project.artifactId}-${project.version}.jar<#if project.name??>
 	License: ${license}</#list>
 </#list>
 
+The famfamfam Silk Icons
+	URL: http://www.famfamfam.com/lab/icons/silk
+	License: Creative Commons Attribution 3.0 License
+
+LED Icon Set
+	URL: http://led24.de/iconset/
+	License: Creative Commons Attribution 3.0 License
+
+Free web development icons #3
+	URL: http://www.icojam.com/blog/?p=119
+	License: Public Domain
+
 ----
 List of third-party dependencies grouped by their license type:
 <#list licenseMap as e><#assign license = e.getKey()/><#assign projects = e.getValue()/>
@@ -43,6 +55,11 @@ List of third-party dependencies grouped by their license type:
 ${license}<#list projects as project>
 	${artifactFormat(project)}</#list>
 </#list>
+	Free web development icons #3
+
+Creative Commons Attribution 3.0 License
+	The famfamfam Silk Icons
+	LED Icon Set
 
 ----
 For the appropriate license, see
@@ -58,6 +75,8 @@ BSD or BSD-style Licenses
 	http://dom4j.sourceforge.net/dom4j-1.6.1/license.html (dom4j)
 Common Development and Distribution License (CDDL), Version 1.0
 	http://opensource.org/licenses/CDDL-1.0
+Creative Commons Attribution 3.0 License
+	http://creativecommons.org/licenses/by/3.0
 Eclipse Public License (EPL), Version 1.0
 	http://www.eclipse.org/legal/epl-v10.html
 GNU General Public License (GPL), Version 2
@@ -68,8 +87,11 @@ GNU Lesser General Public License (LGPL), Version 2.1
 	https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
 GNU Lesser General Public License (LGPL), Version 3
 	https://www.gnu.org/licenses/lgpl.html
+JA-SIG License for Use
+	http://www.jasig.org/cas/license
 Public Domain
 	http://www.json.org/license.html (JSON)
+	http://creativecommons.org/publicdomain/mark/1.0 (Free web development icons #3)
 MIT License
 	http://www.slf4j.org/license.html (SLF4J)
 Mozilla Public License (MPL), Version 1.1

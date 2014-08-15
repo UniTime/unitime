@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client;
 
 import org.unitime.timetable.gwt.client.curricula.CourseCurriculaTable;
+import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.page.UniTimeBack;
@@ -34,6 +35,7 @@ import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.sectioning.ExaminationEnrollmentTable;
 import org.unitime.timetable.gwt.client.solver.SolverAllocatedMemory;
+import org.unitime.timetable.gwt.client.widgets.CourseNumbersSuggestBox;
 
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -65,6 +67,8 @@ public enum Components {
 	courseLink("UniTimeGWT:CourseLink", true, new ComponentFactory() { public void insert(RootPanel panel) { new CourseDetailsWidget(true).insert(panel); } }),
 	courseDetails("UniTimeGWT:CourseDetails", new ComponentFactory() { public void insert(RootPanel panel) { new CourseDetailsWidget(false).insert(panel); } }),
 	solverAllocatedMemory("UniTimeGWT:SolverAllocatedMem", true, new ComponentFactory() { public void insert(RootPanel panel) { new SolverAllocatedMemory().insert(panel); } }),
+	calendar("UniTimeGWT:Calendar", true, new ComponentFactory() { public void insert(RootPanel panel) { SingleDateSelector.insert(panel); } }),
+	courseNumberSuggestions("UniTimeGWT:CourseNumberSuggestBox", true, new ComponentFactory() { public void insert(RootPanel panel) { CourseNumbersSuggestBox.insert(panel); } }),
 	;
 	
 	private String iId;

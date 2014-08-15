@@ -24,7 +24,6 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
-<%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
@@ -242,24 +241,19 @@
 			<TH valign="top" nowrap><loc:message name="filterSubject"/></TH>
 			<TD valign="top" nowrap>
 				<% if (frm.getSubjectAreas().size()==1) { %>
-					<html:select property="subjectAreaIds" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+					<html:select property="subjectAreaIds" styleId="subjectAreaIds">
 						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 					</html:select>
 				<% } else { %>
-					<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" property="subjectAreaIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+					<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" property="subjectAreaIds" multiple="true" styleId="subjectAreaIds">
 						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 					</html:select>
 				<% } %>
 			</TD>
 			<TH valign="top" nowrap><loc:message name="filterCourseNumber"/></TH>
 			<TD valign="top" nowrap>
-				<!-- html:text property="courseNbr" size="10" maxlength="10" / -->
-				<layout:suggest 
-					suggestAction="/getCourseNumbers?notOffered=include" property="courseNbr" styleId="courseNbrText" 
-					suggestCount="15" size="10" maxlength="10" layout="false" all="true"
-					minWordLength="2" 
-					tooltip="<%=MSG.tooltipCourseNumber()%>"
-					onblur="blurSuggestionList('courseNbrText');" />
+				<tt:course-number property="courseNbr" configuration="subjectId=\${subjectAreaIds};notOffered=include" size="10"
+					title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
 			</TD>
 			<TD valign="top" nowrap>
 				&nbsp;&nbsp;&nbsp;

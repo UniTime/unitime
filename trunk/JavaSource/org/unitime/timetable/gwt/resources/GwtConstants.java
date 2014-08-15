@@ -192,4 +192,10 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue("h:mma")
 	String timeFormatShort();
+	
+	@DefaultStringValue("MMM d, yyyy")
+	String sessionDateFormat();
+	
+	@DefaultStringValue("MM/dd/yyyy")
+	String dateEntryFormat();
 }

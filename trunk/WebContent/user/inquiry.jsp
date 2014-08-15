@@ -85,10 +85,7 @@
 		<TR>
 			<TD>CC:</TD>
 			<TD>
-				<html:select property="puid"
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="return checkKey(event, this);" >
+				<html:select property="puid">
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:options collection="<%= TimetableManager.MGR_LIST_ATTR_NAME %>" 
 						property="emailAddress" labelProperty="name"/>

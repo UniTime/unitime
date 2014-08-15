@@ -21,7 +21,6 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
-<%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <tiles:importAttribute />
 <html:form action="/classes">
@@ -36,11 +35,11 @@
 	<TR>
 		<TD>
 			Term:
-			<html:select property="session">
+			<html:select property="session" styleId="sessionId">
 				<html:optionsCollection property="sessions" label="label" value="value"/>
 			</html:select>,&nbsp;&nbsp;&nbsp;
 			Subject:
-			<html:select property="subjectArea">
+			<html:select property="subjectArea" styleId="subjectAbbv">
 				<html:option value="">Select...</html:option>
 				<logic:equal name="classesForm" property="canRetrieveAllClassesForAllSubjects" value="true" >
 					<html:option value="--ALL--">All</html:option>
@@ -48,13 +47,10 @@
 				<html:options property="subjectAreas"/>
 			</html:select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			Course Number:
-			<layout:suggest 
-				suggestAction="/getCourseNumbers" property="courseNumber" styleId="courseNumberText" 
-				suggestCount="15" size="10" maxlength="10" layout="false" all="true" 
-			 	tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
-				onblur="blurSuggestionList('courseNumberText');" />
+			<tt:course-number property="courseNumber" configuration="sessionId=\${sessionId};subjectAbbv=\${subjectAbbv};notOffered=exclude" size="10"
+				title="Course numbers can be specified using wildcard (*). E.g. 2*"/>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<html:submit onclick="op.value='Apply'; this.disabled=true; document.getElementById('s2').disabled=true; displayLoading(); form.submit();" styleId="s1" accesskey="A" value="Apply" title="Apply (Alt+A)"/>
+			<html:submit onclick="op.value='Apply'; this.disabled=true; if (document.getElementById('s2')) document.getElementById('s2').disabled=true; displayLoading(); form.submit();" styleId="s1" accesskey="A" value="Apply" title="Apply (Alt+A)"/>
 		</TD>
 	</TR>
 	</TABLE>

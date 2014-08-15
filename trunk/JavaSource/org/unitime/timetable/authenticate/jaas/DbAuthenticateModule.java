@@ -19,7 +19,6 @@
  */
 package org.unitime.timetable.authenticate.jaas;
 
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +31,7 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
-import org.unitime.commons.Base64;
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.unitime.timetable.model.User;
 import org.unitime.timetable.model.dao.UserDAO;
 
@@ -178,12 +177,8 @@ public class DbAuthenticateModule extends AuthenticateModule {
 	 * @return
 	 * @throws NoSuchAlgorithmException
 	 */
-	public static String getEncodedPassword(String clearTextPassword)
-			throws NoSuchAlgorithmException {
-
-		MessageDigest md = MessageDigest.getInstance("MD5");
-		md.update(clearTextPassword.getBytes());
-		return Base64.encodeBytes(md.digest());
+	public static String getEncodedPassword(String clearTextPassword) {
+		return new MessageDigestPasswordEncoder("MD5", true).encodePassword(clearTextPassword, null);
 	}
 
 	/**

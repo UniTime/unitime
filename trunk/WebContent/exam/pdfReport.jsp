@@ -101,8 +101,7 @@
   		<TD width="10%" nowrap valign='top'>Subject Areas:</TD>
 		<TD>
 			<html:checkbox property="all" onclick="selectionChanged();"/>All Subject Areas (on one report)<br>
-			<html:select property="subjects" multiple="true" size="7"
-				onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+			<html:select property="subjects" multiple="true" size="7">
 				<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
 			</html:select>
 		</TD>
@@ -168,10 +167,13 @@
   	</TR>
   	<TR>
 		<TD>
-			Date: <html:text property="since" maxlength="10" size="10" styleId="since_date"/> 
-				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" 
-				border="0" id="show_since_date">
-			<i>(Only email instructors/students that have a change in their schedule since this date, email all when empty)</i>
+			<span style="display: table;">
+				<span style="display: table-row;">
+					<span style="display: table-cell; vertical-align: middle; padding-right: 5px;">Date: </span>
+					<tt:calendar property="since" outerStyle="display: table-cell;"/>
+					<span style="display: table-cell; font-style: italic; padding-left: 5px; vertical-align: middle;">(Only email instructors/students that have a change in their schedule since this date, email all when empty)
+				</span>
+			</span>
 		</TD>
 	</TR>
 	<TR>
@@ -272,22 +274,5 @@
 		if (!instructorSchedule) objEmailInstructors.checked=false;
 		objSince.disabled=objEmailInstructors.disabled && objEmailStudents.disabled;
 	}
-</script>
-<script type="text/javascript" language="javascript">
- 
- var objSinceDate = document.getElementById('since_date');
- if (objSinceDate!=null) {
- Calendar.setup( {
-  cache      : true,      // Single object used for all calendars
-  electric   : false,     // Changes date only when calendar is closed
-  inputField : "since_date",  // ID of the input field
-  ifFormat   : "%m/%d/%Y",    // Format of the input field
-  showOthers : true,     // Show overlap of dates from other months     
-  date		: <%=request.getParameter("since") != null && request.getParameter("since").length() >= 10 ? request.getParameter("since") : null%>,
-  button     : "show_since_date" // ID of the button
- } );
- }
- 
- selectionChanged();
 </script>
 </html:form>
