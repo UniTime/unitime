@@ -20,7 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +56,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 
 
@@ -132,7 +133,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 		sessionEditForm.setAcademicYear(acadSession.getAcademicYear());
 		sessionEditForm.setAcademicTerm(acadSession.getAcademicTerm());
 		
-		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+		Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
 		sessionEditForm.setSessionStart(sdf.format(acadSession.getSessionBeginDateTime()));
 		sessionEditForm.setSessionEnd(sdf.format(acadSession.getSessionEndDateTime()));
 		sessionEditForm.setClassesEnd(sdf.format(acadSession.getClassesEndDateTime()));
@@ -373,7 +374,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 			SessionEditForm sessionEditForm,
 			Session sessn ) throws ParseException {
 		
-		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+		Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
 		sessn.setAcademicYear(sessionEditForm.getAcademicYear());
 		sessn.setAcademicTerm(sessionEditForm.getAcademicTerm());
 		sessn.setSessionBeginDateTime(sdf.parse(sessionEditForm.getSessionStart()));

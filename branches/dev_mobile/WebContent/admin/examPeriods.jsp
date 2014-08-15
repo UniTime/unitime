@@ -297,7 +297,7 @@
 			<TD>Date:</TD>
 			<TD>
 				<logic:equal name="examPeriodEditForm" property="editable" value="true">
-					<tt:calendar property="date" format="MM/dd/yyyy"/>
+					<tt:calendar property="date"/>
 				</logic:equal>
 				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
 					<bean:write name="examPeriodEditForm" property="date"/>

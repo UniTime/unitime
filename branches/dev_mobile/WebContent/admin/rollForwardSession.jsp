@@ -253,7 +253,7 @@
 				<span style="display: table;">
 					<span style="display: table-row;">
 						<span style="display: table-cell; vertical-align: middle;">New Expiration Date: </span>
-						<tt:calendar property="expirationCourseReservations" format="MM/dd/yyyy" outerStyle="display: table-cell;"/>
+						<tt:calendar property="expirationCourseReservations" outerStyle="display: table-cell;"/>
 						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to course reservations with an expiration date filled in.</span>
 					</span>
 				</span>
@@ -264,7 +264,7 @@
 				<span style="display: table;">
 					<span style="display: table-row;">
 						<span style="display: table-cell; vertical-align: middle;">New Expiration Date: </span>
-						<tt:calendar property="expirationCurriculumReservations" format="MM/dd/yyyy" outerStyle="display: table-cell;"/>
+						<tt:calendar property="expirationCurriculumReservations" outerStyle="display: table-cell;"/>
 						<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to curriculum reservations with an expiration date filled in.</span>
 					</span>
 				</span>
@@ -276,7 +276,7 @@
 					<span style="display: table;">
 						<span style="display: table-row;">
 							<span style="display: table-cell; vertical-align: middle;">New Expiration Date: </span>
-							<tt:calendar property="expirationGroupReservations" format="MM/dd/yyyy" outerStyle="display: table-cell;"/>
+							<tt:calendar property="expirationGroupReservations" outerStyle="display: table-cell;"/>
 							<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;">Applies to student group reservations with an expiration date filled in.
 						</span>
 					</span>

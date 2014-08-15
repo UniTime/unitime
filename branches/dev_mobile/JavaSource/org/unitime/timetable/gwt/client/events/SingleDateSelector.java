@@ -872,7 +872,10 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 				}
 			});
 		if (text.getText() != null && !text.getText().isEmpty()) {
-			Date date = selector.iFormat.parse(text.getText());
+			Date date = null;
+			try {
+				date = selector.iFormat.parse(text.getText());
+			} catch (IllegalArgumentException e) {}
 			if (date != null)
 				selector.setValue(date);
 		}
