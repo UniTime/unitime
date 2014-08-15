@@ -19,71 +19,29 @@
 */
 package org.unitime.timetable.gwt.client.page;
 
-import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
-import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Cursor;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * @author Tomas Muller
  */
-public class UniTimePageLabel extends Composite {
-	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
-	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-
+public class UniTimePageLabel {
+	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 
-	private HorizontalPanel iPanel;
-	
-	private Label iName;
-	private Image iHelp;
-	
-	private String iUrl = null;
+	private PageLabel iLabel = new PageLabel();
 	
 	private static UniTimePageLabel sInstance = null;
 	
-	private UniTimePageLabel() {
-		iPanel = new HorizontalPanel();
-		
-        iName = new Label();
-        iName.setStyleName("unitime-Title");
-		iHelp = new Image(RESOURCES.help());
-		iHelp.setVisible(false);
-		iHelp.getElement().getStyle().setCursor(Cursor.POINTER);
-		
-		iPanel.add(iName);
-		iPanel.add(iHelp);
-		iPanel.setCellVerticalAlignment(iHelp, HasVerticalAlignment.ALIGN_TOP);
-				
-		initWidget(iPanel);
-				
-		iHelp.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				if (iUrl == null) return;
-				UniTimeFrameDialog.openDialog(MESSAGES.pageHelp(iName.getText()), iUrl);
-			}
-		});
-		
-	}
+	private UniTimePageLabel() {}
 	
 	public static UniTimePageLabel getInstance() {
 		if (sInstance == null)
@@ -91,42 +49,33 @@ public class UniTimePageLabel extends Composite {
 		return sInstance;
 	}
 	
-	public void insert(final RootPanel panel) {
+	public void insert(RootPanel panel) {
 		String title = panel.getElement().getInnerText();
 		if (title != null && !title.isEmpty())
-			setPageName(title);
-		panel.getElement().setInnerText(null);
-		panel.add(this);
-		panel.setVisible(true);
+			iLabel.setText(title);
+		panel.getElement().setInnerText("");
+		panel.add(iLabel);
+		setPageName(title);
 	}
 	
 	public void setPageName(final String title) {
+		if (title == null || title.isEmpty()) return;
 		RPC.execute(new MenuInterface.PageNameRpcRequest(title), new AsyncCallback<PageNameInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.setTitle("UniTime " + CONSTANTS.version() + "| " + title);
-				iName.setText(title);
-				iHelp.setTitle(MESSAGES.pageHelp(title));
-				iHelp.setVisible(false);
-				iUrl = null;
+				iLabel.setText(title);
+				iLabel.setHelpUrl(null);
 			}
 			@Override
 			public void onSuccess(PageNameInterface result) {
-				if (result.getHelpUrl() == null) {
-					iHelp.setVisible(false);
-					iUrl = null;
-				} else {
-					iHelp.setVisible(true);
-					iUrl = result.getHelpUrl();
-				}
+				iLabel.setHelpUrl(result.getHelpUrl());
 				if (result.getName() != null) {
-					iName.setText(result.getName());
-					iHelp.setTitle(MESSAGES.pageHelp(result.getName()));
+					iLabel.setText(result.getName());
 					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + result.getName());
 				} else {
 					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + title);
-					iName.setText(title);
-					iHelp.setTitle(MESSAGES.pageHelp(title));
+					iLabel.setText(title);
 				}
 			}
 		});

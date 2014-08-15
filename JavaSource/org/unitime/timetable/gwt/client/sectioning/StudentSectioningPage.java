@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
+import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.sectioning.UserAuthentication.UserAuthenticatedEvent;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -27,13 +28,9 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * @author Tomas Muller
@@ -53,17 +50,7 @@ public class StudentSectioningPage extends Composite {
 	};
 	
 	public StudentSectioningPage(final Mode mode) {
-		Grid titlePanel = new Grid(1, 3);
-		titlePanel.getCellFormatter().setWidth(0, 0, "33%");
-		titlePanel.getCellFormatter().setWidth(0, 1, "34%");
-		titlePanel.getCellFormatter().setWidth(0, 2, "33%");
-		titlePanel.getCellFormatter().setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_CENTER);
-		titlePanel.getCellFormatter().setHorizontalAlignment(0, 2, HasHorizontalAlignment.ALIGN_RIGHT);
-		titlePanel.getCellFormatter().getElement(0, 2).getStyle().setPaddingLeft(10, Unit.PX);
-		titlePanel.setHTML(0, 0, "&nbsp;");
-		
-		final UserAuthentication userAuthentication = new UserAuthentication(mode.isSectioning() ? !CONSTANTS.isAuthenticationRequired() : false);
-		titlePanel.setWidget(0, 1, userAuthentication);
+		final UserAuthentication userAuthentication = new UserAuthentication(UniTimePageHeader.getInstance().getMiddle(), mode.isSectioning() ? !CONSTANTS.isAuthenticationRequired() : false);
 		
 		if (Window.Location.getParameter("student") == null)
 			iSectioningService.whoAmI(new AsyncCallback<String>() {
@@ -82,8 +69,7 @@ public class StudentSectioningPage extends Composite {
 				}
 			});
 		
-		final AcademicSessionSelector sessionSelector = new AcademicSessionSelector(mode);
-		titlePanel.setWidget(0, 2, sessionSelector);
+		final AcademicSessionSelector sessionSelector = new AcademicSessionSelector(UniTimePageHeader.getInstance().getRight(), mode);
 		
 		iSectioningService.isAdminOrAdvisor(new AsyncCallback<Boolean>() {
 			public void onFailure(Throwable caught) {
@@ -107,11 +93,10 @@ public class StudentSectioningPage extends Composite {
 				}
 			}
 		});
-
 		
-		RootPanel.get("UniTimeGWT:Header").clear();
-		RootPanel.get("UniTimeGWT:Header").add(titlePanel);
-
+		UniTimePageHeader.getInstance().getLeft().setVisible(false);
+		UniTimePageHeader.getInstance().getLeft().setPreventDefault(true);
+		
 		final StudentSectioningWidget widget = new StudentSectioningWidget(true, sessionSelector, userAuthentication, mode, true);
 		
 		initWidget(widget);

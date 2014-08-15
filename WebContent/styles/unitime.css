@@ -19,22 +19,69 @@
 
 .unitime-Body {
 	font-family: sans-serif, verdana, arial;
+	background-color: #FFFFFF;
 }
 
 .unitime-Page {
+	display: table;
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 800px;
+}
+
+.unitime-Page .row {
+	display: table-row;
+}
+
+.unitime-Page .sidebar {
+	display: table-cell;
+	padding: 0px 2px 0px 2px;
+	vertical-align: top;
+}
+
+.unitime-Page .main {
+	display: table-cell;
+}
+
+.unitime-Page .body {
+	display: block;
 	border: 1px solid #9CB0CE;
-	padding: 5px;
-	margin-top: 10px;
+	margin-top: 5px;
 	background-color: #FFFFFF;
 	vertical-align: center;
 }
 
+.unitime-Page .content {
+	display: block;
+	padding: 2px;
+}
+
+.unitime-Page .footer {
+	display: block;
+	padding: 2px;
+}
+
 .unitime-Title {
+	display: block;
 	font-size: x-large;
 	font-weight: bold;
 	color: #333333;
 	margin-bottom: 10px;
 	margin-left: 10px;
+	margin-right: 5px;
+	height: 33px;
+}
+
+.unitime-Title .text {
+	display: inline;
+	white-space: nowrap;
+}
+
+.unitime-Title .icon {
+	vertical-align: top;
+	display: inline-block;
+	margin-left: 5px;
+	cursor: pointer;
 }
 
 .unitime-SubTitle {
@@ -66,8 +113,36 @@
 }
 
 .unitime-Footer {
+	display: table;
 	width: 100%;
-	margin-top: -3px;
+}
+
+.unitime-Footer .row {
+	display: table-row;
+	font-size: 9pt;
+	vertical-align: top;
+	font-style: italic;
+	color: #9CB0CE;
+	white-space: nowrap;
+}
+
+.unitime-Footer .cell {
+	display: table-cell;
+	width: 33%;
+}
+
+.unitime-Footer .left {
+	padding-left: 2px;
+	text-align: left;
+}
+
+.unitime-Footer .middle {
+	text-align: center;
+}
+
+.unitime-Footer .right {
+	padding-right: 2px;
+	text-align: right;
 }
 
 .unitime-FooterText {
@@ -79,9 +154,11 @@
 }
 
 .unitime-Disclaimer {
+	display: block;
 	color: #777777;
 	text-align: center;
 	max-width: 800px;
+	margin: auto;
 }
 
 .unitime-PrintIcon {
@@ -1211,6 +1288,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-PrintedPage {
+	display: block;
 	page-break-inside: avoid;
 	page-break-after: auto;
 	page-break-before: auto;
@@ -3247,4 +3325,197 @@ unitime-RoomSharingWidget .legend .blank {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
+}
+
+.unitime-InfoPanel {
+	display: inline-table;
+	height: 28px;
+}
+
+.unitime-InfoPanel .row {
+	display: table-row;
+}
+
+.unitime-InfoPanel .cell {
+	display: table-cell;
+}
+
+.unitime-InfoPanel .left {
+	padding-right: 30px;
+}
+
+.unitime-InfoPanel .middle {
+}
+
+.unitime-InfoPanel .right {
+	padding-left: 30px;
+}
+
+.unitime-InfoPanel .clickable {
+	cursor: pointer;
+}
+
+.unitime-InfoPanel .text {
+	display: block;
+	white-space: nowrap;
+	text-align: center;
+}
+
+.unitime-InfoPanel .hint {
+	display: block;
+	font-size: xx-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	margin-top: -2px;
+	white-space: nowrap;
+	text-decoration: none;
+}
+
+.unitime-InfoTable {
+	border-spacing: 2px;
+	border-collapse: separate;
+}
+
+.unitime-InfoTable .separator {
+	border-bottom: 1px dashed #AB8B00;
+}
+
+.unitime-PageWarn {
+	display: block;
+	padding: 2px 2px 2px 10px;
+	width: 100%;
+	background: #fcdd89;
+	border-bottom: 1px solid black;
+}
+
+.unitime-PageMessage {
+	display: block;
+	padding: 2px 2px 2px 10px;
+	width: 100%;
+	background: #dfe7f2;
+	border-bottom: 1px black solid;	
+}
+
+.unitime-PageHeader {
+	display: table;
+	width: 100%;
+}
+
+.unitime-PageHeader .row {
+	display: table-row;
+}
+
+.unitime-PageHeader .logo {
+	display: table-cell;
+	padding: 5px;
+}
+
+.unitime-PageHeader .content {
+	display: table-cell;
+	vertical-align: top;
+	padding: 5px;
+	width: 100%;
+}
+
+.unitime-PageHeader .title {
+	display: block;
+	text-align: right;
+	white-space: nowrap;
+	font-size: x-large;
+	color: #333333;
+	margin-bottom: 10px;
+}
+
+.unitime-PageHeader .title .text {
+	display: inline-block;
+	vertical-align: bottom;
+	white-space: nowrap;
+}
+
+.unitime-PageHeader .title .icon {
+	display: inline-block;
+	vertical-align: top;
+	padding-left: 3px;
+}
+
+.unitime-PageHeader .navigation {
+	display: block;
+	width: 100%;
+}
+
+.unitime-Navigation {
+	display: block;
+	max-width: 800px;
+}
+
+.unitime-Navigation .item {
+	white-space: nowrap;
+}
+
+.unitime-PageLoading {
+	display: block;
+	text-align: center;
+	font-style: italic;
+	margin-bottom: 10px;
+}
+
+.unitime-Header {
+	display: block;	
+	text-align: right;
+}
+
+.unitime-Login {
+	margin: 20px 5px 20px 5px;
+	display: block;
+	text-align: center;
+}
+
+.unitime-Login .header {
+	display: inline-block;
+	padding: 5px 0px 5px 10px;
+}
+
+.unitime-Login .header .h1 {
+	color: #35526F;
+	font-size: xx-large;
+}
+
+.unitime-Login .header .h2 {
+	color: #35526F;
+	font-size: large;
+}
+
+.unitime-Login .error {
+	display: block;
+	color: red;
+	font-size: medium;
+	font-weight: bold;
+	margin-top: 20px;
+}
+
+.unitime-Login .logo {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.unitime-Login .login {
+	display: block;
+	padding: 10px 0px 10px 0px;
+}
+
+.unitime-Login .forgot {
+	display: block;
+}
+
+.unitime-Login .menu {
+	display: inline-block;
+	vertical-align: top;
+	padding-right: 5px;
+}
+
+.unitime-InitializationError {
+	color: red;
+	text-align: center;
+	margin-bottom: 20px;
 }

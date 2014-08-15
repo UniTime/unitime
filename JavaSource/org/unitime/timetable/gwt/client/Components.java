@@ -51,7 +51,7 @@ public enum Components {
 	sidebar_tree_static("UniTimeGWT:StaticSideTreeMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeSideBar(false, false).insert(panel); } }),
 	menubar_static("UniTimeGWT:TopMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeMenuBar(false).insert(panel); } }),
 	menubar_dynamic("UniTimeGWT:DynamicTopMenu", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeMenuBar(true).insert(panel); } }),
-	header("UniTimeGWT:Header", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimePageHeader().insert(panel); } }),
+	header("UniTimeGWT:Header", new ComponentFactory() { public void insert(RootPanel panel) { UniTimePageHeader.getInstance().insert(panel); } }),
 	version("UniTimeGWT:Version", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeVersion().insert(panel); } }),
 	back("UniTimeGWT:Back", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeBack().insert(panel); } }),
 	offeringReservations("UniTimeGWT:OfferingReservations", new ComponentFactory() { public void insert(RootPanel panel) { new ReservationTable(true, true).insert(panel); } }),
@@ -66,7 +66,6 @@ public enum Components {
 	courseDetails("UniTimeGWT:CourseDetails", new ComponentFactory() { public void insert(RootPanel panel) { new CourseDetailsWidget(false).insert(panel); } }),
 	solverAllocatedMemory("UniTimeGWT:SolverAllocatedMem", true, new ComponentFactory() { public void insert(RootPanel panel) { new SolverAllocatedMemory().insert(panel); } }),
 	;
-	
 	
 	private String iId;
 	private ComponentFactory iFactory;

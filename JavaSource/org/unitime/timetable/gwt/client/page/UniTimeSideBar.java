@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
@@ -54,7 +55,6 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -427,7 +427,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 		    if (index >= getWidgetCount()) {
 		        return null;
 		      }
-		      Element tdWrapper = DOM.getChild(DOM.getChild(body, index * 2), 0);
+		      Element tdWrapper = DOM.getChild((Element) DOM.getChild(body, index * 2), 0);
 		      return DOM.getFirstChild(tdWrapper).getInnerText();
 		}
 		

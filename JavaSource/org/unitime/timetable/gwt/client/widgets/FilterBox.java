@@ -38,6 +38,7 @@ import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -72,7 +73,6 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Timer;
@@ -279,7 +279,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
         
         sinkEvents(Event.ONMOUSEDOWN);
         
-		DOM.setElementAttribute(iSuggestionsPopup.getElement(), "id", DOM.createUniqueId());
+		iSuggestionsPopup.getElement().setAttribute("id", DOM.createUniqueId());
 		Roles.getTextboxRole().setAriaOwnsProperty(iFilter.getElement(), Id.of(iSuggestionsPopup.getElement()));
 		
 		Roles.getTextboxRole().setAriaAutocompleteProperty(iFilter.getElement(), AutocompleteValue.NONE);
@@ -1341,7 +1341,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					}
 				});
 			setStyleName("item");
-			DOM.setStyleAttribute(getElement(), "whiteSpace", "nowrap");
+			getElement().setAttribute("whiteSpace", "nowrap");
 			iSuggestion = suggestion;
 		}
 		

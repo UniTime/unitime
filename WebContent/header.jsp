@@ -24,28 +24,25 @@
 
 <tiles:importAttribute name="showNavigation" scope="request"/>	
 
-	<div id="loading" style="visibility:hidden;display:none">
-		<table border="0" width='100%'>
-			<tr>
-				<td align="center" valign="middle">
-					<img align="middle" vspace="5" border="0" src="images/loading.gif">
-				</td>
-			</tr>
-		</table>
+	<div id="loading" class="unitime-PageLoading" style="visibility:hidden;display:none">
+		<img align="middle" vspace="5" border="0" src="images/loading.gif">
 	</div>
 	
 	<logic:equal name="showNavigation" value="true"> 
 		<% if (!"hide".equals(request.getParameter("menu"))) { %>
 		<tt:has-back>
-			<table border="0" width='100%'>
-				<tr>
-					<td style="max-width: 800px;">
-						<tt:back styleClass="btn" name="[&larr;]" title="Return to %%"/>
-						<tt:back-tree/>
-						<tt:gwt-back/>
-					</td>
-				</tr>
-			</table>
+			<tt:form-factor value="mobile">
+				<tt:back styleClass="btn" name="[&larr;]" title="Return to %%"/>
+				<tt:back-tree/>
+				<tt:gwt-back/>
+			</tt:form-factor>
+			<tt:form-factor value="desktop">
+				<span class="unitime-Navigation">
+					<tt:back styleClass="btn" name="[&larr;]" title="Return to %%"/>
+					<tt:back-tree/>
+					<tt:gwt-back/>
+				</span>
+			</tt:form-factor>
 		</tt:has-back>
 		<% } %>
 	</logic:equal>

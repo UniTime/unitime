@@ -29,13 +29,12 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -147,7 +146,7 @@ public class ToolBox {
     public static void print(String title, String user, String session, Widget... widgets) {
     	String content = "";
     	for (Widget w: widgets)
-    		content += "<div class=\"unitime-PrintedComponent\">" + DOM.toString(w.getElement()) + "</div>";
+    		content += "<div class=\"unitime-PrintedComponent\">" + w.getElement().getString() + "</div>";
     	String html = "<html><header>" +
     		"<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">" +
     		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "unitime/gwt/standard/standard.css\">" +
@@ -155,22 +154,36 @@ public class ToolBox {
     	    "<link rel=\"shortcut icon\" href=\"" + GWT.getHostPageBaseURL() + "images/timetabling.ico\">" +
     	    "<title>UniTime " + CONSTANTS.version() + "| University Timetabling Application</title>" +
     		"</header><body class='unitime-Body'>" + 
-    		"<table align=\"center\"><tr><td>" +
-    		"<table class=\"unitime-Page\"><tr><td>" +
-    		"<table id=\"header\" class=\"unitime-MainTable\" cellpadding=\"2\" cellspacing=\"0\" width=\"100%\">" +
-    		"<tr><td rowspan=\"2\"><img src=\"" + GWT.getHostPageBaseURL() + "images/unitime.png\" border=\"0\"/></td>" +
-    		"<td nowrap=\"nowrap\" class=\"unitime-Title\" width=\"100%\" align=\"center\" colspan=\"2\">" + title + "</td></tr>" +
-    		"<tr><td nowrap=\"nowrap\" class=\"unitime-SubTitle\" width=\"50%\" align=\"center\">" + user + "</td>"+
-    		"<td nowrap=\"nowrap\" class=\"unitime-SubTitle\" width=\"50%\" align=\"center\">" + session + "</td></tr></table>" +
-    		content + 
-    		"</td></tr></table>" +
-    		"</td></tr><tr><td>" +
-    		"<table class=\"unitime-Footer\"><tr>" +
-    		"<td width=\"33%\" align=\"left\" nowrap=\"nowrap\">Printed from UniTime " + CONSTANTS.version() + " | University Timetabling Application</td>" +
-    		"<td width=\"34%\" align=\"center\">" + CONSTANTS.copyright() + "</td>" +
-    		"<td width=\"33%\" align=\"right\">" + DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM).format(new Date()) + "</td>" +
-    		"</tr></table></td></tr></table>" +
-    		"</body></html>";
+    	    "<span class='unitime-Page'>" +
+    			"<span class='body'>"+
+    				"<span class='unitime-PageHeader'>" +
+    					"<span class='row'>"+
+    						"<span class='logo'><img src='" + GWT.getHostPageBaseURL() + "images/unitime.png' border='0'/></span>"+
+    						"<span class='content'>"+
+    							"<span id='UniTimeGWT:Title' class='title'>" + title + "</span>"+
+    							"<span class='unitime-Header'>" +
+    								"<span class='unitime-InfoPanel'>"+
+    									"<span class='row'>" +
+    										"<span class='cell middle'>" + user + "</span>" +
+    										"<span class='cell right'>" + session + "</span>" +
+    									"</span>" +
+    								"</span>" +
+    							"</span>" +
+    						"</span>" +
+    					"</span>" +
+    				"</span>" +
+    				"<span class='content'>" + content + "</span>" +
+    			"</span>" +
+    			"<span class='footer'>" +
+    				"<span class='unitime-Footer'>" +
+    					"<span class='row'>" +
+    						"<span class='cell left'>Printed from UniTime " + CONSTANTS.version() + " | University Timetabling Application</span>" +
+    						"<span class='cell middle'>" + CONSTANTS.copyright() + "</span>" +
+    						"<span class='cell right'>" + DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM).format(new Date()) + "</span>" +
+    					"</span>" +
+    				"</span>" +
+    			"</span>" +
+    		"</span></body></html>";
     	printf(html);
     }
     
@@ -183,21 +196,38 @@ public class ToolBox {
         	    "<title>UniTime " + CONSTANTS.version() + "| University Timetabling Application</title>" +
         		"</header><body class='unitime-Body'>";
     	for (Page p: pages) {
-    		html += "<table class=\"unitime-PrintedPage\" align=\"center\"><tr><td>" +
-    				"<table class=\"unitime-Page\"><tr><td>" +
-    	    		"<table id=\"header\" class=\"unitime-MainTable\" cellpadding=\"2\" cellspacing=\"0\" width=\"100%\">" +
-    	    		"<tr><td rowspan=\"2\"><img src=\"" + GWT.getHostPageBaseURL() + "images/unitime.png\" border=\"0\"/></td>" +
-    	    		"<td nowrap=\"nowrap\" class=\"unitime-Title\" width=\"100%\" align=\"center\" colspan=\"2\">" + p.getName() + "</td></tr>" +
-    	    		"<tr><td nowrap=\"nowrap\" class=\"unitime-SubTitle\" width=\"50%\" align=\"center\">" + p.getUser() + "</td>"+
-    	    		"<td nowrap=\"nowrap\" class=\"unitime-SubTitle\" width=\"50%\" align=\"center\">" + p.getSession() + "</td></tr></table>" +
-    	    		DOM.toString(p.getBody()) +
-    	    		"</td></tr></table>" +
-    	    		"</td></tr><tr><td>" +
-    	    		"<table class=\"unitime-Footer\"><tr>" +
-    	    		"<td width=\"33%\" align=\"left\" nowrap=\"nowrap\">Printed from UniTime " + CONSTANTS.version() + " | University Timetabling Application</td>" +
-    	    		"<td width=\"34%\" align=\"center\">" + CONSTANTS.copyright() + "</td>" +
-    	    		"<td width=\"33%\" align=\"right\">" + DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM).format(new Date()) + "</td>" +
-    	    		"</tr></table></td></tr></table>";
+    		html += "<span class='unitime-PrintedPage'>" +
+    					"<span class='unitime-Page'>" +
+    						"<span class='body'>"+
+    							"<span class='unitime-PageHeader'>" +
+    								"<span class='row'>"+
+    									"<span class='logo'><img src='" + GWT.getHostPageBaseURL() + "images/unitime.png' border='0'/></span>"+
+    									"<span class='content'>"+
+    										"<span id='UniTimeGWT:Title' class='title'>" + p.getName() + "</span>"+
+    										"<span class='unitime-Header'>" +
+    											"<span class='unitime-InfoPanel'>"+
+    												"<span class='row'>" +
+    													"<span class='cell middle'>" + p.getUser() + "</span>" +
+    													"<span class='cell right'>" + p.getSession() + "</span>" +
+    												"</span>" +
+    											"</span>" +
+    										"</span>" +
+    									"</span>" +
+    								"</span>" +
+    							"</span>" +
+    							"<span class='content'>" + p.getBody().getString() + "</span>" +
+    						"</span>" +
+    						"<span class='footer'>" +
+    							"<span class='unitime-Footer'>" +
+    								"<span class='row'>" +
+    									"<span class='cell left'>Printed from UniTime " + CONSTANTS.version() + " | University Timetabling Application</span>" +
+    									"<span class='cell middle'>" + CONSTANTS.copyright() + "</span>" +
+    									"<span class='cell right'>" + DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM).format(new Date()) + "</span>" +
+    								"</span>" +
+    							"</span>" +
+    						"</span>" +
+    					"</span>" +
+    				"</span>";
     	}
     	html += "</body></html>";
     	printf(html);
@@ -245,9 +275,11 @@ public class ToolBox {
 	}-*/;
 
 	public native static int getClientWidth() /*-{
-		var sideMenu = $doc.getElementById("unitime-SideMenu").getElementsByTagName("span");
-    	if (sideMenu.length > 0) {
-    		return $doc.body.clientWidth - sideMenu[0].clientWidth;
+		var sideMenu = $doc.getElementById("unitime-SideMenu");
+		if (!sideMenu) return $doc.body.clientWidth;
+		var sideMenuSpans = sideMenu.getElementsByTagName("span");
+    	if (sideMenuSpans.length > 0) {
+    		return $doc.body.clientWidth - sideMenuSpans[0].clientWidth;
     	} else {
     		return $doc.body.clientWidth;
     	}

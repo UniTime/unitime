@@ -226,7 +226,7 @@ public class BackTracker {
 				String[] backItem = (String[])back.elementAt(i);
 				//if (!e.hasMoreElements()) continue;
 				if (ret.length()>0) ret.append(" &rarr; ");
-				ret.append("<A href='back.do?uri="+encodeURL(backItem[0])+"'>"+backItem[1]+"</A>");
+				ret.append("<span class='item'><A href='back.do?uri="+encodeURL(backItem[0])+"'>"+backItem[1]+"</A></span>");
 			}
 			return "&nbsp;"+ret.toString();
 		}

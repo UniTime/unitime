@@ -39,10 +39,14 @@ public class UniTimeAnonymousAuthenticationFilter extends AnonymousAuthenticatio
 
 	@Override
 	protected Authentication createAuthentication(HttpServletRequest request) {
-		AnonymousUserContext user = new AnonymousUserContext();
-		if (!user.getAuthorities().isEmpty())
-			return new AnonymousAuthenticationToken("guest", user, user.getAuthorities());
-		else
+		try {
+			AnonymousUserContext user = new AnonymousUserContext();
+			if (!user.getAuthorities().isEmpty())
+				return new AnonymousAuthenticationToken("guest", user, user.getAuthorities());
+			else
+				return super.createAuthentication(request);
+		} catch (Throwable t) {
 			return super.createAuthentication(request);
+		}
     }
 }

@@ -86,7 +86,7 @@ public class ClickableHint extends Label implements HasAriaLabel, Focusable {
 
 	    if ((event.getTypeInt() & Event.KEYEVENTS) != 0) {
 	    	int type = DOM.eventGetType(event);
-	    	char keyCode = (char) DOM.eventGetKeyCode(event);
+	    	char keyCode = (char) event.getKeyCode();
 	    	switch (type) {
 	        case Event.ONKEYUP:
 	        	if (keyCode == ' ' || keyCode == '\n' || keyCode == '\r')

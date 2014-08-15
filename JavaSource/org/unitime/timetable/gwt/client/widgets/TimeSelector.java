@@ -388,7 +388,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 				}
 			);
 			setStyleName("item");
-			DOM.setStyleAttribute(getElement(), "whiteSpace", "nowrap");
+			getElement().setAttribute("whiteSpace", "nowrap");
 			iSlot = slot;
 		}
 		

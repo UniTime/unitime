@@ -949,10 +949,10 @@ public class TimeGrid extends Composite {
 		
 		public void onBrowserEvent(Event event) {
 			if (iDummy) return;
-		    com.google.gwt.user.client.Element target = DOM.eventGetTarget(event);
+		    Element target = DOM.eventGetTarget(event);
 		    boolean anchor = false;
 		    for (; target != null; target = DOM.getParent(target)) {
-		    	String tag = DOM.getElementProperty(target, "tagName");
+		    	String tag = target.getPropertyString("tagName");
 		    	if ("a".equalsIgnoreCase(tag)) {
 		    		anchor = true;
 		    		break;
@@ -1135,7 +1135,7 @@ public class TimeGrid extends Composite {
 		}
 		
 		public void add(Widget w) {
-            super.add(w, getElement());
+            super.add(w, (Element)getElement());
         }
 		
 		public void setDummy() {
@@ -1234,8 +1234,8 @@ public class TimeGrid extends Composite {
 				}
 				break;
 			case Event.ONMOUSEOUT:
-				com.google.gwt.user.client.Element child = DOM.eventGetToElement(event);
-				if (child != null && !DOM.isOrHasChild(getElement(), child)) {
+				Element child = DOM.eventGetToElement(event);
+				if (child != null && !getElement().isOrHasChild(child)) {
 					if (iPopup.isShowing()) {
 						iPopup.hide();
 						RoomHint.hideHint(); iLastRoomId = null;

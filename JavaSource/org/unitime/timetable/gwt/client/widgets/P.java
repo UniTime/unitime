@@ -19,8 +19,12 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasAllMouseHandlers;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -42,8 +46,14 @@ import com.google.gwt.user.client.ui.HasHTML;
 /**
  * @author Tomas Muller
  */
-public class P extends AbsolutePanel implements HasAllMouseHandlers, HasHTML {
+public class P extends AbsolutePanel implements HasAllMouseHandlers, HasHTML, HasClickHandlers {
 
+	public P(Element element, String... styles) {
+		super(element);
+		addStyleNames(styles);
+		sinkAllMouseEvents();
+	}
+	
 	public P(String... styles) {
 		addStyleNames(styles);
 		sinkAllMouseEvents();
@@ -56,6 +66,7 @@ public class P extends AbsolutePanel implements HasAllMouseHandlers, HasHTML {
 		sinkEvents(Event.ONMOUSEOVER);
 		sinkEvents(Event.ONMOUSEOUT);
 		sinkEvents(Event.ONMOUSEWHEEL);
+		sinkEvents(Event.ONCLICK);
 	}
 	
 	public void addStyleNames(String... styles) {
@@ -91,7 +102,11 @@ public class P extends AbsolutePanel implements HasAllMouseHandlers, HasHTML {
 	    case Event.ONMOUSEWHEEL:
 	    	MouseWheelEvent.fireNativeEvent(event, this);
 	    	break;
+	    case Event.ONCLICK:
+	    	ClickEvent.fireNativeEvent(event, this);
+	    	break;
 		}
+		super.onBrowserEvent(event);
 	}
 	
 	@Override
@@ -173,5 +188,10 @@ public class P extends AbsolutePanel implements HasAllMouseHandlers, HasHTML {
 	@Deprecated
 	public void setHeight(String width) {
 		super.setHeight(width);
+	}
+
+	@Override
+	public HandlerRegistration addClickHandler(ClickHandler handler) {
+		return addHandler(handler, ClickEvent.getType());
 	}
 }

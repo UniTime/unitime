@@ -71,6 +71,7 @@
             <fileset dir="${src.dir}" includes="**/*.java"/>
             <fileset dir="${src.dir}" includes="**/*.gwt.xml"/>
             <fileset dir="${src.dir}" includes="org/unitime/timetable/gwt/resources/**/*.*"/>
+            <fileset dir="${src.dir}" includes="org/unitime/timetable/gwt/mobile/resources/**/*.*"/>
         </copy>
         <replace file="${build.dir}/org/unitime/timetable/util/Constants.java">
             <replacetoken>${build.number}</replacetoken>
@@ -106,10 +107,12 @@
 		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" dir="${temp.dir}">
 			<classpath refid="build.classpath" />
 			<classpath path="${build.dir}"/>
-			<jvmarg value="-Xmx600M"/>
+			<jvmarg value="-Xmx1g"/>
 			<jvmarg value="${macJvmArgs}"/>
 			<jvmarg value="-Dgwt.persistentunitcache=false"/>
 			<arg value="org.unitime.timetable.gwt.UniTime"/>
+			<arg value="-localWorkers"/>
+			<arg value="4"/>
 		</java>
 	</target>
 
@@ -425,11 +428,13 @@
 			<classpath refid="build.classpath" />
 			<classpath path="JavaSource"/>
 			<classpath path="${env.TOMCAT_HOME}/webapps/UniTime/WEB-INF/classes"/>
-			<jvmarg value="-Xmx600M"/>
+			<jvmarg value="-Xmx1g"/>
 			<jvmarg value="${macJvmArgs}"/>
 			<arg value="-war"/>
 			<arg value="${env.TOMCAT_HOME}/webapps/UniTime"/>
 			<arg value="org.unitime.timetable.gwt.UniTime"/>
+			<arg value="-localWorkers"/>
+			<arg value="4"/>
 		</java>
 	</target>
 	
@@ -447,7 +452,7 @@
 			<classpath refid="build.classpath" />
 			<classpath path="JavaSource"/>
 			<classpath path="${env.TOMCAT_HOME}/webapps/UniTime/WEB-INF/classes"/>
-			<jvmarg value="-Xmx600M"/>
+			<jvmarg value="-Xmx1g"/>
 			<jvmarg value="${macJvmArgs}"/>
 			<arg value="-war"/>
 			<arg value="${env.TOMCAT_HOME}/webapps/UniTime"/>
@@ -455,6 +460,8 @@
 			<arg value="org.unitime.timetable.gwt.UniTimeDev"/>
 			<arg value="-style"/>
 			<arg value="DETAILED"/>
+			<arg value="-localWorkers"/>
+			<arg value="4"/>
 		</java>
 	</target>
 

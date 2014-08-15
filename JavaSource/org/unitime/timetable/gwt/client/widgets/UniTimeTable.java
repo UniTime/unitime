@@ -28,12 +28,12 @@ import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 
 import com.google.gwt.aria.client.Roles;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
@@ -322,8 +322,8 @@ public class UniTimeTable<T> extends FlexTable {
 			Element body = getBodyElement();
 			Element a = DOM.getChild(body, r0);
 			Element b = DOM.getChild(body, r1);
-			DOM.removeChild(body, a);
-			DOM.removeChild(body, b);
+			body.removeChild(a);
+			body.removeChild(b);
 			DOM.insertChild(body, b, r0);
 			DOM.insertChild(body, a, r1);
 		}
@@ -549,9 +549,9 @@ public class UniTimeTable<T> extends FlexTable {
 		case Event.ONCLICK:
 			if (isAllowSelection() && hasData) {
 				Element element = DOM.eventGetTarget(event);
-				while (DOM.getElementProperty(element, "tagName").equalsIgnoreCase("div"))
+				while (element.getPropertyString("tagName").equalsIgnoreCase("div"))
 					element = DOM.getParent(element);
-				if (DOM.getElementProperty(element, "tagName").equalsIgnoreCase("td")) {
+				if (element.getPropertyString("tagName").equalsIgnoreCase("td")) {
 					boolean hover = ("unitime-TableRowHover".equals(style) || "unitime-TableRowSelectedHover".equals(style));
 					boolean selected = !("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
 					getRowFormatter().setStyleName(row, "unitime-TableRow" + (selected ? "Selected" : "") + (hover ? "Hover" : ""));
