@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.aria;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseOutEvent;
@@ -31,7 +32,6 @@ import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
@@ -147,7 +147,7 @@ public class ImageButton extends Image implements HasEnabled, Focusable, HasAria
 
 	    if ((event.getTypeInt() & Event.KEYEVENTS) != 0) {
 	    	int type = DOM.eventGetType(event);
-	    	char keyCode = (char) DOM.eventGetKeyCode(event);
+	    	char keyCode = (char) event.getKeyCode();
 	    	switch (type) {
 	    	case Event.ONKEYDOWN:
 	    		if (keyCode == ' ' || keyCode == '\n' || keyCode == '\r') {

@@ -27,7 +27,6 @@
 
 <HTML>
 	<HEAD>
-    	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	    <meta charset="UTF-8"/>
  	   <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
  	   <link type="text/css" rel="stylesheet" href="styles/unitime.css">
@@ -37,12 +36,15 @@
 		<TITLE>UniTime <%=Constants.VERSION%>| Log In</TITLE>
 	</HEAD>
 	<BODY class="bodyMain" onload="document.forms[0].j_username.focus();">
+	<tt:form-factor value="unknown"><span id='UniTimeGWT:DetectFormFactor' style="display: none;"></span></tt:form-factor>
 	
 	<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
 	<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
 	<% } %>
 	
-    <span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;"></span>
+	<tt:form-factor value="desktop">	
+    	<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;"></span>
+	</tt:form-factor>
 	
 <%
 	String errorMsg = null;
@@ -60,86 +62,54 @@
 		errorMsg = (String)request.getParameter("m");
 	}
  %>		
-		<BR>
-		
-		<FORM name="f" action="<c:url value='j_spring_security_check'/>" method="POST">
-			<INPUT type="hidden" name="cs" value="login">
-			<INPUT type="hidden" name="menu" value="<%=request.getParameter("menu") == null ? "" : request.getParameter("menu") %>">
 
-			<TABLE border="0" cellspacing="0" cellpadding="0" align="center" style="margin-top: 30px; margin-bottom: 50px;">
-				<TR>
-					<TD class="H3" align="center" colspan="3">
-						<IMG src="images/timetabling-nocopy.jpg" alt="Timetabling" title="Timetabling Log In" style="margin-bottom: 20px;">
-						<% if (errorMsg!=null)  { %>
-							<div style="color: red; margin-bottom: 10px;">
-							<%= errorMsg %>
-							</div>
-						<% } %>
-						<c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION.message}">
-							<div style="color: red; margin-bottom: 10px;">
-								Authentication failed: <c:out value="${SPRING_SECURITY_LAST_EXCEPTION.message}"/>.
-							</div>
-						</c:if>
-					</TD>
-				</TR>
-
-				<TR>
-					<TD align="left" rowspan="2" valign="middle">
-						<IMG src="images/unitime.png" border="0" align="bottom" alt="UniTime" title="UniTime" hspace="20">
-					</TD>
-					<TD>
-						<DIV align="center" id="login">
-							<DIV class="BrownBG">
-								<DIV class="H40px"></DIV>
-								<DIV>
-									<LABEL>
-										Username:
-									</LABEL>
-								</DIV>
-								<DIV class="txtField">
-									<input type='text' name='j_username' value='<c:if test="${not empty SPRING_SECURITY_LAST_USERNAME}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>' aria-label='Enter user name'/>
-								</DIV>
-								<DIV class="H20px"></DIV>
-								<DIV>
-									<LABEL>
-										Password:
-									</LABEL>
-								</DIV>
-								<DIV class="txtField">
-									<input type='password' name='j_password' aria-label='Enter password'>
-								</DIV>
-							</DIV>
-						</DIV>
-					</TD>
-					<TD rowspan="2" width="150px">
-					</TD>
-				</TR>
-				<TR>
-					<TD><DIV align="center" id="login"><DIV class="bottom"><IMG src="images/login_bg_2.jpg"/><INPUT id="submit" name="submit" type="image" src="images/login_bg_3.jpg" border="0" align="top" value="log in" alt="Submit login information."><IMG src="images/login_bg_4.jpg"/></DIV></DIV></TD>
-				</TR>
-				<c:if test="${SUGGEST_PASSWORD_RESET}">
-						<tr><td class="unitime-Footer" align="center" colspan="3" style="padding-top: 10px; color: #9CB0CE;">
-							<a href='gwt.jsp?page=password&reset=1' class='unitime-FooterLink'>Forgot your password?</a>
-						</td></tr>
-				</c:if>
-			</TABLE>
-		</FORM>
+<FORM name="f" action="<c:url value='j_spring_security_check'/>" method="POST">
+	<INPUT type="hidden" name="cs" value="login">
+	<INPUT type="hidden" name="menu" value="<%=request.getParameter("menu") == null ? "" : request.getParameter("menu") %>">
+			
+	<span class='unitime-Login'>
+		<span class='menu'><span id='UniTimeGWT:MobileMenu'></span></span>
+		<span class='logo'><img src="images/unitime.png" border="0" alt="UniTime"></span>
+		<span class='header'>
+			<div class='h1'>University Timetabling</div>
+			<div class='h2'>Comprehensive Academic Scheduling Solutions</div>
+		</span>
+		<% if (errorMsg!=null)  { %><div class='error'><%= errorMsg %></div><% } %>
+		<c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION.message}">
+			<div class='error'>Authentication failed: <c:out value="${SPRING_SECURITY_LAST_EXCEPTION.message}"/>.</div>
+		</c:if>
+		<span class='login'>
+			<div align="center" id="login">
+				<div class="BrownBG">
+					<div class="H40px"></div>
+					<div><label>Username:</label></div>
+					<div class="txtField"><input type='text' name='j_username' value='<c:if test="${not empty SPRING_SECURITY_LAST_USERNAME}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>' aria-label='Enter user name'/></div>
+					<div class="H20px"></div>
+					<div><label>Password:</label></div>
+					<div class="txtField"><input type='password' name='j_password' aria-label='Enter password'></div>
+				</div>
+				<div class="bottom"><img src="images/login_bg_2.jpg"/><input id="submit" name="submit" type="image" src="images/login_bg_3.jpg" border="0" align="top" value="log in" alt="Submit login information."><img src="images/login_bg_4.jpg"/></div>
+			</div>
+		</span>
+		<c:if test="${SUGGEST_PASSWORD_RESET}">
+			<span class='forgot'><a href='gwt.jsp?page=password&reset=1' class='unitime-FooterLink'>Forgot your password?</a></span>
+		</c:if>
+	</span>
+</FORM>
 		
 		<%@ include file="/initializationError.jspf"%>
 		
-    	<table class="unitime-Footer">
-    		<tr>
-    			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
-    			<td align="center" class="unitime-FooterText"><span id="UniTimeGWT:Version"></span><tt:copy br="false"/></td>
-    		</tr>
-			<tt:hasProperty name="tmtbl.page.disclaimer">
-				<tr>
-    				<td align="center" style="color:#777777;">
-    					<tt:property name="tmtbl.page.disclaimer"/>
-    				</td>
-    			</tr>
-    		</tt:hasProperty>
-    	</table>
+		<span class="unitime-Footer">
+			<span class="row">
+				<span class="cell middle">
+					<span id='UniTimeGWT:Version'></span>
+					<tt:copy br="false"/>
+				</span>
+			</span>
+		</span>
+		<tt:hasProperty name="tmtbl.page.disclaimer">
+			<span class='unitime-Disclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
+		</tt:hasProperty>
 		
 
 		<% if (ApplicationProperties.getProperty("tmtbl.footer.external", "").trim().length()>0) { %>

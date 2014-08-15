@@ -18,9 +18,6 @@
  * 
  --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
-<%@ page import="java.text.NumberFormat" %>
-<%@ page import="org.cpsolver.ifs.util.JProf" %>
-<%@ page import="java.util.Date" %>
 <%@ page import="org.unitime.timetable.util.Constants"%>
 <%@ page import="org.unitime.localization.impl.Localization"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld"	prefix="bean"%>
@@ -49,12 +46,12 @@
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
 	<meta http-equiv="expires" content="0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
     <meta charset="UTF-8"/>
 	<style type="text/css">@import url(scripts/jscalendar/calendar-blue.css);</style>
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
+    <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
     <!--[if IE]>
 	    <link type="text/css" rel="stylesheet" href="styles/unitime-ie.css">
     <![endif]-->
@@ -74,6 +71,7 @@
 	<script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 </head>
 <body class="unitime-Body" <tiles:getAsString name="onLoadFunction" />>
+	<tt:form-factor value="unknown"><span id='UniTimeGWT:DetectFormFactor' style="display: none;"></span></tt:form-factor>
 	<script language="JavaScript" type="text/javascript">
 		if (!String.prototype.trim) {
 			String.prototype.trim = function() {
@@ -84,6 +82,7 @@
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     
+    <tt:form-factor value="desktop">
     <logic:equal name="showMenu" value="true">
     	<tt:notHasProperty name="unitime.menu.style" user="true">
 	    	<span id='UniTimeGWT:DynamicTopMenu' style="display: block; height: 23px;"></span>
@@ -95,42 +94,20 @@
     		<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;"></span>
     	</tt:propertyEquals>
     </logic:equal>
+    </tt:form-factor>
     
     <tt:hasProperty name="tmtbl.global.warn">
-		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqGlobalWarn" style='padding-left:10px;'>
-			<tt:property name="tmtbl.global.warn"/>
-		</td></tr></table>
+    	<div class='unitime-PageWarn'><tt:property name="tmtbl.global.warn"/></div>
 	</tt:hasProperty>
-	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-MessageYellow"/>
-	<tt:page-warning prefix="tmtbl.page.info." style="unitime-MessageBlue"/>
-	<% if (request.getAttribute(Constants.REQUEST_OPEN_URL)!=null) { %>
-		<script language="JavaScript">
-			<% String url = request.getAttribute(Constants.REQUEST_OPEN_URL).toString(); %>
-			window.open('<%=url%>');
-		</script>
-		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr>
-			<td 
-				class="popupBlocked" style='padding-left:10px;'
-				onMouseOver="this.style.backgroundColor='#BBCDD0';"
-				onMouseOut="this.style.backgroundColor='#DFE7F2';">
-				<a class='noFancyLinks' href="<%=request.getAttribute(Constants.REQUEST_OPEN_URL)%>">
-					If the pop-up window was blocked, you can follow this link to retrieve the exported file.
-				</a>
-			</td></tr>
-		</table>
-	<% } %>
-	<% if (session.getAttribute(Constants.REQUEST_WARN)!=null) { %>
-		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqWarn" style='padding-left:10px;'>
-				<%=session.getAttribute(Constants.REQUEST_WARN)%>
-		</td></tr></table>
-	<% session.removeAttribute(Constants.REQUEST_WARN);
-	   } %>
-	<% if (session.getAttribute(Constants.REQUEST_MSSG)!=null) { %>
-		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqMsg" style='padding-left:10px;'>
-				<%=session.getAttribute(Constants.REQUEST_MSSG)%>
-		</td></tr></table>
-	<% session.removeAttribute(Constants.REQUEST_MSSG);
-	   } %>
+	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-PageWarn"/>
+	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage"/>
+	<tt:page-file/>
+	<logic:notEmpty name="<%=Constants.REQUEST_WARN%>" scope="request">
+		<div class='unitime-PageWarn'><bean:write name="<%=Constants.REQUEST_WARN%>" scope="request"/></div>
+	</logic:notEmpty>
+	<logic:notEmpty name="<%=Constants.REQUEST_MSSG%>" scope="request">
+		<div class='unitime-PageMessage'><bean:write name="<%=Constants.REQUEST_MSSG%>" scope="request"/></div>
+	</logic:notEmpty>
 	<tiles:importAttribute name="showSolverWarnings" scope="request"/>
 	<logic:notEqual name="showSolverWarnings" value="none">
 		<tt:solver-warnings><bean:write name="showSolverWarnings"/></tt:solver-warnings>
@@ -140,10 +117,50 @@
 	<tiles:importAttribute/>
 	<tiles:importAttribute name="title" scope="request"/>
 	<tiles:importAttribute name="showNavigation" scope="request"/>
-	<div id="contentMain">
-	<table align="center">
-    <tr>
-    <td valign="top" rowspan="2" id="unitime-SideMenu">
+	
+<tt:form-factor value="mobile">
+	<span class="unitime-MobilePage">
+	<span class="unitime-MobilePageHeader">
+		<span class="row">
+			<logic:equal name="showMenu" value="true">
+				<span id='UniTimeGWT:MobileMenu' class="menu"></span>
+			</logic:equal>
+			<span class="logo"><a href='main.jsp' tabIndex="-1">
+				<tt:form-factor value="phone"><img src="images/unitime-phone.png" border="0"/></tt:form-factor>
+				<tt:form-factor value="tablet"><img src="images/unitime-tablet.png" border="0"/></tt:form-factor>
+			</a></span>
+			<span id='UniTimeGWT:Title' class="title"><bean:write name="title" scope="request"/></span>
+		</span>
+	</span>
+	<logic:equal name="showMenu" value="true">
+		<span class='unitime-MobileHeader'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
+	</logic:equal>
+	<span id='UniTimeGWT:TitlePanel' class="unitime-MobileNavigation"><tiles:insert attribute="header"><tiles:put name="showNavigation" value="${showNavigation}"/></tiles:insert></span>
+	<span id='UniTimeGWT:Content'>
+		<tiles:insert attribute="body">
+			<tiles:put name="body2" value="${body2}"/>
+			<tiles:put name="action2" value="${action2}"/>
+		</tiles:insert>
+	</span>
+	<span class="unitime-MobileFooter">
+		<span class="row">
+			<span class="cell left">
+				<span id='UniTimeGWT:Version'></span>
+				<tt:time-stamp/>
+			</span>
+    		<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
+			<span class="cell middle"><tt:copy/></span>
+			<span class="cell right"><tt:registration/></span>
+		</span>
+	</span>
+	<tt:hasProperty name="tmtbl.page.disclaimer">
+		<span class='unitime-MobileDisclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
+	</tt:hasProperty>
+	</span>
+</tt:form-factor>
+<tt:form-factor value="desktop">
+	<span class="unitime-Page"><span class='row'>
+	<span class='sidebar' id="unitime-SideMenu">
     	<logic:equal name="showMenu" value="true">
     		<tt:propertyEquals name="unitime.menu.style" user="true" value="Stack On Side">
     			<span id='UniTimeGWT:SideStackMenu' style="display: block;" ></span>
@@ -164,7 +181,6 @@
     			<span id='UniTimeGWT:SideTreeMenu' style="display: block;" ></span>
 		    </tt:propertyEquals>
 	    </logic:equal>
-    </td>
     <script language="JavaScript" type="text/javascript">
     	var sideMenu = document.getElementById("unitime-SideMenu").getElementsByTagName("span");
     	if (sideMenu.length > 0) {
@@ -182,77 +198,50 @@
     		}
     	}
     </script>
-    <td valign="top">
-	    <table class="unitime-Page" id="unitime-Page" width="100%">
-	    <tr><td>
-    		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%">
-		   		<tr><td rowspan="3"><a href='main.jsp' tabIndex="-1"><img src="images/unitime.png" border="0"/></a></td>
-		   			<td nowrap="nowrap" width="100%" align="right" valign="middle" class="unitime-Title" style="padding-right: 20px; height: 55px;">
-		   				<span id='UniTimeGWT:Title'><bean:write name="title" scope="request"/></span>
-		   			</td>
-	    		</tr><tr>
-	    			<td width="100%" align="right" valign="middle" nowrap="nowrap" style="height:34px;">
-					    <logic:equal name="showMenu" value="true">
-	    					<span id='UniTimeGWT:Header'></span>
-	    				</logic:equal>
-	    			</td>
-	    		</tr><tr>
-	    			<td width="100%" align="left" valign="middle">
-	    				<span id='UniTimeGWT:TitlePanel'>
-	    					<tiles:insert attribute="header">
-								<tiles:put name="showNavigation" value="${showNavigation}"/>
-							</tiles:insert>
-						</span>
-	    			</td>
-	    		</tr>
-	    	</table>
-	    </td></tr><tr><td style="min-width: 800px">
+	</span>
+    <span class='main'><span class='body' id="unitime-Page">
+    	<span class="unitime-PageHeader" id="unitime-Header">
+    		<span class="row">
+    			<span class="logo"><a href='main.jsp' tabIndex="-1"><img src="images/unitime.png" border="0"/></a></span>
+    			<span class="content">
+					<span id='UniTimeGWT:Title' class="title"><bean:write name="title" scope="request"/></span>
+					<logic:equal name="showMenu" value="true">
+						<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
+					</logic:equal>
+	    			<span id='UniTimeGWT:TitlePanel' class='navigation'>
+	    				<tiles:insert attribute="header">
+	    					<tiles:put name="showNavigation" value="${showNavigation}"/>
+						</tiles:insert>
+					</span>
+				</span>
+			</span>
+		</span>
+		<span class='content'>
         	<span id='UniTimeGWT:Content'>
 	    		<tiles:insert attribute="body">
 					<tiles:put name="body2" value="${body2}"/>
 					<tiles:put name="action2" value="${action2}"/>
 				</tiles:insert>
         	</span>
-	    </td></tr></table>
-    </td></tr><tr><td valign="top">
-    	<table class="unitime-Footer" cellpadding="0" cellspacing="0">
-    		<tr>
-    			<td width="33%" align="left" class="unitime-FooterText"><span id="UniTimeGWT:Version"></span>
-    				<logic:notEmpty scope="request" name="TimeStamp">
-<% 
-		double endTime = JProf.currentTimeSec();
-		double startTime = ((Double)request.getAttribute("TimeStamp")).doubleValue();
-		double diff = endTime - startTime;
-		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMaximumFractionDigits(2);	
-%>
-					Page generated in <%=nf.format(diff)%> sec.
-					</logic:notEmpty>
-    			</td>
-    			<!-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org -->
-    			<td width="34%" align="center" class="unitime-FooterText"><tt:copy/></td>
-    			<td width="33%" align="right" class="unitime-FooterText"><tt:registration/></td>
-    		</tr>
-    		<tt:hasProperty name="tmtbl.page.disclaimer">
-    			<tr>
-    				<td colspan="3" class="unitime-Disclaimer">
-    					<tt:property name="tmtbl.page.disclaimer"/>
-    				</td>
-    			</tr>
-    		</tt:hasProperty>
-    	</table>
-	</td></tr></table>
-	</div>
+        </span>
+    </span><span class='footer' id="unitime-Footer">
+		<span class="unitime-Footer">
+			<span class="row">
+				<span class="cell left">
+					<span id='UniTimeGWT:Version'></span>
+					<tt:time-stamp/>
+				</span>
+    			<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
+				<span class="cell middle"><tt:copy/></span>
+				<span class="cell right"><tt:registration/></span>
+			</span>
+		</span>
+		<tt:hasProperty name="tmtbl.page.disclaimer">
+			<span class='unitime-Disclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
+		</tt:hasProperty>
+	</span>
+</span></span></span>
 	
-<div id="loadingMain" style="visibility:hidden;display:none">
-	<table width="100%" height="100%" align="center" cellpadding="0" cellspacing="0" border="0">
-		<tr>
-			<td valign="middle" align="center">
-				<font class="WelcomeRowHeadNoLine">Loading</font><br>&nbsp;<br>
-				<img align="middle" vspace="5" border="0" src="images/loading.gif">
-			</td>
-		</tr>
-	</table>
-</div>
+</tt:form-factor>
 </body>
 </html:html>

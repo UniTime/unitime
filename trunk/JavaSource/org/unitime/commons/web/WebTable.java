@@ -346,7 +346,7 @@ public class WebTable {
                     + (!suppressRowHighlight ? "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\"" : "") 
                     + ">");
 			if (wtline.getUniqueId()!=null) {
-				sb.append("<A name=\""+wtline.iUniqueId+"\" />");
+				sb.append("<A name=\""+wtline.iUniqueId+"\" ></A>");
 			}
             boolean blank = iBlankWhenSame;
             for (int i = 0; i < line.length; i++) {

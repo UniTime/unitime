@@ -95,20 +95,21 @@
 	
 	function isWideTable(element) {
 		if (element) {
-			if ("TABLE" == element.tagName) {
-				return "unitime-Page" == element.className;
-			} else {
-				return isWideTable(element.parentNode);
-			}
-		} else {
-			return false;
+			if ("unitime-Page" == element.id)
+				return true;
+			if ("TABLE" == element.tagName)
+				return false;
+			return isWideTable(element.parentNode);
 		}
+		return false;
 	}
-
+	
 	function resizeWideTables() {
-		var clientWidth = (document.compatMode=='CSS1Compat'? document.documentElement.clientWidth : document.body.clientWidth);
+		var clientWidth = 12 + (document.compatMode=='CSS1Compat'? document.documentElement.clientWidth : document.body.clientWidth);
 		var scrollWidth = (document.compatMode=='CSS1Compat'? document.documentElement.scrollWidth : document.body.scrollWidth);
 		var mainTable = document.getElementById("unitime-Page");
+		var header = document.getElementById("unitime-Header");
+		var footer = document.getElementById("unitime-Footer");
 		if (mainTable && clientWidth < scrollWidth) {
 			var border = 10 + scrollWidth - mainTable.clientWidth;
 			var newWidth = (clientWidth - border) + "px";
@@ -116,6 +117,10 @@
 			for (var i = 0; i < tables.length; i++)
 				if ("100%" == tables[i].width && isWideTable(tables[i].parentNode)) // && tables[i].clientWidth > clientWidth - border)
 					tables[i].style.width = newWidth;
+			if (header)
+				header.style.width = newWidth;
+			if (footer)
+				footer.style.width = newWidth;
 		}
 	}
 	

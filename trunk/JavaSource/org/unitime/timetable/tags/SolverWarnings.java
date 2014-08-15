@@ -193,8 +193,7 @@ public class SolverWarnings extends BodyTagSupport {
 	
 	private void printWarning(String style, String message, String link) throws IOException {
 		if (message != null && !message.isEmpty()) {
-			pageContext.getOut().println("<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr>");
-			pageContext.getOut().println("<td class=\"" + style + "\" style='padding-left:10px' " +
+			pageContext.getOut().println("<div class=\"" + style + "\"" + 
 					(link == null ? "" : "onMouseOver=\"this.style.backgroundColor='#BBCDD0';\" onMouseOut=\"this.style.backgroundColor='#DFE7F2';\"") +
 					">");
 			if (link != null)
@@ -202,7 +201,7 @@ public class SolverWarnings extends BodyTagSupport {
 			pageContext.getOut().println(message);
 			if (link != null)
 				pageContext.getOut().print("</a>");
-			pageContext.getOut().println("</td></tr></table>");
+			pageContext.getOut().println("</div>");
 		}
 	}
 	
@@ -221,28 +220,28 @@ public class SolverWarnings extends BodyTagSupport {
 				
 				String warn = getSolverWarningCheckSolution();
 				if (warn != null)
-					printWarning("unitime-MessageYellow", warn, null);
+					printWarning("unitime-PageWarn", warn, null);
 				
 				String[] awarn = getCurrentAssignmentWarning();
 				if (awarn != null)
-					printWarning("unitime-MessageBlue", awarn[1], awarn[0]);
+					printWarning("unitime-PageMessage", awarn[1], awarn[0]);
 				
 			} else if ("assignment".equals(body)) {
 				
 				String[] awarn = getCurrentAssignmentWarning();
 				if (awarn != null) {
-					printWarning("unitime-MessageBlue", awarn[1], awarn[0]);
+					printWarning("unitime-PageMessage", awarn[1], awarn[0]);
 				}
 				
 				String[] xwarn = getExamAssignmentWarning(false);
 				if (xwarn != null)
-					printWarning("unitime-MessageBlue", xwarn[1], xwarn[0]);
+					printWarning("unitime-PageMessage", xwarn[1], xwarn[0]);
 				
 			} else if ("exams".equals(body)) {
 				
 				String[] awarn = getExamAssignmentWarning(true);
 				if (awarn != null)
-					printWarning("unitime-MessageBlue", awarn[1], awarn[0]);
+					printWarning("unitime-PageMessage", awarn[1], awarn[0]);
 				
 			}
 			

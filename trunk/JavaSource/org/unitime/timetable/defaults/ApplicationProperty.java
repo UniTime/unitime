@@ -1627,6 +1627,7 @@ public enum ApplicationProperty {
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Main Page: when Internet Explorer is used, show \"the UniTime application may run very slow in Internet Explorer\" warning")
+	@Deprecated
 	ChromeFrameWarning("unitime.warn.chromeframe"),
 	
 	@Parameter("class")

@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
@@ -490,9 +489,7 @@ public class SectioningStatusPage extends Composite {
 				@Override
 				public void onFailure(Throwable caught) {
 					ToolBox.checkAccess(caught);
-					UniTimePageHeader header = (UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0);
-					AcademicSessionSelector session = new AcademicSessionSelector(StudentSectioningPage.Mode.SECTIONING);
-					header.setSessionSelector(session);
+					AcademicSessionSelector session = new AcademicSessionSelector(UniTimePageHeader.getInstance().getRight(), StudentSectioningPage.Mode.SECTIONING);
 					session.addAcademicSessionChangeHandler(new AcademicSessionSelector.AcademicSessionChangeHandler() {
 						@Override
 						public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
