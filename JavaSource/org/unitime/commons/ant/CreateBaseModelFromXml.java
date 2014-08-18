@@ -20,11 +20,8 @@
 package org.unitime.commons.ant;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Hashtable;
@@ -64,25 +61,9 @@ public class CreateBaseModelFromXml extends Task {
 	private EntityResolver iEntityResolver = new EntityResolver() {
 	    public InputSource resolveEntity(String publicId, String systemId) {
 	        if (publicId.equals("-//Hibernate/Hibernate Mapping DTD 3.0//EN")) {
-	        	InputStream stream = null;
-	        	if (iSource == null) {
-		            stream = getClass().getClassLoader().getResourceAsStream("hibernate-mapping-3.0.dtd");
-	        	} else {
-	        		try {
-	        			stream = new FileInputStream(iSource + File.separator + "hibernate-mapping-3.0.dtd");
-	        		} catch (FileNotFoundException e) {}
-	        	}
-	        	return (stream == null ? null : new InputSource(stream));
+	        	return new InputSource(getClass().getClassLoader().getResourceAsStream("org/hibernate/hibernate-mapping-3.0.dtd"));
 	        } else if (publicId.equals("-//Hibernate/Hibernate Configuration DTD 3.0//EN")) {
-	        	InputStream stream = null;
-	        	if (iSource == null) {
-		            stream = getClass().getClassLoader().getResourceAsStream("hibernate-configuration-3.0.dtd");
-	        	} else {
-	        		try {
-	        			stream = new FileInputStream(iSource + File.separator + "hibernate-configuration-3.0.dtd");
-	        		} catch (FileNotFoundException e) {}
-	        	}
-	        	return (stream == null ? null : new InputSource(stream));
+	        	return new InputSource(getClass().getClassLoader().getResourceAsStream("org/hibernate/hibernate-configuration-3.0.dtd"));
 	        }
 	        return null;
 	    }

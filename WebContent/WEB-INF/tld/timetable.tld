@@ -26,6 +26,7 @@
 	<tlib-version>1.0</tlib-version>
 	<jsp-version>1.2</jsp-version>
 	<short-name>Timetable Custom Tags</short-name> 
+	<uri>http://www.unitime.org/tags-custom</uri>
   	<tag>
 		<name>back</name>
 		<tag-class>org.unitime.timetable.tags.BackButton</tag-class>

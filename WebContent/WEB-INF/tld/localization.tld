@@ -26,6 +26,7 @@
 	<tlib-version>1.0</tlib-version>
 	<jsp-version>1.2</jsp-version>
 	<short-name>Localization Tags</short-name>
+	<uri>http://www.unitime.org/tags-localization</uri>
   	<tag>
 		<name>bundle</name>
 		<tag-class>org.unitime.localization.impl.BundleTag</tag-class>

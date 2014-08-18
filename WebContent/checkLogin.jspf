@@ -17,7 +17,7 @@
  * 
 --%>
 <%@ page import="org.unitime.timetable.util.AccessDeniedException"%>
-<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <tt:session-context/>
 <%
 	if (!sessionContext.isAuthenticated()) {
