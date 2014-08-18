@@ -18,7 +18,7 @@
  --%>
 <%@ page language="java" %>
 <%@ page errorPage="../error.jsp" %>
-<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <%@ include file="../checkAdmin.jspf" %>
 
 	<TABLE align="left" width="100%">

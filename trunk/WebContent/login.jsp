@@ -21,9 +21,9 @@
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
 <%@page import="org.cpsolver.ifs.util.JProf"%>
 <%@page import="java.text.NumberFormat"%>
-<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
-<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
-<%@ taglib prefix='c' uri='http://java.sun.com/jstl/core_rt' %>
+<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
+<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
+<%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 
 <HTML>
 	<HEAD>

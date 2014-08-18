@@ -17,11 +17,11 @@
  * 
 --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp"%>
-<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
-<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
-<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
-<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
-<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
+<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
+<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
+<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <loc:bundle name="CourseMessages">

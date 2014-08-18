@@ -18,9 +18,9 @@
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="org.unitime.timetable.model.Roles"%>
-<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%> 
-<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
-<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
+<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%> 
+<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
+<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
 <html:form action="selectPrimaryRole.do" target="_top">
 	<html:hidden property="authority"/>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">

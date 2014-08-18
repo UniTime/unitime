@@ -125,7 +125,6 @@
 				<include name="*.xml" />
 				<include name="*.dtd" />
 				<include name="**/*.properties" />
-				<include name="solver.key" />
 				<include name="**/*.ftl" />
 			</fileset>
 			<manifest>

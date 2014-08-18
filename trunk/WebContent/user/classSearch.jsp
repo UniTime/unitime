@@ -22,12 +22,12 @@
 <%@ page import="org.unitime.timetable.model.Department" %>
 <%@ page import="org.unitime.timetable.model.ItypeDesc" %>
 <%@page import="org.unitime.timetable.model.StudentClassEnrollment"%>
-<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%>
-<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
-<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
-<%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles"%>
-<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
-<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%>
+<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
+<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
+<%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles"%>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
+<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 <%
