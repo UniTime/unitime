@@ -29,21 +29,11 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.googlecode.mgwt.ui.client.MGWT;
-import com.googlecode.mgwt.ui.client.MGWTSettings;
 
 /**
  * @author Tomas Muller
  */
 public class MobileClient extends Client {
-	@Override
-	public void onModuleLoad() {
-		MGWTSettings settings = MGWTSettings.getAppSetting();
-		settings.setPreventScrolling(false);
-		MGWT.applySettings(settings);
-		
-		super.onModuleLoad();
-	}
 
 	@Override
 	public void onModuleLoadDeferred() {

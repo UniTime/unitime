@@ -28,5 +28,8 @@
  	</replace-with>
  	<replace-with class="org.unitime.timetable.gwt.client.page.PageLabelImpl">
  		<when-type-is class="org.unitime.timetable.gwt.client.page.PageLabelDisplay" />
- 	</replace-with> 	
+ 	</replace-with>
+ 	<replace-with class="org.unitime.timetable.gwt.client.page.UniTimeNotifications.Implementation">
+ 		<when-type-is class="org.unitime.timetable.gwt.client.page.UniTimeNotifications.Display" />
+ 	</replace-with>
  </module>
