@@ -16,6 +16,6 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  --%>
-<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
+<%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
 
 <tr><td align="right"> &nbsp;<br/></td></tr>

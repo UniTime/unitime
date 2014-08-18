@@ -20,7 +20,7 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
 <%@ page import="org.unitime.timetable.util.Constants"%>
-<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <tt:session-context/>
 <HTML>
 	<HEAD>

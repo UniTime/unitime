@@ -22,7 +22,7 @@
 <%@ page import="org.unitime.timetable.model.Class_" %>
 <%@ page import="org.unitime.timetable.model.DatePattern" %>
 <%@ page import="org.unitime.timetable.model.dao.DatePatternDAO" %>
-<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <tt:session-context/>
 <%

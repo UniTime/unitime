@@ -21,7 +21,7 @@
 <%@ page import="org.hibernate.SessionFactory" %>
 <%@ page import="org.unitime.timetable.model.dao._RootDAO" %>
 <%@ page import="org.unitime.commons.hibernate.stats.StatsProvider" %>
-<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <sec:authorize access="hasPermission(null, null, 'HibernateStatistics')">
