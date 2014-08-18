@@ -147,23 +147,44 @@
 	z-index: 1500000;	
 }
 
-.unitime-MobileNotification {
-	position: absolute;
+.unitime-MobileNotifications {
+	display: block;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	z-index: 5000000;
+}
+
+.unitime-MobileNotifications .container {
+	display: block;
+}
+
+.unitime-MobileNotifications .slideup {
+	-webkit-animation: slideupfrombottom 1s ease-in-out;
+}
+
+
+@-webkit-keyframes slideupfrombottom {
+  from { -webkit-transform: translateY(100%); }
+  to { -webkit-transform: translateY(0); }
+}
+
+.unitime-MobileNotifications .notification {
 	font-size: small;
 	font-family: arial;
 	overflow: hidden;
 	padding: 10px;
 	color: #000000;
-	z-index: 5000000;
-	right: 0px;
+	width: 100%;
 	vertical-align: middle;
 	text-align: center;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	cursor: pointer;
+	overflow-y: hidden;
 }
 
-.unitime-MobileNotificationInfo {
+.unitime-MobileNotifications .info {
 	background-image: linear-gradient(bottom, rgb(138,169,230) 0%, rgb(232,240,255) 100%);
 	background-image: -o-linear-gradient(bottom, rgb(138,169,230) 0%, rgb(232,240,255) 100%);
 	background-image: -moz-linear-gradient(bottom, rgb(138,169,230) 0%, rgb(232,240,255) 100%);
@@ -185,7 +206,7 @@
   	background-color: rgb(138,169,230);
 }
 
-.unitime-MobileNotificationWarning {
+.unitime-MobileNotifications .warn {
 	background-image: linear-gradient(bottom, rgb(209,179,111) 0%, rgb(250,242,208) 100%);
 	background-image: -o-linear-gradient(bottom, rgb(209,179,111) 0%, rgb(250,242,208) 100%);
 	background-image: -moz-linear-gradient(bottom, rgb(209,179,111) 0%, rgb(250,242,208) 100%);
@@ -207,7 +228,7 @@
   	background-color: rgb(209,179,111);
 }
 
-.unitime-MobileNotificationError {
+.unitime-MobileNotifications .error {
 	background-image: linear-gradient(bottom, rgb(209,138,138) 0%, rgb(247,225,225) 100%);
 	background-image: -o-linear-gradient(bottom, rgb(209,138,138) 0%, rgb(247,225,225) 100%);
 	background-image: -moz-linear-gradient(bottom, rgb(209,138,138) 0%, rgb(247,225,225) 100%);
