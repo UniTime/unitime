@@ -76,10 +76,15 @@ public class UniTimePageHeader implements PageHeaderDisplay {
 			@Override
 			public void onSuccess(SessionInfoInterface result) {
 				if (getRight().isPreventDefault()) return;
-				getRight().setText(result.getSession());
-				getRight().setInfo(result);
-				getRight().setHint(MESSAGES.hintClickToChangeSession());
-				getRight().setUrl("selectPrimaryRole.do?list=Y");
+				if (result == null || result.getSession() == null) {
+					getRight().setVisible(false);	
+				} else {
+					getRight().setText(result.getSession());
+					getRight().setInfo(result);
+					getRight().setHint(MESSAGES.hintClickToChangeSession());
+					getRight().setUrl("selectPrimaryRole.do?list=Y");
+					getRight().setVisible(true);	
+				}
 			}
 			@Override
 			public void onFailure(Throwable caught) {
@@ -95,13 +100,18 @@ public class UniTimePageHeader implements PageHeaderDisplay {
 			@Override
 			public void onSuccess(UserInfoInterface result) {
 				if (getMiddle().isPreventDefault()) return;
-				getMiddle().setText(result.getName());
-				getMiddle().setHint(result.getRole());
-				getMiddle().setInfo(result);
-				if (result.isChameleon()) {
-					getMiddle().setUrl("chameleon.do");
+				if (result == null || result.getName() == null) {
+					getMiddle().setVisible(false);
 				} else {
-					getMiddle().setUrl("selectPrimaryRole.do?list=Y");
+					getMiddle().setText(result.getName());
+					getMiddle().setHint(result.getRole());
+					getMiddle().setInfo(result);
+					if (result.isChameleon()) {
+						getMiddle().setUrl("chameleon.do");
+					} else {
+						getMiddle().setUrl("selectPrimaryRole.do?list=Y");
+					}
+					getMiddle().setVisible(true);
 				}
 			}
 			@Override
@@ -119,7 +129,7 @@ public class UniTimePageHeader implements PageHeaderDisplay {
 			public void onSuccess(SolverInfoInterface result) {
 				if (getLeft().isPreventDefault()) return;
 				try {
-					if (result != null) {
+					if (result != null && result.getSolver() != null) {
 						getLeft().setText(result.getSolver());
 						getLeft().setHint(result.getType());
 						getLeft().setInfo(result);
