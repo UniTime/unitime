@@ -22,11 +22,12 @@ package org.unitime.timetable.onlinesectioning.basic;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
-
 
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
@@ -43,7 +44,6 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
-
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -376,8 +376,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			action.addEnrollment(stored);
 			
 			if (iMessages != null) {
+				Set<String> added = new HashSet<String>();
 				for (EnrollmentFailure f: iMessages) {
-					ret.addMessage(MSG.clazz(f.getCourse().getSubjectArea(), f.getCourse().getCourseNumber(), f.getSection().getSubpartName(), f.getSection().getName(f.getCourse().getCourseId())) + ": " + f.getMessage());
+					String message = MSG.clazz(f.getCourse().getSubjectArea(), f.getCourse().getCourseNumber(), f.getSection().getSubpartName(), f.getSection().getName(f.getCourse().getCourseId())) + ": " + f.getMessage();
+					if (added.add(message))
+						ret.addMessage(message);
 				}
 			}
 			
