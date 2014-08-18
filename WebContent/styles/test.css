@@ -17,45 +17,51 @@
  * 
 */
 
-BODY {
+.unitime-Body {
 	background-color: #a37b2c;
 }
 
-.unitime-Page {
+.unitime-Page .body {
 	border: 1px solid #101010;
 }
 
-.unitime-Page {
-	border: 1px solid #101010;
+.unitime-MobilePage {
+	background-color: #ffffff;
 }
 
 .unitime-Footer {
-	border: 1px solid #101010;
-	background-color: white;
+	color: #111;
 }
 
-.unitime-Footer td {
-	padding-left: 3px;
-	padding-right: 3px;
-	padding-bottom: 2px;
-	padding-top: 2px;
+.unitime-Footer .row {
+	color: #101010;
 }
 
-.unitime-FooterText {
+.unitime-MobileFooter {
+	color: #111;
+	background-color: #a37b2c;
+}
+
+.unitime-MobileFooter .row {
 	color: #101010;
 }
 
 a.unitime-FooterLink:link,a.unitime-FooterLink:visited,a.unitime-FooterLink:active,a.unitime-FooterLink:hover {
-	color: #a37b2c;
+	color: #111;
 }
 
 .unitime-Disclaimer {
-	color: #999;
-	background-color: black;
-	font-size: 9pt;
 	border-top: solid 5px #a37b2c;
-	margin: -1px;
-	white-space: nowrap;
+	color: #999;
+	padding: 2px;
+	background-color: black;
+}
+
+.unitime-MobileDisclaimer {
+	border-top: solid 5px #a37b2c;
+	color: #999;
+	padding: 2px;
+	background-color: black;
 }
 
 .unitime-MenuHeaderLabel {
