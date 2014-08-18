@@ -280,7 +280,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 			
 			// Next, try to enroll student into the given courses
-			Map<String, XSection> id2section = new HashMap<String, XSection>();
+			Map<String, List<XSection>> id2section = new HashMap<String, List<XSection>>();
 			Map<String, XCourse> id2course = new HashMap<String, XCourse>();
 			Set<String> added = new HashSet<String>();
 			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(getBannerTerm(session), getBannerId(student), pin);
@@ -292,18 +292,26 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					// offering is locked, make no changes
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
-						if (registered.remove(id)) {
+						if (registered.remove(id) || added.contains(id)) {
 							// no change to this section: keep the enrollment
-							if (added.add(id)) {
-								req.add(id);
-								id2section.put(id, section);
-								id2course.put(id, course);
+							if (added.add(id)) req.add(id);
+							List<XSection> sections = id2section.get(id);
+							if (sections == null) {
+								sections = new ArrayList<XSection>();
+								id2section.put(id, sections);
 							}
+							sections.add(section);
+							id2course.put(id, course);
 						} else {
 							// student had a different section: just put warning on the new enrollment
 							fails.add(new EnrollmentFailure(course, section, MESSAGES.courseLocked(course.getCourseName()), false));
 							checked.add(id);
-							id2section.put(id, section);
+							List<XSection> sections = id2section.get(id);
+							if (sections == null) {
+								sections = new ArrayList<XSection>();
+								id2section.put(id, sections);
+							}
+							sections.add(section);
 							id2course.put(id, course);
 						}
 					}
@@ -312,11 +320,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
 						registered.remove(id);
-						if (added.add(id)) {
-							req.add(id);
-							id2section.put(id, section);
-							id2course.put(id, course);
+						if (added.add(id)) req.add(id);
+						List<XSection> sections = id2section.get(id);
+						if (sections == null) {
+							sections = new ArrayList<XSection>();
+							id2section.put(id, sections);
 						}
+						sections.add(section);
+						id2course.put(id, course);
 					}
 				}
 			}
@@ -332,7 +343,12 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 								for (XSubpart s: f.getSubparts())
 									for (XSection x: s.getSections())
 										if (id.equals(x.getExternalId(c.getCourseId()))) {
-											id2section.put(id, x);
+											List<XSection> sections = id2section.get(id);
+											if (sections == null) {
+												sections = new ArrayList<XSection>();
+												id2section.put(id, sections);
+											}
+											sections.add(x);
 											id2course.put(id, offering.getCourse(c.getCourseId()));
 										}
 						}
@@ -386,15 +402,22 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
 							.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
 							.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
-						if (error != null)
-							fails.add(new EnrollmentFailure(id2course.get(id), id2section.get(id), error, true));
+						if (error != null) {
+							XCourse course = id2course.get(id);
+							if (course != null)
+								for (XSection section: id2section.get(id))
+									fails.add(new EnrollmentFailure(course, section, error, true));
+						}
 						continue;
 					}
 					if ("Deleted".equals(reg.statusDescription)) {
 						// skip deleted enrollments
 						continue;
 					}
-					fails.add(new EnrollmentFailure(id2course.get(id), id2section.get(id), error == null ? added.contains(id) ? "Enrollment failed." : "Drop failed." : error, "Registered".equals(reg.statusDescription)));
+					XCourse course = id2course.get(id);
+					if (course != null)
+						for (XSection section: id2section.get(id))
+							fails.add(new EnrollmentFailure(course, section, error == null ? added.contains(id) ? "Enrollment failed." : "Drop failed." : error, "Registered".equals(reg.statusDescription)));
 				}
 				helper.getAction().addEnrollment(external);
 			}
@@ -404,8 +427,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					if (reg.failedCRN != null) {
 						String id = reg.failedCRN;
 						XCourse course = id2course.get(id);
-						XSection section = id2section.get(id);
-						fails.add(new EnrollmentFailure(course, section, reg.failure == null ? "Enrollment failed." : reg.failure, false));
+						if (course != null)
+							for (XSection section: id2section.get(id))
+								fails.add(new EnrollmentFailure(course, section, reg.failure == null ? "Enrollment failed." : reg.failure, false));
 						checked.add(id);
 					} else {
 						if (reg.failure != null)
