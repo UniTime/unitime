@@ -23,153 +23,107 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.unitime.timetable.gwt.client.Client;
-import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
-import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications.NotificationType;
+import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
 
-import com.google.gwt.animation.client.Animation;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.Window.ScrollEvent;
-import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasText;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
  */
 public class MobileNotifications implements UniTimeNotifications.Display {
 	protected List<Notification> iNotifications = new ArrayList<Notification>();
-	protected Timer iMoveTimer = null;
-	protected Animation iAnimation;
+	protected P iPanel = new P("unitime-MobileNotifications");
 	
 	public MobileNotifications() {
-		Window.addResizeHandler(new ResizeHandler() {
-			@Override
-			public void onResize(ResizeEvent event) {
-				delayedMove();
-			}
-		});
-		Window.addWindowScrollHandler(new Window.ScrollHandler() {
-			@Override
-			public void onWindowScroll(ScrollEvent event) {
-				delayedMove();
-			}
-		});
-		Client.addGwtPageChangedHandler(new GwtPageChangedHandler() {
-			@Override
-			public void onChange(GwtPageChangeEvent event) {
-				delayedMove();
-			}
-		});
-		iMoveTimer = new Timer() {
-			@Override
-			public void run() {
-				move();
-			}
-		};
-		iAnimation = new NotificationAnimation();		
+		RootPanel.get().add(iPanel);
+		iPanel.addStyleName("unitime-MobileNotifications");
+		iPanel.getElement().getStyle().setPosition(Position.FIXED);
 	}
 	
-	protected void addNotification(final Notification notification) {
-		RootPanel.get().add(notification, Window.getScrollLeft(), Window.getScrollTop() + Window.getClientHeight());
-		iAnimation.cancel();
-		for (Iterator<Notification> i = iNotifications.iterator(); i.hasNext(); ) {
-			Notification n = i.next();
-			if (n.equals(notification)) {
-				n.hide(); i.remove();
-			}
-		}
-		move();
-		iNotifications.add(0, notification);
-		iAnimation.run(1000);
-		Timer timer = new Timer() {
-			@Override
-			public void run() {
-				notification.hide();
-				iNotifications.remove(notification);
-			}
-		};
-		notification.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				notification.hide();
-				iNotifications.remove(notification);
-				move();
-			}
-		});
-		timer.schedule(10000);
-	}
-	
-	protected void move() {
-		int height = 0;
-		iAnimation.cancel();
-		for (HTML notification: iNotifications) {
-			height += notification.getElement().getClientHeight();
-			notification.getElement().getStyle().setProperty("left", Window.getScrollLeft() + "px");
-			notification.getElement().getStyle().setProperty("top", (Window.getScrollTop() + Window.getClientHeight() - height) + "px");
-		}
-	}
-	
-	protected void delayedMove() {
-		if (!iNotifications.isEmpty())
-			iMoveTimer.schedule(100);
-	}
-	
-
 	@Override
 	public void addNotification(String html, NotificationType type) {
 		switch (type) {
 		case ERROR:
-			addNotification(new Notification(html, "unitime-MobileNotificationError"));
+			addNotification(new Notification(html, "error"));
 			break;
 		case WARN:
-			addNotification(new Notification(html, "unitime-MobileNotificationWarning"));
+			addNotification(new Notification(html, "warn"));
 			break;
 		case INFO:
-			addNotification(new Notification(html, "unitime-MobileNotificationInfo"));
+			addNotification(new Notification(html, "info"));
 			break;
 		}
 	}
 	
-	private class NotificationAnimation extends Animation {
-		@Override
-		protected void onUpdate(double progress) {
-			if (iNotifications.isEmpty()) return;
-			int height = - (int) Math.round((1.0 - progress) * (iNotifications.get(0).getElement().getClientHeight()));
-			for (Notification notification: iNotifications) {
-				height += notification.getElement().getClientHeight();
-				notification.getElement().getStyle().setProperty("left", Window.getScrollLeft() + "px");
-				notification.getElement().getStyle().setProperty("top", (Window.getScrollTop() + Window.getClientHeight() - height) + "px");
+	protected void populate(String style) {
+		iPanel.clear();
+		if (!iNotifications.isEmpty()) {
+			P panel = new P("container", style);
+			for (Notification n: iNotifications) {
+				panel.add(n.asWidget());
 			}
+			iPanel.add(panel);
 		}
 	}
 	
-	public static class Notification extends HTML {
+	protected void addNotification(final Notification notification) {
+		for (Iterator<Notification> i = iNotifications.iterator(); i.hasNext(); ) {
+			Notification n = i.next();
+			if (n.getText().equals(notification.getText())) {
+				i.remove();
+			}
+		}
+		iNotifications.add(notification);
+		populate("slideup");
+		
+		Timer timer = new Timer() {
+			@Override
+			public void run() {
+				iNotifications.remove(notification);
+				populate(null);
+			}
+		};
+		timer.schedule(10000);
+	}
+
+	public class Notification implements IsWidget, HasText, HasStyleName {
+		String iText, iStyle;
 		Notification(String text, String style) {
-			super(text);
-			setStyleName("unitime-MobileNotification");
-			addStyleName(style);
+			iText = text; iStyle = style;
 		}
 		
-		public String toString() { return getHTML(); }
-		public int hashCode() { return getHTML().hashCode(); }
-		public boolean equals(Object o) {
-			if (o == null || !(o instanceof Notification)) return false;
-			return ((Notification)o).getHTML().equals(getHTML());
-		}
+		@Override
+		public String getStyleName() { return iStyle; }
+
+		@Override
+		public String getText() { return iText; }
+
+		@Override
+		public void setText(String text) { iText = text; }
 		
-		public void hide() {
-			RootPanel.get().remove(this);
+		@Override
+		public Widget asWidget() {
+			final P p = new P("notification", getStyleName());
+			p.setHTML(getText());
+			p.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					iNotifications.remove(Notification.this);
+					populate(null);
+				}
+			});
+			return p;
 		}
-		
-		public void show() {
-			RootPanel.get().add(this, Window.getScrollLeft(), Window.getScrollTop() + Window.getClientHeight());
-		}
+
 	}
 }
