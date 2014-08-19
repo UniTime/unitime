@@ -29,6 +29,9 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.googlecode.mgwt.ui.client.MGWT;
+import com.googlecode.mgwt.ui.client.MGWTSettings;
+import com.googlecode.mgwt.ui.client.MGWTSettings.ViewPort;
 
 /**
  * @author Tomas Muller
@@ -37,6 +40,19 @@ public class MobileClient extends Client {
 
 	@Override
 	public void onModuleLoadDeferred() {
+	    ViewPort viewPort = new MGWTSettings.ViewPort();
+	    viewPort.setWidthToDeviceWidth();
+	    viewPort.setUserScaleAble(true).setMinimumScale(0.25).setInitialScale(1.0).setMaximumScale(1.0);
+
+	    MGWTSettings settings = new MGWTSettings();
+	    settings.setViewPort(viewPort);
+	    settings.setFullscreen(true);
+	    settings.setPreventScrolling(false);
+	    settings.setIconUrl("images/unitime-phone.png");
+	    settings.setFixIOS71BodyBug(true);
+	    
+		MGWT.applySettings(settings);
+		
 		super.onModuleLoadDeferred();
 		
 		// load components

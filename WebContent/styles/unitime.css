@@ -161,6 +161,13 @@
 	margin: auto;
 }
 
+.unitime-Disclaimer A.link:link,A.link:visited,A.link:active,A.link:hover {
+	color: #777777;
+    text-decoration: none;
+    background-color : transparent;
+}
+
+
 .unitime-PrintIcon {
 	cursor: pointer;	
 }

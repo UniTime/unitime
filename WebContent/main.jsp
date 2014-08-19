@@ -62,7 +62,7 @@
   	
 <tt:form-factor value="mobile">
 	<span class="unitime-MobilePage">
-	<span style="display:block;background-image:url('images/logofaded.jpg');backbackground-repeat:no-repeat;background-position: center;">
+	<span class='body' style="display:block;background-image:url('images/logofaded.jpg');backbackground-repeat:no-repeat;background-position: center;">
 	<span class="unitime-MobilePageHeader">
 		<span class="row">
 			<span id='UniTimeGWT:MobileMenu' class="menu"></span>

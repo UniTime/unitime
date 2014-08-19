@@ -1395,10 +1395,9 @@ div.suggestionList_element_on {
 #login .BrownBG {
 	height: 140px;
 	background: url(../images/login_bg.jpg) no-repeat scroll left top;
-	text-align: center;
-	vertical-align: middle;
 	width: 354px;
-	margin: 0px;
+	margin-left: auto;
+	margin-right: auto;
 }
 #login label {
 	font: bold 15px Verdana, Arial, Helvetica, sans-serif;
@@ -1429,12 +1428,9 @@ div.suggestionList_element_on {
 }
 #login .bottom {
 	height: 46px;
-	width: 384px;
-	background: none;
-	padding: 0px;
-	margin: 0px;
-	border: 0px solid white;
-	vertical-align: top;
+	width: 354px;
+	margin-left: auto;
+	margin-right: auto;
 }
 #login .bottom input{
 	padding: 0px;

@@ -63,7 +63,7 @@
 	<tt:offering-locks/>
   	
 <tt:form-factor value="mobile">
-	<span class="unitime-MobilePage">
+	<span class="unitime-MobilePage"><span class='body'>
 	<span class="unitime-MobilePageHeader">
 		<span class="row">
 			<span id='UniTimeGWT:MobileMenu' class="menu"></span>
@@ -79,8 +79,8 @@
 		<span id="UniTimeGWT:Loading" class="unitime-PageLoading">
 			Page is loading, please wait ...
 		</span>
-	    <span id='UniTimeGWT:Body'></span>
-	<span class="unitime-MobileFooter">
+	    <span id='UniTimeGWT:Body' class="content"></span>
+	</span><span class="unitime-MobileFooter">
 		<span class="row">
 			<span class="cell left">
 				<span id='UniTimeGWT:Version'></span>
