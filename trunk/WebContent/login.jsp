@@ -33,7 +33,7 @@
  	   <link type="text/css" rel="stylesheet" href="styles/timetabling.css">
 		<link rel="shortcut icon" href="images/timetabling.ico" />
 	    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
-		<TITLE>UniTime <%=Constants.VERSION%>| Log In</TITLE>
+		<TITLE>UniTime <%=Constants.VERSION%></TITLE>
 	</HEAD>
 	<BODY class="bodyMain" onload="document.forms[0].j_username.focus();">
 	<tt:form-factor value="unknown"><span id='UniTimeGWT:DetectFormFactor' style="display: none;"></span></tt:form-factor>
@@ -79,7 +79,7 @@
 			<div class='error'>Authentication failed: <c:out value="${SPRING_SECURITY_LAST_EXCEPTION.message}"/>.</div>
 		</c:if>
 		<span class='login'>
-			<div align="center" id="login">
+			<div id="login">
 				<div class="BrownBG">
 					<div class="H40px"></div>
 					<div><label>Username:</label></div>

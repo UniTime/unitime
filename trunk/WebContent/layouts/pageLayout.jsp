@@ -114,6 +114,7 @@
 	
 <tt:form-factor value="mobile">
 	<span class="unitime-MobilePage">
+	<span class="body">
 	<span class="unitime-MobilePageHeader">
 		<span class="row">
 			<logic:equal name="showMenu" value="true">
@@ -130,11 +131,14 @@
 		<span class='unitime-MobileHeader'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
 	</logic:equal>
 	<span id='UniTimeGWT:TitlePanel' class="unitime-MobileNavigation"><tiles:insert attribute="header"><tiles:put name="showNavigation" value="${showNavigation}"/></tiles:insert></span>
-	<span id='UniTimeGWT:Content'>
-		<tiles:insert attribute="body">
-			<tiles:put name="body2" value="${body2}"/>
-			<tiles:put name="action2" value="${action2}"/>
-		</tiles:insert>
+	<span id="unitime-Page" class="content">
+		<span id='UniTimeGWT:Content'>
+			<tiles:insert attribute="body">
+				<tiles:put name="body2" value="${body2}"/>
+				<tiles:put name="action2" value="${action2}"/>
+			</tiles:insert>
+		</span>
+	</span>
 	</span>
 	<span class="unitime-MobileFooter">
 		<span class="row">
