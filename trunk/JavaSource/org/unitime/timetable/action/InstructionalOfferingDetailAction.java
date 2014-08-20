@@ -406,7 +406,7 @@ public class InstructionalOfferingDetailAction extends Action {
         	for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
         		int limit = 0;
         		for (Class_ clazz: subpart.getClasses()) {
-        			limit += clazz.getExpectedCapacity();
+        			limit += (clazz.getMaxExpectedCapacity() == null ? clazz.getExpectedCapacity() : clazz.getMaxExpectedCapacity());
         		}
         		if (subpartLimit == null || subpartLimit > limit) subpartLimit = limit;
         	}
