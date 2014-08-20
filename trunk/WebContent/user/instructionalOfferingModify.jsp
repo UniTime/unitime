@@ -185,11 +185,34 @@
 			</TD>
 		</TR>
 		</logic:messagesPresent>
-		<TR>
-			<TD align="left" colspan="2">
-				<loc:message name="propertyConfigurationLimit"/>&nbsp;&nbsp;&nbsp;<html:text property="instrOffrConfigLimit" maxlength="5" size="5"/>
-			</TD>
-		</TR>
+		
+		<html:hidden property="instrOffrConfigUnlimitedReadOnly"/>
+		<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimitedReadOnly" value="true">
+			<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+				<TR><TD align="left" colspan="2">
+					<loc:message name="propertyUnlimitedEnrollment"/>&nbsp;&nbsp;&nbsp;<IMG border='0' title='<%=MSG.titleUnlimitedEnrollment()%>' alt='true' align='middle' src='images/tick.gif'>
+				</TD></TR>
+			</logic:equal>
+			<html:hidden property="instrOffrConfigUnlimited"/>
+		</logic:equal>
+		<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimitedReadOnly" value="true">
+			<TR>
+				<TD align="left" colspan="2">
+						<loc:message name="propertyUnlimitedEnrollment"/>&nbsp;&nbsp;&nbsp;<html:checkbox property="instrOffrConfigUnlimited"
+							onclick="document.forms[0].elements['hdnOp'].value='unlimited';document.forms[0].submit();"/>
+				</TD>
+			</TR>
+		</logic:notEqual>
+		<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+			<html:hidden property="instrOffrConfigLimit"/>
+		</logic:equal>
+		<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+			<TR>
+				<TD align="left" colspan="2">
+					<loc:message name="propertyConfigurationLimit"/>&nbsp;&nbsp;&nbsp;<html:text property="instrOffrConfigLimit" maxlength="5" size="5"/>
+				</TD>
+			</TR>
+		</logic:notEqual>
 		<TR>
 			<TD align="left" colspan="2">
 			<table align="left" border="0" cellspacing="0" cellpadding="1">
@@ -209,7 +232,12 @@
 									</td> 
 									<td align="right" nowrap>
 										<div id='<%= "subtotal1Values" + ctr %>'>
-											<bean:write name="<%=frmName%>" property='<%= "subtotalValues[" + ctr + "]" %>'/>
+											<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+												&infin;										
+											</logic:equal>
+											<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+												<bean:write name="<%=frmName%>" property='<%= "subtotalValues[" + ctr + "]" %>'/>
+											</logic:notEqual>
 										</div>
 									</td>
 									<logic:equal name="<%=frmName%>" property="displayDisplayInstructors" value="true" >
@@ -255,74 +283,82 @@
 			<TD colspan="2" align="left">
 				<TABLE align="left" border="0" cellspacing="0" cellpadding="1">
 					<TR>
-						<logic:equal name="<%=frmName%>" property="displayOptionForMaxLimit" value="true" >
-							<TD align="left" valign="bottom" rowSpan="2" colspan="2">
-								<i><html:checkbox name="<%=frmName%>" property="displayMaxLimit" onclick="doClick('multipleLimits', 0);"/> 
-								<small><loc:message name="columnAllowVariableLimits"/></small></i>
-							</TD>
-						</logic:equal>
-						<logic:equal name="<%=frmName%>" property="displayOptionForMaxLimit" value="false" >
-							<TD align="center" valign="bottom" rowSpan="2" colspan="2"> &nbsp;</TD>
+						<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+							<logic:equal name="<%=frmName%>" property="displayOptionForMaxLimit" value="true" >
+								<TD align="left" valign="bottom" rowSpan="2" colspan="2" class='WebTableHeader'>
+									<html:checkbox name="<%=frmName%>" property="displayMaxLimit" onclick="doClick('multipleLimits', 0);"/> 
+									<small><loc:message name="columnAllowVariableLimits"/></small>
+								</TD>
+							</logic:equal>
+							<logic:equal name="<%=frmName%>" property="displayOptionForMaxLimit" value="false" >
+								<TD align="center" valign="bottom" rowSpan="2" colspan="2" class='WebTableHeader'> &nbsp;</TD>
+							</logic:equal>
+						</logic:notEqual>
+						<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+							<TD align="center" valign="bottom" rowSpan="2" colspan="2" class='WebTableHeader'> &nbsp;</TD>
 						</logic:equal>
 						<logic:equal name="<%=frmName%>" property="displayExternalId" value="true" >
-							<TD rowspan="2">&nbsp;</TD>
-							<TD align="center" valign="bottom" rowspan="2"><i><loc:message name="columnExternalId"/></i>
-							</TD>
+							<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+							<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnExternalId"/></TD>
 						</logic:equal>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD rowspan="2">&nbsp;</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
 						<logic:equal name="<%=frmName%>" property="displayEnrollment" value="true" >
-							<TD align="center" valign="bottom" rowSpan="2"><I><loc:message name="columnEnroll"/></I></TD>
-							<TD rowspan="2">&nbsp;</TD>
+							<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnEnroll"/></TD>
+							<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
 						</logic:equal>
-						<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="true" >
-							<TD align="center" valign="bottom" colSpan="2"><I><loc:message name="columnLimit"/></I></TD>
-						</logic:equal>
-						<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="false" >
-							<TD align="center" valign="bottom" colSpan="2" rowspan="2"><I>Limit</I></TD>
-						</logic:equal>
-						<TD align="center" valign="bottom" rowSpan="2"><I><loc:message name="columnRoomRatioBr"/></I></TD>
-						<TD align="center" valign="bottom" rowSpan="2"><I><loc:message name="columnNbrRms"/></I></TD>
-						<TD align="center" valign="bottom" rowSpan="2"><I><loc:message name="columnManagingDepartment"/></I></TD>
-						<TD align="center" valign="bottom" rowSpan="2"><I><loc:message name="columnDatePattern"/></I></TD>
-						<TD align="center" valign="bottom" rowSpan="1">
+						<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+							<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="true" >
+								<TD align="center" valign="bottom" colSpan="2" class='WebTableHeaderFirstRow'><loc:message name="columnLimit"/></TD>
+							</logic:equal>
+							<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="false" >
+								<TD align="center" valign="bottom" colSpan="2" rowspan="2" class='WebTableHeader'><loc:message name="columnLimit"/></TD>
+							</logic:equal>
+							<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnRoomRatioBr"/></TD>
+							<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnNbrRms"/></TD>
+						</logic:notEqual>
+						<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnManagingDepartment"/></TD>
+						<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnDatePattern"/></TD>
+						<TD align="center" valign="bottom" rowSpan="1" class='WebTableHeaderFirstRow'>
 							<logic:equal name="<%=frmName%>" property="displayDisplayInstructors" value="true" >
-								<I><loc:message name="columnDisplayInstr"/></I>
+								<loc:message name="columnDisplayInstr"/>
 							</logic:equal>
 						</TD>
-						<TD align="center" valign="bottom" rowSpan="1">
+						<TD align="center" valign="bottom" rowSpan="1" class='WebTableHeaderFirstRow'>
 							<logic:equal name="<%=frmName%>" property="displayEnabledForStudentScheduling" value="true" >
-								<I><loc:message name="columnStudentScheduling"/></I>
+								<loc:message name="columnStudentScheduling"/>
 							</logic:equal>
 						</TD>
-						<TD align="center" valign="bottom" rowSpan="1" colspan="2"><I>---&nbsp;<loc:message name="columnTimetable"/>&nbsp;---</I></TD>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD align="center" valign="bottom" rowSpan="2"><I><loc:message name="columnInstructors"/></I></TD>
-						<TD rowspan="2">&nbsp;</TD>
+						<TD align="center" valign="bottom" rowSpan="1" colspan="2" class='WebTableHeaderFirstRow'>---&nbsp;<loc:message name="columnTimetable"/>&nbsp;---</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD align="center" valign="bottom" rowSpan="2" class='WebTableHeader'><loc:message name="columnInstructors"/></TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
 					</TR>
 					<TR>
-						<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="true" >
-							<TD align="center" valign="bottom"><I><loc:message name="columnMin"/></I></TD>
-							<TD align="center" valign="bottom"><I><loc:message name="columnMax"/></I></TD>
-						</logic:equal>			
-						<td align="center" valign="bottom">
+						<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+							<logic:equal name="<%=frmName%>" property="displayMaxLimit" value="true" >
+								<TD align="center" valign="bottom" class='WebTableHeaderSecondRow'><loc:message name="columnMin"/></TD>
+								<TD align="center" valign="bottom" class='WebTableHeaderSecondRow'><loc:message name="columnMax"/></TD>
+							</logic:equal>
+						</logic:notEqual>			
+						<td align="center" valign="bottom" class='WebTableHeaderSecondRow'>
 							<logic:equal name="<%=frmName%>" property="displayDisplayInstructors" value="true" >
 								(<loc:message name="propertyAll"/>
 								 <html:checkbox name="<%=frmName%>" property="displayAllClassesInstructors" onclick="resetAllDisplayFlags(this.checked, 'displayInstructors')" />)
 							</logic:equal>
 						</td>
-						<td align="center" valign="bottom">
+						<td align="center" valign="bottom" class='WebTableHeaderSecondRow'>
 							<logic:equal name="<%=frmName%>" property="displayEnabledForStudentScheduling" value="true" >
 								(<loc:message name="propertyAll"/>
 								 <html:checkbox name="<%=frmName%>" property="enableAllClassesForStudentScheduling" onclick="resetAllDisplayFlags(this.checked, 'enabledForStudentScheduling')"/>)
 							</logic:equal>
 						</td>						
-						<TD align="center" valign="bottom" rowSpan="1"><I><loc:message name="columnAssignedTime"/></I></TD>
-						<TD align="center" valign="bottom" rowSpan="1"><I><loc:message name="columnAssignedRoom"/></I></TD>
+						<TD align="center" valign="bottom" rowSpan="1" class='WebTableHeaderSecondRow'><loc:message name="columnAssignedTime"/></TD>
+						<TD align="center" valign="bottom" rowSpan="1" class='WebTableHeaderSecondRow'><loc:message name="columnAssignedRoom"/></TD>
 					</TR>					
 					<logic:iterate name="<%=frmName%>" property="classIds" id="c" indexId="ctr">
 						<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
@@ -393,6 +429,13 @@
 								<TD align="right" valign="top" nowrap><bean:write name="<%=frmName%>" property='<%= "enrollments[" + ctr + "]" %>'/></TD>
 								<TD>&nbsp;</TD>
 							</logic:equal>
+							<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+								<html:hidden property='<%= "minClassLimits[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "maxClassLimits[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "roomRatios[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "numberOfRooms[" + ctr + "]" %>'/>
+							</logic:equal>
+							<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">							
 							<TD align="left" nowrap valign="top">
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<html:hidden property='<%= "origMinLimit[" + ctr + "]" %>' value="<%= (String)frm.getMinClassLimits().get(ctr) %>"/>
@@ -441,6 +484,7 @@
 									<html:hidden property='<%= "numberOfRooms[" + ctr + "]" %>'/>
 								</logic:equal>
 							</TD>
+							</logic:notEqual>
 							<TD align="left" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<html:select style="width:200px;" property='<%= "departments[" + ctr + "]" %>' 
@@ -549,7 +593,12 @@
 										</td> 
 										<td nowrap align="right">
 											<div id='<%="subtotal2Values" + ctr%>'>
-												<bean:write name="<%=frmName%>" property='<%= "subtotalValues[" + ctr + "]" %>'/>
+												<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+													&infin;										
+												</logic:equal>
+												<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
+													<bean:write name="<%=frmName%>" property='<%= "subtotalValues[" + ctr + "]" %>'/>
+												</logic:notEqual>
 											</div>
 										</td>
 										<logic:equal name="<%=frmName%>" property="displayDisplayInstructors" value="true" >

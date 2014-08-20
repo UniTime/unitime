@@ -265,6 +265,7 @@ public class InstructionalOfferingModifyAction extends Action {
         // Load form properties
         frm.setInstrOffrConfigId(ioc.getUniqueId());
         frm.setInstrOffrConfigLimit(ioc.getLimit());
+        frm.setInstrOffrConfigUnlimited(ioc.isUnlimitedEnrollment());
         frm.setInstrOfferingId(io.getUniqueId());
         frm.setDisplayDisplayInstructors(ApplicationProperty.ClassSetupDisplayInstructorFlags.isTrue());
         frm.setDisplayEnabledForStudentScheduling(ApplicationProperty.ClassSetupEnabledForStudentScheduling.isTrue());
@@ -283,6 +284,7 @@ public class InstructionalOfferingModifyAction extends Action {
         ArrayList subpartList = new ArrayList(ioc.getSchedulingSubparts());
         Collections.sort(subpartList, new SchedulingSubpartComparator());
         ClassAssignmentProxy proxy = classAssignmentService.getAssignment();
+        frm.setInstrOffrConfigUnlimitedReadOnly(false);
         for(Iterator it = subpartList.iterator(); it.hasNext();){
         	SchedulingSubpart ss = (SchedulingSubpart) it.next();
     		if (ss.getClasses() == null || ss.getClasses().size() == 0)
@@ -316,6 +318,7 @@ public class InstructionalOfferingModifyAction extends Action {
 	    		} else {
 	    			readOnlyClass = new Boolean(!sessionContext.hasPermission(cls, Right.MultipleClassSetupClass));
 	    		}
+	    		if (readOnlyClass) frm.setInstrOffrConfigUnlimitedReadOnly(true);
 				frm.addToClasses(cls, readOnlyClass, indent, proxy, UserProperty.NameFormat.get(sessionContext.getUser()));
 	    		loadClasses(frm, cls.getChildClasses(), new Boolean(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", proxy);
 	    	}
@@ -344,8 +347,12 @@ public class InstructionalOfferingModifyAction extends Action {
         try {
 	        tx = hibSession.beginTransaction();
 
-	        // If the instructional offering config limit has changed update it.
-	        if (!frm.getInstrOffrConfigLimit().equals(ioc.getLimit())){
+	        // If the instructional offering config limit or unlimited flag has changed update it.
+	        if (frm.isInstrOffrConfigUnlimited() != ioc.isUnlimitedEnrollment()) {
+	        	ioc.setUnlimitedEnrollment(frm.isInstrOffrConfigUnlimited());
+	        	ioc.setLimit(frm.isInstrOffrConfigUnlimited() ? 0 : frm.getInstrOffrConfigLimit());
+	        	hibSession.update(ioc);
+	        } else if (!frm.getInstrOffrConfigLimit().equals(ioc.getLimit())) {
 	        	ioc.setLimit(frm.getInstrOffrConfigLimit());
 	        	hibSession.update(ioc);
 	        }
@@ -654,6 +661,12 @@ public class InstructionalOfferingModifyAction extends Action {
 			Integer numberOfRooms = new Integer(it7.next().toString());
 			Integer maxClassLimit = new Integer(it8.next().toString());
 			Float roomRatio = new Float(it9.next().toString());
+			if (frm.isInstrOffrConfigUnlimited()) {
+				roomRatio = 1.0f;
+				minClassLimit = 0;
+				maxClassLimit = 0;
+				numberOfRooms = 0;
+			}
 			String displayInstructorStr = null;
 			if(it10.hasNext())
 				displayInstructorStr = (String) it10.next();
@@ -735,6 +748,12 @@ public class InstructionalOfferingModifyAction extends Action {
 			Integer numberOfRooms = new Integer(it5.next().toString());
 			Integer maxClassLimit = new Integer(it6.next().toString());
 			Float roomRatio = new Float(it7.next().toString());
+			if (frm.isInstrOffrConfigUnlimited()) {
+				roomRatio = 1.0f;
+				minClassLimit = 0;
+				maxClassLimit = 0;
+				numberOfRooms = 0;
+			}
 			String displayInstructorStr = null;
 			if(it8.hasNext()){
 				displayInstructorStr = (String) it8.next();
