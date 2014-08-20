@@ -44,6 +44,8 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.engine.jdbc.internal.BasicFormatterImpl;
+import org.hibernate.engine.jdbc.internal.Formatter;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.hql.internal.QueryExecutionRequestException;
@@ -54,7 +56,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.commons.hibernate.util.PrettyFormatter;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.HibernateQueryTestForm;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -177,7 +178,8 @@ public class HibernateQueryTestAction extends Action {
             if (sql.length()>0) sql+="<br><br>";
             if (comment!=null)
                 sql += "<font color='gray'>-- "+comment+"</font>";
-            sql += new PrettyFormatter(line).format().replaceAll("\n", "<br>").replaceAll(" ", "&nbsp;");
+            Formatter f = new BasicFormatterImpl();
+            sql += f.format(line).replaceAll("\n", "<br>").replaceAll(" ", "&nbsp;");
         }
         if (sql.length()>0)
             request.setAttribute("sql",sql);
