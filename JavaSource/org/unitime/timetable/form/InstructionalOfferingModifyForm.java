@@ -64,7 +64,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     private Integer subjectAreaId;
 	private Long instrOfferingId;
     private String instrOfferingName;
+    private boolean instrOffrConfigUnlimited;
 	private Integer instrOffrConfigLimit;
+	private boolean instrOffrConfigUnlimitedReadOnly;
 	private Long instrOffrConfigId;
 	private String origSubparts;
 	private Boolean displayMaxLimit;
@@ -438,8 +440,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     }
     
     private void validateClassLimits(ActionErrors errors){
+    	boolean unlimited = isInstrOffrConfigUnlimited();
     	int limit = getInstrOffrConfigLimit().intValue();
-    	if (limit > 0) {
+    	if (!unlimited && limit > 0) {
     		initClassHasErrorsToFalse();
     		validateMinLessThanMaxClassLimits(errors);
     		validateMinOrMaxParentClassLimits(errors, this.getMaxClassLimits(), "maxLimit", ((getDisplayMaxLimit().booleanValue())? MSG.errorTotalMaxChildrenAtLeastMaxParent():MSG.errorLimitsChildClasses()));
@@ -456,6 +459,8 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     public void reset(ActionMapping mapping, HttpServletRequest request) {
     	instrOfferingId = null;
     	instrOffrConfigLimit = null;
+    	instrOffrConfigUnlimited = false;
+    	instrOffrConfigUnlimitedReadOnly = false;
     	instrOffrConfigId = null;
     	instrOfferingName = "";
     	origSubparts = "";
@@ -764,6 +769,18 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	public void setInstrOffrConfigLimit(Integer instrOffrConfigLimit) {
 		this.instrOffrConfigLimit = instrOffrConfigLimit;
 	}
+	public boolean isInstrOffrConfigUnlimited() {
+		return instrOffrConfigUnlimited;
+	}
+	public void setInstrOffrConfigUnlimited(boolean instrOffrConfigUnlimited) {
+		this.instrOffrConfigUnlimited = instrOffrConfigUnlimited;
+	}
+	public boolean getInstrOffrConfigUnlimitedReadOnly() {
+		return instrOffrConfigUnlimitedReadOnly;
+	}
+	public void setInstrOffrConfigUnlimitedReadOnly(boolean instrOffrConfigUnlimitedReadOnly) {
+		this.instrOffrConfigUnlimitedReadOnly = instrOffrConfigUnlimitedReadOnly;
+	}
 	public List getDepartments() {
 		return departments;
 	}
@@ -939,16 +956,26 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.readOnlyClasses.add(isReadOnly.toString());
 		this.classHasErrors.add(new Boolean(false).toString());	
 		this.enrollments.add(StudentClassEnrollment.sessionHasEnrollments(cls.getSessionId())?(cls.getEnrollment()==null?"0":cls.getEnrollment().toString()):"");
-		this.minClassLimits.add(cls.getExpectedCapacity().toString());
-		this.numberOfRooms.add(cls.getNbrRooms().toString());
+		if (isInstrOffrConfigUnlimited())
+			this.minClassLimits.add("0");
+		else
+			this.minClassLimits.add(cls.getExpectedCapacity().toString());
+		if (isInstrOffrConfigUnlimited())
+			this.numberOfRooms.add("1");
+		else
+			this.numberOfRooms.add(cls.getNbrRooms().toString());
 		this.displayInstructors.add(cls.isDisplayInstructor().toString());
 		this.enabledForStudentScheduling.add(cls.isEnabledForStudentScheduling().toString());
 
-		if(cls.getMaxExpectedCapacity() != null)
+		if (isInstrOffrConfigUnlimited()) 
+			this.maxClassLimits.add("0");
+		else if(cls.getMaxExpectedCapacity() != null)
 			this.maxClassLimits.add(cls.getMaxExpectedCapacity().toString());
 		else
 			this.maxClassLimits.add("");
-		if(cls.getRoomRatio() != null)
+		if (isInstrOffrConfigUnlimited())
+			this.roomRatios.add("1.0");
+		else if(cls.getRoomRatio() != null)
 			this.roomRatios.add(cls.getRoomRatio().toString());
 		else
 			this.roomRatios.add("");
