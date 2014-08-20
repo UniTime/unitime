@@ -38,7 +38,6 @@ import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.HasHTML;
@@ -79,34 +78,6 @@ public class P extends AbsolutePanel implements HasAllMouseHandlers, HasHTML, Ha
 		for (String style: styles)
 			if (style != null && !style.isEmpty())
 				removeStyleName(style);
-	}
-	
-	@Override
-	public void onBrowserEvent(Event event) {
-		switch (DOM.eventGetType(event)) {
-	    case Event.ONMOUSEDOWN:
-	    	MouseDownEvent.fireNativeEvent(event, this);
-	    	break;
-	    case Event.ONMOUSEUP:
-	    	MouseUpEvent.fireNativeEvent(event, this);
-	    	break;
-	    case Event.ONMOUSEMOVE:
-	    	MouseMoveEvent.fireNativeEvent(event, this);
-	    	break;
-	    case Event.ONMOUSEOVER:
-	    	MouseOverEvent.fireNativeEvent(event, this);
-	    	break;
-	    case Event.ONMOUSEOUT:
-	    	MouseOutEvent.fireNativeEvent(event, this);
-	    	break;
-	    case Event.ONMOUSEWHEEL:
-	    	MouseWheelEvent.fireNativeEvent(event, this);
-	    	break;
-	    case Event.ONCLICK:
-	    	ClickEvent.fireNativeEvent(event, this);
-	    	break;
-		}
-		super.onBrowserEvent(event);
 	}
 	
 	@Override
