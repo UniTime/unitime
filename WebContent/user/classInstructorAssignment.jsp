@@ -156,29 +156,29 @@
 			<TD colspan="2" align="left">
 				<TABLE align="left" border="0" cellspacing="0" cellpadding="1">
 					<TR>
-						<TD align="center" valign="bottom" rowspan="2"> &nbsp;</TD>
-						<TD align="center" valign="bottom" rowspan="2"> &nbsp;</TD>
-						<TD align="center" valign="bottom" rowspan="2"> &nbsp;</TD>
+						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'> &nbsp;</TD>
+						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'> &nbsp;</TD>
+						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'> &nbsp;</TD>
 						<logic:equal name="<%=frmName%>" property="displayExternalId" value="true" >
-							<TD rowspan="2">&nbsp;</TD>
-							<TD align="center" valign="bottom" rowspan="2"><i><loc:message name="columnExternalId"/></i></TD>
+							<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+							<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnExternalId"/></TD>
 						</logic:equal>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD align="center" valign="bottom" rowspan="2"><I><loc:message name="columnInstructorName"/></I></TD>
-						<TD align="center" valign="bottom" rowspan="2"><I><loc:message name="columnInstructorShare"/></I></TD>
-						<TD align="center" valign="bottom" rowspan="2"><I><loc:message name="columnInstructorCheckConflictsBr"/>&nbsp;&nbsp;</I></TD>
-						<TD align="center" valign="bottom"><I><loc:message name="columnDisplay"/>&nbsp;</I></TD>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD align="center" valign="bottom" rowspan="2"><I><loc:message name="columnAssignedTime"/></I></TD>
-						<TD rowspan="2">&nbsp;</TD>
-						<TD align="center" valign="bottom" rowspan="2"><I><loc:message name="columnAssignedRoom"/></I></TD>
-						<TD rowspan="2">&nbsp;</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnInstructorName"/></TD>
+						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnInstructorShare"/></TD>
+						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnInstructorCheckConflictsBr"/>&nbsp;&nbsp;</TD>
+						<TD align="center" valign="bottom" class='WebTableHeaderFirstRow'><loc:message name="columnDisplay"/>&nbsp;</TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnAssignedTime"/></TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+						<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnAssignedRoom"/></TD>
+						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
 					</TR>
 					<TR>
-						<TD align="left" valign="bottom">
+						<TD align="left" valign="bottom" class='WebTableHeaderSecondRow'>
 							(<loc:message name="propertyAll"/>
 							<input type='checkbox' checked='checked' 
 									onclick='resetAllDisplayFlags(this.checked);' value='test'>)
