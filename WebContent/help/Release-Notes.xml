@@ -3,7 +3,7 @@
 <!DOCTYPE release-history PUBLIC "-//UniTime//UniTime Release Notes DTD/EN" "Release-Notes.dtd">
 <!-- 
  * UniTime 3.5 (University Timetabling Application)
- * Copyright (C) 2008 - 2013, UniTime LLC
+ * Copyright (C) 2008 - 2014, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,9 @@
 					</line>
 				</line>
 				<line>Clustering can be disabled by setting application properties unitime.hibernate.cluster (Hibernate L2 cache) and unitime.solver.cluster (remove solver servers) to false.</line>
-				<line>Online student scheduling server can now run on multiple machines at once, with the data asynchronously replicated (using infinispan) and one machine being the master (responsible for all the updates).</line>
+				<line>Online student scheduling server can now run on multiple machines at once, with the data asynchronously replicated (using infinispan) and one machine being the master (responsible for all the updates).
+					<line>To enable replication, set unitime.enrollment.server.replicated to true.</line>
+				</line>
 			</description>
 		</item>
 		<item>
@@ -47,6 +49,13 @@
 			<description>
 				<line>Using the latest version of CPSolver 1.3</line>
 				<line>This update contains a new assignment model and multi-core capabilities.</line>
+			</description>
+		</item>
+		<item>
+			<name>Mobile</name>
+			<description>
+				<line>A few initial steps have been made towards a frendlier version of UniTime pages on mobile (tables or phone) devices.</line>
+				<line>Mobile page layout is using less tables, and there is a new menu.</line>
 			</description>
 		</item>
 	</category>
@@ -89,6 +98,26 @@
 			<name>Student Scheduling Assistant</name>
 			<description>
 				<line>Added ability to wait-list an unassigned course request in the List of Classes table.</line>
+				<line>Added ability to automatically add course request and alternate course request lines as they are needed.</line>
+				<line>Time Conflicts: display the allowed time conflicts note (Overlaps with x) in red color.
+					<line>There is also a warning icon next to each class that has a time conflict.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Custom Student Enrollment Interface</name>
+			<description>
+				<line>Added an ability to provide a custom class that synchronizes the enrollments with an external system.</line>
+				<line>The interface can be used to check student's eligibility (an additional step in the CheckEligibility action).
+					<line>The external system can request students to enter a PIN number.</line>
+					<line>Discrepancies between the two systems can be detected (e.g., a student may be denied the ability to enroll through UniTime if the two systems are not in sync).</line>
+				</line>
+				<line>The interface can be used to enroll students into classes (an additional step in the EnrollStudent action).
+					<line>The external system may reject enrollment of some classes.</line>
+					<line>If this happens, student is not enrolled into the rejected classes in UniTime as well (appropriate error messages are displayed instead).</line>
+				</line>
+				<line>Automated qait-listing is disabled when such a custom interface is used.</line>
+				<line>This change also includes an example implementation using the new Banner XE (RESTful) interface.</line>
 			</description>
 		</item>
 	</category>
@@ -163,7 +192,43 @@
 				<line>All (or most of) application properties are now registered and used through the ApplicationProperty enum.
 					<line>This allows for an easy place to see all configuration properties, define their default values and short descriptions.</line>
 				</line>
-				<line>Application Configuration page modified to include all registered properties, including their defaults and descriptions.</line>
+				<line>Application Configuration page was modified to include all registered properties, including their defaults and descriptions.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Added export of student course requests.</line>
+				<line>Student Class Enrollment Import: update student course requests to match student class enrollments.</line>
+				<line>Room Sharing: added ability to export and import room sharing.</line>
+				<line>Student Import, Student Class Enrollments Import: added incremental mode
+					<line>When not in incremental mode, students (student class enrollments) that are not included in the XML are deleted (this is the default).</line>
+					<line>When in incremental mode, students that are not included in the file are completely ignored.</line>
+				</line>
+				<line>Student Course Requests Import
+					<line>Added ability to cancel a student through the import (cancelStudent element).</line>
+					<line>Added ability to include class enrollments with the course requests.</line>
+					<line>Added enrollment mode (attribute enrollment on the root element) with the following values:
+						<line>update: enrollments are updated to point to new course requests, orphaned enrollments (enrollments without course requests) are deleted (this is the default)</line>
+						<line>nochange: all enrollments are kept (previously, this was achieved by keepEnrollments='true')</line>
+						<line>import: import enrollments from the file (default when there are class elements in the file)</line>
+						<line>delete: all class enrollments (of the related students) are deleted</line>
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>CAS Authentication</name>
+			<description>
+				<line>Added provisions for CAS-based authentication.</line>
+				<line>To enable CAS, uncomment the CAS Authentication sections in securityContext.xml and web.xml (see the comments there).</line>
+			</description>
+		</item>
+		<item>
+			<name>Localization</name>
+			<description>
+				<line>Added en_UK locale: it is much like the default, except of time (24-hour format) and date (day before moth) formatting.</line>
+				<line>Course Timetabling: Added ability to display assigned times in either 12-hour or 24-hour time format (based on the locale).</line>
 			</description>
 		</item>
 	</category>
@@ -176,7 +241,7 @@
 					<line>Students are ordered by their academic information (curriculum) and unique ids and assigned in this order to the first available group (configuration or lecture).</line>
 				</line>
 				<line>To enable this customization set the following parameter:
-					<line>StudentSectioning.Class=net.sf.cpsolver.coursett.custom.DeterministicStudentSectioning</line>
+					<line>StudentSectioning.Class=org.cpsolver.coursett.custom.DeterministicStudentSectioning</line>
 				</line>
 			</description>
 		</item>
@@ -184,6 +249,7 @@
 			<name>Course Timetabling: Group Constraint</name>
 			<description>
 				<line>Forward checking extended to all hard group constraints (not only meet-together).</line>
+				<line>It is possible to avoid forward check on variables with large domains (parameter ForwardCheck.MaxDomainSize, defaults to 1000) and to limit the depth (parameter ForwardCheck.MaxDepth, defaults to 2).</line>
 			</description>
 		</item>
 		<item>
@@ -233,6 +299,43 @@
 				</line>
 				<line>While the domain of the course request already does not allow for such enrollments, such an enrollment can be loaded in from the database or XML.
 					<line>This constraint is to prevent assignment of such invalid enrollments.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Room Ratio</name>
+			<description>
+				<line>Changed the computation of minimal room size to round(room ratio x class limit), instead of the previous ceil(room ratio x class limit).</line>
+				<line>While using ceiling instead of round has some merit, this fixes the ongoing issues with the computation.
+					<line>E.g., minimal room size of a class with limit 25 and room ratio 0.6 was 16 (as 0.6f * 25 = 15.000001 in Java) instead of the expected 15.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: MaxWeeks constraint</name>
+			<description>
+				<line>The MaxWeeks constraint limits the number of weeks during which the given set of classes are taught.</line>
+				<line>It has two parameters: a maximal number of weeks during which the given set of classes can be placed and a day code indicating what days of week are considered.</line>
+				<line>Reference _MaxWeeks:3:48_ translates to a maximum number of 3 weeks, but only for classes that are placed on Fridays and Saturdays
+					<line>(64 for Monday, 32 for Tuesday, 16 for Wednesday, 8 for Thursday, 4 for Friday, 2 for Saturday, and 1 for Sunday)</line>
+					<line>If the second parameter is zero, all days of week are considered.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Classes with multiple rooms</name>
+			<description>
+				<line>For each time, limit the number of room combinations (parameter General.MaxRoomCombinations, defaults to 100).
+					<line>Domain is dynamic (not cached) in this case, preferring rooms that are available for the given time (for which the room combinations are generated).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Max N Hours A Day constraint</name>
+			<description>
+				<line>Added ability to consider date patterns (individual weeks).
+					<line>When solver parameter MaxNHoursADay.ConsiderDatePatterns is set to true (this is also the new default).</line>
+					<line>For former behavior, set MaxNHoursADay.ConsiderDatePatterns to false.</line>
 				</line>
 			</description>
 		</item>
