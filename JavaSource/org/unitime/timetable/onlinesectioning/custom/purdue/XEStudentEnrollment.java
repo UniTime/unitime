@@ -229,9 +229,6 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	
 	@Override
 	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses) throws SectioningException {
-		if (enrollments == null || enrollments.isEmpty())
-			return new ArrayList<StudentEnrollmentProvider.EnrollmentFailure>();
-		
 		ClientResource resource = null;
 		try {
 			String pin = helper.getPin();
@@ -359,6 +356,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				helper.debug("Request: " + gson.toJson(req));
 			helper.getAction().addOptionBuilder().setKey("request").setValue(gson.toJson(req));
 			
+			if (req.isEmpty()) {
+				// no classes to add or drop -> return no failures
+				return new ArrayList<EnrollmentFailure>();
+			}
+
 			resource.post(new JsonRepresentation(gson.toJson(req)));
 			
 			// Finally, check the response
