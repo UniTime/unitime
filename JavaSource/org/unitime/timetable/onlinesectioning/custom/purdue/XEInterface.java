@@ -128,6 +128,7 @@ public class XEInterface {
 		List<Registration> registrations;
 		List<TimeTicket> timeTickets;
 		Boolean validStudent;
+		String registrationException;
 	}
 	
 	public static class CourseReferenceNumber {

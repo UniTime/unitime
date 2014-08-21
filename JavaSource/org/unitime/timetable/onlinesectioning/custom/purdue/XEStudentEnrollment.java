@@ -416,6 +416,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						// skip deleted enrollments
 						continue;
 					}
+					if (error == null && response.registrationException != null)
+						error = response.registrationException;
 					XCourse course = id2course.get(id);
 					if (course != null)
 						for (XSection section: id2section.get(id))
@@ -445,6 +447,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					else
 						em += ", " + m;
 				}
+				if (em == null && response.registrationException != null)
+					em = response.registrationException;
 				for (EnrollmentRequest request: enrollments) {
 					XCourse course = request.getCourse();
 					for (XSection section: request.getSections()) {
