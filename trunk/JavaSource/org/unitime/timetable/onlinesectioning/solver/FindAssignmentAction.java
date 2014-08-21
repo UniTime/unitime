@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-
 import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
@@ -59,6 +58,7 @@ import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -100,6 +100,7 @@ import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteria
 public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAssignmentInterface>>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
+	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	private CourseRequestInterface iRequest;
 	private Collection<ClassAssignmentInterface.ClassAssignment> iAssignment;
 	
@@ -164,7 +165,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
 				addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions);
-			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
+			if (student.getRequests().isEmpty() && !CONSTANTS.allowEmptySchedule()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
 				addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions);
 			model.addStudent(student);
@@ -263,6 +264,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		selection.setRequiredFreeTimes(requiredFreeTimes);
 		
 		BranchBoundNeighbour neighbour = selection.select(assignment, student);
+		if (neighbour == null && student.getRequests().isEmpty())
+			neighbour = new BranchBoundNeighbour(student, 0, new Enrollment[] {});
 		if (neighbour == null) throw new SectioningException(MSG.exceptionNoSolution());
 
 		helper.debug("Using " + (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +
@@ -741,7 +744,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	private ClassAssignmentInterface convert(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, BranchBoundNeighbour neighbour,
 			Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse, HashSet<FreeTimeRequest> requiredFreeTimes, Set<Long> savedClasses) throws SectioningException {
         Enrollment [] enrollments = neighbour.getAssignment();
-        if (enrollments == null || enrollments.length == 0)
+        if (enrollments == null || enrollments.length < student.getRequests().size())
         	throw new SectioningException(MSG.exceptionNoSolution());
         int idx=0;
         for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext(); idx++) {

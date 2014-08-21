@@ -247,6 +247,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				new WebTable.WidgetCell(iCalendar, MESSAGES.colIcons(), 1, "1px")
 			));
 		iAssignments.setWidth("100%");
+		iAssignments.setEmptyMessage(MESSAGES.emptySchedule());
 		
 		VerticalPanel vp = new VerticalPanel();
 		vp.add(iAssignments);
@@ -590,7 +591,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		String calendarUrl = GWT.getHostPageBaseURL() + "calendar?sid=" + iSessionSelector.getAcademicSessionId() + "&cid=";
 		String ftParam = "&ft=";
 		boolean hasError = false;
-		if (!result.getCourseAssignments().isEmpty()) {
+		if (!result.getCourseAssignments().isEmpty() || CONSTANTS.allowEmptySchedule()) {
 			ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 			iAssignmentGrid.clear(true);
 			for (final ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
