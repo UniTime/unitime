@@ -384,6 +384,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Computed schedule is empty.")
 	String noSchedule();
 	
+	@DefaultMessage("There is no schedule.")
+	String emptySchedule();
+	
 	/* User Authentication messages
 	 */
 	@DefaultMessage("User: Not authenticated")

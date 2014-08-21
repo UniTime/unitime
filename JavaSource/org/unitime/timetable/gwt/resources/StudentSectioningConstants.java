@@ -125,4 +125,7 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultBooleanValue(false)
 	boolean hasAuthenticationPin();
+	
+	@DefaultBooleanValue(true)
+	boolean allowEmptySchedule();
 }
