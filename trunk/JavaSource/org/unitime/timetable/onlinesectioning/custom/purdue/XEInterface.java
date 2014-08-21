@@ -176,6 +176,10 @@ public class XEInterface {
 			courseReferenceNumbers.add(new CourseReferenceNumber(crn));
 			return this;
 		}
+		
+		public boolean isEmpty() {
+			return (actionsAndOptions == null || actionsAndOptions.isEmpty()) && (courseReferenceNumbers == null || courseReferenceNumbers.isEmpty());
+		}
 	}
 
 }
