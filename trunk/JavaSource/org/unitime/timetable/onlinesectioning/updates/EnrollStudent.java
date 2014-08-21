@@ -218,6 +218,40 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						ca.setClassId(f.getSection().getSectionId());
 						ca.setCourseId(f.getCourse().getCourseId());
 						getAssignment().add(ca);
+						// ensure that there is a request for the course
+						boolean hasRequest = false;
+						CourseRequestInterface.Request fe = null; // first empty
+						for (CourseRequestInterface.Request r: getRequest().getCourses()) {
+							if (r.hasRequestedCourse() && f.getCourse().matchCourseName(r.getRequestedCourse().toLowerCase())) {
+								hasRequest = true; break;
+							}
+							if (r.hasFirstAlternative() && f.getCourse().matchCourseName(r.getFirstAlternative().toLowerCase())) {
+								hasRequest = true; break;
+							}
+							if (r.hasSecondAlternative() && f.getCourse().matchCourseName(r.getSecondAlternative().toLowerCase())) {
+								hasRequest = true; break;
+							}
+							if (fe == null && !r.hasRequestedFreeTime() && !r.hasRequestedCourse() && !r.hasFirstAlternative() && !r.hasSecondAlternative()) fe = r;
+						}
+						if (!hasRequest)
+							for (CourseRequestInterface.Request r: getRequest().getAlternatives()) {
+								if (r.hasRequestedCourse() && f.getCourse().matchCourseName(r.getRequestedCourse().toLowerCase())) {
+									hasRequest = true; break;
+								}
+								if (r.hasFirstAlternative() && f.getCourse().matchCourseName(r.getFirstAlternative().toLowerCase())) {
+									hasRequest = true; break;
+								}
+								if (r.hasSecondAlternative() && f.getCourse().matchCourseName(r.getSecondAlternative().toLowerCase())) {
+									hasRequest = true; break;
+								}
+							}
+						if (!hasRequest) {
+							if (fe == null) {
+								fe = new CourseRequestInterface.Request();
+								getRequest().getCourses().add(fe);
+							}								
+							fe.setRequestedCourse(f.getCourse().getCourseName());
+						}
 					}
 				}
 				
