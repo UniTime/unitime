@@ -60,9 +60,20 @@
 	</tt:hasProperty>
 	<tt:offering-locks/>
   	
+<%
+	String sysMessage = ApplicationProperties.getProperty("tmtbl.system_message");
+	boolean showBackground = (sysMessage == null || sysMessage.trim().isEmpty());
+	if ("cas-logout".equals(request.getParameter("op"))) {
+		sysMessage = "You have been successfully logged out of UniTime, click <a href='j_spring_cas_security_logout'>here</a> to log out of all other applications as well."; 
+	}
+%>
+<tt:registration method="hasMessage">
+	<% showBackground = false; %>
+</tt:registration>
+
 <tt:form-factor value="mobile">
 	<span class="unitime-MobilePage">
-	<span class='body' style="display:block;background-image:url('images/logofaded.jpg');backbackground-repeat:no-repeat;background-position: center;">
+	<span class='body' style="display:block;background-image:url('images/logofaded.jpg');backbackground-repeat:no-repeat;background-position: center; margin-bottom: -10px;">
 	<span class="unitime-MobilePageHeader">
 		<span class="row">
 			<span id='UniTimeGWT:MobileMenu' class="menu"></span>
@@ -74,62 +85,20 @@
 		</span>
 	</span>
 	<span class='unitime-MobileHeader'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
-	<span id='UniTimeGWT:Content'>
-		<tiles:insert attribute="body">
-			<tiles:put name="body2" value="${body2}"/>
-			<tiles:put name="action2" value="${action2}"/>
-		</tiles:insert>
+	<span id='UniTimeGWT:Content' <%=(!showBackground ? "class='unitime-MobileMainContent'" : "class='unitime-MobileMainContent unitime-MainLogo'")%>>
+		<% if (sysMessage != null && !sysMessage.trim().isEmpty()) { %>
+			<span class='messages'>
+				<div class='WelcomeRowHead'>System Messages</div>
+				<div class='message'><%= sysMessage %></div>
+			</span>
+		<% } %>
+		<tt:registration method="hasMessage">
+			<span class='messages'>
+				<div class='WelcomeRowHead'>Messages from UniTime</div>
+				<div class='message'><tt:registration method="message"/></div>
+			</span>
+		</tt:registration>
 	</span>
-<TABLE width="100%" height="600px" align="center" >
-	<TR>
-	<% 
-	String sysMessage = ApplicationProperties.getProperty("tmtbl.system_message");
-	boolean showBackground = (sysMessage == null || sysMessage.trim().isEmpty());
-	if ("cas-logout".equals(request.getParameter("op"))) {
-		sysMessage = "You have been successfully logged out of UniTime, click <a href='j_spring_cas_security_logout'>here</a> to log out of all other applications as well."; 
-	}
-	%>
-	<tt:registration method="hasMessage">
-	<% showBackground = false; %>
-	</tt:registration>
-		<TD align="center" valign="top" width="100%" height="100%" <%=(showBackground ? "background=\"images/logo.jpg\"" : "" )%> style="background-repeat:no-repeat;background-position: center;">
-		<TABLE width="100%" cellspacing="2" cellpadding="2" border="0">
-			<% 
-				if (sysMessage != null && !sysMessage.trim().isEmpty()) {
-			%>
-			<TR>
-				<TD class="WelcomeRowHead" align="left">System Messages</TD>
-			</TR>
-			<TR>
-				<TD align="left">
-					&nbsp;<BR>
-					<FONT class="normalBlack">
-						<%= sysMessage %>
-					</FONT>
-					<BR>&nbsp;
-				</TD>
-			</TR>
-			<%
-				}
-			%>
-			<tt:registration method="hasMessage">
-				<TR>
-					<TD class="WelcomeRowHead" align="left">Messages from UniTime</TD>
-				</TR>
-				<TR>
-					<TD align="left">
-						&nbsp;<BR>
-						<FONT class="normalBlack">
-							<tt:registration method="message"/>
-						</FONT>
-						<BR>&nbsp;
-					</TD>
-				</TR>
-			</tt:registration>
-		</TABLE>
-		</TD>
-	</TR>
-</TABLE>
 	</span>
 	<span class="unitime-MobileFooter">
 		<span class="row">
@@ -145,7 +114,6 @@
 	<tt:hasProperty name="tmtbl.page.disclaimer">
 		<span class='unitime-MobileDisclaimer'><tt:property name="tmtbl.page.disclaimer"/></span>
 	</tt:hasProperty>
-	</span>
 </tt:form-factor>
 <tt:form-factor value="desktop">
 	<span class="unitime-Page"><span class='row'>
@@ -196,58 +164,20 @@
 				</span>
 			</span>
 		</span>
-        	<span id='UniTimeGWT:Content'>
-<TABLE width="100%" height="600px" align="center" >
-	<TR>
-	<% 
-	String sysMessage = ApplicationProperties.getProperty("tmtbl.system_message");
-	boolean showBackground = (sysMessage == null || sysMessage.trim().isEmpty());
-	if ("cas-logout".equals(request.getParameter("op"))) {
-		sysMessage = "You have been successfully logged out of UniTime, click <a href='j_spring_cas_security_logout'>here</a> to log out of all other applications as well."; 
-	}
-	%>
-	<tt:registration method="hasMessage">
-	<% showBackground = false; %>
-	</tt:registration>
-		<TD align="center" valign="top" width="100%" height="100%" <%=(showBackground ? "background=\"images/logo.jpg\"" : "" )%> style="background-repeat:no-repeat;background-position: center;">
-		<TABLE width="100%" cellspacing="2" cellpadding="2" border="0">
-			<% 
-				if (sysMessage != null && !sysMessage.trim().isEmpty()) {
-			%>
-			<TR>
-				<TD class="WelcomeRowHead" align="left">System Messages</TD>
-			</TR>
-			<TR>
-				<TD align="left">
-					&nbsp;<BR>
-					<FONT class="normalBlack">
-						<%= sysMessage %>
-					</FONT>
-					<BR>&nbsp;
-				</TD>
-			</TR>
-			<%
-				}
-			%>
-			<tt:registration method="hasMessage">
-				<TR>
-					<TD class="WelcomeRowHead" align="left">Messages from UniTime</TD>
-				</TR>
-				<TR>
-					<TD align="left">
-						&nbsp;<BR>
-						<FONT class="normalBlack">
-							<tt:registration method="message"/>
-						</FONT>
-						<BR>&nbsp;
-					</TD>
-				</TR>
-			</tt:registration>
-		</TABLE>
-		</TD>
-	</TR>
-</TABLE>
-        	</span>
+	<span id='UniTimeGWT:Content' <%=(!showBackground ? "class='unitime-MainContent'" : "class='unitime-MainContent unitime-MainLogo'")%>>
+		<% if (sysMessage != null && !sysMessage.trim().isEmpty()) { %>
+			<span class='messages'>
+				<div class='WelcomeRowHead'>System Messages</div>
+				<div class='message'><%= sysMessage %></div>
+			</span>
+		<% } %>
+		<tt:registration method="hasMessage">
+			<span class='messages'>
+				<div class='WelcomeRowHead'>Messages from UniTime</div>
+				<div class='message'><tt:registration method="message"/></div>
+			</span>
+		</tt:registration>
+	</span>
     </span><span class='footer' id="unitime-Footer">
 		<span class="unitime-Footer">
 			<span class="row">
