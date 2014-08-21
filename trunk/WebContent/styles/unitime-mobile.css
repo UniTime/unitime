@@ -249,3 +249,17 @@
   	box-shadow:         2px 2px 3px rgb(232,162,162);
   	background-color: rgb(209,138,138);
 }
+
+.unitime-MobileMainContent {
+	display: block;
+	height: 600px;
+}
+
+.unitime-MobileMainContent .messages {
+	display: block;
+	padding: 5px;
+}
+
+.unitime-MobileMainContent .message {
+	padding: 2px 0px 0px 10px;
+}

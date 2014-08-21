@@ -3526,3 +3526,25 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: center;
 	margin-bottom: 20px;
 }
+
+.unitime-MainContent {
+	display: block;
+	width: 800px;
+	height: 600px;
+}
+
+.unitime-MainLogo {
+	background-repeat:no-repeat;
+	background-position: center;
+	background-image: url('../images/logo.jpg');
+	margin: 10px;
+}
+
+.unitime-MainContent .messages {
+	display: block;
+	padding: 5px;
+}
+
+.unitime-MainContent .message {
+	padding: 2px 0px 0px 10px;
+}
