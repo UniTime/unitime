@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -71,12 +72,12 @@ public class StudentSectioningPage extends Composite {
 		
 		final AcademicSessionSelector sessionSelector = new AcademicSessionSelector(UniTimePageHeader.getInstance().getRight(), mode);
 		
-		iSectioningService.isAdminOrAdvisor(new AsyncCallback<Boolean>() {
+		iSectioningService.getProperties(null, new AsyncCallback<SectioningProperties>() {
 			public void onFailure(Throwable caught) {
 			}
 
-			public void onSuccess(Boolean result) {
-				if (result) {
+			public void onSuccess(SectioningProperties result) {
+				if (result.isAdmin()) {
 					userAuthentication.setAllowLookup(true);
 					if (Window.Location.getParameter("session") != null)
 						sessionSelector.selectSession(Long.valueOf(Window.Location.getParameter("session")), new AsyncCallback<Boolean>() {

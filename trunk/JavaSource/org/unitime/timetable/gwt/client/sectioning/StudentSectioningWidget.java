@@ -1048,7 +1048,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iSectioningService.checkEligibility(iOnline, sessionId, studentId, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 			@Override
 			public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
+				iErrorMessage.setVisible(false);
 				iEligibilityCheck = result;
+				iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 				if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_USE_ASSISTANT)) {
 					if (result.hasMessage())
 						UniTimeNotifications.warn(result.getMessage());
@@ -1065,6 +1067,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							}
 							@Override
 							public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
+								iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 								iEligibilityCheck = result;
 								iSchedule.setVisible(true);
 								lastRequest(sessionId, studentId, saved);
@@ -1073,10 +1076,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}); 
 						iPinDialog.checkEligibility(iOnline, sessionId, null, callback);
 					} else {
+						iSchedule.setVisible(true);
 						lastRequest(sessionId, studentId, saved);
 						if (ret != null) ret.onSuccess(iEligibilityCheck);
 					}
 				} else {
+					iCourseRequests.setCanWaitList(false);
 					LoadingWidget.getInstance().hide();
 					if (result.hasMessage()) {
 						iErrorMessage.setHTML(result.getMessage());

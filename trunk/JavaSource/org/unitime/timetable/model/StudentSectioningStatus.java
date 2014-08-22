@@ -38,6 +38,8 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		notype("Must Have Course Type"),
 		waitlist("Wait-Listing Enabled"),
 		nobatch("Do Not Schedule in Batch Solver"),
+		enrollment("Enrollment Enabled"),
+		admin("Admin Can Enroll"),
 		;
 		
 		private String iName;

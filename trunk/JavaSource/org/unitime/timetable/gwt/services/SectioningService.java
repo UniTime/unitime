@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -57,8 +58,7 @@ public interface SectioningService extends RemoteService {
 	ClassAssignmentInterface lastResult(boolean online, Long sessionId) throws SectioningException, PageAccessException;
     Boolean saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException;
     ClassAssignmentInterface enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException;
-    Boolean isAdmin() throws SectioningException, PageAccessException;
-	Boolean isAdminOrAdvisor() throws SectioningException, PageAccessException;
+    SectioningProperties getProperties(Long sessionId) throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.Enrollment> listEnrollments(Long offeringId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface getEnrollment(boolean online, Long studentId) throws SectioningException, PageAccessException;
 	List<Long> canApprove(Long classOrOfferingId) throws SectioningException, PageAccessException;

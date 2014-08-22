@@ -230,8 +230,17 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 			return;
 		}
 
-		if (right.hasType() && !right.type().isInstance(domainObject))
+		if (right.hasType() && !right.type().isInstance(domainObject)) {
+			if (domainObject instanceof Qualifiable) {
+				checkPermission(user, ((Qualifiable)domainObject).getQualifierId(), ((Qualifiable)domainObject).getQualifierType(), right);
+				return;
+			}
+			if (domainObject instanceof Long) {
+				checkPermission(user, (Long)domainObject, right.type().getSimpleName(), right);
+				return;
+			}
 			throw new AccessDeniedException(MSG.wrongDomainObject(right.toString(), domainObject.getClass().getSimpleName(), right.type().getSimpleName()));
+		}
 		
 		try {
 			Permission<?> perm = (Permission<?>)applicationContext.getBean("permission" + right.name(), Permission.class);
@@ -437,8 +446,15 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 			return true;
 		}
 
-		if (right.hasType() && !right.type().isInstance(domainObject))
+		if (right.hasType() && !right.type().isInstance(domainObject)) {
+			if (domainObject instanceof Qualifiable) {
+				return hasPermission(user, ((Qualifiable)domainObject).getQualifierId(), ((Qualifiable)domainObject).getQualifierType(), right);
+			}
+			if (domainObject instanceof Long) {
+				return hasPermission(user, (Long)domainObject, right.type().getSimpleName(), right);
+			}
 			return false;
+		}
 		
 		try {
 			Permission<?> perm = (Permission<?>)applicationContext.getBean("permission" + right.name(), Permission.class);
