@@ -398,19 +398,21 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 								error += "\n" + e.message;
 						}
 					
-					if ("Registered".equals(reg.statusDescription) && added.contains(id)) {
-						// skip successfully registered enrollments
+					if ("Registered".equals(reg.statusDescription)) {
 						external.addSectionBuilder()
 							.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
 							.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
 							.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
-						if (error != null) {
-							XCourse course = id2course.get(id);
-							if (course != null)
-								for (XSection section: id2section.get(id))
-									fails.add(new EnrollmentFailure(course, section, error, true));
+						if (added.contains(id)) {
+							// skip successfully registered enrollments
+							if (error != null) {
+								XCourse course = id2course.get(id);
+								if (course != null)
+									for (XSection section: id2section.get(id))
+										fails.add(new EnrollmentFailure(course, section, error, true));
+							}
+							continue;
 						}
-						continue;
 					}
 					if ("Deleted".equals(reg.statusDescription)) {
 						// skip deleted enrollments
