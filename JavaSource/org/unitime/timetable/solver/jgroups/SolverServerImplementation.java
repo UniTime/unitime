@@ -513,10 +513,12 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
     public static void main(String[] args) {
     	try {
     		if (ApplicationProperty.DataDir.value() == null)
-    			ApplicationProperties.getDefaultProperties().setProperty(ApplicationProperty.DataDir.key(), ".");
+    			ApplicationProperties.getDefaultProperties().setProperty(ApplicationProperty.DataDir.key(),
+    					ApplicationProperties.getProperty("tmtbl.solver.home", "."));
     		
     		if (System.getProperty("catalina.base") == null)
-    			ApplicationProperties.getDefaultProperties().setProperty("catalina.base", ".");
+    			ApplicationProperties.getDefaultProperties().setProperty("catalina.base",
+    					ApplicationProperty.DataDir.value());
     		    		
 			configureLogging(ApplicationProperties.getDefaultProperties());
     		
