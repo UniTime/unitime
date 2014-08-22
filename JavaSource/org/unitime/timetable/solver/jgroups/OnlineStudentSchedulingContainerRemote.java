@@ -101,7 +101,10 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 	@Override
 	public void stop() {
 		super.stop();
-		iCacheManager.stop();
+		if (iCacheManager != null) {
+			iCacheManager.stop();
+			iCacheManager = null;
+		}
 	}
 	
 	@Override
