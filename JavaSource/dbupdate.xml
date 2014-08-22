@@ -9739,5 +9739,34 @@
 		<mysql>alter table %SCHEMA%.course_credit_unit_config drop foreign key fk_crs_crdt_unit_cfg_crs_own</mysql>
 		<plsql>alter table %SCHEMA%.course_credit_unit_config drop constraint fk_crs_crdt_unit_cfg_crs_own</plsql>
 		<sql>alter table %SCHEMA%.course_credit_unit_config add constraint fk_crs_crdt_unit_cfg_crs_own foreign key (course_id) references %SCHEMA%.course_offering(uniqueid) on delete cascade</sql>
-	</update>	
+	</update>
+	<update version="138" date="22-Aug-2014" comment="Additional Student Scheduling Permissions">
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentSchedulingMassCancel'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'StudentSchedulingAdmin'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentSchedulingEmailStudent'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'StudentSchedulingAdmin'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentSchedulingChangeStudentStatus'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'StudentSchedulingAdmin'
+		</sql>
+		<sql>
+			update %SCHEMA%.sectioning_status set status = 215 where reference = 'Enabled'
+		</sql>
+		<sql>
+			update %SCHEMA%.sectioning_status set status = 20 where reference = 'Disabled'
+		</sql>
+		<sql>
+			update %SCHEMA%.sectioning_status set status = 151 where reference = 'Not Available'
+		</sql>
+		<sql>
+			update %SCHEMA%.sectioning_status set status = 211 where reference = 'No Email'
+		</sql>
+	</update>
 </dbupdate>

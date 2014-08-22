@@ -24,12 +24,13 @@ import java.util.BitSet;
 import java.util.Date;
 
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.util.DateUtils;
 
 /**
  * @author Tomas Muller
  */
-public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Serializable {
+public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Serializable, Qualifiable {
 	private static final long serialVersionUID = 1L;
 	private Long iUniqueId;
 	private String iYear, iTerm, iCampus;
@@ -126,4 +127,24 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	public int getLastWeekToDrop() { return iWkDrop; }
 	
 	public String getDefaultSectioningStatus() { return iDefaultStatus; }
+
+	@Override
+	public Serializable getQualifierId() {
+		return getUniqueId();
+	}
+
+	@Override
+	public String getQualifierType() {
+		return Session.class.getSimpleName();
+	}
+
+	@Override
+	public String getQualifierReference() {
+		return toCompactString();
+	}
+
+	@Override
+	public String getQualifierLabel() {
+		return toString();
+	}
 }

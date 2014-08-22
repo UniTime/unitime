@@ -920,6 +920,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Enrollment disabled.")
 	String exceptionEnrollmentDisabled();
 	
+	@DefaultMessage("Access disabled.")
+	String exceptionAccessDisabled();
+	
 	@DefaultMessage("Authentication PIN is required.")
 	String exceptionAuthenticationPinRequired();
 	

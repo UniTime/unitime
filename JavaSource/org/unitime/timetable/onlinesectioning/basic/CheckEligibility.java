@@ -84,6 +84,8 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 			if (iStudentId != null)
 				action.setStudent(OnlineSectioningLog.Entity.newBuilder().setUniqueId(iStudentId));
 			
+			iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, server.getAcademicSession().isSectioningEnabled() && CustomStudentEnrollmentHolder.isAllowWaitListing());
+			
 			Student student = (iStudentId == null ? null : StudentDAO.getInstance().get(iStudentId, helper.getHibSession()));
 			if (student == null) {
 				if (!iCheck.hasFlag(EligibilityFlag.IS_ADMIN) && !iCheck.hasFlag(EligibilityFlag.IS_ADVISOR))
@@ -92,7 +94,6 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				action.setResult(OnlineSectioningLog.Action.ResultType.NULL);
 				return iCheck;
 			}
-			
 
 			action.getStudentBuilder().setExternalId(student.getExternalUniqueId());
 			action.getStudentBuilder().setName(helper.getStudentNameFormat().format(student));
@@ -100,25 +101,33 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 			StudentSectioningStatus status = student.getSectioningStatus();
 			if (status == null) status = student.getSession().getDefaultSectioningStatus();
 			boolean disabled = (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled));
-			if (disabled && iCheck.hasFlag(EligibilityFlag.IS_ADMIN))
-				disabled = false;
-			if (disabled && status.hasOption(StudentSectioningStatus.Option.advisor) && iCheck.hasFlag(EligibilityFlag.IS_ADVISOR))
-				disabled = false;
-			if (disabled) {
-				if (status.getMessage() == null)
-					iCheck.setMessage(MSG.exceptionEnrollmentDisabled());
-				else
-					iCheck.setMessage(status.getMessage());
-			}
+			
+			boolean noenrl = (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment));
+			if (noenrl && status.hasOption(StudentSectioningStatus.Option.admin) && iCheck.hasFlag(EligibilityFlag.IS_ADMIN))
+				noenrl = false;
+			if (noenrl && status.hasOption(StudentSectioningStatus.Option.advisor) && iCheck.hasFlag(EligibilityFlag.IS_ADVISOR))
+				noenrl = false;
+			
+			if (status != null && !status.hasOption(StudentSectioningStatus.Option.waitlist))
+				iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, false);
+			
+			if (disabled)
+				iCheck.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, false);
 			
 			if (server.getAcademicSession().isSectioningEnabled()) {
-				if (!disabled)
+				if (!noenrl)
 					iCheck.setFlag(EligibilityFlag.CAN_ENROLL, true);
 			} else {
-				// iCheck.setMessage(MSG.exceptionNoServerForSession());
 				iCheck.setFlag(EligibilityFlag.CAN_ENROLL, false);
 			}
-			
+
+			if (status != null && status.getMessage() != null)
+				iCheck.setMessage(status.getMessage());
+			else if (disabled)
+				iCheck.setMessage(MSG.exceptionAccessDisabled());
+			else if (noenrl)
+				iCheck.setMessage(MSG.exceptionEnrollmentDisabled());
+				
 			if (CustomStudentEnrollmentHolder.hasProvider())
 				CustomStudentEnrollmentHolder.getProvider().checkEligibility(server, helper, iCheck, server.getStudent(iStudentId));
 

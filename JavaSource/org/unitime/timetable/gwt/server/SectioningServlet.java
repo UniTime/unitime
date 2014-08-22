@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-
 import org.apache.log4j.Logger;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
@@ -57,6 +56,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningActio
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
@@ -271,7 +271,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public CourseMatcher getCourseMatcher(Long sessionId) {
 		boolean noCourseType = true, allCourseTypes = false;
 		Set<String> allowedCourseTypes = new HashSet<String>();
-		if (isAdminOrAdvisor()) {
+		if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)) {
 			allCourseTypes = true;
 		} else {
 			Long studentId = getStudentId(sessionId);
@@ -394,8 +394,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				ret.add(new AcademicSessionProvider.AcademicSessionInfo(
 						session.getUniqueId(),
 						session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
-						MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()),
-						session.getStatusType().canOnlineSectionStudents() && CustomStudentEnrollmentHolder.isAllowWaitListing()));
+						MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative())));
 			}
 		} else {
 			for (Session session: SessionDAO.getInstance().findAll()) {
@@ -404,8 +403,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					ret.add(new AcademicSessionProvider.AcademicSessionInfo(
 							session.getUniqueId(),
 							session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
-							MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()),
-							CustomStudentEnrollmentHolder.isAllowWaitListing()));
+							MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative())));
 			}
 		}
 		if (ret.isEmpty()) {
@@ -728,8 +726,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			return new AcademicSessionProvider.AcademicSessionInfo(
 					s.getUniqueId(),
 					s.getYear(), s.getTerm(), s.getCampus(),
-					MSG.sessionName(s.getYear(), s.getTerm(), s.getCampus()),
-					s.isSectioningEnabled() && CustomStudentEnrollmentHolder.isAllowWaitListing());
+					MSG.sessionName(s.getYear(), s.getTerm(), s.getCampus()));
 		} else {
 			Session session = SessionDAO.getInstance().get(sessionId);
 			if (session == null || session.getStatusType().isTestSession())
@@ -739,8 +736,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			return new AcademicSessionProvider.AcademicSessionInfo(
 					session.getUniqueId(),
 					session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
-					MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()),
-					CustomStudentEnrollmentHolder.isAllowWaitListing());
+					MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()));
 		}
 	}
 	
@@ -944,7 +940,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (ApplicationProperty.OnlineSchedulingSaveRequests.isFalse()) return false;
 		}
 		Long studentId = getStudentId(request.getAcademicSessionId());
-		if (studentId == null && isAdminOrAdvisor())
+		if (studentId == null && getSessionContext().hasPermission(Right.StudentSchedulingAdvisor))
 			studentId = request.getStudentId();
 		if (server != null) {
 			if (studentId == null)
@@ -996,23 +992,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		return server.execute(server.createAction(EnrollStudent.class).forStudent(request.getStudentId()).withRequest(request).withAssignment(currentAssignment), currentUser());
 	}
 
-	public Boolean isAdminOrAdvisor() throws SectioningException, PageAccessException {
-		try {
-			return getSessionContext().hasPermission(Right.StudentSchedulingAdvisor);
-		} catch (PageAccessException e) {
-			throw e;
-		} catch (SectioningException e) {
-			throw e;
-		} catch  (Exception e) {
-			sLog.error(e.getMessage(), e);
-			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
-		}
-	}
-	
-	public Boolean isAdmin() throws SectioningException, PageAccessException {
-		return getSessionContext().hasPermission(Right.StudentSchedulingAdmin);
-	}
-	
 	public List<Long> canApprove(Long classOrOfferingId) throws SectioningException, PageAccessException {
 		try {
 			UserContext user = getSessionContext().getUser();
@@ -1780,6 +1759,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			if (ApplicationProperty.OnlineSchedulingEmailConfirmation.isFalse())
 				throw new SectioningException(MSG.exceptionStudentEmailsDisabled());
+			getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingEmailStudent);
 			StudentEmail email = server.createAction(StudentEmail.class).forStudent(studentId);
 			email.setCC(cc);
 			email.setEmailSubject(subject == null || subject.isEmpty() ? MSG.defaulSubject() : subject);
@@ -1800,6 +1780,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		try {
 			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+			getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingChangeStudentStatus);
 			return server.execute(server.createAction(ChangeStudentStatus.class).forStudents(studentIds).withStatus(ref), currentUser());
 		} catch (PageAccessException e) {
 			throw e;
@@ -1850,7 +1831,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			
-			getSessionContext().checkPermission(Right.StudentSchedulingAdmin);
+			getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingMassCancel);
 			
 			org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
 			StudentSectioningStatus status = (statusRef == null || statusRef.isEmpty() ? null : (StudentSectioningStatus)hibSession.createQuery(
@@ -1946,5 +1927,21 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	@Override
 	public void destroy() throws Exception {
 		CustomStudentEnrollmentHolder.release();
+	}
+
+	@Override
+	public SectioningProperties getProperties(Long sessionId) throws SectioningException, PageAccessException {
+		SectioningProperties properties = new SectioningProperties();
+		properties.setAdmin(getSessionContext().hasPermission(Right.StudentSchedulingAdmin));
+		properties.setAdvisor(getSessionContext().hasPermission(Right.StudentSchedulingAdmin));
+		if (sessionId == null && getSessionContext().getUser() != null)
+			sessionId = getSessionContext().getUser().getCurrentAcademicSessionId();
+		properties.setSessionId(sessionId);
+		if (sessionId != null) {
+			properties.setMassCancel(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingMassCancel));
+			properties.setEmail(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingEmailStudent));
+			properties.setChangeStatus(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentStatus));
+		}
+		return properties;
 	}
 }

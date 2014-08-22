@@ -40,6 +40,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			CAN_USE_ASSISTANT,
 			CAN_ENROLL,
 			PIN_REQUIRED,
+			CAN_WAITLIST,
 			
 			;
 			
@@ -79,6 +80,35 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public Long getSessionId() { return iSessionId; }
 		public void setStudentId(Long studentId) { iStudentId = studentId; }
 		public Long getStudentId() { return iStudentId; }
+	}
+	
+	public static class SectioningProperties implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private Long iSessionId = null;
+		private boolean iAdmin = false, iAdvisor = false;
+		private boolean iEmail = false, iMassCancel = false, iChangeStatus = false;
+		
+		public SectioningProperties() {
+		}
+		
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public Long getSessionId() { return iSessionId; }
+		
+		public boolean isAdmin() { return iAdmin; }
+		public boolean isAdvisor() { return iAdvisor; }
+		public boolean isAdminOrAdvisor() { return iAdmin || iAdvisor; }
+		
+		public void setAdmin(boolean admin) { iAdmin = admin; }
+		public void setAdvisor(boolean advisor) { iAdvisor = advisor; }
+		
+		public void setEmail(boolean email) { iEmail = email; }
+		public boolean isEmail() { return iEmail; }
+		
+		public void setMassCancel(boolean massCancel) { iMassCancel = massCancel; }
+		public boolean isMassCancel() { return iMassCancel; }
+		
+		public void setChangeStatus(boolean changeStatus) { iChangeStatus = changeStatus; }
+		public boolean isChangeStatus() { return iChangeStatus; }
 	}
 
 }

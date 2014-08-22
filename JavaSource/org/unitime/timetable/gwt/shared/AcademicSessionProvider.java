@@ -46,25 +46,20 @@ public interface AcademicSessionProvider {
 	
 	public static class AcademicSessionInfo implements IsSerializable {
 		private Long iSessionId;
-		private Boolean iCanWaitListCourseRequests;
 		private String iYear, iTerm, iCampus, iName;
 		
 		public AcademicSessionInfo() {}
 		
-		public AcademicSessionInfo(Long sessionId, String year, String term, String campus, String name, Boolean canWaitListCourseRequests) {
+		public AcademicSessionInfo(Long sessionId, String year, String term, String campus, String name) {
 			iSessionId = sessionId;
 			iTerm = term;
 			iYear = year;
 			iCampus = campus;
 			iName = name;
-			iCanWaitListCourseRequests = canWaitListCourseRequests;
 		}
 		
 		public Long getSessionId() { return iSessionId; }
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
-		
-		public Boolean isCanWaitListCourseRequests() { return iCanWaitListCourseRequests; }
-		public void setCanWaitListCourseRequests(Boolean canWaitListCourseRequests) { iCanWaitListCourseRequests = canWaitListCourseRequests; }
 		
 		public String getYear() { return iYear; }
 		public void setYear(String year) { iYear = year; }

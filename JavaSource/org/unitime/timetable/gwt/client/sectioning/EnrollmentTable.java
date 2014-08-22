@@ -213,6 +213,7 @@ public class EnrollmentTable extends Composite {
 						new WebTable.Cell(MESSAGES.colParent(), 1, "75px"),
 						new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10px")
 					));
+				assignments.setEmptyMessage(MESSAGES.emptySchedule());
 				
 				ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 				for (ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {

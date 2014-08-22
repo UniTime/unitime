@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -93,7 +94,7 @@ public class OnlineSectioningTest extends Composite {
 		iSessions.setHint("An academic session with enabled student sectioning.");
 		
 		LoadingWidget.getInstance().show("Loading...");
-		iSectioningService.isAdminOrAdvisor(new AsyncCallback<Boolean>() {
+		iSectioningService.getProperties(null, new AsyncCallback<SectioningProperties>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(caught.getMessage());
@@ -103,8 +104,8 @@ public class OnlineSectioningTest extends Composite {
 			}
 
 			@Override
-			public void onSuccess(Boolean result) {
-				if (!result) {
+			public void onSuccess(SectioningProperties result) {
+				if (!result.isAdmin()) {
 					iHeader.setErrorMessage("Only administrators can use this page.");
 					LoadingWidget.getInstance().hide();
 					UniTimeNotifications.error("Only administrators can use this page.");
