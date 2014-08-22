@@ -31,7 +31,6 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
-import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable.TopCell;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -53,13 +52,12 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
-import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
-import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.StudentInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Overflow;
@@ -135,6 +133,7 @@ public class SectioningStatusPage extends Composite {
 	private UniTimeTabPanel iTabPanel = null;
 	private int iTabIndex = 0;
 	private FocusPanel iTabPanelWithFocus = null;
+	private SectioningProperties iProperties = null;
 	
 	private HTML iError = null, iCourseTableHint, iStudentTableHint;
 	private String iLastFilterOnEnter = null, iCourseFilter = null;
@@ -345,41 +344,22 @@ public class SectioningStatusPage extends Composite {
 			@Override
 			public void onMouseClick(final TableEvent<StudentInfo> event) {
 				if (event.getData() == null || event.getData().getStudent() == null) return; // header or footer
-				if (event.getData().getRequested() == null && iOnline) {
-					LoadingWidget.getInstance().show(MESSAGES.loadingAssistant(event.getData().getStudent().getName()));
-					iError.setVisible(false);
-					iEnrollmentTable.showStudentAssistant(event.getData().getStudent(), new AsyncCallback<Boolean>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							LoadingWidget.getInstance().hide();
-							iError.setHTML(caught.getMessage());
-							iError.setVisible(true);
-						}
-						@Override
-						public void onSuccess(Boolean result) {
-							LoadingWidget.getInstance().hide();
-							if (result)
-								iStudentTable.clearHover();
-						}
-					});
-				} else {
-					iStudentTable.clearHover();
-					LoadingWidget.getInstance().show(MESSAGES.loadingEnrollment(event.getData().getStudent().getName()));
-					iError.setVisible(false);
-					iEnrollmentTable.showStudentSchedule(event.getData().getStudent(), new AsyncCallback<Boolean>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							LoadingWidget.getInstance().hide();
-							iError.setHTML(caught.getMessage());
-							iError.setVisible(true);
-						}
+				iStudentTable.clearHover();
+				LoadingWidget.getInstance().show(MESSAGES.loadingEnrollment(event.getData().getStudent().getName()));
+				iError.setVisible(false);
+				iEnrollmentTable.showStudentSchedule(event.getData().getStudent(), new AsyncCallback<Boolean>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						iError.setHTML(caught.getMessage());
+						iError.setVisible(true);
+					}
 
-						@Override
-						public void onSuccess(Boolean result) {
-							LoadingWidget.getInstance().hide();
-						}
-					});
-				}
+					@Override
+					public void onSuccess(Boolean result) {
+						LoadingWidget.getInstance().hide();
+					}
+				});
 			}
 		});
 		
@@ -472,47 +452,19 @@ public class SectioningStatusPage extends Composite {
 		
 		
 		if (iOnline) {
-			iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
-				
+			iSectioningService.getProperties(null, new AsyncCallback<SectioningProperties>() {
 				@Override
-				public void onFailure(Throwable caught) {
-				}
-
-				@Override
-				public void onSuccess(Boolean result) {
-					if (result)
+				public void onSuccess(SectioningProperties result) {
+					iProperties = result;
+					if (iProperties.isAdmin())
 						iTabPanel.add(iLogTable, MESSAGES.tabChangeLog(), true);
+					checkLastQuery();
 				}
-			});
-			
-			iSectioningService.lastAcademicSession(true, new AsyncCallback<AcademicSessionProvider.AcademicSessionInfo>() {
+
 				@Override
 				public void onFailure(Throwable caught) {
-					ToolBox.checkAccess(caught);
-					AcademicSessionSelector session = new AcademicSessionSelector(UniTimePageHeader.getInstance().getRight(), StudentSectioningPage.Mode.SECTIONING);
-					session.addAcademicSessionChangeHandler(new AcademicSessionSelector.AcademicSessionChangeHandler() {
-						@Override
-						public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
-							iSectioningService.selectSession(event.getNewAcademicSessionId(), new AsyncCallback<Boolean>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									iError.setHTML(caught.getMessage());
-									iError.setVisible(true);
-								}
-
-								@Override
-								public void onSuccess(Boolean result) {
-									checkLastQuery();								
-								}
-							});
-						}
-					});
-					session.selectSession();
-				}
-
-				@Override
-				public void onSuccess(AcademicSessionProvider.AcademicSessionInfo result) {
-					checkLastQuery();
+					iError.setHTML(caught.getMessage());
+					iError.setVisible(true);
 				}
 			});
 		} else {
@@ -654,7 +606,7 @@ public class SectioningStatusPage extends Composite {
 			});
 		} else if (iTabIndex == 1) {
 			if (iOnline) {
-				iSectioningService.isAdmin(new AsyncCallback<Boolean>() {
+				iSectioningService.findStudentInfos(iOnline, iCourseFilter, iCourseFilterRequest, new AsyncCallback<List<StudentInfo>>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
@@ -666,34 +618,19 @@ public class SectioningStatusPage extends Composite {
 					}
 
 					@Override
-					public void onSuccess(final Boolean isAdmin) {
-						iSectioningService.findStudentInfos(iOnline, iCourseFilter, iCourseFilterRequest, new AsyncCallback<List<StudentInfo>>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								LoadingWidget.getInstance().hide();
-								setLoading(false);
-								iError.setHTML(caught.getMessage());
-								iError.setVisible(true);
-								iTabPanel.setVisible(false);
-								ToolBox.checkAccess(caught);
-							}
-
-							@Override
-							public void onSuccess(List<StudentInfo> result) {
-								if (result.isEmpty()) {
-									iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
-									iError.setVisible(true);
-									iTabPanel.setVisible(false);
-								} else {
-									populateStudentTable(result, isAdmin);
-									iTabPanel.setVisible(true);
-								}
-								setLoading(false);
-								LoadingWidget.getInstance().hide();
-							}
-						});
+					public void onSuccess(List<StudentInfo> result) {
+						if (result.isEmpty()) {
+							iError.setHTML(MESSAGES.exceptionNoMatchingResultsFound(iCourseFilter));
+							iError.setVisible(true);
+							iTabPanel.setVisible(false);
+						} else {
+							populateStudentTable(result);
+							iTabPanel.setVisible(true);
+						}
+						setLoading(false);
+						LoadingWidget.getInstance().hide();
 					}
-				});				
+				});			
 			} else {
 				iSectioningService.findStudentInfos(iOnline, iCourseFilter, iCourseFilterRequest, new AsyncCallback<List<StudentInfo>>() {
 					@Override
@@ -713,7 +650,7 @@ public class SectioningStatusPage extends Composite {
 							iError.setVisible(true);
 							iTabPanel.setVisible(false);
 						} else {
-							populateStudentTable(result, false);
+							populateStudentTable(result);
 							iTabPanel.setVisible(true);
 						}
 						setLoading(false);
@@ -1055,10 +992,10 @@ public class SectioningStatusPage extends Composite {
 		iCourseTableHint.setVisible(hasReservation);
 	}
 	
-	public void populateStudentTable(List<StudentInfo> result, boolean isAdmin) {
+	public void populateStudentTable(List<StudentInfo> result) {
 		List<Widget> header = new ArrayList<Widget>();
 		
-		if (isAdmin && iOnline) {
+		if (iOnline && iProperties != null && iProperties.isAdmin()) {
 			UniTimeTableHeader hSelect = new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER);
 			header.add(hSelect);
 			hSelect.setWidth("10px");
@@ -1122,7 +1059,7 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public boolean isApplicable() {
-					return iSelectedStudentIds.size() > 0;
+					return iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isEmail();
 				}
 				@Override
 				public void execute() {
@@ -1174,7 +1111,7 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public boolean isApplicable() {
-					return iSelectedStudentIds.size() > 0;
+					return iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isMassCancel();
 				}
 				@Override
 				public void execute() {
@@ -1259,7 +1196,7 @@ public class SectioningStatusPage extends Composite {
 						}
 						@Override
 						public boolean isApplicable() {
-							return iSelectedStudentIds.size() > 0;
+							return iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isChangeStatus();
 						}
 						@Override
 						public void execute() {
@@ -1821,7 +1758,7 @@ public class SectioningStatusPage extends Composite {
 		for (StudentInfo info: result) {
 			List<Widget> line = new ArrayList<Widget>();
 			if (info.getStudent() != null) {
-				if (isAdmin && iOnline) {
+				if (iOnline && iProperties != null && iProperties.isAdmin()) {
 					CheckBox ch = new CheckBox();
 					ch.addClickHandler(new ClickHandler() {
 						@Override
@@ -1864,7 +1801,7 @@ public class SectioningStatusPage extends Composite {
 					line.add(new HTML(info.getStudent().getAccommodation("<br>"), false));
 				line.add(new HTML(info.getStatus(), false));
 			} else {
-				if (isAdmin && iOnline) line.add(new HTML("&nbsp;", false));
+				if (iOnline && iProperties != null && iProperties.isAdmin()) line.add(new HTML("&nbsp;", false));
 				line.add(new Label(MESSAGES.total()));
 				line.add(new NumberCell(null, result.size() - 1));
 				if (hasArea) {

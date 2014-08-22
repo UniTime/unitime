@@ -70,6 +70,7 @@ public class CourseRequestsTable extends Composite {
 	private boolean iOnline;
 	
 	Validator<CourseSelection> iCheckForDuplicities;
+	private boolean iCanWaitList = true;
 
 	public CourseRequestsTable(AcademicSessionProvider sessionProvider, boolean online) {
 		iOnline = online;
@@ -247,18 +248,9 @@ public class CourseRequestsTable extends Composite {
 		}
 		iAlternatives.get(0)[0].setHint(MESSAGES.courseRequestsHintA0());
 		
-		iSessionProvider.addAcademicSessionChangeHandler(new AcademicSessionProvider.AcademicSessionChangeHandler() {
-			@Override
-			public void onAcademicSessionChange(AcademicSessionProvider.AcademicSessionChangeEvent event) {
-				sessionChanged();
-			}
-		});
-		
 		initWidget(iGrid);
 		
 		initAsync();
-		
-		sessionChanged();
 	}
 	
 	private void initAsync() {
@@ -328,7 +320,7 @@ public class CourseRequestsTable extends Composite {
 		iGrid.setWidget(idx, 2, c[1]);
 		iGrid.setWidget(idx, 3, c[2]);
 		iGrid.setWidget(idx, 4, ch);
-		iGrid.getCellFormatter().setVisible(idx, 4, iSessionProvider != null && iSessionProvider.getAcademicSessionInfo() != null && iSessionProvider.getAcademicSessionInfo().isCanWaitListCourseRequests());
+		iGrid.getCellFormatter().setVisible(idx, 4, iCanWaitList);
 		iGrid.getRowFormatter().setVerticalAlign(idx, HasVerticalAlignment.ALIGN_TOP);
 		iCourses.add(c);
 		c[0].setWaitList(ch);
@@ -671,11 +663,11 @@ public class CourseRequestsTable extends Composite {
 		}
 	}
 	
-	public void sessionChanged() {
-		boolean showWaitLists = (iSessionProvider != null && iSessionProvider.getAcademicSessionInfo() != null && iSessionProvider.getAcademicSessionInfo().isCanWaitListCourseRequests());
-		iGrid.setHTML(0, 1, showWaitLists ? MESSAGES.courseRequestsWaitList() : "");
+	public void setCanWaitList(boolean canWaitList) {
+		iCanWaitList = canWaitList;
+		iGrid.setHTML(0, 1, iCanWaitList ? MESSAGES.courseRequestsWaitList() : "");
 		for (int i = 0; i < iCourses.size(); i++)
-			iGrid.getCellFormatter().setVisible(1 + i, 4, showWaitLists);
+			iGrid.getCellFormatter().setVisible(1 + i, 4, iCanWaitList);
 	}
 	
 	public void validate(final AsyncCallback<Boolean> callback) {
@@ -771,7 +763,7 @@ public class CourseRequestsTable extends Composite {
 	}
 	
 	public Boolean getWaitList(String course) {
-		if (iSessionProvider != null && iSessionProvider.getAcademicSessionInfo() != null && iSessionProvider.getAcademicSessionInfo().isCanWaitListCourseRequests())
+		if (iCanWaitList)
 			for (CourseSelectionBox[] line: iCourses)
 				if (course.equals(line[0].getValue()) || course.equals(line[1].getValue()) || course.equals(line[2].getValue()))
 					return line[0].getWaitList();

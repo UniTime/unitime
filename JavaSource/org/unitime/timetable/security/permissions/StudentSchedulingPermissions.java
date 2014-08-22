@@ -20,6 +20,7 @@
 package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -27,6 +28,8 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.DepartmentStatusType.Status;
+import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
@@ -159,5 +162,29 @@ public class StudentSchedulingPermissions {
 		@Override
 		public Class<Student> type() { return Student.class; }
 		
+	}
+	
+	@PermissionForRight(Right.StudentSchedulingMassCancel)
+	public static class StudentSchedulingMassCancel extends SimpleSessionPermission {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return super.check(user, source) && source.getStatusType().can(Status.StudentsOnline) && CustomStudentEnrollmentHolder.isAllowWaitListing();
+		}
+	}
+
+	@PermissionForRight(Right.StudentSchedulingEmailStudent)
+	public static class StudentSchedulingEmailStudent extends SimpleSessionPermission {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return super.check(user, source) && source.getStatusType().can(Status.StudentsOnline) && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue();
+		}
+	}
+
+	@PermissionForRight(Right.StudentSchedulingChangeStudentStatus)
+	public static class StudentSchedulingChangeStudentStatus extends SimpleSessionPermission {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return super.check(user, source) && source.getStatusType().can(Status.StudentsOnline);
+		}
 	}
 }

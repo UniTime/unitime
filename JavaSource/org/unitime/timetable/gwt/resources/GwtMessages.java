@@ -2585,8 +2585,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Access")
 	String toggleAccess();
 	
+	@DefaultMessage("Enrollment")
+	String toggleEnrollment();
+	
 	@DefaultMessage("Advisor")
 	String toggleAdvisor();
+	
+	@DefaultMessage("Admin")
+	String toggleAdmin();
 	
 	@DefaultMessage("Email")
 	String toggleEmail();
