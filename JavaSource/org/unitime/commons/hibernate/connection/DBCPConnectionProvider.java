@@ -80,9 +80,6 @@ public class DBCPConnectionProvider implements ConnectionProvider {
     // Old Environment property for backward-compatibility (property removed in Hibernate3)
     private static final String DBCP_PS_MAXACTIVE = "hibernate.dbcp.ps.maxActive";
 
-    // Property doesn't exists in Hibernate2
-    private static final String AUTOCOMMIT = "hibernate.connection.autocommit";
-    
     public void configure(Properties props) throws HibernateException {
         try {
             log.debug("Configure DBCPConnectionProvider");
@@ -109,7 +106,7 @@ public class DBCPConnectionProvider implements ConnectionProvider {
             }
             
             // Turn off autocommit (unless autocommit property is set) 
-            String autocommit = props.getProperty(AUTOCOMMIT);
+            String autocommit = props.getProperty(Environment.AUTOCOMMIT);
             if ((autocommit != null) && (autocommit.trim().length() > 0)) {
                 dbcpProperties.put("defaultAutoCommit", autocommit);
             } else {
