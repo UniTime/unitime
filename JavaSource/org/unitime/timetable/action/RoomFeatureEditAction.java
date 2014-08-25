@@ -51,6 +51,7 @@ import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
@@ -210,6 +211,14 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 					loc.getFeatures().remove(rf);
 					hibSession.save(loc);
 				}
+                
+				for (RoomFeaturePref p: (List<RoomFeaturePref>)hibSession.createQuery("from RoomFeaturePref p where p.roomFeature.uniqueId = :id")
+						.setLong("id", id).list()) {
+					p.getOwner().getPreferences().remove(p);
+					hibSession.delete(p);
+					hibSession.saveOrUpdate(p.getOwner());
+				}
+                
 				hibSession.delete(rf);
 			}
             
