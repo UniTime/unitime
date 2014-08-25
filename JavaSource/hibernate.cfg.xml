@@ -79,13 +79,15 @@
 
 	<property name="hibernate.jdbc.batch_size">20</property>
 
-	<property name="hibernate.connection.release_mode">auto</property>
+	<property name="hibernate.connection.release_mode">after_transaction</property>
 
 	<property name="hibernate.default_batch_fetch_size">100</property>
 
+	<property name="hibernate.current_session_context_class">managed</property>
+
 	<!-- Use Second Level Cache -->
 	<property name="hibernate.cache.use_second_level_cache">true</property>
-
+	
 	<!-- Cache Provider - EhCache -->
 	<property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
 	
