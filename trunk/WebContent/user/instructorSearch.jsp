@@ -36,11 +36,11 @@
 	
 <tiles:importAttribute />
 <loc:bundle name="CourseMessages">
-<html:form action="instructorList">
-	<TABLE border="0" cellspacing="0" cellpadding="3" style="width:100%;">
+<TABLE border="0" cellspacing="0" cellpadding="3" style="width:100%;">
 	<TR><TD>
 		<tt:section-header>
 			<tt:section-title>
+				<html:form action="instructorList">
 				<B><loc:message name="propertyDepartment"/></B>
 				<html:select property="deptUniqueId"
 					onchange="displayLoading(); submit()">
@@ -54,6 +54,7 @@
 						title="<%=MSG.titleSearchInstructors(MSG.accessSearchInstructors()) %>">
 					<loc:message name="actionSearchInstructors" />
 				</html:submit>
+				</html:form>
 			</tt:section-title>
 			<TABLE border="0" cellspacing="0" cellpadding="0" align="right"><TR>
 				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'InstructorsExportPdf')">
@@ -93,7 +94,6 @@
 		</tt:section-header>
 		</TD></TR>
 	</TABLE>
-</html:form>
 </loc:bundle>
 
 <logic:notEmpty name="body2">
