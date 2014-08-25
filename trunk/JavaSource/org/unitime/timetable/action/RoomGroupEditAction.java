@@ -49,6 +49,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -229,6 +230,14 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 					hibSession.saveOrUpdate(r);
 
 				}
+				
+				for (RoomGroupPref p: (List<RoomGroupPref>)hibSession.createQuery("from RoomGroupPref p where p.roomGroup.uniqueId = :id")
+						.setLong("id", id).list()) {
+					p.getOwner().getPreferences().remove(p);
+					hibSession.delete(p);
+					hibSession.saveOrUpdate(p.getOwner());
+				}
+
 				
 				hibSession.delete(rg);
 			}
