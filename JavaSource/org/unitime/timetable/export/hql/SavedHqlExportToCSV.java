@@ -21,6 +21,8 @@ package org.unitime.timetable.export.hql;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.export.BufferedPrinter;
 import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
@@ -92,10 +95,35 @@ public class SavedHqlExportToCSV implements Exporter {
 			}
 		}
 		
-		Printer out = new CSVPrinter(helper.getWriter(), false);
+		BufferedPrinter out = new BufferedPrinter(new CSVPrinter(helper.getWriter(), false));
 		helper.setup(out.getContentType(), q.getName().replace('/', '-').replace('\\', '-').replace(':', '-') + ".csv", false);
 		
 		execute(helper.getSessionContext().getUser(), out, q, params, 0, -1);
+		
+		String sort = helper.getParameter("sort");
+		if (sort != null && !"0".equals(sort)) {
+			final boolean asc = Integer.parseInt(sort) > 0;
+			final int col = Math.abs(Integer.parseInt(sort)) - 1;
+			Collections.sort(out.getBuffer(), new Comparator<String[]>() {
+				int compare(String[] a, String[] b, int col) {
+					for (int i = 0; i < a.length; i++) {
+						int c = (col + i) % a.length;
+						try {
+							int cmp = Double.valueOf(a[c] == null ? "0" : a[c]).compareTo(Double.valueOf(b[c] == null ? "0" : b[c]));
+							if (cmp != 0) return cmp;
+						} catch (NumberFormatException e) {
+							int cmp = (a[c] == null ? "" : a[c]).compareTo(b[c] == null ? "" : b[c]);
+							if (cmp != 0) return cmp;
+						}
+					}
+					return 0;
+				}	
+				@Override
+				public int compare(String[] a, String[] b) {
+					return asc ? compare(a, b, col) : compare(b, a, col);
+				}
+			});
+		}
 		
 		out.close();
 	}

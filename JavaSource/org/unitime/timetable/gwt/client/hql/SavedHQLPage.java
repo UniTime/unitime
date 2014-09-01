@@ -309,7 +309,7 @@ public class SavedHQLPage extends Composite {
 				}
 				String reportId = iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex());
 				
-				RPC.execute(EncodeQueryRpcRequest.encode("output=hql-report.csv&report=" + reportId + "&params=" + params), new AsyncCallback<EncodeQueryRpcResponse>() {
+				RPC.execute(EncodeQueryRpcRequest.encode("output=hql-report.csv&report=" + reportId + "&params=" + params + "&sort=" + iLastSort), new AsyncCallback<EncodeQueryRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
 					}
