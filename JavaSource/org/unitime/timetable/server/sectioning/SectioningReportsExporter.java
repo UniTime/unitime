@@ -20,8 +20,12 @@
 package org.unitime.timetable.server.sectioning;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
-
+import java.util.List;
 
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
@@ -102,16 +106,122 @@ public class SectioningReportsExporter implements Exporter {
 		for (int i = 0; i < csv.getHeader().getFields().size(); i++)
 			header[i] = csv.getHeader().getField(i).toString();
 		out.printHeader(header);
+		
+		DecimalFormat pf = new DecimalFormat("0.00%");
+		List<Row> rows = new ArrayList<Row>();
+		Row prev = null;
 		if (csv.getLines() != null)
 			for (CSVLine line: csv.getLines()) {
-				String[] row = new String[line.getFields().size()];
-				for (int i = 0; i < line.getFields().size(); i++)
-					row[i] = line.getField(i).toString();
-				out.printLine(row);
+				if (line.getFields().isEmpty()) continue;
+				Row data = new Row(line);
+				while (prev != null) {
+					if (data.getNrBlanks() > prev.getNrBlanks()) break;
+					prev = prev.getParent();
+				}
+				if (prev != null)
+					data.setParent(prev);
+				rows.add(data);
+				prev = data;
 			}
+
+		String sort = helper.getParameter("sort");
+		if (sort != null && !"0".equals(sort)) {
+			final boolean asc = Integer.parseInt(sort) > 0;
+			final int col = Math.abs(Integer.parseInt(sort)) - 1;
+			Collections.sort(rows, new Comparator<Row>() {
+				@Override
+				public int compare(Row o1, Row o2) {
+					return (asc ? o1.compareTo(o2, col) : o2.compareTo(o1, col));
+				}
+			});
+		}
+		
+		prev = null;
+		for (Row row: rows) {
+			boolean prevHide = true;
+			String[] line = new String[csv.getHeader().size()];
+			for (int x = 0; x < csv.getHeader().size(); x++) {
+				boolean hide = true;
+				if (prev == null || !prevHide || !prev.getCell(x).equals(row.getCell(x))) hide = false;
+				String text = row.getCell(x);
+				boolean number = false;
+				if (csv.getHeader().getField(x).toString().contains("%")) {
+					if (x > 0)
+						try {
+							Double.parseDouble(text);
+							number = true;
+						} catch (Exception e) {}
+					if (number)
+						text = pf.format(Double.parseDouble(text));
+				}
+				line[x] = (hide ? "" : text);
+				prevHide = hide;
+			}
+			if (prev != null && !prev.getCell(0).equals(row.getCell(0)))
+				out.printLine();
+			out.printLine(line);
+			prev = row;
+		}
 		
 		out.flush();
 		out.close();
+	}
+	
+	private static class Row {
+		CSVLine iLine;
+		Row iParent;
+		
+		public Row(CSVLine line) {
+			iLine = line;
+		}
+		
+		public Row getParent() { return iParent; }
+		
+		public void setParent(Row parent) { iParent = parent; }
+		
+		public boolean isBlank(int col) {
+			return iLine.getFields().size() <= col || iLine.getField(col).toString().isEmpty();
+		}
+		
+		public String getCell(int col) {
+			if (isBlank(col)) {
+				if (getParent() != null)
+					return getParent().getCell(col);
+				else
+					return "";
+			} else {
+				return iLine.getField(col).toString();
+			}
+		}
+		
+		public int getLevel() {
+			return getParent() == null ? 0 : getParent().getLevel() + 1;
+		}
+		
+		public int getLength() {
+			return getParent() == null ? iLine.getFields().size() : getParent().getLength();
+		}
+		
+		public int getNrBlanks() {
+			for (int i = 0; i < getLength(); i++)
+				if (!isBlank(i)) return i;
+			return getLength();
+		}
+		
+		public int compareTo(Row b, int col) {
+			Row a = this;
+			while (a.getLevel() > b.getLevel()) a = a.getParent();
+			while (b.getLevel() > a.getLevel()) b = b.getParent();
+			try {
+				int cmp = Double.valueOf(a.getCell(col) == null ? "0" : a.getCell(col)).compareTo(Double.valueOf(b.getCell(col) == null ? "0" : b.getCell(col)));
+				if (cmp != 0) return cmp;
+			} catch (NumberFormatException e) {
+				int cmp = (a.getCell(col) == null ? "" : a.getCell(col)).compareTo(b.getCell(col) == null ? "" : b.getCell(col));
+				if (cmp != 0) return cmp;
+			}
+			return 0;
+		}
+		
 	}
 	
 }
