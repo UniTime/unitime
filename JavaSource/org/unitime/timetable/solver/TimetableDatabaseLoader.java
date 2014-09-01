@@ -2733,7 +2733,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             				else if (course.getDemand() != null)
             					courseLimit = course.getDemand();
             				else
-            					courseLimit = 0;
+            					courseLimit = offeringLimit / offering.getCourseOfferings().size();
             			}
             		}
             		
