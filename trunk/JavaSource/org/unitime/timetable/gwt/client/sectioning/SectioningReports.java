@@ -197,7 +197,7 @@ public class SectioningReports extends Composite {
 					return;
 				}
 				ReportType type = ReportType.valueOf(iReportSelector.getWidget().getValue(iReportSelector.getWidget().getSelectedIndex()));
-				String query = "output=sct-report.csv&name=" + type.name() + "&report=" + type.getImplementation() + "&online=" + (iOnline ? "true" : "false");
+				String query = "output=sct-report.csv&name=" + type.name() + "&report=" + type.getImplementation() + "&online=" + (iOnline ? "true" : "false") + "&sort=" + iLastSort;
 				for (int i = 0; i + 1 < type.getParameters().length; i += 2)
 					query += "&" + type.getParameters()[i] + "=" + type.getParameters()[i + 1];
 				
@@ -519,7 +519,7 @@ public class SectioningReports extends Composite {
 		public void setParent(RowData parent) { iParent = parent; }
 		
 		public boolean isBlank(int col) {
-			return getRow().length < col || getRow()[col] == null || getRow()[col].isEmpty();
+			return getRow().length <= col || getRow()[col] == null || getRow()[col].isEmpty();
 		}
 		
 		public String getCell(int col) {
