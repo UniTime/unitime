@@ -40,6 +40,7 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 	
 	private P iName;
 	private ImageButton iHelp;
+	private ImageButton iClose = null;
 	private String iUrl = null;
 	
 	public MobilePageLabelImpl() {
@@ -62,7 +63,29 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 					ToolBox.open(getHelpUrl());
 			}
 		});
+		
+		if (hasParentWindow()) {
+			iClose = new ImageButton(ImageHolder.get().remove());
+			P close = new P("icon");
+			close.add(iClose);
+			add(close);
+			
+			iClose.addTapHandler(new TapHandler() {
+				@Override
+				public void onTap(TapEvent event) {
+					tellParentToCloseThisWindo();
+				}
+			});
+		}
 	}
+	
+	public static native boolean hasParentWindow()/*-{
+		return ($wnd.parent && $wnd.parent.hasGwtDialog());
+	}-*/;
+	
+	public static native boolean tellParentToCloseThisWindo()/*-{
+		$wnd.parent.hideGwtDialog();
+	}-*/;
 
 	@Override
 	public String getText() {
