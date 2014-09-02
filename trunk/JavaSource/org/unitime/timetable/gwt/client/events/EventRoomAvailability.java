@@ -179,6 +179,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			protected void onInitializationSuccess(List<AcademicSession> sessions) {
 				iFilter.setVisible(sessions != null && !sessions.isEmpty());
 				UniTimePageHeader.getInstance().getRight().setVisible(false);
+				UniTimePageHeader.getInstance().getRight().setPreventDefault(true);
 			}
 			
 			@Override
