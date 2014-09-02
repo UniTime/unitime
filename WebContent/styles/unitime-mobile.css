@@ -263,3 +263,17 @@
 .unitime-MobileMainContent .message {
 	padding: 2px 0px 0px 10px;
 }
+
+.unitime-MobileFrameDialog {
+	width: 100%;
+	padding: 0px;
+	border: none;
+}
+
+.unitime-MobileFrameDialog .frame {
+	width: 100%;
+	height: 100%;
+	border: none;
+	padding: 0px;
+	margin: 0px;
+}
