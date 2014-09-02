@@ -69,8 +69,10 @@ public class SavedHqlExportToCSV implements Exporter {
 		// FIXME: helper.getSessionContext().checkPermission(Right.???);
 		
 		// Retrive report
-		SavedHQL hql = SavedHQLDAO.getInstance().get(Long.valueOf(helper.getParameter("report")));
-		if (hql == null) throw new SavedHQLException("No report provided.");
+		String report = helper.getParameter("report");
+		if (report == null) throw new IllegalArgumentException("No report provided, please set the report parameter.");
+		SavedHQL hql = SavedHQLDAO.getInstance().get(Long.valueOf(report));
+		if (hql == null) throw new IllegalArgumentException("Report " + report + " does not exist.");
 		
 		SavedHQLInterface.Query q = new SavedHQLInterface.Query();
 		q.setName(hql.getName());

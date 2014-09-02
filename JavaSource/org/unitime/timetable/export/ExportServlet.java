@@ -26,8 +26,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
 
@@ -35,6 +39,7 @@ import org.unitime.timetable.security.context.HttpSessionContext;
  * @author Tomas Muller
  */
 public class ExportServlet extends HttpServlet {
+	private static Log sLog = LogFactory.getLog(ExportServlet.class);
 	private static final long serialVersionUID = 1L;
 	
 	protected SessionContext getSessionContext() {
@@ -50,14 +55,25 @@ public class ExportServlet extends HttpServlet {
 		ExportServletHelper helper = new ExportServletHelper(request, response, getSessionContext());
 		
 		String ref = helper.getParameter("output");
-		if (ref == null) throw new ServletException("No exporter provided.");
-		Exporter exporter = getExporter(ref);
-		if (exporter == null) throw new ServletException("Exporter " + ref + " not known.");
-		
+		if (ref == null) {
+			sLog.info("No exporter provided.");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No exporter provided, please set the output parameter.");
+			return;
+		}
 		try {
-			
-			exporter.export(helper);
-			
+			getExporter(ref).export(helper);
+		} catch (NoSuchBeanDefinitionException e) {
+			sLog.info("Exporter " + ref + " not known.");
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Exporter " + ref + " not known, please check the output parameter.");
+		} catch (IllegalArgumentException e) {
+			sLog.info(e.getMessage());
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+		} catch (PageAccessException e) {
+			sLog.info(e.getMessage());
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+		} catch (Exception e) {
+			sLog.warn(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 		} finally {
 			if (helper.hasOutputStream()) {
 				helper.getOutputStream().flush();

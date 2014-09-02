@@ -45,6 +45,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.context.UniTimeUserContext;
@@ -61,7 +62,7 @@ public abstract class EventsExporter implements Exporter {
 	public void export(ExportHelper helper) throws IOException {
 		Long sessionId = helper.getAcademicSessionId();
 		if (sessionId == null)
-			throw new RuntimeException("No academic session provided.");
+			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
 
 		EventLookupRpcRequest request = new EventLookupRpcRequest();
     	request.setSessionId(sessionId);
@@ -70,6 +71,8 @@ public abstract class EventsExporter implements Exporter {
     	String ext = helper.getParameter("ext");
     	if (ext != null) request.setResourceExternalId(ext);
     	String type = helper.getParameter("type");
+    	if (type == null)
+    		throw new IllegalArgumentException("Resource type not provided, please set the type parameter.");
     	request.setResourceType(ResourceType.valueOf(type.toUpperCase()));
     	EventFilterRpcRequest eventFilter = new EventFilterRpcRequest();
     	eventFilter.setSessionId(sessionId);
@@ -111,6 +114,8 @@ public abstract class EventsExporter implements Exporter {
     		context.checkPermission(Right.Events);
     		if (request.getResourceType() == ResourceType.PERSON && !context.getUser().getExternalUserId().equals(request.getResourceExternalId()))
     			context.checkPermission(Right.EventLookupSchedule);
+    	} else if (!helper.isRequestEncoded() && request.getResourceType() == ResourceType.PERSON) {
+    		throw new PageAccessException("Request parameters must be encrypted.");
     	}
     	
     	List<EventInterface> events = new EventLookupBackend().findEvents(request, context);
