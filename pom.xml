@@ -749,7 +749,7 @@
 		<joda.version>2.3</joda.version>
 		<json.version>20140107</json.version>
 		<gson.version>2.2.4</gson.version>
-		<mgwt.version>2.0.0-rc1</mgwt.version>
+		<mgwt.version>2.0.0-rc2</mgwt.version>
 	</properties>
 	
 	<distributionManagement>

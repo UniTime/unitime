@@ -92,7 +92,7 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jboss-logging-annotations-1.2.0.Beta1.jar" sourcepath="3rd_party/sources/jboss-logging-annotations-1.2.0.Beta1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cas-client-core-3.1.12.jar" sourcepath="3rd_party/sources/cas-client-core-3.1.12-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-security-cas-3.1.4.RELEASE.jar" sourcepath="3rd_party/sources/spring-security-cas-3.1.4.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mgwt-2.0.0-rc1.jar" sourcepath="3rd_party/sources/mgwt-2.0.0-rc1-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mgwt-2.0.0-rc2.jar" sourcepath="3rd_party/sources/mgwt-2.0.0-rc2-sources.jar"/>
 	
 	<classpathentry kind="lib" path="3rd_party/ant-1.8.4.jar" sourcepath="3rd_party/sources/ant-1.8.4-sources.jar"/>
 	<classpathentry kind="lib" path="3rd_party/ojdbc14-10.2.0.4.0.jar"/>
