@@ -291,6 +291,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			protected void onInitializationSuccess(List<AcademicSession> sessions) {
 				iFilter.setVisible(sessions != null && !sessions.isEmpty());
 				UniTimePageHeader.getInstance().getRight().setVisible(false);
+				UniTimePageHeader.getInstance().getRight().setPreventDefault(true);
 			}
 			
 			@Override
