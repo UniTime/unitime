@@ -65,6 +65,14 @@
  		</any>
  	</replace-with>
 
+ 	<replace-with class="org.unitime.timetable.gwt.mobile.client.widgets.MobileUniTimeFrameDialogImpl">
+ 		<when-type-is class="org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialogDisplay" />
+ 		<any>
+  			<when-property-is name="mgwt.formfactor" value="tablet" />
+  			<when-property-is name="mgwt.formfactor" value="phone" />
+ 		</any>
+ 	</replace-with>
+
  	<source path="client"/>
  	<source path="resources"/>
 </module>
