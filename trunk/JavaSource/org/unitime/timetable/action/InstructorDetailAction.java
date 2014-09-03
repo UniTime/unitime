@@ -316,7 +316,7 @@ public class InstructorDetailAction extends PreferencesAction {
 								new String[] {
 									(back?"<A name=\"back\"></A>":"")+
 									c.getClassLabel(),
-									(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/tick.gif'>":""),
+									(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/accept.png'>":""),
 									ci.getPercentShare()+"%",
 									limitString,
 									enrollmentString,
@@ -332,7 +332,7 @@ public class InstructorDetailAction extends PreferencesAction {
 								new String[] {
 									(back?"<A name=\"back\"></A>":"")+
 									c.getClassLabel(),
-									(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/tick.gif'>":""),
+									(ci.isLead().booleanValue()?"<IMG border='0' alt='true' align='absmiddle' src='images/accept.png'>":""),
 									ci.getPercentShare()+"%",
 									limitString,
 									managingDept

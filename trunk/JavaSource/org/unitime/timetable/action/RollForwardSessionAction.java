@@ -154,7 +154,7 @@ public class RollForwardSessionAction extends Action {
 			if (name.length() > 60) name = name.substring(0, 57) + "...";
 			String delete = null;
 			if (sessionContext.getUser().getExternalUserId().equals(item.getOwnerId()) && (item.started() == null || item.finished() != null)) {
-				delete = "<img src='images/Delete16.gif' border='0' onClick=\"if (confirm('Do you really want to remove this roll forward?')) document.location='rollForwardSession.do?remove="+item.getId()+"'; event.cancelBubble=true;\">";
+				delete = "<img src='images/action_delete.png' border='0' onClick=\"if (confirm('Do you really want to remove this roll forward?')) document.location='rollForwardSession.do?remove="+item.getId()+"'; event.cancelBubble=true;\">";
 			}
 			WebTableLine line = table.addLine("onClick=\"document.location='rollForwardSession.do?log=" + item.getId() + "';\"",
 					new String[] {

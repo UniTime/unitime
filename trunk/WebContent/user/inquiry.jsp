@@ -105,7 +105,7 @@
 					<INPUT type="hidden" name='<%= "carbonCopy[" + ctr + "]" %>' value="<%=cc%>" />
 					<font class="font8Gray"><%=cc%></font>
 					<html:image 
-						src="images/Error16.jpg" border="0" align="absmiddle"						
+						src="images/cancel.png" border="0" align="absmiddle"						
 						titleKey="title.deleteAddress"  
 						styleClass="btn" style="border:0;background-color:#FFFFFF;"
 						onclick="<%= \"javascript: doDel('\" + ctr + \"');\"%>" />&nbsp;

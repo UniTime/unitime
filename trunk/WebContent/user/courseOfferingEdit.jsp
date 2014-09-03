@@ -486,7 +486,7 @@
 				<TR>
 					<TD><loc:message name="propertyByReservationOnly"/></TD>
 					<TD>
-						<IMG src="images/tick.gif" alt="ENABLED" title="<%=MSG.descriptionByReservationOnly2() %>" border="0">
+						<IMG src="images/accept.png" alt="ENABLED" title="<%=MSG.descriptionByReservationOnly2() %>" border="0">
 						<i><loc:message name="descriptionByReservationOnly2"/></i>
 					</TD>
 				</TR>

@@ -906,7 +906,7 @@ public class DatePatternEditAction extends Action {
             	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='gray'>")+"<a name='"+pattern.getUniqueId()+"'>"+pattern.getName().replaceAll(" ","&nbsp;")+      	        "</a>"+
             	        (pattern.isVisible()?"":"</font>")+(pattern.isDefault()?"</B>":""),
             	        (pattern.isVisible()?"":"<font color='gray'>")+DatePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
-            			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
+            			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/accept.png'>":""),
             			(pattern.isVisible()?"":"<font color='gray'>")+pattStr+(pattern.isVisible()?"":"</font>"),
             			(pattern.isVisible()?"":"<font color='gray'>")+datePatternStr+(pattern.isVisible()?"":"</font>"),
             			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")        			
@@ -923,7 +923,7 @@ public class DatePatternEditAction extends Action {
             	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='gray'>")+"<a name='"+pattern.getUniqueId()+"'>"+pattern.getName().replaceAll(" ","&nbsp;")+      	        "</a>"+
             	        (pattern.isVisible()?"":"</font>")+(pattern.isDefault()?"</B>":""),
             	        (pattern.isVisible()?"":"<font color='gray'>")+DatePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
-            			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
+            			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/accept.png'>":""),
             			(pattern.isVisible()?"":"<font color='gray'>")+pattStr+(pattern.isVisible()?"":"</font>"),
             			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")        			
             		},new Comparable[] {

@@ -100,7 +100,7 @@ public class InstructorListBuilder {
 				if (di.getExternalUniqueId()!=null && di.getExternalUniqueId().trim().length()>0)
 				    puid = di.getExternalUniqueId();
 				else
-				    puid = "<center><IMG src='images/Error16.jpg' border='0' alt='" + MSG.altNotAvailableExternalId()+
+				    puid = "<center><IMG src='images/error.png' border='0' alt='" + MSG.altNotAvailableExternalId()+
 				    		"' title='"+MSG.titleInstructorExternalIdNotSupplied()+"'></center>";
 				
 				//get instructor name 
@@ -250,7 +250,7 @@ public class InstructorListBuilder {
 					        putSpace(distPref),
 					        putSpace(classesStr),
 					        putSpace(examsStr),
-                            (itf?"<IMG border='0' title='"+MSG.titleIgnoreTooFarDistances()+"' alt='true' align='absmiddle' src='images/tick.gif'>":"&nbsp;")}, 
+                            (itf?"<IMG border='0' title='"+MSG.titleIgnoreTooFarDistances()+"' alt='true' align='absmiddle' src='images/accept.png'>":"&nbsp;")}, 
 						new Comparable[] { puid, nameOrd, posType, null, null, null, null, null, null, new Integer(itf?0:1) });
 
 			}

@@ -68,7 +68,7 @@ public class Wiki extends BodyTagSupport {
         StringBuffer html = new StringBuffer();
         
         if (isEnabled() && getWikiUrl()!=null) {
-            String img = ((HttpServletRequest)pageContext.getRequest()).getContextPath()+"/images/help_icon.gif";
+            String img = ((HttpServletRequest)pageContext.getRequest()).getContextPath()+"/images/help.png";
             String url = getWikiUrl() + pageName.trim().replace(' ', '_');
             html.append("<img border='0' align='top' src='"+img+"' alt='"+pageName.trim()+" Help' " +
                     "onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" " +
