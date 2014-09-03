@@ -254,8 +254,8 @@ public class DepartmentListAction extends Action {
     						(d.getDistributionPrefPriority() == null && d.getDistributionPrefPriority().intValue() != 0 
     							? "&nbsp;" : d.getDistributionPrefPriority().toString()),
     						allowReq,
-    						(d.isInheritInstructorPreferences() ? "<IMG border='0' title='Instructor preferences are to be inherited.' alt='Inherit Instructor Preferences' align='absmiddle' src='images/tick.gif'>" : ""),
-    						(d.isAllowEvents() ? "<IMG border='0' title='This department has event management enabled.' alt='Event Management' align='absmiddle' src='images/tick.gif'>" : ""),
+    						(d.isInheritInstructorPreferences() ? "<IMG border='0' title='Instructor preferences are to be inherited.' alt='Inherit Instructor Preferences' align='absmiddle' src='images/accept.png'>" : ""),
+    						(d.isAllowEvents() ? "<IMG border='0' title='This department has event management enabled.' alt='Event Management' align='absmiddle' src='images/accept.png'>" : ""),
     						lastChangeStr },
     				new Comparable[] {
     						d.getDeptCode(),

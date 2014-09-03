@@ -254,7 +254,7 @@
 						<TD align="center" class="BottomBorderGray">
 							&nbsp;
 							<logic:equal name="co" property="isControl" value="true">
-								<IMG src="images/tick.gif" alt="<%=MSG.altControllingCourse() %>" title="<%=MSG.titleControllingCourse() %>" border="0">
+								<IMG src="images/accept.png" alt="<%=MSG.altControllingCourse() %>" title="<%=MSG.titleControllingCourse() %>" border="0">
 							</logic:equal>
 							&nbsp;
 						</TD>
@@ -358,13 +358,13 @@
 					<bean:write name="instructionalOfferingDetailForm" property="limit" />
 					<logic:present name="limitsDoNotMatch" scope="request"> 
 						&nbsp;
-						<img src='images/Error16.jpg' alt='<%=MSG.altLimitsDoNotMatch() %>' title='<%=MSG.titleLimitsDoNotMatch() %>' border='0' align='top'>
+						<img src='images/cancel.png' alt='<%=MSG.altLimitsDoNotMatch() %>' title='<%=MSG.titleLimitsDoNotMatch() %>' border='0' align='top'>
 						<font color="#FF0000"><loc:message name="errorReservedSpacesForOfferingsTotal"><bean:write name="limitsDoNotMatch" scope="request"/></loc:message></font>
 					</logic:present>
 					<logic:present name="configsWithTooHighLimit" scope="request">
 						<logic:notPresent name="limitsDoNotMatch" scope="request">
 							&nbsp;
-							<img src='images/Error16.jpg' alt='<%=MSG.altLimitsDoNotMatch() %>' title='<%=MSG.titleLimitsDoNotMatch() %>' border='0' align='top'>
+							<img src='images/cancel.png' alt='<%=MSG.altLimitsDoNotMatch() %>' title='<%=MSG.titleLimitsDoNotMatch() %>' border='0' align='top'>
 						</logic:notPresent>
 						<font color="#FF0000"><bean:write name="configsWithTooHighLimit" scope="request"/></font>
 					</logic:present>
@@ -379,7 +379,7 @@
 			<TR>
 				<TD><loc:message name="propertyByReservationOnly"/></TD>
 				<TD>
-					<IMG src="images/tick.gif" alt="ENABLED" title="<%=MSG.descriptionByReservationOnly2() %>" border="0">
+					<IMG src="images/accept.png" alt="ENABLED" title="<%=MSG.descriptionByReservationOnly2() %>" border="0">
 					<i><loc:message name="descriptionByReservationOnly2"/></i>
 				</TD>
 			</TR>

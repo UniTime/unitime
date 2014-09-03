@@ -204,7 +204,7 @@ public class RoomGroupListAction extends Action {
 							"<A name=\"A"+rg.getUniqueId()+"\"></A>"+
 							(editable?"":"<font color=gray>")+rg.getName().replaceAll(" ","&nbsp;")+(editable?"":"</font>"),
                             (editable?"":"<font color=gray>")+rg.getAbbv().replaceAll(" ","&nbsp;")+(editable?"":"</font>"),
-							(rg.isDefaultGroup().booleanValue()?"<IMG border='0' title='This group is default group.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
+							(rg.isDefaultGroup().booleanValue()?"<IMG border='0' title='This group is default group.' alt='Default' align='absmiddle' src='images/accept.png'>":""),
 							(editable?"":"<font color=gray>")+assignedRoom+(editable?"":"</font>"), 
 							(editable?"":"<font color=gray>")+(rg.getDescription() == null ? "" : rg.getDescription()).replaceAll(" ","&nbsp;").replaceAll("\\\n","<BR>")+(editable?"":"</font>") }, 
 					new Comparable[] {

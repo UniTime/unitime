@@ -33,7 +33,7 @@ public interface GwtResources extends ClientBundle, com.google.gwt.user.client.u
 	@Source("org/unitime/timetable/gwt/resources/icons/loading_small.gif")
 	ImageResource loading_small();
 
-	@Source("org/unitime/timetable/gwt/resources/icons/help_icon.gif")
+	@Source("org/unitime/timetable/gwt/resources/icons/help.png")
 	ImageResource help();
 
 	@Source("org/unitime/timetable/gwt/resources/icons/expand_node_btn.gif")

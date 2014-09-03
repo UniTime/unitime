@@ -75,7 +75,7 @@ public class WikiHelp extends BodyTagSupport {
             html.append("<span class='PageTitle'>");
             html.append(pageName.trim());
             html.append("</span>");
-            html.append("<img border='0' align='top' src='images/help_icon.gif' alt='"+pageName.trim()+" Help'>");
+            html.append("<img border='0' align='top' src='images/help.png' alt='"+pageName.trim()+" Help'>");
             html.append("</a>");
             html.append("&nbsp;");
         } else {

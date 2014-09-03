@@ -313,12 +313,12 @@ public class SchedulingSubpartTableBuilder {
                 new String[] {
                         indent 
                         	+ "<span style='font-weight:bold;'>" + itype.getDesc() + "</span>"
-                        	+ (hasError ? "&nbsp; <IMG align=\"absmiddle\" src=\"images/Error16.jpg\">" : ""),
+                        	+ (hasError ? "&nbsp; <IMG align=\"absmiddle\" src=\"images/cancel.png\">" : ""),
                         
                         (!disabled) 
                         	? getIcons(sic, level, rowNum, maxRows, spRowNum, maxSp) 
                         	: (notOwned)
-                        		? "<img border=\"0\" src=\"images/lock.gif\">"
+                        		? "<img border=\"0\" src=\"images/lock.png\">"
                         		: "",
                          
                         "\n\t <INPUT type=\"hidden\" name=\"subpartId" + sicId + "\" value=\"" + subpartId + "\">"                        
@@ -484,7 +484,7 @@ public class SchedulingSubpartTableBuilder {
             html += "<IMG align=\"absmiddle\" src=\"images/blank.gif\">";
 
         // Delete
-        html += "<IMG border=\"0\" alt=\""+MSG.altDelete()+"\" title=\""+MSG.titleDeleteInstructionalType()+"\" align=\"top\" src=\"images/Delete16.gif\" " +
+        html += "<IMG border=\"0\" alt=\""+MSG.altDelete()+"\" title=\""+MSG.titleDeleteInstructionalType()+"\" align=\"top\" src=\"images/action_delete.png\" " +
         		"onClick=\"doClick('delete', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">&nbsp; ";
 
         html += "&nbsp; &nbsp;";

@@ -242,10 +242,10 @@
 			<TD><loc:message name="propertyDisplayInstructors"/></TD>
 			<TD>
 				<logic:equal name="<%=frmName%>" property="displayInstructor" value="true">
-					<IMG src="images/tick.gif" border="0" alt="<%=MSG.titleInstructorDisplayed() %>" title="<%=MSG.titleInstructorDisplayed() %>">
+					<IMG src="images/accept.png" border="0" alt="<%=MSG.titleInstructorDisplayed() %>" title="<%=MSG.titleInstructorDisplayed() %>">
 				</logic:equal>
 				<logic:notEqual name="<%=frmName%>" property="displayInstructor" value="true">
-					<IMG src="images/delete.gif" border="0" alt="<%=MSG.titleInstructorNotDisplayed() %>" title="<%=MSG.titleInstructorNotDisplayed() %>">
+					<IMG src="images/cross.png" border="0" alt="<%=MSG.titleInstructorNotDisplayed() %>" title="<%=MSG.titleInstructorNotDisplayed() %>">
 				</logic:notEqual>
 			</TD>
 		</TR>
@@ -254,10 +254,10 @@
 			<TD><loc:message name="propertyEnabledForStudentScheduling"/> </TD>
 			<TD>
 				<logic:equal name="<%=frmName%>" property="enabledForStudentScheduling" value="true">
-					<IMG src="images/tick.gif" border="0" alt="<%=MSG.titleEnabledForStudentScheduling() %>" title="<%=MSG.titleEnabledForStudentScheduling() %>">
+					<IMG src="images/accept.png" border="0" alt="<%=MSG.titleEnabledForStudentScheduling() %>" title="<%=MSG.titleEnabledForStudentScheduling() %>">
 				</logic:equal>
 				<logic:notEqual name="<%=frmName%>" property="enabledForStudentScheduling" value="true">
-					<IMG src="images/delete.gif" border="0" alt="<%=MSG.titleNotEnabledForStudentScheduling() %>" title="<%=MSG.titleNotEnabledForStudentScheduling() %>">
+					<IMG src="images/cross.png" border="0" alt="<%=MSG.titleNotEnabledForStudentScheduling() %>" title="<%=MSG.titleNotEnabledForStudentScheduling() %>">
 				</logic:notEqual>
 			</TD>
 		</TR>
@@ -301,7 +301,7 @@
 								</td>
 								<td>
 									<logic:equal name="<%=frmName%>" property='<%="instrLead[" + ctr + "]"%>' value="true"> 
-										<IMG border='0' alt='true' align="middle" src='images/tick.gif'>
+										<IMG border='0' alt='true' align="middle" src='images/accept.png'>
 										<%-- <input type='checkbox' checked disabled> --%>
 									</logic:equal>
 									<%-- 

@@ -665,25 +665,25 @@ public class SolutionReportAction extends Action {
         		line[idx] = rSB.toString();
         		cmp[idx++] = null;
         		
-        		line[idx] = (noHtml?(g.isHard()?"true":""):g.isHard()?"<img src='images/checkmark.gif' border='0'/>":"");
+        		line[idx] = (noHtml?(g.isHard()?"true":""):g.isHard()?"<img src='images/accept.png' border='0'/>":"");
         		cmp[idx++] = new Integer(g.isHard()?1:0);
         		
         		line[idx] = (g.isDistance()?String.valueOf(Math.round(g.getDistance()))+"m":"");
         		cmp[idx++] = new Double(g.getDistance());
         		
-        		line[idx] = (noHtml?(g.isFixed()?"true":""):g.isFixed()?"<img src='images/checkmark.gif' border='0'/>":"");
+        		line[idx] = (noHtml?(g.isFixed()?"true":""):g.isFixed()?"<img src='images/accept.png' border='0'/>":"");
         		cmp[idx++] = new Integer(g.isFixed()?1:0);
         		
-        		line[idx] = (noHtml?(g.isCommited()?"true":""):g.isCommited()?"<img src='images/checkmark.gif' border='0'/>":"");
+        		line[idx] = (noHtml?(g.isCommited()?"true":""):g.isCommited()?"<img src='images/accept.png' border='0'/>":"");
         		cmp[idx++] = new Integer(g.isCommited()?1:0);
         		
         		if (hasImportant) {
-        			line[idx] = (noHtml?(g.isImportant()?"true":""):g.isImportant()?"<img src='images/checkmark.gif' border='0'/>":"");
+        			line[idx] = (noHtml?(g.isImportant()?"true":""):g.isImportant()?"<img src='images/accept.png' border='0'/>":"");
         			cmp[idx++] = new Integer(g.isImportant()?1:0);
         		}
         		
         		if (hasInstructor) {
-        			line[idx] = (noHtml?(g.isInstructor()?"true":""):g.isInstructor()?"<img src='images/checkmark.gif' border='0'/>":"");
+        			line[idx] = (noHtml?(g.isInstructor()?"true":""):g.isInstructor()?"<img src='images/accept.png' border='0'/>":"");
         			cmp[idx++] = new Integer(g.isInstructor()?1:0);
         		}
         		

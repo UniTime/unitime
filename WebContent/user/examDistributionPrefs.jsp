@@ -214,7 +214,7 @@
 					<bean:message key="button.delete" />
 				</html:submit>
 				<!--
-				<IMG src="images/Delete16.gif" border="0" align="middle">	
+				<IMG src="images/action_delete.png" border="0" align="middle">	
 				-->
 			</TD>
 		</TR>

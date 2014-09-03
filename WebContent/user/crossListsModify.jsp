@@ -40,7 +40,7 @@
 	var ioLimit = -1;
 	var mismatchHtml = 
 		" &nbsp;&nbsp; " +
-		"<img src='images/Error16.jpg' alt='<%=MSG.altCrossListsLimitsDoNotMatch()%>' title='<%=MSG.titleCrossListsLimitsDoNotMatch() %>' border='0' align='top'> &nbsp;" +
+		"<img src='images/cancel.png' alt='<%=MSG.altCrossListsLimitsDoNotMatch()%>' title='<%=MSG.titleCrossListsLimitsDoNotMatch() %>' border='0' align='top'> &nbsp;" +
 		"<font color='#FF0000'><%= MSG.errorCrossListsLimitsDoNotMatch()%></font>";
 	
 	String.prototype.trim = function() {
@@ -271,7 +271,7 @@
 						<TD align="center" nowrap class="BottomBorderGray">
 							&nbsp;
 							<logic:notEqual name="crossListsModifyForm" property="readOnlyCrsOfferingId" value="<%= co.toString() %>" >
-								<IMG border="0" src="images/Delete16.gif" title="<%=MSG.titleRemoveCourseFromCrossList() %>"
+								<IMG border="0" src="images/action_delete.png" title="<%=MSG.titleRemoveCourseFromCrossList() %>"
 									onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
 									onClick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedCourseOfferingId'].value='<%= co.toString() %>';document.forms[0].submit();">
 							</logic:notEqual>

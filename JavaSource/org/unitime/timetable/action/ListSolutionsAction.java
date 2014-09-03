@@ -483,7 +483,7 @@ public class ListSolutionsAction extends Action {
 					webTable.addLine(onClick, new String[] {
 							sDF.format(new Date(solution.getCreated().getTime())),
 							type,
-							(solution.isValid().booleanValue()?"<IMG border='0' align='absmiddle' src='images/tick.gif'>":""),
+							(solution.isValid().booleanValue()?"<IMG border='0' align='absmiddle' src='images/accept.png'>":""),
 							(solution.isCommited().booleanValue()?sDF.format(new Date(solution.getCommitDate().getTime())):""),
 							ownerName, 
 							assigned,
