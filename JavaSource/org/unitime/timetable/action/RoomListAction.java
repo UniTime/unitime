@@ -712,11 +712,11 @@ public class RoomListAction extends Action {
 	                //ignore too far
 	                if (location instanceof NonUniversityLocation) {
 	                    boolean itf = (location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue());
-	                    text[idx] = (itf?"<IMG border='0' title='Ignore too far distances' alt='true' align='absmiddle' src='images/tick.gif'>":"&nbsp;");
+	                    text[idx] = (itf?"<IMG border='0' title='Ignore too far distances' alt='true' align='absmiddle' src='images/accept.png'>":"&nbsp;");
 	                    comp[idx] = new Integer(itf?1:0);
 	                    idx++;
 	                    boolean con = (location.isIgnoreRoomCheck()==null?true:location.isIgnoreRoomCheck().booleanValue());
-	                    text[idx] = (con?"<IMG border='0' title='Create Constraint' alt='true' align='absmiddle' src='images/tick.gif'>":"&nbsp;");
+	                    text[idx] = (con?"<IMG border='0' title='Create Constraint' alt='true' align='absmiddle' src='images/accept.png'>":"&nbsp;");
 	                    comp[idx] = new Integer(con?1:0);
 	                    idx++;
 	                }
@@ -785,7 +785,7 @@ public class RoomListAction extends Action {
 	                //control column
 	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
 	                    if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
-	                        text[idx] = "<IMG border='0' title='Selected department is controlling this room.' alt='true' align='absmiddle' src='images/tick.gif'>";
+	                        text[idx] = "<IMG border='0' title='Selected department is controlling this room.' alt='true' align='absmiddle' src='images/accept.png'>";
 	                        comp[idx] = new Integer(1);
 	                    } else {
 	                        text[idx] = "";
@@ -868,7 +868,7 @@ public class RoomListAction extends Action {
 					for (Iterator it = globalRoomFeatures.iterator(); it.hasNext();) {
 					    GlobalRoomFeature grf = (GlobalRoomFeature) it.next();
 						boolean b = location.hasFeature(grf);
-						text[idx] = b ? "<IMG border='0' title='" + grf.getLabel() + "' alt='" + grf.getLabel() + "' align='absmiddle' src='images/tick.gif'>" : "&nbsp;";
+						text[idx] = b ? "<IMG border='0' title='" + grf.getLabel() + "' alt='" + grf.getLabel() + "' align='absmiddle' src='images/accept.png'>" : "&nbsp;";
 						comp[idx] = "" + b;
 						idx++;
 					}
@@ -879,7 +879,7 @@ public class RoomListAction extends Action {
                             RoomDept rd = (RoomDept)j.next();
                             if (drf.getDepartment().equals(rd.getDepartment())) { b=false; break; }
                         }
-						text[idx] = b ? "<IMG border='0' title='" + drf.getLabel() + "' alt='" + drf.getLabel() + "' align='absmiddle' src='images/tick.gif'>" : "&nbsp;";
+						text[idx] = b ? "<IMG border='0' title='" + drf.getLabel() + "' alt='" + drf.getLabel() + "' align='absmiddle' src='images/accept.png'>" : "&nbsp;";
 						comp[idx] = "" + b;
 						idx++;
 					}

@@ -381,7 +381,7 @@ public class SuggestionsAction extends Action {
         			ca = hint.getDetails(context, solver, false);
         		String remLink = null;
         		if (remove)
-        			remLink = "<a href='suggestions.do?id="+ca.getClazz().getClassId()+"&op=Remove&noCacheTS=" + new Date().getTime()+"'><img src='images/Delete16.gif' border='0'></a>&nbsp;";
+        			remLink = "<a href='suggestions.do?id="+ca.getClazz().getClassId()+"&op=Remove&noCacheTS=" + new Date().getTime()+"'><img src='images/action_delete.png' border='0'></a>&nbsp;";
         		
         		String line[] = new String[hasConfInfo?(simple?6:15):(simple?5:14)];
         		Comparable cmp[] = new Comparable[hasConfInfo?(simple?6:15):(simple?5:14)];

@@ -194,7 +194,7 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
             		"onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
             		"onclick=\"document.location='examInfo.do?examId="+current.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             ret += "<td nowrap>";
-            ret += "<img src='images/Delete16.gif' border='0' onclick=\"document.location='examInfo.do?delete="+current.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
+            ret += "<img src='images/action_delete.png' border='0' onclick=\"document.location='examInfo.do?delete="+current.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
             ret += current.getExamNameHtml();
             ret += "</td><td nowrap>";
             if (initial!=null && !initial.getPeriodId().equals(current.getPeriodId()))

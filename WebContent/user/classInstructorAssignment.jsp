@@ -201,7 +201,7 @@
 							</TD>
 							<TD nowrap valign="top">
 								<logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="true" >
-									<IMG src="images/Error16.jpg">
+									<IMG src="images/cancel.png">
 								</logic:equal>
 								<logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="false" >
 									&nbsp;
@@ -221,7 +221,7 @@
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<logic:equal name="<%=frmName%>" property='<%= "allowDeletes[" + ctr + "]" %>' value="true" >
-										<IMG border="0" src="images/Delete16.gif" title="<%=MSG.titleRemoveInstructorFromClass() %>"
+										<IMG border="0" src="images/action_delete.png" title="<%=MSG.titleRemoveInstructorFromClass() %>"
 											onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
 											onclick="document.forms[0].elements['hdnOp'].value='Delete';
 													document.forms[0].elements['deletedInstrRowNum'].value='<%= ctr.toString() %>';
@@ -231,7 +231,7 @@
 							</TD>
 							<TD align="center" valign="top" nowrap> &nbsp;
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
-									<IMG border="0" src="images/Add16.gif" title="<%=MSG.titleAddInstructorToClass() %>"
+									<IMG border="0" src="images/action_add.png" title="<%=MSG.titleAddInstructorToClass() %>"
 										onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
 										onclick="document.forms[0].elements['hdnOp'].value='Add Instructor';
 												document.forms[0].elements['addInstructorId'].value='<%= ctr.toString() %>';

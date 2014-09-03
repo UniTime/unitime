@@ -670,7 +670,7 @@ public class TimePatternEditAction extends Action {
         	        (pattern.isVisible()?"":"<font color='gray'>")+
         	            TimePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+
         	        (pattern.isVisible()?"":"</font>"),
-        			(isUsed?"<IMG border='0' title='This time pattern is being used.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
+        			(isUsed?"<IMG border='0' title='This time pattern is being used.' alt='Default' align='absmiddle' src='images/accept.png'>":""),
         			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getNrMeetings().toString()+(pattern.isVisible()?"":"</font>"),
         			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getMinPerMtg().toString()+(pattern.isVisible()?"":"</font>"),
         			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getSlotsPerMtg().toString()+(pattern.isVisible()?"":"</font>"),

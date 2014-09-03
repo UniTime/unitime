@@ -146,7 +146,7 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
             		"onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
             		"onclick=\"document.location='classInfo.do?classId="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
             ret += "<td nowrap>";
-            ret += "<img src='images/Delete16.gif' border='0' onclick=\"document.location='classInfo.do?delete="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
+            ret += "<img src='images/action_delete.png' border='0' onclick=\"document.location='classInfo.do?delete="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
             ret += current.getClassNameHtml();
             ret += "</td><td nowrap>";
             ret += current.getLeadingInstructorNames(", ");

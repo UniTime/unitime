@@ -109,7 +109,7 @@ public class SessionListAction extends Action {
 			webTable.addLine(
 					sessionContext.hasPermission(s, Right.AcademicSessionEdit) ?  "onClick=\"document.location='sessionEdit.do?doit=editSession&sessionId=" + s.getSessionId() + "';\"" : null,
 					new String[] {
-						s.equals(defaultSession) ? "<img src='images/tick.gif'> " : "&nbsp; ", 
+						s.equals(defaultSession) ? "<img src='images/accept.png'> " : "&nbsp; ", 
 						s.getAcademicTerm() + " " + s.getSessionStartYear(),
 						s.academicInitiativeDisplayString(),
 						df.format(s.getSessionBeginDateTime()).replace(" ", "&nbsp;"),
@@ -127,7 +127,7 @@ public class SessionListAction extends Action {
 						(s.getDefaultSectioningStatus() == null ? "&nbsp;" : s.getDefaultSectioningStatus().getReference()),
 						 },
 					new Comparable[] {
-						s.equals(defaultSession) ? "<img src='images/tick.gif'>" : "",
+						s.equals(defaultSession) ? "<img src='images/accept.png'>" : "",
 						s.getLabel(),
 						s.academicInitiativeDisplayString(),
 						s.getSessionBeginDateTime(),

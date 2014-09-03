@@ -47,7 +47,7 @@ public class WebSubpartClassListTableBuilder extends WebClassListTableBuilder {
         sb.append(aClass.getUniqueId());
         sb.append("'; return true; } else { return false; }");
         sb.append("\" >");
-		sb.append("<IMG src=\"images/Delete16.gif\" border=\"0\" alt=\"Delete Class\" title=\"Delete Class\" align=\"top\">");
+		sb.append("<IMG src=\"images/action_delete.png\" border=\"0\" alt=\"Delete Class\" title=\"Delete Class\" align=\"top\">");
 		sb.append("</A> ");
 		return(sb.toString());
 	}

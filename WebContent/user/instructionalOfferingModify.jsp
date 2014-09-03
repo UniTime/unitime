@@ -190,7 +190,7 @@
 		<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimitedReadOnly" value="true">
 			<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
 				<TR><TD align="left" colspan="2">
-					<loc:message name="propertyUnlimitedEnrollment"/>&nbsp;&nbsp;&nbsp;<IMG border='0' title='<%=MSG.titleUnlimitedEnrollment()%>' alt='true' align='middle' src='images/tick.gif'>
+					<loc:message name="propertyUnlimitedEnrollment"/>&nbsp;&nbsp;&nbsp;<IMG border='0' title='<%=MSG.titleUnlimitedEnrollment()%>' alt='true' align='middle' src='images/accept.png'>
 				</TD></TR>
 			</logic:equal>
 			<html:hidden property="instrOffrConfigUnlimited"/>
@@ -249,7 +249,7 @@
 											</logic:equal>
 											<logic:equal name="<%=frmName%>" property='<%= "readOnlySubparts[" + ctr + "]" %>' value="true" >
 												<logic:equal name="<%=frmName%>" property='<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>' value="true" >
-													<IMG border='0' title='<%=MSG.titleDisplayAllInstrForSubpartInSchedBook()%>' alt='true' align='middle' src='images/tick.gif'>
+													<IMG border='0' title='<%=MSG.titleDisplayAllInstrForSubpartInSchedBook()%>' alt='true' align='middle' src='images/accept.png'>
 												</logic:equal>
 												<html:hidden property='<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>'/>
 											</logic:equal>
@@ -264,7 +264,7 @@
 											</logic:equal>
 											<logic:equal name="<%=frmName%>" property='<%= "readOnlySubparts[" + ctr + "]" %>' value="true" >
 												<logic:equal name="<%=frmName%>" property='<%= "enableAllClassesForStudentSchedulingForSubpart[" + ctr + "]" %>' value="true" >
-													<IMG border='0' title='<%=MSG.titleEnableAllClassesOfSubpartForStudentScheduling()%>' alt='true' align='middle' src='images/tick.gif'>
+													<IMG border='0' title='<%=MSG.titleEnableAllClassesOfSubpartForStudentScheduling()%>' alt='true' align='middle' src='images/accept.png'>
 												</logic:equal>
 												<html:hidden property='<%= "enableAllClassesForStudentSchedulingForSubpart[" + ctr + "]" %>'/>
 											</logic:equal>
@@ -364,7 +364,7 @@
 						<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
 							<TD nowrap valign="top">
 								<logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="true" >
-									<IMG src="images/Error16.jpg">
+									<IMG src="images/cancel.png">
 								</logic:equal>
 								<logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="false" >
 									&nbsp;
@@ -414,13 +414,13 @@
 							</TD>
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
-									<IMG border="0" src="images/Delete16.gif" title="<%=MSG.titleRemoveClassFromIO()%>"
+									<IMG border="0" src="images/action_delete.png" title="<%=MSG.titleRemoveClassFromIO()%>"
 										onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
 										onclick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
 								</logic:equal>
 							</TD>
 							<TD align="center" valign="top" nowrap>
-								<IMG border="0" src="images/Add16.gif" title="<%=MSG.titleAddClassToIO()%>"
+								<IMG border="0" src="images/action_add.png" title="<%=MSG.titleAddClassToIO()%>"
 									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
 									onclick="document.forms[0].elements['hdnOp'].value='add';document.forms[0].elements['addTemplateClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
 							</TD>
@@ -530,7 +530,7 @@
 									</logic:equal>
 										<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >					
 											<logic:equal name="<%=frmName%>" property='<%= "displayInstructors[" + ctr + "]" %>' value="true" >
-												<IMG border='0' title='<%=MSG.titleDisplayAllInstrForSubpartInSchedBook()%>' alt='true' align='middle' src='images/tick.gif'>
+												<IMG border='0' title='<%=MSG.titleDisplayAllInstrForSubpartInSchedBook()%>' alt='true' align='middle' src='images/accept.png'>
 											</logic:equal>
 											<html:hidden property='<%= "displayInstructors[" + ctr + "]" %>'/>
 										</logic:equal>
@@ -546,7 +546,7 @@
 									</logic:equal>
 									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
 										<logic:equal name="<%=frmName%>" property='<%= "enabledForStudentScheduling[" + ctr + "]" %>' value="true" >
-											<IMG border='0' title='<%=MSG.titleEnableTheseClassesForStudentScheduling()%>' alt='true' align='middle' src='images/tick.gif'>
+											<IMG border='0' title='<%=MSG.titleEnableTheseClassesForStudentScheduling()%>' alt='true' align='middle' src='images/accept.png'>
 										</logic:equal><html:hidden property='<%= "enabledForStudentScheduling[" + ctr + "]" %>'/>
 									</logic:equal>
 								</logic:equal>
@@ -610,7 +610,7 @@
 												</logic:equal>
 												<logic:equal name="<%=frmName%>" property='<%= "readOnlySubparts[" + ctr + "]" %>' value="true" >
 													<logic:equal name="<%=frmName%>" property='<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>' value="true" >
-														<IMG border='0' title='<%=MSG.titleDisplayAllInstrForSubpartInSchedBook()%>' alt='true' align="middle" src='images/tick.gif'>
+														<IMG border='0' title='<%=MSG.titleDisplayAllInstrForSubpartInSchedBook()%>' alt='true' align="middle" src='images/accept.png'>
 													</logic:equal>
 													<html:hidden property='<%= "displayAllClassesInstructorsForSubpart[" + ctr + "]" %>'/>
 												</logic:equal>
@@ -625,7 +625,7 @@
 												</logic:equal>
 												<logic:equal name="<%=frmName%>" property='<%= "readOnlySubparts[" + ctr + "]" %>' value="true" >
 													<logic:equal name="<%=frmName%>" property='<%= "enableAllClassesForStudentSchedulingForSubpart[" + ctr + "]" %>' value="true" >
-														<IMG border='0' title='<%=MSG.titleEnableAllClassesOfSubpartForStudentScheduling()%>' alt='true' align='middle' src='images/tick.gif'>
+														<IMG border='0' title='<%=MSG.titleEnableAllClassesOfSubpartForStudentScheduling()%>' alt='true' align='middle' src='images/accept.png'>
 													</logic:equal>
 													<html:hidden property='<%= "enableAllClassesForStudentSchedulingForSubpart[" + ctr + "]" %>'/>
 												</logic:equal>

@@ -843,7 +843,7 @@ public class WebInstructionalOfferingTableBuilder {
     				cell = initNormalCell(note.replace("\n", "<br>"), isEditable);
 	    			cell.setAlign("left");
     			} else {
-    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasSchedulePrintNote() + "' title='" + c.getSchedulePrintNote() + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasSchedulePrintNote() + "' title='" + c.getSchedulePrintNote() + "' align='absmiddle' src='images/note.png'>", isEditable);
     	    		cell.setAlign("center");
     			}
     		} else {
@@ -942,7 +942,7 @@ public class WebInstructionalOfferingTableBuilder {
 			cell = this.initNormalCell("&nbsp;" ,isEditable);
 		} else {
 			if (CommonValues.NoteAsIcon.eq(user.getProperty(UserProperty.CourseOfferingNoteDisplay))) {
-	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasCourseOfferingNote() + "' title='" + note.replace("<br>", "\n") + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasCourseOfferingNote() + "' title='" + note.replace("<br>", "\n") + "' align='absmiddle' src='images/note.png'>", isEditable);
 	    		cell.setAlign("center");	
 			} else {
 				cell = initNormalCell(note.replace("\n", "<br>"), isEditable);
@@ -965,7 +965,7 @@ public class WebInstructionalOfferingTableBuilder {
     				cell = initNormalCell(c.getNotes().replaceAll("\n","<br>"), isEditable);
         			cell.setAlign("left");
     			} else {
-    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + c.getNotes() + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + c.getNotes() + "' align='absmiddle' src='images/note.png'>", isEditable);
     	    		cell.setAlign("center");
     			}
     		} else { 
