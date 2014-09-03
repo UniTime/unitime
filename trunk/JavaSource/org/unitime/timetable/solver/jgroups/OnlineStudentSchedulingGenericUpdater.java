@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
-
 import org.apache.log4j.Logger;
 import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
@@ -154,8 +153,8 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 					continue;
 				}
 				
-				Collections.shuffle(available);
 				if (replicate) {
+					Collections.shuffle(available);
 					Set<Address> members = solvers.get(session.getUniqueId().toString());
 					if (members != null) {
 						boolean ready = false;
@@ -181,9 +180,26 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 					}
 				} else {
 					try {
+						// retrieve usage of the available serves
+						Map<Address, Integer> usages = new HashMap<Address, Integer>();
 						for (Address address: available) {
+							Integer usage = iDispatcher.callRemoteMethod(address, "getUsage", new Object[] {}, new Class[] {}, SolverServerImplementation.sFirstResponse);
+							usages.put(address, usage);
+						}
+						
+						// while there is a server available, pick one with the lowest usage and try to create the solver there
+						while (!usages.isEmpty()) {
+							Address bestAddress = null;
+							int bestUsage = 0;
+							for (Map.Entry<Address, Integer> entry: usages.entrySet()) {
+								if (bestAddress == null || bestUsage > entry.getValue()) {
+									bestAddress = entry.getKey();
+									bestUsage = entry.getValue();
+								}
+							}
+							
 							Boolean created = iContainer.getDispatcher().callRemoteMethod(
-									address,
+									bestAddress,
 									"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iDispatcher.getChannel().getAddress() },
 									new Class[] { String.class, DataProperties.class, Address.class },
 									SolverServerImplementation.sFirstResponse);
