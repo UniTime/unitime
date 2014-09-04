@@ -302,7 +302,7 @@ input[type="text"] {
 	background: #FFFFFF;
 	height: 22px;
 	border: 1px solid #9CB0CE;
-	padding: 2px;
+	padding: 0px 2px 0px 2px;
 }
 
 input[type="password"] {
@@ -316,7 +316,7 @@ input[type="password"] {
 	background: #FFFFFF;
 	height: 22px;
 	border: 1px solid #9CB0CE;
-	padding: 2px;
+	padding: 0px 2px 0px 2px;
 }
 
 textarea {
