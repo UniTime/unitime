@@ -252,7 +252,7 @@
 
 	</TABLE>
 	
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="2">
 		<% int cols = 9; %>
 		<%= request.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME)!=null 
 			? request.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME)

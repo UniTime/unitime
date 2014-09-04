@@ -336,15 +336,15 @@ public class DeptStatusTypeEditAction extends Action {
             }
             String ops = "";
             if (s.getOrd().intValue()>0) {
-                ops += "<img src='images/arrow_u.gif' border='0' align='absmiddle' title='Move Up' " +
+                ops += "<img src='images/arrow_up.png' border='0' align='absmiddle' title='Move Up' " +
                 		"onclick=\"deptStatusTypeEditForm.op2.value='Move Up';deptStatusTypeEditForm.uniqueId.value='"+s.getUniqueId()+"';deptStatusTypeEditForm.submit(); event.cancelBubble=true;\">";
             } else
-                ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+                ops += "<img src='images/blank.png' border='0' align='absmiddle'>";
             if (i.hasNext()) {
-                ops += "<img src='images/arrow_d.gif' border='0' align='absmiddle' title='Move Down' " +
+                ops += "<img src='images/arrow_down.png' border='0' align='absmiddle' title='Move Down' " +
                 		"onclick=\"deptStatusTypeEditForm.op2.value='Move Down';deptStatusTypeEditForm.uniqueId.value='"+s.getUniqueId()+"';deptStatusTypeEditForm.submit(); event.cancelBubble=true;\">";
             } else
-                ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+                ops += "<img src='images/blank.png' border='0' align='absmiddle'>";
             webTable.addLine(onClick, new String[] {
                     ops,
                     s.getReference(),
