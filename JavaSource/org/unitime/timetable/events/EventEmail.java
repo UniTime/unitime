@@ -60,6 +60,12 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 
+import biweekly.Biweekly;
+import biweekly.ICalendar;
+import biweekly.property.CalendarScale;
+import biweekly.property.Method;
+import biweekly.property.Status;
+import biweekly.property.Version;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -289,26 +295,20 @@ public class EventEmail {
 	}
 
 	public String icalendar() throws IOException {
-		StringWriter buffer = new StringWriter();
-		PrintWriter out = new PrintWriter(buffer);
-
-		out.println("BEGIN:VCALENDAR");
-        out.println("VERSION:2.0");
-        out.println("CALSCALE:GREGORIAN");
-        out.println("METHOD:PUBLISH");
-        out.println("X-WR-CALNAME:" + event().getName());
-        out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
-        out.println("PRODID:-//UniTime " + Constants.getVersion() + "/Events Calendar//NONSGML v1.0//EN");
+		ICalendar ical = new ICalendar();
+		ical.setVersion(Version.v2_0());
+		ical.setCalendarScale(CalendarScale.gregorian());
+		ical.setMethod(new Method("PUBLISH"));
+		ical.setExperimentalProperty("X-WR-CALNAME", "UniTime Schedule");
+		ical.setExperimentalProperty("X-WR-TIMEZONE", TimeZone.getDefault().getID());
+		ical.setProductId("-//UniTime LLC/UniTime " + Constants.getVersion() + " Events//EN");
         
         boolean exp = new EventsExportEventsToICal().print(
-        		out,
+        		ical,
         		response().hasEventWithId() && response().getEvent().hasMeetings() ? response().getEvent() : request().getEvent(),
-        		response().hasEventWithId() && response().getEvent().hasMeetings() ? null : EventsExportEventsToICal.ICalendarStatus.CANCELLED);
-        
-		out.println("END:VCALENDAR");
-		
-		out.flush(); out.close();
-		return (exp ? buffer.getBuffer().toString() : null);		
+        		response().hasEventWithId() && response().getEvent().hasMeetings() ? null : Status.cancelled());
+
+		return (exp ? Biweekly.write(ical).go() : null);		
 	}
 	
 	public static void eventExpired(Event cancelledEvent, Set<Meeting> cancelledMeetings) throws Exception {

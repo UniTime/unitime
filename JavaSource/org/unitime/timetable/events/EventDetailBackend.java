@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-
 import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.UserProperty;
@@ -73,6 +72,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
@@ -105,7 +105,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		event.setEmail(e.getEmail());
 		event.setExpirationDate(e.getExpirationDate());
 		event.setMaxCapacity(e.getMaxCapacity());
-		String nameFormat = context.getUser().getProperty(UserProperty.NameFormat);
+		String nameFormat = (context != null ? context.getUser().getProperty(UserProperty.NameFormat) : NameFormat.LAST_FIRST_MIDDLE.reference());
 				
 		if (e.getMainContact() != null) {
 			ContactInterface contact = new ContactInterface();

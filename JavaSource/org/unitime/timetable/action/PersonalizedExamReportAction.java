@@ -438,7 +438,7 @@ public class PersonalizedExamReportAction extends Action {
         
         if ("iCalendar".equals(myForm.getOp())) {
         	Long sid = (instructor != null ? instructor.getDepartment().getSession().getUniqueId() : student.getSession().getUniqueId());
-        	response.sendRedirect( response.encodeURL("calendar?q=" + QueryEncoderBackend.encode("uid=" + externalId + (sid == null ? "" : "&sid=" + sid))));
+        	response.sendRedirect( response.encodeURL("export?q=" + QueryEncoderBackend.encode("output=events.ics&type=person&ext=" + externalId + (sid == null ? "" : "&sid=" + sid))));
         	return null;
         }
         
