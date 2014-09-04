@@ -71,7 +71,7 @@ BSD or BSD-style Licenses
 	http://asm.ow2.org/license.html (ASM Core)
 	http://www.antlr.org/license.html (AntLR Parser Generator)
 	http://freemarker.org/docs/app_license.html (FreeMaker)
-	http://opensource.org/licenses/BSD-3-Clause (Protocol Buffer Java API)
+	http://opensource.org/licenses/bsd-license.php (Protocol Buffer Java API, biweekly)
 	http://dom4j.sourceforge.net/dom4j-1.6.1/license.html (dom4j)
 Common Development and Distribution License (CDDL), Version 1.0
 	http://opensource.org/licenses/CDDL-1.0

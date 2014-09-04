@@ -22,16 +22,15 @@ package org.unitime.timetable.gwt.server;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -45,21 +44,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cpsolver.coursett.model.TimeLocation;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
+import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
-import org.unitime.timetable.events.EventLookupBackend;
+import org.unitime.timetable.events.EventDetailBackend;
 import org.unitime.timetable.events.QueryEncoderBackend;
-import org.unitime.timetable.events.EventAction.EventContext;
-import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.EventInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
-import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
-import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
-import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
+import org.unitime.timetable.export.events.EventsExportEventsToICal;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -78,17 +72,32 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
-import org.unitime.timetable.model.dao.MeetingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.updates.CalendarExport;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.context.UniTimeUserContext;
+import org.unitime.timetable.server.CourseDetailsBackend;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+
+import biweekly.Biweekly;
+import biweekly.ICalendar;
+import biweekly.component.VEvent;
+import biweekly.component.VFreeBusy;
+import biweekly.parameter.Role;
+import biweekly.property.Attendee;
+import biweekly.property.CalendarScale;
+import biweekly.property.DateEnd;
+import biweekly.property.DateStart;
+import biweekly.property.ExceptionDates;
+import biweekly.property.Method;
+import biweekly.property.Organizer;
+import biweekly.property.Status;
+import biweekly.property.Version;
+import biweekly.util.Recurrence;
+import biweekly.util.Recurrence.DayOfWeek;
+import biweekly.util.Recurrence.Frequency;
 
 
 /**
@@ -96,7 +105,7 @@ import org.unitime.timetable.util.DateUtils;
  */
 public class CalendarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Override
 	public void init() {
@@ -139,65 +148,64 @@ public class CalendarServlet extends HttpServlet {
 				hibSession.close();
 			}
 		}
-		if (sessionId == null)
-			throw new ServletException("No academic session provided.");
-		OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString());
-    	String classIds = params.getParameter("cid");
+		if (sessionId == null) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No academic session provided.");
+			return;
+		}
+		Session session = SessionDAO.getInstance().get(sessionId);
+		if (session == null) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Academic session does not exist.");
+		}
+		String classIds = params.getParameter("cid");
     	String fts = params.getParameter("ft");
     	String examIds = params.getParameter("xid");
     	String eventIds = params.getParameter("eid");
-    	String meetingIds = params.getParameter("mid");
     	String userId = params.getParameter("uid");
     	if (q == null) userId = QueryEncoderBackend.decode(userId);
-    	String type = params.getParameter("type");
    
 		response.setContentType("text/calendar; charset=UTF-8");
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader( "Content-Disposition", "attachment; filename=\"schedule.ics\"" );
         
-		PrintWriter out = response.getWriter();
+		ICalendar ical = new ICalendar();
+		ical.setVersion(Version.v2_0());
+		ical.setCalendarScale(CalendarScale.gregorian());
+		ical.setMethod(new Method("PUBLISH"));
+		ical.setExperimentalProperty("X-WR-CALNAME", "UniTime Schedule");
+		ical.setExperimentalProperty("X-WR-TIMEZONE", TimeZone.getDefault().getID());
+		ical.setProductId("-//UniTime LLC/UniTime " + Constants.getVersion() + " Schedule//EN");
+
 		org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 		try {
-            out.println("BEGIN:VCALENDAR");
-            out.println("VERSION:2.0");
-            out.println("CALSCALE:GREGORIAN");
-            out.println("METHOD:PUBLISH");
-            out.println("X-WR-CALNAME:UniTime Schedule");
-            out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
-            out.println("PRODID:-//UniTime " + Constants.getVersion() + "/Schedule Calendar//NONSGML v1.0//EN");
-            if (server != null) {
-            	out.println(server.execute(server.createAction(CalendarExport.class).withParams(classIds, fts), null));
-            } else { 
-            	if (classIds != null && !classIds.isEmpty()) {
-            		for (String classId: classIds.split(",")) {
-            			if (classId.isEmpty()) continue;
-            			String[] courseAndClassId = classId.split("-");
-            			if (courseAndClassId.length != 2) continue;
-        				CourseOffering course = CourseOfferingDAO.getInstance().get(Long.valueOf(courseAndClassId[0]), hibSession);
-        				Class_ clazz = Class_DAO.getInstance().get(Long.valueOf(courseAndClassId[1]), hibSession);
-        				if (course == null || clazz == null) continue;
-                		printClass(course, clazz, out);
-            		}
-            	}
-            	if (fts != null && !fts.isEmpty()) {
-        			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
-        			Date dpFirstDate = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
-        			BitSet weekCode = session.getDefaultDatePattern().getPatternBitSet();
-	        		for (String ft: fts.split(",")) {
-	        			if (ft.isEmpty()) continue;
-	        			String[] daysStartLen = ft.split("-");
-	        			if (daysStartLen.length != 3) continue;
-	        			printFreeTime(dpFirstDate, weekCode, daysStartLen[0], Integer.parseInt(daysStartLen[1]), Integer.parseInt(daysStartLen[2]), out);
-	        		}
-            	}
-            }
+			EventsExportEventsToICal exporter = new EventsExportEventsToICal();
+        	if (classIds != null && !classIds.isEmpty()) {
+        		for (String classId: classIds.split(",")) {
+        			if (classId.isEmpty()) continue;
+        			String[] courseAndClassId = classId.split("-");
+        			if (courseAndClassId.length != 2) continue;
+    				CourseOffering course = CourseOfferingDAO.getInstance().get(Long.valueOf(courseAndClassId[0]), hibSession);
+    				Class_ clazz = Class_DAO.getInstance().get(Long.valueOf(courseAndClassId[1]), hibSession);
+    				if (course == null || clazz == null) continue;
+            		printClass(course, clazz, ical);
+        		}
+        	}
+        	if (fts != null && !fts.isEmpty()) {
+    			Date dpFirstDate = DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear());
+    			BitSet weekCode = session.getDefaultDatePattern().getPatternBitSet();
+        		for (String ft: fts.split(",")) {
+        			if (ft.isEmpty()) continue;
+        			String[] daysStartLen = ft.split("-");
+        			if (daysStartLen.length != 3) continue;
+        			printFreeTime(dpFirstDate, weekCode, daysStartLen[0], Integer.parseInt(daysStartLen[1]), Integer.parseInt(daysStartLen[2]), ical);
+        		}
+        	}
             if (examIds != null && !examIds.isEmpty()) {
             	for (String examId: examIds.split(",")) {
             		if (examId.isEmpty()) continue;
             		try {
                 		Exam exam = ExamDAO.getInstance().get(Long.valueOf(examId), hibSession);
                 		if (exam != null)
-                			printExam(exam, out);
+                			printExam(exam, ical);
             		} catch (NumberFormatException e) {}
             	}
             }
@@ -207,28 +215,8 @@ public class CalendarServlet extends HttpServlet {
             		try {
             			Event event = EventDAO.getInstance().get(Long.valueOf(eventId), hibSession);
             			if (event != null)
-            				printEvent(event, null, out);
+            				exporter.print(ical, EventDetailBackend.getEventDetail(session, event, null));
             		} catch (NumberFormatException e) {}
-            	}
-            }
-            if (meetingIds != null && !meetingIds.isEmpty()) {
-            	Hashtable<Long, List<Meeting>> meetings = new Hashtable<Long, List<Meeting>>();
-            	for (String meetingId: meetingIds.split(",")) {
-            		if (meetingId.isEmpty()) continue;
-            		try {
-            			Meeting meeting = MeetingDAO.getInstance().get(Long.valueOf(meetingId), hibSession);
-            			if (meeting != null) {
-            				List<Meeting> m = meetings.get(meeting.getEvent().getUniqueId());
-            				if (m == null) {
-            					m = new ArrayList<Meeting>();
-            					meetings.put(meeting.getEvent().getUniqueId(), m);
-            				}
-            				m.add(meeting);
-            			}
-            		} catch (NumberFormatException e) {}
-            	}
-            	for (List<Meeting> eventMeetings: meetings.values()) {
-            		printEvent(eventMeetings.get(0).getEvent(), eventMeetings, out);
             	}
             }
             if (userId != null && !userId.isEmpty()) {
@@ -238,15 +226,15 @@ public class CalendarServlet extends HttpServlet {
                 	if (!PersonalizedExamReportAction.canDisplay(instructor.getDepartment().getSession())) continue;
                     if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamMidterm())
                     	for (Exam exam: instructor.getExams(ExamType.sExamTypeMidterm)) {
-                    		printExam(exam, out);
+                    		printExam(exam, ical);
                     	}
                     if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamFinal())
                     	for (Exam exam: instructor.getExams(ExamType.sExamTypeFinal)) {
-                    		printExam(exam, out);
+                    		printExam(exam, ical);
                     	}
                     if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
                         for (ClassInstructor ci: instructor.getClasses()) {
-                            printClass(ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering(), ci.getClassInstructing(), out);
+                            printClass(ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering(), ci.getClassInstructing(), ical);
                         }
                     }
                 }
@@ -256,207 +244,47 @@ public class CalendarServlet extends HttpServlet {
                 	if (!PersonalizedExamReportAction.canDisplay(student.getSession())) continue;
                 	if (student.getSession().getStatusType().canNoRoleReportExamFinal()) {
                 		for (Exam exam: student.getExams(ExamType.sExamTypeFinal))
-                			printExam(exam, out);
+                			printExam(exam, ical);
                 	}
                 	if (student.getSession().getStatusType().canNoRoleReportExamMidterm()) {
                 		for (Exam exam: student.getExams(ExamType.sExamTypeMidterm))
-                			printExam(exam, out);
+                			printExam(exam, ical);
                 	}
                     if (student.getSession().getStatusType().canNoRoleReportClass()) {
                         for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
                             StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
-                            printClass(sce.getCourseOffering(), sce.getClazz(), out);
+                            printClass(sce.getCourseOffering(), sce.getClazz(), ical);
                         }
                     }
                 }
             }
-            if (type != null) {
-            	EventLookupRpcRequest r = new EventLookupRpcRequest();
-            	r.setSessionId(sessionId);
-            	String id = params.getParameter("id");
-            	if (id != null) r.setResourceId(Long.valueOf(id));
-            	String ext = params.getParameter("ext");
-            	if (ext != null)
-            		r.setResourceExternalId(ext);
-            	r.setResourceType(ResourceType.valueOf(type.toUpperCase()));
-            	EventFilterRpcRequest eventFilter = new EventFilterRpcRequest();
-            	eventFilter.setSessionId(sessionId);
-            	r.setEventFilter(eventFilter);
-            	RoomFilterRpcRequest roomFilter = new RoomFilterRpcRequest();
-            	roomFilter.setSessionId(sessionId);
-            	boolean hasRoomFilter = false;
-            	for (Enumeration<String> e = params.getParameterNames(); e.hasMoreElements(); ) {
-            		String command = e.nextElement();
-            		if (command.equals("e:text")) {
-            			eventFilter.setText(params.getParameter("e:text"));
-            	} else if (command.startsWith("e:")) {
-            			for (String value: params.getParameterValues(command))
-            				eventFilter.addOption(command.substring(2), value);
-            		} else if (command.equals("r:text")) {
-            			hasRoomFilter = true;
-            			roomFilter.setText(params.getParameter("r:text"));
-            		} else if (command.startsWith("r:")) {
-            			hasRoomFilter = true;
-            			for (String value: params.getParameterValues(command))
-            				roomFilter.addOption(command.substring(2), value);
-            		}
-            	}
-            	if (hasRoomFilter)
-            		r.setRoomFilter(roomFilter);
-            	String user = params.getParameter("user");
-            	UserContext u = sessionContext.getUser();
-            	if (u == null && user != null) {
-            		u = new UniTimeUserContext(user, null, null, null);
-            		String role = params.getParameter("role");
-            		if (role != null) {
-            			for (UserAuthority a: u.getAuthorities()) {
-            				if (a.getAcademicSession() != null && a.getAcademicSession().getQualifierId().equals(sessionId) && role.equals(a.getRole())) {
-            					u.setCurrentAuthority(a); break;
-            				}
-            			}
-            		}
-            	}
-            	for (EventInterface e: new EventLookupBackend().findEvents(r, new EventContext(sessionContext, u, sessionId)))
-        			printEvent(e, out);
-            }
-            out.println("END:VCALENDAR");
+        } catch (Exception e) {
+        	Debug.error(e.getMessage(), e);
+        	response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+		
+		PrintWriter out = response.getWriter();
+		try {
+            Biweekly.write(ical).go(out);
         	out.flush();
-        } finally {
-        	if (hibSession.isOpen()) 
-        		hibSession.close();
-        	out.close();
-        }
+		} finally {
+			out.close();
+		}
 	}
-	
-	private void printEvent(EventInterface event, PrintWriter out) throws IOException {
-		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-        SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
-        tf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        
-        Hashtable<String, String> date2loc = new Hashtable<String, String>();
-        Hashtable<String, Boolean> approved = new Hashtable<String, Boolean>();
-        for (MeetingInterface m: event.getMeetings()) {
-        	Date startTime = new Date(m.getStartTime());
-        	Date stopTime = new Date(m.getStopTime());
-            String date = df.format(startTime) + "T" + tf.format(startTime) + "Z/" + df.format(stopTime) + "T" + tf.format(stopTime) + "Z";
-            String loc = m.getLocationName();
-            String l = date2loc.get(date);
-            date2loc.put(date, (l == null || l.isEmpty() ? "" : l + ", ") + loc);
-            Boolean a = approved.get(date);
-            approved.put(date, (a == null || a) && m.isApproved());
-        }
-        
-        String firstDate = null;
-        for (String date : new TreeSet<String>(date2loc.keySet())) {
-        	String loc = date2loc.get(date);
-        	String start = date.substring(0, date.indexOf('/'));
-        	String end = date.substring(date.indexOf('/') + 1);
-            out.println("BEGIN:VEVENT");
-            out.println("SEQUENCE:0");
-            out.println("UID:"+event.getId());
-            out.println("SUMMARY:"+event.getName());
-            out.println("DESCRIPTION:"+(event.getInstruction() != null ? event.getInstruction() : event.getType()));
-            out.println("DTSTART:" + start);
-            out.println("DTEND:" + end);
-            if (firstDate == null) {
-            	firstDate = date;
-            	String rdate = "";
-                for (String d : new TreeSet<String>(date2loc.keySet())) {
-                	if (d.equals(date)) continue;
-                	if (!rdate.isEmpty()) rdate += ",";
-                	rdate += d;
-            	}
-            	if (!rdate.isEmpty())
-            		out.println("RDATE;VALUE=PERIOD:" + rdate);
-            } else {
-    	        out.println("RECURRENCE-ID:" + start);
-            }
-            out.println("LOCATION:" + loc);
-            out.println("STATUS:" + (approved.get(date) ? "CONFIRMED" : "TENTATIVE"));
-            if (event.hasInstructors()) {
-            	int idx = 0;
-            	for (ContactInterface instructor: event.getInstructors()) {
-            		out.println((idx++ == 0 ? "ORGANIZER" : "ATTENDEE") + ";ROLE=CHAIR;CN=\"" + instructor.getName(MESSAGES) + "\":MAILTO:" + (instructor.hasEmail() ? instructor.getEmail() : ""));
-            	}
-            } else if (event.hasSponsor()) {
-            	out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + event.getSponsor().getName() + "\":MAILTO:" + (event.getSponsor().hasEmail() ? event.getSponsor().getEmail() : ""));
-            }
-            out.println("END:VEVENT");	
-        }
-	}
-	
-	private void printEvent(Event event, Collection<Meeting> meetings, PrintWriter out) throws IOException {
-		if (meetings == null)
-			meetings = event.getMeetings();
-		
-		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-        SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
-        tf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        
-        Hashtable<String, String> date2loc = new Hashtable<String, String>();
-        Hashtable<String, Boolean> approved = new Hashtable<String, Boolean>();
-        for (Meeting m: meetings) {
-            String date = df.format(m.getStartTime()) + "T" + tf.format(m.getStartTime()) + "Z/" + df.format(m.getStopTime()) + "T" + tf.format(m.getStopTime()) + "Z";
-            String loc = (m.getLocation() == null ? "" : m.getLocation().getLabel());
-            String l = date2loc.get(date);
-            date2loc.put(date, (l == null || l.isEmpty() ? "" : l + ", ") + loc);
-            Boolean a = approved.get(date);
-            approved.put(date, (a == null || a) && m.isApproved());
-        }
-        
-        String firstDate = null;
-        for (String date : new TreeSet<String>(date2loc.keySet())) {
-        	String loc = date2loc.get(date);
-        	String start = date.substring(0, date.indexOf('/'));
-        	String end = date.substring(date.indexOf('/') + 1);
-            out.println("BEGIN:VEVENT");
-            out.println("SEQUENCE:0");
-            out.println("UID:"+event.getUniqueId());
-            out.println("SUMMARY:"+event.getEventName());
-            out.println("DESCRIPTION:"+event.getEventTypeLabel());
-            out.println("DTSTART:" + start);
-            out.println("DTEND:" + end);
-            if (firstDate == null) {
-            	firstDate = date;
-            	String rdate = "";
-                for (String d : new TreeSet<String>(date2loc.keySet())) {
-                	if (d.equals(date)) continue;
-                	if (!rdate.isEmpty()) rdate += ",";
-                	rdate += d;
-            	}
-            	if (!rdate.isEmpty())
-            		out.println("RDATE;VALUE=PERIOD:" + rdate);
-            } else {
-    	        out.println("RECURRENCE-ID:" + start);
-            }
-            if (event.getSponsoringOrganization() != null) {
-            	out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + event.getSponsoringOrganization().getName() + "\":MAILTO:" +
-            			(event.getSponsoringOrganization().getEmail() == null ? "" : event.getSponsoringOrganization().getEmail()));
-            }
-            out.println("LOCATION:" + loc);
-            out.println("STATUS:" + (approved.get(date) ? "CONFIRMED" : "TENTATIVE"));
-            out.println("END:VEVENT");	
-        }
-	}
-	
-	private void printExam(Exam exam, PrintWriter out) throws IOException {
-		if (exam.getAssignedPeriod() == null) return;
-		
-        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-        SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
-        tf.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-        out.println("BEGIN:VEVENT");
-        out.println("SEQUENCE:0");
-        out.println("UID:"+exam.getUniqueId());
-        out.println("DTSTART:"+df.format(exam.getAssignedPeriod().getStartTime())+"T"+tf.format(exam.getAssignedPeriod().getStartTime())+"Z");
+	private void printExam(Exam exam, ICalendar ical) throws IOException {
+		if (exam.getAssignedPeriod() == null) return;
+
+        VEvent vevent = new VEvent();
+        vevent.setSequence(0);
+        vevent.setUid(exam.getUniqueId().toString());
+    	DateStart dstart = new DateStart(exam.getAssignedPeriod().getStartTime(), true); dstart.setLocalTime(false); dstart.setTimezoneId(TimeZone.getDefault().getID());
+    	vevent.setDateStart(dstart);
         Calendar endTime = Calendar.getInstance(); endTime.setTime(exam.getAssignedPeriod().getStartTime());
         endTime.add(Calendar.MINUTE, exam.getLength());
-        out.println("DTEND:"+df.format(endTime.getTime())+"T"+tf.format(endTime.getTime())+"Z");
-        out.println("SUMMARY:"+exam.getLabel()+" ("+exam.getExamType().getLabel()+" Exam)");
+    	DateEnd dend = new DateEnd(endTime.getTime(), true); dend.setLocalTime(false); dend.setTimezoneId(TimeZone.getDefault().getID());
+    	vevent.setDateEnd(dend);
+    	vevent.setSummary(exam.getLabel()+" ("+exam.getExamType().getLabel()+" Exam)");
         if (!exam.getAssignedRooms().isEmpty()) {
             String rooms = "";
             for (Iterator i=new TreeSet(exam.getAssignedRooms()).iterator();i.hasNext();) {
@@ -464,13 +292,13 @@ public class CalendarServlet extends HttpServlet {
                 if (rooms.length()>0) rooms+=", ";
                 rooms+=location.getLabel();
             }
-            out.println("LOCATION:"+rooms);
+            vevent.setLocation(rooms);
         }
-		out.println("STATUS:CONFIRMED");	
-        out.println("END:VEVENT");      
+        vevent.setStatus(Status.confirmed());
+        ical.addEvent(vevent);
 	}
 
-	private void printClass(CourseOffering course, Class_ clazz, PrintWriter out) throws IOException {
+	private void printClass(CourseOffering course, Class_ clazz, ICalendar ical) throws IOException {
 		Assignment assignment = clazz.getCommittedAssignment();
 		if (assignment == null) return;
 		TimeLocation time = assignment.getTimeLocation();
@@ -574,16 +402,35 @@ public class CalendarServlet extends HttpServlet {
     	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
     	cal.set(Calendar.SECOND, 0);
 
-        out.println("BEGIN:VEVENT");
-        out.println("DTSTART:" + df.format(first) + "T" + tf.format(first) + "Z");
-        out.println("DTEND:" + df.format(firstEnd) + "T" + tf.format(firstEnd) + "Z");
-        out.print("RRULE:FREQ=WEEKLY;BYDAY=");
-        for (Iterator<DayCode> i = DayCode.toDayCodes(time.getDayCode()).iterator(); i.hasNext(); ) {
-        	out.print(i.next().getName().substring(0, 2).toUpperCase());
-        	if (i.hasNext()) out.print(",");
+    	VEvent vevent = new VEvent();
+    	DateStart dstart = new DateStart(first, true); dstart.setLocalTime(false); dstart.setTimezoneId(TimeZone.getDefault().getID());
+    	vevent.setDateStart(dstart);
+    	DateEnd dend = new DateEnd(firstEnd, true); dend.setLocalTime(false); dend.setTimezoneId(TimeZone.getDefault().getID());
+    	vevent.setDateEnd(dend);
+    	
+    	Recurrence.Builder recur = new Recurrence.Builder(Frequency.WEEKLY);
+    	for (Iterator<DayCode> i = DayCode.toDayCodes(time.getDayCode()).iterator(); i.hasNext(); ) {
+        	switch (i.next()) {
+        	case MON:
+        		recur.byDay(DayOfWeek.MONDAY); break;
+        	case TUE:
+        		recur.byDay(DayOfWeek.TUESDAY); break;
+        	case WED:
+        		recur.byDay(DayOfWeek.WEDNESDAY); break;
+        	case THU:
+        		recur.byDay(DayOfWeek.THURSDAY); break;
+        	case FRI:
+        		recur.byDay(DayOfWeek.FRIDAY); break;
+        	case SAT:
+        		recur.byDay(DayOfWeek.SATURDAY); break;
+        	case SUN:
+        		recur.byDay(DayOfWeek.SUNDAY); break;
+        	}
         }
-        out.println(";WKST=MO;UNTIL=" + df.format(last) + "T" + tf.format(last) + "Z");
-        ArrayList<ArrayList<String>> extra = new ArrayList<ArrayList<String>>();
+        recur.workweekStarts(DayOfWeek.MONDAY).until(last);
+        vevent.setRecurrenceRule(recur.build());
+
+        ExceptionDates exdates = new ExceptionDates(true);
     	while (idx < time.getWeekCode().length()) {
     		int dow = cal.get(Calendar.DAY_OF_WEEK);
     		boolean offered = false;
@@ -617,65 +464,56 @@ public class CalendarServlet extends HttpServlet {
         	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(time.getStartSlot()));
         	cal.set(Calendar.MINUTE, Constants.toMinute(time.getStartSlot()));
         	cal.set(Calendar.SECOND, 0);
-    		if (time.getWeekCode().get(idx)) {
-    			if (!tf.format(first).equals(tf.format(cal.getTime()))) {
-    				ArrayList<String> x = new ArrayList<String>(); extra.add(x);
-    		        x.add("RECURRENCE-ID:" + df.format(cal.getTime()) + "T" + tf.format(first) + "Z");
-    		        x.add("DTSTART:" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
-    		    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * time.getLength() - time.getBreakTime());
-    		        x.add("DTEND:" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
-    			}
-    		} else {
-    			out.println("EXDATE:" + df.format(cal.getTime()) + "T" + tf.format(first) + "Z");
+    		if (!time.getWeekCode().get(idx)) {
+    			exdates.addValue(cal.getTime());
     		}
     		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
     	}
-    	printClassRest(course, clazz, assignment, out);
-        for (ArrayList<String> x: extra) {
-            out.println("BEGIN:VEVENT");
-            for (String s: x) out.println(s);
-        	printClassRest(course, clazz, assignment, out);
-        }
-	}
-	
-	private void printClassRest(CourseOffering course, Class_ clazz, Assignment assignment, PrintWriter out) throws IOException {
-        out.println("UID:" + clazz.getUniqueId());
-        out.println("SEQUENCE:0");
-        out.println("SUMMARY:" + clazz.getClassLabel(course));
+    	if (!exdates.getValues().isEmpty())
+        	vevent.addExceptionDates(exdates);
+
+    	vevent.setUid(clazz.getUniqueId().toString());
+    	vevent.setSequence(0);
+    	vevent.setSummary(clazz.getClassLabel(course));
         String desc = (course.getTitle() == null ? "" : course.getTitle());
         if (course.getConsentType() != null)
         	desc += " (" + course.getConsentType().getLabel() + ")";
-			out.println("DESCRIPTION:" + desc);
+		vevent.setDescription(desc);
 		if (!assignment.getRooms().isEmpty()) {
 			String loc = "";
         	for (Location r: assignment.getRooms()) {
         		if (!loc.isEmpty()) loc += ", ";
         		loc += r.getLabel();
         	}
-        	out.println("LOCATION:" + loc);
+        	vevent.setLocation(loc);
 		}
-        if (clazz.isDisplayInstructor()) {
-        	boolean org = false;
-            for (ClassInstructor instructor: clazz.getClassInstructors()) {
-				if (!org) {
-					out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + instructor.getInstructor().getNameLastFirst() + "\":MAILTO:" + ( instructor.getInstructor().getEmail() != null ? instructor.getInstructor().getEmail() : ""));
-					org = true;
-				} else {
-					out.println("ATTENDEE;ROLE=CHAIR;CN=\"" + instructor.getInstructor().getNameLastFirst() + "\":MAILTO:" + ( instructor.getInstructor().getEmail() != null ? instructor.getInstructor().getEmail() : ""));
-				}
-    		}
+        try {
+        	URL url = CourseDetailsBackend.getCourseUrl(new AcademicSessionInfo(course.getInstructionalOffering().getSession()), course.getSubjectAreaAbbv(), course.getCourseNbr());
+        	if (url != null)
+        		vevent.setUrl(url.toString());
+        } catch (Exception e) {
+        	e.printStackTrace();
         }
-		out.println("STATUS:CONFIRMED");	
-        out.println("END:VEVENT");
+        if (clazz.isDisplayInstructor()) {
+            for (ClassInstructor instructor: clazz.getClassInstructors()) {
+				if (vevent.getOrganizer() == null) {
+					Organizer organizer = new Organizer("mailto:" + (instructor.getInstructor().getEmail() != null ? instructor.getInstructor().getEmail() : ""));
+					organizer.setCommonName(instructor.getInstructor().getNameLastFirst());
+					vevent.setOrganizer(organizer);
+				} else {
+					Attendee attendee = new Attendee("mailto:" + (instructor.getInstructor().getEmail() != null ? instructor.getInstructor().getEmail() : ""));
+					attendee.setCommonName(instructor.getInstructor().getNameLastFirst());
+					attendee.setRole(Role.CHAIR);
+					vevent.addAttendee(attendee);
+				}
+            }
+        }
+        vevent.setStatus(Status.confirmed());
+        ical.addEvent(vevent);
 	}
 	
-	private static void printFreeTime(Date dpFirstDate, BitSet weekCode, String days, int start, int len, PrintWriter out) throws IOException {
-        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-        SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
-        tf.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-    	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
+	private static void printFreeTime(Date dpFirstDate, BitSet weekCode, String days, int start, int len, ICalendar ical) throws IOException {
+		Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
     	cal.setTime(dpFirstDate);
 
     	int idx = weekCode.nextSetBit(0);
@@ -754,11 +592,14 @@ public class CalendarServlet extends HttpServlet {
     	}
     	if (last == null) return;
     	
-    	out.println("BEGIN:VFREEBUSY");
-        out.println("DTSTART:" + df.format(first) + "T" + tf.format(first) + "Z");
-    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * len);
-        out.println("DTEND:" + df.format(last) + "T" + tf.format(last) + "Z");
-        out.println("COMMENT:Free Time");
+    	VFreeBusy vfree = new VFreeBusy();
+    	DateStart dstart = new DateStart(first, true); dstart.setLocalTime(false); dstart.setTimezoneId(TimeZone.getDefault().getID());
+    	vfree.setDateStart(dstart);
+    	Calendar c = Calendar.getInstance(Locale.US); c.setTime(first); c.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * len);
+    	DateEnd dend = new DateEnd(c.getTime(), true); dend.setLocalTime(false); dend.setTimezoneId(TimeZone.getDefault().getID());
+    	vfree.setDateEnd(dend);
+    	vfree.addComment("Free Time");
+    	ical.addFreeBusy(vfree);
 
     	cal.setTime(dpFirstDate);
     	idx = weekCode.nextSetBit(0);
@@ -794,15 +635,19 @@ public class CalendarServlet extends HttpServlet {
         	    	cal.set(Calendar.HOUR_OF_DAY, Constants.toHour(start));
         	    	cal.set(Calendar.MINUTE, Constants.toMinute(start));
         	    	cal.set(Calendar.SECOND, 0);
-                    out.print("FREEBUSY:" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
-                	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * len);
-                    out.println("/" + df.format(cal.getTime()) + "T" + tf.format(cal.getTime()) + "Z");
+        	    	
+        	    	vfree = new VFreeBusy();
+        	    	dstart = new DateStart(cal.getTime(), true); dstart.setLocalTime(false); dstart.setTimezoneId(TimeZone.getDefault().getID());
+        	    	vfree.setDateStart(dstart);
+        	    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * len);
+        	    	dend = new DateEnd(cal.getTime(), true); dend.setLocalTime(false); dend.setTimezoneId(TimeZone.getDefault().getID());
+        	    	vfree.setDateEnd(dend);
+        	    	vfree.addComment("Free Time");
+        	    	ical.addFreeBusy(vfree);
         		}
     		}
     		cal.add(Calendar.DAY_OF_YEAR, 1); idx++;
     	}
-    	
-        out.println("END:VFREEBUSY");
 	}
 
 	public static interface Params {
@@ -889,6 +734,59 @@ public class CalendarServlet extends HttpServlet {
 					return iterator.next();
 				}
 			};
+		}
+		
+	}
+	
+	public class ICalendarMeeting implements Comparable<ICalendarMeeting>{
+		private DateTime iStart, iEnd;
+		private String iLocation;
+		private Status iStatus;
+		
+		public ICalendarMeeting(Meeting meeting) {
+			iStart = new DateTime(meeting.getStartTime());
+			iEnd = new DateTime(meeting.getStopTime());
+			iLocation = (meeting.getLocation() == null ? "" : meeting.getLocation().getLabel());
+			iStatus = meeting.isApproved() ? Status.confirmed() : Status.tentative();
+		}
+		
+		public DateTime getStart() { return iStart; }
+		public DateStart getDateStart() {
+			DateStart ds = new DateStart(iStart.toDate(), true);
+			ds.setLocalTime(false);
+			ds.setTimezoneId(TimeZone.getDefault().getID());
+			return ds;
+		}
+		
+		public DateTime getEnd() { return iEnd; }
+		public DateEnd getDateEnd() {
+			DateEnd de = new DateEnd(iEnd.toDate(), true);
+			de.setLocalTime(false);
+			de.setTimezoneId(TimeZone.getDefault().getID());
+			return de;
+		}
+
+		public String getLocation() { return iLocation; }
+		public Status getStatus() { return iStatus; }
+		
+		public boolean merge(ICalendarMeeting m) {
+			if (m.getStart().equals(getStart()) && m.getEnd().equals(getEnd())) {
+				if (m.getStatus() == Status.tentative()) iStatus = Status.tentative();
+				iLocation += ", " + m.getLocation();
+				return true;
+			}
+			return false;
+		}
+		
+		public boolean same(ICalendarMeeting m) {
+			return m.getStart().getSecondOfDay() == getStart().getSecondOfDay() && m.getEnd().getSecondOfDay() == getEnd().getSecondOfDay() &&
+					getLocation().equals(m.getLocation()) && getStatus().equals(m.getStatus());
+		}
+		
+		public int compareTo(ICalendarMeeting m) {
+			int cmp = getStart().compareTo(m.getStart());
+			if (cmp != 0) return cmp;
+			return getEnd().compareTo(m.getEnd());
 		}
 		
 	}
