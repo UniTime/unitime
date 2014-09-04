@@ -567,8 +567,12 @@ LED Icon Set
 	URL: http://led24.de/iconset/
 	License: Creative Commons Attribution 3.0 License
 
-Free web development icons #3
+Free web development icons
 	URL: http://www.icojam.com/blog/?p=119
+	License: Public Domain
+
+Onebit icon sets
+	URL: http://www.icojam.com/blog/?p=177
 	License: Public Domain
 
 ----
@@ -711,7 +715,8 @@ Public Domain
 	JBoss Marshalling API (org.jboss.marshalling:jboss-marshalling:1.3.18.GA)
 	JBoss Marshalling River (org.jboss.marshalling:jboss-marshalling-river:1.3.18.GA)
 	JSON in Java (org.json:json:20140107)
-	Free web development icons #3
+	Free web development icons
+	Onebit icon sets
 
 Creative Commons Attribution 3.0 License
 	The famfamfam Silk Icons
