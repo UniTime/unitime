@@ -303,15 +303,15 @@ public class SolverParamDefAction extends Action {
 		        	SolverParameterDef def= (SolverParameterDef)j.next();
                     String ops = "";
                     if (def.getOrder().intValue()>0) {
-                        ops += "<img src='images/arrow_u.gif' border='0' align='absmiddle' title='Move Up' " +
+                        ops += "<img src='images/arrow_up.png' border='0' align='absmiddle' title='Move Up' " +
                                 "onclick=\"solverParamDefForm.op2.value='Move Up';solverParamDefForm.uniqueId.value='"+def.getUniqueId()+"';solverParamDefForm.submit(); event.cancelBubble=true;\">";
                     } else
-                        ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+                        ops += "<img src='images/blank.png' border='0' align='absmiddle'>";
                     if (j.hasNext()) {
-                        ops += "<img src='images/arrow_d.gif' border='0' align='absmiddle' title='Move Down' " +
+                        ops += "<img src='images/arrow_down.png' border='0' align='absmiddle' title='Move Down' " +
                                 "onclick=\"solverParamDefForm.op2.value='Move Down';solverParamDefForm.uniqueId.value='"+def.getUniqueId()+"';solverParamDefForm.submit(); event.cancelBubble=true;\">";
                     } else
-                        ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+                        ops += "<img src='images/blank.png' border='0' align='absmiddle'>";
 					String onClick = "onClick=\"document.location='solverParamDef.do?op=Edit&id=" + def.getUniqueId() + "';\"";
 					webTable.addLine(onClick, new String[] {
 							ops,

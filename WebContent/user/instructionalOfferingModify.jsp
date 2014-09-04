@@ -397,7 +397,7 @@
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<logic:equal name="<%=frmName%>" property='<%= "classCanMoveUp[" + ctr + "]" %>' value="true" >
-										<IMG border="0" src="images/arrow_u.gif" title="<%=MSG.titleMoveClassUp()%>"
+										<IMG border="0" src="images/arrow_up.png" align='absmiddle' title="<%=MSG.titleMoveClassUp()%>"
 											onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
 											onclick="document.forms[0].elements['hdnOp'].value='moveUp';document.forms[0].elements['moveUpClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
 									</logic:equal>
@@ -406,7 +406,7 @@
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<logic:equal name="<%=frmName%>" property='<%= "classCanMoveDown[" + ctr + "]" %>' value="true" >
-										<IMG border="0" src="images/arrow_d.gif" title="<%=MSG.titleMoveClassDown()%>"
+										<IMG border="0" src="images/arrow_down.png" align='absmiddle' title="<%=MSG.titleMoveClassDown()%>"
 											onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
 											onclick="document.forms[0].elements['hdnOp'].value='moveDown';document.forms[0].elements['moveDownClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
 									</logic:equal>
@@ -414,13 +414,13 @@
 							</TD>
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
-									<IMG border="0" src="images/action_delete.png" title="<%=MSG.titleRemoveClassFromIO()%>"
+									<IMG border="0" src="images/action_delete.png" align='absmiddle' title="<%=MSG.titleRemoveClassFromIO()%>"
 										onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
 										onclick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
 								</logic:equal>
 							</TD>
 							<TD align="center" valign="top" nowrap>
-								<IMG border="0" src="images/action_add.png" title="<%=MSG.titleAddClassToIO()%>"
+								<IMG border="0" src="images/action_add.png" align='absmiddle' title="<%=MSG.titleAddClassToIO()%>"
 									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
 									onclick="document.forms[0].elements['hdnOp'].value='add';document.forms[0].elements['addTemplateClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
 							</TD>

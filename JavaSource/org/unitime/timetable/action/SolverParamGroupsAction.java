@@ -238,15 +238,15 @@ public class SolverParamGroupsAction extends Action {
 					String onClick = "onClick=\"document.location='solverParamGroups.do?op=Edit&id=" + group.getUniqueId() + "';\"";
 		            String ops = "";
 		            if (group.getOrder().intValue()>0) {
-		                ops += "<img src='images/arrow_u.gif' border='0' align='absmiddle' title='Move Up' " +
+		                ops += "<img src='images/arrow_up.png' border='0' align='absmiddle' title='Move Up' " +
 		                        "onclick=\"solverParamGroupsForm.op2.value='Move Up';solverParamGroupsForm.uniqueId.value='"+group.getUniqueId()+"';solverParamGroupsForm.submit(); event.cancelBubble=true;\">";
 		            } else
-		                ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+		                ops += "<img src='images/blank.png' border='0' align='absmiddle'>";
 		            if (i.hasNext()) {
-		                ops += "<img src='images/arrow_d.gif' border='0' align='absmiddle' title='Move Down' " +
+		                ops += "<img src='images/arrow_down.png' border='0' align='absmiddle' title='Move Down' " +
 		                        "onclick=\"solverParamGroupsForm.op2.value='Move Down';solverParamGroupsForm.uniqueId.value='"+group.getUniqueId()+"';solverParamGroupsForm.submit(); event.cancelBubble=true;\">";
 		            } else
-		                ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+		                ops += "<img src='images/blank.png' border='0' align='absmiddle'>";
 					webTable.addLine(onClick, new String[] {ops, group.getName(), (group.getType()==SolverParameterGroup.sTypeStudent?"student":group.getType()==SolverParameterGroup.sTypeCourse?"course":"exam"), group.getDescription()},
 							new Comparable[] {group.getOrder(), group.getName(), group.getType(), group.getDescription()});
 				}

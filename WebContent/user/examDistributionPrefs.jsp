@@ -189,23 +189,23 @@
 				
 				<!-- Arrows -->
 				<logic:greaterThan name="ctr" value="0">
-					<IMG border="0" src="images/arrow_u.gif" alt="Move Up" title="Move Up" align="top"
+					<IMG border="0" src="images/arrow_up.png" alt="Move Up" title="Move Up" align='absmiddle'
 						onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
 						onClick="javascript: doReload('moveUp', '<%=ctr%>');">
 				</logic:greaterThan>
 
 				<logic:equal name="ctr" value="0">
-					<IMG border="0" src="images/blank.gif" align="top">
+					<IMG border="0" src="images/blank.png" align='absmiddle'>
 				</logic:equal>
 
 				<logic:lessThan name="ctr" value="<%=request.getAttribute(DistributionPrefsForm.LIST_SIZE_ATTR).toString()%>">
-					<IMG border="0" src="images/arrow_d.gif" alt="Move Down" title="Move Down" align="top"
+					<IMG border="0" src="images/arrow_down.png" alt="Move Down" title="Move Down" align='absmiddle'
 						onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
 						onClick="javascript: doReload('moveDown', '<%=ctr%>');">
 				</logic:lessThan>
 
 				<logic:equal name="ctr" value="<%=request.getAttribute(DistributionPrefsForm.LIST_SIZE_ATTR).toString()%>">
-					<IMG border="0" src="images/blank.gif" align="top">
+					<IMG border="0" src="images/blank.png" align='absmiddle'>
 				</logic:equal>
 
 				<!-- Delete button -->

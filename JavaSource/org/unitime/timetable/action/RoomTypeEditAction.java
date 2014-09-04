@@ -226,15 +226,15 @@ public class RoomTypeEditAction extends Action {
         	String onClick = "onClick=\"document.location='roomTypeEdit.do?op=Edit&id=" + t.getUniqueId() + "';\"";
             String ops = "";
             if (t.getOrd().intValue()>0) {
-                ops += "<img src='images/arrow_u.gif' border='0' align='absmiddle' title='Move Up' " +
+                ops += "<img src='images/arrow_up.png' border='0' align='absmiddle' title='Move Up' " +
                 		"onclick=\"roomTypeEditForm.op2.value='Move Up';roomTypeEditForm.uniqueId.value='"+t.getUniqueId()+"';roomTypeEditForm.submit(); event.cancelBubble=true;\">";
             } else
-                ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+                ops += "<img src='images/blank.png' border='0' align='absmiddle'>";
             if (i.hasNext()) {
-                ops += "<img src='images/arrow_d.gif' border='0' align='absmiddle' title='Move Down' " +
+                ops += "<img src='images/arrow_down.png' border='0' align='absmiddle' title='Move Down' " +
                 		"onclick=\"roomTypeEditForm.op2.value='Move Down';roomTypeEditForm.uniqueId.value='"+t.getUniqueId()+"';roomTypeEditForm.submit(); event.cancelBubble=true;\">";
             } else
-                ops += "<img src='images/blank.gif' border='0' align='absmiddle'>";
+                ops += "<img src='images/blank.png' border='0' align='absmiddle'>";
             int nrRooms = t.countRooms();
             webTable.addLine(onClick, new String[] {
                     ops,

@@ -296,10 +296,10 @@ public class SchedulingSubpartTableBuilder {
         // Generate indentation depending on recursive level
         String indent = "";
         for(int i=1; i<level; i++) 
-            indent += "\n<IMG width=\"10\" align=\"absmiddle\" src=\"images/blank.gif\">";
+            indent += "\n<IMG width=\"16\" align=\"absmiddle\" src=\"images/blank.png\">";
         
         if(indent.length()!=0) 
-            indent += "\n<IMG align=\"absmiddle\" src=\"images/dot_line.gif\">&nbsp;";
+            indent += "\n<IMG align=\"absmiddle\" src=\"images/indent.png\">&nbsp;";
 
         if (!varLimits && mnlpc!=mxlpc) {
             if (mnlpc==-1) 
@@ -318,7 +318,7 @@ public class SchedulingSubpartTableBuilder {
                         (!disabled) 
                         	? getIcons(sic, level, rowNum, maxRows, spRowNum, maxSp) 
                         	: (notOwned)
-                        		? "<img border=\"0\" src=\"images/lock.png\">"
+                        		? "<img align=\"absmiddle\" border=\"0\" src=\"images/lock.png\">"
                         		: "",
                          
                         "\n\t <INPUT type=\"hidden\" name=\"subpartId" + sicId + "\" value=\"" + subpartId + "\">"                        
@@ -455,36 +455,36 @@ public class SchedulingSubpartTableBuilder {
         // Right Arrow
         if ( (level==1 && rowNum>0)
              || (level>1 && spRowNum>0) ) 
-        	html += "<IMG border=\"0\" alt=\""+ MSG.titleMoveToChildLevel() + "\" title=\"" + MSG.titleMoveToChildLevel() + "\" align=\"top\" src=\"images/arrow_r.gif\" " +
+        	html += "<IMG border=\"0\" alt=\""+ MSG.titleMoveToChildLevel() + "\" title=\"" + MSG.titleMoveToChildLevel() + "\" align=\"absmiddle\" src=\"images/arrow_right.png\" " +
         			"onClick=\"doClick('shiftRight', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
-            html += "<IMG align=\"top\" src=\"images/blank.gif\">";
+            html += "<IMG align=\"top\" src=\"images/blank.png\">";
         
         // Left Arrow
         if (level>1)
-        	html += "<IMG border=\"0\" alt=\""+ MSG.titleMoveToParentLevel()+"\" title=\""+MSG.titleMoveToParentLevel() +"\" align=\"top\" src=\"images/arrow_l.gif\" " +
+        	html += "<IMG border=\"0\" alt=\""+ MSG.titleMoveToParentLevel()+"\" title=\""+MSG.titleMoveToParentLevel() +"\" align=\"absmiddle\" src=\"images/arrow_left.png\" " +
         			"onClick=\"doClick('shiftLeft', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
-            html += "<IMG align=\"top\" src=\"images/blank.gif\">"; 
+            html += "<IMG align=\"top\" src=\"images/blank.png\">"; 
         
         // Up Arrow
         if( (level==1 && rowNum>0 )
              || (level>1 && spRowNum>0) ) 
-        	html += "<IMG border=\"0\" alt=\""+MSG.altMoveUp()+"\" align=\"absmiddle\" src=\"images/arrow_u.gif\" " +
+        	html += "<IMG border=\"0\" alt=\""+MSG.altMoveUp()+"\" align=\"absmiddle\" src=\"images/arrow_up.png\" " +
         			"onClick=\"doClick('shiftUp', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
-            html += "<IMG align=\"absmiddle\" src=\"images/blank.gif\">";
+            html += "<IMG align=\"absmiddle\" src=\"images/blank.png\">";
 
         // Down Arrow
         if ( (level==1 && (rowNum+1)<maxRows)
              || (level>1 && (spRowNum+1)<maxSp) )
-        	html += "<IMG border=\"0\" alt=\""+MSG.altMoveDown()+"\" align=\"absmiddle\" src=\"images/arrow_d.gif\" " +
+        	html += "<IMG border=\"0\" alt=\""+MSG.altMoveDown()+"\" align=\"absmiddle\" src=\"images/arrow_down.png\" " +
         			"onClick=\"doClick('shiftDown', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">";
         else
-            html += "<IMG align=\"absmiddle\" src=\"images/blank.gif\">";
+            html += "<IMG align=\"absmiddle\" src=\"images/blank.png\">";
 
         // Delete
-        html += "<IMG border=\"0\" alt=\""+MSG.altDelete()+"\" title=\""+MSG.titleDeleteInstructionalType()+"\" align=\"top\" src=\"images/action_delete.png\" " +
+        html += "<IMG border=\"0\" alt=\""+MSG.altDelete()+"\" title=\""+MSG.titleDeleteInstructionalType()+"\" align=\"absmiddle\" src=\"images/action_delete.png\" " +
         		"onClick=\"doClick('delete', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">&nbsp; ";
 
         html += "&nbsp; &nbsp;";
