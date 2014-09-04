@@ -44,8 +44,12 @@ LED Icon Set
 	URL: http://led24.de/iconset/
 	License: Creative Commons Attribution 3.0 License
 
-Free web development icons #3
+Free web development icons
 	URL: http://www.icojam.com/blog/?p=119
+	License: Public Domain
+
+Onebit icon sets
+	URL: http://www.icojam.com/blog/?p=177
 	License: Public Domain
 
 ----
@@ -55,7 +59,8 @@ List of third-party dependencies grouped by their license type:
 ${license}<#list projects as project>
 	${artifactFormat(project)}</#list>
 </#list>
-	Free web development icons #3
+	Free web development icons
+	Onebit icon sets
 
 Creative Commons Attribution 3.0 License
 	The famfamfam Silk Icons
