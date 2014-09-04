@@ -24,6 +24,13 @@ cglib-2.2.2.jar
 	URL: http://cglib.sourceforge.net/
 	License: Apache Software License (ASL), Version 2.0
 
+jackson-core-2.3.3.jar
+	Jackson-core
+	Maven: com.fasterxml.jackson.core:jackson-core:2.3.3
+	URL: http://wiki.fasterxml.com/JacksonHome
+	License: Apache Software License (ASL), Version 2.0
+	License: GNU Lesser General Public License, Version 2.1
+
 gson-2.2.4.jar
 	Gson
 	Maven: com.google.code.gson:gson:2.2.4
@@ -57,7 +64,7 @@ protobuf-java-2.5.0.jar
 mgwt-2.0.0-rc2.jar
 	mgwt
 	Maven: com.googlecode.mgwt:mgwt:2.0.0-rc2
-	URL: http://code.google.com/p/mgwt/
+	URL: http://www.m-gwt.com
 	License: Apache Software License (ASL), Version 2.0
 
 itext-2.1.7.jar
@@ -191,6 +198,12 @@ mysql-connector-java-5.1.26.jar
 	Maven: mysql:mysql-connector-java:5.1.26
 	URL: http://dev.mysql.com/usingmysql/java/
 	License: GNU General Public License (GPL), Version 2
+
+biweekly-0.3.3.jar
+	biweekly
+	Maven: net.sf.biweekly:biweekly:0.3.3
+	URL: http://sourceforge.net/p/biweekly
+	License: BSD or BSD-style License
 
 ehcache-core-2.6.6.jar
 	Ehcache Core
@@ -582,6 +595,7 @@ Apache Software License (ASL), Version 2.0
 	JBoss Logging 3 (org.jboss.logging:jboss-logging:3.1.3.GA)
 	JGroups (org.jgroups:jgroups:3.4.1.Final)
 	JGroups Replication (net.sf.ehcache:ehcache-jgroupsreplication:1.7)
+	Jackson-core (com.fasterxml.jackson.core:jackson-core:2.3.3)
 	Java Annotation Indexer (org.jboss:jandex:1.1.0.Final)
 	Javassist (org.javassist:javassist:3.18.0-GA)
 	Joda-Time (joda-time:joda-time:2.3)
@@ -630,6 +644,7 @@ BSD or BSD-style License
 	AntLR Parser Generator (antlr:antlr:2.7.7)
 	FreeMarker (org.freemarker:freemarker:2.3.20)
 	Protocol Buffer Java API (com.google.protobuf:protobuf-java:2.5.0)
+	biweekly (net.sf.biweekly:biweekly:0.3.3)
 	dom4j (dom4j:dom4j:1.6.1)
 
 Common Development and Distribution License (CDDL), Version 1.0
@@ -676,6 +691,9 @@ GNU Lesser General Public License (LGPL), Version 3
 	Restlet Core - API and Engine (org.restlet.jse:org.restlet:2.2.1)
 	Restlet Extension - JSON (org.restlet.jse:org.restlet.ext.json:2.2.1)
 
+GNU Lesser General Public License, Version 2.1
+	Jackson-core (com.fasterxml.jackson.core:jackson-core:2.3.3)
+
 JA-SIG License for Use
 	JA-SIG CAS Client for Java - Core (org.jasig.cas.client:cas-client-core:3.1.12)
 
@@ -709,7 +727,7 @@ BSD or BSD-style Licenses
 	http://asm.ow2.org/license.html (ASM Core)
 	http://www.antlr.org/license.html (AntLR Parser Generator)
 	http://freemarker.org/docs/app_license.html (FreeMaker)
-	http://opensource.org/licenses/BSD-3-Clause (Protocol Buffer Java API)
+	http://opensource.org/licenses/bsd-license.php (Protocol Buffer Java API, biweekly)
 	http://dom4j.sourceforge.net/dom4j-1.6.1/license.html (dom4j)
 Common Development and Distribution License (CDDL), Version 1.0
 	http://opensource.org/licenses/CDDL-1.0
