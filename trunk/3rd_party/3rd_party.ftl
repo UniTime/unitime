@@ -96,7 +96,7 @@ JA-SIG License for Use
 	http://www.jasig.org/cas/license
 Public Domain
 	http://www.json.org/license.html (JSON)
-	http://creativecommons.org/publicdomain/mark/1.0 (Free web development icons #3)
+	http://creativecommons.org/publicdomain/mark/1.0 (Free web development icons, Onebit icon sets)
 MIT License
 	http://www.slf4j.org/license.html (SLF4J)
 Mozilla Public License (MPL), Version 1.1
