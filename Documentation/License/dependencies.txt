@@ -61,9 +61,9 @@ protobuf-java-2.5.0.jar
 	URL: http://code.google.com/p/protobuf
 	License: BSD or BSD-style License
 
-mgwt-2.0.0-rc2.jar
+mgwt-2.0.0.jar
 	mgwt
-	Maven: com.googlecode.mgwt:mgwt:2.0.0-rc2
+	Maven: com.googlecode.mgwt:mgwt:2.0.0
 	URL: http://www.m-gwt.com
 	License: Apache Software License (ASL), Version 2.0
 
@@ -620,7 +620,7 @@ Apache Software License (ASL), Version 2.0
 	gwt-dev (com.google.gwt:gwt-dev:2.6.1)
 	gwt-servlet (com.google.gwt:gwt-servlet:2.6.1)
 	gwt-user (com.google.gwt:gwt-user:2.6.1)
-	mgwt (com.googlecode.mgwt:mgwt:2.0.0-rc2)
+	mgwt (com.googlecode.mgwt:mgwt:2.0.0)
 	oro (oro:oro:2.0.8)
 	spring-aop (org.springframework:spring-aop:3.1.4.RELEASE)
 	spring-asm (org.springframework:spring-asm:3.1.4.RELEASE)
@@ -752,7 +752,7 @@ JA-SIG License for Use
 	http://www.jasig.org/cas/license
 Public Domain
 	http://www.json.org/license.html (JSON)
-	http://creativecommons.org/publicdomain/mark/1.0 (Free web development icons #3)
+	http://creativecommons.org/publicdomain/mark/1.0 (Free web development icons, Onebit icon sets)
 MIT License
 	http://www.slf4j.org/license.html (SLF4J)
 Mozilla Public License (MPL), Version 1.1
