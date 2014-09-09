@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.client.solver.SolverAllocatedMemory.SolverAlloc
 import org.unitime.timetable.gwt.client.solver.SolverAllocatedMemory.SolverAllocatedMemoryRpcResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.service.SolverServerService;
 
@@ -52,7 +53,9 @@ public class SolverAllocatedMemoryBackend implements GwtRpcImplementation<Solver
 		case 'O':
 			if (request.getSolverId().indexOf(':') >= 0) {
 				String[] idHost = request.getSolverId().substring(1).split(":");
-				memUsage = solverServerService.getServer(idHost[0]).getOnlineStudentSchedulingContainer().getSolver(idHost[1]).getMemUsage();
+				OnlineSectioningServer server = solverServerService.getServer(idHost[0]).getOnlineStudentSchedulingContainer().getSolver(idHost[1]);
+				if (server != null)
+					memUsage = server.getMemUsage();
 			} else {
 				memUsage = solverServerService.getOnlineStudentSchedulingContainer().getMemUsage(request.getSolverId().substring(1));
 			}
