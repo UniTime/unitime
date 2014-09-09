@@ -34,6 +34,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 
@@ -94,7 +95,7 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				action.setResult(OnlineSectioningLog.Action.ResultType.NULL);
 				return iCheck;
 			}
-
+			
 			action.getStudentBuilder().setExternalId(student.getExternalUniqueId());
 			action.getStudentBuilder().setName(helper.getStudentNameFormat().format(student));
 			
@@ -128,8 +129,15 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 			else if (noenrl)
 				iCheck.setMessage(MSG.exceptionEnrollmentDisabled());
 				
-			if (CustomStudentEnrollmentHolder.hasProvider())
-				CustomStudentEnrollmentHolder.getProvider().checkEligibility(server, helper, iCheck, server.getStudent(iStudentId));
+			XStudent xstudent = server.getStudent(iStudentId);
+			if (xstudent == null) {
+				if (!iCheck.hasMessage())
+					iCheck.setMessage(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
+				iCheck.setFlag(EligibilityFlag.CAN_ENROLL, false);
+			} else {
+				if (CustomStudentEnrollmentHolder.hasProvider())
+					CustomStudentEnrollmentHolder.getProvider().checkEligibility(server, helper, iCheck, xstudent);
+			}
 
 			logCheck(action, iCheck);
 			return iCheck;
