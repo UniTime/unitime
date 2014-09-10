@@ -501,11 +501,6 @@ public class CourseOfferingEditAction extends Action {
 	        if (frm.getConsent()!=null && frm.getConsent().intValue() > 0)
 	        	co.setConsentType(OfferingConsentTypeDAO.getInstance().get(frm.getConsent()));
 	        
-	        if (frm.getCreditFormat() != null && !frm.getCreditFormat().isEmpty() && !frm.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)) {
-	        	co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
-    			co.getCredit().setOwner(co);
-	        }
-
 	        io.setByReservationOnly(frm.isByReservationOnly());
 	        
 	        try {
@@ -525,11 +520,16 @@ public class CourseOfferingEditAction extends Action {
 	        }
 
 	        frm.setInstrOfferingId((Long)hibSession.save(io));
+	        
+	        frm.setCourseOfferingId((Long)hibSession.save(co));
+
+	        if (frm.getCreditFormat() != null && !frm.getCreditFormat().isEmpty() && !frm.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)) {
+	        	co.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+    			co.getCredit().setOwner(co);
+	        }
+
 	        if (co.getCredit() != null)
 	        	hibSession.saveOrUpdate(co.getCredit());
-
-
-	        frm.setCourseOfferingId((Long)hibSession.save(co));
 
             ChangeLog.addChange(
                     hibSession,
