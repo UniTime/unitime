@@ -271,6 +271,10 @@ public class ApplicationProperties {
 	 * @return Absolute file path 
 	 */
 	public static String getBasePath() {
+		// Added ability to override the default way of getting the base dir
+		String base = getProperty("unitime.base.dir");
+		if (base != null) return base;
+		
 		//Get the URL of the class location (usually in /WEB-INF/classes/...) 		
 		URL url = ApplicationProperties.class.
 							getProtectionDomain().getCodeSource().getLocation();
@@ -282,6 +286,8 @@ public class ApplicationProperties {
 		try {
 			// Try to use URI to avoid bug 4466485 on Windows (see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4466485)
 			file = new File(new URI(url.toString()).getPath());
+		} catch (NullPointerException e) {
+			file = new File(url.getFile());
 		} catch (URISyntaxException e) {
 			file = new File(url.getFile());
 		}
