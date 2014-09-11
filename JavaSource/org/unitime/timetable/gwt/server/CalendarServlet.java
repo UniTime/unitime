@@ -155,6 +155,7 @@ public class CalendarServlet extends HttpServlet {
 		Session session = SessionDAO.getInstance().get(sessionId);
 		if (session == null) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Academic session does not exist.");
+			return;
 		}
 		String classIds = params.getParameter("cid");
     	String fts = params.getParameter("ft");
