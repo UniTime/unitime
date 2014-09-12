@@ -342,7 +342,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(action.getClass().getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
 			h.addAction(action, getAcademicSession());
 			E ret = action.execute(this, h);
-			if (h.getAction() != null) {
+			if (h.getAction() != null && h.getAction().getResult() == null) {
 				if (ret == null)
 					h.getAction().setResult(OnlineSectioningLog.Action.ResultType.NULL);
 				else if (ret instanceof Boolean)
