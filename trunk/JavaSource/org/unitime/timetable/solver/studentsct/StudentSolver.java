@@ -872,7 +872,7 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
 			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(action.getClass().getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
 			h.addAction(action, getAcademicSession());
 			E ret = action.execute(this, h);
-			if (h.getAction() != null && h.getAction().getResult() == null) {
+			if (h.getAction() != null && !h.getAction().hasResult()) {
 				if (ret == null)
 					h.getAction().setResult(OnlineSectioningLog.Action.ResultType.NULL);
 				else if (ret instanceof Boolean)
