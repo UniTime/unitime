@@ -1640,6 +1640,17 @@ public enum ApplicationProperty {
 	@Description("Instructor Add/Edit: allow editation of external id")
 	InstructorAllowEditExternalId("tmtbl.instructor.allowExternalIdEdit"),
 	
+	@Type(Class.class)
+	@Implements(org.unitime.timetable.backup.SessionBackupInterface.class)
+	@DefaultValue("org.unitime.timetable.backup.SessionBackup")
+	@Description("Implementation of the session backup interface.")
+	SessionBackupInterface("unitime.session_backup.class"),
+
+	@Type(Class.class)
+	@Implements(org.unitime.timetable.backup.SessionRestoreInterface.class)
+	@DefaultValue("org.unitime.timetable.backup.SessionRestore")
+	@Description("Implementation of the session restore interface.")
+	SessionRestoreInterface("unitime.session_restore.class"),
 	;
 
 	String iKey;

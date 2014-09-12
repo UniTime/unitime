@@ -88,7 +88,7 @@ import com.google.protobuf.CodedOutputStream;
 /**
  * @author Tomas Muller
  */
-public class SessionBackup {
+public class SessionBackup implements SessionBackupInterface {
     private static Log sLog = LogFactory.getLog(SessionBackup.class);
     private SessionFactory iHibSessionFactory = null;
 	private org.hibernate.Session iHibSession = null;
@@ -97,11 +97,6 @@ public class SessionBackup {
 	private PrintWriter iDebug = null;
 	private Long iSessionId = null;
 	private Progress iProgress = null;
-	
-	public SessionBackup(OutputStream out, Progress progress) {
-        iOut = CodedOutputStream.newInstance(out);
-        iProgress = progress;
-	}
 	
 	public Progress getProgress() {
 		return iProgress;
@@ -123,7 +118,10 @@ public class SessionBackup {
 		iDebug = pw;
 	}
 	
-	public void backup(Long sessionId) throws IOException {
+	@Override
+	public void backup(OutputStream out, Progress progress, Long sessionId) throws IOException {
+        iOut = CodedOutputStream.newInstance(out);
+        iProgress = progress;
 		iSessionId = sessionId;
         iHibSession = new _RootDAO().createNewSession(); 
         iHibSession.setCacheMode(CacheMode.IGNORE);
@@ -608,17 +606,19 @@ public class SessionBackup {
             		? session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative() + ".dat"
             		: args[0]);
             
-            SessionBackup backup = new SessionBackup(out, Progress.getInstance());
+            Progress progress = Progress.getInstance();
             
+            SessionBackup backup = new SessionBackup();
+
             PrintWriter debug = null;
             if (args.length >= 2) {
             	debug = new PrintWriter(args[1]);
             	backup.debug(debug);
             }
             
-            backup.getProgress().addProgressListener(new ProgressWriter(System.out));
+            progress.addProgressListener(new ProgressWriter(System.out));
             
-            backup.backup(session.getUniqueId());
+            backup.backup(out, progress, session.getUniqueId());
             
             out.close();
             if (debug != null) debug.close();
