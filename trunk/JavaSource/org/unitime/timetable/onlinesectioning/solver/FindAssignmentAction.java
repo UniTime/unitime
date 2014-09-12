@@ -209,6 +209,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					HashSet<Section> preferredSections = new HashSet<Section>();
 					HashSet<Section> requiredSections = new HashSet<Section>();
 					HashSet<Section> requiredOrSavedSections = new HashSet<Section>();
+					HashSet<CourseRequest> allowOverlaps = new HashSet<CourseRequest>();
+					boolean conflict = false;
 					a: for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
 						if (a != null && !a.isFreeTime() && cr.getCourse(a.getCourseId()) != null && a.getClassId() != null) {
 							Section section = cr.getSection(a.getClassId());
@@ -218,16 +220,25 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							if (a.isPinned())
 								requiredSections.add(section);
 							if (a.isPinned() || a.isSaved() || getRequest().isNoChange()) {
-								boolean conflict = false;
-								for (Section s: requiredOrSavedSections)
-									if (s.isOverlapping(section)) { conflict = true; break; }
-								for (Set<Section> x: requiredOrSavedSectionsForCourse.values()) {
-									if (conflict) break;
-									for (Section s: x)
+								if (!conflict) {
+									for (Section s: requiredOrSavedSections)
 										if (s.isOverlapping(section)) { conflict = true; break; }
+									boolean allowOverlap = false;
+									for (Reservation rx: cr.getReservations(cr.getCourse(a.getCourseId()))) {
+										if (rx.isAllowOverlap()) { allowOverlap = true; break; }
+									}
+									if (allowOverlap) {
+										allowOverlaps.add(cr);
+									} else {
+										for (Map.Entry<CourseRequest, Set<Section>> x: requiredOrSavedSectionsForCourse.entrySet()) {
+											if (!allowOverlaps.contains(x.getKey()))
+												for (Section s: x.getValue())
+													if (s.isOverlapping(section)) { conflict = true; break; }
+												if (conflict) break;
+										}
+									}
 								}
-								if (!conflict)
-									requiredOrSavedSections.add(section);
+								requiredOrSavedSections.add(section);
 							}
 							preferredSections.add(section);
 							cr.getSelectedChoices().add(section.getChoice());
@@ -237,7 +248,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 					preferredSectionsForCourse.put(cr, preferredSections);
 					requiredSectionsForCourse.put(cr, requiredSections);
-					requiredOrSavedSectionsForCourse.put(cr, requiredOrSavedSections);
+					if (!conflict)
+						requiredOrSavedSectionsForCourse.put(cr, requiredOrSavedSections);
 				} else {
 					FreeTimeRequest ft = (FreeTimeRequest)r;
 					for (ClassAssignmentInterface.ClassAssignment a: getAssignment()) {
