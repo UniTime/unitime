@@ -46,6 +46,8 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.PageAccessException;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.context.UniTimeUserContext;
@@ -63,6 +65,10 @@ public abstract class EventsExporter implements Exporter {
 		Long sessionId = helper.getAcademicSessionId();
 		if (sessionId == null)
 			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
+		
+		Session session = SessionDAO.getInstance().get(sessionId);
+		if (session == null)
+			throw new IllegalArgumentException("Given academic session no longer exists.");
 
 		EventLookupRpcRequest request = new EventLookupRpcRequest();
     	request.setSessionId(sessionId);
