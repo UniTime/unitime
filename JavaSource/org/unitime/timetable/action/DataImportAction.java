@@ -28,7 +28,6 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -47,8 +46,8 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
-import org.unitime.timetable.backup.SessionBackup;
-import org.unitime.timetable.backup.SessionRestore;
+import org.unitime.timetable.backup.SessionBackupInterface;
+import org.unitime.timetable.backup.SessionRestoreInterface;
 import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.dataexchange.DataExchangeHelper.LogWriter;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -317,7 +316,8 @@ public class DataImportAction extends Action {
 		@Override
 		protected void executeDataExchange() throws Exception {
 			if (iForm.getFile().getFileName().toLowerCase().endsWith(".dat")) {
-				new SessionRestore(iForm.getFile().getInputStream(), iProgress).restore();
+				SessionRestoreInterface restore = (SessionRestoreInterface)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).getConstructor().newInstance();
+				restore.restore(iForm.getFile().getInputStream(), iProgress);
 			} else {
 				DataExchangeHelper.importDocument((new SAXReader()).read(iForm.getFile().getInputStream()), getOwnerId(), this);
 			}
@@ -337,8 +337,8 @@ public class DataImportAction extends Action {
         	if (type == ExportType.SESSION) {
     			FileOutputStream out = new FileOutputStream(createOutput("session", "dat"));
     			try {
-    				SessionBackup backup = new SessionBackup(out, iProgress);
-    				backup.backup(getSessionId());
+    				SessionBackupInterface backup = (SessionBackupInterface)Class.forName(ApplicationProperty.SessionBackupInterface.value()).getConstructor().newInstance();
+    				backup.backup(out, iProgress, getSessionId());
     			} finally {
     				out.close();
     			}

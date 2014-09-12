@@ -109,7 +109,7 @@ import com.google.protobuf.CodedInputStream;
 /**
  * @author Tomas Muller
  */
-public class SessionRestore {
+public class SessionRestore implements SessionRestoreInterface {
     private static Log sLog = LogFactory.getLog(SessionBackup.class);
     private SessionFactory iHibSessionFactory = null;
 	private org.hibernate.Session iHibSession = null;
@@ -123,11 +123,6 @@ public class SessionRestore {
 
 	private InputStream iIn;
 
-	public SessionRestore(InputStream input, Progress progress) {
-		iIn = input;
-        iProgress = progress;
-	}
-	
 	public Progress getProgress() {
 		return iProgress;
 	}
@@ -156,7 +151,7 @@ public class SessionRestore {
 		}
 	}
 	
-	private void add(Entity entity) {
+	protected void add(Entity entity) {
 		boolean save = true;
 		boolean lookup = true;
 		if (entity.getObject() instanceof Session) {
@@ -278,7 +273,7 @@ public class SessionRestore {
 	}
 	
 	Map<String, Set<String>> iMessages = new HashMap<String, Set<String>>();
-	private void message(String message, String id) {
+	protected void message(String message, String id) {
 		Set<String> ids = iMessages.get(message);
 		if (ids == null) {
 			ids = new HashSet<String>();
@@ -313,7 +308,7 @@ public class SessionRestore {
 		}
 	}
 	
-	private Object get(Class clazz, String id) {
+	protected Object get(Class clazz, String id) {
 		if (clazz.equals(String.class) || clazz.equals(StringType.class)) return id;
 		if (clazz.equals(Character.class) || clazz.equals(CharacterType.class)) return (id == null || id.isEmpty() ? null : id.charAt(0));
 		if (clazz.equals(Byte.class) || clazz.equals(ByteType.class)) return Byte.valueOf(id);
@@ -382,7 +377,9 @@ public class SessionRestore {
 	}
 	
 	
-	public void restore() throws IOException, InstantiationException, IllegalAccessException, DocumentException {
+	public void restore(InputStream input, Progress progress) throws IOException, InstantiationException, IllegalAccessException, DocumentException {
+		iIn = input;
+        iProgress = progress;
         iHibSession = new _RootDAO().createNewSession();
         iHibSession.setCacheMode(CacheMode.IGNORE);
         iHibSessionFactory = iHibSession.getSessionFactory();
@@ -452,13 +449,13 @@ public class SessionRestore {
         }
 	}
 	
-	class Entity {
+	protected class Entity {
 		private ClassMetadata iMetaData;
 		private TableData.Record iRecord;
 		private Object iObject;
 		private String iId;
 		
-		Entity(ClassMetadata metadata, TableData.Record record, Object object, String id) {
+		protected Entity(ClassMetadata metadata, TableData.Record record, Object object, String id) {
 			iMetaData = metadata;
 			iRecord = record;
 			iObject = object;
@@ -664,7 +661,7 @@ public class SessionRestore {
 
             FileInputStream in = new FileInputStream(args[0]);
             
-            SessionRestore restore = new SessionRestore(in, Progress.getInstance());
+            SessionRestore restore = new SessionRestore();
             
             PrintWriter debug = null;
             if (args.length >= 2) {
@@ -672,9 +669,10 @@ public class SessionRestore {
             	restore.debug(debug);
             }
 
-            restore.getProgress().addProgressListener(new ProgressWriter(System.out));
+            Progress progress = Progress.getInstance();
+            progress.addProgressListener(new ProgressWriter(System.out));
 
-            restore.restore();
+            restore.restore(in, progress);
             
             in.close();
             if (debug != null) debug.close();
