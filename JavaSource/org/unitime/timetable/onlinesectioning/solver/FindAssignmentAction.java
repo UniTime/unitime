@@ -217,8 +217,18 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							}
 							if (a.isPinned())
 								requiredSections.add(section);
-							if (a.isPinned() || a.isSaved() || getRequest().isNoChange())
-								requiredOrSavedSections.add(section);
+							if (a.isPinned() || a.isSaved() || getRequest().isNoChange()) {
+								boolean conflict = false;
+								for (Section s: requiredOrSavedSections)
+									if (s.isOverlapping(section)) { conflict = true; break; }
+								for (Set<Section> x: requiredOrSavedSectionsForCourse.values()) {
+									if (conflict) break;
+									for (Section s: x)
+										if (s.isOverlapping(section)) { conflict = true; break; }
+								}
+								if (!conflict)
+									requiredOrSavedSections.add(section);
+							}
 							preferredSections.add(section);
 							cr.getSelectedChoices().add(section.getChoice());
 							rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(
