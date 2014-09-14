@@ -339,6 +339,16 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Distribution Preferences</name>
+			<description>
+				<line>Added structure One of Each
+					<line>The distribution constraint is created for each combination of classes such that one class is taken from each line representing a class or a scheduling subpart</line>
+					<line>For instance, if the constraint is put between three scheduling subparts, a constraint will be posted between  each combination of three classes, each from one of the three subparts.</line>
+					<line>If a constraint is put between a class and a scheduling subpart, there will be a binary constraint posted between the class and each of the classes of the scheduling subpart.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 </release-history>
