@@ -67,7 +67,6 @@ import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.Progress;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
-import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
@@ -2137,20 +2136,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		Assignment assignment = (Assignment)result[0];
     		if (!assignments.containsKey(assignment)) hibSession.evict(assignment);
 		}
-		for (Enumeration e1=assignments.keys(); e1.hasMoreElements();) {
-			Assignment assignment = (Assignment)e1.nextElement();
-			Hibernate.initialize(assignment.getClazz());
-		}
-		for (Enumeration e1=assignments.keys(); e1.hasMoreElements();) {
-			Assignment assignment = (Assignment)e1.nextElement();
-			Hibernate.initialize(assignment.getClazz().getChildClasses());
-			Hibernate.initialize(assignment.getClazz().getSchedulingSubpart());
-		}
-		for (Enumeration e1=assignments.keys(); e1.hasMoreElements();) {
-			Assignment assignment = (Assignment)e1.nextElement();
-			Hibernate.initialize(assignment.getClazz().getSchedulingSubpart().getChildSubparts());
-			Hibernate.initialize(assignment.getClazz().getSchedulingSubpart().getClasses());
-		}
 		
 		// Make up the appropriate committed placements and propagate those through the course structure
         iProgress.setPhase("Loading student conflicts with commited solutions ...", assignments.size());
@@ -2457,41 +2442,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		}
 		iProgress.debug("classes to load: "+iAllClasses.size());
 		
-		for (Iterator i=iAllClasses.iterator();i.hasNext();) {
-			Class_ c = (Class_)i.next();
-			Hibernate.initialize(c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getInstrOfferingConfigs());
-		}
-		for (Iterator i=iAllClasses.iterator();i.hasNext();) {
-			Class_ c = (Class_)i.next();
-			Hibernate.initialize(c.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts());
-		}
-		for (Iterator i=iAllClasses.iterator();i.hasNext();) {
-			Class_ c = (Class_)i.next();
-			Hibernate.initialize(c.getSchedulingSubpart().getClasses());
-		}
-		for (Iterator i=iAllClasses.iterator();i.hasNext();) {
-			Class_ c = (Class_)i.next();
-			Hibernate.initialize(c.getClassInstructors());
-		}
-		for (Iterator i=iAllClasses.iterator();i.hasNext();) {
-			Class_ c = (Class_)i.next();
-			for (Iterator j=c.getClassInstructors().iterator();j.hasNext();) {
-				ClassInstructor ci = (ClassInstructor)j.next();
-				Hibernate.initialize(ci.getInstructor());
-			}
-		}
-		for (Iterator i=iAllClasses.iterator();i.hasNext();) {
-			Class_ c = (Class_)i.next();
-			Hibernate.initialize(c.getPreferences());
-			Hibernate.initialize(c.getSchedulingSubpart().getPreferences());
-			for (Iterator j=c.getClassInstructors().iterator();j.hasNext();) {
-				ClassInstructor ci = (ClassInstructor)j.next();
-				Hibernate.initialize(ci.getInstructor().getPreferences());
-			}
-			c.getControllingDept().getPreferences();
-			c.getManagingDept().getPreferences();
-		}
-		
 		iProgress.setPhase("Loading classes ...",iAllClasses.size());
 		int ord = 0;
 		HashSet<SchedulingSubpart> subparts = new HashSet<SchedulingSubpart>();
@@ -2523,95 +2473,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			iOfferings.put(offering, loadOffering(offering, false));
 		}
 		
-		/*
-		// old code, replaced by Loading offerings ... part
-		iProgress.setPhase("Setting parent classes ...",iLectures.size());
-		Hashtable<SchedulingSubpart, List<Lecture>> subparts = new Hashtable<SchedulingSubpart, List<Lecture>>();
-		Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>>> offerings = new Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig,Set<SchedulingSubpart>>>();
-		Hashtable<InstrOfferingConfig, Configuration> configurations = new Hashtable<InstrOfferingConfig, Configuration>();
-		Hashtable<InstructionalOffering, List<Configuration>> altConfigurations = new Hashtable<InstructionalOffering, List<Configuration>>();
-		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
-			Class_ clazz = (Class_)i1.next();
-			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
-			
-			if (lecture==null) continue; //skip classes that were not loaded
-			
-			Class_ parentClazz = clazz.getParentClass();
-			if (parentClazz!=null) {
-				Lecture parentLecture = null; Class_ c = clazz;
-				while ((parentLecture==null || parentLecture.isCommitted()) && c.getParentClass()!=null) {
-					c = c.getParentClass();
-					parentLecture = (Lecture)iLectures.get(c.getUniqueId());
-				}
-				if (parentLecture!=null && !parentLecture.isCommitted()) lecture.setParent(parentLecture);
-			}
-			
-			SchedulingSubpart subpart = clazz.getSchedulingSubpart();
-			InstrOfferingConfig config = subpart.getInstrOfferingConfig();
-			InstructionalOffering offering = config.getInstructionalOffering();
-						
-			iSubparts.put(subpart.getUniqueId(),subpart);
-
-			if (lecture.getParent()==null) {
-				Configuration cfg = configurations.get(config);
-				if (cfg==null) {
-					cfg = new Configuration(offering.getUniqueId(), config.getUniqueId(), config.getLimit().intValue());
-					configurations.put(config, cfg);
-					List<Configuration> altCfgs = altConfigurations.get(offering);
-					if (altCfgs==null) {
-						altCfgs = new ArrayList<Configuration>();
-						altConfigurations.put(offering, altCfgs);
-					}
-					altCfgs.add(cfg);
-					cfg.setAltConfigurations(altCfgs);
-				}
-
-				lecture.setConfiguration(cfg);
-			
-				Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>> topSubparts = offerings.get(offering);
-				
-				if (topSubparts==null) {
-					topSubparts = new Hashtable();
-					offerings.put(offering,topSubparts);
-				}
-				Set<SchedulingSubpart> topSubpartsThisConfig = topSubparts.get(config);
-				if (topSubpartsThisConfig==null) {
-					topSubpartsThisConfig = new HashSet<SchedulingSubpart>();
-					topSubparts.put(config, topSubpartsThisConfig);
-				}
-
-				topSubpartsThisConfig.add(clazz.getSchedulingSubpart());
-			}
-			
-			List<Lecture> sameSubpart = subparts.get(clazz.getSchedulingSubpart());
-			if (sameSubpart==null) {
-				sameSubpart = new ArrayList<Lecture>();
-				subparts.put(clazz.getSchedulingSubpart(), sameSubpart);
-			}
-			sameSubpart.add(lecture);
-			
-			lecture.setSameSubpartLectures(sameSubpart);
-			
-			iProgress.incProgress();
-		}
-		*/
-
 		List<DistributionPref> distPrefs = new ArrayList<DistributionPref>();
 		for (int i=0;i<iSolverGroup.length;i++) {
 			distPrefs.addAll(iSolverGroup[i].getDistributionPreferences());
 		}
 		iProgress.setPhase("Loading distribution preferences ...",distPrefs.size());
-		Hibernate.initialize(distPrefs);
-		// Commented out for speeding up issues (calling just 
-		// Hibernate.initialize(distPrefs) instead)
-		// May need to call Hibernate.initialize on committed classed
-		// in getLecture(Class_) if this will cause issues.
-		/*
-		for (Iterator i=distPrefs.iterator();i.hasNext();) {
-			DistributionPref distributionPref = (DistributionPref)i.next();
-			Hibernate.initialize(distributionPref.getDistributionObjects());
-		}
-		*/
 		for (Iterator i=distPrefs.iterator();i.hasNext();) {
 			DistributionPref distributionPref = (DistributionPref)i.next();
 			if (!PreferenceLevel.sNeutral.equals(distributionPref.getPrefLevel().getPrefProlog()))
