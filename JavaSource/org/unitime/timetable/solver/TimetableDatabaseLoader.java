@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.TimetableLoader;
@@ -1714,6 +1713,45 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	    		gc.addVariable(l2);
         	    		addGroupConstraint(gc); 
         			}
+        		}
+        	}
+    	} else if (groupingType == DistributionPref.sGroupingOneOfEach) {
+    		List<Lecture> lectures = new ArrayList<Lecture>();
+    		List<Integer> counts = new ArrayList<Integer>();
+        	for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
+        		DistributionObject distributionObject = (DistributionObject)i.next();
+        		int count = 0;
+    			if (distributionObject.getPrefGroup() instanceof Class_) {
+        			Class_ clazz = (Class_)distributionObject.getPrefGroup();
+        			Lecture lecture = getLecture(clazz);
+        			if (lecture==null) {
+        				errorAddGroupConstraintNotFound(pref, clazz); continue;
+        			}
+        			lectures.add(lecture); count++;
+    			} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
+        			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
+        	    	List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
+        	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+        	    	for (Class_ clazz: classes) {
+            			Lecture lecture = getLecture(clazz);
+            			if (lecture==null) {
+            				errorAddGroupConstraintNotFound(pref, clazz); continue;
+            			}
+            			lectures.add(lecture); count++;
+        	    	}
+        		} else {
+        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getDistributionType().getLabel()+pref.getGroupingSufix()+" refers to unsupported object "+distributionObject.getPrefGroup());
+        		}
+    			if (count > 0) counts.add(count);
+        	}
+        	if (counts.size() > 1) {
+        		for (Enumeration<List<Lecture>> e = DistributionPref.permutations(lectures, counts); e.hasMoreElements(); ) {
+        			Collection<Lecture> perm = e.nextElement();
+    				Constraint gc = createGroupConstraint(pref);
+    	    		if (gc==null) return;
+        			for (Lecture lecture: perm) gc.addVariable(lecture);
+        			addGroupConstraint(gc);
+        			iProgress.debug("Posted " + gc.getName() + " between " + gc.variables());
         		}
         	}
     	} else {
