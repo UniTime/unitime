@@ -22,7 +22,6 @@ package org.unitime.timetable.action;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -36,11 +35,9 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.action.ActionRedirect;
-import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.impl.LocalizedLookupDispatchAction;
 import org.unitime.localization.messages.CourseMessages;
@@ -48,14 +45,8 @@ import org.unitime.localization.messages.Messages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
-import org.unitime.timetable.model.Assignment;
-import org.unitime.timetable.model.ClassInstructor;
-import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
@@ -306,87 +297,6 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
         	if (ts.isEmpty()) continue;
         	map.put(Long.valueOf(subjectAreaId), ts);
         	
-    		if (form.getInstructor().booleanValue() || form.getPreferences().booleanValue() || form.getTimePattern().booleanValue()) {
-    			Debug.debug("---- Load Instructors ---- ");
-    			for (Iterator i=ts.iterator();i.hasNext();) {
-    				InstructionalOffering io = (InstructionalOffering)i.next();
-    				for (Iterator j=io.getInstrOfferingConfigs().iterator();j.hasNext();) {
-    					InstrOfferingConfig ioc = (InstrOfferingConfig)j.next();
-    					for (Iterator k=ioc.getSchedulingSubparts().iterator();k.hasNext();) {
-    						SchedulingSubpart s = (SchedulingSubpart)k.next();
-    						for (Iterator l=s.getClasses().iterator();l.hasNext();) {
-    							Class_ c = (Class_)l.next();
-    							Hibernate.initialize(c.getClassInstructors());
-    						}
-    					}
-    				}
-    			}
-    			for (Iterator i=ts.iterator();i.hasNext();) {
-    				InstructionalOffering io = (InstructionalOffering)i.next();
-    				for (Iterator j=io.getInstrOfferingConfigs().iterator();j.hasNext();) {
-    					InstrOfferingConfig ioc = (InstrOfferingConfig)j.next();
-    					for (Iterator k=ioc.getSchedulingSubparts().iterator();k.hasNext();) {
-    						SchedulingSubpart s = (SchedulingSubpart)k.next();
-    						for (Iterator l=s.getClasses().iterator();l.hasNext();) {
-    							Class_ c = (Class_)l.next();
-    							for (Iterator m=c.getClassInstructors().iterator();m.hasNext();) {
-    								ClassInstructor ci = (ClassInstructor)m.next();
-    								Hibernate.initialize(ci.getInstructor());
-    							}
-    						}
-    					}
-    				}
-    			}
-    		}
-    		
-    		if (form.getPreferences().booleanValue() || form.getTimePattern().booleanValue()) {
-    			Debug.debug("---- Load Preferences ---- ");
-    			for (Iterator i=ts.iterator();i.hasNext();) {
-    				InstructionalOffering io = (InstructionalOffering)i.next();
-    				for (Iterator j=io.getInstrOfferingConfigs().iterator();j.hasNext();) {
-    					InstrOfferingConfig ioc = (InstrOfferingConfig)j.next();
-    					for (Iterator k=ioc.getSchedulingSubparts().iterator();k.hasNext();) {
-    						SchedulingSubpart s = (SchedulingSubpart)k.next();
-    						Hibernate.initialize(s.getPreferences());
-    						Hibernate.initialize(s.getDistributionObjects());
-    						for (Iterator l=s.getClasses().iterator();l.hasNext();) {
-    							Class_ c = (Class_)l.next();
-    							Hibernate.initialize(c.getPreferences());
-    							for (Iterator m=c.getClassInstructors().iterator();m.hasNext();) {
-    								ClassInstructor ci = (ClassInstructor)m.next();
-    								Hibernate.initialize(ci.getInstructor().getPreferences());
-    							}
-    							c.getControllingDept().getPreferences();
-    							c.getManagingDept().getPreferences();
-    							Hibernate.initialize(c.getDistributionObjects());
-    						}
-    					}
-    				}
-    			}
-    		}
-    		
-    		if (form.getTimetable()!=null && form.getTimetable().booleanValue()) {
-    			Debug.debug("--- Load Assignments --- ");
-    			if (classAssignmentProxy!=null && classAssignmentProxy instanceof Solution) {
-    				for (Iterator i=ts.iterator();i.hasNext();) {
-    					InstructionalOffering io = (InstructionalOffering)i.next();
-    					for (Iterator j=io.getInstrOfferingConfigs().iterator();j.hasNext();) {
-    						InstrOfferingConfig ioc = (InstrOfferingConfig)j.next();
-    						for (Iterator k=ioc.getSchedulingSubparts().iterator();k.hasNext();) {
-    							SchedulingSubpart s = (SchedulingSubpart)k.next();
-    							for (Iterator l=s.getClasses().iterator();l.hasNext();) {
-    								Class_ c = (Class_)l.next();
-    								try {
-    									Assignment a = classAssignmentProxy.getAssignment(c);
-    									if (a!=null)
-    										Hibernate.initialize(a);
-    								} catch (Exception e) {}
-    							}
-    						}
-    					}
-    				}
-    			}
-    		}
         }
         
 
@@ -450,85 +360,6 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
         	redirect.addParameter("subjAreaId", subjAreaId.toString());
         redirect.addParameter("courseNbr", courseNbr);
         return redirect;
-        
-        /*
-	    ActionRedirect redirect = new ActionRedirect(mapping.findForward("showInstructionalOfferingDetail"));
-        redirect.addParameter("op", "view");
-        redirect.addParameter("io", course.getInstructionalOffering().getUniqueId().toString());
-        return redirect;
-	        
-	    // Check blank course number
-	    if (courseNbr == null || courseNbr.isEmpty()) 
-	        errors.add("courseNbr", new ActionMessage("errors.required", "Course Number"));
-	    
-	    // Check that course number matches a pattern
-	    else {
-	    	String courseNbrRegex = ApplicationProperties.getProperty("tmtbl.courseNumber.pattern");
-	    	String courseNbrInfo = ApplicationProperties.getProperty("tmtbl.courseNumber.patternInfo");
-	    	try { 
-		    	Pattern pattern = Pattern.compile(courseNbrRegex);
-		    	Matcher matcher = pattern.matcher(courseNbr);
-		    	if (!matcher.find()) {
-			        errors.add("courseNbr", new ActionMessage("errors.generic", courseNbrInfo));
-		    	}
-	    	} catch (Exception e) {
-		        errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseDoesNotMatchRegEx(courseNbrRegex, e.getMessage())));
-	    	}
-	    }
-	    
-	    // Check if errors were found
-	    if (!errors.isEmpty()) {
-		    frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
-		    saveErrors(request, errors);
-	        if (frm.getInstructionalOfferings() == null || frm.getInstructionalOfferings().isEmpty()) {
-	        	return mapping.findForward("showInstructionalOfferingSearch");
-			} else {
-			    return mapping.findForward("showInstructionalOfferingList");
-			}
-	    }
-
-	    // Convert to uppercase - e.g. 001d -> 001D
-	    if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
-	    	courseNbr = courseNbr.toUpperCase();
-	    frm.setCourseNbr(courseNbr);
-	    
-	    // Set Session Variables
-        sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, subjAreaId.toString());
-        sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, courseNbr);        
-	    
-	    // Offering exists - redirect to offering detail
-    	String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
-
-    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")) {
-    		CourseOffering course = CourseOffering.findBySessionSubjAreaIdCourseNbr(sessionContext.getUser().getCurrentAcademicSessionId(), subjAreaId, courseNbr);
-    		if (course != null) {
-	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showInstructionalOfferingDetail"));
-	            redirect.addParameter("op", "view");
-	            redirect.addParameter("io", course.getInstructionalOffering().getUniqueId().toString());
-	            return redirect;
-		    }
-    	}
-
-	    // No Errors - create Course Offering	    
-	    CourseOffering newCourseOffering = CourseOffering.addNew(subjAreaId, courseNbr);
-	    	    	
-	    // Offering exists - redirect to offering detail
-	    if(newCourseOffering != null) {
-	    	// Lock the offering, if needed
-		    if (sessionContext.hasPermission(newCourseOffering.getInstructionalOffering(), Right.OfferingCanLock))
-		    	newCourseOffering.getInstructionalOffering().getSession().lockOffering(newCourseOffering.getInstructionalOffering().getUniqueId());
-	    	
-            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showCourseOfferingEdit"));
-            redirect.addParameter("op", MSG.actionEditCourseOffering());
-            redirect.addParameter("courseOfferingId", newCourseOffering.getUniqueId().toString());
-            return redirect;
-	    }
-		
-	    frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
-	    frm.setInstructionalOfferings(getInstructionalOfferings(sessionContext.getUser().getCurrentAcademicSessionId(), classAssignmentService.getAssignment(), frm));
-
-	    return mapping.findForward("showInstructionalOfferingList");
-		*/
 	}
 	
 	public static void setLastInstructionalOffering(SessionContext sessionContext, InstructionalOffering offering) {

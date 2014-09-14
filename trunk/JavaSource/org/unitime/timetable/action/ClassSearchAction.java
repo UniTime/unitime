@@ -22,7 +22,6 @@ package org.unitime.timetable.action;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -39,7 +38,6 @@ import org.apache.struts.action.ActionMessages;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.coursett.model.TimeLocation;
-import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +56,6 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
-import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
@@ -292,7 +289,6 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 			}
 			
 			query.append("inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co ");
-			//query.append (" where c.schedulingSubpart in ( select ss2 from SchedulingSubpart as ss2 inner join ss2.instrOfferingConfig.instructionalOffering.courseOfferings as co2 ");
 			query.append(" where co.subjectArea.uniqueId in ( ");
 			boolean first = true;
 			for(int i = 0; i < subjectIds.length; i++){
@@ -319,7 +315,6 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	            query.append(courseNbr);
 	            query.append("'  ");
 	        }
-	        // query.append(" ) ");
 
 	        if (doFilterManager) {
 	        	if (filterManager.longValue()<0) { //all departmental
@@ -329,49 +324,6 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	        	}
 	        }
 	        
-	        //NOTE: former implementation -- only classes that are editable were displayed on the classes page  
-	        /*  
-			String[] deptIds = form.getUserDeptIds();
-			if (!form.isUserIsAdmin() && !form.isReturnAllControlClassesForSubjects() && deptIds != null){
-				query.append(" and ((c.managingDept is not null and c.managingDept.uniqueId in (");
-				first = true;
-				for(int i = 0; i < deptIds.length; i++){
-					if (!first){
-						query.append(", ");
-					} else {
-						first = false;
-					}
-					query.append(deptIds[i]);
-				}
-				query.append(")) or (c.managingDept is null and co2.subjectArea.department.uniqueId in (" );
-				first = true;
-				for(int i = 0; i < deptIds.length; i++){
-					if (!first){
-						query.append(", ");
-					} else {
-						first = false;
-					}
-					query.append(deptIds[i]);
-				}
-				query.append("))");
-				if (form.isSessionInLLREditStatus()){
-					query.append(" or (c.managingDept is not null and co2.subjectArea.department.uniqueId in (" );
-					first = true;
-					for(int i = 0; i < deptIds.length; i++){
-						if (!first){
-							query.append(", ");
-						} else {
-							first = false;
-						}
-						query.append(deptIds[i]);
-					}
-					query.append("))");
-				}
-				query.append(")");
-			}
-			*/
-	        
-	        // query.append(" ) ");
 	        if (!form.getShowCrossListedClasses()) {
 	        	query.append(" and co.isControl = true ");
 	        }
@@ -404,22 +356,6 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
             // only start time selected -> create time location all days with given start time and 1 slot length
 			// only days selected -> create time location of given days all day long (all location assigned in the given days overlap)
 			
-			List allClasses = q.list();
-			
-			Debug.debug(" --- Load structure ---");
-			for (Iterator i=allClasses.iterator();i.hasNext();) {
-				Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
-				Hibernate.initialize(c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getInstrOfferingConfigs());
-			}
-			for (Iterator i=allClasses.iterator();i.hasNext();) {
-				Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
-				Hibernate.initialize(c.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts());
-			}
-			for (Iterator i=allClasses.iterator();i.hasNext();) {
-				Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
-				Hibernate.initialize(c.getSchedulingSubpart().getClasses());
-			}
-
 			Debug.debug(" --- Filter classes ---");
 			for (Iterator i=q.list().iterator();i.hasNext();) {
 				Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
@@ -447,19 +383,9 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 						}
 					}
 					if (filterLine) {
-						hibSession.evict(c);
 						continue;
 					}
 				}
-				/*
-				if (doFilterManager) {
-					if (filterManager.longValue()<0) {
-						if (c.getManagingDept()==null || c.getManagingDept().isExternalManager().booleanValue())
-							continue;
-					} else if (c.getManagingDept()==null || !c.getManagingDept().getUniqueId().equals(filterManager))
-						continue;
-				}
-				*/
 				
 				if (doFilterIType) {
 				    ItypeDesc itype = c.getSchedulingSubpart().getItype();
@@ -469,7 +395,6 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 				        itype = itype.getParent();
 				    }
 					if (!match) {
-						hibSession.evict(c);
 						continue;
 					}
 				}
@@ -478,26 +403,21 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 					try {
 						Assignment a = classAssignmentProxy.getAssignment(c);
 						if (a==null) {
-							hibSession.evict(c);
 							continue;
 						}
 						Placement p = a.getPlacement();
 						if (p==null) {
-							hibSession.evict(c);
 							continue;
 						}
 						TimeLocation t = p.getTimeLocation();
 						if (t==null) {
-							hibSession.evict(c);
 							continue;
 						}
 						boolean overlap = t.shareDays(filterAssignedTime) && t.shareHours(filterAssignedTime);
 						if (!overlap) {
-							hibSession.evict(c);
 							continue;
 						}
 					} catch (Exception e) {
-						hibSession.evict(c);
 						continue;
 					}
 				}
@@ -506,12 +426,10 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 					try {
 						Assignment a = classAssignmentProxy.getAssignment(c);
 						if (a==null) {
-							hibSession.evict(c);
 							continue;
 						}
 						Placement p = a.getPlacement();
 						if (p==null || p.getNrRooms()<=0) {
-							hibSession.evict(c);
 							continue;
 						}
 						boolean filterLine = true;
@@ -528,7 +446,6 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 							}
 						}
 						if (filterLine) {
-							hibSession.evict(c);
 							continue;
 						}
 					} catch (Exception e) {
@@ -537,50 +454,6 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 				}
 				
 				ts.add(o);
-			}
-			
-			if (form.getInstructor().booleanValue() || form.getPreferences().booleanValue() || form.getTimePattern().booleanValue()) {
-				Debug.debug("---- Load Instructors ---- ");
-				for (Iterator i=ts.iterator();i.hasNext();) {
-					Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
-					Hibernate.initialize(c.getClassInstructors());
-				}
-				for (Iterator i=ts.iterator();i.hasNext();) {
-					Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
-					for (Iterator j=c.getClassInstructors().iterator();j.hasNext();) {
-						ClassInstructor ci = (ClassInstructor)j.next();
-						Hibernate.initialize(ci.getInstructor());
-					}
-				}
-			}
-			
-			if (form.getPreferences().booleanValue() || form.getTimePattern().booleanValue()) {
-				Debug.debug("---- Load Preferences ---- ");
-				for (Iterator i=ts.iterator();i.hasNext();) {
-					Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
-					Hibernate.initialize(c.getPreferences());
-					Hibernate.initialize(c.getSchedulingSubpart().getPreferences());
-					for (Iterator j=c.getClassInstructors().iterator();j.hasNext();) {
-						ClassInstructor ci = (ClassInstructor)j.next();
-						Hibernate.initialize(ci.getInstructor().getPreferences());
-					}
-					c.getControllingDept().getPreferences();
-					c.getManagingDept().getPreferences();
-					Hibernate.initialize(c.getDistributionObjects());
-					Hibernate.initialize(c.getSchedulingSubpart().getDistributionObjects());
-				}
-			}
-			
-			if (form.getTimetable()!=null && form.getTimetable().booleanValue() && classAssignmentProxy!=null && classAssignmentProxy instanceof Solution) {
-				Debug.debug("--- Load Assignments --- ");
-				for (Iterator i=ts.iterator();i.hasNext();) {
-					Object[] o = (Object[])i.next(); Class_ c = (Class_)o[0];
-					try {
-						Assignment a = classAssignmentProxy.getAssignment(c);
-						if (a!=null)
-							Hibernate.initialize(a);
-					} catch (Exception e) {}
-				}
 			}
 			
 			long eTime = new java.util.Date().getTime();
