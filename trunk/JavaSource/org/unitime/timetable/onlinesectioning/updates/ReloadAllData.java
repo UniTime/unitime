@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -30,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
@@ -330,7 +330,28 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     		}
     		for (Set<Class_> s: sections)
     			ret.add(s);
-		} else {
+    	} else if (groupingType == DistributionPref.sGroupingOneOfEach) {
+    		List<Class_> sections = new ArrayList<Class_>();
+    		List<Integer> counts = new ArrayList<Integer>();
+        	for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
+        		DistributionObject distributionObject = (DistributionObject)i.next();
+    			int count = 0;
+    			if (distributionObject.getPrefGroup() instanceof Class_) {
+        			Class_ clazz = (Class_)distributionObject.getPrefGroup();
+        			sections.add(clazz); count++;
+    			} else if (distributionObject.getPrefGroup() instanceof SchedulingSubpart) {
+        			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
+        			List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
+        	    	Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+        			sections.addAll(classes); count += classes.size();
+        		}
+    			if (count > 0) counts.add(count);
+        	}
+        	if (counts.size() > 1) {
+        		for (Enumeration<List<Class_>> e = DistributionPref.permutations(sections, counts); e.hasMoreElements(); )
+        			ret.add(e.nextElement());
+        	}
+    	} else {
     		List<Class_> sections = new ArrayList<Class_>();
         	for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
         		DistributionObject distributionObject = (DistributionObject)i.next();

@@ -19,9 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -50,11 +53,12 @@ public class DistributionPref extends BaseDistributionPref {
 	public static final int sGroupingByFour = 4;
 	public static final int sGroupingByFive = 5;
 	public static final int sGroupingPairWise = 6;
+	public static final int sGroupingOneOfEach = 7;
 	
 	//TODO put this stuff into the database (as a some kind of DistributionPreferenceGroupingType object)
-	public static String[] sGroupings = new String[] { "All Classes", "Progressive", "Groups of Two", "Groups of Three", "Groups of Four", "Groups of Five", "Pairwise"};
-	public static String[] sGroupingsSufix = new String[] {""," Progressive"," Groups of Two"," Groups of Three"," Groups of Four"," Groups of Five", " Pairwise"};
-	public static String[] sGroupingsSufixShort = new String[] {""," Prg"," Go2"," Go3"," Go4"," Go5", " Pair"};
+	public static String[] sGroupings = new String[] { "All Classes", "Progressive", "Groups of Two", "Groups of Three", "Groups of Four", "Groups of Five", "Pairwise", "One of Each"};
+	public static String[] sGroupingsSufix = new String[] {""," Progressive"," Groups of Two"," Groups of Three"," Groups of Four"," Groups of Five", " Pairwise", "One of Each"};
+	public static String[] sGroupingsSufixShort = new String[] {""," Prg"," Go2"," Go3"," Go4"," Go5", " Pair", " OoE"};
 	public static String[] sGroupingsDescription = new String[] {
 		//All Classes
 		"The constraint will apply to all classes in the selected distribution set. "+
@@ -86,7 +90,13 @@ public class DistributionPref extends BaseDistributionPref {
 		"The distribution constraint is created between every pair of classes in the selected distribution set. "+
 		"Therefore, if n classes are in the set, n(n-1)/2 constraints will be posted among the classes. "+
 		"This structure should not be used with \"required\" or \"prohibited\" preferences on sets containing "+
-		"more than a few classes."
+		"more than a few classes.",
+		//One of each
+		"The distribution constraint is created for each combination of classes such that one class is taken from each " +
+		"line representing a class or a scheduling subpart. " +
+		"For instance, if the constraint is put between three scheduling subparts, a constraint will be posted between " +
+		"each combination of three classes, each from one of the three subparts. If a constraint is put between a class and " +
+		"a scheduling subpart, there will be a binary constraint posted between the class and each of the classes of the scheduling subpart."
 	};
 	
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -405,5 +415,47 @@ public class DistributionPref extends BaseDistributionPref {
     
     public String toString(){
     	return(preferenceText(false, false, " ", ", ", ""));
+    }
+    
+    public static <E> Enumeration<List<E>> permutations(final List<E> items, final List<Integer> counts) {
+        return new Enumeration<List<E>>() {
+            int[] p = null;
+            int[] b = null;
+            int m = 0;
+            
+            @Override
+            public boolean hasMoreElements() {
+            	if (p == null) return true;
+            	for (int i = 0; i < m; i++)
+            		if (p[i] < b[i]) return true;
+            	return false;
+            }
+            
+            @Override
+            public List<E> nextElement() {
+                if (p == null) {
+                	m = counts.size();
+                    p = new int[m];
+                    b = new int[m];
+                    int c = 0;
+                    for (int i = 0; i < m; i++) {
+                        p[i] = c;
+                        c += counts.get(i);
+                        b[i] = c - 1;
+                    }
+                } else {
+                    for (int i = m - 1; i >= 0; i--) {
+                        p[i] = p[i] + 1;
+                        for (int j = i + 1; j < m; j++)
+                            p[j] = b[j - 1] + 1;
+                        if (i == 0 || p[i] <= b[i]) break;
+                    }
+                }
+                List<E> ret = new ArrayList<E>();
+                for (int i = 0; i < m; i++)
+                    ret.add(items.get(p[i]));
+                return ret;
+            }
+        };
     }
 }
