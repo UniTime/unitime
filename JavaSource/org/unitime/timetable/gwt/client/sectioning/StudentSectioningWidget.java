@@ -1052,15 +1052,22 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iEligibilityCheck = result;
 				iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 				if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_USE_ASSISTANT)) {
-					if (result.hasMessage())
+					if (result.hasMessage()) {
 						UniTimeNotifications.warn(result.getMessage());
+						iErrorMessage.setHTML(result.getMessage());
+						iErrorMessage.setVisible(true);
+					} else {
+						iErrorMessage.setVisible(false);
+					}
 					if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
 						if (iPinDialog == null) iPinDialog = new PinDialog();
 						LoadingWidget.getInstance().hide();
-						AsyncCallback<OnlineSectioningInterface.EligibilityCheck> callback = (new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
+						PinDialog.PinCallback callback = new PinDialog.PinCallback() {
 							@Override
 							public void onFailure(Throwable caught) {
 								UniTimeNotifications.error(caught.getMessage());
+								iErrorMessage.setHTML(caught.getMessage());
+								iErrorMessage.setVisible(true);
 								iSchedule.setVisible(true);
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
@@ -1073,7 +1080,21 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
-						}); 
+							@Override
+							public void onMessage(OnlineSectioningInterface.EligibilityCheck result) {
+								if (result.hasMessage()) {
+									UniTimeNotifications.error(result.getMessage());
+									iErrorMessage.setHTML(result.getMessage());
+									iErrorMessage.setVisible(true);
+								} else if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
+									UniTimeNotifications.warn(MESSAGES.exceptionAuthenticationPinRequired());
+									iErrorMessage.setHTML(result.getMessage());
+									iErrorMessage.setVisible(true);
+								} else {
+									iErrorMessage.setVisible(false);
+								}
+							}
+						};
 						iPinDialog.checkEligibility(iOnline, sessionId, null, callback);
 					} else {
 						iSchedule.setVisible(true);
