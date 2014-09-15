@@ -22,7 +22,6 @@ package org.unitime.timetable.gwt.client.sectioning;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaDialogBox;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -55,7 +54,7 @@ public class PinDialog extends AriaDialogBox {
 	
 	private AriaTextBox iPin = null;
 	private AriaButton iButton = null;
-	private AsyncCallback<EligibilityCheck> iCallback = null;
+	private PinCallback iCallback = null;
 	
 	private boolean iOnline;
 	private Long iSessionId, iStudentId;
@@ -117,11 +116,8 @@ public class PinDialog extends AriaDialogBox {
 			@Override
 			public void onSuccess(EligibilityCheck result) {
 				LoadingWidget.getInstance().hide();
+				iCallback.onMessage(result);
 				if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
-					if (result.hasMessage())
-						UniTimeNotifications.error(result.getMessage());
-					else
-						UniTimeNotifications.error(MESSAGES.exceptionAuthenticationPinRequired());
 					center();
 					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 						@Override
@@ -131,8 +127,6 @@ public class PinDialog extends AriaDialogBox {
 						}
 					});
 				} else {
-					if (result.hasMessage())
-						UniTimeNotifications.error(result.getMessage());
 					iCallback.onSuccess(result);
 				}
 			}
@@ -145,7 +139,7 @@ public class PinDialog extends AriaDialogBox {
 		});
 	}
 	
-	public void checkEligibility(boolean online, Long sessionId, Long studentId, AsyncCallback<EligibilityCheck> callback) {
+	public void checkEligibility(boolean online, Long sessionId, Long studentId, PinCallback callback) {
 		iOnline = online;
 		iSessionId = sessionId;
 		iStudentId = studentId;
@@ -158,6 +152,10 @@ public class PinDialog extends AriaDialogBox {
 				iPin.setFocus(true);
 			}
 		});
+	}
+	
+	public static interface PinCallback extends AsyncCallback<EligibilityCheck> {
+		public void onMessage(EligibilityCheck result);
 	}
 
 }
