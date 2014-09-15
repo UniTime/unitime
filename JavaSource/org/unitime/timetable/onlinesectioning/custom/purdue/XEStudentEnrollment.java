@@ -447,10 +447,13 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					if (em == null)
 						em = m;
 					else
-						em += ", " + m;
+						em += "\n" + m;
 				}
-				if (em == null && response.registrationException != null)
-					em = response.registrationException;
+				if (response.registrationException != null)
+					if (em == null)
+						em = response.registrationException;
+					else
+						em += "\n" + response.registrationException;
 				for (EnrollmentRequest request: enrollments) {
 					XCourse course = request.getCourse();
 					for (XSection section: request.getSections()) {

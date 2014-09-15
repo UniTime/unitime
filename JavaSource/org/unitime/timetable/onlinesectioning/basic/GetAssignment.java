@@ -378,9 +378,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			if (iMessages != null) {
 				Set<String> added = new HashSet<String>();
 				for (EnrollmentFailure f: iMessages) {
-					String message = MSG.clazz(f.getCourse().getSubjectArea(), f.getCourse().getCourseNumber(), f.getSection().getSubpartName(), f.getSection().getName(f.getCourse().getCourseId())) + ": " + f.getMessage();
-					if (added.add(message))
-						ret.addMessage(message);
+					for (String fm: f.getMessage().split("\n")) {
+						String message = MSG.clazz(f.getCourse().getSubjectArea(), f.getCourse().getCourseNumber(), f.getSection().getSubpartName(), f.getSection().getName(f.getCourse().getCourseId())) + ": " + fm;
+						if (added.add(message))
+							ret.addMessage(message);
+					}
 				}
 			}
 			
