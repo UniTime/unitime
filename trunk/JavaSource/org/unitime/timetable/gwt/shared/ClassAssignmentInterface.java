@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
 
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -113,6 +115,14 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setCreditText(String creditText) { iCreditText = creditText; }
 		public String getCreditAbbv() { return iCreditAbbv; }
 		public void setCreditAbbv(String creditAbbv) { iCreditAbbv = creditAbbv; }
+		public String getCredit() { return hasCredit() ? getCreditAbbv() + "|" + getCreditText() : null; }
+		
+		public float guessCreditCount() {
+			if (!hasCredit()) return 0f;
+			MatchResult m = RegExp.compile("\\d+\\.?\\d*").exec(getCreditAbbv());
+			if (m != null) return Float.parseFloat(m.getGroup(0));
+			return 0f;
+		}
 
 		public boolean hasUniqueName() { return iHasUniqueName; }
 		public void setHasUniqueName(boolean hasUniqueName) { iHasUniqueName = hasUniqueName; }
@@ -491,6 +501,13 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		}
 		public String getCredit() { return (iCredit == null ? "" : iCredit); }
 		public void setCredit(String credit) { iCredit = credit; }
+		
+		public float guessCreditCount() {
+			if (!hasCredit()) return 0f;
+			MatchResult m = RegExp.compile("\\d+\\.?\\d*").exec(getCredit());
+			if (m != null) return Float.parseFloat(m.getGroup(0));
+			return 0f;
+		}
 
 	}
 	
