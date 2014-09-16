@@ -28,6 +28,7 @@ import java.util.TreeSet;
 
 import org.hibernate.FlushMode;
 import org.hibernate.NonUniqueResultException;
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -35,6 +36,7 @@ import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.base.BaseDepartmentalInstructor;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
@@ -384,8 +386,21 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     }
     
     public boolean hasPreferences() {
-        if (getPreferences()==null || getPreferences().isEmpty()) return false;
-        for (Iterator i=getPreferences().iterator();i.hasNext();) {
+    	Iterator i = null;
+    	try {
+    		i = getPreferences().iterator();
+    	} catch (ObjectNotFoundException e) {
+    		Debug.error("Exception "+e.getMessage()+" seen for "+this);
+    		new _RootDAO().getSession().refresh(this);
+    		if (getPreferences() != null)
+    			i = getPreferences().iterator();
+    		else
+    			i = null;
+    	} catch (Exception e){
+    		i = null;
+    	}
+    	if (i == null) return false;
+        while (i.hasNext()) {
             Preference preference = (Preference)i.next();
             if (preference instanceof TimePref) {
                 TimePref timePref = (TimePref)preference;
