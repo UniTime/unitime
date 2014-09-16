@@ -72,6 +72,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -109,6 +110,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private TimeGrid iAssignmentGrid;
 	private SuggestionsBox iSuggestionsBox;
 	private CheckBox iShowUnassignments;
+	private Label iTotalCredit;
 	
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iLastResult;
 	private ClassAssignmentInterface iLastAssignment, iSavedAssignment = null;
@@ -284,17 +286,23 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iAssignments.setWidth("100%");
 		iAssignments.setEmptyMessage(MESSAGES.emptySchedule());
 		
-		VerticalPanel vp = new VerticalPanel();
-		vp.add(iAssignments);
+		FlexTable vp = new FlexTable();
+		vp.setCellPadding(0); vp.setCellSpacing(0);
+		vp.setWidget(0, 0, iAssignments);
+		vp.getFlexCellFormatter().setColSpan(0, 0, 2);
+		
+		iTotalCredit = new Label();
+		iTotalCredit.getElement().getStyle().setMarginTop(2, Unit.PX);
+		vp.setWidget(1, 0, iTotalCredit);
 
 		iShowUnassignments = new CheckBox(MESSAGES.showUnassignments());
 		iShowUnassignments.getElement().getStyle().setMarginTop(2, Unit.PX);
-		vp.add(iShowUnassignments);
-		vp.setCellHorizontalAlignment(iShowUnassignments, HasHorizontalAlignment.ALIGN_RIGHT);
+		vp.setWidget(1, 1, iShowUnassignments);
+		vp.getFlexCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_RIGHT);
 		iShowUnassignments.setVisible(false);		
 		String showUnassignments = Cookies.getCookie("UniTime:Unassignments");
 		iShowUnassignments.setValue(showUnassignments == null || "1".equals(showUnassignments));
-		
+				
 		
 		iAssignmentPanel = new UniTimeTabPanel();
 		iAssignmentPanel.add(vp, MESSAGES.tabClasses(), true);
@@ -626,6 +634,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		String calendarUrl = GWT.getHostPageBaseURL() + "calendar?sid=" + iSessionSelector.getAcademicSessionId() + "&cid=";
 		String ftParam = "&ft=";
 		boolean hasError = false;
+		float totalCredit = 0f;
 		if (!result.getCourseAssignments().isEmpty() || CONSTANTS.allowEmptySchedule()) {
 			ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 			iAssignmentGrid.clear(true);
@@ -657,6 +666,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (clazz != null && clazz.hasOverlapNote())
 							icons.add(RESOURCES.overlap(), clazz.getOverlapNote());
 
+						totalCredit += clazz.guessCreditCount();
 						if (clazz.isAssigned()) {
 							row = new WebTable.Row(
 								new WebTable.CheckboxCell(clazz.isPinned(), course.isFreeTime() ? ARIA.freeTimePin(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours())) : ARIA.classPin(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection()))),
@@ -1040,7 +1050,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					UniTimeNotifications.warn(result.getMessages("<br>"));
 				iErrorMessage.setHTML(result.getMessages("<br>"));
 			}
+			iTotalCredit.setVisible(totalCredit > 0f);
+			iTotalCredit.setText(MESSAGES.totalCredit(totalCredit));
 		} else {
+			iTotalCredit.setVisible(false);
 			iErrorMessage.setHTML(MESSAGES.noSchedule());
 			if (LoadingWidget.getInstance().isShowing())
 				LoadingWidget.getInstance().hide();
