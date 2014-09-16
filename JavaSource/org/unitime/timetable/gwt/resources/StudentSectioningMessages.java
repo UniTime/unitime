@@ -1119,7 +1119,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Student:")
 	String propStudent();
 	
-	@DefaultMessage("You are not registered for any classes yet. Please click the Enroll button to make the registration.")
+	@DefaultMessage("You are not registered for any classes yet. Please click the Enroll button in order to complete your registration..")
 	String warnScheduleEmpty();
 	
 	@DefaultMessage("You have made some changes in your schedule. Please click the Enroll button to update your registration.")
