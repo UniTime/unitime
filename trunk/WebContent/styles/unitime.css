@@ -3548,3 +3548,26 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-MainContent .message {
 	padding: 2px 0px 0px 10px;
 }
+
+.unitime-ScheduleChangedNote {
+	background-color: #FFF0AB;
+	padding: 1px 10px 1px 10px;
+	margin: 2px 0px 2px 0px;
+}
+
+.unitime-EnrollButton {
+	background: none;
+	background-image: linear-gradient( rgba(255,255,255,0.15), rgba(0,0,0,0.15) );
+	background-color: #cdf;
+	-webkit-animation: blinkblue 1s infinite alternate;
+	animation: blinkblue 1s infinite alternate;
+}
+
+@keyframes blinkblue {
+	100% {background-color: #fff; }
+}
+
+@-webkit-keyframes blinkblue {
+  from { background-color: #fff; }
+  to { background-color: #cdf; }
+}
