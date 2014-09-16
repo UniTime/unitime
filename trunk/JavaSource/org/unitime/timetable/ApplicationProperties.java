@@ -22,7 +22,8 @@ package org.unitime.timetable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URI;
+import java.io.UnsupportedEncodingException;
+import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -277,32 +278,45 @@ public class ApplicationProperties {
 		
 		//Get the URL of the class location (usually in /WEB-INF/classes/...) 		
 		URL url = ApplicationProperties.class.
-							getProtectionDomain().getCodeSource().getLocation();
+				getProtectionDomain().getCodeSource().getLocation();
 		
 		if (url==null) return null;
 		
-		//Get file and parent		
+		try {
+			if ("jar".equals(url.getProtocol()))
+    			url = ((JarURLConnection)url.openConnection()).getJarFileURL();
+		} catch (Exception e) {}
+
+		//Get file and parent
 		File file = null;
 		try {
 			// Try to use URI to avoid bug 4466485 on Windows (see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4466485)
-			file = new File(new URI(url.toString()).getPath());
-		} catch (NullPointerException e) {
+			file = new File(url.toURI());
+		} catch (Exception e) {
 			file = new File(url.getFile());
-		} catch (URISyntaxException e) {
-			file = new File(url.getFile());
+			try {
+				file = new File(URLDecoder.decode(url.getFile(), "UTF-8"));
+			} catch (UnsupportedEncodingException x) {
+				file = new File(url.getFile());
+			}
 		}
 		File parent = file.getParentFile();
 
 		// Iterate up the folder structure till WEB-INF is encountered
 		while (parent!=null && !parent.getName().equals("WEB-INF"))
 			parent = parent.getParentFile();
-
+		
 		return (parent==null?null:parent.getAbsolutePath());
 	}
 	
 	public static File getDataFolder() {
 		if (getProperty("unitime.data.dir") != null) {
 			File dir = new File(getProperty("unitime.data.dir"));
+			dir.mkdirs();
+			return dir;
+		}
+		if (getProperty("catalina.base") != null) {
+			File dir = new File(new File(getProperty("catalina.base"), "data"), "unitime");
 			dir.mkdirs();
 			return dir;
 		}
