@@ -438,6 +438,10 @@ public class UserAuthentication implements UserAuthenticationProvider {
 		sSectioningService.logIn("LOOKUP", externalUniqueId, null, sAuthenticateCallback);
 	}
 	
+	public boolean isLoggedIn() {
+		return iLoggedIn;
+	}
+	
 	private native JavaScriptObject createLookupCallback() /*-{
 		return function(person) {
 			@org.unitime.timetable.gwt.client.sectioning.UserAuthentication::personFound(Ljava/lang/String;)(person[0]);

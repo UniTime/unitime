@@ -68,6 +68,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -76,6 +77,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -118,6 +120,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private StudentSectioningPage.Mode iMode = null;
 	private OnlineSectioningInterface.EligibilityCheck iEligibilityCheck = null;
 	private PinDialog iPinDialog = null;
+	private Label iScheduleChangedLabel = null;
 
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
@@ -129,6 +132,32 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iPanel = new VerticalPanel();
 		
 		iCourseRequests = new CourseRequestsTable(iSessionSelector, iOnline);
+		iCourseRequests.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<CourseRequestInterface> event) {
+				if (iLastAssignment == null || !iLastAssignment.isCanEnroll() || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL))
+					return;
+				if (!iScheduleChangedLabel.isVisible() || MESSAGES.warnScheduleChanged().equals(iScheduleChangedLabel.getText())) {
+					courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
+						if (!course.isAssigned() || course.isFreeTime()) continue;
+						for (CourseRequestInterface.Request r: event.getValue().getCourses()) {
+							if (r.hasRequestedCourse()  && course.getCourseName().equalsIgnoreCase(r.getRequestedCourse())) continue courses;
+							if (r.hasFirstAlternative()  && course.getCourseName().equalsIgnoreCase(r.getFirstAlternative())) continue courses;
+							if (r.hasSecondAlternative()  && course.getCourseName().equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+						}
+						for (CourseRequestInterface.Request r: event.getValue().getAlternatives()) {
+							if (r.hasRequestedCourse()  && course.getCourseName().equalsIgnoreCase(r.getRequestedCourse())) continue courses;
+							if (r.hasFirstAlternative()  && course.getCourseName().equalsIgnoreCase(r.getFirstAlternative())) continue courses;
+							if (r.hasSecondAlternative()  && course.getCourseName().equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+						}
+						iScheduleChangedLabel.setText(MESSAGES.warnScheduleChanged());
+						iScheduleChangedLabel.setVisible(true);
+						return;
+					}
+					iScheduleChangedLabel.setVisible(false);
+				}
+			}
+		});
 		
 		iPanel.add(iCourseRequests);
 		
@@ -169,6 +198,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 
 		iEnroll = new AriaButton(MESSAGES.buttonEnroll());
 		iEnroll.setVisible(false);
+		iEnroll.addStyleName("unitime-EnrollButton");
 		rightFooterPanel.add(iEnroll);
 
 
@@ -181,6 +211,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iExport.setVisible(false);
 		iExport.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		rightFooterPanel.add(iExport);
+		
+		iScheduleChangedLabel = new Label();
+		iScheduleChangedLabel.setStyleName("unitime-ScheduleChangedNote");
+		iScheduleChangedLabel.setVisible(false);
+		iPanel.add(iScheduleChangedLabel);
 
 		iPanel.add(iFooter);
 		
@@ -487,7 +522,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (item < 0) item = 0;
 						if (item >= iHistory.size()) item = iHistory.size() - 1;
 						if (item >= 0) iHistory.get(item).restore();
-					} else {
+					} else if (isChanged() && Window.confirm(MESSAGES.queryLeaveChanges())) {
 						iCourseRequests.clear();
 						if (!iSchedule.isVisible()) prev();
 					}
@@ -1011,6 +1046,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				LoadingWidget.getInstance().hide();
 			UniTimeNotifications.error(MESSAGES.noSchedule());
 		}
+		updateScheduleChangedNoteIfNeeded();
 	}
 	
 	public void prev() {
@@ -1025,6 +1061,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iErrorMessage.setVisible(false);
 		ResizeEvent.fire(this, getOffsetWidth(), getOffsetHeight());
 		AriaStatus.getInstance().setHTML(ARIA.courseRequests());
+		updateScheduleChangedNoteIfNeeded();
 	}
 	
 	public void clear() {
@@ -1036,9 +1073,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		if (iRequests.isVisible()) {
 			prev();
 		}
+		updateScheduleChangedNoteIfNeeded();
 	}
 	
 	public void checkEligibility(final Long sessionId, final Long studentId, final boolean saved, final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret) {
+		updateScheduleChangedNoteIfNeeded();
 		if (!iOnline || !iMode.isSectioning()) {
 			lastRequest(sessionId, studentId, saved);
 			if (ret != null) ret.onSuccess(null);
@@ -1071,6 +1110,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iSchedule.setVisible(true);
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
+								updateScheduleChangedNoteIfNeeded();
 							}
 							@Override
 							public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
@@ -1079,6 +1119,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iSchedule.setVisible(true);
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
+								updateScheduleChangedNoteIfNeeded();
 							}
 							@Override
 							public void onMessage(OnlineSectioningInterface.EligibilityCheck result) {
@@ -1100,6 +1141,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSchedule.setVisible(true);
 						lastRequest(sessionId, studentId, saved);
 						if (ret != null) ret.onSuccess(iEligibilityCheck);
+						updateScheduleChangedNoteIfNeeded();
 					}
 				} else {
 					iCourseRequests.setCanWaitList(false);
@@ -1111,6 +1153,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSchedule.setVisible(false);
 					}
 					if (ret != null) ret.onFailure(new SectioningException(result.getMessage()));
+					updateScheduleChangedNoteIfNeeded();
 				}
 			}
 			
@@ -1230,6 +1273,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 		
 		public void restore() {
+			if (isChanged() && ((iUser != null && !iUser.equals(iUserAuthentication.getUser())) || (iSessionId != null && !iSessionId.equals(iSessionSelector.getAcademicSessionId()))) && !Window.confirm(MESSAGES.queryLeaveChanges()))
+				return;
 			iInRestore = true;
 			iUserAuthentication.setUser(iUser, new AsyncCallback<Boolean>() {
 				public void onSuccess(Boolean result) {
@@ -1262,6 +1307,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					} else {
 						iInRestore = false;
 					}
+					updateScheduleChangedNoteIfNeeded();
 				}
 				public void onFailure(Throwable reason) {
 					iInRestore = false;
@@ -1280,10 +1326,80 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 			fillIn(response);
 		}
+		updateScheduleChangedNoteIfNeeded();
 	}
 
 	@Override
 	public HandlerRegistration addResizeHandler(ResizeHandler handler) {
 		return addHandler(handler, ResizeEvent.getType());
+	}
+	
+	public void updateScheduleChangedNoteIfNeeded() {
+		iScheduleChangedLabel.setVisible(false);
+		if (iLastAssignment == null || !iLastAssignment.isCanEnroll() || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL))
+			return;
+		boolean empty = true;
+		if (iSavedAssignment != null)
+			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+				if (!course.isAssigned() || course.isFreeTime()) continue;
+				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+					if (clazz.isSaved()) { empty = false; break courses; }
+				}
+			}
+		for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
+			if (!course.isAssigned() || course.isFreeTime()) continue;
+			for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+				if (!clazz.isSaved() && !clazz.hasError()) {
+					iScheduleChangedLabel.setText(empty ? MESSAGES.warnScheduleEmpty() : MESSAGES.warnScheduleChanged());
+					iScheduleChangedLabel.setVisible(true);
+					return;
+				}
+			}
+			if (iSavedAssignment != null)
+				for (ClassAssignmentInterface.CourseAssignment saved: iSavedAssignment.getCourseAssignments()) {
+					if (!saved.isAssigned() || saved.isFreeTime() || !course.getCourseId().equals(saved.getCourseId())) continue;
+					classes: for (ClassAssignmentInterface.ClassAssignment clazz: saved.getClassAssignments()) {
+						for (ClassAssignmentInterface.ClassAssignment x: course.getClassAssignments()) {
+							if (clazz.getClassId().equals(x.getClassId())) continue classes;
+						}
+						if (clazz.isSaved() && !clazz.hasError()) {
+							iScheduleChangedLabel.setText(MESSAGES.warnScheduleChanged());
+							iScheduleChangedLabel.setVisible(true);
+						}
+					}
+				}
+		}
+		if (iSavedAssignment != null)
+			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+				if (!course.isAssigned() || course.isFreeTime()) continue;
+				for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
+					if (course.getCourseId().equals(x.getCourseId())) continue courses;
+				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+					if (clazz.isSaved() && !clazz.hasError()) {
+						iScheduleChangedLabel.setText(MESSAGES.warnScheduleChanged());
+						iScheduleChangedLabel.setVisible(true);
+					}
+				}
+			}
+		CourseRequestInterface request = iCourseRequests.getRequest();
+		courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
+			if (!course.isAssigned() || course.isFreeTime()) continue;
+			for (CourseRequestInterface.Request r: request.getCourses()) {
+				if (r.hasRequestedCourse()  && course.getCourseName().equalsIgnoreCase(r.getRequestedCourse())) continue courses;
+				if (r.hasFirstAlternative()  && course.getCourseName().equalsIgnoreCase(r.getFirstAlternative())) continue courses;
+				if (r.hasSecondAlternative()  && course.getCourseName().equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+			}
+			for (CourseRequestInterface.Request r: request.getAlternatives()) {
+				if (r.hasRequestedCourse()  && course.getCourseName().equalsIgnoreCase(r.getRequestedCourse())) continue courses;
+				if (r.hasFirstAlternative()  && course.getCourseName().equalsIgnoreCase(r.getFirstAlternative())) continue courses;
+				if (r.hasSecondAlternative()  && course.getCourseName().equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+			}
+			iScheduleChangedLabel.setText(MESSAGES.warnScheduleChanged());
+			iScheduleChangedLabel.setVisible(true);
+		}
+	}
+	
+	public boolean isChanged() {
+		return iScheduleChangedLabel.isVisible();
 	}
 }
