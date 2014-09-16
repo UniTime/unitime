@@ -1127,4 +1127,7 @@ public interface StudentSectioningMessages extends Messages {
 		
 	@DefaultMessage("There are unsaved changes in your schedule. Do you really want to discard these changes without updating your registration?")
 	String queryLeaveChanges();
+	
+	@DefaultMessage("Total Credit: {0,number,0.#}")
+	String totalCredit(float total);
 }
