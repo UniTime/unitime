@@ -45,16 +45,20 @@ import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 
 /**
  * @author Tomas Muller
  */
-public class CourseRequestsTable extends Composite {
+public class CourseRequestsTable extends Composite implements HasValue<CourseRequestInterface> {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
@@ -339,6 +343,7 @@ public class CourseRequestsTable extends Composite {
 					c[1].setHint("");
 				}
 				if (event.isValid() && c == iCourses.get(iCourses.size() - 1)) addCourseLine();
+				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 			}
 		});
 		c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
@@ -350,12 +355,14 @@ public class CourseRequestsTable extends Composite {
 					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
 				else
 					c[2].setHint("");
+				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 			}
 		});
 		c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
 			@Override
 			public void onCourseSelection(CourseSelectionEvent event) {
 				if (event.isValid()) c[2].setError("");
+				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 			}
 		});
 		c[1].addValidator(new Validator<CourseSelection>() {
@@ -453,6 +460,7 @@ public class CourseRequestsTable extends Composite {
 					c[1].setHint("");
 				}
 				if (event.isValid() && c == iAlternatives.get(iAlternatives.size() - 1)) addAlternativeLine();
+				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 			}
 		});
 		c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
@@ -464,12 +472,14 @@ public class CourseRequestsTable extends Composite {
 					c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
 				else
 					c[2].setHint("");
+				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 			}
 		});
 		c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
 			@Override
 			public void onCourseSelection(CourseSelectionEvent event) {
 				if (event.isValid()) c[2].setError("");
+				ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 			}
 		});
 		c[0].addValidator(new Validator<CourseSelection>() {
@@ -531,6 +541,7 @@ public class CourseRequestsTable extends Composite {
 						c[1].setHint("");
 					}
 					if (event.isValid() && c == iCourses.get(iCourses.size() - 1)) addCourseLine();
+					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 				}
 			});
 			c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
@@ -542,12 +553,14 @@ public class CourseRequestsTable extends Composite {
 						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
 					else
 						c[2].setHint("");
+					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 				}
 			});
 			c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
 				@Override
 				public void onCourseSelection(CourseSelectionEvent event) {
 					if (event.isValid()) c[2].setError("");
+					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 				}
 			});
 			c[1].addValidator(new Validator<CourseSelection>() {
@@ -600,6 +613,7 @@ public class CourseRequestsTable extends Composite {
 						c[1].setHint("");
 					}
 					if (event.isValid() && c == iAlternatives.get(iAlternatives.size() - 1)) addAlternativeLine();
+					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 				}
 			});
 			c[1].addCourseSelectionHandler(new CourseSelectionHandler() {
@@ -611,12 +625,14 @@ public class CourseRequestsTable extends Composite {
 						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getValue(), c[1].getValue()));
 					else
 						c[2].setHint("");
+					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 				}
 			});
 			c[2].addCourseSelectionHandler(new CourseSelectionHandler() {
 				@Override
 				public void onCourseSelection(CourseSelectionEvent event) {
 					if (event.isValid()) c[2].setError("");
+					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
 				}
 			});
 			c[0].addValidator(new Validator<CourseSelection>() {
@@ -812,5 +828,27 @@ public class CourseRequestsTable extends Composite {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<CourseRequestInterface> handler) {
+		return addHandler(handler, ValueChangeEvent.getType());
+	}
+
+	@Override
+	public CourseRequestInterface getValue() {
+		return getRequest();
+	}
+
+	@Override
+	public void setValue(CourseRequestInterface value) {
+		setValue(value, false);
+	}
+
+	@Override
+	public void setValue(CourseRequestInterface value, boolean fireEvents) {
+		setRequest(value);
+		if (fireEvents)
+			ValueChangeEvent.fire(this, value);
 	}
 }
