@@ -30,6 +30,20 @@
 	<category>
 		<title>Bug Fixes</title>
 		<item>
+			<name>Application Properties: Base Path</name>
+			<description>
+				<line>Fixed an issue that sometimes happens on Windows that could cause UniTime to fail to start (could not instantiate bean SpringConfigurationProperties).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.4.320</version>
+	<release-date>Thu, 31 Jul 2014</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
 			<name>Add Event</name>
 			<description>
 				<line>Fixed the behavior of the "contact information changed" confirmation when an academic session is changed.
