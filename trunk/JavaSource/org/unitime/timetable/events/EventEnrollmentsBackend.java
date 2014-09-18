@@ -84,7 +84,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 				}
 			}				
 
-			return convert(enrollments, conflicts);
+			return convert(enrollments, conflicts, context.hasPermission(Right.EnrollmentsShowExternalId));
 		} else if (request.hasEventId()) {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			Event event = EventDAO.getInstance().get(request.getEventId());
@@ -96,11 +96,11 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 	    	if (enrollments == null || enrollments.isEmpty()) return null;
 	    	
 	    	if (Event.sEventTypeClass == event.getEventType()) {
-	    		return convert(enrollments, computeConflicts(event instanceof ClassEvent ? (ClassEvent)event : ClassEventDAO.getInstance().get(event.getUniqueId(), hibSession)));
+	    		return convert(enrollments, computeConflicts(event instanceof ClassEvent ? (ClassEvent)event : ClassEventDAO.getInstance().get(event.getUniqueId(), hibSession)), context.hasPermission(Right.EnrollmentsShowExternalId));
 	    	} else if (Event.sEventTypeFinalExam == event.getEventType() || Event.sEventTypeMidtermExam == event.getEventType()) {
-	    		return convert(enrollments, computeConflicts(event instanceof ExamEvent ? (ExamEvent)event : ExamEventDAO.getInstance().get(event.getUniqueId(), hibSession)));
+	    		return convert(enrollments, computeConflicts(event instanceof ExamEvent ? (ExamEvent)event : ExamEventDAO.getInstance().get(event.getUniqueId(), hibSession)), context.hasPermission(Right.EnrollmentsShowExternalId));
 	    	} else  if (Event.sEventTypeCourse == event.getEventType()) {
-	    		return convert(enrollments, computeConflicts(event instanceof CourseEvent ? (CourseEvent)event : CourseEventDAO.getInstance().get(event.getUniqueId(), hibSession)));
+	    		return convert(enrollments, computeConflicts(event instanceof CourseEvent ? (CourseEvent)event : CourseEventDAO.getInstance().get(event.getUniqueId(), hibSession)), context.hasPermission(Right.EnrollmentsShowExternalId));
 	    	}
 		}
 		
@@ -407,7 +407,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 	}
 
 	
-	public static GwtRpcResponseList<ClassAssignmentInterface.Enrollment> convert(Collection<StudentClassEnrollment> enrollments, Map<Long, List<Meeting>> conflicts) {
+	public static GwtRpcResponseList<ClassAssignmentInterface.Enrollment> convert(Collection<StudentClassEnrollment> enrollments, Map<Long, List<Meeting>> conflicts, boolean canShowExtId) {
 		GwtRpcResponseList<ClassAssignmentInterface.Enrollment> converted = new GwtRpcResponseList<ClassAssignmentInterface.Enrollment>();
 		Map<String, String> approvedBy2name = new Hashtable<String, String>();
 		Hashtable<Long, ClassAssignmentInterface.Enrollment> student2enrollment = new Hashtable<Long, ClassAssignmentInterface.Enrollment>();
@@ -417,6 +417,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			ClassAssignmentInterface.Student st = new ClassAssignmentInterface.Student();
     			st.setId(enrollment.getStudent().getUniqueId());
     			st.setExternalId(enrollment.getStudent().getExternalUniqueId());
+    			st.setCanShowExternalId(canShowExtId);
     			st.setName(enrollment.getStudent().getName(ApplicationProperty.OnlineSchedulingStudentNameFormat.value()));
     			for (AcademicAreaClassification ac: enrollment.getStudent().getAcademicAreaClassifications()) {
     				st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());

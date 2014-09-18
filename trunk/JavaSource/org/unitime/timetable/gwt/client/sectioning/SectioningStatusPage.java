@@ -1228,6 +1228,45 @@ public class SectioningStatusPage extends Composite {
 			}
 		}
 		
+		boolean hasExtId = false;
+		for (ClassAssignmentInterface.StudentInfo e: result) {
+			if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
+		}
+		
+		if (hasExtId) {
+			final UniTimeTableHeader hExtId = new UniTimeTableHeader(MESSAGES.colStudentExternalId());
+			header.add(hExtId);
+			hExtId.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					iStudentTable.sort(hExtId, new Comparator<ClassAssignmentInterface.StudentInfo>() {
+						@Override
+						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
+							if (e1.getStudent() == null) return 1;
+							if (e2.getStudent() == null) return -1;
+							int cmp = (e1.getStudent().isCanShowExternalId() ? e1.getStudent().getExternalId() : "").compareTo(e2.getStudent().isCanShowExternalId() ? e2.getStudent().getExternalId() : "");
+							if (cmp != 0) return cmp;
+							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+							if (cmp != 0) return cmp;
+							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
+						}
+					});
+				}
+				@Override
+				public boolean isApplicable() {
+					return true;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.sortBy(MESSAGES.colStudentExternalId());
+				}
+			});
+		}
+		
 		final UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
 		header.add(hStudent);
 		hStudent.addOperation(new Operation() {
@@ -1788,6 +1827,9 @@ public class SectioningStatusPage extends Composite {
 					});
 					line.add(ch);
 				}
+				if (hasExtId) {
+					line.add(new Label(info.getStudent().isCanShowExternalId() ? info.getStudent().getExternalId() : "", false));
+				}
 				line.add(new TitleCell(info.getStudent().getName()));
 				if (hasArea) {
 					line.add(new HTML(info.getStudent().getArea("<br>"), false));
@@ -1802,7 +1844,10 @@ public class SectioningStatusPage extends Composite {
 				line.add(new HTML(info.getStatus(), false));
 			} else {
 				if (iOnline && iProperties != null && iProperties.isAdmin()) line.add(new HTML("&nbsp;", false));
-				line.add(new Label(MESSAGES.total()));
+				if (hasExtId)
+					line.add(new TitleCell(MESSAGES.total()));
+				else
+					line.add(new Label(MESSAGES.total()));
 				line.add(new NumberCell(null, result.size() - 1));
 				if (hasArea) {
 					line.add(new HTML("&nbsp;", false));

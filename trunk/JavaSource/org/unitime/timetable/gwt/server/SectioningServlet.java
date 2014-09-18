@@ -38,6 +38,7 @@ import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -1054,6 +1055,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
 					Map<String, String> approvedBy2name = new Hashtable<String, String>();
 					Hashtable<Long, ClassAssignmentInterface.Enrollment> student2enrollment = new Hashtable<Long, ClassAssignmentInterface.Enrollment>();
+					boolean canShowExtIds = sessionContext.hasPermission(Right.EnrollmentsShowExternalId);
 					for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
 							clazz == null ?
 								"from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId" :
@@ -1066,6 +1068,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							st.setId(enrollment.getStudent().getUniqueId());
 							st.setSessionId(enrollment.getStudent().getSession().getUniqueId());
 							st.setExternalId(enrollment.getStudent().getExternalUniqueId());
+							st.setCanShowExternalId(canShowExtIds);
 							st.setName(nameFormat.format(enrollment.getStudent()));
 							for (AcademicAreaClassification ac: enrollment.getStudent().getAcademicAreaClassifications()) {
 								st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
@@ -1161,6 +1164,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							st.setId(request.getCourseDemand().getStudent().getUniqueId());
 							st.setSessionId(request.getCourseDemand().getStudent().getSession().getUniqueId());
 							st.setExternalId(request.getCourseDemand().getStudent().getExternalUniqueId());
+							st.setCanShowExternalId(canShowExtIds);
 							st.setName(nameFormat.format(request.getCourseDemand().getStudent()));
 							for (AcademicAreaClassification ac: request.getCourseDemand().getStudent().getAcademicAreaClassifications()) {
 								st.addArea(ac.getAcademicArea().getAcademicAreaAbbreviation());
@@ -1212,7 +1216,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						}
 					return new ArrayList<ClassAssignmentInterface.Enrollment>(student2enrollment.values());
 				} else {
-					return server.execute(server.createAction(ListEnrollments.class).forOffering(offeringId).withSection(clazz == null ? null : clazz.getUniqueId()), currentUser());
+					return server.execute(server.createAction(ListEnrollments.class)
+							.forOffering(offeringId).withSection(clazz == null ? null : clazz.getUniqueId())
+							.canShowExternalIds(sessionContext.hasPermission(Right.EnrollmentsShowExternalId)),
+							currentUser());
 				}
 			} finally {
 				hibSession.close();
@@ -1374,6 +1381,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			throw e;
 		} catch (SectioningException e) {
 			throw e;
+		} catch (AccessDeniedException e) {
+			throw new PageAccessException(e.getMessage());
 		} catch  (Exception e) {
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
@@ -1558,7 +1567,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(
 						query,
 						getCoordinatingCourses(sessionId),
-						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null)
+						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
+						sessionContext.hasPermission(Right.EnrollmentsShowExternalId))
 						.withFilter(filter), currentUser()
 				);
 			} else {
@@ -1569,7 +1579,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
-				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(query, null, null).withFilter(filter), currentUser());
+				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(query, null, null,
+						sessionContext.hasPermission(Right.EnrollmentsShowExternalId)).withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
@@ -1630,7 +1641,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				
 				return server.execute(server.createAction(FindEnrollmentAction.class).withParams(
 						query, courseId, classId, 
-						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId).contains(courseId): false).withFilter(filter), currentUser());
+						query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId).contains(courseId): false,
+						sessionContext.hasPermission(Right.EnrollmentsShowExternalId)).withFilter(filter), currentUser());
 			} else {
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
@@ -1639,7 +1651,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
-				return server.execute(server.createAction(FindEnrollmentAction.class).withParams(query, courseId, classId, false).withFilter(filter), currentUser());
+				return server.execute(server.createAction(FindEnrollmentAction.class).withParams(
+						query, courseId, classId, false,
+						sessionContext.hasPermission(Right.EnrollmentsShowExternalId)).withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
 			throw e;
