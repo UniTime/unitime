@@ -322,6 +322,7 @@ public enum Right {
     
     OfferingEnrollments(InstructionalOffering.class),
     StudentEnrollments(Student.class),
+    EnrollmentsShowExternalId,
 
     /** Individual page rights: Events */
     

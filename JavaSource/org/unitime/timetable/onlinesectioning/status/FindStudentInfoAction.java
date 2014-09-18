@@ -60,11 +60,13 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	private Query iQuery;
 	private Integer iLimit = null;
 	private Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
+	private boolean iCanShowExtIds = false;
 	
-	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove) {
+	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, boolean canShowExtIds) {
 		iQuery = new Query(query);
 		iCoursesIcanApprove = coursesIcanApprove;
 		iCoursesIcoordinate = coursesIcoordinage;
+		iCanShowExtIds = canShowExtIds;
 		Matcher m = Pattern.compile("limit:[ ]?([0-9]*)", Pattern.CASE_INSENSITIVE).matcher(query);
 		if (m.find()) {
 			iLimit = Integer.parseInt(m.group(1));
@@ -124,6 +126,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						st.setId(request.getStudentId());
 						st.setSessionId(session.getUniqueId());
 						st.setExternalId(student.getExternalId());
+						st.setCanShowExternalId(iCanShowExtIds);
 						st.setName(student.getName());
 						for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 							st.addArea(ac.getArea());
@@ -230,6 +233,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				st.setId(student.getStudentId());
 				st.setSessionId(session.getUniqueId());
 				st.setExternalId(student.getExternalId());
+				st.setCanShowExternalId(iCanShowExtIds);
 				st.setName(student.getName());
 				for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 					st.addArea(ac.getArea());
@@ -256,6 +260,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				st.setId(student.getStudentId());
 				st.setSessionId(session.getUniqueId());
 				st.setExternalId(student.getExternalId());
+				st.setCanShowExternalId(iCanShowExtIds);
 				st.setName(student.getName());
 				for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 					st.addArea(ac.getArea());
