@@ -88,6 +88,19 @@
         	    <key column="reservation_id" foreign-key="fk_res_student_reservation"/>
     	        <many-to-many class="Student" column="student_id" foreign-key="fk_res_student_student"/>
 	        </set>
+	        
+	        <subclass
+	        	name="OverrideReservation"
+	        	abstract="false"
+	        	discriminator-value="4">
+	        	
+	        	<property
+	        		name="type"
+	        		column="override_type"
+	        		type="java.lang.Integer"
+	        		not-null="true"/>
+	        	
+	        </subclass>
         </subclass>
 
         <subclass

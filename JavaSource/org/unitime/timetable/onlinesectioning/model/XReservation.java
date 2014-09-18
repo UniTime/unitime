@@ -121,7 +121,9 @@ public abstract class XReservation extends XReservationId implements Comparable<
     
     
     /** Reservation priority (e.g., individual reservations first) */
-    public abstract int getPriority();
+    public int getPriority() {
+    	return getType().getPriority();
+    }
     
     /**
      * Returns true if the student is applicable for the reservation

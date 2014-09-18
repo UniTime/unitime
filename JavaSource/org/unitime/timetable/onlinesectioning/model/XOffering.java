@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-
 import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.TimeLocation;
@@ -49,6 +48,7 @@ import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.reservation.DummyReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
+import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.CourseOffering;
@@ -57,6 +57,7 @@ import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -89,7 +90,9 @@ public class XOffering implements Serializable, Externalizable {
     	for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
     		iConfigs.add(new XConfig(config, helper));
         for (Reservation reservation: offering.getReservations()) {
-        	if (reservation instanceof IndividualReservation) {
+        	if (reservation instanceof OverrideReservation) {
+        		iReservations.add(new XIndividualReservation(this, (OverrideReservation)reservation));
+        	} else if (reservation instanceof IndividualReservation) {
         		iReservations.add(new XIndividualReservation(this, (IndividualReservation)reservation));
         	} else if (reservation instanceof StudentGroupReservation) {
         		iReservations.add(new XGroupReservation(this, (StudentGroupReservation)reservation));
@@ -115,7 +118,9 @@ public class XOffering implements Serializable, Externalizable {
     	for (Config config: offering.getConfigs())
     		iConfigs.add(new XConfig(config));
     	for (org.cpsolver.studentsct.reservation.Reservation reservation: offering.getReservations()) {
-    		if (reservation instanceof org.cpsolver.studentsct.reservation.IndividualReservation) {
+    		if (reservation instanceof ReservationOverride) {
+        		iReservations.add(new XIndividualReservation((ReservationOverride)reservation));
+    		} else if (reservation instanceof org.cpsolver.studentsct.reservation.IndividualReservation) {
         		iReservations.add(new XIndividualReservation((org.cpsolver.studentsct.reservation.IndividualReservation)reservation));
         	} else if (reservation instanceof GroupReservation) {
         		iReservations.add(new XIndividualReservation((GroupReservation)reservation));
@@ -692,6 +697,7 @@ public class XOffering implements Serializable, Externalizable {
 				iReservations.add(new XGroupReservation(in));
 				break;
 			case Individual:
+			case Override:
 				iReservations.add(new XIndividualReservation(in));
 				break;
 			}

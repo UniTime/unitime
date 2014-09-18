@@ -41,7 +41,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	private List<Clazz> iClasses = new ArrayList<Clazz>();
 	private Integer iLimit = null, iEnrollment = null, iLastLike = null, iProjection = null;
 	private Date iExpirationDate;
-	private boolean iEditable = false;
+	private boolean iEditable = false, iExpired = false;
 	
 	public Long getId() { return iId; }
 	public void setId(Long id) { iId = id; }
@@ -59,6 +59,8 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	public void setExpirationDate(Date d) { iExpirationDate = d; }
 	public void setEditable(boolean editable) { iEditable = editable; }
 	public boolean isEditable() { return iEditable; }
+	public void setExpired(boolean expired) { iExpired = expired; }
+	public boolean isExpired() { return iExpired; }
 	
 	public List<Config> getConfigs() { return iConfigs; }
 	public List<Clazz> getClasses() { return iClasses; }
@@ -129,6 +131,40 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public Integer getLimit() { return iStudents.size(); }
 		
 		public String toString() { return getStudents().toString(); }
+	}
+	
+	public static class OverrideReservation extends IndividualReservation {
+		private List<IdName> iStudents = new ArrayList<IdName>();
+		private OverrideType iType = null;
+		
+		public OverrideReservation() {
+			super();
+		}
+		
+		public OverrideReservation(OverrideType type) {
+			super();
+			setType(type);
+		}
+		
+		public List<IdName> getStudents() { return iStudents; }
+		
+		public Integer getLimit() { return iStudents.size(); }
+		
+		public OverrideType getType() { return iType; }
+		
+		public void setType(OverrideType type) { iType = type; }
+		
+		public String toString() { return getStudents().toString(); }
+		
+		@Override
+		public boolean isExpired() {
+			return (getType().isCanHaveExpirationDate() ? super.isExpired() : getType().isExpired());
+		}
+		
+		@Override
+		public Date getExpirationDate() {
+			return (getType().isCanHaveExpirationDate() ? super.getExpirationDate() : null);
+		}
 	}
 
 	public static class CurriculumReservation extends ReservationInterface {
@@ -267,6 +303,28 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public void setLimit(Integer limit) { iLimit = limit; }
 
 		public String toString() { return super.toString() + " " + getArea().toString() + " " + getClassifications().toString() + " " + getMajors().toString(); }
+	}
+	
+	public static enum OverrideType implements IsSerializable {
+		AllowTimeConflict("time-cnflt", false, true, false, true),
+		AllowOverLimit("limit-cnflt", false, false, true, true),
+		AllowOverLimitTimeConflict("time-limit-cnflt", false, true, true, true),
+		;
+		
+		String iReference;
+		boolean iMustBeUsed = false, iAllowTimeConflict = false, iAllowOverLimit = false;
+		Boolean iExpired = false;
+		OverrideType(String reference, boolean mustBeUsed, boolean timeConflict, boolean overLimit, Boolean expired) {
+			iReference = reference;
+			iMustBeUsed = mustBeUsed; iAllowTimeConflict = timeConflict; iAllowOverLimit = overLimit; iExpired = expired;
+		}
+		
+		public String getReference() { return iReference; }
+		public boolean isMustBeUsed() { return iMustBeUsed; }
+		public boolean isAllowTimeConflict() { return iAllowTimeConflict; }
+		public boolean isAllowOverLimit() { return iAllowOverLimit; }
+		public Boolean isExpired() { return iExpired; }
+		public boolean isCanHaveExpirationDate() { return iExpired == null; }
 	}
 	
 	public static class ReservationFilterRpcRequest extends FilterRpcRequest {

@@ -92,14 +92,6 @@ public class XCourseReservation extends XReservation {
     public int getReservationLimit() {
         return iLimit;
     }
-
-    /**
-     * Reservation priority (lower than individual and group reservations)
-     */
-    @Override
-    public int getPriority() {
-        return 2;
-    }
         
     /**
      * Check the courses

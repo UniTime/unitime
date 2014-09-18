@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.dom4j.Element;
+import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.ChangeLog;
@@ -36,6 +37,7 @@ import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -148,8 +150,17 @@ public class ReservationImport  extends BaseImport {
                 } else if ("course".equals(type)) {
                 	reservation = new CourseReservation();
                 } else {
-                	warn("Unknown reservation type " + type);
-                	continue;
+                	for (OverrideType t: OverrideType.values()) {
+                		if (t.getReference().equalsIgnoreCase(type)) {
+                			reservation = new OverrideReservation();
+                			((OverrideReservation)reservation).setOverrideType(t);
+                			break;
+                		}
+                	}
+                	if (reservation == null) {
+                		warn("Unknown reservation type " + type);
+                		continue;
+                	}
                 }
                 
                 CourseOffering course = corusesBySubjectCourseNbr.get(
@@ -289,11 +300,27 @@ public class ReservationImport  extends BaseImport {
                     		curriculum.getMajors().add(major);
                     	}
                     }
-                } else {
+                } else if ("course".equals(type)) {
                 	course.setReservation(reservation.getLimit()); reservation.setLimit(null);
                 	getHibSession().saveOrUpdate(course);
                 	if (reservation.getConfigurations().isEmpty() && reservation.getClasses().isEmpty()) continue;
                 	((CourseReservation)reservation).setCourse(course);
+                } else {
+                	OverrideReservation override = (OverrideReservation)reservation;
+                	override.setStudents(new HashSet<Student>());
+                	for (Iterator j = reservationElement.elementIterator("student"); j.hasNext(); ) {
+                    	String studentId = ((Element)j.next()).attributeValue("externalId");
+                    	Student student = Student.findByExternalId(session.getUniqueId(), studentId);
+                    	if (student == null) {
+                    		warn("Unable to find student " + student);
+                    	} else {
+                    		override.getStudents().add(student);
+                    	}
+                	}
+                	if (override.getStudents().isEmpty()) {
+                		warn("Override reservation of course " + course.getCourseName() + " has no students.");
+                		continue;
+                	}
                 }
                 
                 getHibSession().saveOrUpdate(reservation);

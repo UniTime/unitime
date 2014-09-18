@@ -1,8 +1,8 @@
 /*
- * UniTime 3.5 (University Timetabling Application)
- * Copyright (C) 2013, UniTime LLC, and individual contributors
+ * UniTime 3.2 - 3.5 (University Timetabling Application)
+ * Copyright (C) 2010 - 2014, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -17,24 +17,12 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.onlinesectioning.model;
+package org.unitime.timetable.model.dao;
 
-import java.io.Serializable;
+import org.unitime.timetable.model.base.BaseOverrideReservationDAO;
 
-/**
- * @author Tomas Muller
- */
-public enum XReservationType implements Serializable {
-	Individual(100),
-	Group(200),
-	Override(300),
-	Course(400),
-	Curriculum(500),
-	Dummy(600),
-	None(700),
-		;
-	
-	int iPriority;
-	XReservationType(int priority) { iPriority = priority; }
-	public int getPriority() { return iPriority; }
+public class OverrideReservationDAO extends BaseOverrideReservationDAO {
+
+	public OverrideReservationDAO() {}
+
 }

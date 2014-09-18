@@ -55,14 +55,6 @@ public class XDummyReservation extends XReservation {
     }
 
     /**
-     * Dummy reservation has low priority
-     */
-    @Override
-    public int getPriority() {
-        return 4;
-    }
-
-    /**
      * Dummy reservation is not applicable to any students
      */
     @Override
