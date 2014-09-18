@@ -36,6 +36,7 @@ import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Session;
@@ -102,7 +103,12 @@ public class ReservationExport extends BaseExport {
 	        		classEl.addAttribute("suffix", clazz.getSectionNumberString(getHibSession()));
 	        	}
 	        	
-	        	if (reservation instanceof IndividualReservation) {
+	        	if (reservation instanceof OverrideReservation) {
+	        		reservationEl.addAttribute("type", ((OverrideReservation)reservation).getOverrideType().getReference());
+	        		for (Student student: ((OverrideReservation)reservation).getStudents()) {
+	        			reservationEl.addElement("student").addAttribute("externalId", student.getExternalUniqueId());
+	        		}
+	        	} else if (reservation instanceof IndividualReservation) {
 	        		reservationEl.addAttribute("type", "individual");
 	        		for (Student student: ((IndividualReservation)reservation).getStudents()) {
 	        			reservationEl.addElement("student").addAttribute("externalId", student.getExternalUniqueId());
@@ -137,6 +143,12 @@ public class ReservationExport extends BaseExport {
 	        		if (course.getReservation() != null)
 	        			reservationEl.addAttribute("limit", course.getReservation().toString());
 	        		reservationEl.addAttribute("type", "course");
+	        	} else if (reservation instanceof OverrideReservation) {
+	        		OverrideReservation ovRes = (OverrideReservation)reservation;
+	        		reservationEl.addAttribute("type", ovRes.getOverrideType().getReference());
+	        		for (Student student: ovRes.getStudents()) {
+	        			reservationEl.addElement("student").addAttribute("externalId", student.getExternalUniqueId());
+	        		}
 	        	} else {
 	        		reservationEl.addAttribute("type", "unknown");
 	        	}

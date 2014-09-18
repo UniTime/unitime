@@ -51,6 +51,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
@@ -111,7 +112,11 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		Integer courseCnt = type2count.get(3);
 		if (courseCnt != null)
 			courseType.setCount(courseCnt);
-		response.add("type", courseType);
+		Entity overrideType = new Entity(new Long(0), "Override", "Override");
+		Integer overrideCnt = type2count.get(4);
+		if (overrideCnt != null)
+			overrideType.setCount(overrideCnt);
+		response.add("type", overrideType);
 
 		Map<Long, Integer> dept2count = new HashMap<Long, Integer>();
 		for (Object[] o: (List<Object[]>)query.select("co.subjectArea.department.uniqueId, count(distinct r)").group("co.subjectArea.department.uniqueId").exclude("department").exclude("subject").query(hibSession).list()) {
@@ -615,7 +620,8 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				}
 			}
 			if ("type".equals(attr)) {
-				if (iReservation instanceof IndividualReservation && "individual".equalsIgnoreCase(term)) return true;
+				if (iReservation instanceof OverrideReservation && "override".equalsIgnoreCase(term)) return true;
+				if (iReservation instanceof IndividualReservation && !(iReservation instanceof OverrideReservation) && "individual".equalsIgnoreCase(term)) return true;
 				if (iReservation instanceof StudentGroupReservation && "group".equalsIgnoreCase(term)) return true;
 				if (iReservation instanceof CourseReservation && "course".equalsIgnoreCase(term)) return true;
 				if (iReservation instanceof CurriculumReservation && "curriculum".equalsIgnoreCase(term)) return true;

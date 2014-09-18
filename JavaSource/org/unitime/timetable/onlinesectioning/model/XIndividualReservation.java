@@ -25,11 +25,12 @@ import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Set;
 
-
 import org.cpsolver.studentsct.reservation.GroupReservation;
+import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.IndividualReservation;
+import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.Student;
 
 /**
@@ -40,6 +41,10 @@ public class XIndividualReservation extends XReservation {
 	private static final long serialVersionUID = 1L;
 	private Set<Long> iStudentIds = new HashSet<Long>();
 	private Integer iLimit = null;
+    private boolean iMustBeUsed = false;
+    private boolean iAllowOverlap = false;
+    private boolean iAllowOverLimit = false;
+    private Boolean iExpired = null;
     
     public XIndividualReservation() {
         super();
@@ -56,11 +61,29 @@ public class XIndividualReservation extends XReservation {
         	iStudentIds.add(student.getUniqueId());
     }
     
+    public XIndividualReservation(XOffering offering, OverrideReservation reservation) {
+        super(XReservationType.Override, offering, reservation);
+        for (Student student: reservation.getStudents())
+        	iStudentIds.add(student.getUniqueId());
+        iMustBeUsed = reservation.getOverrideType().isMustBeUsed();
+        iAllowOverlap = reservation.getOverrideType().isAllowTimeConflict();
+        iAllowOverLimit = reservation.getOverrideType().isAllowOverLimit();
+        iExpired = reservation.getOverrideType().isExpired();
+    }
+
     public XIndividualReservation(org.cpsolver.studentsct.reservation.IndividualReservation reservation) {
         super(XReservationType.Individual, reservation);
         iStudentIds.addAll(reservation.getStudentIds());
     }
     
+    public XIndividualReservation(ReservationOverride reservation) {
+        super(XReservationType.Override, reservation);
+        iStudentIds.addAll(reservation.getStudentIds());
+        iMustBeUsed = reservation.mustBeUsed();
+        iAllowOverlap = reservation.isAllowOverlap();
+        iAllowOverLimit = reservation.canAssignOverLimit();
+    }
+
     public XIndividualReservation(GroupReservation reservation) {
         super(XReservationType.Group, reservation);
         iStudentIds.addAll(reservation.getStudentIds());
@@ -73,6 +96,8 @@ public class XIndividualReservation extends XReservation {
     @Override
     public boolean canAssignOverLimit() {
     	switch (getType()) {
+    	case Override:
+    		return iAllowOverLimit;
     	case Individual:
     		return true;
     	default:
@@ -86,19 +111,11 @@ public class XIndividualReservation extends XReservation {
      */
     @Override
     public boolean mustBeUsed() {
-        return !isExpired();
-    }
-
-    /**
-     * Individual reservations are of the top priority
-     */
-    @Override
-    public int getPriority() {
     	switch (getType()) {
-    	case Individual:
-    		return 0;
+    	case Override:
+    		return iMustBeUsed && !isExpired();
     	default:
-    		return 1;
+    		return !isExpired();
     	}
     }
 
@@ -131,11 +148,18 @@ public class XIndividualReservation extends XReservation {
     @Override
     public boolean isAllowOverlap() {
     	switch (getType()) {
+    	case Override:
+    		return iAllowOverlap;
     	case Individual:
     		return true;
     	default:
     		return false;
     	}
+    }
+    
+    @Override
+    public boolean isExpired() {
+    	return (getType() == XReservationType.Override && iExpired != null ? iExpired.booleanValue() : super.isExpired());
     }
     
 	@Override
@@ -149,6 +173,20 @@ public class XIndividualReservation extends XReservation {
 
     	iLimit = in.readInt();
     	if (iLimit == -2) iLimit = null;
+    	
+    	if (getType() == XReservationType.Override) {
+    		iMustBeUsed = in.readBoolean();
+    		iAllowOverlap = in.readBoolean();
+    		iAllowOverLimit = in.readBoolean();
+    		switch (in.readByte()) {
+    		case 0:
+    			iExpired = false; break;
+    		case 1:
+    			iExpired = true; break;
+    		default:
+    			iExpired = null; break;
+    		}
+    	}
 	}
 
 	@Override
@@ -160,6 +198,13 @@ public class XIndividualReservation extends XReservation {
 			out.writeLong(studentId);
 		
 		out.writeInt(iLimit == null ? -2 : iLimit);
+		
+		if (getType() == XReservationType.Override) {
+			out.writeBoolean(iMustBeUsed);
+			out.writeBoolean(iAllowOverlap);
+			out.writeBoolean(iAllowOverLimit);
+			out.writeByte(iExpired == null ? 2 : iExpired.booleanValue() ? 1 : 0);
+		}
 	}
 	
 	public static class XIndividualReservationSerializer implements Externalizer<XIndividualReservation> {

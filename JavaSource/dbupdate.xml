@@ -9769,4 +9769,12 @@
 			update %SCHEMA%.sectioning_status set status = 211 where reference = 'No Email'
 		</sql>
 	</update>
+	<update version="139" date="17-Sep-2014" comment="Reservation Override">
+		<mysql>
+			alter table %SCHEMA%.reservation add override_type bigint(10) null
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.reservation add override_type decimal(10,0)
+		</plsql>
+	</update>
 </dbupdate>

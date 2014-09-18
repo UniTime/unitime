@@ -69,11 +69,13 @@ import org.cpsolver.studentsct.reservation.DummyReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.IndividualReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
+import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Assignment;
@@ -89,6 +91,7 @@ import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
@@ -422,7 +425,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
         for (org.unitime.timetable.model.Reservation reservation: io.getReservations()) {
         	Reservation r = null;
-        	if (reservation instanceof org.unitime.timetable.model.IndividualReservation) {
+        	if (reservation instanceof OverrideReservation) {
+        		List<Long> studentIds = new ArrayList<Long>();
+        		for (org.unitime.timetable.model.Student s: ((org.unitime.timetable.model.IndividualReservation)reservation).getStudents())
+        			studentIds.add(s.getUniqueId());
+        		r = new ReservationOverride(reservation.getUniqueId(), offering, studentIds);
+        		OverrideType type = ((OverrideReservation)reservation).getOverrideType();
+        		((ReservationOverride)r).setMustBeUsed(type.isMustBeUsed());
+        		((ReservationOverride)r).setAllowOverlap(type.isAllowTimeConflict());
+        		((ReservationOverride)r).setCanAssignOverLimit(type.isAllowOverLimit());
+        	} else if (reservation instanceof org.unitime.timetable.model.IndividualReservation) {
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((org.unitime.timetable.model.IndividualReservation)reservation).getStudents())
         			studentIds.add(s.getUniqueId());

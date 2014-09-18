@@ -2852,6 +2852,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course")
 	String reservationCourseAbbv();
 	
+	@DefaultMessage("Override")
+	String reservationOverrideAbbv();
+	
 	@DefaultMessage("Unknown")
 	String reservationUnknownAbbv();
 	
