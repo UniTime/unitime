@@ -1,7 +1,6 @@
 /*
  * UniTime 3.5 (University Timetabling Application)
- * Copyright (C) 2013, UniTime LLC, and individual contributors
- * as indicated by the @authors tag.
+ * Copyright (C) 2014, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,24 +16,13 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.onlinesectioning.model;
 
-import java.io.Serializable;
+alter table reservation add override_type decimal(10,0);
 
-/**
- * @author Tomas Muller
+/*
+ * Update database version
  */
-public enum XReservationType implements Serializable {
-	Individual(100),
-	Group(200),
-	Override(300),
-	Course(400),
-	Curriculum(500),
-	Dummy(600),
-	None(700),
-		;
-	
-	int iPriority;
-	XReservationType(int priority) { iPriority = priority; }
-	public int getPriority() { return iPriority; }
-}
+
+update application_config set value='139' where name='tmtbl.db.version';
+
+commit;

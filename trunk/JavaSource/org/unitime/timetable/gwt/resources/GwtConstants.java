@@ -198,4 +198,14 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue("MM/dd/yyyy")
 	String dateEntryFormat();
+	
+	@DefaultStringArrayValue({
+		"Override: Allow Time Conflict", "Override: Can Assign Over Limit", "Override: Time Conflict & Over Limit"
+	})
+	String[] reservationOverrideTypeName();
+	
+	@DefaultStringArrayValue({
+		"Time Conflict", "Over Limit", "Time & Limit"
+	})
+	String[] reservationOverrideTypeAbbv();
 }

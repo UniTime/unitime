@@ -30,7 +30,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
@@ -52,6 +51,7 @@ import org.cpsolver.studentsct.reservation.DummyReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.IndividualReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
+import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -148,18 +148,30 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
         				clonedReservation = new CurriculumReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering, curriculumR.getAcademicArea(), curriculumR.getClassifications(), curriculumR.getMajors());
         				break;
         			case Group:
-        				XGroupReservation groupR = (XGroupReservation) reservation;
-        				clonedReservation = new GroupReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering);
-        				List<GroupReservation> list = groups.get(groupR.getGroup());
-        				if (list == null) {
-        					list = new ArrayList<GroupReservation>();
-        					groups.put(groupR.getGroup(), list);
+        				if (reservation instanceof XIndividualReservation) {
+            				XIndividualReservation indR = (XIndividualReservation) reservation;
+            				clonedReservation = new GroupReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering, indR.getStudentIds());
+        				} else {
+            				XGroupReservation groupR = (XGroupReservation) reservation;
+            				clonedReservation = new GroupReservation(reservation.getReservationId(), reservation.getLimit(), clonedOffering);
+            				List<GroupReservation> list = groups.get(groupR.getGroup());
+            				if (list == null) {
+            					list = new ArrayList<GroupReservation>();
+            					groups.put(groupR.getGroup(), list);
+            				}
+            				list.add((GroupReservation)clonedReservation);
         				}
-        				list.add((GroupReservation)clonedReservation);
         				break;
         			case Individual:
         				XIndividualReservation indR = (XIndividualReservation) reservation;
         				clonedReservation = new IndividualReservation(reservation.getReservationId(), clonedOffering, indR.getStudentIds());
+        				break;
+        			case Override:
+        				XIndividualReservation ovrR = (XIndividualReservation) reservation;
+        				clonedReservation = new ReservationOverride(reservation.getReservationId(), clonedOffering, ovrR.getStudentIds());
+        				((ReservationOverride)clonedReservation).setMustBeUsed(ovrR.mustBeUsed());
+        				((ReservationOverride)clonedReservation).setAllowOverlap(ovrR.isAllowOverlap());
+        				((ReservationOverride)clonedReservation).setCanAssignOverLimit(ovrR.canAssignOverLimit());
         				break;
         			default:
         				clonedReservation = new DummyReservation(clonedOffering);

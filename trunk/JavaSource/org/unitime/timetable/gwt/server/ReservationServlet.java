@@ -56,6 +56,7 @@ import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -300,6 +301,9 @@ public class ReservationServlet implements ReservationService {
 			r.setProjection(co.getProjectedDemand());
 		} else if (reservation instanceof IndividualReservation) {
 			r = new ReservationInterface.IndividualReservation();
+			if (reservation instanceof OverrideReservation) {
+				r = new ReservationInterface.OverrideReservation(((OverrideReservation)reservation).getOverrideType());
+			}
 			String sId = "";
 			for (Student student: ((IndividualReservation) reservation).getStudents()) {
 				ReservationInterface.IdName s = new ReservationInterface.IdName();
@@ -487,6 +491,7 @@ public class ReservationServlet implements ReservationService {
 			r.getClasses().add(clazz);
 		}
 		r.setExpirationDate(reservation.getExpirationDate());
+		r.setExpired(reservation.isExpired());
 		r.setLimit(reservation.getLimit());
 		r.setId(reservation.getUniqueId());
 		return r;
@@ -594,7 +599,10 @@ public class ReservationServlet implements ReservationService {
 					r = ReservationDAO.getInstance().get(reservation.getId(), hibSession);
 				}
 				if (r == null) {
-					if (reservation instanceof ReservationInterface.IndividualReservation)
+					if (reservation instanceof ReservationInterface.OverrideReservation) {
+						r = new OverrideReservation();
+						((OverrideReservation)r).setOverrideType(((ReservationInterface.OverrideReservation)reservation).getType());
+					} else if (reservation instanceof ReservationInterface.IndividualReservation)
 						r = new IndividualReservation();
 					else if (reservation instanceof ReservationInterface.GroupReservation)
 						r = new StudentGroupReservation();
@@ -602,7 +610,7 @@ public class ReservationServlet implements ReservationService {
 						r = new CurriculumReservation();
 					else if (reservation instanceof ReservationInterface.CourseReservation)
 						r = new CourseReservation();
-					else 
+					else
 						throw new ReservationException(MESSAGES.errorUnknownReservationType(reservation.getClass().getName()));
 				}
 				r.setLimit(r instanceof IndividualReservation ? null : reservation.getLimit());

@@ -50,6 +50,7 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.CurriculumReservati
 import org.unitime.timetable.gwt.shared.ReservationInterface.GroupReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IndividualReservation;
+import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationFilterRpcRequest;
 
 import com.google.gwt.core.client.GWT;
@@ -485,8 +486,10 @@ public class ReservationTable extends Composite {
 					l.getElement().getStyle().setColor("gray");
 					courses.add(l);
 				}
-				if (!reservation.isEditable())
+				if (reservation.isExpired())
 					courses.addStyleName("unitime-Disabled");
+				if (reservation.isEditable())
+					courses.addStyleName("unitime-Editable");
 				line.add(courses);
 
 			}
@@ -498,14 +501,20 @@ public class ReservationTable extends Composite {
 				limit = course.getLimit();
 				line.add(new Label(course.getAbbv(), false));
 			} else if (reservation instanceof IndividualReservation) {
-				line.add(new Label(MESSAGES.reservationIndividualAbbv()));
+				if (reservation instanceof OverrideReservation) {
+					line.add(new Label(CONSTANTS.reservationOverrideTypeAbbv()[((OverrideReservation)reservation).getType().ordinal()]));
+				} else {
+					line.add(new Label(MESSAGES.reservationIndividualAbbv()));
+				}
 				VerticalPanel students = new VerticalPanel();
 				limit = ((IndividualReservation) reservation).getStudents().size();
 				for (IdName student: ((IndividualReservation) reservation).getStudents()) {
 					students.add(new Label(student.getName(), false));
 				}
-				if (!reservation.isEditable())
+				if (reservation.isExpired())
 					students.addStyleName("unitime-Disabled");
+				if (reservation.isEditable())
+					students.addStyleName("unitime-Editable");
 				line.add(students);
 			} else if (reservation instanceof GroupReservation) {
 				line.add(new Label(MESSAGES.reservationStudentGroupAbbv()));
@@ -526,8 +535,10 @@ public class ReservationTable extends Composite {
 					l.getElement().getStyle().setMarginLeft(10, Unit.PX);
 					owner.add(l);
 				}
-				if (!reservation.isEditable())
+				if (reservation.isExpired())
 					owner.addStyleName("unitime-Disabled");
+				if (reservation.isEditable())
+					owner.addStyleName("unitime-Editable");
 				line.add(owner);
 			} else {
 				line.add(new Label(MESSAGES.reservationUnknownAbbv()));
@@ -541,13 +552,13 @@ public class ReservationTable extends Composite {
 				restrictions.add(new Label(clazz.getName() + " (" + clazz.getLimit() + ")", false));
 			}
 			line.add(restrictions);
-			if (!reservation.isEditable())
+			if (reservation.isExpired())
 				restrictions.addStyleName("unitime-Disabled");
+			if (reservation.isEditable())
+				restrictions.addStyleName("unitime-Editable");
 			line.add(new Number(limit == null ? MESSAGES.infinity() : String.valueOf(limit)));
 			if (limit == null)
 				unlimited = true;
-			else
-				total += limit;
 			
 			if (reservation.getLastLike() != null) {
 				line.add(new Number(reservation.getLastLike().toString()));
@@ -571,11 +582,16 @@ public class ReservationTable extends Composite {
 				line.add(new Label(""));
 			}
 
-			line.add(new Label(reservation.getExpirationDate() == null ? "" : sDF.format(reservation.getExpirationDate())));
+			if (reservation instanceof OverrideReservation && !((OverrideReservation)reservation).getType().isCanHaveExpirationDate())
+				line.add(new Label(MESSAGES.reservationOverrideAbbv()));
+			else
+				line.add(new Label(reservation.getExpirationDate() == null ? "" : sDF.format(reservation.getExpirationDate())));
 			iReservations.addRow(reservation, line);
 			iReservations.getRowFormatter().setVerticalAlign(iReservations.getRowCount() - 1, HasVerticalAlignment.ALIGN_TOP);
-			if (!reservation.isEditable())
+			if (reservation.isExpired())
 				iReservations.getRowFormatter().addStyleName(iReservations.getRowCount() - 1, "unitime-Disabled");
+			if (reservation.isEditable())
+				iReservations.getRowFormatter().addStyleName(iReservations.getRowCount() - 1, "unitime-Editable");
 		}
 		
 		if (iOfferingId != null) {

@@ -56,14 +56,6 @@ public class XGroupReservation extends XReservation {
     }
     
     /**
-     * Group reservations are of the second highest priority
-     */
-    @Override
-    public int getPriority() {
-        return 1;
-    }
-
-    /**
      * Group reservations can not be assigned over the limit.
      */
     @Override
