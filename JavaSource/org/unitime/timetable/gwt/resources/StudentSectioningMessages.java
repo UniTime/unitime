@@ -550,6 +550,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Reservation")
 	String colReservation();
+	
+	@DefaultMessage("External Id")
+	String colStudentExternalId();
 
 	@DefaultMessage("{0}.")
 	String priority(int priority);
