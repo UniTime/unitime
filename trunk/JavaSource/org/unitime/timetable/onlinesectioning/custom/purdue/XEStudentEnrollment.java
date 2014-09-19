@@ -89,13 +89,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		protocols.add(Protocol.HTTPS);
 		iClient = new Client(protocols);
 		try {
-			if (iExternalTermProvider == null) {
-				String clazz = ApplicationProperty.CustomizationExternalTerm.value();
-				if (clazz == null || clazz.isEmpty())
-					iExternalTermProvider = new BannerTermProvider();
-				else
-					iExternalTermProvider = (ExternalTermProvider)Class.forName(clazz).getConstructor().newInstance();
-			}
+			String clazz = ApplicationProperty.CustomizationExternalTerm.value();
+			if (clazz == null || clazz.isEmpty())
+				iExternalTermProvider = new BannerTermProvider();
+			else
+				iExternalTermProvider = (ExternalTermProvider)Class.forName(clazz).getConstructor().newInstance();
 		} catch (Exception e) {
 			sLog.error("Failed to create external term provider, using the default one instead.", e);
 			iExternalTermProvider = new BannerTermProvider();
