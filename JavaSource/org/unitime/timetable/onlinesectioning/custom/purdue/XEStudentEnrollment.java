@@ -39,6 +39,7 @@ import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.ClientResource;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
@@ -47,6 +48,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -79,20 +81,25 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	private String iBannerApiPassword = ApplicationProperties.getProperty("banner.xe.password");
 	
 	private Client iClient;
+	private ExternalTermProvider iExternalTermProvider;
 	
 	public XEStudentEnrollment() {
 		List<Protocol> protocols = new ArrayList<Protocol>();
 		protocols.add(Protocol.HTTP);
 		protocols.add(Protocol.HTTPS);
 		iClient = new Client(protocols);
-	}
-	
-	private String getBannerTerm(AcademicSessionInfo session) {
-		if (session.getTerm().toLowerCase().startsWith("spr")) return session.getYear() + "20";
-		if (session.getTerm().toLowerCase().startsWith("sum")) return session.getYear() + "30";
-		if (session.getTerm().toLowerCase().startsWith("fal"))
-			return String.valueOf(Integer.parseInt(session.getYear()) + 1) + "10";
-		return session.getYear() + session.getTerm().toLowerCase();
+		try {
+			if (iExternalTermProvider == null) {
+				String clazz = ApplicationProperty.CustomizationExternalTerm.value();
+				if (clazz == null || clazz.isEmpty())
+					iExternalTermProvider = new BannerTermProvider();
+				else
+					iExternalTermProvider = (ExternalTermProvider)Class.forName(clazz).getConstructor().newInstance();
+			}
+		} catch (Exception e) {
+			sLog.error("Failed to create external term provider, using the default one instead.", e);
+			iExternalTermProvider = new BannerTermProvider();
+		}
 	}
 	
 	private String getBannerId(XStudent student) {
@@ -128,15 +135,16 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		try {
 			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
+			String term = iExternalTermProvider.getExternalTerm(session);
 			if (helper.isDebugEnabled())
-				helper.debug("Checking eligility for " + student.getName() + " (term: " + getBannerTerm(session) + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
+				helper.debug("Checking eligility for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(iBannerApiUrl);
 			resource.setNext(iClient);
-			resource.addQueryParameter("term", getBannerTerm(session));
+			resource.addQueryParameter("term", term);
 			resource.addQueryParameter("bannerId", getBannerId(student));
-			helper.getAction().addOptionBuilder().setKey("term").setValue(getBannerTerm(session));
+			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
 			helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 			if (pin != null && !pin.isEmpty()) {
 				resource.addQueryParameter("altPin", pin);
@@ -233,15 +241,16 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		try {
 			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
+			String term = iExternalTermProvider.getExternalTerm(session);
 			if (helper.isDebugEnabled())
-				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + getBannerTerm(session) + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
+				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + term + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(iBannerApiUrl);
 			resource.setNext(iClient);
-			resource.addQueryParameter("term", getBannerTerm(session));
+			resource.addQueryParameter("term", term);
 			resource.addQueryParameter("bannerId", getBannerId(student));
-			helper.getAction().addOptionBuilder().setKey("term").setValue(getBannerTerm(session));
+			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
 			helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 			if (pin != null && !pin.isEmpty()) {
 				resource.addQueryParameter("altPin", pin);
@@ -280,7 +289,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			Map<String, List<XSection>> id2section = new HashMap<String, List<XSection>>();
 			Map<String, XCourse> id2course = new HashMap<String, XCourse>();
 			Set<String> added = new HashSet<String>();
-			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(getBannerTerm(session), getBannerId(student), pin);
+			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), pin);
 			List<EnrollmentFailure> fails = new ArrayList<EnrollmentFailure>();
 			Set<String> checked = new HashSet<String>();
 			for (EnrollmentRequest request: enrollments) {

@@ -55,6 +55,7 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
@@ -1013,6 +1014,12 @@ public enum ApplicationProperty {
 	CustomizationStudentEnrollments("unitime.custom.StudentEnrollmentProvider"),
 	
 	@Type(Class.class)
+	@Implements(ExternalTermProvider.class)
+	@Description("Customization: external term provider (interface ExternalTermProvider converting academic session info into an external term string etc.)")
+	@Since(3.5)
+	CustomizationExternalTerm("unitime.custom.ExternalTermProvider"),
+	
+	@Type(Class.class)
 	@Implements(ExternalLinkLookup.class)
 	@Description("Customization: course catalog link provider (interface ExternalLinkLookup, deprecated)")
 	@Deprecated
@@ -1651,6 +1658,37 @@ public enum ApplicationProperty {
 	@DefaultValue("org.unitime.timetable.backup.SessionRestore")
 	@Description("Implementation of the session restore interface.")
 	SessionRestoreInterface("unitime.session_restore.class"),
+	
+	
+	@Type(String.class)
+	@DefaultValue("https://selfservice.mypurdue.purdue.edu/prod/bzwsrch.p_catalog_detail?term=:xterm&subject=:subject&cnbr=:courseNbr&enhanced=Y")
+	@Description("DefaultCourseDetailsProvider: course url\n"
+			+ "Use:\n"
+			+ " - :campus, :term, :year for academic session identification or\n"
+			+ " - :xcampus, :xterm when ExternalTermProvider is configured,\n"
+			+ " - :subject for subject area abbreviation and :courseNbr for course number or\n"
+			+ " - :xsubject, :xcourseNbr when ExternalTermProvider is configured.\n"
+			+ "Example: https://www.university.edu/catalog?term=:term:year&amp;subject=:subject&cnbr=:courseNbr")
+	CustomizationDefaultCourseUrl("unitime.custom.default.course_url"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("DefaultCourseDetailsProvider: downloads course details (unitime.custom.default.course_url must be set)")
+	CustomizationDefaultCourseDetailsDownload("unitime.custom.default.course_download"),
+	
+	@Type(String.class)
+	@DefaultValue("(?idm)<body[^>]*>(.*)</body>")
+	@Description("DefaultCourseDetailsProvider: if course details are downloaded (unitime.custom.default.course_download is true), "
+			+"this property contains regular expression that is used to get the content of the downloaded page")
+	CustomizationDefaultCourseDetailsContent("unitime.custom.default.course_regexp"),
+	
+	@Type(String.class)
+	@Description("DefaultCourseDetailsProvider: if course details are downloaded (unitime.custom.default.course_download is true), "
+			+"this property contains a list of regular expressions that are used to reformat the content. This property "
+			+"can contain multiple lines with the following sequence:"
+			+"\n  1st regural expression,\n  1st replacement,\n  2nd regular expression,\n  2nd replacement,\n  ...\n"
+			+"Example:\n  (?i)<a href=\"[^>]*\">\n  <b>\n  (?i)</a>\n  </b>")
+	CustomizationDefaultCourseDetailsModifiers("unitime.custom.default.course_modifiers"),
 	;
 
 	String iKey;
