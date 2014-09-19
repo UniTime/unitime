@@ -51,9 +51,9 @@
     <org.unitime.commons.jgroups.UniTimeClusterDiscovery initial_hosts="${unitime.solver.initial_hosts:127.0.0.1[7800]}" port_range="3" />
     <MERGE2  min_interval="10000"
              max_interval="30000"/>
-    <FD_SOCK/>
+    <FD_SOCK bind_addr="${jgroups.tcp.address:127.0.0.1}"/>
     <FD timeout="3000" max_tries="3" />
-    <VERIFY_SUSPECT timeout="1500"  />
+    <VERIFY_SUSPECT timeout="1500" bind_addr="${jgroups.tcp.address:127.0.0.1}" />
     <BARRIER />
     <pbcast.NAKACK2 use_mcast_xmit="false"
                    discard_delivered_msgs="true"/>
@@ -61,7 +61,6 @@
     <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
                    max_bytes="4M"/>
     <pbcast.GMS print_local_addr="true" join_timeout="3000"
-
                 view_bundling="true"/>
     <MFC max_credits="2M"
          min_threshold="0.4"/>
