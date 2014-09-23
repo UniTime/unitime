@@ -307,7 +307,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	
 	public static enum OverrideType implements IsSerializable {
 		AllowTimeConflict("time-cnflt", false, true, false, true),
-		AllowOverLimit("limit-cnflt", false, false, true, true),
+		AllowOverLimit("closed", false, false, true, true),
 		AllowOverLimitTimeConflict("time-limit-cnflt", false, true, true, true),
 		;
 		
