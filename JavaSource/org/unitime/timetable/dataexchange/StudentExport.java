@@ -55,58 +55,7 @@ public class StudentExport extends BaseExport {
 	        		.setLong("sessionId", session.getUniqueId()).list()) {
 	        	
 	        	Element studentEl = root.addElement("student");
-	        	studentEl.addAttribute("externalId",
-	        			student.getExternalUniqueId() == null || student.getExternalUniqueId().isEmpty() ? student.getUniqueId().toString() : student.getExternalUniqueId());
-	        	
-	        	if (student.getFirstName() != null)
-	        		studentEl.addAttribute("firstName", student.getFirstName());
-	        	if (student.getMiddleName() != null)
-	        		studentEl.addAttribute("middleName", student.getMiddleName());
-	        	if (student.getLastName() != null)
-	        		studentEl.addAttribute("lastName", student.getLastName());
-	        	if (student.getEmail() != null)
-	        		studentEl.addAttribute("email", student.getEmail());
-	        	
-	        	if (!student.getAcademicAreaClassifications().isEmpty()) {
-	        		Element e = studentEl.addElement("studentAcadAreaClass");
-		        	for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
-		        		e.addElement("acadAreaClass")
-		        			.addAttribute("academicArea", aac.getAcademicArea().getAcademicAreaAbbreviation())
-		        			.addAttribute("academicClass", aac.getAcademicClassification().getCode());
-		        	}
-	        	}
-	        	
-	        	if (!student.getPosMajors().isEmpty()) {
-	        		Element e = studentEl.addElement("studentMajors");
-		        	for (PosMajor major: student.getPosMajors()) {
-		        		for (AcademicArea area: major.getAcademicAreas()) {
-			        		e.addElement("major").addAttribute("academicArea", area.getAcademicAreaAbbreviation()).addAttribute("code", major.getCode());
-		        		}
-		        	}
-	        	}
-	        	
-	        	if (!student.getPosMinors().isEmpty()) {
-	        		Element e = studentEl.addElement("studentMinors");
-		        	for (PosMinor minor: student.getPosMinors()) {
-		        		for (AcademicArea area: minor.getAcademicAreas()) {
-			        		e.addElement("minor").addAttribute("academicArea", area.getAcademicAreaAbbreviation()).addAttribute("code", minor.getCode());
-		        		}
-		        	}
-	        	}
-	        	
-	        	if (!student.getGroups().isEmpty()) {
-	        		Element e = studentEl.addElement("studentGroups");
-		        	for (StudentGroup group: student.getGroups()) {
-		        		e.addElement("studentGroup").addAttribute("group", group.getGroupAbbreviation());
-		        	}
-	        	}
-	        	
-	        	if (!student.getAccomodations().isEmpty()) {
-	        		Element e = studentEl.addElement("studentAccomodations");
-		        	for (StudentAccomodation accomodation: student.getAccomodations()) {
-		        		e.addElement("studentAccomodation").addAttribute("accomodation", accomodation.getAbbreviation());
-		        	}
-	        	}
+	        	exportStudent(studentEl, student);
 	        }
 	        
             commitTransaction();
@@ -116,5 +65,59 @@ public class StudentExport extends BaseExport {
 		}
 	}
 
+	protected void exportStudent(Element studentEl, Student student) {
+    	studentEl.addAttribute("externalId",
+    			student.getExternalUniqueId() == null || student.getExternalUniqueId().isEmpty() ? student.getUniqueId().toString() : student.getExternalUniqueId());
+    	
+    	if (student.getFirstName() != null)
+    		studentEl.addAttribute("firstName", student.getFirstName());
+    	if (student.getMiddleName() != null)
+    		studentEl.addAttribute("middleName", student.getMiddleName());
+    	if (student.getLastName() != null)
+    		studentEl.addAttribute("lastName", student.getLastName());
+    	if (student.getEmail() != null)
+    		studentEl.addAttribute("email", student.getEmail());
+    	
+    	if (!student.getAcademicAreaClassifications().isEmpty()) {
+    		Element e = studentEl.addElement("studentAcadAreaClass");
+        	for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
+        		e.addElement("acadAreaClass")
+        			.addAttribute("academicArea", aac.getAcademicArea().getAcademicAreaAbbreviation())
+        			.addAttribute("academicClass", aac.getAcademicClassification().getCode());
+        	}
+    	}
+    	
+    	if (!student.getPosMajors().isEmpty()) {
+    		Element e = studentEl.addElement("studentMajors");
+        	for (PosMajor major: student.getPosMajors()) {
+        		for (AcademicArea area: major.getAcademicAreas()) {
+	        		e.addElement("major").addAttribute("academicArea", area.getAcademicAreaAbbreviation()).addAttribute("code", major.getCode());
+        		}
+        	}
+    	}
+    	
+    	if (!student.getPosMinors().isEmpty()) {
+    		Element e = studentEl.addElement("studentMinors");
+        	for (PosMinor minor: student.getPosMinors()) {
+        		for (AcademicArea area: minor.getAcademicAreas()) {
+	        		e.addElement("minor").addAttribute("academicArea", area.getAcademicAreaAbbreviation()).addAttribute("code", minor.getCode());
+        		}
+        	}
+    	}
+    	
+    	if (!student.getGroups().isEmpty()) {
+    		Element e = studentEl.addElement("studentGroups");
+        	for (StudentGroup group: student.getGroups()) {
+        		e.addElement("studentGroup").addAttribute("group", group.getGroupAbbreviation());
+        	}
+    	}
+    	
+    	if (!student.getAccomodations().isEmpty()) {
+    		Element e = studentEl.addElement("studentAccomodations");
+        	for (StudentAccomodation accomodation: student.getAccomodations()) {
+        		e.addElement("studentAccomodation").addAttribute("accomodation", accomodation.getAbbreviation());
+        	}
+    	}		
+	}
 
 }
