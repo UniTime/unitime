@@ -350,6 +350,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<u>S</u>elect")
 	String buttonSelect();
+	
+	@DefaultMessage("Start Over")
+	String buttonStartOver();
 
 	@DefaultMessage("<u>L</u>ist of Classes")
 	String tabClasses();

@@ -99,7 +99,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	private VerticalPanel iPanel;
 	private HorizontalPanel iFooter;
-	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport, iSave;
+	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport, iSave, iStartOver;
 	private HTML iErrorMessage;
 	private UniTimeTabPanel iAssignmentPanel;
 	private FocusPanel iAssignmentPanelWithFocus;
@@ -177,6 +177,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iReset.setVisible(false);
 		iReset.setEnabled(false);
 		iReset.getElement().getStyle().setMarginLeft(4, Unit.PX);
+		iReset.getElement().getStyle().setMarginRight(4, Unit.PX);
 		leftFooterPanel.add(iReset);
 		iFooter.add(leftFooterPanel);
 
@@ -189,6 +190,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iFooter.add(rightFooterPanel);
 		iFooter.setCellHorizontalAlignment(rightFooterPanel, HasHorizontalAlignment.ALIGN_RIGHT);
 
+		iStartOver = new AriaButton(MESSAGES.buttonStartOver());
+		if (mode.isSectioning())
+			leftFooterPanel.add(iStartOver);
+		iStartOver.setVisible(false);
+		iStartOver.setEnabled(false);
 
 		iSchedule = new AriaButton(MESSAGES.buttonSchedule());
 		if (mode.isSectioning())
@@ -418,6 +424,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						UniTimeNotifications.error(MESSAGES.validationFailedWithMessage(caught.getMessage()), caught);
 					}
 				});
+			}
+		});
+		
+		iStartOver.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				clear();
+				lastRequest(iSessionSelector.getAcademicSessionId(), null, true);
 			}
 		});
 		
@@ -1088,7 +1102,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	public void clear() {
 		if (iShowUnassignments != null)
 			iShowUnassignments.setVisible(false);
-		iSavedAssignment = null;
+		iSavedAssignment = null; iLastAssignment = null;
 		iCourseRequests.clear();
 		iLastResult.clear();
 		if (iRequests.isVisible()) {
@@ -1129,6 +1143,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iErrorMessage.setHTML(caught.getMessage());
 								iErrorMessage.setVisible(true);
 								iSchedule.setVisible(true); iSchedule.setEnabled(true);
+								iStartOver.setVisible(true); iStartOver.setEnabled(true);
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 								updateScheduleChangedNoteIfNeeded();
@@ -1138,6 +1153,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 								iEligibilityCheck = result;
 								iSchedule.setVisible(true); iSchedule.setEnabled(true);
+								iStartOver.setVisible(true); iStartOver.setEnabled(true);
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 								updateScheduleChangedNoteIfNeeded();
@@ -1160,6 +1176,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iPinDialog.checkEligibility(iOnline, sessionId, null, callback);
 					} else {
 						iSchedule.setVisible(true); iSchedule.setEnabled(true);
+						iStartOver.setVisible(true); iStartOver.setEnabled(true);
 						lastRequest(sessionId, studentId, saved);
 						if (ret != null) ret.onSuccess(iEligibilityCheck);
 						updateScheduleChangedNoteIfNeeded();
@@ -1173,6 +1190,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						UniTimeNotifications.error(result.getMessage());
 					}
 					iSchedule.setVisible(false);  iSchedule.setEnabled(false);
+					iStartOver.setVisible(false); iStartOver.setEnabled(false);
 					if (ret != null) ret.onFailure(new SectioningException(result.getMessage()));
 					updateScheduleChangedNoteIfNeeded();
 				}

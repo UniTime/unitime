@@ -1717,6 +1717,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public CourseRequestInterface savedRequest(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException {
 		if (online) {
 			OnlineSectioningServer server = getServerInstance(sessionId == null ? canEnroll(online, studentId) : sessionId);
+			if (studentId == null) {
+				studentId = getStudentId(sessionId);
+				if (studentId == null) throw new SectioningException(MSG.exceptionNoStudent());
+			}
 			return server.execute(server.createAction(GetRequest.class).forStudent(studentId), currentUser());
 		} else {
 			OnlineSectioningServer server = getStudentSolver();
