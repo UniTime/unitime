@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import org.cpsolver.ifs.util.DataProperties;
@@ -99,13 +98,25 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					.setUniqueId(offeringId)
 					.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
 			
+			List<Long> studentIds = (List<Long>)
+					helper.getHibSession().createQuery(
+							"select distinct cr.courseDemand.student.uniqueId from CourseRequest cr " +
+							"where cr.courseOffering.instructionalOffering.uniqueId = :offeringId")
+							.setLong("offeringId", offeringId).list();
+			studentIds.addAll(
+					helper.getHibSession().createQuery(
+							"select distinct e.student.uniqueId from StudentClassEnrollment e " +
+							"where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.courseRequest is null")
+							.setLong("offeringId", offeringId).list());
+			/*
 			List<Long> studentIds = (List<Long>)helper.getHibSession().createQuery(
 					"select distinct s.uniqueId from Student s " +
 					"left outer join s.classEnrollments e " +
 					"left outer join s.courseDemands d left outer join d.courseRequests r left outer join r.courseOffering co " +
 					"where e.courseOffering.instructionalOffering.uniqueId = :offeringId or " +
 					"co.instructionalOffering.uniqueId = :offeringId").setLong("offeringId", offeringId).list();
-
+			*/
+			
 			Lock lock = server.lockOffering(offeringId, studentIds, true);
 			try {
 				helper.beginTransaction();
@@ -129,6 +140,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 	public void reloadOffering(final OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId) {
 		// Load new students
 		Map<Long, org.unitime.timetable.model.Student> newStudents = new HashMap<Long, org.unitime.timetable.model.Student>();
+		/*
 		for (org.unitime.timetable.model.Student student : (List<org.unitime.timetable.model.Student>)helper.getHibSession().createQuery(
                 "select s from Student s " +
                 "left join fetch s.courseDemands as cd " +
@@ -142,6 +154,37 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
                 "left join fetch s.groups as g " +
                 "where s.uniqueId in (select xe.student.uniqueId from StudentClassEnrollment xe where xe.courseOffering.instructionalOffering.uniqueId = :offeringId) " +
                 "or s.uniqueId in (select xr.courseDemand.student.uniqueId from CourseRequest xr where xr.courseOffering.instructionalOffering.uniqueId = :offeringId)"
+                ).setLong("offeringId", offeringId).list()) {
+			newStudents.put(student.getUniqueId(), student);
+		}
+		*/
+		for (org.unitime.timetable.model.Student student : (List<org.unitime.timetable.model.Student>)helper.getHibSession().createQuery(
+                "select distinct s from Student s " +
+                "left join fetch s.courseDemands as cd " +
+                "left join fetch cd.courseRequests as cr " +
+                "left join fetch cr.courseOffering as co " +
+                "left join fetch cr.classWaitLists as cwl " + 
+                "left join fetch s.classEnrollments as e " +
+                "left join fetch s.academicAreaClassifications as a " +
+                "left join fetch s.posMajors as mj " +
+                "left join fetch s.waitlists as w " +
+                "left join fetch s.groups as g " +
+                "where cr.courseOffering.instructionalOffering.uniqueId = :offeringId"
+                ).setLong("offeringId", offeringId).list()) {
+			newStudents.put(student.getUniqueId(), student);
+		}
+		for (org.unitime.timetable.model.Student student : (List<org.unitime.timetable.model.Student>)helper.getHibSession().createQuery(
+                "select distinct s from Student s " +
+                "left join fetch s.courseDemands as cd " +
+                "left join fetch cd.courseRequests as cr " +
+                "left join fetch cr.courseOffering as co " +
+                "left join fetch cr.classWaitLists as cwl " + 
+                "left join fetch s.classEnrollments as e " +
+                "left join fetch s.academicAreaClassifications as a " +
+                "left join fetch s.posMajors as mj " +
+                "left join fetch s.waitlists as w " +
+                "left join fetch s.groups as g " +
+                "where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.courseRequest is null"
                 ).setLong("offeringId", offeringId).list()) {
 			newStudents.put(student.getUniqueId(), student);
 		}
