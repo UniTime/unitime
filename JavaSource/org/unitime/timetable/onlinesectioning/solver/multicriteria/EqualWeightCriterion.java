@@ -74,6 +74,27 @@ public class EqualWeightCriterion extends OnlineSectioningCriterion {
 		if (currentAssignedAlternativity < bestAssignedAlternativity) return -1;
 		if (bestAssignedAlternativity < currentAssignedAlternativity) return 1;
 		
+		// 0.5. avoid course overlaps
+		if (getModel().getTimeOverlaps() != null) {
+			int bestTimeOverlaps = 0, currentTimeOverlaps = 0;
+			for (int idx = 0; idx < current.length; idx++) {
+				if (best[idx] != null && best[idx].getAssignments() != null) {
+			        for (int x = 0; x < idx; x++) {
+			        	if (best[x] != null && best[x].getAssignments() != null && best[x].getRequest() instanceof CourseRequest)
+			        		bestTimeOverlaps += getModel().getTimeOverlaps().nrConflicts(best[x], best[idx]);
+			        }
+				}
+				if (current[idx] != null && current[idx].getAssignments() != null) {
+			        for (int x = 0; x < idx; x++) {
+			        	if (current[x] != null && current[x].getAssignments() != null && current[x].getRequest() instanceof CourseRequest)
+			        		currentTimeOverlaps += getModel().getTimeOverlaps().nrConflicts(current[x], current[idx]);
+			        }
+				}
+			}
+			if (currentTimeOverlaps < bestTimeOverlaps) return -1;
+			if (bestTimeOverlaps < currentTimeOverlaps) return 1;
+		}
+		
 		// 1. minimize number of penalties
 		double bestPenalties = 0, currentPenalties = 0;
 		for (int idx = 0; idx < current.length; idx++) {
@@ -270,6 +291,27 @@ public class EqualWeightCriterion extends OnlineSectioningCriterion {
 		if (bestAssignedPriority < currentAssignedPriority) return false;
 		if (currentAssignedAlternativity < bestAssignedAlternativity) return true;
 		if (bestAssignedAlternativity < currentAssignedAlternativity) return false;
+		
+		// 0.5. avoid course time overlaps
+		if (getModel().getTimeOverlaps() != null) {
+			int bestTimeOverlaps = 0, currentTimeOverlaps = 0;
+			for (int idx = 0; idx < current.length; idx++) {
+				if (best[idx] != null) {
+			        for (int x = 0; x < idx; x++) {
+			        	if (best[x] != null && best[x].getRequest() instanceof CourseRequest)
+			        		bestTimeOverlaps += getModel().getTimeOverlaps().nrConflicts(best[x], best[idx]);
+			        }
+				}
+				if (current[idx] != null && idx < maxIdx) {
+			        for (int x = 0; x < idx; x++) {
+			        	if (current[x] != null && current[x].getRequest() instanceof CourseRequest)
+			        		currentTimeOverlaps += getModel().getTimeOverlaps().nrConflicts(current[x], current[idx]);
+			        }
+				}
+			}
+			if (currentTimeOverlaps < bestTimeOverlaps) return true;
+			if (bestTimeOverlaps < currentTimeOverlaps) return false;
+		}
 		
 		// 1. maximize number of penalties
 		double bestPenalties = 0, currentPenalties = 0;
