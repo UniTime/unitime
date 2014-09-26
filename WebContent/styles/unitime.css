@@ -3553,12 +3553,6 @@ unitime-RoomSharingWidget .legend .blank {
 	padding: 2px 0px 0px 10px;
 }
 
-.unitime-ScheduleChangedNote {
-	background-color: #FFF0AB;
-	padding: 1px 10px 1px 10px;
-	margin: 2px 0px 2px 0px;
-}
-
 .unitime-EnrollButton {
 	background: none;
 	background-image: linear-gradient( rgba(255,255,255,0.15), rgba(0,0,0,0.15) );
@@ -3574,4 +3568,25 @@ unitime-RoomSharingWidget .legend .blank {
 @-webkit-keyframes blinkblue {
   from { background-color: #fff; }
   to { background-color: #cdf; }
+}
+
+.unitime-ScheduleBlankMessage {
+}
+
+.unitime-ScheduleMessage {
+	background-color: #d0e4f6;
+	padding: 1px 10px 1px 10px;
+	margin: 4px 0px 1px 0px;
+}
+
+.unitime-ScheduleWarningMessage {
+	background-color: #FFF0AB;
+	padding: 1px 10px 1px 10px;
+	margin: 4px 0px 1px 0px;
+}
+
+.unitime-ScheduleErrorMessage {
+	background-color: #FFD7D7;
+	padding: 1px 10px 1px 10px;
+	margin: 4px 0px 1px 0px;
 }
