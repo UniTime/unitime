@@ -100,7 +100,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private VerticalPanel iPanel;
 	private HorizontalPanel iFooter;
 	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport, iSave, iStartOver;
-	private HTML iErrorMessage;
 	private UniTimeTabPanel iAssignmentPanel;
 	private FocusPanel iAssignmentPanelWithFocus;
 	private ImageLink iCalendar;
@@ -122,7 +121,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private StudentSectioningPage.Mode iMode = null;
 	private OnlineSectioningInterface.EligibilityCheck iEligibilityCheck = null;
 	private PinDialog iPinDialog = null;
-	private Label iScheduleChangedLabel = null;
+	private boolean iScheduleChanged = false;
+	private HTML iMessage = null;
 
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
@@ -139,7 +139,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onValueChange(ValueChangeEvent<CourseRequestInterface> event) {
 				if (iLastAssignment == null || !iLastAssignment.isCanEnroll() || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL))
 					return;
-				if (!iScheduleChangedLabel.isVisible() || MESSAGES.warnScheduleChanged().equals(iScheduleChangedLabel.getText())) {
+				if (!iScheduleChanged || MESSAGES.warnScheduleChanged().equals(getMessage())) {
 					courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
 						if (!course.isAssigned() || course.isFreeTime()) continue;
 						for (CourseRequestInterface.Request r: event.getValue().getCourses()) {
@@ -152,11 +152,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							if (r.hasFirstAlternative()  && course.getCourseName().equalsIgnoreCase(r.getFirstAlternative())) continue courses;
 							if (r.hasSecondAlternative()  && course.getCourseName().equalsIgnoreCase(r.getSecondAlternative())) continue courses;
 						}
-						iScheduleChangedLabel.setText(MESSAGES.warnScheduleChanged());
-						iScheduleChangedLabel.setVisible(true);
+						iScheduleChanged = true;
+						setWarning(MESSAGES.warnScheduleChanged(), false);
+						iEnroll.addStyleName("unitime-EnrollButton");
 						return;
 					}
-					iScheduleChangedLabel.setVisible(false);
+					iScheduleChanged = false;
+					clearMessage();
 				}
 			}
 		});
@@ -181,11 +183,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		leftFooterPanel.add(iReset);
 		iFooter.add(leftFooterPanel);
 
-		iErrorMessage = new HTML();
-		iErrorMessage.setWidth("100%");
-		iErrorMessage.setStyleName("unitime-ErrorMessage");
-		iFooter.add(iErrorMessage);
-		
 		HorizontalPanel rightFooterPanel = new HorizontalPanel();
 		iFooter.add(rightFooterPanel);
 		iFooter.setCellHorizontalAlignment(rightFooterPanel, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -211,9 +208,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iEnroll = new AriaButton(MESSAGES.buttonEnroll());
 		iEnroll.setVisible(false);
 		iEnroll.setEnabled(false);
-		iEnroll.addStyleName("unitime-EnrollButton");
 		rightFooterPanel.add(iEnroll);
-
 
 		iPrint = new AriaButton(MESSAGES.buttonPrint());
 		iPrint.setVisible(false);
@@ -227,12 +222,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iExport.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		rightFooterPanel.add(iExport);
 		
-		iScheduleChangedLabel = new Label();
-		iScheduleChangedLabel.setStyleName("unitime-ScheduleChangedNote");
-		iScheduleChangedLabel.setVisible(false);
-		iPanel.add(iScheduleChangedLabel);
-
 		iPanel.add(iFooter);
+		
+		iMessage = new HTML();
+		iMessage.setStyleName("unitime-ScheduleBlankMessage");
+		iPanel.add(iMessage);
 		
 		iLastResult = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 		
@@ -351,15 +345,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iReset.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iErrorMessage.setHTML("");
+				clearMessage();
 				LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 				iSectioningService.section(iOnline, iCourseRequests.getRequest(), null, new AsyncCallback<ClassAssignmentInterface>() {
 					public void onFailure(Throwable caught) {
-						iErrorMessage.setHTML(caught.getMessage());
-						iErrorMessage.setVisible(true);
+						setError(caught.getMessage());
 						LoadingWidget.getInstance().hide();
 						updateHistory();
-						UniTimeNotifications.error(caught);
 					}
 					public void onSuccess(ClassAssignmentInterface result) {
 						fillIn(result);
@@ -372,7 +364,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iSchedule.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				iCourseRequests.changeTip();
-				iErrorMessage.setHTML("");
+				clearMessage();
 				iCourseRequests.validate(new AsyncCallback<Boolean>() {
 					public void onSuccess(Boolean result) {
 						updateHistory();
@@ -381,26 +373,20 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iSectioningService.saveRequest(iCourseRequests.getRequest(), new AsyncCallback<Boolean>() {
 									public void onSuccess(Boolean result) {
 										if (result) {
-											iErrorMessage.setHTML("<font color='blue'>" + MESSAGES.saveRequestsOK() + "</font>");
-											iErrorMessage.setVisible(true);
-											UniTimeNotifications.info(MESSAGES.saveRequestsOK());
+											setMessage(MESSAGES.saveRequestsOK());
 										}
 									}
 									public void onFailure(Throwable caught) {
-										iErrorMessage.setHTML(MESSAGES.saveRequestsFail(caught.getMessage()));
-										iErrorMessage.setVisible(true);
-										UniTimeNotifications.error(MESSAGES.saveRequestsFail(caught.getMessage()), caught);
+										setError(MESSAGES.saveRequestsFail(caught.getMessage()), caught);
 									}
 								});
 							}
 							LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 							iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 								public void onFailure(Throwable caught) {
-									iErrorMessage.setHTML(caught.getMessage());
-									iErrorMessage.setVisible(true);
+									setError(caught);
 									LoadingWidget.getInstance().hide();
 									updateHistory();
-									UniTimeNotifications.error(caught);
 								}
 								public void onSuccess(ClassAssignmentInterface result) {
 									fillIn(result);
@@ -409,19 +395,15 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							});								
 						} else {
 							String error = iCourseRequests.getFirstError();
-							iErrorMessage.setHTML(error == null ? MESSAGES.validationFailed() : MESSAGES.validationFailedWithMessage(error));
-							iErrorMessage.setVisible(true);
+							setError(error == null ? MESSAGES.validationFailed() : MESSAGES.validationFailedWithMessage(error));
 							LoadingWidget.getInstance().hide();
 							updateHistory();
-							UniTimeNotifications.error(error == null ? MESSAGES.validationFailed() : MESSAGES.validationFailedWithMessage(error));
 						}
 					}
 					public void onFailure(Throwable caught) {
-						iErrorMessage.setHTML(MESSAGES.validationFailedWithMessage(caught.getMessage()));
-						iErrorMessage.setVisible(true);
+						setError(MESSAGES.validationFailedWithMessage(caught.getMessage()), caught);
 						LoadingWidget.getInstance().hide();
 						updateHistory();
-						UniTimeNotifications.error(MESSAGES.validationFailedWithMessage(caught.getMessage()), caught);
 					}
 				});
 			}
@@ -500,18 +482,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSavedAssignment = result;
 						fillIn(result);
 						if (!result.hasMessages())
-							iErrorMessage.setHTML("<font color='blue'>" + MESSAGES.enrollOK() + "</font>");
-						iErrorMessage.setVisible(true);
+							setMessage(MESSAGES.enrollOK());
 						updateHistory();
-						if (!result.hasMessages())
-							UniTimeNotifications.info(MESSAGES.enrollOK());
 					}
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
-						iErrorMessage.setHTML(MESSAGES.enrollFailed(caught.getMessage()));
-						iErrorMessage.setVisible(true);
+						setError(MESSAGES.enrollFailed(caught.getMessage()), caught);
 						updateHistory();
-						UniTimeNotifications.error(MESSAGES.enrollFailed(caught.getMessage()));
 					}
 				});
 			}
@@ -530,7 +507,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iSessionSelector.getAcademicSessionName(),
 						iAssignmentGrid.getPrintWidget(),
 						w,
-						iErrorMessage);
+						iMessage);
 			}
 		});
 		
@@ -570,7 +547,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iSave.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				iCourseRequests.changeTip();
-				iErrorMessage.setHTML("");
+				clearMessage();
 				iCourseRequests.validate(new AsyncCallback<Boolean>() {
 					public void onSuccess(Boolean result) {
 						updateHistory();
@@ -579,34 +556,26 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							iSectioningService.saveRequest(iCourseRequests.getRequest(), new AsyncCallback<Boolean>() {
 								public void onSuccess(Boolean result) {
 									if (result) {
-										iErrorMessage.setHTML("<font color='blue'>" + MESSAGES.saveRequestsOK() + "</font>");
-										iErrorMessage.setVisible(true);
-										UniTimeNotifications.info(MESSAGES.saveRequestsOK());
+										setMessage(MESSAGES.saveRequestsOK());
 									}
 									LoadingWidget.getInstance().hide();
 								}
 								public void onFailure(Throwable caught) {
-									iErrorMessage.setHTML(MESSAGES.saveRequestsFail(caught.getMessage()));
-									iErrorMessage.setVisible(true);
+									setError(MESSAGES.saveRequestsFail(caught.getMessage()), caught);
 									LoadingWidget.getInstance().hide();
-									UniTimeNotifications.error(MESSAGES.saveRequestsFail(caught.getMessage()), caught);
 								}
 							});
 						} else {
 							String error = iCourseRequests.getFirstError();
-							iErrorMessage.setHTML(error == null ? MESSAGES.validationFailed() : MESSAGES.validationFailedWithMessage(error));
-							iErrorMessage.setVisible(true);
+							setError(error == null ? MESSAGES.validationFailed() : MESSAGES.validationFailedWithMessage(error));
 							LoadingWidget.getInstance().hide();
 							updateHistory();
-							UniTimeNotifications.error(error == null ? MESSAGES.validationFailed() : MESSAGES.validationFailedWithMessage(error));
 						}
 					}
 					public void onFailure(Throwable caught) {
-						iErrorMessage.setHTML(MESSAGES.validationFailedWithMessage(caught.getMessage()));
-						iErrorMessage.setVisible(true);
+						setError(MESSAGES.validationFailedWithMessage(caught.getMessage()), caught);
 						LoadingWidget.getInstance().hide();
 						updateHistory();
-						UniTimeNotifications.error(MESSAGES.validationFailedWithMessage(caught.getMessage()));
 					}
 				});
 			}
@@ -645,12 +614,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			});
 		}		
 		iAssignments.setSelectedRow(rowIndex);
-		iErrorMessage.setVisible(false);
+		clearMessage();
 		iSuggestionsBox.open(iCourseRequests.getRequest(), iLastResult, rowIndex);
 	}
 	
 	private void fillIn(ClassAssignmentInterface result) {
-		iLastResult.clear();
+		iLastResult.clear(); clearMessage();
 		iLastAssignment = result;
 		String calendarUrl = GWT.getHostPageBaseURL() + "calendar?sid=" + iSessionSelector.getAcademicSessionId() + "&cid=";
 		String ftParam = "&ft=";
@@ -793,11 +762,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
 								iSectioningService.section(iOnline, r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 									public void onFailure(Throwable caught) {
-										iErrorMessage.setHTML(caught.getMessage());
-										iErrorMessage.setVisible(true);
+										setError(caught);
 										LoadingWidget.getInstance().hide();
 										updateHistory();
-										UniTimeNotifications.error(caught);
 									}
 									public void onSuccess(ClassAssignmentInterface result) {
 										fillIn(result);
@@ -1066,22 +1033,22 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				AriaStatus.getInstance().setHTML(ARIA.timetable());
 			}
 			if (result.hasMessages()) {
-				if (hasError)
-					UniTimeNotifications.error(result.getMessages("<br>"));
-				else 
-					UniTimeNotifications.warn(result.getMessages("<br>"));
-				iErrorMessage.setHTML(result.getMessages("<br>"));
+				if (hasError) {
+					setError(result.getMessages("<br>"));
+				} else { 
+					setWarning(result.getMessages("<br>"));
+				}
+			} else {
+				updateScheduleChangedNoteIfNeeded();
 			}
 			iTotalCredit.setVisible(totalCredit > 0f);
 			iTotalCredit.setText(MESSAGES.totalCredit(totalCredit));
 		} else {
 			iTotalCredit.setVisible(false);
-			iErrorMessage.setHTML(MESSAGES.noSchedule());
+			setError(MESSAGES.noSchedule());
 			if (LoadingWidget.getInstance().isShowing())
 				LoadingWidget.getInstance().hide();
-			UniTimeNotifications.error(MESSAGES.noSchedule());
 		}
-		updateScheduleChangedNoteIfNeeded();
 	}
 	
 	public void prev() {
@@ -1093,7 +1060,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iPrint.setVisible(false); iPrint.setEnabled(false);
 		iExport.setVisible(false); iExport.setEnabled(false);
 		iSchedule.setVisible(true); iSchedule.setEnabled(true);
-		iErrorMessage.setVisible(false);
+		clearMessage();
 		ResizeEvent.fire(this, getOffsetWidth(), getOffsetHeight());
 		AriaStatus.getInstance().setHTML(ARIA.courseRequests());
 		updateScheduleChangedNoteIfNeeded();
@@ -1108,11 +1075,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		if (iRequests.isVisible()) {
 			prev();
 		}
-		updateScheduleChangedNoteIfNeeded();
+		clearMessage();
 	}
 	
 	public void checkEligibility(final Long sessionId, final Long studentId, final boolean saved, final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret) {
-		updateScheduleChangedNoteIfNeeded();
 		if (!iOnline || !iMode.isSectioning()) {
 			lastRequest(sessionId, studentId, saved);
 			if (ret != null) ret.onSuccess(null);
@@ -1122,16 +1088,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iSectioningService.checkEligibility(iOnline, sessionId, studentId, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 			@Override
 			public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
-				iErrorMessage.setVisible(false);
+				clearMessage();
 				iEligibilityCheck = result;
 				iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 				if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_USE_ASSISTANT)) {
 					if (result.hasMessage()) {
-						UniTimeNotifications.warn(result.getMessage());
-						iErrorMessage.setHTML(result.getMessage());
-						iErrorMessage.setVisible(true);
+						setWarning(result.getMessage());
 					} else {
-						iErrorMessage.setVisible(false);
+						clearMessage();
 					}
 					if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
 						if (iPinDialog == null) iPinDialog = new PinDialog();
@@ -1139,14 +1103,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						PinDialog.PinCallback callback = new PinDialog.PinCallback() {
 							@Override
 							public void onFailure(Throwable caught) {
-								UniTimeNotifications.error(caught.getMessage());
-								iErrorMessage.setHTML(caught.getMessage());
-								iErrorMessage.setVisible(true);
+								setError(caught);
 								iSchedule.setVisible(true); iSchedule.setEnabled(true);
 								iStartOver.setVisible(true); iStartOver.setEnabled(true);
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
-								updateScheduleChangedNoteIfNeeded();
 							}
 							@Override
 							public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
@@ -1156,20 +1117,15 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iStartOver.setVisible(true); iStartOver.setEnabled(true);
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
-								updateScheduleChangedNoteIfNeeded();
 							}
 							@Override
 							public void onMessage(OnlineSectioningInterface.EligibilityCheck result) {
 								if (result.hasMessage()) {
-									UniTimeNotifications.error(result.getMessage());
-									iErrorMessage.setHTML(result.getMessage());
-									iErrorMessage.setVisible(true);
+									setError(result.getMessage());
 								} else if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
-									UniTimeNotifications.warn(MESSAGES.exceptionAuthenticationPinRequired());
-									iErrorMessage.setHTML(result.getMessage());
-									iErrorMessage.setVisible(true);
+									setWarning(MESSAGES.exceptionAuthenticationPinRequired());
 								} else {
-									iErrorMessage.setVisible(false);
+									clearMessage();
 								}
 							}
 						};
@@ -1179,20 +1135,16 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iStartOver.setVisible(true); iStartOver.setEnabled(true);
 						lastRequest(sessionId, studentId, saved);
 						if (ret != null) ret.onSuccess(iEligibilityCheck);
-						updateScheduleChangedNoteIfNeeded();
 					}
 				} else {
 					iCourseRequests.setCanWaitList(false);
 					LoadingWidget.getInstance().hide();
 					if (result.hasMessage()) {
-						iErrorMessage.setHTML(result.getMessage());
-						iErrorMessage.setVisible(true);
-						UniTimeNotifications.error(result.getMessage());
+						setError(result.getMessage());
 					}
 					iSchedule.setVisible(false);  iSchedule.setEnabled(false);
 					iStartOver.setVisible(false); iStartOver.setEnabled(false);
 					if (ret != null) ret.onFailure(new SectioningException(result.getMessage()));
-					updateScheduleChangedNoteIfNeeded();
 				}
 			}
 			
@@ -1287,7 +1239,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				openSuggestionsBox(rowIndex);
 			}
 			public void onFailure(Throwable caught) {
-				UniTimeNotifications.error(caught);
+				setError(caught);
 			}
 		});
 	}
@@ -1298,7 +1250,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		private boolean iFirstPage;
 		private Long iSessionId;
 		private String iUser;
-		private String iError = null;
+		private String iError = null, iErrorStyle = null;;
 		private int iTab = 0;
 		
 		private HistoryItem() {
@@ -1307,7 +1259,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iFirstPage = iSchedule.isVisible();
 			iSessionId = iSessionSelector.getAcademicSessionId();
 			iUser = iUserAuthentication.getUser();
-			if (iErrorMessage.isVisible()) iError = iErrorMessage.getHTML();
+			iError = getMessage(); iErrorStyle = iMessage.getStyleName();
 			iTab = iAssignmentTab;
 		}
 		
@@ -1331,9 +1283,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										if (iAssignment != null) fillIn(iAssignment);
 									}
 									if (iError != null && !iError.isEmpty()) {
-										iErrorMessage.setHTML(iError);
-										iErrorMessage.setVisible(true);
-										UniTimeNotifications.error(iError);
+										if ("unitime-ScheduleErrorMessage".equals(iErrorStyle))
+											setError(iError);
+										else if ("unitime-ScheduleWarningMessage".equals(iErrorStyle))
+											setWarning(iError);
+										else
+											setMessage(iError);
+									} else {
+										clearMessage();
 									}
 								}
 								iInRestore = false;
@@ -1346,7 +1303,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					} else {
 						iInRestore = false;
 					}
-					updateScheduleChangedNoteIfNeeded();
 				}
 				public void onFailure(Throwable reason) {
 					iInRestore = false;
@@ -1365,7 +1321,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 			fillIn(response);
 		}
-		updateScheduleChangedNoteIfNeeded();
 	}
 
 	@Override
@@ -1374,7 +1329,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	public void updateScheduleChangedNoteIfNeeded() {
-		iScheduleChangedLabel.setVisible(false);
+		if (iScheduleChanged) {
+			iScheduleChanged = false;
+			clearMessage();
+		}
 		if (iLastAssignment == null || !iLastAssignment.isCanEnroll() || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL))
 			return;
 		boolean empty = true;
@@ -1389,8 +1347,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			if (!course.isAssigned() || course.isFreeTime()) continue;
 			for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 				if (!clazz.isSaved() && !clazz.hasError()) {
-					iScheduleChangedLabel.setText(empty ? MESSAGES.warnScheduleEmpty() : MESSAGES.warnScheduleChanged());
-					iScheduleChangedLabel.setVisible(true);
+					iScheduleChanged = true;
+					iEnroll.addStyleName("unitime-EnrollButton");
+					setWarning(empty ? MESSAGES.warnScheduleEmpty() : MESSAGES.warnScheduleChanged(), false);
 					return;
 				}
 			}
@@ -1402,8 +1361,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							if (clazz.getClassId().equals(x.getClassId())) continue classes;
 						}
 						if (clazz.isSaved() && !clazz.hasError()) {
-							iScheduleChangedLabel.setText(MESSAGES.warnScheduleChanged());
-							iScheduleChangedLabel.setVisible(true);
+							iScheduleChanged = true;
+							iEnroll.addStyleName("unitime-EnrollButton");
+							setWarning(MESSAGES.warnScheduleChanged(), false);
 						}
 					}
 				}
@@ -1415,8 +1375,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					if (course.getCourseId().equals(x.getCourseId())) continue courses;
 				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 					if (clazz.isSaved() && !clazz.hasError()) {
-						iScheduleChangedLabel.setText(MESSAGES.warnScheduleChanged());
-						iScheduleChangedLabel.setVisible(true);
+						iScheduleChanged = true;
+						iEnroll.addStyleName("unitime-EnrollButton");
+						setWarning(MESSAGES.warnScheduleChanged(), false);
 					}
 				}
 			}
@@ -1433,12 +1394,62 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (r.hasFirstAlternative()  && course.getCourseName().equalsIgnoreCase(r.getFirstAlternative())) continue courses;
 				if (r.hasSecondAlternative()  && course.getCourseName().equalsIgnoreCase(r.getSecondAlternative())) continue courses;
 			}
-			iScheduleChangedLabel.setText(MESSAGES.warnScheduleChanged());
-			iScheduleChangedLabel.setVisible(true);
+			iScheduleChanged = true;
+			iEnroll.addStyleName("unitime-EnrollButton");
+			setWarning(MESSAGES.warnScheduleChanged(), false);
 		}
 	}
 	
 	public boolean isChanged() {
-		return iScheduleChangedLabel.isVisible();
+		return iScheduleChanged;
+	}
+	
+	public void clearMessage() {
+		iMessage.setHTML("");
+		iMessage.setStyleName("unitime-ScheduleBlankMessage");
+		iEnroll.removeStyleName("unitime-EnrollButton");
+		if (isChanged())
+			updateScheduleChangedNoteIfNeeded();
+	}
+	
+	public void setError(String message) {
+		iMessage.setHTML(message);
+		iMessage.setStyleName("unitime-ScheduleErrorMessage");
+		iMessage.setVisible(true);
+		UniTimeNotifications.error(message);
+	}
+	
+	public void setError(String message, Throwable t) {
+		iMessage.setHTML(message);
+		iMessage.setStyleName("unitime-ScheduleErrorMessage");
+		iMessage.setVisible(true);
+		UniTimeNotifications.error(message, t);
+	}
+	
+	public void setError(Throwable t) {
+		setError(t.getMessage(), t);
+	}
+	
+	public void setWarning(String message) {
+		setWarning(message, true);
+	}
+	
+	public void setWarning(String message, boolean popup) {
+		iMessage.setHTML(message);
+		iMessage.setStyleName("unitime-ScheduleWarningMessage");
+		iMessage.setVisible(true);
+		if (popup)
+			UniTimeNotifications.warn(message);
+	}
+	
+	public void setMessage(String message) {
+		iMessage.setHTML(message);
+		iMessage.setStyleName("unitime-ScheduleMessage");
+		iMessage.setVisible(true);
+		UniTimeNotifications.info(message);
+	}
+	
+	public String getMessage() {
+		return iMessage.getHTML();
 	}
 }
