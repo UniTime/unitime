@@ -1136,4 +1136,16 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Total Credit: {0,number,0.#}")
 	String totalCredit(float total);
+	
+	@DefaultMessage("Request Update")
+	String requestStudentUpdate();
+	
+	@DefaultMessage("Requesting student update...")
+	String requestingStudentUpdate();
+	
+	@DefaultMessage("Student update request not allowed.")
+	String exceptionRequestStudentUpdateNotAllowed();
+	
+	@DefaultMessage("Student update successfully requested. Please wait a while for the synchronization to take place.")
+	String requestStudentUpdateSuccess();
 }

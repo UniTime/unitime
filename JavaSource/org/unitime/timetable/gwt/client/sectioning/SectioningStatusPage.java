@@ -995,7 +995,7 @@ public class SectioningStatusPage extends Composite {
 	public void populateStudentTable(List<StudentInfo> result) {
 		List<Widget> header = new ArrayList<Widget>();
 		
-		if (iOnline && iProperties != null && iProperties.isAdmin()) {
+		if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) {
 			UniTimeTableHeader hSelect = new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER);
 			header.add(hSelect);
 			hSelect.setWidth("10px");
@@ -1181,6 +1181,38 @@ public class SectioningStatusPage extends Composite {
 						}
 					});
 					dialog.center();
+				}
+			});
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.requestStudentUpdate();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return true;
+				}
+				@Override
+				public boolean isApplicable() {
+					return iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isRequestUpdate();
+				}
+				@Override
+				public void execute() {
+					List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+					LoadingWidget.getInstance().show(MESSAGES.requestingStudentUpdate());
+					iSectioningService.requestStudentUpdate(studentIds, new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught);
+						}
+
+						@Override
+						public void onSuccess(Boolean result) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.info(MESSAGES.requestStudentUpdateSuccess());
+						}
+					});
 				}
 			});
 			if (iStates != null) {
@@ -1797,7 +1829,7 @@ public class SectioningStatusPage extends Composite {
 		for (StudentInfo info: result) {
 			List<Widget> line = new ArrayList<Widget>();
 			if (info.getStudent() != null) {
-				if (iOnline && iProperties != null && iProperties.isAdmin()) {
+				if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) {
 					CheckBox ch = new CheckBox();
 					ch.addClickHandler(new ClickHandler() {
 						@Override
@@ -1843,7 +1875,7 @@ public class SectioningStatusPage extends Composite {
 					line.add(new HTML(info.getStudent().getAccommodation("<br>"), false));
 				line.add(new HTML(info.getStatus(), false));
 			} else {
-				if (iOnline && iProperties != null && iProperties.isAdmin()) line.add(new HTML("&nbsp;", false));
+				if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) line.add(new HTML("&nbsp;", false));
 				if (hasExtId)
 					line.add(new TitleCell(MESSAGES.total()));
 				else

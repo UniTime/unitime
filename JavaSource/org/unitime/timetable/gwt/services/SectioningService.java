@@ -78,4 +78,5 @@ public interface SectioningService extends RemoteService {
 	Boolean changeStatus(List<Long> studentIds, String status) throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.SectioningAction> changeLog(String query) throws SectioningException, PageAccessException;
 	Boolean massCancel(List<Long> studentIds, String status, String subject, String message, String cc) throws SectioningException, PageAccessException;
+	Boolean requestStudentUpdate(List<Long> studentIds) throws SectioningException, PageAccessException;
 }
