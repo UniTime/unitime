@@ -101,9 +101,11 @@ public class InMemorySectioningTest {
 	public InMemorySectioningTest(DataProperties config) {
 		iModel = new TestModel(config);
 		iModel.setDistanceConflict(new DistanceConflict(new DistanceMetric(iModel.getProperties()), iModel.getProperties()));
-		iModel.addModelListener(iModel.getDistanceConflict());
+		iModel.getDistanceConflict().register(iModel);
+		iModel.getDistanceConflict().setAssignmentContextReference(iModel.createReference(iModel.getDistanceConflict()));
 		iModel.setTimeOverlaps(new TimeOverlapsCounter(null, iModel.getProperties()));
-		iModel.addModelListener(iModel.getTimeOverlaps());
+		iModel.getTimeOverlaps().register(iModel);
+		iModel.getTimeOverlaps().setAssignmentContextReference(iModel.createReference(iModel.getTimeOverlaps()));
 		iModel.setStudentWeights(new StudentSchedulingAssistantWeights(iModel.getProperties()));
 		iAssignment = new DefaultSingleAssignment<Request, Enrollment>();
 		iSuggestions = "true".equals(System.getProperty("suggestions", iSuggestions ? "true" : "false"));
@@ -814,6 +816,8 @@ public class InMemorySectioningTest {
             cfg.setProperty("log4j.logger.org.hibernate.cache.EhCacheProvider","ERROR");
             cfg.setProperty("log4j.logger.org.unitime.commons.hibernate","INFO");
             cfg.setProperty("log4j.logger.net","INFO");
+            
+            cfg.setProperty("Xml.LoadBest", "false");
             
             cfg.putAll(System.getProperties());
 
