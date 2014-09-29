@@ -319,6 +319,7 @@ public enum Right {
     StudentSchedulingMassCancel(Session.class),
     StudentSchedulingEmailStudent(Session.class),
     StudentSchedulingChangeStudentStatus(Session.class),
+    StudentSchedulingRequestStudentUpdate(Session.class),
     
     OfferingEnrollments(InstructionalOffering.class),
     StudentEnrollments(Student.class),
