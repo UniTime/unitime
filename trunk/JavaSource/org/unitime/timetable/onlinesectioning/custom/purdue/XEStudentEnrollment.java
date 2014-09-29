@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -100,10 +101,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		}
 	}
 	
-	private String getBannerId(XStudent student) {
+	protected String getBannerId(XStudent student) {
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
 		return id;
+	}
+	
+	protected String getBannerTerm(AcademicSessionInfo session) {
+		return iExternalTermProvider.getExternalTerm(session);
 	}
 	
 	private Gson getGson(OnlineSectioningHelper helper) {
@@ -133,7 +138,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		try {
 			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
-			String term = iExternalTermProvider.getExternalTerm(session);
+			String term = getBannerTerm(session);
 			if (helper.isDebugEnabled())
 				helper.debug("Checking eligility for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
 			
@@ -220,6 +225,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later" +
 							" (" + (removed.isEmpty() ? "added " + added : added.isEmpty() ? "dropped " + removed : "added " + added + ", dropped " + removed) + ")");
 					check.setFlag(EligibilityFlag.CAN_ENROLL, false);
+					if (isCanRequestUpdates()) {
+						List<XStudent> students = new ArrayList<XStudent>(1); students.add(student);
+						requestUpdate(server, helper, students);
+					}
 				}
 			}
 		} catch (SectioningException e) {
@@ -239,7 +248,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		try {
 			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
-			String term = iExternalTermProvider.getExternalTerm(session);
+			String term = getBannerTerm(session);
 			if (helper.isDebugEnabled())
 				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + term + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
 			
@@ -498,6 +507,16 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	
 	@Override
 	public boolean isAllowWaitListing() {
+		return false;
+	}
+
+	@Override
+	public boolean requestUpdate(OnlineSectioningServer server, OnlineSectioningHelper helper, Collection<XStudent> students) throws SectioningException {
+		return false;
+	}
+
+	@Override
+	public boolean isCanRequestUpdates() {
 		return false;
 	}
 }

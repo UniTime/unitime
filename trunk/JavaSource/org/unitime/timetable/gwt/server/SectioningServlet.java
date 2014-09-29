@@ -105,6 +105,7 @@ import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.DefaultCourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -1959,7 +1960,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setMassCancel(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingMassCancel));
 			properties.setEmail(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingEmailStudent));
 			properties.setChangeStatus(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentStatus));
+			properties.setRequestUpdate(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRequestStudentUpdate));
 		}
 		return properties;
+	}
+
+	@Override
+	public Boolean requestStudentUpdate(List<Long> studentIds) throws SectioningException, PageAccessException {
+		OnlineSectioningServer server = getServerInstance(getStatusPageSessionId());
+		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+		
+		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingRequestStudentUpdate);
+		
+		return server.execute(server.createAction(RequestStudentUpdates.class).forStudents(studentIds), currentUser());
 	}
 }

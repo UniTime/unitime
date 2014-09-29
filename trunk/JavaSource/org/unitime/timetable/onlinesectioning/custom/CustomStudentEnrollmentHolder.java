@@ -55,4 +55,8 @@ public class CustomStudentEnrollmentHolder {
 	public synchronized static boolean isAllowWaitListing() {
 		return !hasProvider() || getProvider().isAllowWaitListing();
 	}
+	
+	public synchronized static boolean isCanRequestUpdates() {
+		return !hasProvider() || getProvider().isCanRequestUpdates();
+	}
 }

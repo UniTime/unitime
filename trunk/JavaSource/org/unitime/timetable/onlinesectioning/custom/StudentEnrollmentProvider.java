@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.custom;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -38,9 +39,13 @@ public interface StudentEnrollmentProvider {
 	
 	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses) throws SectioningException;
 	
+	public boolean requestUpdate(OnlineSectioningServer server, OnlineSectioningHelper helper, Collection<XStudent> students) throws SectioningException;
+	
 	public void dispose();
 	
 	public boolean isAllowWaitListing();
+	
+	public boolean isCanRequestUpdates();
 	
 	public static class EnrollmentFailure implements Serializable {
 		private static final long serialVersionUID = 1L;
