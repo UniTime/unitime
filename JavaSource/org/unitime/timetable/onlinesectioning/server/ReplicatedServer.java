@@ -159,7 +159,7 @@ public class ReplicatedServer extends AbstractServer {
 		Lock lock = readLock();
 		try {
 			DistributedExecutorService ex = new DefaultExecutorService(iCourseForId);
-			SubSet<XCourseId> ret = new SubSet<XCourseId>(limit);
+			SubSet<XCourseId> ret = new SubSet<XCourseId>(limit, new CourseComparator(query));
 			String queryInLowerCase = query.toLowerCase();
 			
 			List<Future<Collection<XCourseId>>> futures = ex.submitEverywhere(new FindCoursesCallable(getAcademicSession().getUniqueId(), queryInLowerCase, limit, matcher));
@@ -608,7 +608,7 @@ public class ReplicatedServer extends AbstractServer {
 		@Override
 		public Collection<XCourseId> call() throws Exception {
 			if (iMatcher != null) iMatcher.setServer(getLocalServer(iSessionId));
-			SubSet<XCourseId> ret = new SubSet<XCourseId>(iLimit);
+			SubSet<XCourseId> ret = new SubSet<XCourseId>(iLimit, new CourseComparator(iQuery));
 			for (XCourseId c : iCache.values()) {
 				if (iQuery != null && !c.matchCourseName(iQuery)) continue;
 				if (iMatcher != null && !iMatcher.match(c)) continue;
