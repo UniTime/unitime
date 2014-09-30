@@ -1,6 +1,6 @@
 /*
  * UniTime 3.5 (University Timetabling Application)
- * Copyright (C) 2013, UniTime LLC, and individual contributors
+ * Copyright (C) 2014, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -19,36 +19,34 @@
 */
 package org.unitime.timetable.onlinesectioning.server;
 
+import java.io.Serializable;
 import java.util.Comparator;
-import java.util.TreeSet;
+
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 
 /**
+ * XCourseId comparator preferring courses with with matching course name (to courses with matching title).
+ * 
  * @author Tomas Muller
  */
-public class SubSet<T extends Comparable<T>> extends TreeSet<T> {
+public class CourseComparator implements Comparator<XCourseId>, Serializable {
 	private static final long serialVersionUID = 1L;
-	private int iLimit = -1;
+	private String iQuery = null;
 	
-	public SubSet(Integer limit, Comparator<T> comparator) {
-		super(comparator);
-		iLimit = (limit == null ? -1 : limit);
+	public CourseComparator(String query) {
+		iQuery = (query == null ? null : query.toLowerCase());
 	}
-	
+
 	@Override
-	public boolean add(T e) {
-		if (iLimit <= 0 || size() < iLimit) {
-			return super.add(e);
+	public int compare(XCourseId c1, XCourseId c2) {
+		if (iQuery != null && !iQuery.isEmpty()) {
+			if (c1.matchCourseName(iQuery)) {
+				if (!c2.matchCourseName(iQuery)) return -1;
+			} else if (c2.matchCourseName(iQuery)) {
+				return 1;
+			}
 		}
-		T last = last();
-		if (comparator().compare(last, e) > 0) {
-			remove(last);
-			return super.add(e);
-		} else {
-			return false;
-		}
+		return c1.compareTo(c2);
 	}
-	
-	public boolean isLimitReached() {
-		return (iLimit > 0 && size() >= iLimit);
-	}
+
 }
