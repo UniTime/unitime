@@ -25,10 +25,14 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.MetaElement;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.googlecode.mgwt.dom.client.event.orientation.OrientationChangeEvent;
+import com.googlecode.mgwt.dom.client.event.orientation.OrientationChangeHandler;
 import com.googlecode.mgwt.ui.client.MGWT;
 import com.googlecode.mgwt.ui.client.MGWTSettings;
 
@@ -47,6 +51,22 @@ public class MobileClient extends Client {
 	    settings.setFixIOS71BodyBug(true);
 	    
 		MGWT.applySettings(settings);
+		
+		MGWT.addOrientationChangeHandler(
+				new OrientationChangeHandler() {
+					@Override
+					public void onOrientationChanged(OrientationChangeEvent event) {
+						NodeList<Element> tags = Document.get().getElementsByTagName("meta");
+						for (int i = 0; i < tags.getLength(); i++) {
+							MetaElement meta = (MetaElement)tags.getItem(i);
+							if (meta.getName().equals("viewport")) {
+								meta.setContent(new Viewport().getContent());
+							}
+						}
+					}
+				}
+			);
+				
 		
 		super.onModuleLoadDeferred();
 		
@@ -89,10 +109,29 @@ public class MobileClient extends Client {
 		});
 	}
 	
+	public native static int getDeviceWidth() /*-{
+		if ($wnd.orientation == 90 || $wnd.orientation == -90)
+			return $wnd.screen.height / $wnd.devicePixelRatio;
+		else
+			return $wnd.screen.width / $wnd.devicePixelRatio;
+	}-*/;
+	
+	public native static int getDeviceHeight() /*-{
+		if ($wnd.orientation == 90 || $wnd.orientation == -90)
+			return $wnd.screen.width / $wnd.devicePixelRatio;
+		else
+			return $wnd.screen.height / $wnd.devicePixelRatio;
+	}-*/;
+	
 	public static class Viewport extends MGWTSettings.ViewPort {
 		@Override
 	    public String getContent() {
-			return "minimum-scale=0.25,maximum-scale=1.0,width=device-width,user-scalable=yes";
+			int dw = getDeviceWidth();
+			if (dw < 480) {
+				return "initial-scale=" + (dw / 480.0) + ",minimum-scale=" + (dw / 1920.0) + ",maximum-scale=" + (dw / 480.0) + ",width=480,user-scalable=yes";
+			} else {
+				return "initial-scale=1.0,minimum-scale=0.25,maximum-scale=1.0,width=device-width,user-scalable=yes";
+			}
 		}
 	}
 }
