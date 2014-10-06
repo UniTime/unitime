@@ -25,12 +25,12 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.JProf;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.localization.impl.Localization;
@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -157,6 +158,8 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 					sLog.info("Seen server exception: " + e.getMessage());
 				throw e;
 			}
+			if (t instanceof AccessDeniedException)
+				throw new PageAccessException(t.getMessage(), t);
 			if (t instanceof IsSerializable) {
 				if (t.getCause() != null)
 					sLog.error("Seen server exception: " + t.getMessage(), t);
