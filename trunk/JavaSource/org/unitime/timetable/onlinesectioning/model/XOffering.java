@@ -44,8 +44,10 @@ import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Section;
-import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.online.OnlineConfig;
+import org.cpsolver.studentsct.online.OnlineReservation;
+import org.cpsolver.studentsct.online.OnlineSection;
 import org.cpsolver.studentsct.reservation.DummyReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
@@ -437,62 +439,6 @@ public class XOffering implements Serializable, Externalizable {
     	return null;
     }
     
-	public static class SimpleReservation extends org.cpsolver.studentsct.reservation.Reservation {
-		private XReservationType iType;
-		private int iPriority;
-		private boolean iOver;
-		private int iLimit;
-		private boolean iApply;
-		private boolean iMustUse;
-		private boolean iAllowOverlap;
-		
-		public SimpleReservation(XReservationType type, long id, Offering offering, int priority, boolean over, int limit, boolean apply, boolean mustUse, boolean allowOverlap, boolean expired) {
-			super(id, offering);
-			iType = type;
-			iPriority = priority;
-			iOver = over;
-			iLimit = limit;
-			iApply = apply;
-			iMustUse = mustUse;
-			iAllowOverlap = allowOverlap;
-			setExpired(expired);
-		}
-		
-		public XReservationType getType() {
-			return iType;
-		}
-		
-		@Override
-		public boolean canAssignOverLimit() {
-			return iOver;
-		}
-
-		@Override
-		public boolean mustBeUsed() {
-			return iMustUse;
-		}
-		
-		@Override
-		public double getReservationLimit() {
-			return iLimit;
-		}
-
-		@Override
-		public int getPriority() {
-			return iPriority;
-		}
-
-		@Override
-		public boolean isApplicable(Student student) {
-			return iApply;
-		}
-
-		@Override
-		public boolean isAllowOverlap() {
-			return iAllowOverlap;
-		}
-	}
-	
 	public int distance(DistanceMetric m, Section s1, Section s2) {
         if (s1.getPlacement()==null || s2.getPlacement()==null) return 0;
         TimeLocation t1 = s1.getTime();
@@ -628,7 +574,8 @@ public class XOffering implements Serializable, Externalizable {
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 					if (enrollment.getStudentId().equals(student.getStudentId())) { applicable = true; break; }
 			}
-			org.cpsolver.studentsct.reservation.Reservation clonedReservation = new SimpleReservation(reservation.getType(), reservation.getReservationId(), clonedOffering,
+			org.cpsolver.studentsct.reservation.Reservation clonedReservation = new OnlineReservation(reservation.getType().ordinal(),
+					reservation.getReservationId(), clonedOffering,
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
 					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());
 			for (Long configId: reservation.getConfigsIds())

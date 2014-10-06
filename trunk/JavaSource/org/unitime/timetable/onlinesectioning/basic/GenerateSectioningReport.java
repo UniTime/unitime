@@ -46,6 +46,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.online.OnlineSectioningModel;
 import org.cpsolver.studentsct.report.SectionConflictTable;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 import org.cpsolver.studentsct.reservation.CourseReservation;
@@ -81,7 +82,6 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
-import org.unitime.timetable.onlinesectioning.solver.OnlineSectioningModel;
 
 /**
  * @author Tomas Muller
@@ -102,7 +102,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 	public CSVFile execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Lock lock = server.readLock();
 		try {
-			OnlineSectioningModel model = new OnlineSectioningModel(server);
+			OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
 			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 

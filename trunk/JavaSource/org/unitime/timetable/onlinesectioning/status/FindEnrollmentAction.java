@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -51,7 +51,6 @@ import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
-import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 
 /**
  * @author Tomas Muller
@@ -255,7 +254,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setSaved(true);
 					if (a.getParentSection() == null)
 						a.setParentSection(course.getConsentLabel());
-					a.setExpected(overExp.getExpected(section, expectations));
+					a.setExpected(overExp.getExpected(section.getLimit(), expectations.getExpectedSpace(section.getSectionId())));
 				}
 			}
 			ret.add(e);

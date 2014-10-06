@@ -56,6 +56,14 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.online.OnlineConfig;
+import org.cpsolver.studentsct.online.OnlineReservation;
+import org.cpsolver.studentsct.online.OnlineSection;
+import org.cpsolver.studentsct.online.OnlineSectioningModel;
+import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
+import org.cpsolver.studentsct.online.selection.MultiCriteriaBranchAndBoundSelection;
+import org.cpsolver.studentsct.online.selection.OnlineSectioningSelection;
+import org.cpsolver.studentsct.online.selection.SuggestionSelection;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -69,8 +77,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
-import org.unitime.timetable.onlinesectioning.model.OnlineConfig;
-import org.unitime.timetable.onlinesectioning.model.OnlineSection;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -91,8 +97,6 @@ import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
-import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
-import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection;
 
 /**
  * @author Tomas Muller
@@ -125,7 +129,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
-		OnlineSectioningModel model = new OnlineSectioningModel(server);
+		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 		
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
@@ -430,7 +434,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 					if (enrollment.getStudentId().equals(studentId)) { applicable = true; break; }
 			}
-			Reservation clonedReservation = new XOffering.SimpleReservation(reservation.getType(), reservation.getReservationId(), clonedOffering,
+			Reservation clonedReservation = new OnlineReservation(reservation.getType().ordinal(), reservation.getReservationId(), clonedOffering,
 					reservation.getPriority(), reservation.canAssignOverLimit(), reservationLimit, 
 					applicable, reservation.mustBeUsed(), reservation.isAllowOverlap(), reservation.isExpired());
 			for (Long configId: reservation.getConfigsIds())
@@ -505,7 +509,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 									}
 								}
 								if (needReservation) {
-									Reservation reservation = new XOffering.SimpleReservation(XReservationType.Dummy, -originalStudent.getStudentId(), clonnedCourse.getOffering(), 5, false, 1, true, false, false, true);
+									Reservation reservation = new OnlineReservation(XReservationType.Dummy.ordinal(),
+											-originalStudent.getStudentId(), clonnedCourse.getOffering(), 5, false, 1, true, false, false, true);
 									for (Long originalSectionId: originalEnrollment.getSectionIds())
 										reservation.addSection(classTable.get(originalSectionId));
 								}
@@ -740,7 +745,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					if (savedClasses != null && savedClasses.contains(section.getId())) a.setSaved(true);
 					if (a.getParentSection() == null)
 						a.setParentSection(server.getCourse(course.getId()).getConsentLabel());
-					a.setExpected(overExp.getExpected(section));
+					a.setExpected(overExp.getExpected(section.getLimit(), section.getSpaceExpected()));
 				}
 				ret.add(ca);
 			} else {
