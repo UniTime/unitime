@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.access.AccessDeniedException;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -72,6 +73,8 @@ public class AdminBackend {
 				throw e;
 			} catch (GwtRpcException e) {
 				throw e;
+			} catch (AccessDeniedException e) {
+				throw new PageAccessException(e.getMessage(), e);
 			} catch (Exception e) {
 				sLog.error(e.getMessage(), e);
 				throw new GwtRpcException(e.getMessage(), e);
