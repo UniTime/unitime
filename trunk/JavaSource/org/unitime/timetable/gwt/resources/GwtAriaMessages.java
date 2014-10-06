@@ -64,6 +64,9 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Not authenticated, click here to log in.")
 	String userNotAuthenticated();
+	
+	@DefaultMessage("Logged in as {0}, click here to lookup a student.")
+	String userAuthenticatedLookup(String user);
 
 	@DefaultMessage("No academic session selected, click here to change the session.")
 	String sessionNoSession();

@@ -404,6 +404,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Click here to log out.")
 	String userHintLogout();
 	
+	@DefaultMessage("Click here to lookup a student.")
+	String userHintLookup();
+	
 	@DefaultMessage("You can close the window now.")
 	String userHintClose();
 
