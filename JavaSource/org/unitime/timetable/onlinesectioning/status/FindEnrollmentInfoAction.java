@@ -28,13 +28,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
@@ -62,7 +62,6 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
-import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseInfoMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 
@@ -519,7 +518,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 					if (consent != null)
 						a.setParentSection(consent);
 				}
-				a.setExpected(overExp.getExpected(section, expectations));
+				a.setExpected(overExp.getExpected(section.getLimit(), expectations.getExpectedSpace(section.getSectionId())));
 				e.setAssignment(a);
 				
 				ret.add(e);

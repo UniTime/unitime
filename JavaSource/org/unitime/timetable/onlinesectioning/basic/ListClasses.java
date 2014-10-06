@@ -22,6 +22,7 @@ package org.unitime.timetable.onlinesectioning.basic;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -43,7 +44,6 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
-import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 
 /**
  * @author Tomas Muller
@@ -132,7 +132,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						a.setSubpartId(subpart.getSubpartId());
 						if (a.getParentSection() == null)
 							a.setParentSection(c.getConsentLabel());
-						a.setExpected(overExp.getExpected(section, expectations));
+						a.setExpected(overExp.getExpected(section.getLimit(), expectations.getExpectedSpace(section.getSectionId())));
 						ret.add(a);
 					}
 		} finally {

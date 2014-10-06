@@ -40,6 +40,7 @@ import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
+import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -65,7 +66,6 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
-import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 import org.unitime.timetable.util.Formats;
 
 /**
@@ -291,7 +291,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 										a.setParentSection(MSG.consentWaiting(consent.toLowerCase()));
 								}
 							}
-							a.setExpected(overExp.getExpected(section, expectations));
+							a.setExpected(overExp.getExpected(section.getLimit(), expectations.getExpectedSpace(section.getSectionId())));
 						}
 					}
 					
@@ -343,7 +343,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							a.setBackToBackRooms(from);
 							a.setSaved(false);
 							a.setError(f.getMessage());
-							a.setExpected(overExp.getExpected(section, expectations));
+							a.setExpected(overExp.getExpected(section.getLimit(), expectations.getExpectedSpace(section.getSectionId())));
 						}
 					}
 				} else if (request instanceof XFreeTimeRequest) {
