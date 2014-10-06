@@ -66,6 +66,7 @@
 <FORM name="f" action="<c:url value='j_spring_security_check'/>" method="POST">
 	<INPUT type="hidden" name="cs" value="login">
 	<INPUT type="hidden" name="menu" value="<%=request.getParameter("menu") == null ? "" : request.getParameter("menu") %>">
+	<INPUT type="hidden" name="target" value="<%=request.getParameter("target") == null ? "" : request.getParameter("target") %>">
 			
 	<span class='unitime-Login'>
 		<span class='menu'><span id='UniTimeGWT:MobileMenu'></span></span>

@@ -192,7 +192,13 @@ public class BackTracker {
 		synchronized (request.getSession()) {
 			String uri = request.getParameter("uri");
 			Vector back = getBackList(request.getSession());
-			if (back.isEmpty()) return false;
+			if (back.isEmpty()) {
+				if (uri != null) {
+					response.sendRedirect(response.encodeURL(uri));
+					return true;
+				}
+				return false;
+			}
 			if (uri==null) {
 				uri = ((String[])back.lastElement())[0];
 				back.remove(back.size()-1);
