@@ -19,9 +19,11 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.sectioning.UserAuthentication.UserAuthenticatedEvent;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
@@ -32,6 +34,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProp
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -64,9 +67,14 @@ public class StudentSectioningPage extends Composite {
 				}
 				public void onSuccess(String result) {
 					if (MESSAGES.userGuest().equals(result)) { // user is guest (i.e., not truly authenticated)
-						if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired() || CONSTANTS.tryAuthenticationWhenGuest())
-							userAuthentication.authenticate();
-						else
+						if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired() || CONSTANTS.tryAuthenticationWhenGuest()) {
+							if (CONSTANTS.allowUserLogin())
+								userAuthentication.authenticate();
+							else if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired())
+								ToolBox.open(GWT.getHostPageBaseURL() + "login.jsp?target=" + URL.encodeQueryString(Window.Location.getHref()));
+							else
+								userAuthentication.authenticated(result);
+						} else
 							userAuthentication.authenticated(result);
 					} else {
 						userAuthentication.authenticated(result);
@@ -95,6 +103,8 @@ public class StudentSectioningPage extends Composite {
 									UserAuthentication.personFound(Window.Location.getParameter("student"));
 							}
 						});
+				} else {
+					userAuthentication.setAllowLookup(false);
 				}
 			}
 		});
@@ -116,11 +126,19 @@ public class StudentSectioningPage extends Composite {
 		UniTimePageHeader.getInstance().getMiddle().setClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (widget.isChanged() && !Window.confirm(MESSAGES.queryLeaveChanges())) return;
-				if (userAuthentication.isLoggedIn())
-					userAuthentication.logOut();
-				else
-					userAuthentication.authenticate();
+				if (CONSTANTS.allowUserLogin()) {
+					if (widget.isChanged() && !Window.confirm(MESSAGES.queryLeaveChanges())) return;
+					if (userAuthentication.isLoggedIn())
+						userAuthentication.logOut();
+					else
+						userAuthentication.authenticate();
+				} else if (userAuthentication.isAllowLookup()) {
+					userAuthentication.doLookup();
+				} else if (userAuthentication.isGuest()) {
+					ToolBox.open(GWT.getHostPageBaseURL() + "login.jsp?target=" + URL.encodeQueryString(Window.Location.getHref()));
+				} else {
+					ToolBox.open(GWT.getHostPageBaseURL() + "logOut.do");
+				}
 			}
 		});
 
@@ -153,7 +171,7 @@ public class StudentSectioningPage extends Composite {
 		if (Window.Location.getParameter("session") == null)
 			iSectioningService.lastAcademicSession(mode.isSectioning(), new AsyncCallback<AcademicSessionProvider.AcademicSessionInfo>() {
 				public void onFailure(Throwable caught) {
-					if (!userAuthentication.isShowing())
+					if (!userAuthentication.isShowing() && !UniTimeFrameDialog.hasDialog())
 						sessionSelector.selectSession();
 				}
 				public void onSuccess(AcademicSessionProvider.AcademicSessionInfo result) {

@@ -200,8 +200,7 @@ public class UserAuthentication implements UserAuthenticationProvider {
 		iLookup.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iDialog.hide();
-				iLookupDialog.center();
+				doLookup();
 			}
 		});
 		
@@ -274,8 +273,13 @@ public class UserAuthentication implements UserAuthenticationProvider {
 				iDialog.hide();
 				iPanel.setText(MESSAGES.userLabel(result));
 				iLastUser = result;
-				iPanel.setHint(MESSAGES.userHintLogout());
-				iPanel.setAriaLabel(ARIA.userAuthenticated(result));
+				if (isAllowLookup() && !CONSTANTS.allowUserLogin()) {
+					iPanel.setHint(MESSAGES.userHintLookup());
+					iPanel.setAriaLabel(ARIA.userAuthenticatedLookup(getUser()));
+				} else {
+					iPanel.setHint(MESSAGES.userHintLogout());
+					iPanel.setAriaLabel(ARIA.userAuthenticated(result));
+				}
 				iLoggedIn = true;
 				iGuest = false;
 				UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
@@ -291,10 +295,30 @@ public class UserAuthentication implements UserAuthenticationProvider {
 	
 	public void setAllowLookup(boolean allow) {
 		iLookup.setVisible(allow);
+		if (isAllowLookup() && !CONSTANTS.allowUserLogin()) {
+			iPanel.setHint(MESSAGES.userHintLookup());
+			iPanel.setAriaLabel(ARIA.userAuthenticatedLookup(getUser()));
+		} else {
+			iPanel.setHint(iGuest ? MESSAGES.userHintLogin() : MESSAGES.userHintLogout());
+			iPanel.setAriaLabel(iGuest || getUser() == null ? ARIA.userGuest() : ARIA.userAuthenticated(getUser()));
+		}
+	}
+	
+	public boolean isAllowLookup() {
+		return iLookup.isVisible();
+	}
+	
+	public void doLookup() {
+		if (iDialog.isShowing()) iDialog.hide();
+		iLookupDialog.center();
 	}
 	
 	public boolean isShowing() {
 		return iDialog.isShowing();
+	}
+	
+	public boolean isGuest() {
+		return iGuest;
 	}
 	
 	public void authenticate() {
