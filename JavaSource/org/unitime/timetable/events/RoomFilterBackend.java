@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -55,6 +54,7 @@ import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
+import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.rights.Right;
 
 /**
@@ -75,11 +75,16 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 	public void load(RoomFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		Set<String> departments = request.getOptions("department");
 		
-		Set<String> userDepts = null;
-		if (context.isAuthenticated()) {
-			userDepts = new HashSet<String>();
-			for (Department d: Department.getUserDepartments(context.getUser()))
-				userDepts.add(d.getDeptCode());
+		Set<Long> userDepts = null;
+		if (request.hasOption("user")) {
+			userDepts = new HashSet<Long>(
+					TimetableManagerDAO.getInstance().getSession().createQuery(
+							"select d.uniqueId from TimetableManager m inner join m.departments d where " +
+							"m.externalUniqueId = :user and d.session.uniqueId = :sessionId")
+							.setLong("sessionId", request.getSessionId())
+							.setString("user", request.getOption("user"))
+							.setCacheable(true).list()
+					);
 		}
 		
 		fixRoomFeatureTypes(request);
@@ -165,6 +170,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					depts.put(department.getUniqueId(), department);
 				}
 				department.incCount();
+				if (userDepts != null && userDepts.contains(location.getEventDepartment().getUniqueId())) isManaged = true;
 			} else {
 				for (RoomDept rd: location.getRoomDepts()) {
 					if (evtDept != null && rd.getDepartment().equals(evtDept)) evtDept = null;
@@ -175,7 +181,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 						depts.put(department.getUniqueId(), department);
 					}
 					department.incCount();
-					if (userDepts != null && userDepts.contains(rd.getDepartment().getDeptCode())) isManaged = true;
+					if (userDepts != null && userDepts.contains(rd.getDepartment().getUniqueId())) isManaged = true;
 				}
 				if (evtDept != null && allRooms) {
 					Entity department = depts.get(evtDept.getUniqueId());
@@ -260,50 +266,31 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			}
 		}
 		
-		List<Location> locations = (department != null && department.contains("Event") ? (List<Location>)hibSession.createQuery("select distinct l from" +
-				" Location l " +
-				" left outer join l.roomType t " +
-				" left outer join l.roomGroups g " +
-				" left outer join l.features f " +
-				" left outer join l.examTypes x " +
-				" ,RoomTypeOption o" +
-				" where" +
-				" l.session.uniqueId = :sessionId and" +
-				" l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment) or l.eventStatus != 0)")
-				.setLong("sessionId", sessionId)
-				.setCacheable(true)
-				.list() : department != null && department.contains("Managed") && user != null && !user.isEmpty() ?
-				(List<Location>)hibSession.createQuery("select distinct l from" +
-				" Location l inner join l.roomDepts rd" +
-				" left outer join l.roomType t " +
-				" left outer join l.roomGroups g " +
-				" left outer join l.features f " +
-				" left outer join l.examTypes x " +
-				" inner join rd.department.timetableManagers m" +
-				" left outer join m.managerRoles mr " +
-				(eventRooms ? " ,RoomTypeOption o" : "") +
-				" where" +
-				" l.session.uniqueId = :sessionId and m.externalUniqueId = :user" +
-				(eventRooms ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment) or l.eventStatus != 0)" : ""))
-				.setLong("sessionId", sessionId)
-				.setString("user", user.iterator().next())
-				.setCacheable(true)
-				.list() :
-				(List<Location>)hibSession.createQuery("select distinct l from" +
-				" Location l left outer join l.roomDepts rd" +
-				" left outer join l.roomType t " +
-				" left outer join l.roomGroups g " +
-				" left outer join l.features f " +
-				" left outer join l.examTypes x " +
-				" left outer join rd.department.timetableManagers m" +
-				" left outer join m.managerRoles mr " +
-				(eventRooms ? " ,RoomTypeOption o" : "") +
-				" where" +
-				" l.session.uniqueId = :sessionId" +
-				(eventRooms ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment) or l.eventStatus != 0)" : ""))
-				.setLong("sessionId", sessionId)
-				.setCacheable(true)
-				.list());
+		List<Location> locations = null;
+		if (department != null && department.contains("Managed") && user != null && !user.isEmpty()) {
+			locations = (List<Location>)hibSession.createQuery("select distinct l from Location l" +
+					(eventRooms ? " inner join l.eventDepartment.timetableManagers m" : " inner join l.roomDepts rd inner join rd.department.timetableManagers m") +
+					(group != null && !group.isEmpty() ? " left join fetch l.roomGroups g" : "") +
+					(feature != null && !feature.isEmpty() ? " left join fetch l.features f" : "") +
+					(department.contains("Final") || department.contains("Midterm") ?" left join fetch l.examTypes x" : "") +
+					(eventRooms ? " ,RoomTypeOption o" : "") +
+					" where l.session.uniqueId = :sessionId and m.externalUniqueId = :user" +
+					(eventRooms ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment) or l.eventStatus != 0)" : ""))
+					.setLong("sessionId", sessionId)
+					.setString("user", user.iterator().next())
+					.setCacheable(true).list();
+		} else {
+			locations = (List<Location>)hibSession.createQuery("select distinct l from Location l" +
+					(department != null && !department.isEmpty() ? 
+							(department.contains("Final") || department.contains("Midterm") ?" left join fetch l.examTypes x" : " left join fetch l.roomDepts rd") : "") +
+					(group != null && !group.isEmpty() ? " left join fetch l.roomGroups g" : "") +
+					(feature != null && !feature.isEmpty() ? " left join fetch l.features f" : "") +
+					(eventRooms ? " ,RoomTypeOption o" : "") +
+					" where l.session.uniqueId = :sessionId" +
+					(eventRooms ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment) or l.eventStatus != 0)" : ""))
+					.setLong("sessionId", sessionId)
+					.setCacheable(true).list();
+		}
 		
 		Set<String> featureTypes = new HashSet<String>();
 		for (RoomFeatureType ft: RoomFeatureTypeDAO.getInstance().findAll())
@@ -323,7 +310,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 						if (rf instanceof GlobalRoomFeature) {
 							if (f.equals(rf.getLabel())) { found = true; break; }
 						} else if (rf instanceof DepartmentRoomFeature && groupFeaturedept != null && !groupFeaturedept.isEmpty()) {
-							if (groupFeaturedept.contains(((DepartmentRoomFeature)rf).getDepartment().getDeptCode()) && f.equals(rf.getLabel())) { found = true; break; }
+							if (f.equals(rf.getLabel()) && groupFeaturedept.contains(((DepartmentRoomFeature)rf).getDepartment().getDeptCode())) { found = true; break; }
 						}
 					if (!found) continue locations;
 				}
@@ -333,8 +320,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				for (RoomGroup rg: location.getRoomGroups()) {
 					if (rg.isGlobal()) {
 						if (group.contains(rg.getName())) { found = true; break; }
-					} else if (groupFeaturedept != null && !groupFeaturedept.isEmpty() && groupFeaturedept.contains(rg.getDepartment().getDeptCode())) {
-						if (group.contains(rg.getName())) { found = true; break; }	
+					} else if (groupFeaturedept != null && !groupFeaturedept.isEmpty()) {
+						if (group.contains(rg.getName()) && groupFeaturedept.contains(rg.getDepartment().getDeptCode())) { found = true; break; }	
 					}
 				}
 				if (!found) continue;
@@ -344,7 +331,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				if (!location.hasFinalExamsEnabled()) continue;
 			} else if (department.contains("Midterm")) {
 				if (!location.hasMidtermExamsEnabled()) continue;
-			} else if (!department.contains("Event") && !department.contains("Managed")) {
+			} else if (!department.contains("Managed")) {
 				boolean found = false;
 				if ((eventRooms || allRooms) && location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() && department.contains(location.getEventDepartment().getDeptCode()))
 					found = true;
@@ -410,7 +397,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 						if (!location.hasFinalExamsEnabled()) continue;
 					} else if (department.contains("Midterm")) {
 						if (!location.hasMidtermExamsEnabled()) continue;
-					} else if (!department.contains("Event") && !department.contains("Managed")) {
+					} else if (!department.contains("Managed")) {
 						boolean found = false;
 						if ((eventRooms || allRooms) && location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() && department.contains(location.getEventDepartment().getDeptCode()))
 							found = true;
