@@ -152,6 +152,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				Map<Long, Location> locationMap = null;
 				if (request.getRoomFilter() != null && !request.getRoomFilter().isEmpty()) {
 					locationMap = new HashMap<Long, Location>();
+					if (context.isAuthenticated())
+						request.getRoomFilter().setOption("user", context.getUser().getExternalUserId());
 					for (Location location: new RoomFilterBackend().locations(request.getSessionId(), request.getRoomFilter(), 1000, distances)) {
 						request.getEventFilter().addOption("room", location.getUniqueId().toString());
 						locationMap.put(location.getPermanentId(), location);
