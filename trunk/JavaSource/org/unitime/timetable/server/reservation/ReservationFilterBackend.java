@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -72,9 +71,14 @@ import org.unitime.timetable.util.Formats;
 @GwtRpcImplements(ReservationFilterRpcRequest.class)
 public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilterRpcRequest> {
 	public static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
-	
+
 	@Override
-	@PreAuthorize("checkPermission('Reservations')")
+	public FilterRpcResponse execute(ReservationFilterRpcRequest request, SessionContext context) {
+		context.checkPermission(Right.Reservations);
+		return super.execute(request, context);
+	}
+
+	@Override
 	public void load(ReservationFilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
 		ReservationQuery query = getQuery(request, context);
 		
@@ -191,7 +195,6 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 	}
 
 	@Override
-	@PreAuthorize("checkPermission('Reservations')")
 	public void suggestions(ReservationFilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
 		org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 
@@ -243,7 +246,6 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 	}
 
 	@Override
-	@PreAuthorize("checkPermission('Reservations')")
 	public void enumarate(ReservationFilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
 		for (Reservation reservation: reservations(request, context)) {
 			CourseOffering course = reservation.getInstructionalOffering().getControllingCourseOffering();

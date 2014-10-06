@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumFilterRpcRequest;
@@ -39,6 +38,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.FilterBoxBackend;
 import org.unitime.timetable.util.Constants;
 
@@ -47,9 +47,14 @@ import org.unitime.timetable.util.Constants;
  */
 @GwtRpcImplements(CurriculumFilterRpcRequest.class)
 public class CurriculumFilterBackend extends FilterBoxBackend<CurriculumFilterRpcRequest> {
-
+	
 	@Override
-	@PreAuthorize("checkPermission('CurriculumView')")
+	public FilterRpcResponse execute(CurriculumFilterRpcRequest request, SessionContext context) {
+		context.checkPermission(Right.CurriculumView);
+		return super.execute(request, context);
+	}
+	
+	@Override
 	public void load(CurriculumFilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
 		Set<Department> userDepts = Department.getUserDepartments(context.getUser());
 		
@@ -237,14 +242,12 @@ public class CurriculumFilterBackend extends FilterBoxBackend<CurriculumFilterRp
 	}
 
 	@Override
-	@PreAuthorize("checkPermission('CurriculumView')")
 	public void suggestions(CurriculumFilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
 		for (Curriculum curriculum: curricula(request.getSessionId(), request.getOptions(), new Query(suggestionQuery(request.getText())), 20, null, Department.getUserDepartments(context.getUser())))
 			response.addSuggestion(curriculum.getAbbv(), curriculum.getAbbv(), "(" + curriculum.getName() + ")");
 	}
 
 	@Override
-	@PreAuthorize("checkPermission('CurriculumView')")
 	public void enumarate(CurriculumFilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
 		for (Curriculum curriculum: curricula(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, null, Department.getUserDepartments(context.getUser()))) {
 			response.addResult(new Entity(
