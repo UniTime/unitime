@@ -32,8 +32,10 @@ import java.util.TreeSet;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import org.cpsolver.ifs.util.DataProperties;
+import org.cpsolver.ifs.util.ToolBox;
 import org.cpsolver.studentsct.extension.DistanceConflict;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
+import org.cpsolver.studentsct.online.selection.ResectioningWeights;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -61,11 +63,12 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
-import org.unitime.timetable.onlinesectioning.solver.ResectioningWeights;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 
 /**
@@ -354,7 +357,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					action.addEnrollment(enrollment);
 					action.setEndTime(System.currentTimeMillis());
 					
-					if (!ResectioningWeights.isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
+					if (!isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
 						server.execute(server.createAction(NotifyStudentAction.class).forStudent(student[0] == null ? student[1].getStudentId() : student[0].getStudentId()).oldEnrollment(oldOffering, oldEnrollment), helper.getUser());
 					continue;
 				}
@@ -501,6 +504,37 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		return true;
 	}
 
+	public static boolean sameRooms(XSection s, List<XRoom> rooms) {
+        if (s.getRooms() == null && rooms == null) return true;
+        if (s.getRooms() == null || rooms == null) return false;
+        return
+        		s.getRooms().size() == rooms.size() &&
+                s.getRooms().containsAll(rooms);
+	}
+	
+	public static boolean sameTime(XSection s, XTime t) {
+        if (s.getTime() == null && t == null) return true;
+        if (s.getTime() == null || t == null) return false;
+        return
+                s.getTime().getSlot() == t.getSlot() &&
+                s.getTime().getLength() == t.getLength() && 
+                s.getTime().getDays() == t.getDays() && 
+                ToolBox.equals(s.getTime().getDatePatternName(), t.getDatePatternName());
+	}
+	
+    public static boolean sameName(Long courseId, XSection s1, XSection s2) {
+            return s1.getName(courseId).equals(s2.getName(courseId));
+    }
+    
+    public static boolean isVerySame(Long courseId, List<XSection> e1, List<XSection> e2) {
+            if (e1.size() != e2.size()) return false;
+            s1: for (XSection s1: e1) {
+                    for (XSection s2: e2)
+                            if (sameName(courseId, s1, s2) && sameTime(s1, s2.getTime()) && sameRooms(s1, s2.getRooms())) continue s1;
+                    return false;
+            }
+            return true;
+    }
 		
 	@Override
     public String name() { return "reload-offering"; }

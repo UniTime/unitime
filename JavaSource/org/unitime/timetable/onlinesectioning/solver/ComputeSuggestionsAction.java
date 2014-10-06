@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.studentsct.extension.DistanceConflict;
@@ -43,6 +42,11 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
+import org.cpsolver.studentsct.online.OnlineSectioningModel;
+import org.cpsolver.studentsct.online.selection.BestPenaltyCriterion;
+import org.cpsolver.studentsct.online.selection.MultiCriteriaBranchAndBoundSelection;
+import org.cpsolver.studentsct.online.selection.MultiCriteriaBranchAndBoundSuggestions;
+import org.cpsolver.studentsct.online.selection.SuggestionsBranchAndBound;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -62,9 +66,6 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
-import org.unitime.timetable.onlinesectioning.solver.multicriteria.BestPenaltyCriterion;
-import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSelection;
-import org.unitime.timetable.onlinesectioning.solver.multicriteria.MultiCriteriaBranchAndBoundSuggestions;
 
 /**
  * @author Tomas Muller
@@ -103,7 +104,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 	@Override
 	public List<ClassAssignmentInterface> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		long t0 = System.currentTimeMillis();
-		OnlineSectioningModel model = new OnlineSectioningModel(server);
+		OnlineSectioningModel model = new OnlineSectioningModel(server.getConfig(), server.getOverExpectedCriterion());
 		Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
@@ -288,18 +289,21 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			}
 		}
 		
+		SuggestionsFilter filter = null;
+		if (getFilter() != null && !getFilter().isEmpty()) {
+			filter = new SuggestionsFilter(getFilter(), server.getAcademicSession().getDatePatternFirstDate());
+		}
+		
 		if (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true)) {
 			suggestionBaB = new MultiCriteriaBranchAndBoundSuggestions(
 					model.getProperties(), student, assignment,
 					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
 					selectedRequest, selectedSection,
-					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), maxOverExpected,
-					server.getConfig().getPropertyBoolean("StudentWeights.PriorityWeighting", true));
+					filter, maxOverExpected, server.getConfig().getPropertyBoolean("StudentWeights.PriorityWeighting", true));
 		} else {
 			suggestionBaB = new SuggestionsBranchAndBound(model.getProperties(), student, assignment,
 					requiredSectionsForCourse, requiredFreeTimes, preferredSectionsForCourse,
-					selectedRequest, selectedSection,
-					getFilter(), server.getAcademicSession().getDatePatternFirstDate(), maxOverExpected);
+					selectedRequest, selectedSection, filter, maxOverExpected);
 		}
 		
 		helper.debug("Using " + (server.getConfig().getPropertyBoolean("StudentWeights.MultiCriteria", true) ? "multi-criteria ": "") +

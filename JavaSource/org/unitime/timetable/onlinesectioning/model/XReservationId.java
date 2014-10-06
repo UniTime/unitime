@@ -25,6 +25,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
+import org.cpsolver.studentsct.online.OnlineReservation;
 import org.cpsolver.studentsct.reservation.CourseReservation;
 import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.GroupReservation;
@@ -33,7 +34,6 @@ import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
-import org.unitime.timetable.onlinesectioning.model.XOffering.SimpleReservation;
 
 
 /**
@@ -66,8 +66,8 @@ public class XReservationId implements Serializable, Externalizable {
 	public XReservationId(Reservation reservation) {
 		iOfferingId = reservation.getOffering().getId();
 		iReservationId = reservation.getId();
-		if (reservation instanceof SimpleReservation)
-			iType = ((SimpleReservation)reservation).getType();
+		if (reservation instanceof OnlineReservation)
+			iType = XReservationType.values()[((OnlineReservation)reservation).getType()];
 		else if (reservation instanceof ReservationOverride)
 			iType = XReservationType.Override;
 		else if (reservation instanceof IndividualReservation)

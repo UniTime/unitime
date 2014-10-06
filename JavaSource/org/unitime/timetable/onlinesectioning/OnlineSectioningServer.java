@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
@@ -41,7 +42,6 @@ import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
-import org.unitime.timetable.onlinesectioning.solver.expectations.OverExpectedCriterion;
 
 
 /**
