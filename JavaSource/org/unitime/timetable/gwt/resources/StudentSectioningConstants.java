@@ -128,4 +128,7 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultBooleanValue(true)
 	boolean allowEmptySchedule();
+	
+	@DefaultBooleanValue(true)
+	boolean allowUserLogin();
 }
