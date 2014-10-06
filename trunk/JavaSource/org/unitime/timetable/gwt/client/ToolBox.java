@@ -35,6 +35,7 @@ import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -250,7 +251,8 @@ public class ToolBox {
 	public static void checkAccess(Throwable t) {
 		if (t != null && t instanceof GwtRpcException && t.getCause() != null) t = t.getCause();
 		if (t != null && t instanceof PageAccessException) {
-			UniTimeFrameDialog.openDialog("UniTime " + CONSTANTS.version() + "| Log In", "login.jsp?menu=hide&m=" + URL.encodeQueryString(t.getMessage()), "700px", "420px");
+			UniTimeFrameDialog.openDialog("UniTime " + CONSTANTS.version() + "| Log In", "login.jsp?menu=hide&m=" + URL.encodeQueryString(t.getMessage())
+					+"&target=" + URL.encodeQueryString(Window.Location.getHref()), "700px", "420px");
 		}
 	}
 	

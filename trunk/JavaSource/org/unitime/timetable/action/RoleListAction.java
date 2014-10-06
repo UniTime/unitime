@@ -74,7 +74,7 @@ public class RoleListAction extends Action {
         HttpServletResponse response) throws Exception {
     	RoleListForm roleListForm = (RoleListForm) form;
 
-    	UserContext user = null;
+        UserContext user = null;
     	try {
     		user = (UserContext)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     	} catch (Exception e) {}
@@ -91,7 +91,12 @@ public class RoleListAction extends Action {
             	for (SessionAttribute s: SessionAttribute.values())
             		sessionContext.removeAttribute(s);
         	}
-        	return mapping.findForward("success");
+        	if (roleListForm.getTarget() != null && !roleListForm.getTarget().isEmpty()) {
+        		response.sendRedirect(roleListForm.getTarget());
+        		return null;
+        	} else {
+        		return mapping.findForward("success");
+        	}
         }
 
         UserAuthority authority = setupAuthorities(request, user);
@@ -99,7 +104,12 @@ public class RoleListAction extends Action {
         // Role/session list not requested -- try assign default role/session first 
         if (!"Y".equals(request.getParameter("list")) && authority != null) {
         	user.setCurrentAuthority(authority);
-        	return mapping.findForward("success");
+        	if (roleListForm.getTarget() != null && !roleListForm.getTarget().isEmpty()) {
+        		response.sendRedirect(roleListForm.getTarget());
+        		return null;
+        	} else {
+        		return mapping.findForward("success");
+        	}
         }
         
     	Set<String> roles = new HashSet<String>();

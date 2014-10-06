@@ -38,6 +38,7 @@ public class RoleListForm extends ActionForm {
 	private static final long serialVersionUID = 3546920294733526840L;
 
     private String iAuthority;
+    private String iTarget;
 
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -54,5 +55,13 @@ public class RoleListForm extends ActionForm {
     
     public void setAuthority(String authority) {
         iAuthority = authority;
+    }
+    
+    public String getTarget() {
+    	return iTarget;
+    }
+    
+    public void setTarget(String target) {
+    	iTarget = target;
     }
 }
