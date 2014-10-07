@@ -34,6 +34,7 @@
 <HTML>
 	<HEAD>
 	    <meta charset="UTF-8"/>
+	    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 		<TITLE>UniTime <%=Constants.VERSION%>| Logging out ...</TITLE>
 		<SCRIPT language="javascript">
 			function closeWin() {
