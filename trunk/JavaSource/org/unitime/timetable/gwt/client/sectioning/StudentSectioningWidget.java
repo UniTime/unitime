@@ -349,7 +349,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 				iSectioningService.section(iOnline, iCourseRequests.getRequest(), null, new AsyncCallback<ClassAssignmentInterface>() {
 					public void onFailure(Throwable caught) {
-						setError(caught.getMessage());
+						setError(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
 						LoadingWidget.getInstance().hide();
 						updateHistory();
 					}
@@ -384,7 +384,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 							iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 								public void onFailure(Throwable caught) {
-									setError(caught);
+									setError(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
 									LoadingWidget.getInstance().hide();
 									updateHistory();
 								}
@@ -762,7 +762,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
 								iSectioningService.section(iOnline, r, iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 									public void onFailure(Throwable caught) {
-										setError(caught);
+										setError(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
 										LoadingWidget.getInstance().hide();
 										updateHistory();
 									}
@@ -1103,7 +1103,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						PinDialog.PinCallback callback = new PinDialog.PinCallback() {
 							@Override
 							public void onFailure(Throwable caught) {
-								setError(caught);
+								setError(MESSAGES.exceptionFailedEligibilityCheck(caught.getMessage()), caught);
 								iSchedule.setVisible(true); iSchedule.setEnabled(true);
 								iStartOver.setVisible(true); iStartOver.setEnabled(true);
 								lastRequest(sessionId, studentId, saved);
@@ -1239,7 +1239,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				openSuggestionsBox(rowIndex);
 			}
 			public void onFailure(Throwable caught) {
-				setError(caught);
+				setError(MESSAGES.exceptionSuggestionsFailed(caught.getMessage()), caught);
 			}
 		});
 	}
