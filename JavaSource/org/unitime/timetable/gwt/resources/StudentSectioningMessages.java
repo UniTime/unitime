@@ -661,6 +661,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Unable to compute a schedule ({0}).")
 	String exceptionSectioningFailed(String message);
 	
+	@DefaultMessage("Unable to compute alternatives ({0}).")
+	String exceptionSuggestionsFailed(String message);
+	
 	@DefaultMessage("Too many bad attempts, login disabled.")
 	String exceptionTooManyLoginAttempts();
 	
