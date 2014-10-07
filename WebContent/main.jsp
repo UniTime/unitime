@@ -26,6 +26,7 @@
 <HTML>
 <head>
     <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 	<title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
 	<link rel="shortcut icon" href="images/timetabling.ico" />
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">

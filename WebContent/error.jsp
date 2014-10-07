@@ -44,6 +44,7 @@
 <HEAD>
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 	<TITLE>UniTime <%=Constants.VERSION%>| Error</TITLE>
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
