@@ -27,7 +27,7 @@
 	    <meta charset="UTF-8"/>
 	    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 		<% if (!sessionContext.isAuthenticated()) {%>
-		<META http-equiv="Refresh" content="1; url=login.do">	
+		<META http-equiv="Refresh" content="1; url=login.jsp">	
 		<% } else { %>	
 		<META http-equiv="Refresh" content="1; url=selectPrimaryRole.do">	
 		<% } %>
