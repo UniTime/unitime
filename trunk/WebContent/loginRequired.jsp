@@ -33,7 +33,7 @@
 		<BR>
 	<% } %>
 	<A class="l7" href="javascript:self.history.back();">BACK</A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	<A class="l7" href="<%=request.getContextPath()%>/login.do" target="_top">LOG IN</A>
+	<A class="l7" href="<%=request.getContextPath()%>/login.jsp" target="_top">LOG IN</A>
 	<BR><BR>
 </DIV>
 
