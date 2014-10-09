@@ -481,26 +481,23 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-Message {
-	text-align: left;
+	text-align: center;
 	font-style: italic;
 	font-weight: normal;
-	text-align: center;
 }
 
 .unitime-WarningMessage {
 	color: orange;
-	text-align: left;
+	text-align: center;
 	font-style: italic;
 	font-weight: normal;
-	text-align: center;
 }
 
 .unitime-ErrorMessage {
 	color: red;
-	text-align: left;
+	text-align: center;
 	font-style: italic;
 	font-weight: normal;
-	text-align: center;
 }
 
 .unitime-Disabled {
