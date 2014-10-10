@@ -159,6 +159,9 @@ public class ClassInfoModel implements Serializable {
         	iChange.getConflicts().clear();
         }
         for (ClassAssignment assignment : iChange.getAssignments()) {
+        	// Skip incomplete assignments (that have no time assigned yet)
+        	if (!assignment.hasTime()) continue;
+        	
         	// Check for room conflicts
         	if (iUnassignConflictingAssignments){
 	            if (assignment.getRooms()!=null) for (ClassRoomInfo room : assignment.getRooms()) {
@@ -383,10 +386,11 @@ public class ClassInfoModel implements Serializable {
         iRooms = null; iTimes = null;
         if (iChange==null) iChange = new ClassProposedChange();
         ClassTimeInfo time = (getSelectedAssignment() == null ? null : getSelectedAssignment().getTime());
+        Collection<ClassRoomInfo> rooms = (getSelectedAssignment() == null ? null : getSelectedAssignment().getRooms());
         for (ClassAssignment date : getDates()) {
             if (dateId.equals(date.getDateId())) {
                 iChange.addChange(
-                		new ClassAssignmentInfo(getClazz().getClazz(), (time == null ? null : new ClassTimeInfo(time, date.getDate())), date.getDate(), null, iChange.getAssignmentTable()), 
+                		new ClassAssignmentInfo(getClazz().getClazz(), (time == null ? null : new ClassTimeInfo(time, date.getDate())), date.getDate(), rooms, iChange.getAssignmentTable()), 
                 		getClassOldAssignment());
             }
         }
