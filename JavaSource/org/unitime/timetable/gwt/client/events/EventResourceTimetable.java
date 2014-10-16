@@ -624,7 +624,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						@Override
 						public void execute() {
 							popup.hide();
-							export("output=" + (getSelectedTab() <= 1 ? "events" : "meetings") + ".pdf&flags=" + EventCookie.getInstance().getFlags());
+							export("output=" + (getSelectedTab() <= 1 ? "events" : "meetings") + ".pdf&flags=" + EventCookie.getInstance().getFlags(), true);
 						}
 					});
 					exportPdf.getElement().getStyle().setCursor(Cursor.POINTER);
@@ -633,7 +633,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						@Override
 						public void execute() {
 							popup.hide();
-							export("output=" + (getSelectedTab() <= 1 ? "events" : "meetings") + ".csv&flags=" + EventCookie.getInstance().getFlags());
+							export("output=" + (getSelectedTab() <= 1 ? "events" : "meetings") + ".csv&flags=" + EventCookie.getInstance().getFlags(), true);
 						}
 					});
 					exportCsv.getElement().getStyle().setCursor(Cursor.POINTER);
@@ -642,7 +642,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						@Override
 						public void execute() {
 							popup.hide();
-							export("output=events.ics");
+							export("output=events.ics", false);
 						}
 					});
 					exportIcs.getElement().getStyle().setCursor(Cursor.POINTER);
@@ -660,7 +660,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					popup.showRelativeTo((UIObject)clickEvent.getSource());
 					menu.focus();
 				} else {
-					export("output=events.ics");
+					export("output=events.ics", false);
 				}
 			}
 		});
@@ -1426,20 +1426,34 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		}
 	}
 	
-	protected String query(String extra) {
+	protected String query(String extra, boolean includeRoomWeekFilter) {
 		String query = "sid=" + iSession.getAcademicSessionId() +
 				(iResource == null || iResource.getType() == null ? "" : "&type=" + iResource.getType().toString().toLowerCase()) +
 				(iResource == null || iResource.getId() == null ? "" : "&id=" + iResource.getId()) +
 				(iResource == null || iResource.getExternalId() == null ? "" : "&ext=" + iResource.getExternalId());
 		
 		FilterRpcRequest events = iEvents.getElementsRequest();
-		if (iWeekPanel.getValue() != null && !iWeekPanel.getValue().isAll()) {
-			events.setOption("from", String.valueOf(iWeekPanel.getValue().getFirst().getDayOfYear()));
-			events.setOption("to", String.valueOf((iWeekPanel.getValue().isOne() ? iWeekPanel.getValue().getFirst() : iWeekPanel.getValue().getLast()).getDayOfYear() + 6));
-		}
-		if (iRoomPanel.getValue() != null && !iRoomPanel.getValue().isAll()) {
-			for (ResourceInterface resource: iRoomPanel.getSelected())
-				events.addOption("room", resource.getId().toString());
+		if (includeRoomWeekFilter) {
+			if (iWeekPanel.getValue() != null && !iWeekPanel.getValue().isAll()) {
+				events.setOption("from", String.valueOf(iWeekPanel.getValue().getFirst().getDayOfYear()));
+				events.setOption("to", String.valueOf((iWeekPanel.getValue().isOne() ? iWeekPanel.getValue().getFirst() : iWeekPanel.getValue().getLast()).getDayOfYear() + 6));
+			}
+			if (iRoomPanel.getValue() != null && !iRoomPanel.getValue().isAll()) {
+				for (ResourceInterface resource: iRoomPanel.getSelected())
+					events.addOption("room", resource.getId().toString());
+			} else {
+				FilterRpcRequest rooms = iRooms.getElementsRequest();
+				if (rooms.hasOptions()) {
+					for (Map.Entry<String, Set<String>> option: rooms.getOptions().entrySet()) {
+						for (String value: option.getValue()) {
+							query += "&r:" + option.getKey() + "=" + URL.encodeQueryString(value);
+						}
+					}
+				}
+				if (rooms.getText() != null && !rooms.getText().isEmpty()) {
+					query += "&r:text=" + URL.encodeQueryString(rooms.getText());
+				}
+			}
 		} else {
 			FilterRpcRequest rooms = iRooms.getElementsRequest();
 			if (rooms.hasOptions()) {
@@ -1453,7 +1467,6 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				query += "&r:text=" + URL.encodeQueryString(rooms.getText());
 			}
 		}
-
 		if (events.hasOptions()) {
 			for (Map.Entry<String, Set<String>> option: events.getOptions().entrySet()) {
 				for (String value: option.getValue()) {
@@ -1476,8 +1489,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		return query;
 	}
 	
-	protected void export(String format) {
-		RPC.execute(EncodeQueryRpcRequest.encode(query(format)), new AsyncCallback<EncodeQueryRpcResponse>() {
+	protected void export(String format, boolean includeRoomWeekFilter) {
+		RPC.execute(EncodeQueryRpcRequest.encode(query(format, includeRoomWeekFilter)), new AsyncCallback<EncodeQueryRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
 			}
@@ -1489,7 +1502,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	}
 	
 	protected void copyToClipboard(String format) {
-		RPC.execute(EncodeQueryRpcRequest.encode(query(format)), new AsyncCallback<EncodeQueryRpcResponse>() {
+		RPC.execute(EncodeQueryRpcRequest.encode(query(format, false)), new AsyncCallback<EncodeQueryRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
 			}
@@ -1528,7 +1541,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		
 	protected void changeUrl() {
 		if (iTimeGrid != null) {
-			RPC.execute(EncodeQueryRpcRequest.encode(query("output=events.ics")), new AsyncCallback<EncodeQueryRpcResponse>() {
+			RPC.execute(EncodeQueryRpcRequest.encode(query("output=events.ics", true)), new AsyncCallback<EncodeQueryRpcResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					iHeader.setEnabled("export", false);
