@@ -256,7 +256,12 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						ret.setExternalId(contact.getExternalUniqueId());
 						return ret;
 					}
-					throw new GwtRpcException("No events found in " + academicSession.getLabel() + ".");
+					
+					ResourceInterface ret = new ResourceInterface();
+					ret.setType(ResourceType.PERSON);
+					ret.setExternalId(name);
+					ret.setName("");
+					return ret;
 				default:
 					throw new GwtRpcException("Resource type " + type.getLabel() + " not supported.");
 				}
