@@ -327,32 +327,56 @@ public interface StudentSectioningMessages extends Messages {
 	
 	/* Student Sectioning widget messages
 	 */
-	@DefaultMessage("<u>R</u>equests")
+	@DefaultMessage("Add/Drop <u>C</u>ourses")
 	String buttonRequests();
 	
-	@DefaultMessage("Re&#8209;schedule")
+	@DefaultMessage("Go back to the Course Requests.")
+	String hintRequests();
+	
+	@DefaultMessage("Rearrange Schedule")
 	String buttonReset();
+	
+	@DefaultMessage("Compute a brand new schedule, ignoring current class selection and/or registration.")
+	String hintReset();
 
-	@DefaultMessage("<u>S</u>chedule")
+	@DefaultMessage("<u>B</u>uild Schedule")
 	String buttonSchedule();
 	
-	@DefaultMessage("<u>E</u>nroll")
+	@DefaultMessage("Compute class schedule using the entered course requests.")
+	String hintSchedule();
+	
+	@DefaultMessage("<u>S</u>ubmit Schedule")
 	String buttonEnroll();
+	
+	@DefaultMessage("Register for the above schedule.")
+	String hintEnroll();
 	
 	@DefaultMessage("<u>P</u>rint")
 	String buttonPrint();
 	
+	@DefaultMessage("Print the currently selected schedule.")
+	String hintPrint();
+	
 	@DefaultMessage("E<u>x</u>port")
 	String buttonExport();
+	
+	@DefaultMessage("Export the currently selected schedule in iCalendar format.")
+	String hintExport();
 
-	@DefaultMessage("<u>S</u>ave")
+	@DefaultMessage("<u>S</u>ubmit Requests")
 	String buttonSave();
+	
+	@DefaultMessage("Submit course requests.")
+	String hintSave();
 	
 	@DefaultMessage("<u>S</u>elect")
 	String buttonSelect();
 	
-	@DefaultMessage("Start Over")
+	@DefaultMessage("Current Registration")
 	String buttonStartOver();
+	
+	@DefaultMessage("Discard all changes and go back to your current registration.")
+	String hintStartOver();
 
 	@DefaultMessage("<u>L</u>ist of Classes")
 	String tabClasses();
@@ -369,7 +393,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Success!")
 	String enrollOK();
 	
-	@DefaultMessage("Enrollment failed: {0}")
+	@DefaultMessage("Registration failed: {0}")
 	String enrollFailed(String reason);
 	
 	@DefaultMessage("Student Schedule")
@@ -494,13 +518,13 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course {0} is undergoing maintenance / changes.")
 	String courseLocked(String course);
 	
-	@DefaultMessage("You are currently enrolled in {0}.")
+	@DefaultMessage("You are currently registered for {0}.")
 	String saved(String clazz);
 
-	@DefaultMessage("You are currently enrolled in {0}, this enrollment will get dropped.")
+	@DefaultMessage("You are currently registered for {0}, this enrollment will get dropped.")
 	String unassignment(String clazz);
 
-	@DefaultMessage("You are currently not enrolled in {0}.")
+	@DefaultMessage("You are currently not registered for {0}. Please click the Submit Schedule button to update your registration.")
 	String assignment(String clazz);
 	
 	@DefaultMessage("Show unassignments")
@@ -722,28 +746,28 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("You are not registered as a student in {0}.")
 	String exceptionEnrollNotStudent(String session);
 	
-	@DefaultMessage("Unable to enroll into {0}, the class is no longer available.")
+	@DefaultMessage("Unable to register for {0}, the class is no longer available.")
 	String exceptionEnrollNotAvailable(String clazz);
 	
-	@DefaultMessage("Unable to enroll into {0}, the class is no longer available (it is after the deadline).")
+	@DefaultMessage("Unable to register for {0}, the class is no longer available (it is after the deadline).")
 	String exceptionEnrollDeadlineChange(String clazz);
 
-	@DefaultMessage("Unable to enroll into {0}, the class is no longer available (it is after the deadline).")
+	@DefaultMessage("Unable to register for {0}, the class is no longer available (it is after the deadline).")
 	String exceptionEnrollDeadlineNew(String clazz);
 	
 	@DefaultMessage("Unable to drop from {0} (it is after the deadline).")
 	String exceptionEnrollDeadlineDrop(String clazz);
 	
-	@DefaultMessage("Unable to enroll into {0}, enrollment is incomplete.")
+	@DefaultMessage("Unable to register for {0}, registration is incomplete.")
 	String exceptionEnrollmentIncomplete(String course);
 	
-	@DefaultMessage("Unable to enroll into {0}, enrollment is overlapping.")
+	@DefaultMessage("Unable to register for {0}, registration is overlapping.")
 	String exceptionEnrollmentOverlapping(String course);
 	
-	@DefaultMessage("Unable to enroll into {0}, enrollment is invalid.")
+	@DefaultMessage("Unable to register for {0}, registration is invalid.")
 	String exceptionEnrollmentInvalid(String course);
 
-	@DefaultMessage("Unable to enroll into {0}, enrollment is conflicting.")
+	@DefaultMessage("Unable to register for {0}, registration is conflicting.")
 	String exceptionEnrollmentConflicting(String course);
 
 	@DefaultMessage("This feature is not supported in the current environment.")
@@ -790,6 +814,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Eligibility check failed: {0}")
 	String exceptionFailedEligibilityCheck(String message);
+	
+	@DefaultMessage("Processing...")
+	String waitEnroll();
 	
 	@DefaultMessage("Checking eligibility...")
 	String waitEligibilityCheck();
@@ -1131,10 +1158,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Student:")
 	String propStudent();
 	
-	@DefaultMessage("You are not registered for any classes yet. Please click the Enroll button in order to complete your registration..")
+	@DefaultMessage("You are not registered for any classes yet. Please click the Submit Schedule button in order to complete your registration..")
 	String warnScheduleEmpty();
 	
-	@DefaultMessage("You have made some changes in your schedule. Please click the Enroll button to update your registration.")
+	@DefaultMessage("You have made some changes in your schedule. Please click the Submit Schedule button to update your registration.")
 	String warnScheduleChanged();
 		
 	@DefaultMessage("There are unsaved changes in your schedule. Do you really want to discard these changes without updating your registration?")
@@ -1154,4 +1181,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Student update successfully requested. Please wait a while for the synchronization to take place.")
 	String requestStudentUpdateSuccess();
+	
+	@DefaultMessage("Click to lock the class. Alternatives cannot change classes that are locked, except of the one that was clicked.")
+	String hintUnlocked();
+	
+	@DefaultMessage("The class is locked. Alternatives cannot change classes that are locked, except of the one that was clicked.")
+	String hintLocked();
 }
