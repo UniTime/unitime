@@ -67,7 +67,7 @@ public class TimeGrid extends Composite {
 	private P[] iSeparators = new P[7];
 	private P iWorkingHours;
 	private ScrollPanel iScrollPanel;
-	private ImageLink iCalendar;
+	private ImageLink iCalendar = null;
 	
 	private ArrayList<ArrayList<Meeting>> iMeetings = new ArrayList<ArrayList<Meeting>>();
 	@SuppressWarnings("unchecked")
@@ -116,13 +116,14 @@ public class TimeGrid extends Composite {
 		iTimes = new P("calendar-times");
 		iTimes.setHeight(50 * (iEnd - iStart));
 
-		iCalendar = new ImageLink();
-		iCalendar.setImage(new Image(RESOURCES.calendar()));
-		iCalendar.setTarget(null);
-		iCalendar.setTitle(MESSAGES.exportICalendar());
-		iCalendar.addStyleName("calendar");
-		if (!iPrint)
+		if (CONSTANTS.allowCalendarExport() && !iPrint) {
+			iCalendar = new ImageLink();
+			iCalendar.setImage(new Image(RESOURCES.calendar()));
+			iCalendar.setTarget(null);
+			iCalendar.setTitle(MESSAGES.exportICalendar());
+			iCalendar.addStyleName("calendar");
 			iContainer.add(iCalendar);
+		}
 		
 		for (int i = 0; i < iNrDays; i++) {
 			P sp = new P("header-time-interval");
@@ -195,7 +196,8 @@ public class TimeGrid extends Composite {
 	}
 	
 	public void setCalendarUrl(String url) {
-		iCalendar.setUrl(url);
+		if (iCalendar != null)
+			iCalendar.setUrl(url);
 	}
 	
 	public Widget getPrintWidget() {
