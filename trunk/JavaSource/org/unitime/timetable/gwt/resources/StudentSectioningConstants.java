@@ -131,4 +131,7 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultBooleanValue(true)
 	boolean allowUserLogin();
+	
+	@DefaultBooleanValue(false)
+	boolean allowCalendarExport();
 }

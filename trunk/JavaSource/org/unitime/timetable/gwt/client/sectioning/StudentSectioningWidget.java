@@ -99,10 +99,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	private VerticalPanel iPanel;
 	private HorizontalPanel iFooter;
-	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport, iSave, iStartOver;
+	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver;
 	private UniTimeTabPanel iAssignmentPanel;
 	private FocusPanel iAssignmentPanelWithFocus;
-	private ImageLink iCalendar;
+	private ImageLink iCalendar = null;
 	
 	private CourseRequestsTable iCourseRequests;
 	private WebTable iAssignments;
@@ -216,11 +216,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iPrint.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		rightFooterPanel.add(iPrint);
 
-		iExport = new AriaButton(MESSAGES.buttonExport());
-		iExport.setVisible(false);
-		iExport.setEnabled(false);
-		iExport.getElement().getStyle().setMarginLeft(4, Unit.PX);
-		rightFooterPanel.add(iExport);
+		if (CONSTANTS.allowCalendarExport()) {
+			iExport = new AriaButton(MESSAGES.buttonExport());
+			iExport.setVisible(false);
+			iExport.setEnabled(false);
+			iExport.getElement().getStyle().setMarginLeft(4, Unit.PX);
+			rightFooterPanel.add(iExport);
+		}
 		
 		iPanel.add(iFooter);
 		
@@ -265,11 +267,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	private void init() {
-		iCalendar = new ImageLink();
-		iCalendar.setImage(new Image(RESOURCES.calendar()));
-		iCalendar.setTarget(null);
-		iCalendar.setTitle(MESSAGES.exportICalendar());
-		iCalendar.setAriaLabel(MESSAGES.exportICalendar());
+		if (CONSTANTS.allowCalendarExport()) {
+			iCalendar = new ImageLink();
+			iCalendar.setImage(new Image(RESOURCES.calendar()));
+			iCalendar.setTarget(null);
+			iCalendar.setTitle(MESSAGES.exportICalendar());
+			iCalendar.setAriaLabel(MESSAGES.exportICalendar());
+		}
 
 		iAssignments = new WebTable();
 		iAssignments.setHeader(new WebTable.Row(
@@ -288,7 +292,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				new WebTable.Cell(MESSAGES.colParent(), 1, "80px"),
 				new WebTable.Cell(MESSAGES.colNote(), 1, "50px"),
 				new WebTable.Cell(MESSAGES.colCredit(), 1, "30px"),
-				new WebTable.WidgetCell(iCalendar, MESSAGES.colIcons(), 1, "1px")
+				(iCalendar != null ? new WebTable.WidgetCell(iCalendar, MESSAGES.colIcons(), 1, "1px") : new WebTable.Cell(MESSAGES.colIcons(), 1, "1px"))
 			));
 		iAssignments.setWidth("100%");
 		iAssignments.setEmptyMessage(MESSAGES.emptySchedule());
@@ -511,11 +515,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		});
 		
-		iExport.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				ToolBox.open(iCalendar.getUrl());
-			}
-		});
+		if (iExport != null)
+			iExport.addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					ToolBox.open(iCalendar.getUrl());
+				}
+			});
 		
 		if (iTrackHistory) {
 			History.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -1012,7 +1017,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			iPrint.setVisible(true); iPrint.setEnabled(true);
-			iExport.setVisible(true); iExport.setEnabled(true);
+			if (iExport != null) {
+				iExport.setVisible(true); iExport.setEnabled(true);
+			}
 			iSchedule.setVisible(false); iSchedule.setEnabled(false);
 			iAssignmentGrid.scrollDown();
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -1021,11 +1028,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					iAssignmentPanelWithFocus.setFocus(true);
 				}
 			});
-			if (calendarUrl.endsWith(",")) calendarUrl = calendarUrl.substring(0, calendarUrl.length() - 1);
-			calendarUrl += ftParam;
-			if (calendarUrl.endsWith(",")) calendarUrl = calendarUrl.substring(0, calendarUrl.length() - 1);
-			iAssignmentGrid.setCalendarUrl(calendarUrl);
-			iCalendar.setUrl(calendarUrl);
+			if (iCalendar != null) {
+				if (calendarUrl.endsWith(",")) calendarUrl = calendarUrl.substring(0, calendarUrl.length() - 1);
+				calendarUrl += ftParam;
+				if (calendarUrl.endsWith(",")) calendarUrl = calendarUrl.substring(0, calendarUrl.length() - 1);
+				iAssignmentGrid.setCalendarUrl(calendarUrl);
+				iCalendar.setUrl(calendarUrl);
+			}
 			ResizeEvent.fire(this, getOffsetWidth(), getOffsetHeight());
 			if (iAssignmentTab == 0) {
 				AriaStatus.getInstance().setHTML(ARIA.listOfClasses());
@@ -1058,7 +1067,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iReset.setVisible(false); iReset.setEnabled(false);
 		iEnroll.setVisible(false); iEnroll.setEnabled(false);
 		iPrint.setVisible(false); iPrint.setEnabled(false);
-		iExport.setVisible(false); iExport.setEnabled(false);
+		if (iExport != null) {
+			iExport.setVisible(false); iExport.setEnabled(false);
+		}
 		iSchedule.setVisible(true); iSchedule.setEnabled(true);
 		clearMessage();
 		ResizeEvent.fire(this, getOffsetWidth(), getOffsetHeight());
