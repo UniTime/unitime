@@ -196,7 +196,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				"tab", "1", "filter", "exams", "rooms", "", "title", MESSAGES.pageExaminations(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false", "showClear", "false"),
 		Personal(
 				"type", "person", "fixedType", "true", "events", "", "filter", "person", "rooms", "", "title", MESSAGES.pagePersonalTimetable(),
-				"addEvent", "false", "fixedTitle", "true", "showFilter", "false", "showClear", "false"
+				"addEvent", "false", "fixedTitle", "true", "showFilter", "false", "showClear", "false", "icsAllSessions", "true"
 				),
 		Availability("title", MESSAGES.pageEventRoomAvailability(), "rooms", "flag:Event");
 		
@@ -642,7 +642,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						@Override
 						public void execute() {
 							popup.hide();
-							export("output=events.ics", false);
+							export("output=events.ics" + ("true".equals(iHistoryToken.getParameter("icsAllSessions", "false")) ? "&e:flag=All+Sessions" : ""), false);
 						}
 					});
 					exportIcs.getElement().getStyle().setCursor(Cursor.POINTER);
@@ -651,7 +651,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						@Override
 						public void execute() {
 							popup.hide();
-							copyToClipboard("output=events.ics");
+							copyToClipboard("output=events.ics" + ("true".equals(iHistoryToken.getParameter("icsAllSessions", "false")) ? "&e:flag=All+Sessions" : ""));
 						}
 					});
 					copyIcs.getElement().getStyle().setCursor(Cursor.POINTER);
