@@ -396,7 +396,41 @@
 			</condition>
 		</item>
 	</menu>
-	<!--  <item name="Classes" page="classes.do">  -->
+	<item name="Course Requests" page="requests" type="gwt">
+		<condition>
+			<hasPermission name="CourseRequests" authority="any"/>	
+			<not>
+				<hasPermission name="StudentScheduling"/>
+			</not>
+		</condition>
+	</item>
+	<item name="Scheduling Assistant" page="sectioning" type="gwt">
+		<condition>
+			<hasPermission name="SchedulingAssistant" authority="any"/>	
+			<not>
+				<hasPermission name="StudentScheduling"/>
+			</not>
+		</condition>
+	</item>
+	<item name="Scheduling Dashboard" page="onlinesctdash" type="gwt">
+		<condition>
+			<hasPermission name="SchedulingDashboard" authority="role"/>
+			<not>
+				<hasPermission name="StudentScheduling"/>
+			</not>
+		</condition>
+	</item>
+	<item name="Personal Timetable" page="personal" type="gwt">
+		<condition>
+			<or>
+				<hasPermission name="PersonalScheduleLookup"/>
+				<and>
+					<propertyEquals name="tmtbl.menu.display_personal_schedule" value="true" defaultValue="true"/>
+					<hasPermission name="PersonalSchedule"/>
+				</and>
+			</or>
+		</condition>
+	</item>
 	<item name="Classes" page="classes" type="gwt">
 		<condition>
 			<isAuthenticated/>
@@ -501,41 +535,6 @@
 		<item name="Room Availability" page="eventGrid.do"/>
 	</menu>
 	-->
-	<item name="Course Requests" page="requests" type="gwt">
-		<condition>
-			<hasPermission name="CourseRequests" authority="any"/>	
-			<not>
-				<hasPermission name="StudentScheduling"/>
-			</not>
-		</condition>
-	</item>
-	<item name="Scheduling Assistant" page="sectioning" type="gwt">
-		<condition>
-			<hasPermission name="SchedulingAssistant" authority="any"/>	
-			<not>
-				<hasPermission name="StudentScheduling"/>
-			</not>
-		</condition>
-	</item>
-	<item name="Scheduling Dashboard" page="onlinesctdash" type="gwt">
-		<condition>
-			<hasPermission name="SchedulingDashboard" authority="role"/>
-			<not>
-				<hasPermission name="StudentScheduling"/>
-			</not>
-		</condition>
-	</item>
-	<item name="Personal Timetable" page="personal" type="gwt">
-		<condition>
-			<or>
-				<hasPermission name="PersonalScheduleLookup"/>
-				<and>
-					<propertyEquals name="tmtbl.menu.display_personal_schedule" value="true" defaultValue="true"/>
-					<hasPermission name="PersonalSchedule"/>
-				</and>
-			</or>
-		</condition>
-	</item>
 	<separator/>
 	<menu name="Administration">
 		<condition>
