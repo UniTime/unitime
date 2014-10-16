@@ -171,11 +171,13 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		HorizontalPanel leftFooterPanel = new HorizontalPanel();
 		iRequests = new AriaButton(MESSAGES.buttonRequests());
+		iRequests.setTitle(MESSAGES.hintRequests());
 		iRequests.setVisible(false);
 		iRequests.setEnabled(false);
 		leftFooterPanel.add(iRequests);
 
 		iReset = new AriaButton(MESSAGES.buttonReset());
+		iReset.setTitle(MESSAGES.hintReset());
 		iReset.setVisible(false);
 		iReset.setEnabled(false);
 		iReset.getElement().getStyle().setMarginLeft(4, Unit.PX);
@@ -188,29 +190,34 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iFooter.setCellHorizontalAlignment(rightFooterPanel, HasHorizontalAlignment.ALIGN_RIGHT);
 
 		iStartOver = new AriaButton(MESSAGES.buttonStartOver());
+		iStartOver.setTitle(MESSAGES.hintStartOver());
 		if (mode.isSectioning())
 			leftFooterPanel.add(iStartOver);
 		iStartOver.setVisible(false);
 		iStartOver.setEnabled(false);
 
 		iSchedule = new AriaButton(MESSAGES.buttonSchedule());
+		iSchedule.setTitle(MESSAGES.hintSchedule());
 		if (mode.isSectioning())
 			rightFooterPanel.add(iSchedule);
 		iSchedule.setVisible(mode.isSectioning());
 		iSchedule.setEnabled(mode.isSectioning());
 		
 		iSave = new AriaButton(MESSAGES.buttonSave());
+		iSave.setTitle(MESSAGES.hintSave());
 		if (!mode.isSectioning())
 			rightFooterPanel.add(iSave);
 		iSave.setVisible(!mode.isSectioning());
 		iSave.setEnabled(!mode.isSectioning());
 
 		iEnroll = new AriaButton(MESSAGES.buttonEnroll());
+		iEnroll.setTitle(MESSAGES.hintEnroll());
 		iEnroll.setVisible(false);
 		iEnroll.setEnabled(false);
 		rightFooterPanel.add(iEnroll);
 
 		iPrint = new AriaButton(MESSAGES.buttonPrint());
+		iPrint.setTitle(MESSAGES.hintPrint());
 		iPrint.setVisible(false);
 		iPrint.setEnabled(false);
 		iPrint.getElement().getStyle().setMarginLeft(4, Unit.PX);
@@ -218,6 +225,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 
 		if (CONSTANTS.allowCalendarExport()) {
 			iExport = new AriaButton(MESSAGES.buttonExport());
+			iExport.setTitle(MESSAGES.hintExport());
 			iExport.setVisible(false);
 			iExport.setEnabled(false);
 			iExport.getElement().getStyle().setMarginLeft(4, Unit.PX);
@@ -479,7 +487,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		iEnroll.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				LoadingWidget.getInstance().show("Enrolling...");
+				LoadingWidget.getInstance().show(MESSAGES.waitEnroll());
 				iSectioningService.enroll(iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 					public void onSuccess(ClassAssignmentInterface result) {
 						LoadingWidget.getInstance().hide();
@@ -1017,6 +1025,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			iPrint.setVisible(true); iPrint.setEnabled(true);
+			iStartOver.setVisible(iSavedAssignment != null); iStartOver.setEnabled(iSavedAssignment != null);
 			if (iExport != null) {
 				iExport.setVisible(true); iExport.setEnabled(true);
 			}
@@ -1067,6 +1076,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iReset.setVisible(false); iReset.setEnabled(false);
 		iEnroll.setVisible(false); iEnroll.setEnabled(false);
 		iPrint.setVisible(false); iPrint.setEnabled(false);
+		iStartOver.setVisible(false); iStartOver.setVisible(false);
 		if (iExport != null) {
 			iExport.setVisible(false); iExport.setEnabled(false);
 		}
@@ -1096,6 +1106,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			return;
 		}
 		LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
+		iStartOver.setVisible(false); iStartOver.setEnabled(false);
 		iSectioningService.checkEligibility(iOnline, sessionId, studentId, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 			@Override
 			public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
@@ -1116,7 +1127,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							public void onFailure(Throwable caught) {
 								setError(MESSAGES.exceptionFailedEligibilityCheck(caught.getMessage()), caught);
 								iSchedule.setVisible(true); iSchedule.setEnabled(true);
-								iStartOver.setVisible(true); iStartOver.setEnabled(true);
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
@@ -1125,7 +1135,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 								iEligibilityCheck = result;
 								iSchedule.setVisible(true); iSchedule.setEnabled(true);
-								iStartOver.setVisible(true); iStartOver.setEnabled(true);
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
@@ -1143,7 +1152,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iPinDialog.checkEligibility(iOnline, sessionId, null, callback);
 					} else {
 						iSchedule.setVisible(true); iSchedule.setEnabled(true);
-						iStartOver.setVisible(true); iStartOver.setEnabled(true);
 						lastRequest(sessionId, studentId, saved);
 						if (ret != null) ret.onSuccess(iEligibilityCheck);
 					}
@@ -1154,7 +1162,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						setError(result.getMessage());
 					}
 					iSchedule.setVisible(false);  iSchedule.setEnabled(false);
-					iStartOver.setVisible(false); iStartOver.setEnabled(false);
 					if (ret != null) ret.onFailure(new SectioningException(result.getMessage()));
 				}
 			}

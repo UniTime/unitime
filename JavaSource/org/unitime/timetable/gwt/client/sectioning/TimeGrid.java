@@ -511,6 +511,7 @@ public class TimeGrid extends Composite {
 	        iHeaderPanel.setStylePrimaryName("header");
 	        iPinned = pinned;
 	        iPin = new Image(pinned ? RESOURCES.locked() : RESOURCES.unlocked());
+	        iPin.setTitle(pinned ? MESSAGES.hintLocked() : MESSAGES.hintUnlocked());
 	        iHeaderPanel.add(iPin);
 	        Label nameLabel = new Label(name);
 	        nameLabel.setStyleName("label");
@@ -570,6 +571,7 @@ public class TimeGrid extends Composite {
 		public void setPinned(boolean pinned) {
 			iPinned = pinned;
 			iPin.setResource(pinned ? RESOURCES.locked() : RESOURCES.unlocked());
+			iPin.setTitle(pinned ? MESSAGES.hintLocked() : MESSAGES.hintUnlocked());
 		}
 		
 		public void hidePin() {
