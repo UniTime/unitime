@@ -93,7 +93,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 		iGrid.getRowFormatter().setStyleName(idx, "unitime-MainTableHeaderRow");
 		iGrid.setText(idx, 0, MESSAGES.courseRequestsCourses());
 		
-		iGrid.getFlexCellFormatter().setColSpan(idx, 1, 3);
+		iGrid.getFlexCellFormatter().setColSpan(idx, 1, 4);
 		iGrid.getFlexCellFormatter().setStyleName(idx, 1, "unitime-MainTableHeaderNote");
 		iGrid.setHTML(idx, 1, MESSAGES.courseRequestsWaitList());
 		iGrid.getFlexCellFormatter().getElement(idx, 1).getStyle().setVerticalAlign(VerticalAlign.BOTTOM);
@@ -164,6 +164,15 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 				iGrid.setWidget(idx, 6, down);
 				down.setAltText(i + 1 == CONSTANTS.numberOfCourses() ? ARIA.altSwapCourseAlternateRequest(i + 1, 1) : ARIA.altSwapCourseRequest(i + 1, i + 2));
 			}
+			final ImageButton delete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
+			delete.addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					c[0].remove();
+					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
+				}
+			});
+			iGrid.setWidget(idx, 7, delete);
+			delete.setAltText(ARIA.altDeleteRequest(i + 1));
 			c[0].setWidth("260px");
 			c[1].setWidth("170px");
 			c[2].setWidth("170px");
@@ -191,14 +200,14 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 				} while (oldText.equals(iTip.getText()));
 			}
 		});
-		iGrid.getFlexCellFormatter().setColSpan(idx, 0, 7);
+		iGrid.getFlexCellFormatter().setColSpan(idx, 0, 8);
 		iGrid.getFlexCellFormatter().setStyleName(idx, 0, "unitime-Hint");
 		iGrid.setWidget(idx++, 0, iTip);
 
 		iGrid.getFlexCellFormatter().setColSpan(idx, 0, 2);
 		iGrid.getFlexCellFormatter().setStyleName(idx, 0, "unitime-MainTableHeader");
 		iGrid.setText(idx, 0, MESSAGES.courseRequestsAlternatives());
-		iGrid.getFlexCellFormatter().setColSpan(idx, 1, 5);
+		iGrid.getFlexCellFormatter().setColSpan(idx, 1, 6);
 		iGrid.getFlexCellFormatter().setStyleName(idx, 1, "unitime-MainTableHeaderNote");
 		iGrid.setHTML(idx, 1, MESSAGES.courseRequestsAlternativesNote());
 		iGrid.getFlexCellFormatter().getElement(idx, 1).getStyle().setVerticalAlign(VerticalAlign.BOTTOM);
@@ -240,6 +249,15 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 				iGrid.setWidget(idx, 5, down);
 				down.setAltText(ARIA.altSwapAlternateRequest(i + 1, i + 2));
 			}
+			final ImageButton delete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
+			delete.addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					c[0].remove();
+					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
+				}
+			});
+			iGrid.setWidget(idx, 6, delete);
+			delete.setAltText(ARIA.altDeleteAlternateRequest(i + 1));
 			c[0].setWidth("260px");
 			c[1].setWidth("170px");
 			c[2].setWidth("170px");
@@ -278,6 +296,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 				new CourseSelectionBox(iSessionProvider, false, false),
 				new CourseSelectionBox(iSessionProvider, false, false)
 		};
+		c[0].setHint(MESSAGES.courseRequestsHint8());
 		c[0].setLabel(ARIA.titleRequestedCourse(1 + i), ARIA.altRequestedCourseFinder(1 + i));
 		c[1].setLabel(ARIA.titleRequestedCourseFirstAlternative(1 + i), ARIA.altRequestedCourseFirstAlternativeFinder(1 + i));
 		c[2].setLabel(ARIA.titleRequestedCourseSecondAlternative(1 + i), ARIA.altRequestedCourseSecondAlternativeFinder(1 + i));
@@ -288,6 +307,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 		final AriaCheckBox ch = new AriaCheckBox();
 		ch.setAriaLabel(ARIA.titleRequestedWaitList(1 + i));
 		CourseSelectionBox[] x = iCourses.get(i - 1);
+		x[0].setHint("");
 		for (int j=0; j<3; j++) {
 			c[j].setPrev(x[j]);
 			x[j].setNext(c[j]);
@@ -316,10 +336,22 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			down.setAltText(ARIA.altSwapCourseAlternateRequest(i + 1, 1));
 			((ImageButton)iGrid.getWidget(idx - 1, 6)).setAltText(ARIA.altSwapCourseRequest(i, i + 1));
 			((ImageButton)iGrid.getWidget(idx + 3, 4)).setAltText(ARIA.altSwapCourseAlternateRequest(iCourses.size(), 1));
+			
+			final ImageButton delete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
+			delete.addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					c[0].remove();
+					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
+				}
+			});
+			iGrid.setWidget(idx, 7, delete);
+			delete.setAltText(ARIA.altDeleteRequest(i + 1));
 		}
 		c[0].setWidth("260px");
 		c[1].setWidth("170px");
 		c[2].setWidth("170px");
+		c[1].setEnabled(false);
+		c[2].setEnabled(false);
 		iGrid.setWidget(idx, 1, c[0]);
 		iGrid.setWidget(idx, 2, c[1]);
 		iGrid.setWidget(idx, 3, c[2]);
@@ -436,10 +468,21 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			});
 			iGrid.setWidget(idx - 1, 5, down);
 			down.setAltText(ARIA.altSwapAlternateRequest(i, i + 1));
+			final ImageButton delete = new ImageButton(RESOURCES.delete(), RESOURCES.delete_Down(), RESOURCES.delete_Over());
+			delete.addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					c[0].remove();
+					ValueChangeEvent.fire(CourseRequestsTable.this, getRequest());
+				}
+			});
+			iGrid.setWidget(idx, 6, delete);
+			delete.setAltText(ARIA.altDeleteAlternateRequest(i + 1));
 		}
 		c[0].setWidth("260px");
 		c[1].setWidth("170px");
 		c[2].setWidth("170px");
+		c[1].setEnabled(false);
+		c[2].setEnabled(false);
 		iGrid.setWidget(idx, 1, c[0]);
 		iGrid.setWidget(idx, 2, c[1]);
 		iGrid.setWidget(idx, 3, c[2]);

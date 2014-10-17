@@ -174,4 +174,10 @@ public class ImageButton extends Image implements HasEnabled, Focusable, HasAria
 		setAltText(text);
 	}
 	
+	@Override
+	public void setAltText(String altText) {
+		super.setAltText(altText);
+		if (getTitle() == null || getTitle().isEmpty())
+			setTitle(altText);
+	}
 }

@@ -291,6 +291,10 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 		return iFreeTimeParser;
 	}
 	
+	public boolean isAllowFreeTime() {
+		return iFreeTimeParser != null;
+	}
+	
 	public class SuggestCallback implements AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> {
 		private Request iRequest;
 		private Callback iCallback;
