@@ -510,11 +510,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onClick(ClickEvent event) {
 				boolean allSaved = true;
 				for (ClassAssignmentInterface.ClassAssignment clazz: iLastResult) {
-					if (clazz != null && !clazz.isFreeTime() && clazz.isAssigned() && !clazz.isSaved()) allSaved = false;
+					if (clazz != null && !clazz.isFreeTime() && !clazz.isSaved()) allSaved = false;
 				}
 				Widget w = iAssignments.getPrintWidget(0, 5, 15);
 				w.setWidth("100%");
-				ToolBox.print((allSaved ? MESSAGES.studentSchedule() : MESSAGES.studentScheduleNotEnrolled()),
+				ToolBox.print((allSaved && !isChanged() ? MESSAGES.studentSchedule() : MESSAGES.studentScheduleNotEnrolled()),
 						(CONSTANTS.printReportShowUserName() ? iUserAuthentication.getUser() : ""),
 						iSessionSelector.getAcademicSessionName(),
 						iAssignmentGrid.getPrintWidget(),
