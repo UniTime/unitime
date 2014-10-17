@@ -33,12 +33,16 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.MenuInterface;
+import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
@@ -64,6 +68,7 @@ public class UniTimeMenuBar extends UniTimeMenu {
 	
 	private int iLastScrollLeft = 0, iLastScrollTop = 0, iLastClientWidth = 0;
 	private Timer iMoveTimer;
+	private HandlerRegistration iPageLabelRegistration = null;
 	
 	public UniTimeMenuBar(boolean absolute) {
 		iMenu = new MenuBar();
@@ -133,6 +138,10 @@ public class UniTimeMenuBar extends UniTimeMenu {
 			@Override
 			public void onSuccess(GwtRpcResponseList<MenuInterface> result) {
 				iMenu.clearItems();
+				if (iPageLabelRegistration != null) {
+					iPageLabelRegistration.removeHandler();
+					iPageLabelRegistration = null;
+				}
 				initMenu(iMenu, result, 0);
 			}
 			@Override
@@ -180,6 +189,25 @@ public class UniTimeMenuBar extends UniTimeMenu {
 					MenuBar m = new MenuBar(true);
 					initMenu(m, item.getSubMenus(), level + 1);
 					menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, m));
+				} else if ("PAGE_HELP".equals(item.getPage())) {
+					PageNameInterface name = UniTimePageLabel.getInstance().getValue();
+					final MenuItem m = new MenuItem(item.getName().replace(" ", "&nbsp;"), true, new Command() {
+						@Override
+						public void execute() {
+							PageNameInterface name = UniTimePageLabel.getInstance().getValue();
+							if (name.hasHelpUrl())
+								openUrl(MESSAGES.pageHelp(name.getName()), name.getHelpUrl(), item.getTarget());
+						}
+					});
+					m.setEnabled(name.hasHelpUrl());
+					iPageLabelRegistration = UniTimePageLabel.getInstance().addValueChangeHandler(new ValueChangeHandler<MenuInterface.PageNameInterface>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<PageNameInterface> event) {
+							m.setEnabled(event.getValue().hasHelpUrl());
+						}
+					});
+					menu.addItem(m);
+					initMenu(menu, item.getSubMenus(), level);
 				} else {
 					menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, new Command() {
 						@Override
@@ -190,6 +218,24 @@ public class UniTimeMenuBar extends UniTimeMenu {
 					}));
 					initMenu(menu, item.getSubMenus(), level);
 				}
+			} else if ("PAGE_HELP".equals(item.getPage())) {
+				PageNameInterface name = UniTimePageLabel.getInstance().getValue();
+				final MenuItem m = new MenuItem(item.getName().replace(" ", "&nbsp;"), true, new Command() {
+					@Override
+					public void execute() {
+						PageNameInterface name = UniTimePageLabel.getInstance().getValue();
+						if (name.hasHelpUrl())
+							openUrl(MESSAGES.pageHelp(name.getName()), name.getHelpUrl(), item.getTarget());
+					}
+				});
+				m.setEnabled(name.hasHelpUrl());
+				iPageLabelRegistration = UniTimePageLabel.getInstance().addValueChangeHandler(new ValueChangeHandler<MenuInterface.PageNameInterface>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<PageNameInterface> event) {
+						m.setEnabled(event.getValue().hasHelpUrl());
+					}
+				});
+				menu.addItem(m);
 			} else {
 				menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, new Command() {
 					@Override
@@ -206,7 +252,7 @@ public class UniTimeMenuBar extends UniTimeMenu {
 		}
 	}
 	
-	protected void openUrl(final String name, final String url, String target) {
+	protected void openUrl(String name, String url, String target) {
 		if (target == null)
 			LoadingWidget.getInstance().show();
 		if ("dialog".equals(target)) {

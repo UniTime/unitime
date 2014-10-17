@@ -82,7 +82,7 @@
 				<tt:form-factor value="phone"><img src="images/unitime-phone.png" border="0"/></tt:form-factor>
 				<tt:form-factor value="tablet"><img src="images/unitime-tablet.png" border="0"/></tt:form-factor>
 			</a></span>
-			<span class="title">University Timetabling Application</span>
+			<span id='UniTimeGWT:Title' class="title">University Timetabling Application</span>
 		</span>
 	</span>
 	<span class='unitime-MobileHeader'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
@@ -160,7 +160,7 @@
     		<span class="row">
     			<span class="logo"><a href='http://www.unitime.org' tabIndex="-1"><img src="images/unitime.png" border="0"/></a></span>
     			<span class="content">
-					<span class="title">University Timetabling Application</span>
+					<span id='UniTimeGWT:Title' class="title">University Timetabling Application</span>
 					<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
 				</span>
 			</span>

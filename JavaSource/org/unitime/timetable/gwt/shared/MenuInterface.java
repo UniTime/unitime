@@ -237,12 +237,23 @@ public class MenuInterface implements IsSerializable {
 		private String iHelpUrl, iName;
 		
 		public PageNameInterface() {}
+		public PageNameInterface(String name, String helpUrl) {
+			iName = name; iHelpUrl = helpUrl;
+		}
+		public PageNameInterface(String name) {
+			iName = name; iHelpUrl = null;
+		}
 		
 		public String getHelpUrl() { return iHelpUrl; }
 		public void setHelpUrl(String url) { iHelpUrl = url; }
+		public boolean hasHelpUrl() { return iHelpUrl != null && !iHelpUrl.isEmpty(); }
 		
 		public String getName() { return iName; }
 		public void setName(String name) { iName = name; }
+		public boolean hasName() { return iName != null && !iName.isEmpty(); }
+		
+		@Override
+		public String toString() { return iName; }
 	}
 	
 	public static class PageNameRpcRequest implements GwtRpcRequest<PageNameInterface> {

@@ -920,6 +920,12 @@
 				<hasRole name="Anonymous"/>
 			</not>
 		</condition>
+		<item name="Page Documentation" page="PAGE_HELP" type="page" target="dialog">
+			<condition>
+				<propertyEquals name="tmtbl.wiki.help" value="true"/>
+				<hasProperty name="tmtbl.wiki.url"/>
+			</condition>
+		</item>
 		<item name="Event Manual" page="tmtbl.help.manual.events" type="property" target="download">
 			<condition>
 				<hasPermission name="Events" authority="any"/>

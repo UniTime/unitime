@@ -19,7 +19,11 @@
 */
 package org.unitime.timetable.gwt.client.page;
 
+import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
+
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
 
 /**
@@ -33,22 +37,22 @@ public class PageLabel extends Composite implements PageLabelDisplay {
 	}
 
 	@Override
-	public String getText() {
-		return IMPL.getText();
+	public PageNameInterface getValue() {
+		return IMPL.getValue();
 	}
 
 	@Override
-	public void setText(String text) {
-		IMPL.setText(text);
+	public void setValue(PageNameInterface value) {
+		IMPL.setValue(value);
 	}
 
 	@Override
-	public String getHelpUrl() {
-		return IMPL.getHelpUrl();
+	public void setValue(PageNameInterface value, boolean fireEvents) {
+		IMPL.setValue(value, fireEvents);
 	}
 
 	@Override
-	public void setHelpUrl(String url) {
-		IMPL.setHelpUrl(url);
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<PageNameInterface> handler) {
+		return IMPL.addValueChangeHandler(handler);
 	}
 }
