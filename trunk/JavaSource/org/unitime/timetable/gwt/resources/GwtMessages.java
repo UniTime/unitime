@@ -1907,10 +1907,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Events")
 	String pageEvents();
 	
-	@DefaultMessage("Event Timetable")
+	@DefaultMessage("Event Schedule")
 	String pageEventTimetable();
 	
-	@DefaultMessage("Room Timetable")
+	@DefaultMessage("Room Schedule")
 	String pageRoomTimetable();
 	
 	@DefaultMessage("Online Student Sectioning Test")
@@ -1925,13 +1925,13 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Travel Times")
 	String pageTravelTimes();
 	
-	@DefaultMessage("Class Timetable")
+	@DefaultMessage("Lookup Classes")
 	String pageClasses();
 	
-	@DefaultMessage("Exam Timetable")
+	@DefaultMessage("Lookup Examinations")
 	String pageExaminations();
 	
-	@DefaultMessage("Personal Timetable")
+	@DefaultMessage("Personal Schedule")
 	String pagePersonalTimetable();
 	
 	@DefaultMessage("Edit Room Availability")

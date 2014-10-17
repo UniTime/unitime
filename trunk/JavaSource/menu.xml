@@ -420,7 +420,7 @@
 			</not>
 		</condition>
 	</item>
-	<item name="Personal Timetable" page="personal" type="gwt">
+	<item name="Personal Schedule" page="personal" type="gwt">
 		<condition>
 			<or>
 				<hasPermission name="PersonalScheduleLookup"/>
