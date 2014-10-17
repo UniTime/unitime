@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeMenu;
+import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -35,6 +36,7 @@ import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -72,6 +74,7 @@ public class MobileMenu extends UniTimeMenu {
 	private AnimationHelper iAnimationHelper;
 	private ImageButton iButton;
 	private MenuWidget iMenu = null;
+	private HandlerRegistration iPageLabelRegistration = null;
 	
 	public interface Template extends SafeHtmlTemplates {
 		@SafeHtmlTemplates.Template("<div>{0}</div>")
@@ -121,6 +124,10 @@ public class MobileMenu extends UniTimeMenu {
 		RPC.execute(new MenuInterface.MenuRpcRequest(), new AsyncCallback<GwtRpcResponseList<MenuInterface>>() {
 			@Override
 			public void onSuccess(GwtRpcResponseList<MenuInterface> result) {
+				if (iPageLabelRegistration != null) {
+					iPageLabelRegistration.removeHandler();
+					iPageLabelRegistration = null;
+				}
 				iMenu = new MenuWidget(null, result, new TapHandler() {
 					@Override
 					public void onTap(TapEvent event) {
@@ -247,7 +254,12 @@ public class MobileMenu extends UniTimeMenu {
 		}
 	}
 	
-	protected void openUrl(final String name, final String url, String target) {
+	protected void openUrl(String name, String url, String target) {
+		if ("PAGE_HELP".equals(url)) {
+			url = UniTimePageLabel.getInstance().getValue().getHelpUrl();
+			name = UniTimePageLabel.getInstance().getValue().getName();
+			if (url == null || url.isEmpty()) return;
+		}
 		if (target == null)
 			LoadingWidget.getInstance().show();
 		if ("dialog".equals(target)) {
