@@ -989,7 +989,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Relations")
 	String sectRelations();
 	
-	@DefaultMessage("{0} timetable for {1}")
+	@DefaultMessage("{0} schedule for {1}")
 	String sectTimetable(String resource, String session);
 
 	@DefaultMessage("{0} events for {1}")
@@ -1037,7 +1037,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Loading data for {0} ...")
 	String waitLoadingDataForSession(String session);
 	
-	@DefaultMessage("Loading {0} timetable for {1} ...")
+	@DefaultMessage("Loading {0} schedule for {1} ...")
 	String waitLoadingTimetable(String name, String session);
 	
 	@DefaultMessage("Checking room availability...")
