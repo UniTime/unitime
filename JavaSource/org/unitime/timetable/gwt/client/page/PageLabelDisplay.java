@@ -19,13 +19,13 @@
 */
 package org.unitime.timetable.gwt.client.page;
 
-import com.google.gwt.user.client.ui.HasText;
+import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
+
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.IsWidget;
 
 /**
  * @author Tomas Muller
  */
-public interface PageLabelDisplay extends HasText, IsWidget {
-	public String getHelpUrl();
-	public void setHelpUrl(String url);
+public interface PageLabelDisplay extends HasValue<PageNameInterface>, IsWidget {
 }

@@ -33,8 +33,10 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.MenuInterface;
+import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
@@ -51,6 +53,9 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
@@ -74,6 +79,7 @@ import com.google.gwt.user.client.ui.TreeItem;
  * @author Tomas Muller
  */
 public class UniTimeSideBar extends UniTimeMenu {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
@@ -84,6 +90,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 	private MyStackPanel iStackPanel;
 	private Tree iTree;
 	private boolean iUseStackPanel;
+	private HandlerRegistration iPageLabelRegistration = null;
 	
 	private int iTop = 0;
 	
@@ -244,6 +251,10 @@ public class UniTimeSideBar extends UniTimeMenu {
 				iStackPanel.setActive(false);
 				iTree.clear();
 				iStackPanel.clear();
+				if (iPageLabelRegistration != null) {
+					iPageLabelRegistration.removeHandler();
+					iPageLabelRegistration = null;
+				}
 				initMenu(result);
 			}
 			@Override
@@ -331,9 +342,25 @@ public class UniTimeSideBar extends UniTimeMenu {
 				return URL.encodeQueryString(value);
 			}
 		};
-		Label label = new Label(item.getName(), false);
-		TreeItem treeItem = new TreeItem(label);
-		if (item.hasPage()) {
+		final Label label = new Label(item.getName(), false);
+		final TreeItem treeItem = new TreeItem(label);
+		if ("PAGE_HELP".equals(item.getPage())) {
+			label.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					PageNameInterface name = UniTimePageLabel.getInstance().getValue();
+					if (name.hasHelpUrl())
+						openUrl(MESSAGES.pageHelp(name.getName()), name.getHelpUrl(), item.getTarget());
+				}
+			});
+			treeItem.setVisible(UniTimePageLabel.getInstance().getValue().hasHelpUrl());
+			iPageLabelRegistration = UniTimePageLabel.getInstance().addValueChangeHandler(new ValueChangeHandler<MenuInterface.PageNameInterface>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<PageNameInterface> event) {
+					treeItem.setVisible(event.getValue().hasHelpUrl());
+				}
+			});
+		} else if (item.hasPage()) {
 			label.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -344,7 +371,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 		if (item.hasSubMenus())
 			for (final MenuInterface subItem: item.getSubMenus()) {
 				if (subItem.isSeparator()) continue;
-				if (subItem.getName().equals(item.getName()) && !item.hasPage() && subItem.hasPage()) {
+				if (subItem.getName().equals(item.getName()) && !item.hasPage() && subItem.hasPage() && !"PAGE_HELP".equals(subItem.getPage())) {
 					label.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
@@ -386,6 +413,15 @@ public class UniTimeSideBar extends UniTimeMenu {
 						saveState();
 					}
 				});
+			} else if ("PAGE_HELP".equals(item.getPage())) {
+				iStackPanel.add(new Command() {
+					@Override
+					public void execute() {
+						PageNameInterface name = UniTimePageLabel.getInstance().getValue();
+						if (name.hasHelpUrl())
+							openUrl(MESSAGES.pageHelp(name.getName()), name.getHelpUrl(), item.getTarget());
+					}
+				}, item.getName());
 			} else {
 				iStackPanel.add(new Command() {
 					@Override
@@ -400,7 +436,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 		iStackPanel.setActive(true);
 	}
 	
-	protected void openUrl(final String name, final String url, String target) {
+	protected void openUrl(String name, String url, String target) {
 		if (target == null)
 			LoadingWidget.getInstance().show();
 		if ("dialog".equals(target)) {

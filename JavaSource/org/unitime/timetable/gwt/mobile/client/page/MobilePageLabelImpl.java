@@ -24,8 +24,12 @@ import org.unitime.timetable.gwt.client.page.PageLabelDisplay;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.googlecode.mgwt.dom.client.event.tap.TapEvent;
 import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
 import com.googlecode.mgwt.ui.client.MGWT;
@@ -56,11 +60,11 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 		iHelp.addTapHandler(new TapHandler() {
 			@Override
 			public void onTap(TapEvent event) {
-				if (getHelpUrl() == null || getHelpUrl().isEmpty()) return;
+				if (iUrl == null || iUrl.isEmpty()) return;
 				if (MGWT.getFormFactor().isTablet())
-					UniTimeFrameDialog.openDialog(MESSAGES.pageHelp(getText()), getHelpUrl());
+					UniTimeFrameDialog.openDialog(MESSAGES.pageHelp(getText()), iUrl);
 				else
-					ToolBox.open(getHelpUrl());
+					ToolBox.open(iUrl);
 			}
 		});
 		
@@ -99,14 +103,26 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 	}
 
 	@Override
-	public String getHelpUrl() {
-		return iUrl;
+	public PageNameInterface getValue() {
+		return new PageNameInterface(getText(), iUrl);
 	}
 
 	@Override
-	public void setHelpUrl(String url) {
-		iUrl = url;
-		iHelp.setVisible(iUrl != null && !iUrl.isEmpty());
+	public void setValue(PageNameInterface value) {
+		setValue(value, false);
 	}
 
+	@Override
+	public void setValue(PageNameInterface value, boolean fireEvents) {
+		iUrl = value.getHelpUrl();
+		iHelp.setVisible(iUrl != null && !iUrl.isEmpty());
+		setText(value.getName());
+		if (fireEvents)
+			ValueChangeEvent.fire(this, value);
+	}
+
+	@Override
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<PageNameInterface> handler) {
+		return addHandler(handler, ValueChangeEvent.getType());
+	}
 }

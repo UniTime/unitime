@@ -26,14 +26,18 @@ import org.unitime.timetable.gwt.shared.MenuInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * @author Tomas Muller
  */
-public class UniTimePageLabel {
+public class UniTimePageLabel implements HasValue<PageNameInterface> {
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 
@@ -52,7 +56,7 @@ public class UniTimePageLabel {
 	public void insert(RootPanel panel) {
 		String title = panel.getElement().getInnerText();
 		if (title != null && !title.isEmpty())
-			iLabel.setText(title);
+			iLabel.setValue(new PageNameInterface(title));
 		panel.getElement().setInnerText("");
 		panel.add(iLabel);
 		setPageName(title);
@@ -63,21 +67,41 @@ public class UniTimePageLabel {
 		RPC.execute(new MenuInterface.PageNameRpcRequest(title), new AsyncCallback<PageNameInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.setTitle("UniTime " + CONSTANTS.version() + "| " + title);
-				iLabel.setText(title);
-				iLabel.setHelpUrl(null);
+				setValue(new PageNameInterface(title), true);
 			}
 			@Override
 			public void onSuccess(PageNameInterface result) {
-				iLabel.setHelpUrl(result.getHelpUrl());
-				if (result.getName() != null) {
-					iLabel.setText(result.getName());
-					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + result.getName());
-				} else {
-					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + title);
-					iLabel.setText(title);
-				}
+				if (!result.hasName()) result.setName(title);
+				setValue(result, true);
 			}
 		});
 	}
+
+	@Override
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<PageNameInterface> handler) {
+		return iLabel.addValueChangeHandler(handler);
+	}
+
+	@Override
+	public void fireEvent(GwtEvent<?> event) {
+		iLabel.fireEvent(event);
+	}
+
+	@Override
+	public PageNameInterface getValue() {
+		return iLabel.getValue();
+	}
+
+	@Override
+	public void setValue(PageNameInterface value) {
+		Window.setTitle("UniTime " + CONSTANTS.version() + "| " + value.getName());
+		iLabel.setValue(value);
+	}
+
+	@Override
+	public void setValue(PageNameInterface value, boolean fireEvents) {
+		Window.setTitle("UniTime " + CONSTANTS.version() + "| " + value.getName());
+		iLabel.setValue(value, fireEvents);
+	}
+
 }
