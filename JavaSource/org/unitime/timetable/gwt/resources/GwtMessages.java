@@ -1556,7 +1556,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Room")
 	String resourceRoom();
 	
-	@DefaultMessage("<u>T</u>imetable")
+	@DefaultMessage("<u>T</u>ime Grid")
 	String tabGrid();
 	
 	@DefaultMessage("List of <u>E</u>vents")
