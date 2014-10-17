@@ -146,6 +146,20 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 		}
 	}
 	
+	private void replaceWith(CourseSelectionBox other) {
+		hideSuggestionList();
+		if (other != null) other.hideSuggestionList();
+		setError(other == null ? null : other.getError());
+		setEnabled(other == null ? iPrimary == null || !iPrimary.getValue().isEmpty() : other.isEnabled());
+		if (iPrimary != null)
+			setHint(other == null ? "" : other.getHint());
+		setValue(other == null ? null : other.getValue(), false);
+		if (iAlternative!=null) iAlternative.replaceWith(other == null ? null : other.iAlternative);
+		if (iWaitList != null) {
+			iWaitList.setValue(other == null || other.iWaitList == null ? false : other.iWaitList.getValue());
+		}
+	}
+	
 	private void clearAllAlternatives() {
 		if (iPrimary != null) {
 			setHint("");
@@ -201,6 +215,19 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 		}
 	}
 
+	public void remove() {
+		if (iPrimary!=null) {
+			iPrimary.remove();
+		} else {
+			if (iNext != null && isAllowFreeTime() == iNext.isAllowFreeTime()) {
+				replaceWith(iNext);
+				iNext.remove();
+			} else {
+				replaceWith(null);
+			}
+		}
+	}
+	
 	public boolean fillInFreeTime(CourseRequestInterface.Request request) {
 		try {
 			if (getFreeTimes() != null)

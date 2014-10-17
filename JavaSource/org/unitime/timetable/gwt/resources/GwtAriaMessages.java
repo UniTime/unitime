@@ -146,11 +146,17 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Swaps priority {0, number} course request with priority {1, number} course request including alternatives and wait list information.")
 	String altSwapCourseRequest(@PluralCount int p1, @PluralCount int p2);
 	
+	@DefaultMessage("Delete priority {0, number} course request including alternatives and wait list information.")
+	String altDeleteRequest(@PluralCount int p1);
+	
 	@DefaultMessage("Swaps priority {0, number} alternate course request with priority {1, number} alternate course request including alternatives and wait list information.")
 	String altSwapAlternateRequest(@PluralCount int p1, @PluralCount int p2);
 	
 	@DefaultMessage("Swaps priority {0, number} course request with priority {1, number} alternate course request including alternatives and wait list information.")
-	String altSwapCourseAlternateRequest(@PluralCount int p1, @PluralCount int p2);	
+	String altSwapCourseAlternateRequest(@PluralCount int p1, @PluralCount int p2);
+	
+	@DefaultMessage("Delete priority {0, number} alternate course request including alternatives and wait list information.")
+	String altDeleteAlternateRequest(@PluralCount int p1);
 	
 	@DefaultMessage("Course Finder dialog opened.")
 	String courseFinderDialogOpened();
