@@ -381,7 +381,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>L</u>ist of Classes")
 	String tabClasses();
 	
-	@DefaultMessage("<u>T</u>imetable")
+	@DefaultMessage("<u>T</u>ime Grid")
 	String tabTimetable();
 	
 	@DefaultMessage("Requests stored.")
