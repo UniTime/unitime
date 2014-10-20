@@ -122,6 +122,7 @@ import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
@@ -196,7 +197,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				"tab", "1", "filter", "exams", "rooms", "", "title", MESSAGES.pageExaminations(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false", "showClear", "false"),
 		Personal(
 				"type", "person", "fixedType", "true", "events", "", "filter", "person", "rooms", "", "title", MESSAGES.pagePersonalTimetable(),
-				"addEvent", "false", "fixedTitle", "true", "showFilter", "false", "showClear", "false", "icsAllSessions", "true"
+				"addEvent", "false", "fixedTitle", "true", "showFilter", "false", "showClear", "false"
 				),
 		Availability("title", MESSAGES.pageEventRoomAvailability(), "rooms", "flag:Event");
 		
@@ -642,20 +643,11 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						@Override
 						public void execute() {
 							popup.hide();
-							export("output=events.ics" + ("true".equals(iHistoryToken.getParameter("icsAllSessions", "false")) ? "&e:flag=All+Sessions" : ""), false);
+							copyToClipboard("output=events.ics" + (iType == PageType.Personal ? "&e:flag=All+Sessions" : ""), iType == PageType.Personal);
 						}
 					});
 					exportIcs.getElement().getStyle().setCursor(Cursor.POINTER);
 					menu.addItem(exportIcs);
-					MenuItem copyIcs = new MenuItem(MESSAGES.opCopyToClipboardICalendar(), true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							copyToClipboard("output=events.ics" + ("true".equals(iHistoryToken.getParameter("icsAllSessions", "false")) ? "&e:flag=All+Sessions" : ""));
-						}
-					});
-					copyIcs.getElement().getStyle().setCursor(Cursor.POINTER);
-					menu.addItem(copyIcs);
 					popup.add(menu);
 					popup.showRelativeTo((UIObject)clickEvent.getSource());
 					menu.focus();
@@ -1501,16 +1493,21 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		});
 	}
 	
-	protected void copyToClipboard(String format) {
+	protected void copyToClipboard(String format, final boolean personal) {
 		RPC.execute(EncodeQueryRpcRequest.encode(query(format, false)), new AsyncCallback<EncodeQueryRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
 			}
 			@Override
-			public void onSuccess(EncodeQueryRpcResponse result) {
+			public void onSuccess(final EncodeQueryRpcResponse result) {
 				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
-				dialog.setText(MESSAGES.opCopyToClipboardICalendar());
+				dialog.setText(MESSAGES.opExportICalendar());
 				dialog.setEscapeToHide(true);
+				SimpleForm form = new SimpleForm();
+				if (personal)
+					form.addRow(new HTML(MESSAGES.exportICalendarDescriptionPersonal(), true));
+				else
+					form.addRow(new HTML(MESSAGES.exportICalendarDescriptionOther(iSession.getAcademicSessionName()), true));
 				final TextArea ta = new TextArea();
 				ta.setStyleName("unitime-TextArea");
 				ta.setVisibleLines(5);
@@ -1518,7 +1515,29 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				ta.setText(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
 				UniTimeWidget<TextArea> w = new UniTimeWidget<TextArea>(ta);
 				w.setHint(MESSAGES.hintCtrlCToCopy());
-				dialog.setWidget(w);
+				form.addRow(w);
+				w.getElement().getStyle().setMarginBottom(5, Unit.PX);
+				
+				form.addRow(new HTML(MESSAGES.exportICalendarDownload(MESSAGES.buttonDownload()), true));
+				form.getElement().getStyle().setProperty("max-width", "300px");
+				
+				UniTimeHeaderPanel h = new UniTimeHeaderPanel();
+				h.addButton("download", MESSAGES.buttonDownload(), new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+						dialog.hide();
+					}
+				});
+				h.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						dialog.hide();
+					}
+				});
+				
+				form.addBottomRow(h);
+				dialog.setWidget(form);
 				Scheduler.get().scheduleDeferred(new Command() {
 					@Override
 					public void execute() {
@@ -1546,11 +1565,9 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				public void onFailure(Throwable caught) {
 					iHeader.setEnabled("export", false);
 					iHeader.setEnabled("operations", false);
-					iTimeGrid.setCalendarUrl(null);
 				}
 				@Override
 				public void onSuccess(EncodeQueryRpcResponse result) {
-					iTimeGrid.setCalendarUrl(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
 					iHeader.setEnabled("export", true);
 					iHeader.setEnabled("operations", getSelectedTab() > 0);
 				}

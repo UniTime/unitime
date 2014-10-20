@@ -151,10 +151,7 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Export iCalendar")
 	String opExportICalendar();
-	
-	@DefaultMessage("Copy iCalendar URL")
-	String opCopyToClipboardICalendar();
-	
+		
 	@DefaultMessage("Expand All")
 	String opExpandAll();
 	
@@ -3013,4 +3010,16 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("If the pop-up window was blocked, you can follow this link to retrieve the exported file.")
 	String pageBlockedPopup();
+	
+	@DefaultMessage("<u>D</u>ownload")
+	String buttonDownload();
+	
+	@DefaultMessage("You can subscribe to the following iCalendar URL in your favourite calendar application. It will always return your up-to-date schedule.")
+	String exportICalendarDescriptionPersonal();
+	
+	@DefaultMessage("You can subscribe to the following iCalendar URL in your favourite calendar application. It will always return an up-to-date calendar for {0} and your current filter selection.")
+	String exportICalendarDescriptionOther(String term);
+	
+	@DefaultMessage("Or you can download an iCalendar file by clicking the {0} button bellow. While it is often easier to import an iCalendar file, such a&nbsp;calendar will not get updated automatically.")
+	String exportICalendarDownload(String button);
 }
