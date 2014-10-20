@@ -476,6 +476,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	
 	public Collection<String> checkCourses(boolean online, CourseRequestInterface request) throws SectioningException, PageAccessException {
 		try {
+			if (request.getAcademicSessionId() == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+			
 			if (!online) {
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
@@ -710,7 +712,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 	
 	public void setLastRequest(CourseRequestInterface request) {
-		if (request == null)
+		if (request == null || request.getAcademicSessionId() == null)
 			getSessionContext().removeAttribute("request");
 		else
 			getSessionContext().setAttribute("request", request);
