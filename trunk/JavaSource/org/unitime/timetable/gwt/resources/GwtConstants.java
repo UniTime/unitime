@@ -139,7 +139,7 @@ public interface GwtConstants extends Constants {
 	String[] meetingColors();
 	
 	@DefaultStringArrayValue({
-		"Room Schedule", "Subject Schedule", "Curriculum Schedule", "Departmental Schedule", "Personal Schedule", "Course Schedule"
+		"Room Timetable", "Subject Timetable", "Curriculum Timetable", "Departmental Timetable", "Personal Timetable", "Course Timetable"
 	})
 	String[] resourceType();
 

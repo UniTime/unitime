@@ -447,7 +447,7 @@
 			</not>
 		</condition>
 	</item>
-	<item name="Schedule" page="timetable" type="gwt">
+	<item name="Timetable" page="timetable" type="gwt">
 		<condition>
 			<or>
 				<hasRole name="Anonymous"/>
@@ -508,7 +508,7 @@
 		</item>
 		<item name="Room Availability" page="availability" type="gwt"/>
 		<separator/>
-		<item name="Schedule" page="timetable" type="gwt"/>
+		<item name="Timetable" page="timetable" type="gwt"/>
 		<item name="Reports" page="hql" type="gwt">
 			<parameter name="appearance">events</parameter>
 			<condition>
