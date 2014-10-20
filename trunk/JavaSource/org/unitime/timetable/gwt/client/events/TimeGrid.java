@@ -30,7 +30,6 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
-import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
@@ -68,7 +67,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -94,7 +92,6 @@ public class TimeGrid extends Composite {
 	private P[] iSeparators = new P[7];
 	private P iWorkingHours;
 	private P iTimes;
-	private ImageLink iCalendar;
 	private SelectionLayer iSelectionLayer;
 	private List<SelectionInterface> iAllSelections = new ArrayList<SelectionInterface>();
 	private ResourceType iResourceType;
@@ -164,14 +161,6 @@ public class TimeGrid extends Composite {
 		iTimes = new P("calendar-times");
 		iTimes.setHeight(iCellHeight * (iEnd - iStart));
 
-		iCalendar = new ImageLink();
-		iCalendar.setImage(new Image(RESOURCES.calendar()));
-		iCalendar.setTarget(null);
-		iCalendar.setTitle(MESSAGES.exportICalendar());
-		iCalendar.addStyleName("calendar");
-		if (!print)
-			iContainer.add(iCalendar);
-		
 		for (int i = 0; i < iDays.length; i++) {
 			P sp = new P("header-time-interval");
 			sp.setWidth(iCellWidth);
@@ -289,19 +278,6 @@ public class TimeGrid extends Composite {
 		showSelections();
 	}
 	public Mode getMode() { return iMode; }
-	
-	public void setCalendarUrl(String url) {
-		if (url == null) {
-			iCalendar.setVisible(false);
-		} else {
-			iCalendar.setUrl(url);
-			iCalendar.setVisible(true);
-		}
-	}
-	
-	public String getCalendarUrl() {
-		return (iCalendar.isVisible() ? iCalendar.getUrl() : null);
-	}
 	
 	public TimeGrid getPrintWidget() {
 		int firstSlot = firstSlot();

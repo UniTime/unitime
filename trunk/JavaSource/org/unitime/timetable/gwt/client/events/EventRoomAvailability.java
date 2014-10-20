@@ -261,7 +261,6 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 								grid.addEvent(event, meetings);
 						}
 						grid.labelDays(week, null);
-						grid.setCalendarUrl(null);
 						grid.yellow(iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
 						if (past) grid.gray(0, 1);
 						grid.showVerticalSplit();
@@ -327,7 +326,6 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 								grid.addEvent(event, meetings);
 						}
 						grid.labelDays(dows, week);
-						grid.setCalendarUrl(null);
 						grid.yellow(iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
 						if (lastPast >= 0) grid.gray(0, lastPast);
 						grid.addMeetingClickHandler(iMeetingClickHandler);
@@ -955,7 +953,6 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 						grid.addEvent(event, meetings);
 				}
 				grid.labelDays(week, null);
-				grid.setCalendarUrl(null);
 				grid.yellow(iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
 				if (past) grid.gray(0, 1);
 				grid.showVerticalSplit();
@@ -1033,7 +1030,6 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 						grid.addEvent(event, meetings);
 				}
 				grid.labelDays(dows, week);
-				grid.setCalendarUrl(null);
 				grid.yellow(iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
 				if (lastPast >= 0) grid.gray(0, lastPast);
 				grid.addMeetingClickHandler(iMeetingClickHandler);
