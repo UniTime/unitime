@@ -175,9 +175,7 @@ public class StudentSectioningPage extends Composite {
 						sessionSelector.selectSession();
 				}
 				public void onSuccess(AcademicSessionProvider.AcademicSessionInfo result) {
-					sessionSelector.selectSession(result, false);
-					widget.checkEligibility(sessionSelector.getAcademicSessionId(), null, false, null);
-					userAuthentication.setLookupOptions("mustHaveExternalId,source=students,session=" + sessionSelector.getAcademicSessionId());
+					sessionSelector.selectSession(result, true);
 				}
 			});
 		
