@@ -989,7 +989,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Relations")
 	String sectRelations();
 	
-	@DefaultMessage("{0} schedule for {1}")
+	@DefaultMessage("{0} time grid for {1}")
 	String sectTimetable(String resource, String session);
 
 	@DefaultMessage("{0} events for {1}")
@@ -1907,10 +1907,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Events")
 	String pageEvents();
 	
-	@DefaultMessage("Event Schedule")
+	@DefaultMessage("Event Timetable")
 	String pageEventTimetable();
 	
-	@DefaultMessage("Room Schedule")
+	@DefaultMessage("Room Timetable")
 	String pageRoomTimetable();
 	
 	@DefaultMessage("Online Student Sectioning Test")
