@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.SectioningException;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
@@ -730,31 +731,37 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 	}
 	
 	public void validate(final AsyncCallback<Boolean> callback) {
-		String failed = null;
-		LoadingWidget.getInstance().show(MESSAGES.courseRequestsValidating());
-		for (final CourseSelectionBox[] c: iCourses) {
-			for (CourseSelectionBox x: c) {
-				String message = x.validate();
-				if (message != null) failed = message;
+		try {
+			String failed = null;
+			LoadingWidget.getInstance().show(MESSAGES.courseRequestsValidating());
+			for (final CourseSelectionBox[] c: iCourses) {
+				for (CourseSelectionBox x: c) {
+					String message = x.validate();
+					if (message != null) failed = message;
+				}
 			}
+			CourseRequestInterface cr = new CourseRequestInterface();
+			cr.setAcademicSessionId(iSessionProvider.getAcademicSessionId());
+			if (cr.getAcademicSessionId() == null)
+				throw new SectioningException(MESSAGES.sessionSelectorNoSession());
+			fillInCourses(cr); fillInAlternatives(cr);
+			final boolean success = (failed == null);
+			iSectioningService.checkCourses(iOnline, cr,
+					new AsyncCallback<Collection<String>>() {
+						public void onSuccess(Collection<String> result) {
+							for (String course: result)
+								setError(course, MESSAGES.validationCourseNotExists(course));
+							LoadingWidget.getInstance().hide();
+							callback.onSuccess(success && result.isEmpty());
+						}
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							callback.onFailure(caught);
+						}
+					});
+		} catch (Exception e) {
+			callback.onFailure(e);
 		}
-		CourseRequestInterface cr = new CourseRequestInterface();
-		cr.setAcademicSessionId(iSessionProvider.getAcademicSessionId());
-		fillInCourses(cr); fillInAlternatives(cr);
-		final boolean success = (failed == null);
-		iSectioningService.checkCourses(iOnline, cr,
-				new AsyncCallback<Collection<String>>() {
-					public void onSuccess(Collection<String> result) {
-						for (String course: result)
-							setError(course, MESSAGES.validationCourseNotExists(course));
-						LoadingWidget.getInstance().hide();
-						callback.onSuccess(success && result.isEmpty());
-					}
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().hide();
-						callback.onFailure(caught);
-					}
-				});
 	}
 	
 	public void setError(String course, String error) {
