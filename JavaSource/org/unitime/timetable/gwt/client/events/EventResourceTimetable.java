@@ -313,7 +313,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iResourceTypes = new ListBox();
 		for (ResourceType resource: ResourceType.values()) {
 			if (resource.isVisible())
-				iResourceTypes.addItem(resource.getPageTitle(CONSTANTS), resource.toString());
+				iResourceTypes.addItem(resource.getResourceType(CONSTANTS), resource.toString());
 		}
 		
 		iResourceTypes.addChangeHandler(new ChangeHandler() {
@@ -1963,7 +1963,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		String pageName = iHistoryToken.getParameter("title", "Events");
 		ResourceType resource = getResourceType();
 		if (!"true".equals(iHistoryToken.getParameter("fixedTitle")) && resource != null)
-			pageName = resource.getPageTitle(CONSTANTS);
+			pageName = resource.getPageName();
 		return pageName;
 	}
 

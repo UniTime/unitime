@@ -69,20 +69,22 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private String iMessage = null;
 	
 	public static enum ResourceType implements IsSerializable {
-		ROOM("room", true),
-		SUBJECT("subject", true),
-		CURRICULUM("curriculum", true),
-		DEPARTMENT("department", true),
-		PERSON("person", true),
-		COURSE("course", false);
-		
+		ROOM("Room Timetable","room", true),
+		SUBJECT("Subject Timetable","subject", true),
+		CURRICULUM("Curriculum Timetable","curriculum", true),
+		DEPARTMENT("Departmental Timetable", "department", true),
+		PERSON("Personal Timetable", "person", true),
+		COURSE("Course Timetable", "course", false);
+
+		private String iPage;
 		private String iLabel;
 		private boolean iVisible;
 		
-		ResourceType(String label, boolean visible) { iLabel = label; iVisible = visible; }
+		ResourceType(String page, String label, boolean visible) { iPage = page; iLabel = label; iVisible = visible; }
 		
 		public String getLabel() { return iLabel; }
-		public String getPageTitle(GwtConstants constants) {
+		public String getPageName() { return iPage; }
+		public String getResourceType(GwtConstants constants) {
 			return constants.resourceType()[ordinal()];
 		}
 		public String getName(GwtConstants constants) {
