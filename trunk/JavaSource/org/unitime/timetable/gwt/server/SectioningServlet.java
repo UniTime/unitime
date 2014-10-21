@@ -1917,6 +1917,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (sessionId == null) {
 				// use last used session otherwise
 				sessionId = getLastSessionId();
+			} else {
+				setLastSessionId(sessionId);
 			}
 			
 			if (sessionId == null) return new EligibilityCheck(MSG.exceptionNoAcademicSession());
