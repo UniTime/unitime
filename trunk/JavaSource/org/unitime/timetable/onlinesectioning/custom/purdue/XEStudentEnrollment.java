@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
+import org.restlet.Response;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
@@ -67,10 +69,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 
 public class XEStudentEnrollment implements StudentEnrollmentProvider {
@@ -111,7 +115,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return iExternalTermProvider.getExternalTerm(session);
 	}
 	
-	private Gson getGson(OnlineSectioningHelper helper) {
+	protected Gson getGson(OnlineSectioningHelper helper) {
 		GsonBuilder builder = new GsonBuilder()
 		.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
 			@Override
@@ -127,6 +131,17 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		});
 		if (helper.isDebugEnabled()) builder.setPrettyPrinting();
 		return builder.create();
+	}
+	
+	protected <T> T readResponse(Gson gson, Response response, Type typeOfT) throws JsonIOException, JsonSyntaxException, IOException {
+		if (response == null) return null;
+		JsonReader reader = new JsonReader(response.getEntity().getReader());
+		try {
+			return gson.fromJson(reader, typeOfT);
+		} finally {
+			reader.close();
+			response.release();
+		}
 	}
 	
 	@Override
@@ -159,7 +174,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			
 			// Check status, memorize enrolled sections
 			Gson gson = getGson(helper);
-			List<XEInterface.RegisterResponse> current = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.TYPE_LIST);
+			List<XEInterface.RegisterResponse> current = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.TYPE_LIST);
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
 			if (helper.isDebugEnabled())
 				helper.debug("Current registration: " + gson.toJson(current));
@@ -238,7 +253,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			helper.warn("Banner eligibility failed: " + e.getMessage(), e);
 			throw new SectioningException(e.getMessage(), e);
 		} finally {
-			if (resource != null) resource.release();
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
 		}
 	}
 	
@@ -269,7 +287,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			
 			// Check status, memorize enrolled sections
 			Gson gson = getGson(helper);
-			List<XEInterface.RegisterResponse> current = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.TYPE_LIST);
+			List<XEInterface.RegisterResponse> current = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.TYPE_LIST);
 			if (current == null || current.isEmpty() || !current.get(0).validStudent) {
 				String reason = null;
 				if (current != null && current.size() > 0 && current.get(0).failureReasons != null) {
@@ -380,7 +398,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			resource.post(new JsonRepresentation(gson.toJson(req)));
 			
 			// Finally, check the response
-			XEInterface.RegisterResponse response = gson.fromJson(new JsonReader(resource.getResponseEntity().getReader()), XEInterface.RegisterResponse.class);
+			XEInterface.RegisterResponse response = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.class);
 			if (helper.isDebugEnabled())
 				helper.debug("Response: " + gson.toJson(response));
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));
@@ -492,7 +510,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			helper.warn("Banner enrollment failed: " + e.getMessage(), e);
 			throw new SectioningException(e.getMessage(), e);
 		} finally {
-			if (resource != null) resource.release();
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
 		}
 	}
 
