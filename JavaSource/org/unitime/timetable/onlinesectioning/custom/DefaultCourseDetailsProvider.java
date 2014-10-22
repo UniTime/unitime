@@ -57,7 +57,7 @@ public class DefaultCourseDetailsProvider implements CourseDetailsProvider, Cour
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static StudentSectioningConstants CONST = Localization.create(StudentSectioningConstants.class);
 	private static final long serialVersionUID = 1L;
-	private ExternalTermProvider iExternalTermProvider = null;
+	private transient ExternalTermProvider iExternalTermProvider = null;
 	
 	protected String replaceExternal(String url, AcademicSessionInfo session, String subject, String courseNbr) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException, UnsupportedEncodingException {
 		if (iExternalTermProvider == null) {
