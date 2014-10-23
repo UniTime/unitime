@@ -167,6 +167,7 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 			iLastQuery = null;
 			iCourses.clearData(true);
 			iCourses.setEmptyMessage(MESSAGES.courseSelectionNoCourseFilter());
+			updateCourseDetails();
 		} else if (!value.equals(iLastQuery)) {
 			iLastQuery = value;
 			iDataProvider.getData(value, new AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>>() {
@@ -175,6 +176,7 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 					iCourses.setEmptyMessage(caught.getMessage());
 					if (isVisible())
 						AriaStatus.getInstance().setText(caught.getMessage());
+					updateCourseDetails();
 					ResponseEvent.fire(CourseFinderCourses.this, false);
 				}
 				public void onSuccess(Collection<ClassAssignmentInterface.CourseAssignment> result) {
@@ -243,7 +245,7 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 	}
 	
 	protected void updateCourseDetails() {
-		if (iCourses.getSelectedRow() < 0) {
+		if (iCourses.getSelectedRow() < 0 || iCourses.getRows() == null || iCourses.getRows().length == 0) {
 			if (iDetails != null)
 				for (CourseFinderCourseDetails detail: iDetails) {
 					detail.setValue(null);
