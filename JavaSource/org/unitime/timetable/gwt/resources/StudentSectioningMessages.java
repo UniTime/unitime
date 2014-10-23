@@ -460,6 +460,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("<u>O</u>k")
 	String buttonSetPin();
+	
+	@DefaultMessage("<u>C</u>ancel")
+	String buttonCancelPin();
 
 	@DefaultMessage("Guest")
 	String userGuest();
