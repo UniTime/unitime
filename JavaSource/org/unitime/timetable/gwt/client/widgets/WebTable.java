@@ -34,6 +34,8 @@ import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
@@ -514,6 +516,17 @@ public class WebTable extends Composite {
 		
 		public CheckboxCell(boolean check, String ariaLabel) {
 			this(check, null, ariaLabel);
+		}
+		
+		public CheckboxCell(boolean check, String ariaLabel, final String onTitle, final String offTitle) {
+			this(check, null, ariaLabel);
+			iCheck.setTitle(iCheck.getValue() ? onTitle : offTitle);
+			iCheck.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					iCheck.setTitle(event.getValue() ? onTitle : offTitle);
+				}
+			});
 		}
 		
 		public boolean isChecked() { return iCheck.getValue(); }
