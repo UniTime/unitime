@@ -424,6 +424,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iStartOver.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				clearMessage();
 				clear();
 				lastRequest(iSessionSelector.getAcademicSessionId(), null, true);
 			}
@@ -487,6 +488,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		iEnroll.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
+				clearMessage();
 				LoadingWidget.getInstance().show(MESSAGES.waitEnroll());
 				iSectioningService.enroll(iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 					public void onSuccess(ClassAssignmentInterface result) {
@@ -621,6 +623,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iSuggestionsBox.addSuggestionSelectedHandler(new SuggestionsBox.SuggestionSelectedHandler() {
 				public void onSuggestionSelected(SuggestionsBox.SuggestionSelectedEvent event) {
 					ClassAssignmentInterface result = event.getSuggestion();
+					clearMessage();
 					fillIn(result);
 					addHistory();
 				}
@@ -632,7 +635,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	private void fillIn(ClassAssignmentInterface result) {
-		iLastResult.clear(); clearMessage();
+		iLastResult.clear();
 		iLastAssignment = result;
 		String calendarUrl = GWT.getHostPageBaseURL() + "calendar?sid=" + iSessionSelector.getAcademicSessionId() + "&cid=";
 		String ftParam = "&ft=";
@@ -770,6 +773,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						((CheckBox)waitList.getWidget()).addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 							@Override
 							public void onValueChange(ValueChangeEvent<Boolean> event) {
+								clearMessage();
 								iCourseRequests.setWaitList(course.getCourseName(), event.getValue());
 								LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
 								CourseRequestInterface r = iCourseRequests.getRequest(); r.setNoChange(true);
@@ -1096,7 +1100,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		if (iRequests.isVisible()) {
 			prev();
 		}
-		clearMessage();
 	}
 	
 	public void checkEligibility(final Long sessionId, final Long studentId, final boolean saved, final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret) {
