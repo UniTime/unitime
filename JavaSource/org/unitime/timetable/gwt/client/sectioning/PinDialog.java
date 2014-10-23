@@ -53,7 +53,7 @@ public class PinDialog extends AriaDialogBox {
 	private static final SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
 	
 	private AriaTextBox iPin = null;
-	private AriaButton iButton = null;
+	private AriaButton iButton = null, iCancel = null;
 	private PinCallback iCallback = null;
 	
 	private boolean iOnline;
@@ -86,12 +86,23 @@ public class PinDialog extends AriaDialogBox {
 		iButton = new AriaButton(MESSAGES.buttonSetPin());
 		panel.add(iButton);
 		
+		iCancel = new AriaButton(MESSAGES.buttonCancelPin());
+		panel.add(iCancel);
+		
 		setWidget(panel);
 		
 		iButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				sendPin();
+			}
+		});
+		
+		iCancel.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				hide();
+				iCallback.onFailure(new SectioningException(MESSAGES.exceptionAuthenticationPinNotProvided()));
 			}
 		});
 		
