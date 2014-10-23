@@ -152,6 +152,7 @@ public class StudentSectioningPage extends Composite {
 
 			public void onLogOut(UserAuthenticatedEvent event) {
 				if (!event.isGuest()) {
+					widget.clearMessage();
 					widget.clear();
 					// sessionSelector.selectSession(null);
 				}
@@ -161,8 +162,10 @@ public class StudentSectioningPage extends Composite {
 		
 		sessionSelector.addAcademicSessionChangeHandler(new AcademicSessionProvider.AcademicSessionChangeHandler() {
 			public void onAcademicSessionChange(AcademicSessionProvider.AcademicSessionChangeEvent event) {
-				if (event.isChanged())
+				if (event.isChanged()) {
+					widget.clearMessage();
 					widget.clear();
+				}
 				widget.checkEligibility(event.getNewAcademicSessionId(), null, false, null);
 				userAuthentication.setLookupOptions("mustHaveExternalId,source=students,session=" + event.getNewAcademicSessionId());
 			}
