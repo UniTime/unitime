@@ -138,13 +138,13 @@ public enum ApplicationProperty {
 	LoginPage("tmtbl.login_url"),
 
 	/**
-	 * Custom login page header, see http://help34.unitime.org/Customizations for more details. 
+	 * Custom login page header, see http://help35.unitime.org/Customizations for more details. 
 	 */
 	@Description("Login: custom page header")
 	LoginPageHeader("tmtbl.header.external"),
 
 	/**
-	 * Custom login page footer, see http://help34.unitime.org/Customizations for more details. 
+	 * Custom login page footer, see http://help35.unitime.org/Customizations for more details. 
 	 */
 	@Description("Login: custom page footer")
 	LoginPageFooter("tmtbl.footer.external"),
@@ -172,7 +172,7 @@ public enum ApplicationProperty {
 	 * <li>Stack On Side ... Tree on the left side of the page content, but the first level of the tree is a StackPanel (only one top level item can be opened at a time)
 	 * </ul>
 	 * If manager setting for this property is created, each user (timetable manager) can change his/her menu style.
-	 * See http://help34.unitime.org/Customizations for more details.
+	 * See http://help35.unitime.org/Customizations for more details.
 	 */
 	@DefaultValue("Dynamic On Top")
 	@Values({"Dynamic On Top", "Static On Top", "Tree On Side", "Static Tree On Side", "Dynamic Tree On Side", "Stack On Side", "Static Stack On Side", "Dynamic Stack On Side"})
@@ -244,7 +244,7 @@ public enum ApplicationProperty {
 	AuthenticationModules("tmtbl.authenticate.modules"),
 
 	/**
-	 * LDAP Authentication. See http://help34.unitime.org/LDAP for more details.
+	 * LDAP Authentication. See http://help35.unitime.org/LDAP for more details.
 	 */
 	@Description("LDAP Authentication: ldap url")
 	AuthenticationLdapUrl("unitime.authentication.ldap.url"),
@@ -299,7 +299,7 @@ public enum ApplicationProperty {
 	@Description("All Pages: enable page help")
 	PageHelpEnabled("tmtbl.wiki.help"),
 
-	@DefaultValue("https://sites.google.com/a/unitime.org/help34/")
+	@DefaultValue("https://sites.google.com/a/unitime.org/help35/")
 	@Description("All Pages: page help url")
 	PageHelpUrl("tmtbl.wiki.url"),
 
@@ -544,7 +544,7 @@ public enum ApplicationProperty {
 
 	/**
 	 * Room availability. By default, use the included event management system.
-	 * See http://help34.unitime.org/Custom_Room_Availability for more details.
+	 * See http://help35.unitime.org/Custom_Room_Availability for more details.
 	 */
 	@Type(Class.class)
 	@Implements(RoomAvailabilityInterface.class)
@@ -634,7 +634,7 @@ public enum ApplicationProperty {
 
 	/**
 	 * Use {@link SpringLdapExternalUidLookup} when LDAP authentication is enabled.
-	 * See http://help34.unitime.org/LDAP for more details.
+	 * See http://help35.unitime.org/LDAP for more details.
 	 */
 	@Type(Class.class)
 	@Implements(ExternalUidLookup.class)
@@ -648,7 +648,7 @@ public enum ApplicationProperty {
 
 	/**
 	 * Use {@link SpringLdapExternalUidLookup} when LDAP authentication is enabled.
-	 * See http://help34.unitime.org/LDAP for more details.
+	 * See http://help35.unitime.org/LDAP for more details.
 	 */
 	@Type(Class.class)
 	@Implements(ExternalUidLookup.class)
@@ -727,7 +727,7 @@ public enum ApplicationProperty {
 
 	/**
 	 * Use {@link SpringLdapExternalUidTranslation} when LDAP authentication is enabled.
-	 * See http://help34.unitime.org/LDAP for more details.
+	 * See http://help35.unitime.org/LDAP for more details.
 	 */
 	@Type(Class.class)
 	@Implements(ExternalUidTranslation.class)
@@ -886,7 +886,7 @@ public enum ApplicationProperty {
 	ExaminationNameExpandCrossListedOfferingsToCourses("tmtbl.exam.name.expandCrosslistedOfferingToCourses"),
 
 	/**
-	 * See http://help34.unitime.org/Exam_Naming_Convention for more details.
+	 * See http://help35.unitime.org/Exam_Naming_Convention for more details.
 	 */
 	@Type(Integer.class)
 	@DefaultValue("100")
@@ -1598,7 +1598,7 @@ public enum ApplicationProperty {
 	@Deprecated
 	ExamsLoginMessage("tmtbl.exams.login.message"),
 
-	@DefaultValue("http://help34.unitime.org/Frequently_Asked_Questions")
+	@DefaultValue("http://help35.unitime.org/Frequently_Asked_Questions")
 	@Description("Help: FAQ page")
 	HelpFAQ("tmtbl.help.faq"),
 
@@ -1618,11 +1618,11 @@ public enum ApplicationProperty {
 	@Description("Help: release notes")
 	HelpReleaseNotes("tmtbl.help.release_notes"),
 
-	@DefaultValue("http://help34.unitime.org/Timetabling")
+	@DefaultValue("http://help35.unitime.org/Timetabling")
 	@Description("Help: online help landing page")
 	HelpMain("tmtbl.help.root"),
 
-	@DefaultValue("http://help34.unitime.org/Tips_and_Tricks")
+	@DefaultValue("http://help35.unitime.org/Tips_and_Tricks")
 	@Description("Help: tips and tricks")
 	HelpTricks("tmtbl.help.tricks"),
 
