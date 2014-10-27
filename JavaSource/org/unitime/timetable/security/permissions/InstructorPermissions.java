@@ -28,7 +28,6 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
-import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -41,12 +40,9 @@ public class InstructorPermissions {
 	@PermissionForRight(Right.AssignInstructors)
 	public static class AssignInstructors implements Permission<InstrOfferingConfig> {
 		@Autowired PermissionDepartment permissionDepartment;
-		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeededLimitedEdit;
 
 		@Override
 		public boolean check(UserContext user, InstrOfferingConfig source) {
-			if (permissionOfferingLockNeededLimitedEdit.check(user, source.getInstructionalOffering())) return false;
-			
 			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit))
 				return true;
 			
@@ -72,13 +68,11 @@ public class InstructorPermissions {
 	@PermissionForRight(Right.AssignInstructorsClass)
 	public static class AssignInstructorsClass implements Permission<Class_> {
 		@Autowired PermissionDepartment permissionDepartment;
-		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeededLimitedEdit;
 
 		@Override
 		public boolean check(UserContext user, Class_ source) {
-			return !permissionOfferingLockNeededLimitedEdit.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()) &&
-					permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerLimitedEdit,
-							source.getManagingDept(), DepartmentStatusType.Status.ManagerLimitedEdit);
+			return permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerLimitedEdit, 
+					source.getManagingDept(), DepartmentStatusType.Status.ManagerLimitedEdit);
 		}
 
 		@Override
