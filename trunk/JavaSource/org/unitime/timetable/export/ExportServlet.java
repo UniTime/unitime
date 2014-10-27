@@ -52,15 +52,18 @@ public class ExportServlet extends HttpServlet {
 	}
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		ExportServletHelper helper = new ExportServletHelper(request, response, getSessionContext());
-		
-		String ref = helper.getParameter("output");
-		if (ref == null) {
-			sLog.info("No exporter provided.");
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No exporter provided, please set the output parameter.");
-			return;
-		}
+		ExportServletHelper helper = null;
+		String ref = null;
 		try {
+			helper = new ExportServletHelper(request, response, getSessionContext());
+			
+			ref = helper.getParameter("output");
+			if (ref == null) {
+				sLog.info("No exporter provided.");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No exporter provided, please set the output parameter.");
+				return;
+			}
+			
 			getExporter(ref).export(helper);
 		} catch (NoSuchBeanDefinitionException e) {
 			sLog.info("Exporter " + ref + " not known.");
@@ -75,13 +78,15 @@ public class ExportServlet extends HttpServlet {
 			sLog.warn(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 		} finally {
-			if (helper.hasOutputStream()) {
-				helper.getOutputStream().flush();
-				helper.getOutputStream().close();
-			}
-			if (helper.hasWriter()) {
-				helper.getWriter().flush();
-				helper.getWriter().close();
+			if (helper != null) {
+				if (helper.hasOutputStream()) {
+					helper.getOutputStream().flush();
+					helper.getOutputStream().close();
+				}
+				if (helper.hasWriter()) {
+					helper.getWriter().flush();
+					helper.getWriter().close();
+				}
 			}
 		}
 	}
