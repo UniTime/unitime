@@ -116,7 +116,7 @@ public class CoursePermissions {
 		public boolean check(UserContext user, InstructionalOffering source) {
 			// Owner can edit one of the course offerings
 			for (CourseOffering course: source.getCourseOfferings()) {
-				if (permissionDepartment.check(user, course.getDepartment(), DepartmentStatusType.Status.OwnerEdit))
+				if (permissionDepartment.check(user, course.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit))
 					return true;
 			}
 			
@@ -127,7 +127,7 @@ public class CoursePermissions {
 					for (Class_ clazz: subpart.getClasses()) {
 						if (clazz.getManagingDept() != null && clazz.getManagingDept().isExternalManager()) {
 							if (externals.add(clazz.getManagingDept()) &&
-								permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerEdit))
+								permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerLimitedEdit))
 								return true;
 						}
 					}
