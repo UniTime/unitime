@@ -19,10 +19,7 @@
 */
 package org.unitime.timetable.events;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
@@ -33,8 +30,8 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.log4j.Logger;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
@@ -46,7 +43,6 @@ import org.unitime.timetable.security.SessionContext;
  */
 @GwtRpcImplements(EncodeQueryRpcRequest.class)
 public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcRequest, EncodeQueryRpcResponse> {
-	private static Logger sLog = Logger.getLogger(QueryEncoderBackend.class);
 	
 	@Override
 	public EncodeQueryRpcResponse execute(EncodeQueryRpcRequest request, SessionContext context) {
@@ -69,12 +65,7 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 			cipher.init(Cipher.ENCRYPT_MODE, secret());
 			return new BigInteger(cipher.doFinal(text.getBytes())).toString(36);
 		} catch (Exception e) {
-			sLog.warn("Encoding failed: " + e.getMessage());
-			try {
-				return URLEncoder.encode(text, "ISO-8859-1");
-			} catch (UnsupportedEncodingException x) {
-				return null;
-			}
+			throw new GwtRpcException("Encoding failed: " + e.getMessage(), e);
 		}
 	}
 	
@@ -85,12 +76,7 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 			cipher.init(Cipher.DECRYPT_MODE, secret());
 			return new String(cipher.doFinal(new BigInteger(text, 36).toByteArray()));
 		} catch (Exception e) {
-			sLog.warn("Decoding failed: " + e.getMessage());
-			try {
-				return URLDecoder.decode(text, "ISO-8859-1");
-			} catch (UnsupportedEncodingException x) {
-				return null;
-			}
+			throw new GwtRpcException("Decoding failed: " + e.getMessage(), e);
 		}
 	}	
 
