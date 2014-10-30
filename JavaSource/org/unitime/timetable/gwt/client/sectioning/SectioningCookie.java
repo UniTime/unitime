@@ -27,8 +27,16 @@ import com.google.gwt.user.client.Cookies;
 public class SectioningCookie {
 	private boolean iCourseDetails = false, iShowClassNumbers = false;
 	private int iRelatedSortBy = 0;
+	private EnrollmentFilter iEnrollmentFilter = EnrollmentFilter.ALL;
 	
 	private static SectioningCookie sInstance = null;
+	
+	public static enum EnrollmentFilter {
+		ALL,
+		ENROLLED,
+		NOT_ENROLLED,
+		WAIT_LISTED
+	}
 	
 	private SectioningCookie() {
 		try {
@@ -38,6 +46,7 @@ public class SectioningCookie {
 				iCourseDetails = "T".equals(values[0]);
 				iShowClassNumbers = "T".equals(values.length >= 2 ? values[1] : "F");
 				iRelatedSortBy = Integer.parseInt(values[2]);
+				iEnrollmentFilter = EnrollmentFilter.values()[Integer.parseInt(values[3])];
 			}
 		} catch (Exception e) {
 		}
@@ -46,7 +55,7 @@ public class SectioningCookie {
 	private void save() {
 		String cookie = 
 			(iCourseDetails ? "T": "F") + ":" +
-			(iShowClassNumbers ? "T": "F") + ":" + iRelatedSortBy;
+			(iShowClassNumbers ? "T": "F") + ":" + iRelatedSortBy + ":" + iEnrollmentFilter.ordinal();
 		Cookies.setCookie("UniTime:Sectioning", cookie);
 	}
 	
@@ -80,6 +89,15 @@ public class SectioningCookie {
 	
 	public void setRelatedSortBy(int sort) {
 		iRelatedSortBy = sort;
+		save();
+	}
+	
+	public EnrollmentFilter getEnrollmentFilter() {
+		return iEnrollmentFilter;
+	}
+	
+	public void setEnrollmentFilter(EnrollmentFilter enrollmentFilter) {
+		iEnrollmentFilter = enrollmentFilter;
 		save();
 	}
 }

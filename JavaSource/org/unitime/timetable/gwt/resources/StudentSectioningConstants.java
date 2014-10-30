@@ -134,4 +134,9 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultBooleanValue(false)
 	boolean allowCalendarExport();
+	
+	@DefaultStringArrayValue({
+		"All", "Enrolled", "Not Enrolled", "Wait-Listed"
+	})
+	String[] enrollmentFilterValues();
 }
