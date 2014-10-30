@@ -739,7 +739,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
 					WebTable.Row row = null;
 					String unassignedMessage = MESSAGES.courseNotAssigned();
-					if (course.getNote() != null)
+					if (course.hasEnrollmentMessage())
+						unassignedMessage = course.getEnrollmentMessage();
+					else if (course.getNote() != null)
 						unassignedMessage = course.getNote();
 					else if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
 						unassignedMessage = "";

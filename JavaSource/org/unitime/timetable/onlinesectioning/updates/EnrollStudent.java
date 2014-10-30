@@ -51,6 +51,7 @@ import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.HasCacheMode;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -325,7 +326,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cd.setChangedBy(helper.getUser() == null ? null : helper.getUser().getExternalId());
 							cd.setCourseRequests(new HashSet<CourseRequest>());
 							cd.setStudent(student);
+							cd.setEnrollmentMessages(new HashSet<StudentEnrollmentMessage>());
 							student.getCourseDemands().add(cd);
+						} else {
+							for (Iterator<StudentEnrollmentMessage> i = cd.getEnrollmentMessages().iterator(); i.hasNext(); ) {
+								StudentEnrollmentMessage message = i.next();
+								helper.getHibSession().delete(message);
+								i.remove();
+							}
 						}
 						cd.setAlternative(false);
 						cd.setPriority(priority);
@@ -378,6 +386,27 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							if (cr.getCourseOffering() == null || !cr.getCourseOffering().getUniqueId().equals(co.getCourseId()))
 								cr.setCourseOffering(CourseOfferingDAO.getInstance().get(co.getCourseId(), helper.getHibSession()));
 							course2request.put(co.getCourseId(), cr);
+							
+							if (failures != null) {
+								String message = null;
+								for (EnrollmentFailure f:failures) {
+									if (co.getCourseId().equals(f.getCourse().getCourseId()))
+										if (message == null)
+											message = f.getMessage();
+										else if (!message.contains(f.getMessage()))
+											message += "\n" + f.getMessage();
+								}
+								if (message != null && !message.isEmpty()) {
+									StudentEnrollmentMessage m = new StudentEnrollmentMessage();
+									m.setCourseDemand(cd);
+									m.setLevel(0);
+									m.setType(0);
+									m.setTimestamp(ts);
+									m.setMessage(message.length() > 255 ? message.substring(0, 252) + "..." : message);
+									m.setOrder(0);
+									cd.getEnrollmentMessages().add(m);
+								}
+							}
 						}
 						while (requests.hasNext()) {
 							CourseRequest cr = requests.next();

@@ -84,6 +84,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private boolean iNotAvailable = false, iLocked = false;
 		private String iInstead;
 		private boolean iWaitListed = false;
+		private String iEnrollmentMessage = null;
 
 		private ArrayList<ClassAssignment> iAssignments = new ArrayList<ClassAssignment>();
 
@@ -184,6 +185,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public boolean isWaitListed() { return iWaitListed; }
 		public void setWaitListed(boolean waitListed) { iWaitListed = waitListed; }
+		
+		public String getEnrollmentMessage() { return iEnrollmentMessage; }
+		public boolean hasEnrollmentMessage() { return iEnrollmentMessage != null && !iEnrollmentMessage.isEmpty(); }
+		public void setEnrollmentMessage(String message) { iEnrollmentMessage = message; }
 		
 		public String toString() {
 			return (isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr()) + ": " + (isAssigned() ? getClassAssignments() : "NOT ASSIGNED");
@@ -649,6 +654,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iApprovedBy = null;
 		private List<Conflict> iConflicts = null;
 		private Boolean iWaitList = null; 
+		private String iEnrollmentMessage = null;
 		
 		public Enrollment() {}
 		
@@ -720,6 +726,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iConflicts.add(conflict);
 		}
 		public List<Conflict> getConflicts() { return iConflicts; }
+		
+		public String getEnrollmentMessage() { return iEnrollmentMessage; }
+		public boolean hasEnrollmentMessage() { return iEnrollmentMessage != null && !iEnrollmentMessage.isEmpty(); }
+		public void setEnrollmentMessage(String message) { iEnrollmentMessage = message; }
 	}
 	
 	public static class Conflict implements IsSerializable, Serializable {
