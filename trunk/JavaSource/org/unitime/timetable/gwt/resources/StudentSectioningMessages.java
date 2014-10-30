@@ -545,7 +545,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Failed to load enrollments: {0}")
 	String failedToLoadEnrollments(String message);
 
-	@DefaultMessage("The selected offering has no students enrolled.")
+	@DefaultMessage("The selected offering has no students.")
 	String offeringHasNoEnrollments();
 	
 	@DefaultMessage("The selected class has no students enrolled.")
@@ -1190,4 +1190,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("The class is locked. Alternatives cannot change classes that are locked, except of the one that was clicked.")
 	String hintLocked();
+	
+	@DefaultMessage("Students")
+	String studentsTable();
+	
+	@DefaultMessage("{0} Students")
+	String enrollmentTableFilter(String filter);
+	
+	@DefaultMessage("The selected offering has no {0} students.")
+	String offeringHasNoEnrollmentsOfType(String type);
 }
