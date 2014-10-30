@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import java.util.Date;
+
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -39,6 +41,7 @@ import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -128,6 +131,13 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 	@Override
 	public Interval parse(String query) {
 		if (query == null || getValues() == null) return new Interval();
+		if ("today".equalsIgnoreCase(query)) {
+			Date today = new Date();
+			int m1 = Integer.parseInt(DateTimeFormat.getFormat("MM").format(today));
+			int d1 = Integer.parseInt(DateTimeFormat.getFormat("dd").format(today));
+			WeekInterface first = find(m1, d1, null);
+			return new Interval(first,  null);
+		}
 		MatchResult match = iRegExp[0].exec(query);
 		if (match != null) {
 			int m1 = Integer.parseInt(match.getGroup(1));
