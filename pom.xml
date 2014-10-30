@@ -229,6 +229,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- Uncomment the following dependency for the restlet to use the Apache HTTP client (instead of the default HTTP client)
+		<dependency>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.httpclient</artifactId>
+			<version>${restlet.version}</version>
+		</dependency>
+		-->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
