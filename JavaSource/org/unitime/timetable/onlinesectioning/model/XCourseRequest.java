@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-
 import org.cpsolver.studentsct.model.Choice;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Enrollment;
@@ -45,6 +44,7 @@ import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseRequestOption;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 
@@ -62,6 +62,7 @@ public class XCourseRequest extends XRequest {
     private XEnrollment iEnrollment = null;
     private Map<XCourseId, List<XWaitListedSection>> iSectionWaitlist = null;
     private Map<XCourseId, byte[]> iOptions = null;
+    private String iMessage = null;
 
     public XCourseRequest() {}
     
@@ -106,6 +107,16 @@ public class XCourseRequest extends XRequest {
     			iEnrollment = new XEnrollment(demand.getStudent(), cr.getCourseOffering(), helper, enrl);
     			break;
     		}
+        }
+        if (demand.getEnrollmentMessages() != null) {
+        	StudentEnrollmentMessage message = null;
+        	for (StudentEnrollmentMessage m: demand.getEnrollmentMessages()) {
+        		if (message == null || message.getOrder() < m.getOrder() || (message.getOrder() == m.getOrder() && message.getTimestamp().before(m.getTimestamp()))) {
+        			message = m;
+        		}
+        	}
+        	if (message != null)
+        		iMessage = message.getMessage();
         }
     }
     
@@ -208,6 +219,10 @@ public class XCourseRequest extends XRequest {
     		}
     }
     
+    public String getEnrollmentMessage() { return iMessage; }
+    
+    public void setEnrollmentMessage(String message) { iMessage = message; }
+    
     @Override
     public String toString() {
     	String ret = super.toString();
@@ -269,6 +284,8 @@ public class XCourseRequest extends XRequest {
     				}
         	}
         }
+        
+        iMessage = (String)in.readObject();
 	}
 
 	@Override
@@ -307,6 +324,8 @@ public class XCourseRequest extends XRequest {
 				out.writeInt(value.length);
 				out.write(value);
 			}
+		
+		out.writeObject(iMessage);
 	}
 	
 	public static class XCourseRequestSerializer implements Externalizer<XCourseRequest> {
