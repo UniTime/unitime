@@ -3590,3 +3590,12 @@ unitime-RoomSharingWidget .legend .blank {
 	padding: 1px 10px 1px 10px;
 	margin: 4px 0px 1px 0px;
 }
+
+.unitime-MainTable .text-red {
+	color: red;
+}
+
+.unitime-MainTable .text-gray {
+	color: gray;
+	font-style: italic;
+}
