@@ -244,7 +244,9 @@ public class EnrollmentTable extends Composite {
 						String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
 						WebTable.Row row = null;
 						String unassignedMessage = MESSAGES.courseNotAssigned();
-						if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
+						if (course.hasEnrollmentMessage())
+							unassignedMessage = course.getEnrollmentMessage();
+						else if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
 							unassignedMessage = "";
 							for (Iterator<String> i = course.getOverlaps().iterator(); i.hasNext();) {
 								String x = i.next();
