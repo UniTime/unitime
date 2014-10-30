@@ -224,7 +224,7 @@ public class ExamEditAction extends PreferencesAction {
             } catch(Exception e) { deleteId = -1; }
            
             if ("instructor".equals(deleteType)  && deleteId>=0) {
-                frm.getInstructors().remove(deleteId);
+                frm.getInstructors().remove((int)deleteId);
             } else if ("examType".equals(deleteType)  && deleteId>=0) {
                 frm.setExamType(deleteId);
             } else if ("objects".equals(deleteType)  && deleteId>=0) {
