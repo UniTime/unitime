@@ -268,7 +268,12 @@
 					<html:select style="width:350px;" property='<%= "roomPrefs[" + ctr + "]" %>'
 						disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
-						<html:options collection="<%=Room.ROOM_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="labelWithCapacity" />
+						<logic:equal value="true" parameter="examSeating">
+							<html:options collection="<%=Room.ROOM_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="labelWithExamCapacity" />
+						</logic:equal>
+						<logic:notEqual value="true" parameter="examSeating">
+							<html:options collection="<%=Room.ROOM_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="labelWithCapacity" />
+						</logic:notEqual>
 					</html:select>
 					&nbsp;&nbsp;
 					<html:select property='<%= "roomPrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					

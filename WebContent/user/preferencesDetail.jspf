@@ -156,7 +156,12 @@
 					</logic:iterate>
 					<logic:iterate scope="request" name="<%=Room.ROOM_LIST_ATTR_NAME%>" id="r">
 						<logic:equal name="r" property="uniqueId" value="<%=(String)roomPref%>">
-							<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((Location)r).getLabel()%> (<%=((Location)r).getCapacity()%> seats)'><B><%=((Location)r).getLabel()%></B></div>
+							<logic:equal value="true" parameter="examSeating">
+								<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((Location)r).getLabelWithExamCapacity()%>'><B><%=((Location)r).getLabel()%></B></div>
+							</logic:equal>
+							<logic:notEqual value="true" parameter="examSeating">
+								<div style='color:<%=preference.prefcolor()%>' title='<%=preference.getPrefName()%>: <%=((Location)r).getLabelWithCapacity()%>'><B><%=((Location)r).getLabel()%></B></div>
+							</logic:notEqual>
 						</logic:equal>
 					</logic:iterate>
 	   			</logic:iterate>
