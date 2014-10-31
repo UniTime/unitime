@@ -131,7 +131,7 @@
 		</TR>
 		<TR>
 			<TD>Seating Type:</TD><TD>
-				<html:select property="seatingType">
+				<html:select property="seatingType" onchange="javascript: doDel('seatingType', this.value); submit();">
 					<html:options property="seatingTypes"/>
 				</html:select>
 			</TD>
@@ -247,6 +247,7 @@
 			<jsp:param name="distPref" value="false"/>
 			<jsp:param name="timePref" value="false"/>
 			<jsp:param name="datePatternPref" value="false"/>
+			<jsp:param name="examSeating" value="<%=frm.getSeatingTypeIdx() == 1%>"/>
 		</jsp:include>
 
 <!-- buttons -->
