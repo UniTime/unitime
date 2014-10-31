@@ -267,6 +267,7 @@
 		<jsp:include page="preferencesDetail.jspf">
 			<jsp:param name="frmName" value="<%=frmName%>"/>
 			<jsp:param name="timePref" value="false"/>
+			<jsp:param name="examSeating" value="<%=frm.getSeatingTypeIdx() == 1%>"/>
 		</jsp:include>
 		
 		<TR>

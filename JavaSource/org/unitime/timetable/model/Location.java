@@ -1013,6 +1013,10 @@ public abstract class Location extends BaseLocation implements Comparable {
     	return (getCapacity() == null ? getLabel() : MSG.labelLocationLabelWithCapacity(getLabel(), getCapacity()));
     }
     
+    public String getLabelWithExamCapacity() {
+    	return (getExamCapacity() == null ? getLabelWithCapacity() : MSG.labelLocationLabelWithCapacity(getLabel(), getExamCapacity()));
+    }
+    
     @Override
     public String getPattern() {
     	String pattern = super.getPattern();
