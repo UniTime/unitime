@@ -195,7 +195,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iRoomCodes = new Hashtable<String, String>();
         iRC = "";
         for (StringTokenizer s = new StringTokenizer(roomCode,":;,=");s.hasMoreTokens();) {
-            String room = s.nextToken(), code = s.nextToken();
+            String room = s.nextToken(), code = (s.hasMoreTokens() ? s.nextToken() : "#");
             iRoomCodes.put(room, code);
             if (iRC.length()>0) iRC += ", ";
             iRC += code+":"+room;
