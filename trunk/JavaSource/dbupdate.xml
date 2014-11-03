@@ -9777,4 +9777,67 @@
 			alter table %SCHEMA%.reservation add override_type decimal(10,0)
 		</plsql>
 	</update>
+	<update version="140" date="31-Oct-2014" comment="CHAR">
+		<plsql>alter table %SCHEMA%.application_config modify name varchar2(1000 char)</plsql>
+		<plsql>alter table %SCHEMA%.course_credit_type modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.course_credit_type modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.course_credit_unit_type modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.course_credit_unit_type modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.course_credit_unit_type modify abbreviation varchar2(10 char)</plsql>
+		<plsql>alter table %SCHEMA%.crse_credit_format modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.crse_credit_format modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.demand_offr_type modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.demand_offr_type modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.dept_status_type modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.dept_status_type modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.designator modify code varchar2(6 char)</plsql>
+		<plsql>alter table %SCHEMA%.distribution_type modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.distribution_type modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.distribution_type modify sequencing_required varchar2(1 char)</plsql>
+		<plsql>alter table %SCHEMA%.distribution_type modify description varchar2(2048 char)</plsql>
+		<plsql>alter table %SCHEMA%.distribution_type modify abbreviation varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.event_contact modify external_id varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.event_contact modify email varchar2(200 char)</plsql>
+		<plsql>alter table %SCHEMA%.event_contact modify phone varchar2(25 char)</plsql>
+		<plsql>alter table %SCHEMA%.event_contact modify firstname varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.event_contact modify middlename varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.event_contact modify lastname varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.exam_type modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.exam_type modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.feature_type modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.feature_type modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.history modify subclass varchar2(10 char)</plsql>
+		<plsql>alter table %SCHEMA%.offr_consent_type modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.offr_consent_type modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.offr_group modify name varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.offr_group modify description varchar2(200 char)</plsql>
+		<plsql>alter table %SCHEMA%.position_type modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.position_type modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.rights modify value varchar2(200 char)</plsql>
+		<plsql>alter table %SCHEMA%.roles modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.roles modify abbv varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.room_feature modify discriminator varchar2(10 char)</plsql>
+		<plsql>alter table %SCHEMA%.room_type modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.room_type modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.sectioning_status modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.sectioning_status modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.solver_group modify name varchar2(50 char)</plsql>
+		<plsql>alter table %SCHEMA%.solver_group modify abbv varchar2(50 char)</plsql>
+		<plsql>alter table %SCHEMA%.solver_parameter_group modify condition varchar2(250 char)</plsql>
+		<plsql>alter table %SCHEMA%.sponsoring_organization modify name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.sponsoring_organization modify email varchar2(200 char)</plsql>
+		<plsql>alter table %SCHEMA%.staff modify pos_code varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.standard_event_note modify reference varchar2(20 char)</plsql>
+		<plsql>alter table %SCHEMA%.standard_event_note modify note varchar2(1000 char)</plsql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify external_uid varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify first_name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify middle_name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify last_name varchar2(100 char)</plsql>
+		<plsql>alter table %SCHEMA%.timetable_manager modify email_address varchar2(200 char)</plsql>
+		<plsql>alter table %SCHEMA%.users modify username varchar2(15 char)</plsql>
+		<plsql>alter table %SCHEMA%.users modify password varchar2(25 char)</plsql>
+		<plsql>alter table %SCHEMA%.users modify external_uid varchar2(40 char)</plsql>
+		<plsql>alter table %SCHEMA%.user_data modify external_uid varchar2(12 char)</plsql>
+		<plsql>alter table %SCHEMA%.user_data modify name varchar2(100 char)</plsql>
+	</update>
 </dbupdate>
