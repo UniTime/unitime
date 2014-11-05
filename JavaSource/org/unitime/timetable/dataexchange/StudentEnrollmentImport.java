@@ -79,6 +79,7 @@ public class StudentEnrollmentImport extends BaseImport {
 
 	    	HashMap<String, Class_> extId2class = new HashMap<String, Class_>();
 	    	HashMap<String, Class_> name2class = new HashMap<String, Class_>();
+	    	HashMap<Long, Class_> id2class = new HashMap<Long, Class_>();
 	    	HashMap<String, CourseOffering> extId2course = new HashMap<String, CourseOffering>();
 	    	HashMap<String, CourseOffering> name2course = new HashMap<String, CourseOffering>();
 	    	HashMap<String, CourseOffering> cextId2course = new HashMap<String, CourseOffering>();
@@ -98,6 +99,7 @@ public class StudentEnrollmentImport extends BaseImport {
 				String name = clazz.getClassLabel(course);
 				name2class.put(name, clazz);
 				name2course.put(name, course);
+				id2class.put(clazz.getUniqueId(), clazz);
 				if (!extId2course.containsKey(extId) || course.isIsControl())
 					extId2course.put(extId, course);
 				Set<CourseOffering> courses = class2courses.get(clazz.getUniqueId());
@@ -201,6 +203,8 @@ public class StudentEnrollmentImport extends BaseImport {
                 			clazz = name2class.get(course.getCourseName() + " " + type.trim() + " " + suffix);
             		}
             		
+            		if (clazz == null && classElement.attributeValue("id") != null)
+            			clazz = id2class.get(Long.valueOf(classElement.attributeValue("id")));
             		
             		if (clazz == null) {
             			warn("Class " + (classExternalId != null ? classExternalId : classElement.attributeValue("name",
