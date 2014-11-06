@@ -76,11 +76,20 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 			while (iRun) {
 				try {
 					OnlineSectioningServer server = iContainer.getInstance(getAcademicSession().getUniqueId());
-					if (server != null && server.isMaster()) {
-						checkForUpdates(server);
-						if (!iRun) break;
-						checkForExpiredReservations(server);
-						persistExpectedSpaces(server);
+					if (server != null) {
+						if (server.isMaster()) {
+							checkForUpdates(server);
+							if (!iRun) break;
+							checkForExpiredReservations(server);
+							persistExpectedSpaces(server);
+						} else if (!ApplicationProperty.OnlineSchedulingServerReplicated.isTrue()) {
+							// not master, but replication is disabled -> unload
+							try {
+								iContainer.unload(getAcademicSession().getUniqueId(), false);
+							} catch (Exception e) {
+								iLog.error("Failed to unload server: " + e.getMessage(), e);
+							}
+						}
 					}
 				} finally {
 					_RootDAO.closeCurrentThreadSessions();
