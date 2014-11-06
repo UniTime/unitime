@@ -138,6 +138,7 @@
 				<logic:notEqual name="timePatternEditForm" property="editable" value="true">
 					<bean:write name="timePatternEditForm" property="dayCodes" />
 					<html:hidden name="timePatternEditForm" property="dayCodes" />
+					<html:errors property="dayCodes"/>
 				</logic:notEqual>
 			</TD>
 		</TR>
@@ -152,6 +153,7 @@
 				<logic:notEqual name="timePatternEditForm" property="editable" value="true">
 					<bean:write name="timePatternEditForm" property="startTimes" />
 					<html:hidden name="timePatternEditForm" property="startTimes" />
+					<html:errors property="startTimes"/>
 				</logic:notEqual>
 			</TD>
 		</TR>
