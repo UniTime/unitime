@@ -914,6 +914,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	}
             
             for (int time=0;time<pattern.getNrTimes(); time++) {
+            	if (pattern.getStartSlot(time) + pattern.getSlotsPerMtg() > Constants.SLOTS_PER_DAY) {
+            		iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_WARN), 
+            				"Time pattern " + pattern.getName() + " that is used by " + getClassLabel(clazz) + " has a time that goes over midnight. " +
+            				"This is not allowed and the time " + pattern.getStartTime(time) + " will be ignored.");
+            		continue;
+            	}
                 for (int day=0;day<pattern.getNrDays(); day++) {
                     String pref = pattern.getPreference(day,time);
                 	iProgress.trace("checking time "+pattern.getDayHeader(day)+" "+pattern.getTimeHeaderShort(time)+" ("+pref+")");
