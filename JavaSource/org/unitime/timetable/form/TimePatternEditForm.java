@@ -435,9 +435,9 @@ public class TimePatternEditForm extends ActionForm {
 				if ((min%Constants.SLOT_LENGTH_MIN)!=0)
 					throw new Exception("Invalid time '"+token+"' -- minute ("+min+") must be divisible by "+Constants.SLOT_LENGTH_MIN+".");
 				try {
-					int endTime = hour*60+min+Integer.parseInt(getSlotsPerMtg());
-					if (endTime/Constants.SLOT_LENGTH_MIN-Constants.FIRST_SLOT_TIME_MIN >= Constants.SLOTS_PER_DAY)
-						throw new Exception("Invalid time '"+token+"' -- end time ("+(100*(endTime/60)+endTime%60)+") exceeds maximum available time.");
+					int endTime = hour * 60 + min + (Constants.SLOT_LENGTH_MIN * Integer.parseInt(getSlotsPerMtg()));
+					if (endTime/Constants.SLOT_LENGTH_MIN-Constants.FIRST_SLOT_TIME_MIN > Constants.SLOTS_PER_DAY)
+						throw new Exception("Invalid time '"+token+"' -- the time cannot go over midnight).");
 				} catch (NumberFormatException e) {}
 				slot = (hour*60+min - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
 			} catch (NumberFormatException ex) {
