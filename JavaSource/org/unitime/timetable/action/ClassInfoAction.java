@@ -33,8 +33,10 @@ import org.springframework.stereotype.Service;
 import org.unitime.timetable.form.ClassInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -64,6 +66,7 @@ public class ClassInfoAction extends Action {
             model = new ClassInfoModel();
             request.getSession().setAttribute("ClassInfo.model", model);
         }
+        model.setSessionContext(sessionContext);
         
         if (op==null && model.getClass()!=null && request.getParameter("classId")==null) {
             op="Apply";
@@ -128,6 +131,12 @@ public class ClassInfoAction extends Action {
                     myForm.setMessage(message);
                 }
             }
+        }
+        
+        if ("Lock".equals(op)) {
+        	InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(Long.valueOf(request.getParameter("offering")));
+        	sessionContext.checkPermission(offering, Right.OfferingCanLock);
+        	offering.getSession().lockOffering(offering.getUniqueId());
         }
 
         if ("Close".equals(op)) {
