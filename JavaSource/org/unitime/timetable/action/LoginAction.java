@@ -26,8 +26,10 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.security.SessionContext;
 
 /**
  * @author Tomas Muller
@@ -35,8 +37,13 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 @Service("/login")
 public class LoginAction extends Action {
 	
+	@Autowired SessionContext sessionContext;
+	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		request.getRequestDispatcher(ApplicationProperty.LoginPage.value()).forward(request, response);
+		if (sessionContext.isAuthenticated())
+			request.getRequestDispatcher("selectPrimaryRole.do").forward(request, response);
+		else
+			request.getRequestDispatcher(ApplicationProperty.LoginPage.value()).forward(request, response);
 		return null;
 	}
 }
