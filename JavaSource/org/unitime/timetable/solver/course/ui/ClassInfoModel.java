@@ -43,7 +43,6 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.http.HttpServletRequest;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.Constants;
@@ -83,6 +82,7 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.course.ui.ClassAssignmentInfo.StudentConflict;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.RoomAvailability;
@@ -101,6 +101,7 @@ public class ClassInfoModel implements Serializable {
     private Vector<ClassRoomInfo> iRooms = null;
     private boolean iShowStudentConflicts = ApplicationProperty.ClassAssignmentShowStudentConflicts.isTrue();
     private boolean iUnassignConflictingAssignments = false;
+    private transient SessionContext iContext = null;
     
     public void clear(String userId) {
         iClass = null; iChange = null; iRooms = null; iDates = null; iTimes = null; iUnassignConflictingAssignments = false;
@@ -331,8 +332,13 @@ public class ClassInfoModel implements Serializable {
     
     public boolean getCanAssign() {
         if (iChange==null) return false;
-        for (ClassAssignment assignment : iChange.getAssignments())
+        for (ClassAssignment assignment : iChange.getAssignments()) {
             if (!assignment.isValid()) return false;
+            if (!getSessionContext().hasPermission(assignment.getClazz(), Right.ClassAssignment)) return false; 
+        }
+        for (ClassAssignment assignment : iChange.getConflicts()) {
+        	if (!getSessionContext().hasPermission(assignment.getClazz(), Right.ClassAssignment)) return false;
+        }
         if (ApplicationProperty.ClassAssignmentAllowUnassignments.isFalse() && !iChange.getConflicts().isEmpty()) return false;
         return true;
     }
@@ -1442,6 +1448,15 @@ public class ClassInfoModel implements Serializable {
         return iChange; 
     }
     
+    public boolean isHasChange() {
+        return iChange != null && !iChange.isEmpty();
+    }
+    
+    public String getChangeHtmlTable() {
+    	if (iChange==null || iChange.isEmpty()) return null;
+        return iChange.getHtmlTable(getSessionContext());
+    }
+    
     public static boolean match(String name, String filter) {
         if (filter==null || filter.trim().length()==0) return true;
         String n = name.toUpperCase();
@@ -1467,4 +1482,7 @@ public class ClassInfoModel implements Serializable {
     public boolean isKeepConflictingAssignments() {
     	return !iUnassignConflictingAssignments;
     }
+    
+    public void setSessionContext(SessionContext context) { iContext = context; }
+    public SessionContext getSessionContext() { return iContext; }
 }

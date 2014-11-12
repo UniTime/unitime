@@ -69,7 +69,7 @@
 			<%= frm.getModel().getClazz().getLeadingInstructorNames("<br>") %> 
 		</td></tr> 
  		</logic:notEmpty>
-		<logic:notEmpty name="model" property="change">
+		<logic:equal name="model" property="hasChange" value="true">
 			<logic:notEmpty name="model" property="classOldAssignment">
 				<bean:define id="assignment" name="model" property="classOldAssignment"/>
 				<tr><td>Assigned Dates:</td><td><bean:write name="assignment" property="dateLongNameHtml" filter="false"/></td></tr>
@@ -86,17 +86,16 @@
 					<tr><td>Selected Room:</td><td><bean:write name="assignment" property="roomNamesHtml(, )" filter="false"/></td></tr>
 				</logic:notEmpty>
 			</logic:notEmpty>
-			<bean:define name="model" property="change" id="change"/>
 			<tr><td colspan='2'><tt:section-title><br>New Assignment(s)</tt:section-title></td></tr>
-			<tr><td colspan='2'><bean:write name="change" property="htmlTable" filter="false"/></td></tr>
+			<tr><td colspan='2'><bean:write name="model" property="changeHtmlTable" filter="false"/></td></tr>
 			<tr><td colspan='2'>Do not unassign conflicting classes: <html:checkbox property="keepConflictingAssignments" onchange="op2.value='Apply'; submit();"/></td></tr>
 			<logic:equal name="model" property="canAssign" value="true">
 				<tr><td colspan='2' align="right">
 					<html:submit onclick="return confirmAssign();" property="op" value="Assign" />
 				</td></tr>
 			</logic:equal>
-		</logic:notEmpty>
-		<logic:empty name="model" property="change">
+		</logic:equal>
+		<logic:notEqual name="model" property="hasChange" value="true">
 			<logic:notEmpty name="model" property="classAssignment">
 				<bean:define id="assignment" name="model" property="classAssignment"/>
 				<tr><td>Date:</td><td><bean:write name="assignment" property="dateLongNameHtml" filter="false"/></td></tr>
@@ -105,7 +104,7 @@
 					<tr><td>Room:</td><td><bean:write name="assignment" property="roomNamesHtml(, )" filter="false"/></td></tr>
 				</logic:notEmpty>
 			</logic:notEmpty>
-		</logic:empty>
+		</logic:notEqual>
 		<tr><td colspan='2'><tt:section-title><br>Student Conflicts</tt:section-title></td></tr>
 		<tr><td colspan='2'><bean:write name="model" property="studentConflictTable" filter="false"/></td></tr>
 		<logic:equal name="model" property="showDates" value="true">
