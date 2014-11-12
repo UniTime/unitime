@@ -1492,7 +1492,8 @@
     
     <action
       path="/login"
-      forward="/login.jsp"/> 
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false"/> 
 
     <action
       attribute="dataImportForm"
@@ -1918,7 +1919,7 @@
     		path="/main.jsp" />
     	<forward
     		name="back"
-    		path="/login.jsp"/>
+    		path="/login.do"/>
     	<forward
     		name="exams"
     		path="/exams.do"/>

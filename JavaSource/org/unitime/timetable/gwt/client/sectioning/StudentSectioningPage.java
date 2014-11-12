@@ -71,7 +71,7 @@ public class StudentSectioningPage extends Composite {
 							if (CONSTANTS.allowUserLogin())
 								userAuthentication.authenticate();
 							else if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired())
-								ToolBox.open(GWT.getHostPageBaseURL() + "login.jsp?target=" + URL.encodeQueryString(Window.Location.getHref()));
+								ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
 							else
 								userAuthentication.authenticated(result);
 						} else
@@ -135,7 +135,7 @@ public class StudentSectioningPage extends Composite {
 				} else if (userAuthentication.isAllowLookup()) {
 					userAuthentication.doLookup();
 				} else if (userAuthentication.isGuest()) {
-					ToolBox.open(GWT.getHostPageBaseURL() + "login.jsp?target=" + URL.encodeQueryString(Window.Location.getHref()));
+					ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
 				} else {
 					ToolBox.open(GWT.getHostPageBaseURL() + "logOut.do");
 				}

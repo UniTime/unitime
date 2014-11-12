@@ -39,7 +39,7 @@
 		<SCRIPT language="javascript">
 			function closeWin() {
 				// window.close();				
-				location.href='<%=request.getContextPath()%>/login.jsp';
+				location.href='<%=request.getContextPath()%>/login.do';
 			}
 		</SCRIPT>
 	</HEAD>

@@ -969,7 +969,7 @@
 			</not>
 		</condition>
 	</item>
-	<item name="Log In" page="login.jsp">
+	<item name="Log In" page="login.do">
 		<condition>
 			<or>
 				<not>
