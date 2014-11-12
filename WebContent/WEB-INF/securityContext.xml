@@ -51,6 +51,7 @@
 		<intercept-url pattern="/exams.do" access="permitAll" />
 		<intercept-url pattern="/*.do" access="isAuthenticated()"/>
 		<intercept-url pattern="/**" access="permitAll" />
+		
 		<form-login login-page="/login.jsp"
 			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
 			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
@@ -135,6 +136,7 @@
     
     <beans:bean id="casFilter" class="org.springframework.security.cas.web.CasAuthenticationFilter">
     	<beans:property name="authenticationManager" ref="authenticationManager"/>
+    	<beans:property name="authenticationSuccessHandler" ref="unitimeAuthenticationSuccessHandler"/>
     </beans:bean>
 
 	<beans:bean id="casEntryPoint" class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">
@@ -151,20 +153,20 @@
     	</beans:constructor-arg>
     	<beans:property name="filterProcessesUrl" value="/j_spring_cas_security_logout"/>
     </beans:bean>
- 	-->
+	-->
  	
 	<authentication-manager alias="authenticationManager">
-		<!-- Database Authentication -->
+		<!-- Database Authentication --> 
 		<authentication-provider user-service-ref="unitimeUserDetailsService">
 			<password-encoder hash="md5" base64="true"/>
 		</authentication-provider>
 		<!-- LDAP Authentication -->
 		<authentication-provider ref="ldapAuthProvider"/>
-		<!-- JAAS (Legacy) Authentication -->
+		<!-- JAAS (Legacy) Authentication --> 
 		<authentication-provider ref="jaasAuthProvider"/>
 		<!-- CAS Authentication (uncomment the following authentication provider)
 		<authentication-provider ref="casAuthenticationProvider" />
-		 -->
+		-->
 	</authentication-manager>
 	
 	<!-- LDAP People Lookup
