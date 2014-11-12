@@ -31,12 +31,13 @@
 		<intercept-url pattern="/solver/solver.jnlp" access="isAuthenticated()"/>
 		<intercept-url pattern="/classes.do" access="permitAll" />
 		<intercept-url pattern="/exams.do" access="permitAll" />
+		<intercept-url pattern="/login.do" access="permitAll" />
 		<intercept-url pattern="/*.do" access="isAuthenticated()"/>
 		<intercept-url pattern="/**" access="permitAll" />
-		<form-login login-page="/login.jsp"
+		<form-login login-page="/login.do"
 			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
 			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
-		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/login.jsp"/>
+		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/login.do"/>
 		<expression-handler ref="webExpressionHandler"/>
 		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
 		<anonymous enabled="false"/>
@@ -49,10 +50,11 @@
 		<intercept-url pattern="/solver/solver.jnlp" access="isAuthenticated()"/>
 		<intercept-url pattern="/classes.do" access="permitAll" />
 		<intercept-url pattern="/exams.do" access="permitAll" />
+		<intercept-url pattern="/login.do" access="permitAll" />
 		<intercept-url pattern="/*.do" access="isAuthenticated()"/>
 		<intercept-url pattern="/**" access="permitAll" />
 		
-		<form-login login-page="/login.jsp"
+		<form-login login-page="/login.do"
 			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
 			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
 		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/main.jsp?op=cas-logout"/>
