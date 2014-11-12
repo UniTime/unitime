@@ -251,7 +251,7 @@ public class ToolBox {
 	public static void checkAccess(Throwable t) {
 		if (t != null && t instanceof GwtRpcException && t.getCause() != null) t = t.getCause();
 		if (t != null && t instanceof PageAccessException) {
-			UniTimeFrameDialog.openDialog("UniTime " + CONSTANTS.version() + "| Log In", "login.jsp?menu=hide&m=" + URL.encodeQueryString(t.getMessage())
+			UniTimeFrameDialog.openDialog("UniTime " + CONSTANTS.version() + "| Log In", "login.do?menu=hide&m=" + URL.encodeQueryString(t.getMessage())
 					+"&target=" + URL.encodeQueryString(Window.Location.getHref()), "700px", "420px");
 		}
 	}
