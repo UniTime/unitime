@@ -26,6 +26,8 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -129,7 +131,7 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
         iSelectedClassId = classId;
     }
     
-    public String getHtmlTable() {
+    public String getHtmlTable(SessionContext context) {
         String ret = "<table border='0' cellspacing='0' cellpadding='3' width='100%'>";
         ret += "<tr>";
         ret += "<td><i>Class</i></td>";
@@ -141,12 +143,19 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
         for (ClassAssignment current : iAssignments) {
             ClassAssignment initial = iInitials.get(current.getClassId());
             String bgColor = (current.getClassId().equals(iSelectedClassId)?"rgb(168,187,225)":null);
+            boolean canAssign = context.hasPermission(current.getClazz(), Right.ClassAssignment);
             ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
-            		"onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
+            		(canAssign?"onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
             		"onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-            		"onclick=\"document.location='classInfo.do?classId="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
+            		"onclick=\"document.location='classInfo.do?classId="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\"": "") + ">";
             ret += "<td nowrap>";
             ret += "<img src='images/action_delete.png' border='0' onclick=\"document.location='classInfo.do?delete="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
+            if (!canAssign && context.hasPermission(current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering(), Right.OfferingCanLock)) {
+            	ret += "<img src='images/error.png' border='0' " +
+            			"onclick='if (confirm(\"Course " + current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " is not locked. Do you want to lock it?\")) " +
+            			"document.location=\"classInfo.do?offering="+current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()+"&op=Lock&noCacheTS=" + new Date().getTime()+"\";event.cancelBubble=true;' " +
+            			"title=\"Course " + current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " is not locked. Click the warning icon to lock it.\" style='cursor: pointer;'>&nbsp;";
+            }
             ret += current.getClassNameHtml();
             ret += "</td><td nowrap>";
             ret += current.getLeadingInstructorNames(", ");
@@ -178,11 +187,18 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
         }
         for (ClassAssignment conflict : iConflicts) {
             String bgColor = (conflict.getClassId().equals(iSelectedClassId)?"rgb(168,187,225)":null);
+            boolean canAssign = context.hasPermission(conflict.getClazz(), Right.ClassAssignment);
             ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
-                "onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
+            	(canAssign ? "onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
                 "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-                "onclick=\"document.location='classInfo.do?classId="+conflict.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
+                "onclick=\"document.location='classInfo.do?classId="+conflict.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\"" : "") + ">";
             ret += "<td nowrap>";
+            if (!canAssign && context.hasPermission(conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering(), Right.OfferingCanLock)) {
+            	ret += "<img src='images/error.png' border='0' " +
+            			"onclick='if (confirm(\"Course " + conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " is not locked. Do you want to lock it?\")) " +
+            			"document.location=\"classInfo.do?offering="+conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()+"&op=Lock&noCacheTS=" + new Date().getTime()+"\";event.cancelBubble=true;' " +
+            			"title=\"Course " + conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " is not locked. Click the warning icon to lock it.\" style='cursor: pointer;'>&nbsp;";
+            }
             ret += conflict.getClassNameHtml();
             ret += "</td><td nowrap>";
             ret += conflict.getLeadingInstructorNames(", ");
