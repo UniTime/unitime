@@ -299,9 +299,10 @@ public class InstructorInfoEditAction extends InstructorAction {
 		
 		if (inst.getMiddleName() != null) {
 			frm.setMname(inst.getMiddleName().trim());
-		}		
+		}
 		
 		frm.setLname(inst.getLastName().trim());
+		frm.setTitle(inst.getAcademicTitle());
 		
 	    String puid = inst.getExternalUniqueId();
 		if (puid != null) {

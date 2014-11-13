@@ -144,6 +144,12 @@
 					<html:text name="mgrForm" property="lastName" size="50" maxlength="100" styleId="lname"></html:text>
 				</TD>
 			</TR>
+			<TR>
+				<TD>Academic Title:</TD>
+				<TD>
+					<html:text name="mgrForm" property="title" size="25" maxlength="50" styleId="title"></html:text>
+				</TD>
+			</TR>
 		<%-- </logic:equal> --%>
 
 		<TR>
@@ -385,6 +391,7 @@
 				document.getElementById('mname').value = (person[2] == null ? '' : person[2]);
 				document.getElementById('lname').value = (person[3] == null ? '' : person[3]);
 				document.getElementById('email').value = (person[4] == null ? '' : person[4]);
+				document.getElementById('title').value = (person[6] == null ? '' : person[6]);
 			}
 		}, "mustHaveExternalId");
 	}

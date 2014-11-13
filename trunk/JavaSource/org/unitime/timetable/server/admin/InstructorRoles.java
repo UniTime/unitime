@@ -22,12 +22,12 @@ package org.unitime.timetable.server.admin;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
@@ -46,6 +46,7 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.RolesDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
@@ -76,6 +77,7 @@ public class InstructorRoles implements AdminTable {
 		data.setSortBy(0, 1);
 		
 		boolean deptIndep = context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+		NameFormat nameFormat = NameFormat.fromReference(context.getUser().getProperty(UserProperty.NameFormat));
 
 		for (Department department: Department.getUserDepartments(context.getUser())) {
 			if (!department.isAllowEvents()) continue;
@@ -92,6 +94,8 @@ public class InstructorRoles implements AdminTable {
 				r.addToField(1, instructor.getMiddleName() == null ? "" : instructor.getMiddleName());
 				r.addToField(1, instructor.getExternalUniqueId());
 				r.addToField(1, instructor.getEmail() == null ? "" : instructor.getEmail());
+				r.addToField(1, instructor.getAcademicTitle() == null ? "" : instructor.getAcademicTitle());
+				r.addToField(1, nameFormat.format(instructor));
 				r.setField(2, instructor.getRole() == null ? "" : instructor.getRole().getUniqueId().toString());
 				r.setDeletable(deptIndep);
 			}
@@ -152,6 +156,7 @@ public class InstructorRoles implements AdminTable {
 			instructor.setFirstName(name[1]);
 			instructor.setMiddleName(name[2].isEmpty() ? null : name[2]);
 			instructor.setEmail(name.length <=4 || name[4].isEmpty() ? null : name[4]);
+			instructor.setAcademicTitle(name.length <= 5 || name[5].isEmpty() ? null : name[5]);
 			instructor.setIgnoreToFar(false);
 			instructor.setDepartment(department);
 

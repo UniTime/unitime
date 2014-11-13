@@ -259,6 +259,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Last Name:")
 	String propertyLastName();
 	
+	@DefaultMessage("Academic Title:")
+	String propertyAcademicTitle();
+	
 	@DefaultMessage("Email:")
 	String propertyEmail();
 	

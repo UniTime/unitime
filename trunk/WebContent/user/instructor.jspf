@@ -163,6 +163,13 @@
 		</TR>
 		
 		<TR>
+			<TD> <loc:message name="propertyAcademicTitle"/></TD>
+			<TD>
+				<html:text property="title" maxlength="50" size="20" styleId="title" />
+			</TD>
+		</TR>
+
+		<TR>
 			<TD><loc:message name="propertyEmail"/></TD>
 			<TD>
 				<html:text property="email" maxlength="200" size="50" styleId="email" /> 
@@ -285,6 +292,7 @@
 				document.getElementById('mname').value = (person[2] == null ? '' : person[2]);
 				document.getElementById('lname').value = (person[3] == null ? '' : person[3]);
 				document.getElementById('email').value = (person[4] == null ? '' : person[4]);
+				document.getElementById('title').value = (person[6] == null ? '' : person[6]);
 			}
 		}, "mustHaveExternalId");
 	}

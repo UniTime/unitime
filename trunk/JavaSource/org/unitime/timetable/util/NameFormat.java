@@ -86,6 +86,49 @@ public enum NameFormat {
 					(name.getLastName() != null && !name.getLastName().isEmpty() ? name.getLastName().substring(0, 1).toUpperCase() + name.getLastName().substring(1, Math.min(10, name.getLastName().length())).toLowerCase() : "").trim();
 		}
 	}),
+	TITLE_FIRST_MIDDLE_LAST("title-first-middle-last", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? name.getAcademicTitle() + " ": "") +
+					Constants.toInitialCase(
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "") +
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? " " + name.getLastName() : "")
+					).trim();
+		}
+	}),
+	LAST_FIRST_MIDDLE_TITLE("last-first-middle-title", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return Constants.toInitialCase(
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? name.getLastName() : "") +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty()) || (name.getMiddleName() != null && !name.getMiddleName().isEmpty()) ? "," : "") +
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? " " + name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "")
+					).trim() + 
+					(name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? " " + name.getAcademicTitle(): "");
+		}
+	}),
+	TITLE_INITIAL_LAST("title-initial-last", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? name.getAcademicTitle() + " ": "") +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty() ? name.getFirstName().trim().substring(0, 1).toUpperCase() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName().trim().substring(0, 1).toUpperCase() : "") +
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? " " + Constants.toInitialCase(name.getLastName()) : "")).trim();
+		}
+	}),
+	TITLE_LAST_INITIAL("title-last-initial", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? name.getAcademicTitle() + " ": "") +
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? Constants.toInitialCase(name.getLastName()) : "").trim() +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty()) || (name.getMiddleName() != null && !name.getMiddleName().isEmpty()) ? "," : "") +
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? " " + name.getFirstName().substring(0, 1).toUpperCase() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName().substring(0, 1).toUpperCase() : "");
+		}
+	}),
+	
 	;
 		
 	private String iRefernence;

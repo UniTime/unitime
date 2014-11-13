@@ -128,7 +128,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private ListBox iSponsors;
 	private UniTimeWidget<ListBox> iEventType;
 	private TextArea iNotes, iEmails;
-	private TextBox iMainFName, iMainMName, iMainPhone;
+	private TextBox iMainFName, iMainMName, iMainPhone, iMainTitle;
 	private UniTimeWidget<TextBox> iMainLName, iMainEmail;
 	private CheckBox iReqAttendance;
 	private ListBox iStandardNotes;
@@ -137,6 +137,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private int iMainContactChangedRow;
 	private ContactInterface iOriginalContact;
 	
+	private SimpleForm iMainContact;
 	private SimpleForm iCoursesForm;
 	
 	private SimpleForm iForm;
@@ -151,7 +152,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private AcademicSessionSelectionBox iSession;
 	private Lookup iLookup, iAdditionalLookup;
 	private UniTimeTable<ContactInterface> iContacts;
-	private int iContactRow;
+	private int iContactRow, iAcademicTitleRow;
 	
 	private EnrollmentTable iEnrollments;
 	private UniTimeHeaderPanel iEnrollmentHeader;
@@ -181,6 +182,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					iMainFName.setText(event.getValue().getFirstName() == null ? "" : event.getValue().getFirstName());
 					iMainMName.setText(event.getValue().getMiddleName() == null ? "" : event.getValue().getMiddleName());
 					iMainLName.getWidget().setText(event.getValue().getLastName() == null ? "" : event.getValue().getLastName());
+					iMainTitle.setText(event.getValue().getAcademicTitle() == null ? "" : event.getValue().getAcademicTitle());
 					iMainPhone.setText(event.getValue().getPhone() == null ? "" : event.getValue().getPhone());
 					iMainEmail.getWidget().setText(event.getValue().getEmail() == null ? "" : event.getValue().getEmail());
 					iOriginalContact = new ContactInterface(event.getValue());
@@ -413,9 +415,9 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		
 		iReqAttendance = new CheckBox(MESSAGES.checkRequiredAttendance());
 						
-		SimpleForm mainContact = new SimpleForm();
-		mainContact.getElement().getStyle().clearWidth();
-		mainContact.removeStyleName("unitime-NotPrintableBottomLine");
+		iMainContact = new SimpleForm();
+		iMainContact.getElement().getStyle().clearWidth();
+		iMainContact.removeStyleName("unitime-NotPrintableBottomLine");
 		
 		iLookupButton = new Button(MESSAGES.buttonLookupMainContact());
 		iLookupButton.setWidth("75px");
@@ -456,6 +458,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 						iMainFName.setText("");
 						iMainMName.setText("");
 						iMainLName.getWidget().setText("");
+						iMainTitle.setText("");
 						iMainPhone.setText("");
 						iMainEmail.getWidget().setText("");
 					} else {
@@ -463,6 +466,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 						iMainFName.setText(iOriginalContact.hasFirstName() ? iOriginalContact.getFirstName() : "");
 						iMainMName.setText(iOriginalContact.hasMiddleName() ? iOriginalContact.getMiddleName() : "");
 						iMainLName.getWidget().setText(iOriginalContact.hasLastName() ? iOriginalContact.getLastName() : "");
+						iMainTitle.setText(iOriginalContact.hasAcademicTitle() ? iOriginalContact.getAcademicTitle() : "");
 						iMainPhone.setText(iOriginalContact.hasPhone() ? iOriginalContact.getPhone() : "");
 						iMainEmail.getWidget().setText(iOriginalContact.hasEmail() ? iOriginalContact.getEmail() : "");
 					}
@@ -477,15 +481,15 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iMainFName.setStyleName("unitime-TextBox");
 		iMainFName.setMaxLength(100);
 		iMainFName.setWidth("285px");
-		mainContact.addRow(MESSAGES.propFirstName(), iMainFName);
-		mainContact.setWidget(0, 2, iLookupButton);
-		mainContact.setWidget(0, 3, iMainContactResetButton);
+		iMainContact.addRow(MESSAGES.propFirstName(), iMainFName);
+		iMainContact.setWidget(0, 2, iLookupButton);
+		iMainContact.setWidget(0, 3, iMainContactResetButton);
 		
 		iMainMName = new TextBox();
 		iMainMName.setStyleName("unitime-TextBox");
 		iMainMName.setMaxLength(100);
 		iMainMName.setWidth("285px");
-		mainContact.addRow(MESSAGES.propMiddleName(), iMainMName);
+		iMainContact.addRow(MESSAGES.propMiddleName(), iMainMName);
 		
 		iMainLName = new UniTimeWidget<TextBox>(new TextBox());
 		iMainLName.getWidget().setStyleName("unitime-TextBox");
@@ -498,7 +502,13 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iHeader.clearMessage();
 			}
 		});
-		mainContact.addRow(MESSAGES.propLastName(), iMainLName);
+		iMainContact.addRow(MESSAGES.propLastName(), iMainLName);
+		
+		iMainTitle = new TextBox();
+		iMainTitle.setStyleName("unitime-TextBox");
+		iMainTitle.setMaxLength(50);
+		iMainTitle.setWidth("285px");
+		iAcademicTitleRow = iMainContact.addRow(MESSAGES.propAcademicTitle(), iMainTitle);
 		
 		iMainEmail = new UniTimeWidget<TextBox>(new TextBox());
 		iMainEmail.getWidget().setStyleName("unitime-TextBox");
@@ -511,15 +521,15 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iHeader.clearMessage();
 			}
 		});
-		mainContact.addRow(MESSAGES.propEmail(), iMainEmail);
+		iMainContact.addRow(MESSAGES.propEmail(), iMainEmail);
 		
 		iMainPhone = new TextBox();
 		iMainPhone.setStyleName("unitime-TextBox");
 		iMainPhone.setMaxLength(35);
 		iMainPhone.setWidth("285px");
-		mainContact.addRow(MESSAGES.propPhone(), iMainPhone);
-		mainContact.setWidget(mainContact.getRowCount() - 1, 2, iAdditionalLookupButton);
-		mainContact.getFlexCellFormatter().setColSpan(mainContact.getRowCount() - 1, 2, 2);
+		iMainContact.addRow(MESSAGES.propPhone(), iMainPhone);
+		iMainContact.setWidget(iMainContact.getRowCount() - 1, 2, iAdditionalLookupButton);
+		iMainContact.getFlexCellFormatter().setColSpan(iMainContact.getRowCount() - 1, 2, 2);
 		
 		ValueChangeHandler<String> checkMainContactHandler = new ValueChangeHandler<String>() {
 			@Override
@@ -530,10 +540,11 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iMainFName.addValueChangeHandler(checkMainContactHandler);
 		iMainMName.addValueChangeHandler(checkMainContactHandler);
 		iMainLName.getWidget().addValueChangeHandler(checkMainContactHandler);
+		iMainTitle.addValueChangeHandler(checkMainContactHandler);
 		iMainPhone.addValueChangeHandler(checkMainContactHandler);
 		iMainEmail.getWidget().addValueChangeHandler(checkMainContactHandler);
 		
-		iForm.addRow(MESSAGES.propMainContact(), mainContact);
+		iForm.addRow(MESSAGES.propMainContact(), iMainContact);
 		
 		iMainContactChanged = new CheckBox(MESSAGES.checkYourContactChange());
 		iMainContactChangedRow = iForm.addRow("", iMainContactChanged);
@@ -954,6 +965,12 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		} else {
 			iMainLName.getWidget().removeStyleName("unitime-TextChanged");
 		}
+		if (!iMainTitle.getText().equals(iOriginalContact.hasAcademicTitle() ? iOriginalContact.getAcademicTitle() : "")) {
+			iMainTitle.addStyleName("unitime-TextChanged");
+			changed = true;
+		} else {
+			iMainTitle.removeStyleName("unitime-TextChanged");
+		}
 		if (!iMainPhone.getText().equals(iOriginalContact.hasPhone() ? iOriginalContact.getPhone() : "")) {
 			iMainPhone.addStyleName("unitime-TextChanged");
 			changed = true;
@@ -1004,6 +1021,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iEvent.getContact().setFirstName(iMainFName.getText());
 		iEvent.getContact().setMiddleName(iMainMName.getText());
 		iEvent.getContact().setLastName(iMainLName.getWidget().getText());
+		iEvent.getContact().setAcademicTitle(iMainTitle.getText());
 		iEvent.getContact().setEmail(iMainEmail.getWidget().getText());
 		iEvent.getContact().setPhone(iMainPhone.getText());
 		
@@ -1014,6 +1032,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iEvent.getContact().setFirstName(mainContact.getFirstName());
 				iEvent.getContact().setMiddleName(mainContact.getMiddleName());
 				iEvent.getContact().setLastName(mainContact.getLastName());
+				iEvent.getContact().setAcademicTitle(mainContact.getAcademicTitle());
 				iEvent.getContact().setEmail(mainContact.getEmail());
 				iEvent.getContact().setPhone(mainContact.getPhone());
 			}
@@ -1185,6 +1204,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	}
 	
 	public void setEvent(EventInterface event, boolean resetUpload) {
+		iMainContact.getRowFormatter().setVisible(iAcademicTitleRow, getProperties() != null && getProperties().isCanEditAcademicTitle());
 		iEmailConfirmationHeader.setValue(getProperties() == null ||  getProperties().isEmailConfirmation());
 		iEmailConfirmationHeader.setVisible(getProperties() == null || getProperties().hasEmailConfirmation());
 		iEmailConfirmationFooter.setValue(getProperties() == null ||  getProperties().isEmailConfirmation());
@@ -1294,6 +1314,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iMainFName.setText(iEvent.getContact().hasFirstName() ? iEvent.getContact().getFirstName() : "");
 			iMainMName.setText(iEvent.getContact().hasMiddleName() ? iEvent.getContact().getMiddleName() : "");
 			iMainLName.getWidget().setText(iEvent.getContact().hasLastName() ? iEvent.getContact().getLastName() : "");
+			iMainTitle.setText(iEvent.getContact().hasAcademicTitle() ? iEvent.getContact().getAcademicTitle() : "");
 			iMainPhone.setText(iEvent.getContact().hasPhone() ? iEvent.getContact().getPhone() : "");
 			iMainEmail.getWidget().setText(iEvent.getContact().hasEmail() ? iEvent.getContact().getEmail() : "");
 			iOriginalContact = iEvent.getContact();
@@ -1304,6 +1325,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iMainFName.setText(mainContact.getFirstName() == null ? "" : mainContact.getFirstName());
 				iMainMName.setText(mainContact.getMiddleName() == null ? "" : mainContact.getMiddleName());
 				iMainLName.getWidget().setText(mainContact.getLastName() == null ? "" : mainContact.getLastName());
+				iMainTitle.setText(mainContact.getAcademicTitle() == null ? "" : mainContact.getAcademicTitle());
 				iMainPhone.setText(mainContact.getPhone() == null ? "" : mainContact.getPhone());
 				iMainEmail.getWidget().setText(mainContact.getEmail() == null ? "" : mainContact.getEmail());
 				iOriginalContact = getProperties().getMainContact();
@@ -1312,6 +1334,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iMainFName.setText("");
 				iMainMName.setText("");
 				iMainLName.getWidget().setText("");
+				iMainTitle.setText("");
 				iMainPhone.setText("");
 				iMainEmail.getWidget().setText("");
 				iOriginalContact = null;

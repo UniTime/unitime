@@ -41,6 +41,7 @@ public abstract class BaseTimetableManager implements Serializable {
 	private String iFirstName;
 	private String iMiddleName;
 	private String iLastName;
+	private String iAcademicTitle;
 	private String iEmailAddress;
 
 	private Set<ManagerSettings> iSettings;
@@ -53,6 +54,7 @@ public abstract class BaseTimetableManager implements Serializable {
 	public static String PROP_FIRST_NAME = "firstName";
 	public static String PROP_MIDDLE_NAME = "middleName";
 	public static String PROP_LAST_NAME = "lastName";
+	public static String PROP_ACAD_TITLE = "academicTitle";
 	public static String PROP_EMAIL_ADDRESS = "emailAddress";
 
 	public BaseTimetableManager() {
@@ -80,6 +82,9 @@ public abstract class BaseTimetableManager implements Serializable {
 
 	public String getLastName() { return iLastName; }
 	public void setLastName(String lastName) { iLastName = lastName; }
+
+	public String getAcademicTitle() { return iAcademicTitle; }
+	public void setAcademicTitle(String academicTitle) { iAcademicTitle = academicTitle; }
 
 	public String getEmailAddress() { return iEmailAddress; }
 	public void setEmailAddress(String emailAddress) { iEmailAddress = emailAddress; }
@@ -129,6 +134,7 @@ public abstract class BaseTimetableManager implements Serializable {
 
 	public String toDebugString() {
 		return "TimetableManager[" +
+			"\n	AcademicTitle: " + getAcademicTitle() +
 			"\n	EmailAddress: " + getEmailAddress() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	FirstName: " + getFirstName() +

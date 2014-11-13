@@ -75,7 +75,13 @@
             type="string"
             not-null="false"
             length="100"/>
-
+            
+        <property
+            name="academicTitle"
+            column="acad_title"
+            type="java.lang.String"
+            not-null="false"
+            length="50"/>            
     </class>
 
 </hibernate-mapping>

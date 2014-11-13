@@ -55,6 +55,7 @@ public class InstructorListUpdateForm extends ActionForm {
 	private String[] available;
 	private String[] assignedSelected = {};
 	private String[] availableSelected = {};
+	private String nameFormat;
 	
 	// Filter settings
 	private String displayListType;
@@ -224,6 +225,9 @@ public class InstructorListUpdateForm extends ActionForm {
 		}
 		
 	}
+	
+	public String getNameFormat() { return nameFormat; }
+	public void setNameFormat(String nameFormat) { this.nameFormat = nameFormat; }
 
 }
 

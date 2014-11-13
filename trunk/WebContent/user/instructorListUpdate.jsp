@@ -16,12 +16,12 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="org.unitime.timetable.util.NameFormat"%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp"%>
 <%@ page import="org.unitime.timetable.form.InstructorListUpdateForm" %>
 <%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
 <%@ page import="org.unitime.timetable.model.PositionType" %>
 <%@ page import="org.unitime.timetable.model.Staff" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
@@ -34,6 +34,7 @@
 	String frmName = "instructorListUpdateForm";	
 	InstructorListUpdateForm frm = (InstructorListUpdateForm) request.getAttribute(frmName);	
 	NumberFormat percentFormatter = NumberFormat.getPercentInstance();	
+	NameFormat nameFormat = NameFormat.fromReference(frm.getNameFormat());
 %>	
 <script type="text/javascript" language="javascript">
 <!--
@@ -233,7 +234,7 @@
 								%>&nbsp;
 							</TD>
 							<TD align="left" class="BottomBorderGray">
-								<%= Constants.toInitialCase(inst.nameLastNameFirst(), "'-".toCharArray()) %>
+								<%= nameFormat.format(inst)%>
 							</TD>
 						</TR>
 						</logic:iterate>
@@ -354,7 +355,7 @@
 								%>&nbsp;
 							</TD>
 							<TD align="left" class="BottomBorderGray">
-								<%= Constants.toInitialCase(s.nameLastNameFirst(), "'-".toCharArray()) %>
+								<%= nameFormat.format(s) %>
 							</TD>							
 						</TR>
 						<% } %>

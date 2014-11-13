@@ -40,6 +40,7 @@ import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -62,6 +63,8 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.NameFormat;
+import org.unitime.timetable.util.NameInterface;
 
 /**
  * @author Tomas Muller
@@ -145,7 +148,30 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 				}
 			}
 			
-			return cx.response(displayWithoutId);
+			GwtRpcResponseList<PersonInterface> people =  cx.response(displayWithoutId);
+			NameFormat nameFormat = NameFormat.fromReference(context != null ? context.getUser().getProperty(UserProperty.NameFormat) : NameFormat.LAST_FIRST_MIDDLE.reference());
+			for (final PersonInterface person: people)
+				person.setFormattedName(nameFormat.format(new NameInterface() {
+					@Override
+					public String getMiddleName() {
+						return person.getMiddleName();
+					}
+					@Override
+					public String getLastName() {
+						return person.getLastName();
+					}
+					
+					@Override
+					public String getFirstName() {
+						return person.getFirstName();
+					}
+					
+					@Override
+					public String getAcademicTitle() {
+						return person.getAcademicTitle();
+					}
+				}));
+			return people;
 		} catch (GwtRpcException e) {
 			throw e;
 		} catch (Exception e) {
@@ -181,7 +207,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         	hq.setMaxResults(context.getLimit());
         for (Staff staff: (List<Staff>)hq.setCacheable(true).list()) {
             context.addPerson(new PersonInterface(translate(staff.getExternalUniqueId(), Source.Staff), 
-                    staff.getFirstName(), staff.getMiddleName(), staff.getLastName(),
+                    staff.getFirstName(), staff.getMiddleName(), staff.getLastName(), staff.getAcademicTitle(),
                     staff.getEmail(), null, staff.getDept(), 
                     (staff.getPositionType() == null ? null : staff.getPositionType().getLabel()),
                     "Staff"));
@@ -208,7 +234,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         	hq.setMaxResults(context.getLimit());
         for (EventContact contact: (List<EventContact>)hq.setCacheable(true).list()) {
             context.addPerson(new PersonInterface(translate(contact.getExternalUniqueId(), Source.User), 
-                    contact.getFirstName(), contact.getMiddleName(), contact.getLastName(),
+                    contact.getFirstName(), contact.getMiddleName(), contact.getLastName(), contact.getAcademicTitle(), 
                     contact.getEmailAddress(), contact.getPhone(), null, 
                     null,
                     "Event Contacts"));
@@ -238,6 +264,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                     Constants.toInitialCase(instructor.getFirstName()),
                     Constants.toInitialCase(instructor.getMiddleName()),
                     Constants.toInitialCase(instructor.getLastName()),
+                    instructor.getAcademicTitle(),
                     instructor.getEmail(), null, instructor.getDepartment().getName(),
                     (instructor.getPositionType() == null ? null : instructor.getPositionType().getLabel()),
                     "Instructors"));
@@ -264,7 +291,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         	hq.setMaxResults(context.getLimit());
         for (Student student: (List<Student>)hq.setCacheable(true).list()) {
             context.addPerson(new PersonInterface(translate(student.getExternalUniqueId(), Source.Student), 
-                    student.getFirstName(), student.getMiddleName(), student.getLastName(),
+                    student.getFirstName(), student.getMiddleName(), student.getLastName(), student.getAcademicTitle(),
                     student.getEmail(), null, null, 
                     "Student",
                     "Students"));
@@ -291,7 +318,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         	hq.setMaxResults(context.getLimit());
         for (TimetableManager manager: (List<TimetableManager>)hq.setCacheable(true).list()) {
             context.addPerson(new PersonInterface(translate(manager.getExternalUniqueId(), Source.User), 
-                    manager.getFirstName(), manager.getMiddleName(), manager.getLastName(),
+                    manager.getFirstName(), manager.getMiddleName(), manager.getLastName(), manager.getAcademicTitle(),
                     manager.getEmailAddress(), null, null, 
                  (manager.getPrimaryRole()==null?null:manager.getPrimaryRole().getAbbv()),
                  "Timetable Managers"));
@@ -350,6 +377,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
             getLdapTemplate().search("", filter, getSearchControls(), new AttributesMapper() {
         		protected String getAttribute(Attributes attrs, String name) {
         	        if (attrs==null) return null;
+        	        if (name == null || name.isEmpty()) return null;
         	        for (StringTokenizer stk = new StringTokenizer(name,",");stk.hasMoreTokens();) {
         	            Attribute a = attrs.get(stk.nextToken());
         	            try {
@@ -365,6 +393,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                             Constants.toInitialCase(getAttribute(a,"givenName")),
                             Constants.toInitialCase(getAttribute(a,"cn")),
                             Constants.toInitialCase(getAttribute(a,"sn")),
+                            getAttribute(a, ApplicationProperty.PeopleLookupLdapAcademicTitleAttribute.value()),
                             getAttribute(a, ApplicationProperty.PeopleLookupLdapEmailAttribute.value()),
                             getAttribute(a, ApplicationProperty.PeopleLookupLdapPhoneAttribute.value()),
                             Constants.toInitialCase(getAttribute(a, ApplicationProperty.PeopleLookupLdapDepartmentAttribute.value())),

@@ -733,10 +733,12 @@ public class CourseTimetableImport extends BaseImport {
 					di.setFirstName(instructorElement.attributeValue("fname", "Unkwnown"));
 					di.setMiddleName(instructorElement.attributeValue("mname", null));
 					di.setLastName(instructorElement.attributeValue("lname", "Instructor"));
+					di.setAcademicTitle(instructorElement.attributeValue("title", null));
 				} else {
 					di.setFirstName(staff.getFirstName());
 					di.setMiddleName(staff.getMiddleName());
 					di.setLastName(staff.getLastName());
+					di.setAcademicTitle(staff.getAcademicTitle());
 				}
 				di.setIgnoreToFar(false);
 				getHibSession().save(di);

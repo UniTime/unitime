@@ -419,6 +419,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		newDepartmentalInstructor.setFirstName(getFirstName());
 		newDepartmentalInstructor.setMiddleName(getMiddleName());
 		newDepartmentalInstructor.setLastName(getLastName());
+		newDepartmentalInstructor.setAcademicTitle(getAcademicTitle());
 		newDepartmentalInstructor.setIgnoreToFar(isIgnoreToFar());
 		newDepartmentalInstructor.setNote(getNote());
 		newDepartmentalInstructor.setPositionType(getPositionType());

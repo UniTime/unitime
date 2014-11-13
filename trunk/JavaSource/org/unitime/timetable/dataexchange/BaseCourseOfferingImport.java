@@ -979,6 +979,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         	HashMap<String, String> firstNames = new HashMap<String, String>();
         	HashMap<String, String> middleNames = new HashMap<String, String>();
         	HashMap<String, String> lastNames = new HashMap<String, String>();
+        	HashMap<String, String> acadTitles = new HashMap<String, String>();
         	HashMap<String, Integer> shares = new HashMap<String, Integer>();
         	HashMap<String, Boolean> leads = new HashMap<String, Boolean>();
         	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
@@ -996,6 +997,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				firstNames.put(id, getOptionalStringAttribute(instructorElement, "fname"));
 				middleNames.put(id, getOptionalStringAttribute(instructorElement, "mname"));
 				lastNames.put(id, getOptionalStringAttribute(instructorElement, "lname"));
+				acadTitles.put(id, getOptionalStringAttribute(instructorElement, "title"));
 				Integer share = getOptionalIntegerAttribute(instructorElement, "share");;
 				if (share == null){
 					share = new Integer(100);
@@ -1023,10 +1025,12 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 								firstNames.put(id, staffData.getFirstName());
 								middleNames.put(id, staffData.getMiddleName());
 								lastNames.put(id, staffData.getLastName());
+								acadTitles.put(id, staffData.getAcademicTitle());
 							}
 						}
 						di.setFirstName(firstNames.get(id));
 						di.setMiddleName(middleNames.get(id));
+						di.setAcademicTitle(acadTitles.get(id));
 						String lastName = lastNames.get(id);
 						di.setLastName((lastName != null?lastName:"Unknown Name"));
 						di.setIgnoreToFar(new Boolean(false));

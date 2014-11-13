@@ -16,6 +16,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="org.unitime.timetable.util.NameFormat"%>
+<%@page import="org.unitime.timetable.defaults.UserProperty"%>
 <%@ page import="org.unitime.timetable.model.Session" %>
 <%@ page import="org.unitime.timetable.model.Staff" %>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
@@ -106,6 +108,7 @@
 				
 				<% 
 					Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
+					NameFormat nameFormat = NameFormat.fromReference(sessionContext.getUser().getProperty(UserProperty.NameFormat));
 				 %>
 
 				<TR>
@@ -128,7 +131,7 @@
 										<bean:write name="staff" property="externalUniqueId" /> &nbsp;
 									</td>
 									<td>
-										<bean:write name="staff" property="name" /> &nbsp;
+										<%=nameFormat.format((Staff)staff)%> &nbsp;
 									</td>
 									<td>
 										<%=((Staff)staff).getDeptName(sessionId)%> &nbsp;
