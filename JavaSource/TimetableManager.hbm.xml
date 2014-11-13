@@ -75,6 +75,13 @@
             length="100"/>
 
         <property
+            name="academicTitle"
+            column="acad_title"
+            type="java.lang.String"
+            not-null="false"
+            length="50"/>            
+
+        <property
             name="emailAddress"
             column="email_address"
             type="string"

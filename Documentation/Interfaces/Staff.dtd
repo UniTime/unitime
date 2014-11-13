@@ -29,6 +29,7 @@
 <!ATTLIST staffMember firstName CDATA #IMPLIED >
 <!ATTLIST staffMember lastName CDATA #REQUIRED >
 <!ATTLIST staffMember middleName CDATA #IMPLIED >
+<!ATTLIST staffMember acadTitle CDATA #IMPLIED >
 <!ATTLIST staffMember positionType CDATA #IMPLIED >
 <!ATTLIST staffMember email CDATA #IMPLIED >
 

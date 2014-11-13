@@ -45,6 +45,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	private String iFirstName;
 	private String iMiddleName;
 	private String iLastName;
+	private String iAcademicTitle;
 	private String iNote;
 	private String iEmail;
 	private Boolean iIgnoreToFar;
@@ -62,6 +63,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	public static String PROP_FNAME = "firstName";
 	public static String PROP_MNAME = "middleName";
 	public static String PROP_LNAME = "lastName";
+	public static String PROP_ACAD_TITLE = "academicTitle";
 	public static String PROP_NOTE = "note";
 	public static String PROP_EMAIL = "email";
 	public static String PROP_IGNORE_TOO_FAR = "ignoreToFar";
@@ -91,6 +93,9 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 
 	public String getLastName() { return iLastName; }
 	public void setLastName(String lastName) { iLastName = lastName; }
+
+	public String getAcademicTitle() { return iAcademicTitle; }
+	public void setAcademicTitle(String academicTitle) { iAcademicTitle = academicTitle; }
 
 	public String getNote() { return iNote; }
 	public void setNote(String note) { iNote = note; }
@@ -156,6 +161,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 
 	public String toDebugString() {
 		return "DepartmentalInstructor[" +
+			"\n	AcademicTitle: " + getAcademicTitle() +
 			"\n	CareerAcct: " + getCareerAcct() +
 			"\n	Department: " + getDepartment() +
 			"\n	Email: " + getEmail() +

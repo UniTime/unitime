@@ -76,6 +76,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		response.setCanAddCourseEvent(context.hasPermission(Right.EventAddCourseRelated));
 		response.setCanAddUnavailableEvent(context.hasPermission(Right.EventAddUnavailable));
 		response.setCanSetExpirationDate(context.hasPermission(Right.EventSetExpiration));
+		response.setCanEditAcademicTitle(context.hasPermission(Right.EventCanEditAcademicTitle));
 		
 		response.setCanExportCSV(true);// rights.canSeeSchedule(null) || rights.canLookupContacts());
 		
@@ -128,6 +129,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setFirstName(contact.getFirstName());
 			c.setMiddleName(contact.getMiddleName());
 			c.setLastName(contact.getLastName());
+			c.setAcademicTitle(contact.getAcademicTitle());
 			c.setEmail(contact.getEmailAddress());
 			c.setPhone(contact.getPhone());
 			c.setExternalId(contact.getExternalUniqueId());
@@ -143,6 +145,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setFirstName(manager.getFirstName());
 			c.setMiddleName(manager.getMiddleName());
 			c.setLastName(manager.getLastName());
+			c.setAcademicTitle(manager.getAcademicTitle());
 			c.setEmail(manager.getEmailAddress());
 			c.setFormattedName(manager.getName(nameFormat));
 			return c;
@@ -156,6 +159,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setFirstName(instructor.getFirstName());
 			c.setMiddleName(instructor.getMiddleName());
 			c.setLastName(instructor.getLastName());
+			c.setAcademicTitle(instructor.getAcademicTitle());
 			c.setEmail(instructor.getEmail());
 			c.setFormattedName(instructor.getName(nameFormat));
 			return c;
@@ -169,6 +173,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setFirstName(staff.getFirstName());
 			c.setMiddleName(staff.getMiddleName());
 			c.setLastName(staff.getLastName());
+			c.setAcademicTitle(staff.getAcademicTitle());
 			c.setEmail(staff.getEmail());
 			c.setFormattedName(staff.getName(nameFormat));
 			return c;
@@ -182,6 +187,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setFirstName(student.getFirstName());
 			c.setMiddleName(student.getMiddleName());
 			c.setLastName(student.getLastName());
+			c.setAcademicTitle(student.getAcademicTitle());
 			c.setEmail(student.getEmail());
 			c.setFormattedName(student.getName(nameFormat));
 			return c;
@@ -195,6 +201,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 						c.setFirstName(person.getFirstName());
 						c.setMiddleName(person.getMiddleName());
 						c.setLastName(person.getLastName());
+						c.setAcademicTitle(person.getAcademicTitle());
 						c.setEmail(person.getEmail());
 						c.setPhone(person.getPhone());
 						c.setExternalId(person.getId());

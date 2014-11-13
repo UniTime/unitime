@@ -129,6 +129,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 								instructor.setFirstName(i.getInstructor().getFirstName());
 								instructor.setMiddleName(i.getInstructor().getMiddleName());
 								instructor.setLastName(i.getInstructor().getLastName());
+								instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 								instructor.setEmail(i.getInstructor().getEmail());
 								instructor.setFormattedName(i.getInstructor().getName(nameFormat));
 								conflict.addInstructor(instructor);
@@ -142,6 +143,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 							instructor.setFirstName(i.getFirstName());
 							instructor.setMiddleName(i.getMiddleName());
 							instructor.setLastName(i.getLastName());
+							instructor.setAcademicTitle(i.getAcademicTitle());
 							instructor.setEmail(i.getEmail());
 							instructor.setFormattedName(i.getName(nameFormat));
 							conflict.addInstructor(instructor);

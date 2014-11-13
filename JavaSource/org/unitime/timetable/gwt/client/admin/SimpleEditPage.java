@@ -1223,7 +1223,7 @@ public class SimpleEditPage extends Composite {
 				case person:
 					HorizontalPanel hp = new HorizontalPanel();
 					String[] name = record.getValues(index);
-					final HTML label = new HTML(name.length <= 2 ? "<i>" + MESSAGES.notSet() + "</i>" : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2]));
+					final HTML label = new HTML(name.length <= 2 ? "<i>" + MESSAGES.notSet() + "</i>" : name.length >= 6 && !name[6].isEmpty() ? name[6] : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2]));
 					label.setWidth(field.getWidth() + "px");
 					hp.add(label);
 					Image change = new Image(RESOURCES.edit());
@@ -1237,19 +1237,23 @@ public class SimpleEditPage extends Composite {
 						public void onClick(ClickEvent event) {
 							Lookup lookup = new Lookup();
 							lookup.setOptions("mustHaveExternalId");
-							lookup.setText(label.getText().equals("<i>" + MESSAGES.notSet() + "</i>") ? "" : label.getText());
+							String[] name = record.getValues(index);
+							if (name != null && name.length > 2)
+								lookup.setQuery(name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2]));
 							lookup.addValueChangeHandler(new ValueChangeHandler<PersonInterface>() {
 								@Override
 								public void onValueChange(ValueChangeEvent<PersonInterface> event) {
 									PersonInterface person = event.getValue();
 									if (person != null) {
-										label.setText(person.getLastName() + ", " + person.getFirstName() + (person.getMiddleName() == null ? "" : " " + person.getMiddleName()));
+										label.setText(person.hasFormattedName() ? person.getFormattedName() : person.getLastName() + ", " + person.getFirstName() + (person.getMiddleName() == null ? "" : " " + person.getMiddleName()));
 										record.setField(index, null);
 										record.addToField(index, person.getLastName() == null ? "" : person.getLastName());
 										record.addToField(index, person.getFirstName() == null ? "" : person.getFirstName());
 										record.addToField(index, person.getMiddleName() == null ? "" : person.getMiddleName());
 										record.addToField(index, person.getId() == null ? "" : person.getId());
 										record.addToField(index, person.getEmail() == null ? "" : person.getEmail());
+										record.addToField(index, person.getAcademicTitle() == null ? "" : person.getAcademicTitle());
+										record.addToField(index, person.getFormattedName() == null ? "" : person.getFormattedName());
 										setError(null);
 									}
 								}
@@ -1298,7 +1302,7 @@ public class SimpleEditPage extends Composite {
 					break;
 				case person:
 					String[] name = record.getValues(index);
-					initWidget(new HTML(name.length <= 2 ? "<i>" + MESSAGES.notSet() + "</i>" : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2])));
+					initWidget(new HTML(name.length <= 2 ? "<i>" + MESSAGES.notSet() + "</i>" : name.length >= 6 && !name[6].isEmpty() ? name[6] : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2])));
 					break;
 				case textarea:
 					HTML html = new HTML(getValue());

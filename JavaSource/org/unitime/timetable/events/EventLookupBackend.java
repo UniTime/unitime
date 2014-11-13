@@ -982,6 +982,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							contact.setFirstName(m.getEvent().getMainContact().getFirstName());
 							contact.setMiddleName(m.getEvent().getMainContact().getMiddleName());
 							contact.setLastName(m.getEvent().getMainContact().getLastName());
+							contact.setAcademicTitle(m.getEvent().getMainContact().getAcademicTitle());
 							contact.setEmail(m.getEvent().getMainContact().getEmailAddress());
 							contact.setFormattedName(m.getEvent().getMainContact().getName(nameFormat));
 							event.setContact(contact);
@@ -991,6 +992,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							contact.setFirstName(additional.getFirstName());
 							contact.setMiddleName(additional.getMiddleName());
 							contact.setLastName(additional.getLastName());
+							contact.setAcademicTitle(additional.getAcademicTitle());
 							contact.setEmail(additional.getEmailAddress());
 							contact.setFormattedName(additional.getName(nameFormat));
 							event.addAdditionalContact(contact);
@@ -1020,6 +1022,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									instructor.setFirstName(i.getInstructor().getFirstName());
 									instructor.setMiddleName(i.getInstructor().getMiddleName());
 									instructor.setLastName(i.getInstructor().getLastName());
+									instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 									instructor.setEmail(i.getInstructor().getEmail());
 									instructor.setFormattedName(i.getInstructor().getName(nameFormat));
 									event.addInstructor(instructor);
@@ -1116,6 +1119,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								instructor.setFirstName(i.getFirstName());
 								instructor.setMiddleName(i.getMiddleName());
 								instructor.setLastName(i.getLastName());
+								instructor.setAcademicTitle(i.getAcademicTitle());
 								instructor.setEmail(i.getEmail());
 								instructor.setFormattedName(i.getName(nameFormat));
 								event.addInstructor(instructor);
@@ -1573,6 +1577,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									contact.setFirstName(m.getEvent().getMainContact().getFirstName());
 									contact.setMiddleName(m.getEvent().getMainContact().getMiddleName());
 									contact.setLastName(m.getEvent().getMainContact().getLastName());
+									contact.setAcademicTitle(m.getEvent().getMainContact().getAcademicTitle());
 									contact.setEmail(m.getEvent().getMainContact().getEmailAddress());
 									contact.setFormattedName(m.getEvent().getMainContact().getName(nameFormat));
 									event.setContact(contact);
@@ -1582,6 +1587,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									contact.setFirstName(additional.getFirstName());
 									contact.setMiddleName(additional.getMiddleName());
 									contact.setLastName(additional.getLastName());
+									contact.setAcademicTitle(additional.getAcademicTitle());
 									contact.setEmail(additional.getEmailAddress());
 									contact.setFormattedName(additional.getName(nameFormat));
 									event.addAdditionalContact(contact);
@@ -1610,6 +1616,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 											instructor.setFirstName(i.getInstructor().getFirstName());
 											instructor.setMiddleName(i.getInstructor().getMiddleName());
 											instructor.setLastName(i.getInstructor().getLastName());
+											instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 											instructor.setEmail(i.getInstructor().getEmail());
 											instructor.setFormattedName(i.getInstructor().getName(nameFormat));
 											event.addInstructor(instructor);
@@ -1696,6 +1703,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										instructor.setFirstName(i.getFirstName());
 										instructor.setMiddleName(i.getMiddleName());
 										instructor.setLastName(i.getLastName());
+										instructor.setAcademicTitle(i.getAcademicTitle());
 										instructor.setEmail(i.getEmail());
 										instructor.setFormattedName(i.getName(nameFormat));
 										event.addInstructor(instructor);
@@ -1874,6 +1882,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										instructor.setFirstName(i.getInstructor().getFirstName());
 										instructor.setMiddleName(i.getInstructor().getMiddleName());
 										instructor.setLastName(i.getInstructor().getLastName());
+										instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 										instructor.setEmail(i.getInstructor().getEmail());
 										instructor.setFormattedName(i.getInstructor().getName(nameFormat));
 										event.addInstructor(instructor);

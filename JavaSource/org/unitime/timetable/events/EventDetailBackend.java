@@ -112,6 +112,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			contact.setFirstName(e.getMainContact().getFirstName());
 			contact.setMiddleName(e.getMainContact().getMiddleName());
 			contact.setLastName(e.getMainContact().getLastName());
+			contact.setAcademicTitle(e.getMainContact().getAcademicTitle());
 			contact.setExternalId(e.getMainContact().getExternalUniqueId());
 			contact.setPhone(e.getMainContact().getPhone());
 			contact.setEmail(e.getMainContact().getEmailAddress());
@@ -124,6 +125,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			contact.setFirstName(c.getFirstName());
 			contact.setMiddleName(c.getMiddleName());
 			contact.setLastName(c.getLastName());
+			contact.setAcademicTitle(c.getAcademicTitle());
 			contact.setExternalId(c.getExternalUniqueId());
 			contact.setPhone(c.getPhone());
 			contact.setEmail(c.getEmailAddress());
@@ -152,6 +154,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					instructor.setFirstName(i.getInstructor().getFirstName());
 					instructor.setMiddleName(i.getInstructor().getMiddleName());
 					instructor.setLastName(i.getInstructor().getLastName());
+					instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 					instructor.setEmail(i.getInstructor().getEmail());
 					instructor.setFormattedName(i.getInstructor().getName(nameFormat));
 					event.addInstructor(instructor);
@@ -164,6 +167,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     				coordinator.setFirstName(c.getFirstName());
     				coordinator.setMiddleName(c.getMiddleName());
     				coordinator.setLastName(c.getLastName());
+    				coordinator.setAcademicTitle(c.getAcademicTitle());
     				coordinator.setEmail(c.getEmail());
     				coordinator.setFormattedName(c.getName(nameFormat));
     				event.addCoordinator(coordinator);
@@ -203,6 +207,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					instructor.setFirstName(i.getInstructor().getFirstName());
 					instructor.setMiddleName(i.getInstructor().getMiddleName());
 					instructor.setLastName(i.getInstructor().getLastName());
+					instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 					instructor.setExternalId(i.getInstructor().getExternalUniqueId());
 					instructor.setEmail(i.getInstructor().getEmail());
 					instructor.setFormattedName(i.getInstructor().getName(nameFormat));
@@ -261,6 +266,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				instructor.setFirstName(i.getFirstName());
 				instructor.setMiddleName(i.getMiddleName());
 				instructor.setLastName(i.getLastName());
+				instructor.setAcademicTitle(i.getAcademicTitle());
 				instructor.setEmail(i.getEmail());
 				instructor.setFormattedName(i.getName(nameFormat));
 				event.addInstructor(instructor);
@@ -301,6 +307,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				instructor.setFirstName(i.getFirstName());
 				instructor.setMiddleName(i.getMiddleName());
 				instructor.setLastName(i.getLastName());
+				instructor.setAcademicTitle(i.getAcademicTitle());
 				instructor.setExternalId(i.getExternalUniqueId());
 				instructor.setEmail(i.getEmail());
 				instructor.setFormattedName(i.getName(nameFormat));
@@ -360,6 +367,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 							instructor.setFirstName(i.getInstructor().getFirstName());
 							instructor.setMiddleName(i.getInstructor().getMiddleName());
 							instructor.setLastName(i.getInstructor().getLastName());
+							instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 							instructor.setExternalId(i.getInstructor().getExternalUniqueId());
 							instructor.setEmail(i.getInstructor().getEmail());
 							instructor.setFormattedName(i.getInstructor().getName(nameFormat));
@@ -388,6 +396,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 						coordinator.setFirstName(c.getFirstName());
 						coordinator.setMiddleName(c.getMiddleName());
 						coordinator.setLastName(c.getLastName());
+						coordinator.setAcademicTitle(c.getAcademicTitle());
 						coordinator.setEmail(c.getEmail());
 						coordinator.setFormattedName(c.getName(nameFormat));
 						event.addCoordinator(coordinator);
@@ -454,6 +463,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 							instructor.setFirstName(i.getInstructor().getFirstName());
 							instructor.setMiddleName(i.getInstructor().getMiddleName());
 							instructor.setLastName(i.getInstructor().getLastName());
+							instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 							instructor.setExternalId(i.getInstructor().getExternalUniqueId());
 							instructor.setEmail(i.getInstructor().getEmail());
 							instructor.setFormattedName(i.getInstructor().getName(nameFormat));
@@ -485,6 +495,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 						coordinator.setFirstName(c.getFirstName());
 						coordinator.setMiddleName(c.getMiddleName());
 						coordinator.setLastName(c.getLastName());
+						coordinator.setAcademicTitle(c.getAcademicTitle());
 						coordinator.setEmail(c.getEmail());
 						coordinator.setFormattedName(c.getName(nameFormat));
 						event.addCoordinator(coordinator);
@@ -619,6 +630,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 							contact.setFirstName(overlap.getEvent().getMainContact().getFirstName());
 							contact.setMiddleName(overlap.getEvent().getMainContact().getMiddleName());
 							contact.setLastName(overlap.getEvent().getMainContact().getLastName());
+							contact.setAcademicTitle(overlap.getEvent().getMainContact().getAcademicTitle());
 							contact.setFormattedName(overlap.getEvent().getMainContact().getName(nameFormat));
 							confEvent.setContact(contact);
 						}
@@ -640,6 +652,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 									instructor.setFirstName(i.getInstructor().getFirstName());
 									instructor.setMiddleName(i.getInstructor().getMiddleName());
 									instructor.setLastName(i.getInstructor().getLastName());
+									instructor.setAcademicTitle(i.getInstructor().getAcademicTitle());
 									instructor.setEmail(i.getInstructor().getEmail());
 									instructor.setFormattedName(i.getInstructor().getName(nameFormat));
 									confEvent.addInstructor(instructor);
@@ -673,6 +686,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 								instructor.setFirstName(i.getFirstName());
 								instructor.setMiddleName(i.getMiddleName());
 								instructor.setLastName(i.getLastName());
+								instructor.setAcademicTitle(i.getAcademicTitle());
 								instructor.setEmail(i.getEmail());
 								instructor.setFormattedName(i.getName(nameFormat));
 								confEvent.addInstructor(instructor);

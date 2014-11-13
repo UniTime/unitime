@@ -207,4 +207,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     	return false;
     }
 
+	@Override
+	public String getAcademicTitle() { return null; }
+
 }

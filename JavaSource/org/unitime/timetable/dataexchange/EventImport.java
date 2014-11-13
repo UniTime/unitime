@@ -387,6 +387,7 @@ public class EventImport extends EventRelatedImports {
 		String firstName = getOptionalStringAttribute(eventContactElement, "firstName");
 		String middleName = getOptionalStringAttribute(eventContactElement, "middleName");
 		String lastName  = getRequiredStringAttribute(eventContactElement, "lastName", eventContactElementName);
+		String acadTitle = getOptionalStringAttribute(eventContactElement, "acadTitle");
 		String email = getOptionalStringAttribute(eventContactElement, "email");
 		String phone = getOptionalStringAttribute(eventContactElement, "phone");
 		try {
@@ -417,11 +418,14 @@ public class EventImport extends EventRelatedImports {
 					lastName = user.getLastName();
 				if (phone == null)
 					phone = user.getLastName();
+				if (acadTitle == null)
+					acadTitle = user.getAcademicTitle();
 			}
 			ec = new EventContact();
 			ec.setFirstName(firstName);
 			ec.setMiddleName(middleName);
 			ec.setLastName(lastName);
+			ec.setAcademicTitle(acadTitle);
 			ec.setEmailAddress(email);
 			ec.setPhone(phone);
 			ec.setExternalUniqueId(externalId);

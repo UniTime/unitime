@@ -98,6 +98,7 @@ public class InstructorAction extends Action {
         frm.setFname(staff.getFirstName()!=null ? staff.getFirstName().trim() : "");
         frm.setMname(staff.getMiddleName()!=null ? staff.getMiddleName().trim() : "");
         frm.setLname(staff.getLastName()!=null ? staff.getLastName().trim() : "");
+        frm.setTitle(staff.getAcademicTitle() != null ? staff.getAcademicTitle().trim() : "");
         frm.setEmail(staff.getEmail());
         if (staff.getPositionType() != null &&  (frm.getPosType() == null || frm.getPosType().trim().length() == 0))
         	frm.setPosType(staff.getPositionType().getUniqueId().toString());
@@ -122,6 +123,7 @@ public class InstructorAction extends Action {
 				frm.setMname(results.getMiddleName());
 				frm.setLname(results.getLastName());
 	    		frm.setEmail(results.getEmail());
+	    		frm.setTitle(results.getAcademicTitle());
 	    	}
 	    }	    
     }
@@ -213,6 +215,12 @@ public class InstructorAction extends Action {
 			}
 			
 			inst.setLastName(frm.getLname().trim());
+			
+			if (frm.getTitle() != null && frm.getTitle().trim().length()>0) {
+				inst.setAcademicTitle(frm.getTitle().trim());
+			} else {
+				inst.setAcademicTitle(null);
+			}
 			
 			if (frm.getPuId() != null && frm.getPuId().trim().length()>0 && !frm.getPuId().equalsIgnoreCase("null")) {
 				inst.setExternalUniqueId(frm.getPuId().trim());

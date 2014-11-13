@@ -61,6 +61,7 @@
 <!ATTLIST instructor lead ( false | true ) #IMPLIED >
 <!ATTLIST instructor lname CDATA #IMPLIED >
 <!ATTLIST instructor mname CDATA #IMPLIED >
+<!ATTLIST instructor title CDATA #IMPLIED >
 <!ATTLIST instructor share NMTOKEN #IMPLIED >
 
 <!ELEMENT offering ( designatorRequired?, courseCredit?, course+, config*, exam* ) >

@@ -306,6 +306,8 @@ public class CourseOfferingExport extends BaseExport {
             instructorElement.addAttribute("mname", instructor.getMiddleName());
         if (instructor.getLastName()!=null)
             instructorElement.addAttribute("lname", instructor.getLastName());
+        if (instructor.getAcademicTitle() != null)
+        	instructorElement.addAttribute("title", instructor.getAcademicTitle());
     }
     
     private static String dayCode2days(int dayCode) {

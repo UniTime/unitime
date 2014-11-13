@@ -28,13 +28,14 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  * @author Tomas Muller
  */
 public class PersonInterface implements Comparable<PersonInterface>, IsSerializable {
-    private String iId, iFName, iMName, iLName, iEmail, iPhone, iDept, iPos, iSource;
+    private String iId, iFName, iMName, iLName, iEmail, iPhone, iDept, iPos, iSource, iTitle;
+    private String iFormattedName = null;
     
     public PersonInterface() {
     }
-    public PersonInterface(String id, String fname, String mname, String lname, String email, String phone, String dept, String pos, String source) {
+    public PersonInterface(String id, String fname, String mname, String lname, String title, String email, String phone, String dept, String pos, String source) {
         iId = id; iSource = source;
-        iFName = fname; iMName = mname; iLName = lname;
+        iFName = fname; iMName = mname; iLName = lname; iTitle = title;
         if (iMName!=null && iFName!=null && iMName.indexOf(iFName)>=0) iMName = iMName.replaceAll(iFName+" ?", "");
         if (iMName!=null && iLName!=null && iMName.indexOf(iLName)>=0) iMName = iMName.replaceAll(" ?"+iLName, "");
         iEmail = email; iPhone = phone; iDept = dept; iPos = pos;
@@ -56,7 +57,7 @@ public class PersonInterface implements Comparable<PersonInterface>, IsSerializa
     public void setLastName(String lname) { iLName = lname; }
     
     public String getName() {
-    	return (
+    	return iFormattedName != null ? iFormattedName : ( 
     			(iLName == null || iLName.isEmpty() ? "" : iLName) +
     			(iFName == null || iFName.isEmpty() ? "" : ", " + iFName) +
     			(iMName == null || iMName.isEmpty() ? "" : " " + iMName)).trim();
@@ -85,6 +86,9 @@ public class PersonInterface implements Comparable<PersonInterface>, IsSerializa
     public String getPosition() { return iPos; }
     public void setPosition(String pos) { iPos = pos; }
     
+    public String getAcademicTitle() { return iTitle; }
+    public void setAcademicTitle(String title) { iTitle = title; }
+    
     public int compareTo(PersonInterface p) {
         int cmp = (getLastName()==null?"":getLastName()).compareToIgnoreCase(p.getLastName()==null?"":p.getLastName());
         if (cmp!=0) return cmp;
@@ -104,12 +108,17 @@ public class PersonInterface implements Comparable<PersonInterface>, IsSerializa
     	if (iFName == null || iFName.isEmpty()) iFName = person.getFirstName();
     	if (iMName == null || iMName.isEmpty()) iMName = person.getMiddleName();
     	if (iLName == null || iLName.isEmpty()) iLName = person.getLastName();
+    	if (iTitle == null || iTitle.isEmpty()) iTitle = person.getAcademicTitle();
     	if (iEmail == null || iEmail.isEmpty()) iEmail = person.getEmail();
     	if (iPhone == null || iPhone.isEmpty()) iPhone = person.getPhone();
     	if (iDept == null || iDept.isEmpty()) iDept = person.getDepartment();
     	if (!iSource.contains(person.getSource()))
     		iSource += ", " + person.getSource();
     }
+    
+    public void setFormattedName(String name) { iFormattedName = name; }
+	public boolean hasFormattedName() { return iFormattedName != null && !iFormattedName.isEmpty(); }
+	public String getFormattedName() { return iFormattedName; }
     
     public static class LookupRequest implements GwtRpcRequest<GwtRpcResponseList<PersonInterface>> {
     	private String iQuery, iOptions;
