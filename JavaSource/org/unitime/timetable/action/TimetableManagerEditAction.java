@@ -298,6 +298,9 @@ public class TimetableManagerEditAction extends Action {
 			if (frm.getLastName() == null || frm.getLastName().trim().length() == 0){
 				frm.setLastName(results.getLastName());
 			}
+			if (frm.getTitle() == null || frm.getTitle().trim().length() == 0){
+				frm.setTitle(results.getAcademicTitle());
+			}
 			frm.setEmail(results.getEmail());
         }
     }
@@ -383,11 +386,13 @@ public class TimetableManagerEditAction extends Action {
             frm.setFirstName(mgr.getFirstName());
             frm.setMiddleName(mgr.getMiddleName());
             frm.setLastName(mgr.getLastName());
+            frm.setTitle(mgr.getAcademicTitle());
         } else {
         	frm.setLookupEnabled(Boolean.FALSE);
             frm.setFirstName(mgr.getFirstName());
             frm.setMiddleName(mgr.getMiddleName());
             frm.setLastName(mgr.getLastName());
+            frm.setTitle(mgr.getAcademicTitle());
         }
     }
 
@@ -417,6 +422,7 @@ public class TimetableManagerEditAction extends Action {
         mgr.setFirstName(frm.getFirstName());
         mgr.setMiddleName(frm.getMiddleName());
         mgr.setLastName(frm.getLastName());
+        mgr.setAcademicTitle(frm.getTitle());
         mgr.setExternalUniqueId(frm.getExternalId());
         mgr.setEmailAddress(frm.getEmail());
         
@@ -505,6 +511,7 @@ public class TimetableManagerEditAction extends Action {
         mgr.setFirstName(frm.getFirstName());
         mgr.setMiddleName(frm.getMiddleName());
         mgr.setLastName(frm.getLastName());
+        mgr.setAcademicTitle(frm.getTitle());
         mgr.setExternalUniqueId(frm.getExternalId());
         mgr.setEmailAddress(frm.getEmail());
 

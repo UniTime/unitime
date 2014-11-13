@@ -41,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructorListUpdateForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.model.Assignment;
@@ -132,6 +133,7 @@ public class InstructorListUpdateAction extends Action {
 		setupFilters(frm, request);
 		
 		frm.setInstructors();		
+		frm.setNameFormat(sessionContext.getUser().getProperty(UserProperty.NameFormat));
 		
 		return mapping.findForward("showUpdateInstructorList");
 	}
@@ -276,6 +278,9 @@ public class InstructorListUpdateAction extends Action {
 						}
 						if (staff.getMiddleName() != null) {
 							inst.setMiddleName(staff.getMiddleName());
+						}
+						if (staff.getAcademicTitle() != null) {
+							inst.setAcademicTitle(staff.getAcademicTitle());
 						}
 						if (staff.getExternalUniqueId() != null) {
 							inst.setExternalUniqueId(staff.getExternalUniqueId());

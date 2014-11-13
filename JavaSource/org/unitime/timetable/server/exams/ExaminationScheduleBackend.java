@@ -142,6 +142,7 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 				instructor.setFirstName(i.getFirstName());
 				instructor.setMiddleName(i.getMiddleName());
 				instructor.setLastName(i.getLastName());
+				instructor.setAcademicTitle(i.getAcademicTitle());
 				instructor.setExternalId(i.getExternalUniqueId());
 				instructor.setEmail(i.getEmail());
 				related.addInstructor(instructor);

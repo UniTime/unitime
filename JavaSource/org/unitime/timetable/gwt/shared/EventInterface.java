@@ -953,7 +953,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     }
     
     public static class ContactInterface implements IsSerializable, Comparable<ContactInterface> {
-    	private String iFirstName, iMiddleName, iLastName;
+    	private String iFirstName, iMiddleName, iLastName, iTitle;
     	private String iFormattedName;
     	private String iExternalId, iEmail, iPhone;
     	
@@ -963,10 +963,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     		iFirstName = person.getFirstName();
     		iMiddleName = person.getMiddleName();
     		iLastName = person.getLastName();
+    		iTitle = person.getAcademicTitle();
     		iExternalId = person.getId();
     		iEmail = person.getEmail();
     		iPhone = person.getPhone();
-    		iFormattedName = null;
+    		iFormattedName = person.getFormattedName();
     	}
     	
     	public void setFirstName(String name) { iFirstName = name; }
@@ -980,6 +981,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	public void setLastName(String name) { iLastName = name; }
     	public boolean hasLastName() { return iLastName != null && !iLastName.isEmpty(); }
     	public String getLastName() { return iLastName; }
+    	
+    	public void setAcademicTitle(String title) { iTitle = title; }
+    	public boolean hasAcademicTitle() { return iTitle != null && !iTitle.isEmpty(); }
+    	public String getAcademicTitle() { return iTitle; }
 
     	public void setExternalId(String externalId) { iExternalId = externalId; }
     	public boolean hasExternalId() { return iExternalId != null && !iExternalId.isEmpty(); }
@@ -1725,6 +1730,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private boolean iCanSaveFilterDefaults = false;
 		private Map<String, String> iFilterDefaults = null;
 		private Integer iTooEarlySlot = null;
+		private boolean iCanEditAcademicTitle = false;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -1792,6 +1798,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasTooEarlySlot() { return iTooEarlySlot != null && iTooEarlySlot > 0; }
 		public void setTooEarlySlot(int slot) { iTooEarlySlot = slot; }
 		public Integer getTooEarlySlot() { return iTooEarlySlot; }
+		
+		public boolean isCanEditAcademicTitle() { return iCanEditAcademicTitle; }
+		public void setCanEditAcademicTitle(boolean canEditAcademicTitle) { iCanEditAcademicTitle = canEditAcademicTitle; }
 	}
 	
 	public static class EventDetailRpcRequest extends EventRpcRequest<EventInterface> {

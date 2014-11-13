@@ -73,6 +73,13 @@
             not-null="false"
             length="200"/>
 
+		<property
+            name="academicTitle"
+            column="acad_title"
+            type="java.lang.String"
+            not-null="false"
+            length="50"/>
+		
         <many-to-one
             name="positionType"
             class="PositionType"

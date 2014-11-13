@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.hibernate.criterion.Order;
 import org.unitime.timetable.defaults.CommonValues;
@@ -39,6 +38,7 @@ import org.unitime.timetable.model.comparators.RolesComparator;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.NameFormat;
 
 
 /**
@@ -80,14 +80,15 @@ public class TimetableManagerBuilder {
 						.addOrder(Order.asc("firstName"))
 						.list();
 		Iterator iterEmp = empList.iterator();
+		
+		NameFormat nameFormat = NameFormat.fromReference(context.getUser().getProperty(UserProperty.NameFormat));
 
 		while(iterEmp.hasNext()) {
 		    TimetableManager manager = (TimetableManager) iterEmp.next();
 
 		    String puid = manager.getExternalUniqueId();
-		    String middleName = manager.getMiddleName();
 		    String email = manager.getEmailAddress()!=null ? manager.getEmailAddress() : " ";
-		    String fullName = "";
+		    String fullName = nameFormat.format(manager);
 		    String subjectList = "";
 		    String roleStr = "";
 		    String deptStr = "";
@@ -95,18 +96,6 @@ public class TimetableManagerBuilder {
 		    Set mgrRolesSet = manager.getManagerRoles();
 		    
 		    String onClick = (context.hasPermission(manager, Right.TimetableManagerEdit) ? "onClick=\"document.location='timetableManagerEdit.do?op=Edit&id=" + manager.getUniqueId() + "';\"" : null);
-
-		    // Construct Full Name
-		    if(middleName==null || middleName.equals("null") || middleName.trim().length()==0)
-		        fullName = manager.getLastName() + ", " + manager.getFirstName() + " ";
-		    else {
-		    	String mn = "";
-		    	StringTokenizer strTok = new StringTokenizer(middleName, " ");
-		    	while (strTok.hasMoreTokens()) {
-		    		mn += strTok.nextToken().substring(0,1) + " ";
-		    	}
-		        fullName = manager.getLastName() + ", " + manager.getFirstName() + " " + mn;
-		    }
 
 		    // Determine role type
 		    String roleOrd = "";

@@ -37,6 +37,7 @@ public abstract class BaseEventContact implements Serializable {
 	private String iFirstName;
 	private String iMiddleName;
 	private String iLastName;
+	private String iAcademicTitle;
 
 
 	public static String PROP_UNIQUEID = "uniqueId";
@@ -46,6 +47,7 @@ public abstract class BaseEventContact implements Serializable {
 	public static String PROP_FIRSTNAME = "firstName";
 	public static String PROP_MIDDLENAME = "middleName";
 	public static String PROP_LASTNAME = "lastName";
+	public static String PROP_ACAD_TITLE = "academicTitle";
 
 	public BaseEventContact() {
 		initialize();
@@ -79,6 +81,9 @@ public abstract class BaseEventContact implements Serializable {
 	public String getLastName() { return iLastName; }
 	public void setLastName(String lastName) { iLastName = lastName; }
 
+	public String getAcademicTitle() { return iAcademicTitle; }
+	public void setAcademicTitle(String academicTitle) { iAcademicTitle = academicTitle; }
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof EventContact)) return false;
 		if (getUniqueId() == null || ((EventContact)o).getUniqueId() == null) return false;
@@ -96,6 +101,7 @@ public abstract class BaseEventContact implements Serializable {
 
 	public String toDebugString() {
 		return "EventContact[" +
+			"\n	AcademicTitle: " + getAcademicTitle() +
 			"\n	EmailAddress: " + getEmailAddress() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	FirstName: " + getFirstName() +

@@ -9840,4 +9840,20 @@
 		<plsql>alter table %SCHEMA%.user_data modify external_uid varchar2(12 char)</plsql>
 		<plsql>alter table %SCHEMA%.user_data modify name varchar2(100 char)</plsql>
 	</update>
+	<update version="141" date="13-Nov-2014" comment="Academic Title">
+		<plsql>alter table %SCHEMA%.staff add acad_title varchar2(50 char)</plsql>
+		<plsql>alter table %SCHEMA%.departmental_instructor add acad_title varchar2(50 char)</plsql>
+		<plsql>alter table %SCHEMA%.event_contact add acad_title varchar2(50 char)</plsql>
+		<plsql>alter table %SCHEMA%.timetable_manager add acad_title varchar2(50 char)</plsql>
+		<mysql>alter table %SCHEMA%.staff add acad_title varchar(50) null</mysql>
+		<mysql>alter table %SCHEMA%.departmental_instructor add acad_title varchar(50) null</mysql>
+		<mysql>alter table %SCHEMA%.event_contact add acad_title varchar(50) null</mysql>
+		<mysql>alter table %SCHEMA%.timetable_manager add acad_title varchar(50) null</mysql>
+		<sql>update %SCHEMA%.settings set allowed_values = 'last-first,first-last,initial-last,last-initial,first-middle-last,short,title-first-middle-last,last-first-middle-title,title-initial-last,title-last-initial' where name = 'name'</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventCanEditAcademicTitle'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventLookupContact'
+		</sql>
+	</update>
 </dbupdate>

@@ -74,6 +74,7 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
+import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
@@ -467,9 +468,8 @@ public class InstructorDetailAction extends PreferencesAction {
         // populate form
 		frm.setInstructorId(instructorId);
 		
-		frm.setName( ((inst.getFirstName() == null) ?"": Constants.toInitialCase(inst.getFirstName(), "-".toCharArray()) )+ " " 
-        			+ ((inst.getMiddleName() == null) ?"": Constants.toInitialCase(inst.getMiddleName(), "-".toCharArray()) )+ " " 
-        			+ Constants.toInitialCase(inst.getLastName(), "-".toCharArray()));
+		NameFormat nameFormat = NameFormat.fromReference(sessionContext.getUser().getProperty(UserProperty.NameFormat));
+		frm.setName(nameFormat.format(inst));
 		
 		frm.setEmail(inst.getEmail());
 		

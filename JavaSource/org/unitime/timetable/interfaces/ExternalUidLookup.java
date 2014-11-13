@@ -37,6 +37,7 @@ public interface ExternalUidLookup {
 		private String iFirstName = null;
 		private String iMiddleName = null;
 		private String iLastName = null;
+		private String iAcadTitle = null;
 		private String iEmail = null;
 		private String iName = null;
 		private String iPhone = null;
@@ -103,6 +104,9 @@ public interface ExternalUidLookup {
 			return ((iLastName == null ? "" : iLastName) + ", " + (iFirstName == null ? "" : iFirstName) + (iMiddleName == null ? "" : " " + iMiddleName)).toString();
 		}
 		public void setName(String name) { iName = name; }
+		
+		public void setAcademicTitle(String academicTitle) { iAcadTitle = academicTitle; }
+		public String getAcademicTitle() { return iAcadTitle; }
 	}
 	
 }

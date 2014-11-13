@@ -114,6 +114,7 @@ public class StaffImport extends BaseImport {
 				staff.setFirstName(getOptionalStringAttribute(element, "firstName"));
 				staff.setMiddleName(getOptionalStringAttribute(element, "middleName"));
 				staff.setLastName(getRequiredStringAttribute(element, "lastName", elementName));
+				staff.setAcademicTitle(getOptionalStringAttribute(element, "acadTitle"));
 				PositionType posType = null;
 				String positionType = getOptionalStringAttribute(element, "positionType");
 				if (positionType != null)

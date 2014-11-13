@@ -73,6 +73,7 @@ public class InstructorEditForm extends PreferencesForm  {
 	private String lname;
 	private String mname;
 	private String fname;
+	private String title;
 	private String deptName;
 	private String email;
 
@@ -117,6 +118,9 @@ public class InstructorEditForm extends PreferencesForm  {
 	public void setFname(String fname) {
 		this.fname = fname;
 	}
+	
+	public String getTitle() { return title; }
+	public void setTitle(String title) { this.title = title; }
 
 	public String getLname() {
 		return lname;

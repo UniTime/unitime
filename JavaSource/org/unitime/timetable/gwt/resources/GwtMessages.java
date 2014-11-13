@@ -694,6 +694,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Last Name:")
 	String propLastName();
+	
+	@DefaultMessage("Academic Title:")
+	String propAcademicTitle();
 
 	@DefaultMessage("Email:")
 	String propEmail();

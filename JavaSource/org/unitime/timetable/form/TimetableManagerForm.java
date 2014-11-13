@@ -59,6 +59,7 @@ public class TimetableManagerForm extends ActionForm {
     private String firstName;
     private String middleName;
     private String lastName;
+    private String title;
     private String primaryRole;
     private String email;
     private String role;
@@ -134,6 +135,7 @@ public class TimetableManagerForm extends ActionForm {
         firstName = "";
         middleName = "";
         lastName = "";
+        title = "";
         primaryRole = "";
         role="";
         dept="";
@@ -371,6 +373,9 @@ public class TimetableManagerForm extends ActionForm {
     public void setMiddleName(String middleName) {
         this.middleName = middleName;
     }
+    
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
     
     public String getOp() {
         return op;

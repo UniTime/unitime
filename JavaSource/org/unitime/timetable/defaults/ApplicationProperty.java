@@ -1331,6 +1331,9 @@ public enum ApplicationProperty {
 	@DefaultValue("position,title")
 	@Description("People Lookup LDAP: position attribute")
 	PeopleLookupLdapPositionAttribute("tmtbl.lookup.ldap.position"),
+	
+	@Description("People Lookup LDAP: academic title attribute")
+	PeopleLookupLdapAcademicTitleAttribute("tmtbl.lookup.ldap.title"),
 
 	@Description("Reservations: default reservation expiration date for all reservation types (given either in the number of days relative to the academic session begin date, or as a date in yyyy-mm-dd format)")
 	ReservationExpirationDateGlobal("unitime.reservations.expiration_date"),
