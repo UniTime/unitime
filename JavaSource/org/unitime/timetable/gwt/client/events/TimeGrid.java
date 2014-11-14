@@ -663,16 +663,10 @@ public class TimeGrid extends Composite {
 			MeetingInterface meeting = null;
 			TreeSet<MeetingInterface> dates = new TreeSet<MeetingInterface>(new Comparator<MeetingInterface>() {
 				public int compare(MeetingInterface m1, MeetingInterface m2) {
-					if (isVerticalSplitByWeek()) {
-						int cmp = new Integer(m1.getDayOfYear()).compareTo(new Integer(m2.getDayOfYear()));
-						if (cmp != 0) return cmp;
-					} else {
-						int cmp = (m1.getLocationName() == null ? "" : m1.getLocationName()).compareTo(m2.getLocationName() == null ? "" : m2.getLocationName());
-						if (cmp != 0) return cmp;
-					}
-					return m1.getId().compareTo(m2.getId());
+					return new Integer(m1.getDayOfYear()).compareTo(new Integer(m2.getDayOfYear()));
 				}
 			});
+			TreeSet<String> rooms = new TreeSet<String>();
 			MeetingInterface prev = null;
 			for (Iterator<MeetingInterface> i = meetings.iterator(); i.hasNext(); ) {
 				MeetingInterface m = i.next();
@@ -680,23 +674,23 @@ public class TimeGrid extends Composite {
 					meeting = m;
 					prev = m;
 					dates.add(m);
+					if (m.getLocation() != null) rooms.add(m.getLocation().getName());
 					i.remove();
 				} else if (meeting.getStartSlot() == m.getStartSlot() && meeting.getEndSlot() == m.getEndSlot() &&
 						meeting.getGridIndex() == m.getGridIndex() && meeting.getStartOffset() == m.getStartOffset() && meeting.getEndOffset() == m.getEndOffset()) {
 					if (iMode == Mode.OVERLAP && (weekIndex(prev) != weekIndex(m) && weekIndex(prev) + 1 != weekIndex(m))) continue;
 					dates.add(m);
+					if (m.getLocation() != null) rooms.add(m.getLocation().getName());
 					prev = m;
 					i.remove();
 				}
 			}
 			String dateString = null;
-			TreeSet<String> rooms = new TreeSet<String>();
 			int lastDay = 0;
 			String endDate = null;
 			TreeSet<Integer> days = new TreeSet<Integer>();
 			for (MeetingInterface m: dates) {
 				days.add(m.getDayOfYear());
-				if (m.getLocation() != null) rooms.add(m.getLocation().getName());
 				if (dateString == null) {
 					dateString = sDateFormat.format(m.getMeetingDate());
 					lastDay = m.getDayOfYear();
