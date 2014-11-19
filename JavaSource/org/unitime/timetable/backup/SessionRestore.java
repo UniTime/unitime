@@ -25,6 +25,8 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,6 +76,7 @@ import org.hibernate.type.StringType;
 import org.hibernate.type.TimestampType;
 import org.hibernate.type.Type;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
@@ -246,7 +249,11 @@ public class SessionRestore implements SessionRestoreInterface {
 						value = Short.valueOf(element.getValue(0));
 					}
 				} else if (type instanceof DateType) {
-					value = new DateType().fromStringValue(element.getValue(0));
+					try {
+						value = new SimpleDateFormat("dd MMMM yyyy", Localization.getJavaLocale()).parse(element.getValue(0));
+					} catch (ParseException e) {
+						value  = new DateType().fromStringValue(element.getValue(0));
+					}
 				} else if (type instanceof TimestampType) {
 					value = new TimestampType().fromStringValue(element.getValue(0));
 				} else if (type instanceof StringType) {
@@ -309,6 +316,9 @@ public class SessionRestore implements SessionRestoreInterface {
 	}
 	
 	protected Object get(Class clazz, String id) {
+		if (clazz.equals(Location.class) && id.equals("39125089")) {
+			System.out.println("HERE");
+		}
 		if (clazz.equals(String.class) || clazz.equals(StringType.class)) return id;
 		if (clazz.equals(Character.class) || clazz.equals(CharacterType.class)) return (id == null || id.isEmpty() ? null : id.charAt(0));
 		if (clazz.equals(Byte.class) || clazz.equals(ByteType.class)) return Byte.valueOf(id);
