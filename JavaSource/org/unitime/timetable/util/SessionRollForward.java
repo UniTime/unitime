@@ -675,7 +675,7 @@ public class SessionRollForward {
 					bDao.saveOrUpdate(toBldg);
 					bDao.getSession().flush();
 					//bDao.getSession().evict(toBldg); -- commented out to prevent NonUniqueObjectException
-					bDao.getSession().evict(fromBldg);	
+					//bDao.getSession().evict(fromBldg);	
 				}
 			} catch (Exception e) {
 				Debug.error(e);
