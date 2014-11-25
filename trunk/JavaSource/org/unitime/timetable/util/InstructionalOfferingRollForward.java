@@ -499,8 +499,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				schedSupart.setInstrOfferingConfig(toInstrOfferingConfig);
 				toInstrOfferingConfig.addToschedulingSubparts(schedSupart);
 				schedSupart.setMinutesPerWk(new Integer(0));
-				schedSupart.setAutoSpreadInTime(new Boolean(true));
-				schedSupart.setStudentAllowOverlap(new Boolean(false));
+				schedSupart.setAutoSpreadInTime(ApplicationProperty.SchedulingSubpartAutoSpreadInTimeDefault.isTrue());
+				schedSupart.setStudentAllowOverlap(ApplicationProperty.SchedulingSubpartStudentOverlapsDefault.isTrue());
 				schedSupart.setItype(itDao.get(new Integer(Integer.parseInt(courseSubpartCredit.getSubpartId()))));
 				CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseSubpartCredit.getCreditFormat(), courseSubpartCredit.getCreditType(), courseSubpartCredit.getCreditUnitType(), courseSubpartCredit.getFixedMinimumCredit(), courseSubpartCredit.getMaximumCredit(), courseSubpartCredit.isFractionalCreditAllowed(), new Boolean(false));
 				if (ccuc instanceof ArrangeCreditUnitConfig) {					
