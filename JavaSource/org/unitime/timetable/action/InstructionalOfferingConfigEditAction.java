@@ -1236,8 +1236,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
             subpart.setItype(sic.getItype());
             subpart.setMinutesPerWk(new Integer(mpw));
             subpart.setParentSubpart(parent);
-            subpart.setAutoSpreadInTime(new Boolean(true));
-            subpart.setStudentAllowOverlap(new Boolean(false));
+            subpart.setAutoSpreadInTime(ApplicationProperty.SchedulingSubpartAutoSpreadInTimeDefault.isTrue());
+            subpart.setStudentAllowOverlap(ApplicationProperty.SchedulingSubpartStudentOverlapsDefault.isTrue());
             ioc.addToschedulingSubparts(subpart);
 
             if (md<0 && !ioc.isUnlimitedEnrollment().booleanValue() && rg!=null) {

@@ -1692,6 +1692,18 @@ public enum ApplicationProperty {
 			+"\n  1st regural expression,\n  1st replacement,\n  2nd regular expression,\n  2nd replacement,\n  ...\n"
 			+"Example:\n  (?i)<a href=\"[^>]*\">\n  <b>\n  (?i)</a>\n  </b>")
 	CustomizationDefaultCourseDetailsModifiers("unitime.custom.default.course_modifiers"),
+	
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Scheduling Subpart: default value of the Automatic Spread In Time toggle")
+	SchedulingSubpartAutoSpreadInTimeDefault("unitime.defaults.subpartSpreadInTime"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Scheduling Subpart: default value of the Student Overlaps toggle")
+	SchedulingSubpartStudentOverlapsDefault("unitime.defaults.subpartStudentOverlaps"),
+	
 	;
 
 	String iKey;
