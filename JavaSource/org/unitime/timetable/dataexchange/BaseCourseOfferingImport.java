@@ -2164,11 +2164,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					addNote("\tdid not find existing matching scheduling subpart, created new one: " + ss.getItypeDesc());
 				}
 				if (ss.isAutoSpreadInTime() == null){
-					ss.setAutoSpreadInTime(new Boolean(true));
+					ss.setAutoSpreadInTime(ApplicationProperty.SchedulingSubpartAutoSpreadInTimeDefault.isTrue());
 				}
 				
 				if (ss.isStudentAllowOverlap() == null){
-					ss.setStudentAllowOverlap(new Boolean(false));
+					ss.setStudentAllowOverlap(ApplicationProperty.SchedulingSubpartStudentOverlapsDefault.isTrue());
 				}
 				
 				if (ss.getMinutesPerWk() == null || !ss.getMinutesPerWk().equals(minPerWeek)){
