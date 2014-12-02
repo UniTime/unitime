@@ -68,7 +68,6 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				rollForwardInstructionalOffering(co.getInstructionalOffering(), fromSession, toSession);
 			}
 		}
-		coDao.getSession().clear();
 	}
 	public void rollForwardExpiredInstructionalOfferingsForASubjectArea(String subjectAreaAbbreviation, Session fromSession, Session toSession){
 		CourseOfferingDAO coDao = new CourseOfferingDAO();
