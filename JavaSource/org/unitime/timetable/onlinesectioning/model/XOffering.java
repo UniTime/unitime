@@ -122,10 +122,10 @@ public class XOffering implements Serializable, Externalizable {
     	for (org.cpsolver.studentsct.reservation.Reservation reservation: offering.getReservations()) {
     		if (reservation instanceof ReservationOverride) {
         		iReservations.add(new XIndividualReservation((ReservationOverride)reservation));
-    		} else if (reservation instanceof org.cpsolver.studentsct.reservation.IndividualReservation) {
-        		iReservations.add(new XIndividualReservation((org.cpsolver.studentsct.reservation.IndividualReservation)reservation));
         	} else if (reservation instanceof GroupReservation) {
         		iReservations.add(new XIndividualReservation((GroupReservation)reservation));
+    		} else if (reservation instanceof org.cpsolver.studentsct.reservation.IndividualReservation) {
+        		iReservations.add(new XIndividualReservation((org.cpsolver.studentsct.reservation.IndividualReservation)reservation));
         	} else if (reservation instanceof org.cpsolver.studentsct.reservation.CurriculumReservation) {
         		iReservations.add(new XCurriculumReservation((org.cpsolver.studentsct.reservation.CurriculumReservation)reservation));
         	} else if (reservation instanceof org.cpsolver.studentsct.reservation.CourseReservation) {

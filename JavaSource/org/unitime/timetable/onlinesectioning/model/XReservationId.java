@@ -70,10 +70,10 @@ public class XReservationId implements Serializable, Externalizable {
 			iType = XReservationType.values()[((OnlineReservation)reservation).getType()];
 		else if (reservation instanceof ReservationOverride)
 			iType = XReservationType.Override;
-		else if (reservation instanceof IndividualReservation)
-			iType = XReservationType.Individual;
 		else if (reservation instanceof GroupReservation)
 			iType = XReservationType.Group;
+		else if (reservation instanceof IndividualReservation)
+			iType = XReservationType.Individual;
 		else if (reservation instanceof CurriculumReservation)
 			iType = XReservationType.Curriculum;
 		else if (reservation instanceof CourseReservation)
