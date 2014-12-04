@@ -29,9 +29,11 @@
 	
 	<!-- Logging -->
 	<set-property name="gwt.logging.logLevel" value="ALL"/>
+	<set-property name="gwt.logging.developmentModeHandler" value="ENABLED" />
+	<set-property name="gwt.logging.simpleRemoteHandler" value="ENABLED" />      
 	<set-property name="compiler.stackMode" value="emulated" />
 	<set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true"/>
-	<set-configuration-property name="compiler.emulatedStack.recordFileNames" value="true"/>      
+	<set-configuration-property name="compiler.emulatedStack.recordFileNames" value="true"/>
 
 	<!-- 
 	<set-configuration-property name="org.unitime.timetable.gwt.command.interceptor.class" value="org.unitime.timetable.gwt.client.GwtRpcProxy"/>
