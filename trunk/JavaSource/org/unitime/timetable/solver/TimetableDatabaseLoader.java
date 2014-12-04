@@ -3237,8 +3237,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			if (!lecture.isSingleton()) continue;
     		for (Lecture other: getModel().variables()) {
     			if (!other.isSingleton() || lecture.getClassId().compareTo(other.getClassId())<=0) continue;
-    			Placement p1 = lecture.values(getAssignment()).get(0);
-    			Placement p2 = other.values(getAssignment()).get(0);
+    			Placement p1 = new Placement(lecture, lecture.timeLocations().get(0), lecture.roomLocations());
+    			Placement p2 = new Placement(other, other.timeLocations().get(0), other.roomLocations());
     			if (p1.shareRooms(p2) && p1.getTimeLocation().hasIntersection(p2.getTimeLocation()) && !p1.canShareRooms(p2)) {
     				iProgress.message(msglevel("reqRoomOverlap", Progress.MSGLEVEL_WARN), "Same room and overlapping time required:"+
     						"<br>&nbsp;&nbsp;&nbsp;&nbsp;"+getClassLabel(lecture)+" &larr; "+p1.getLongName(iUseAmPm)+
@@ -3246,7 +3246,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			}
     		}
     		if (getAssignment().getValue(lecture)==null) {
-    			Placement placement = lecture.values(getAssignment()).get(0);
+    			Placement placement = new Placement(lecture, lecture.timeLocations().get(0), lecture.roomLocations());
     			if (!placement.isValid()) {
     				String reason = "";
     	           	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
