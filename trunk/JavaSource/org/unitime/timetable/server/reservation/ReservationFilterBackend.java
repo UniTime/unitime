@@ -300,6 +300,8 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 					type += "CourseReservation";
 				if ("curriculum".equalsIgnoreCase(t))
 					type += "CurriculumReservation";
+				if ("override".equalsIgnoreCase(t))
+					type += "OverrideReservation";
 			}
 			query.addWhere("type", "r.class " + (type.indexOf(',') < 0 ? "= " + type : "in (" + type + ")"));
 		}
