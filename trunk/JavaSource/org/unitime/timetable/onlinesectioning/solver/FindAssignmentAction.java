@@ -424,7 +424,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForReservation(reservation.getReservationId())) {
 					if (enrollment.getStudentId().equals(studentId)) { reservationLimit++; break; }
 				}
-				if (reservationLimit <= 0) continue;
+				if (reservationLimit <= 0 && !reservation.mustBeUsed()) continue;
 			}
 			boolean applicable = originalStudent != null && reservation.isApplicable(originalStudent);
 			if (reservation instanceof XCourseReservation)

@@ -564,7 +564,7 @@ public class XOffering implements Serializable, Externalizable {
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForReservation(reservation.getReservationId())) {
 					if (enrollment.getStudentId().equals(student.getStudentId())) { reservationLimit++; break; }
 				}
-				if (reservationLimit <= 0) continue;
+				if (reservationLimit <= 0 && !reservation.mustBeUsed()) continue;
 			}
 			boolean applicable = reservation.isApplicable(student);
 			if (reservation instanceof XCourseReservation)
