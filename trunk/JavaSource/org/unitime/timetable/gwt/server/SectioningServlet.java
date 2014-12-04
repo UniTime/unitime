@@ -339,7 +339,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
             		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
             	}
                 if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
-				a.setLimit(new int[] {-1, limit});
+				a.setLimit(new int[] {clazz.getEnrollment() == 0 ? -1 : clazz.getEnrollment(), limit});
 				
 				if (p != null && p.getTimeLocation() != null) {
 					for (DayCode d: DayCode.toDayCodes(p.getTimeLocation().getDayCode()))
@@ -1729,6 +1729,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
+			if (studentId == null) {
+				studentId = getStudentId(sessionId);
+				if (studentId == null) throw new SectioningException(MSG.exceptionNoStudent());
+			}
 
 			return server.execute(server.createAction(GetRequest.class).forStudent(studentId), currentUser());
 		}
