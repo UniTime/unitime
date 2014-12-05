@@ -56,14 +56,6 @@ public class XGroupReservation extends XReservation {
     }
     
     /**
-     * Group reservations can not be assigned over the limit.
-     */
-    @Override
-    public boolean canAssignOverLimit() {
-        return false;
-    }
-
-    /**
      * Reservation limit
      */
     @Override
@@ -71,28 +63,11 @@ public class XGroupReservation extends XReservation {
         return iLimit;
     }
     
-    /**
-     * Overlaps are allowed for individual reservations. 
-     */
-    @Override
-    public boolean isAllowOverlap() {
-        return false;
-    }
-
 	@Override
 	public boolean isApplicable(XStudent student) {
 		return student.getGroups().contains(iGroup);
 	}
 
-    /**
-     * Individual or group reservation must be used (unless it is expired)
-     * @return true if not expired, false if expired
-     */
-	@Override
-	public boolean mustBeUsed() {
-		return true;
-	}
-	
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     	super.readExternal(in);

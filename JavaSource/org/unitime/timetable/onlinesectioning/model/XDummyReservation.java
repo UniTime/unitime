@@ -62,23 +62,6 @@ public class XDummyReservation extends XReservation {
         return false;
     }
 
-    /**
-     * Dummy reservation cannot go over the limit
-     */
-    @Override
-    public boolean canAssignOverLimit() {
-        return false;
-    }
-
-    
-    /**
-     * Dummy reservation do not need to be used
-     */
-    @Override
-    public boolean mustBeUsed() {
-        return false;
-    }
-    
 	public static class XDummyReservationSerializer implements Externalizer<XDummyReservation> {
 		private static final long serialVersionUID = 1L;
 
