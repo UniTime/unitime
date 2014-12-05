@@ -71,21 +71,6 @@ public class XCurriculumReservation extends XReservation {
     		iMajors.addAll(reservation.getMajors());
     }
 
-    /**
-     * Curriculum reservation cannot go over the limit
-     */
-    @Override
-    public boolean canAssignOverLimit() {
-        return false;
-    }
-    
-    /**
-     * Curriculum reservation do not need to be used
-     */
-    @Override
-    public boolean mustBeUsed() {
-        return false;
-    }
 
     /**
      * Reservation limit (-1 for unlimited)

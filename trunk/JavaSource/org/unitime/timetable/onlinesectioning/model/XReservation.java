@@ -31,10 +31,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Subpart;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Reservation;
@@ -50,6 +50,26 @@ public abstract class XReservation extends XReservationId implements Comparable<
     private Map<Long, Set<Long>> iSections = new HashMap<Long, Set<Long>>();
     private int iLimitCap = -1;
     private double iRestrictivity = 1.0;
+    
+    private int iPriority = 1000;
+    private int iFlags = 0;
+    
+    public static enum Flags {
+    	MustBeUsed,
+    	CanAssignOverLimit,
+    	AllowOverlap,
+    	;
+    	public int flag() { return 1 << ordinal(); }
+		public boolean in(int flags) {
+			return (flags & flag()) != 0;
+		}
+		public int set(int flags, boolean value) {
+			if (value)
+				return flags | flag();
+			else
+				return flags & ~flag();
+		}
+    }
     
     public XReservation() {
     	super();
@@ -97,6 +117,38 @@ public abstract class XReservation extends XReservationId implements Comparable<
         	iLimitCap = cap;
         }
         iRestrictivity = computeRestrictivity(offering);
+        switch (type) {
+        case Individual:
+        	setPriority(ApplicationProperty.ReservationPriorityIndividual.intValue());
+        	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitIndividual.isTrue());
+        	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedIndividual.isTrue());
+        	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
+        	break;
+        case Group:
+        	setPriority(ApplicationProperty.ReservationPriorityIndividual.intValue());
+        	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitIndividual.isTrue());
+        	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedIndividual.isTrue());
+        	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
+        	break;
+        case Curriculum:
+        	setPriority(ApplicationProperty.ReservationPriorityIndividual.intValue());
+        	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitIndividual.isTrue());
+        	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedIndividual.isTrue());
+        	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
+        	break;
+        case Course:
+        	setPriority(ApplicationProperty.ReservationPriorityIndividual.intValue());
+        	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitIndividual.isTrue());
+        	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedIndividual.isTrue());
+        	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
+        	break;
+        case Override:
+        	setPriority(ApplicationProperty.ReservationPriorityOverride.intValue());
+        	break;
+        case Dummy:
+        	setPriority(ApplicationProperty.ReservationPriorityDummy.intValue());
+        	break;
+        }
     }
     
     public XReservation(XReservationType type, org.cpsolver.studentsct.reservation.Reservation reservation) {
@@ -112,6 +164,10 @@ public abstract class XReservation extends XReservationId implements Comparable<
     			sections.add(section.getId());
     		iSections.put(entry.getKey().getId(), sections);
     	}
+    	setPriority(reservation.getPriority());
+    	setMustBeUsed(reservation.mustBeUsed());
+    	setCanAssignOverLimit(reservation.canAssignOverLimit());
+    	setAllowOverlap(reservation.isAllowOverlap());
     }
     
     /**
@@ -122,7 +178,11 @@ public abstract class XReservation extends XReservationId implements Comparable<
     
     /** Reservation priority (e.g., individual reservations first) */
     public int getPriority() {
-    	return getType().getPriority();
+    	return iPriority;
+    }
+    
+    public void setPriority(int priority) {
+    	iPriority = priority;
     }
     
     /**
@@ -152,12 +212,16 @@ public abstract class XReservation extends XReservationId implements Comparable<
     /**
      * True if can go over the course / config / section limit. Only to be used in the online sectioning. 
       */
-    public abstract boolean canAssignOverLimit();
+    public boolean canAssignOverLimit() { return Flags.CanAssignOverLimit.in(iFlags); }
+    
+    public void setCanAssignOverLimit(boolean canAssignOverLimit) { iFlags = Flags.CanAssignOverLimit.set(iFlags, canAssignOverLimit); }
     
     /**
      * If true, student must use the reservation (if applicable)
      */
-    public abstract boolean mustBeUsed();
+    public boolean mustBeUsed() { return Flags.MustBeUsed.in(iFlags); }
+    
+    public void setMustBeUsed(boolean mustBeUsed) { iFlags = Flags.MustBeUsed.set(iFlags, mustBeUsed); }
     
     /**
      * Return minimum of two limits where -1 counts as unlimited (any limit is smaller)
@@ -183,9 +247,9 @@ public abstract class XReservation extends XReservationId implements Comparable<
     /**
      * True if holding this reservation allows a student to have attend overlapping class. 
      */
-    public boolean isAllowOverlap() {
-        return false;
-    }
+    public boolean isAllowOverlap() { return Flags.AllowOverlap.in(iFlags); }
+    
+    public void setAllowOverlap(boolean allowOverlap) { iFlags = Flags.AllowOverlap.set(iFlags, allowOverlap); }
     
     /**
      * True if the reservation is expired. If a reservation is expired, it works as ordinary reservation
@@ -312,6 +376,8 @@ public abstract class XReservation extends XReservationId implements Comparable<
     	}
     	iLimitCap = in.readInt();
     	iRestrictivity = in.readDouble();
+    	iPriority = in.readInt();
+    	iFlags = in.readInt();
 	}
 
 	@Override
@@ -336,5 +402,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
 		
 		out.writeInt(iLimitCap);
 		out.writeDouble(iRestrictivity);
+		out.writeInt(iPriority);
+		out.writeInt(iFlags);
 	}
 }

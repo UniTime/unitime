@@ -439,12 +439,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		for (org.unitime.timetable.model.Student s: ((org.unitime.timetable.model.IndividualReservation)reservation).getStudents())
         			studentIds.add(s.getUniqueId());
         		r = new IndividualReservation(reservation.getUniqueId(), offering, studentIds);
+        		r.setPriority(ApplicationProperty.ReservationPriorityIndividual.intValue());
+        		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
+        		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitIndividual.isTrue());
+        		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedIndividual.isTrue());
         	} else if (reservation instanceof StudentGroupReservation) {
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((StudentGroupReservation)reservation).getGroup().getStudents())
         			studentIds.add(s.getUniqueId());
         		r = new GroupReservation(reservation.getUniqueId(), (reservation.getLimit() == null ? -1.0 : reservation.getLimit()),
         				offering, studentIds);
+        		r.setPriority(ApplicationProperty.ReservationPriorityGroup.intValue());
+        		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapGroup.isTrue());
+        		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitGroup.isTrue());
+        		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedGroup.isTrue());
         	} else if (reservation instanceof org.unitime.timetable.model.CurriculumReservation) {
         		org.unitime.timetable.model.CurriculumReservation cr = (org.unitime.timetable.model.CurriculumReservation)reservation;
         		List<String> classifications = new ArrayList<String>();
@@ -455,12 +463,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			majors.add(major.getCode());
         		r = new CurriculumReservation(reservation.getUniqueId(), (reservation.getLimit() == null ? -1.0 : reservation.getLimit()),
         				offering, cr.getArea().getAcademicAreaAbbreviation(), classifications, majors);
+        		r.setPriority(ApplicationProperty.ReservationPriorityCurriculum.intValue());
+        		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapCurriculum.isTrue());
+        		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitCurriculum.isTrue());
+        		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedCurriculum.isTrue());
         	} else if (reservation instanceof org.unitime.timetable.model.CourseReservation) {
         		CourseOffering co = ((org.unitime.timetable.model.CourseReservation)reservation).getCourse();
         		for (Course course: offering.getCourses()) {
         			if (co.getUniqueId().equals(course.getId()))
         				r = new CourseReservation(reservation.getUniqueId(), course);
         		}
+        		r.setPriority(ApplicationProperty.ReservationPriorityCourse.intValue());
+        		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapCourse.isTrue());
+        		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitCourse.isTrue());
+        		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedCourse.isTrue());
         	}
         	if (r == null) {
         		iProgress.warn("Failed to load reservation " + reservation.getUniqueId() + "."); continue;

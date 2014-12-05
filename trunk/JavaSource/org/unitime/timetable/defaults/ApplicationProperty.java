@@ -1704,6 +1704,96 @@ public enum ApplicationProperty {
 	@Description("Scheduling Subpart: default value of the Student Overlaps toggle")
 	SchedulingSubpartStudentOverlapsDefault("unitime.defaults.subpartStudentOverlaps"),
 	
+	@Type(Integer.class)
+	@DefaultValue("100")
+	@Description("Reservations: Individual reservation priority")
+	ReservationPriorityIndividual("unitime.reservation.priority.individual"),
+
+	@Type(Integer.class)
+	@DefaultValue("200")
+	@Description("Reservations: Group reservation priority")
+	ReservationPriorityGroup("unitime.reservation.priority.group"),
+	
+	@Type(Integer.class)
+	@DefaultValue("300")
+	@Description("Reservations: Reservation override priority")
+	ReservationPriorityOverride("unitime.reservation.priority.override"),
+	
+	@Type(Integer.class)
+	@DefaultValue("400")
+	@Description("Reservations: Course reservation priority")
+	ReservationPriorityCourse("unitime.reservation.priority.course"),
+	
+	@Type(Integer.class)
+	@DefaultValue("500")
+	@Description("Reservations: Curriculum reservation priority")
+	ReservationPriorityCurriculum("unitime.reservation.priority.curriculum"),
+	
+	@Type(Integer.class)
+	@DefaultValue("600")
+	@Description("Reservations: Curriculum reservation priority")
+	ReservationPriorityDummy("unitime.reservation.priority.dummy"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Reservations: Individual reservation must be used")
+	ReservationMustBeUsedIndividual("unitime.reservation.mustBeUsed.individual"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Reservations: Group reservation must be used")
+	ReservationMustBeUsedGroup("unitime.reservation.mustBeUsed.group"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Reservations: Course reservation must be used")
+	ReservationMustBeUsedCourse("unitime.reservation.mustBeUsed.course"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Reservations: Curriculum reservation must be used")
+	ReservationMustBeUsedCurriculum("unitime.reservation.mustBeUsed.curriculum"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Reservations: Individual reservation can over limit")
+	ReservationCanOverLimitIndividual("unitime.reservation.canOverLimit.individual"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Reservations: Group reservation can over limit")
+	ReservationCanOverLimitGroup("unitime.reservation.canOverLimit.group"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Reservations: Course reservation can over limit")
+	ReservationCanOverLimitCourse("unitime.reservation.canOverLimit.course"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Reservations: Curriculum reservation can over limit")
+	ReservationCanOverLimitCurriculum("unitime.reservation.canOverLimit.curriculum"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Reservations: Individual reservation allow time conflicts")
+	ReservationAllowOverlapIndividual("unitime.reservation.allowOverlap.individual"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Reservations: Group reservation allow time conflicts")
+	ReservationAllowOverlapGroup("unitime.reservation.allowOverlap.group"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Reservations: Course reservation allow time conflicts")
+	ReservationAllowOverlapCourse("unitime.reservation.allowOverlap.course"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Reservations: Curriculum reservation allow time conflicts")
+	ReservationAllowOverlapCurriculum("unitime.reservation.allowOverlap.curriculum"),
+
 	;
 
 	String iKey;

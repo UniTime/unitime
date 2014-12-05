@@ -25,16 +25,12 @@ import java.io.Serializable;
  * @author Tomas Muller
  */
 public enum XReservationType implements Serializable {
-	Individual(100),
-	Group(200),
-	Override(300),
-	Course(400),
-	Curriculum(500),
-	Dummy(600),
-	None(700),
-		;
-	
-	int iPriority;
-	XReservationType(int priority) { iPriority = priority; }
-	public int getPriority() { return iPriority; }
+	Individual,
+	Group,
+	Override,
+	Course,
+	Curriculum,
+	Dummy,
+	None,
+	;
 }
