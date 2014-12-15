@@ -56,7 +56,9 @@
 		<TR><TD>
 			<tt:section-header>
 				<tt:section-title>Roll Forward(s) In Progress</tt:section-title>
+				<%--
 				<html:submit property="op" accesskey="R" styleClass="btn" onclick="displayElement('loading', true);">Refresh</html:submit>
+				--%>
 			</tt:section-header>
 		</TD></TR>
 		<TR><TD>
@@ -66,7 +68,27 @@
 		</TD></TR>
 		<TR><TD>&nbsp;</TD></TR>
 	</logic:notEmpty>
-			
+	<logic:notEmpty name="log" scope="request">
+		<TR>
+			<TD colspan='2'>
+				<tt:section-header>
+					<tt:section-title>
+						Log of <bean:write name="logname" scope="request" filter="false"/>
+					</tt:section-title>
+					<bean:define id="logid" name="logid" scope="request"/>
+					<input type="hidden" name="log" value="<%=logid%>">
+					<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh" title="Refresh Log (Alt+R)"/>
+				</tt:section-header>
+			</TD>
+		</TR>
+		<TR>
+  			<TD colspan='2'>
+  				<blockquote>
+	  				<bean:write name="log" scope="request" filter="false"/>
+  				</blockquote>
+  			</TD>
+		</TR>
+	</logic:notEmpty>			
 	<TR><TD>
 		<tt:section-header>
 			<tt:section-title>Roll Forward Actions</tt:section-title>

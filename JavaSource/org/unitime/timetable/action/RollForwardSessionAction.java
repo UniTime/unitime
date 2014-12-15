@@ -211,7 +211,7 @@ public class RollForwardSessionAction extends Action {
 		
 		@Override
 		protected void execute() throws Exception {
-	        SessionRollForward sessionRollForward = new SessionRollForward();
+	        SessionRollForward sessionRollForward = new SessionRollForward(this);
 	        Session toAcadSession = Session.getSessionById(iForm.getSessionToRollForwardTo());
 			if (toAcadSession == null){
 	   			iErrors.add("mustSelectSession", new ActionMessage("errors.rollForward.missingToSession"));
@@ -348,6 +348,8 @@ public class RollForwardSessionAction extends Action {
 	        iProgress++;
 	        if (!iErrors.isEmpty()) {
 	        	setError(new Exception(((ActionMessage)iErrors.get().next()).getValues()[0].toString()));
+	        } else {
+	        	log("All done.");
 	        }
 		}
 

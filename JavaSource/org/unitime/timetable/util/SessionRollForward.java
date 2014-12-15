@@ -34,10 +34,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import org.apache.commons.logging.Log;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
-import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.RollForwardSessionForm;
@@ -148,6 +148,8 @@ import org.unitime.timetable.model.dao.TravelTimeDAO;
  *
  */
 public class SessionRollForward {
+	protected Log iLog;
+	
 	private static HashMap roomList;
 	private static HashMap sessionHasCourseCatalogList;
 	private static HashMap sessionHasExternalBuildingList;
@@ -168,7 +170,10 @@ public class SessionRollForward {
 	public static String EXAMS_ROOM_PREFS = "rollRoomPrefs"; 
 	public static String EXAMS_ALL_PREF = "rollAllPrefs";
 	
-
+	
+	public SessionRollForward(Log log) {
+		iLog = log;
+	}
 
 	public void setSubpartLocationPrefRollForwardParameters(String subpartLocationPrefsAction){
 		if (subpartLocationPrefsAction == null || subpartLocationPrefsAction.equalsIgnoreCase(ROLL_PREFS_ACTION)){
@@ -236,7 +241,7 @@ public class SessionRollForward {
 				}
 			}
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all room groups forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Room Groups", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all room groups forward."));
 		}
 	}
@@ -289,7 +294,7 @@ public class SessionRollForward {
 				}
 			}
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all room features forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Room Features", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all room features forward."));
 		}	
 	}
@@ -476,7 +481,7 @@ public class SessionRollForward {
 				// rDao.getSession().evict(fromRoom);
 			}								
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all rooms forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Rooms", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all rooms forward."));
 		}
 	}
@@ -590,7 +595,7 @@ public class SessionRollForward {
 				nulDao.getSession().evict(fromNonUniversityLocation);
 			}	
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all non university locations forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Non University Locations", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all non university locations forward."));
 		}		
 	}
@@ -699,7 +704,7 @@ public class SessionRollForward {
 					//bDao.getSession().evict(fromBldg);	
 				}
 			} catch (Exception e) {
-				Debug.error(e);
+				iLog.error("Failed to roll all buildings forward.", e);
 				errors.add("rollForward", new ActionMessage("errors.rollForward", "Buildings", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all buildings forward."));
 			}
 		}
@@ -747,7 +752,7 @@ public class SessionRollForward {
 			tmDao.getSession().flush();
 			tmDao.getSession().clear();			
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all timetable managers forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Timetable Managers", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all timetable managers forward."));
 		}
 	}
@@ -805,7 +810,7 @@ public class SessionRollForward {
 			dDao.getSession().flush();
 			dDao.getSession().clear();
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all departments forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Departments", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all departments forward."));
 		}
 
@@ -871,7 +876,7 @@ public class SessionRollForward {
 			dpDao.getSession().flush();
 			dpDao.getSession().clear();
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all date patterns forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Date Patterns", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all date patterns forward."));
 		}		
 	}
@@ -1009,7 +1014,7 @@ public class SessionRollForward {
 			sDao.getSession().flush();
 			sDao.getSession().clear();
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all subject areas forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Subject Areas", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all subject areas forward."));
 		}
 	}
@@ -1435,7 +1440,7 @@ public class SessionRollForward {
 				} else {
 					toTimePref = TimePattern.getMatchingTimePreference(toSession.getUniqueId(), fromTimePref);
 					if (toTimePref == null){
-						Debug.warning("To Time Pattern not found:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());						
+						iLog.warn("To Time Pattern not found:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());						
 					}
 				}
 				if (toTimePref != null){
@@ -1455,7 +1460,7 @@ public class SessionRollForward {
 				} else {
 					toTimePref = TimePattern.getMatchingTimePreference(toSession.getUniqueId(), fromTimePref);
 					if (toTimePref == null){
-						Debug.warning("To Time Pattern not found:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());						
+						iLog.warn("To Time Pattern not found:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());						
 					}
 				}
 				if (toTimePref != null){
@@ -1502,7 +1507,7 @@ public class SessionRollForward {
 							}
 							toTimePref = TimePattern.getMatchingTimePreference(toSession.getUniqueId(), fromTimePref);
 							if (toTimePref == null){
-								Debug.warning("To Time Pattern not found:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());						
+								iLog.warn("To Time Pattern not found:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());						
 							}
 						}
 						if (toTimePref != null){
@@ -1529,7 +1534,7 @@ public class SessionRollForward {
 						toTimePref.setPrefLevel(PreferenceLevel.getPreferenceLevel(""+PreferenceLevel.sCharLevelRequired));
 						toPrefGroup.addTopreferences(toTimePref);
 					} else {
-						Debug.warning("To Time Pattern not found:  " + fromTp.getName() + " for " + fromPrefGroup.htmlLabel());						
+						iLog.warn("To Time Pattern not found:  " + fromTp.getName() + " for " + fromPrefGroup.htmlLabel());						
 					}
 				}
 			}
@@ -1715,7 +1720,7 @@ public class SessionRollForward {
 				rollForwardExam((Exam) examIt.next(), toSession, rollForwardSessionForm.getMidtermExamsPrefsAction());
 			}
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all midterm exams forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Midterm Exam", "previous session", toSession.getLabel(), "Failed to roll all midterm exams forward."));
 		}		
 	}
@@ -1729,7 +1734,7 @@ public class SessionRollForward {
 				rollForwardExam((Exam) examIt.next(), toSession, rollForwardSessionForm.getFinalExamsPrefsAction());
 			}
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all final exams forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Final Exam", "previous session", toSession.getLabel(), "Failed to roll all final exams forward."));
 		}		
 	}
@@ -1742,7 +1747,7 @@ public class SessionRollForward {
 			rollForwardExamPeriods(toSession, fromSession);
 			rollForwardExamLocationPrefs(toSession, fromSession);
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll exam configuration forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Exam Configuration", fromSession.getLabel(), toSession.getLabel(), "Failed to roll exam configuration forward."));
 		}
 		
@@ -1808,7 +1813,7 @@ public class SessionRollForward {
 			}
 			
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all instructors forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Instructors", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all instructors forward."));
 		}
 	}
@@ -1823,7 +1828,7 @@ public class SessionRollForward {
 		}
 		if (toSession.getSubjectAreas() != null) {
 			SubjectArea subjectArea = null;
-			InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward();
+			InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward(iLog);
 			instrOffrRollFwd.setClassPrefRollForwardParameter(rollForwardSessionForm.getClassPrefsAction());
 			instrOffrRollFwd.setSubpartLocationPrefRollForwardParameters(rollForwardSessionForm.getSubpartLocationPrefsAction());
 			instrOffrRollFwd.setSubpartTimePrefRollForwardParameters(rollForwardSessionForm.getSubpartTimePrefsAction());
@@ -1845,7 +1850,7 @@ public class SessionRollForward {
 		}
 		if (toSession.getSubjectAreas() != null) {
 			SubjectArea subjectArea = null;
-			InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward();
+			InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward(iLog);
 			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
 				subjectArea = (SubjectArea) saIt.next();
 				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
@@ -2059,7 +2064,7 @@ public class SessionRollForward {
 			tpDao.getSession().flush();
 			tpDao.getSession().clear();
 		} catch (Exception e) {
-			Debug.error(e);
+			iLog.error("Failed to roll all time patterns forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Time Patterns", fromSession.getLabel(), toSession.getLabel(), "Failed to roll all time patterns forward."));
 		}		
 	}
@@ -2084,7 +2089,7 @@ public class SessionRollForward {
 
 	private void rollForwardClassInstructorsForASubjectArea(
 			String subjectAreaAbbreviation, Session toSession) {
-		Debug.info("Rolling forward class instructors for:  " + subjectAreaAbbreviation);
+		iLog.info("Rolling forward class instructors for:  " + subjectAreaAbbreviation);
 		Class_DAO clsDao = new Class_DAO();
 		org.hibernate.Session hibSession = clsDao.getSession();
 		hibSession.clear();

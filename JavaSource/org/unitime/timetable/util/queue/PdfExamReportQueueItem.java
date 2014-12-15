@@ -582,9 +582,7 @@ public class PdfExamReportQueueItem extends QueueItem {
         	iProgress = 1.0;
             setStatus("All done.");
         } catch (Exception e) {
-            log("<font color='red'>Process failed: "+e.getMessage()+" (exception "+e.getClass().getName()+")</font>");
-            sLog.error(e.getMessage(),e);
-            setError(e);
+            fatal("Process failed.", e);
         }
 	}
 

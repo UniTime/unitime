@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
 import org.hibernate.Transaction;
-import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.Class_;
@@ -54,6 +54,9 @@ import org.unitime.timetable.model.dao.ItypeDescDAO;
  */
 public class InstructionalOfferingRollForward extends SessionRollForward {
 	
+	InstructionalOfferingRollForward(Log log) {
+		super(log);
+	}
 	
 	public void rollForwardInstructionalOfferingsForASubjectArea(String subjectAreaAbbreviation, Session fromSession, Session toSession){
 		CourseOfferingDAO coDao = new CourseOfferingDAO();
@@ -139,7 +142,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	}
 
 	private void addInstructionalOffering(CourseCatalog courseCatalogEntry, Session toSession) {
-		Debug.info("subject_area = '" + courseCatalogEntry.getSubject() + "' crs nbr = '" + courseCatalogEntry.getCourseNumber() +"'");
+		iLog.info("Creating " + courseCatalogEntry.getSubject() + " " + courseCatalogEntry.getCourseNumber());
 		InstructionalOffering instructionalOffering = createToInstructionalOfferingFromCourseCatalog(courseCatalogEntry, toSession);
 		if (instructionalOffering != null){
 			CourseOffering courseOffering = createToCourseOfferingFromCourseCatalog(courseCatalogEntry, toSession);
@@ -180,7 +183,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	public void rollForwardInstructionalOffering(InstructionalOffering fromInstructionalOffering, Session fromSession, Session toSession){
 		InstructionalOfferingDAO ioDao = new InstructionalOfferingDAO();
 		org.hibernate.Session hibSession = ioDao.getSession();
-		Debug.info("subj = '" + fromInstructionalOffering.getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation() + "' crs nbr = '" + fromInstructionalOffering.getControllingCourseOffering().getCourseNbr() +"'");
+		iLog.info("Rolling " + fromInstructionalOffering.getCourseNameWithTitle());
 		Transaction trns = null;
 		try {
 			trns = hibSession.beginTransaction();
@@ -218,8 +221,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			hibSession.evict(toInstructionalOffering);
 			hibSession.evict(fromInstructionalOffering);
 		} catch (Exception e){
-			Debug.info(e.getMessage());
-			e.printStackTrace();
+			iLog.error("Failed to roll " + fromInstructionalOffering.getCourseName(), e);
 			if (trns != null){
 				if (trns.isActive()){
 					trns.rollback();
