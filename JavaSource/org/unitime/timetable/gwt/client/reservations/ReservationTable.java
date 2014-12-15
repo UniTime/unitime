@@ -559,6 +559,8 @@ public class ReservationTable extends Composite {
 			line.add(new Number(limit == null ? MESSAGES.infinity() : String.valueOf(limit)));
 			if (limit == null)
 				unlimited = true;
+			else
+				total += limit;
 			
 			if (reservation.getLastLike() != null) {
 				line.add(new Number(reservation.getLastLike().toString()));
