@@ -23,13 +23,14 @@ import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 
 /**
  * @author Tomas Muller
  */
 public class EventComparator {
 	public static enum EventMeetingSortBy {
-		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT, TITLE, NOTE
+		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT, TITLE, NOTE, LAST_CHANGE
 	}
 
 	protected static int compareByName(EventInterface e1, EventInterface e2) {
@@ -100,6 +101,14 @@ public class EventComparator {
 		return compareByName(e1, e2);
 	}
 	
+	protected static int compareByLastChange(EventInterface e1, EventInterface e2) {
+		NoteInterface n1 = e1.getLastNote();
+		NoteInterface n2 = e2.getLastNote();
+		int cmp = (n1 == null ? n2 == null ? 0 : 1 : n2 == null ? -1 : n1.compareTo(n2));
+		if (cmp != 0) return cmp;
+		return compareByName(e1, e2);
+	}
+	
 	public static int compareEvents(EventInterface e1, EventInterface e2, EventMeetingSortBy sortBy) {
 		switch (sortBy) {
 		case NAME:
@@ -120,6 +129,8 @@ public class EventComparator {
 			return compareByEnrollment(e1, e2);
 		case NOTE:
 			return compareByNote(e1, e2);
+		case LAST_CHANGE:
+			return compareByLastChange(e1, e2);
 		}
 		return 0;
 	}

@@ -601,6 +601,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Picture")
 	String colPicture();
+	
+	@DefaultMessage("Last Change")
+	String colLastChange();
 
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
