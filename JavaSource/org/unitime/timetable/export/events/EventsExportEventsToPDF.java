@@ -71,6 +71,7 @@ public class EventsExportEventsToPDF extends EventsExporter {
 		case SHOW_SPONSOR: out.hideColumn(14); break;
 		case SHOW_MAIN_CONTACT: out.hideColumn(15); break;
 		case SHOW_APPROVAL: out.hideColumn(16); break;
+		case SHOW_LAST_CHANGE: out.hideColumn(17); break;
 		}
 	}
 
@@ -92,7 +93,8 @@ public class EventsExportEventsToPDF extends EventsExporter {
 				/* 13 */ MESSAGES.colLimit(),
 				/* 14 */ MESSAGES.colSponsorOrInstructor(),
 				/* 15 */ MESSAGES.colMainContact(),
-				/* 16 */ MESSAGES.colApproval());
+				/* 16 */ MESSAGES.colApproval(),
+				/* 17 */ MESSAGES.colLastChange());
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		Formats.Format<Date> dfLong = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG);
@@ -126,7 +128,8 @@ public class EventsExportEventsToPDF extends EventsExporter {
 					multi.getApprovalStatus() == ApprovalStatus.Deleted ? MESSAGES.approvalDeleted() :
 					multi.isPast() ? MESSAGES.approvalNotApprovedPast() :
 					event.getExpirationDate() != null ? MESSAGES.approvalExpire(df.format(event.getExpirationDate())) :
-					MESSAGES.approvalNotApproved()
+					MESSAGES.approvalNotApproved(),
+					event.getLastNote() != null ? df.format(event.getLastNote().getDate()) + " " + event.getLastNote().getType().getName() : null
 					);
 			}
 			out.flush();
