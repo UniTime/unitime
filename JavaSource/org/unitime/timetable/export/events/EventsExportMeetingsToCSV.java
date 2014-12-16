@@ -71,6 +71,7 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 		case SHOW_SPONSOR: out.hideColumn(16); out.hideColumn(17); break;
 		case SHOW_MAIN_CONTACT: out.hideColumn(18); out.hideColumn(19); break;
 		case SHOW_APPROVAL: out.hideColumn(20); break;
+		case SHOW_LAST_CHANGE: out.hideColumn(21); break;
 		}
 	}
 	
@@ -96,7 +97,8 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 				/* 17 */ MESSAGES.colEmail(),
 				/* 18 */ MESSAGES.colMainContact(),
 				/* 19 */ MESSAGES.colEmail(),
-				/* 20 */ MESSAGES.colApproval());
+				/* 20 */ MESSAGES.colApproval(),
+				/* 21 */ MESSAGES.colLastChange());
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		EventInterface last = null;
@@ -138,7 +140,8 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 					meeting.getApprovalStatus() == ApprovalStatus.Deleted ? MESSAGES.approvalDeleted() :
 					meeting.isPast() ? MESSAGES.approvalNotApprovedPast() :
 					event.getExpirationDate() != null ? MESSAGES.approvalExpire(df.format(event.getExpirationDate())) :
-					MESSAGES.approvalNotApproved()
+					MESSAGES.approvalNotApproved(),
+					event.getLastNote() != null ? df.format(event.getLastNote().getDate()) + " " + event.getLastNote().getType().getName() : null
 					);
 		}
 		

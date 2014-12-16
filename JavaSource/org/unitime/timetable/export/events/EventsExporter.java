@@ -143,8 +143,10 @@ public abstract class EventsExporter implements Exporter {
 		}
     	
     	int eventCookieFlags = (helper.getParameter("flags") == null ? EventInterface.sDefaultEventFlags : Integer.parseInt(helper.getParameter("flags")));
-    	if (!context.hasPermission(Right.EventLookupContact))
+    	if (!context.hasPermission(Right.EventLookupContact)) {
     		eventCookieFlags = EventFlag.SHOW_MAIN_CONTACT.clear(eventCookieFlags);
+    		eventCookieFlags = EventFlag.SHOW_LAST_CHANGE.clear(eventCookieFlags);
+    	}
     	eventCookieFlags = EventFlag.SHOW_SECTION.set(eventCookieFlags);
     	
     	if (!"1".equals(helper.getParameter("ua"))) {

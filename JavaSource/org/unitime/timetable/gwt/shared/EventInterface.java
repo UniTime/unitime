@@ -161,6 +161,17 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			}
 		return note;
 	}
+	public NoteInterface getLastNote() {
+		if (iNotes == null) return null;
+		NoteInterface last = null;
+		for (NoteInterface n: getNotes()) {
+			if (n.getDate() == null || n.getType() == null) continue;
+			if (last == null || last.getDate().compareTo(n.getDate()) <= 0) {
+				last = n;
+			}
+		}
+		return last;
+	}
 
 	public String getLastChange() { return iLastChange; }
 	public boolean hasLastChange() { return iLastChange != null && !iLastChange.isEmpty(); }
@@ -2274,7 +2285,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		SHOW_SECTION,
 		SHOW_TITLE,
 		SHOW_APPROVAL,
-		SHOW_NOTE;
+		SHOW_NOTE,
+		SHOW_LAST_CHANGE,
+		;
 		
 		public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {
