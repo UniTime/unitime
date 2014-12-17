@@ -40,6 +40,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.match.AbstractStudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XAcademicAreaCode;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -48,6 +49,7 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction.FindEnrollmentInfoCourseMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
@@ -142,6 +144,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							st.addGroup(gr);
 						}
 						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0;
+						float tCred = 0f;
 						for (XRequest r: student.getRequests()) {
 							if (r instanceof XCourseRequest) {
 								XCourseRequest cr = (XCourseRequest)r;
@@ -164,6 +167,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 											tConNeed ++; gtConNeed ++;
 										}
 									}
+									XOffering o = server.getOffering(cr.getEnrollment().getOfferingId());
+									XConfig g = (o == null ? null : o.getConfig(cr.getEnrollment().getConfigId()));
+									if (g != null) {
+										for (XSubpart xs: g.getSubparts())
+											tCred += guessCredit(xs.getCreditAbbv(cr.getEnrollment().getCourseId()));
+									}
 								}
 							}
 						}
@@ -180,6 +189,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setRequested(tReq);
 						s.setStatus(student.getStatus() == null ? session.getDefaultSectioningStatus() : student.getStatus());
 						s.setEmailDate(student.getEmailTimeStamp() == null ? null : student.getEmailTimeStamp());
+						s.setCredit(0f);
+						s.setTotalCredit(tCred);
 					}
 					if (m.enrollment() != null) {
 						s.setEnrollment(s.getEnrollment() + 1); gEnrl ++;
@@ -198,6 +209,12 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 								s.setApprovedDate(m.enrollment().getApproval().getTimeStamp());
 							else if (m.enrollment().getApproval().getTimeStamp().after(s.getApprovedDate()))
 								s.setApprovedDate(m.enrollment().getApproval().getTimeStamp());
+						}
+						XOffering o = server.getOffering(m.enrollment().getOfferingId());
+						XConfig g = (o == null ? null : o.getConfig(m.enrollment().getConfigId()));
+						if (g != null) {
+							for (XSubpart xs: g.getSubparts())
+								s.setCredit(s.getCredit() + guessCredit(xs.getCreditAbbv(m.enrollment().getCourseId())));
 						}
 					} else if (m.student().canAssign(m.request()) && unassigned.add(m.request().getRequestId())) {
 						if (m.request().isWaitlist()) {
@@ -318,6 +335,15 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		ret.add(t);				
 		
 		return ret;
+	}
+	
+	protected static Pattern sCreditPattern = Pattern.compile("\\d+\\.?\\d*");
+	protected float guessCredit(String creditAbbv) {
+		if (creditAbbv == null) return 0f;
+		Matcher m = Pattern.compile("[0-9]+\\.?[0-9]*").matcher(creditAbbv);
+		if (m.find())
+			return Float.parseFloat(m.group(0));
+		return 0f;
 	}
 
 	@Override
