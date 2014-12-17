@@ -112,7 +112,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 					courses += course.getUniqueId();
 					nrCourses++;
 				}
-			if (nrCourses <= 1000) {
+			if (nrCourses > 0 && nrCourses <= 1000) {
 				curricula = hibSession.createQuery(
 						"select distinct c from CurriculumCourse cc inner join cc.classification.curriculum c where " +
 						"c.academicArea.session.uniqueId = :sessionId and cc.course.uniqueId in (" + courses + ")")
