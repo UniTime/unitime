@@ -65,6 +65,7 @@ import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
@@ -1248,12 +1249,34 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						throw new SectioningException(MSG.exceptionBadStudentId());
 					OnlineSectioningServer server = getServerInstance(student.getSession().getUniqueId());
 					if (server == null) {
+						Comparator<StudentClassEnrollment> cmp = new Comparator<StudentClassEnrollment>() {
+							public boolean isParent(SchedulingSubpart s1, SchedulingSubpart s2) {
+								SchedulingSubpart p1 = s1.getParentSubpart();
+								if (p1==null) return false;
+								if (p1.equals(s2)) return true;
+								return isParent(p1, s2);
+							}
+
+							@Override
+							public int compare(StudentClassEnrollment a, StudentClassEnrollment b) {
+								SchedulingSubpart s1 = a.getClazz().getSchedulingSubpart();
+								SchedulingSubpart s2 = b.getClazz().getSchedulingSubpart();
+								if (isParent(s1, s2)) return 1;
+								if (isParent(s2, s1)) return -1;
+								int cmp = s1.getItype().compareTo(s2.getItype());
+								if (cmp != 0) return cmp;
+								return Double.compare(s1.getUniqueId(), s2.getUniqueId());
+							}
+						};
 						NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
 						ClassAssignmentInterface ret = new ClassAssignmentInterface();
 						Hashtable<Long, CourseAssignment> courses = new Hashtable<Long, ClassAssignmentInterface.CourseAssignment>();
-						for (StudentClassEnrollment enrollment: (List<StudentClassEnrollment>)hibSession.createQuery(
+						CourseCreditUnitConfig credit = null;
+						Set<StudentClassEnrollment> enrollments = new TreeSet<StudentClassEnrollment>(cmp);
+						enrollments.addAll(hibSession.createQuery(
 								"from StudentClassEnrollment e where e.student.uniqueId = :studentId order by e.courseOffering.subjectAreaAbbv, e.courseOffering.courseNbr"
-								).setLong("studentId", studentId).list()) {
+								).setLong("studentId", studentId).list());
+						for (StudentClassEnrollment enrollment: enrollments) {
 							CourseAssignment course = courses.get(enrollment.getCourseOffering().getUniqueId());
 							if (course == null) {
 								course = new CourseAssignment();
@@ -1264,7 +1287,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
 								course.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
 								course.setTitle(enrollment.getCourseOffering().getTitle());
-								course.setWaitListed(enrollment.getCourseRequest() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist().booleanValue()); 
+								course.setWaitListed(enrollment.getCourseRequest() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist().booleanValue());
+								credit = enrollment.getCourseOffering().getCredit();
 							}
 							ClassAssignment clazz = course.addClassAssignment();
 							clazz.setClassId(enrollment.getClazz().getUniqueId());
@@ -1317,6 +1341,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									clazz.addInstructor(nameFormat.format(ci.getInstructor()));
 									clazz.addInstructoEmail(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
 								}
+							if (enrollment.getClazz().getSchedulingSubpart().getCredit() != null) {
+								clazz.setCredit(enrollment.getClazz().getSchedulingSubpart().getCredit().creditAbbv() + "|" + enrollment.getClazz().getSchedulingSubpart().getCredit().creditText());
+							} else if (credit != null) {
+								clazz.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+							}
+							credit = null;
 						}
 						demands: for (CourseDemand demand: (List<CourseDemand>)hibSession.createQuery(
 								"from CourseDemand d where d.student.uniqueId = :studentId order by d.priority"
