@@ -221,11 +221,13 @@ public class EnrollmentTable extends Composite {
 						new WebTable.Cell(MESSAGES.colRoom(), 1, "100px"),
 						new WebTable.Cell(MESSAGES.colInstructor(), 1, "100px"),
 						new WebTable.Cell(MESSAGES.colParent(), 1, "75px"),
-						new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10px")
+						new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10px"),
+						new WebTable.Cell(MESSAGES.colCredit(), 1, "75px")
 					));
 				assignments.setEmptyMessage(MESSAGES.emptySchedule());
 				
 				ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
+				float totalCredit = 0f;
 				for (ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
 					if (course.isAssigned()) {
 						boolean firstClazz = true;
@@ -244,11 +246,13 @@ public class EnrollmentTable extends Composite {
 									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 									new WebTable.Cell(clazz.getParentSection()),
-									clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""));
+									clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""),
+									new WebTable.AbbvTextCell(clazz.getCredit()));
 							rows.add(row);
 							for (WebTable.Cell cell: row.getCells())
 								cell.setStyleName(style);
 							firstClazz = false;
+							totalCredit += clazz.guessCreditCount();
 						}
 					} else {
 						String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
@@ -288,14 +292,15 @@ public class EnrollmentTable extends Composite {
 									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 									new WebTable.Cell(clazz.getDatePattern()),
 									new WebTable.Cell(unassignedMessage, 3, null),
-									clazz.getNote() == null ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), ""));
+									clazz.getNote() == null ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), ""),
+									new WebTable.AbbvTextCell(clazz.getCredit()));
 							break;
 						}
 						if (row == null) {
 							row = new WebTable.Row(
 									new WebTable.Cell(course.getSubject()),
 									new WebTable.Cell(course.getCourseNbr()),
-									new WebTable.Cell(unassignedMessage, 11, null));
+									new WebTable.Cell(unassignedMessage, 12, null));
 						}
 						for (WebTable.Cell cell: row.getCells())
 							cell.setStyleName(style);
@@ -315,6 +320,8 @@ public class EnrollmentTable extends Composite {
 				dialog.setWidget(form);
 				dialog.setText(MESSAGES.dialogEnrollments(student.getName()));
 				dialog.setEscapeToHide(true);
+				if (totalCredit > 0f)
+					buttons.setMessage(MESSAGES.totalCredit(totalCredit));
 				buttons.addButton("assistant", MESSAGES.buttonAssistant(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {
