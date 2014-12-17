@@ -76,6 +76,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -1332,7 +1333,8 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hTotal = new UniTimeTableHeader("&nbsp;");
 		header.add(hTotal);
 		
-		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false, hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false;
+		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
+				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false;
 		for (ClassAssignmentInterface.StudentInfo e: result) {
 			if (e.getStudent() == null) continue;
 			// if (e.getStatus() != null) hasStatus = true;
@@ -1347,6 +1349,7 @@ public class SectioningStatusPage extends Composite {
 			if (e.getEnrolledDate() != null) hasEnrolledDate = true;
 			// if (e.getEmailDate() != null) hasEmailDate = true;
 			if (e.getTotalConsentNeeded() != null && e.getTotalConsentNeeded() > 0) hasConsent = true;
+			if (e.hasTotalCredit()) hasCredit = true;
 		}
 		
 		if (hasArea) {
@@ -1717,6 +1720,42 @@ public class SectioningStatusPage extends Composite {
 				}
 			});			
 		}
+
+		if (hasCredit) {
+			final UniTimeTableHeader hCredit = new UniTimeTableHeader(MESSAGES.colCredit());
+			header.add(hCredit);
+			hCredit.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					iStudentTable.sort(hCredit, new Comparator<ClassAssignmentInterface.StudentInfo>() {
+						@Override
+						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
+							if (e1.getStudent() == null) return 1;
+							if (e2.getStudent() == null) return -1;
+							int cmp = (e1.hasCredit() ? e1.getCredit() : new Float(0f)).compareTo(e2.hasCredit() ? e2.getCredit() : new Float(0f));
+							if (cmp != 0) return - cmp;
+							cmp = (e1.hasTotalCredit() ? e1.getTotalCredit() : new Float(0f)).compareTo(e2.hasTotalCredit() ? e2.getTotalCredit() : new Float(0f));
+							if (cmp != 0) return - cmp;
+							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+							if (cmp != 0) return cmp;
+							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
+						}
+					});
+				}
+				@Override
+				public boolean isApplicable() {
+					return true;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.sortBy(MESSAGES.colCredit());
+				}
+			});			
+		}
 		
 		if (hasRequestedDate) {
 			final UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colRequestTimeStamp());
@@ -1901,6 +1940,8 @@ public class SectioningStatusPage extends Composite {
 				line.add(new NumberCell(info.getReservation(), info.getTotalReservation()));
 			if (hasConsent)
 				line.add(new NumberCell(info.getConsentNeeded(), info.getTotalConsentNeeded()));
+			if (hasCredit)
+				line.add(new CreditCell(info.getCredit(), info.getTotalCredit()));
 			if (info.getStudent() != null) {
 				if (hasRequestedDate)
 					line.add(new HTML(info.getRequestedDate() == null ? "&nbsp;" : sDF.format(info.getRequestedDate()), false));
@@ -2448,5 +2489,26 @@ public class SectioningStatusPage extends Composite {
 				}
 			}
 		});
+	}
+	
+	public static class CreditCell extends HTML implements HasCellAlignment {
+		private static NumberFormat df = NumberFormat.getFormat("0.#");
+		
+		public CreditCell(Float value, Float total) {
+			super();
+			if (total != null && total > 0f) {
+				if (total.equals(value))
+					setHTML(df.format(total));
+				else
+					setHTML(df.format(value) + " / " + df.format(total));
+			} else {
+				setHTML("&nbsp;");
+			}
+		}
+
+		@Override
+		public HorizontalAlignmentConstant getCellAlignment() {
+			return HasHorizontalAlignment.ALIGN_RIGHT;
+		}
 	}
 }

@@ -902,6 +902,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iTopWaitingPriority;
 		private Date iRequestedDate = null, iEnrolledDate = null, iApprovedDate = null, iEmailDate = null;
 		private String iStatus;
+		private Float iCredit, iTotalCredit;
 		
 		public StudentInfo() {}
 		
@@ -970,7 +971,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public String getStatus() { return iStatus; }
 		public void setStatus(String status) { iStatus = status; }
-	}
+		
+		public boolean hasCredit() { return iCredit != null && iCredit > 0; }
+		public void setCredit(Float credit) { iCredit = credit; }
+		public Float getCredit() { return iCredit; }
+
+		public boolean hasTotalCredit() { return iTotalCredit != null && iTotalCredit > 0; }
+		public void setTotalCredit(Float totalCredit) { iTotalCredit = totalCredit; }
+		public Float getTotalCredit() { return iTotalCredit; }
+}
 
 	public static class SectioningAction implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
