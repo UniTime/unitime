@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,8 +28,20 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeFieldType;
+import org.joda.time.Days;
+import org.joda.time.Hours;
+import org.joda.time.Minutes;
+import org.joda.time.Months;
+import org.joda.time.ReadablePeriod;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.model.base.BaseQueryLog;
 import org.unitime.timetable.model.dao.QueryLogDAO;
 
@@ -37,6 +50,7 @@ import org.unitime.timetable.model.dao.QueryLogDAO;
  */
 public class QueryLog extends BaseQueryLog {
 	private static final long serialVersionUID = 7073111443207707716L;
+	protected static Log sLog = LogFactory.getLog(QueryLog.class);
 
 	public QueryLog() {
 		super();
@@ -132,12 +146,186 @@ public class QueryLog extends BaseQueryLog {
 	}
 	
 	public static enum ChartWindow {
-		FIFTEEN_MINUTES("Last 24 Hours (15-minute average)"),
-		THREE_HOUR("Last 7 Days (3-hour average)"),
-		SEVEN_DAYS("Last 3 Months (7-day average)");
+		LAST_HOUR("Last 3 Hours", "kkmm", Hours.THREE, 10, Minutes.ONE,
+				"k:mm", DateTimeFieldType.minuteOfHour(), 20, 0, 10, "Minute",
+				"to_char(timeStamp, 'HH24MI')", "timeStamp > current_date() - 1",
+				"date_format(timeStamp, '%H%i')", "timeStamp > adddate(current_date(), -1)"),
+/*		LAST_DAY("Last 24 Hours (1-hour average)", "kk", Days.ONE, 1, Hours.ONE,
+				"k", 2, 60, "Hour",
+				"to_char(timeStamp, 'HH24')", "timeStamp > current_date() - 1",
+				"date_format(timeStamp, '%H')", "timeStamp > adddate(current_date(), -1)"),*/
+		LAST_WEEK("Last 7 Days", "ddkk", Days.SEVEN, 1, Hours.ONE,
+				"MM/d", DateTimeFieldType.hourOfDay(), 24, 0, 60, "Hour",
+				"to_char(timeStamp, 'DDHH24')", "timeStamp > current_date() - 7",
+				"date_format(timeStamp, '%d%H')", "timeStamp > adddate(current_date(), -7)"),
+		LAST_MONTH("Last 3 Months", "MMdd", Months.THREE, 1, Days.ONE,
+				"MMM/d", DateTimeFieldType.dayOfMonth(), 32, 1, 24 * 60, "Day",
+				"to_char(timeStamp, 'MMDD')", "timeStamp > current_date() - 92",
+				"date_format(timeStamp, '%m%d')", "timeStamp > adddate(current_date(), -92)"),
+		;
 		private String iName;
-		ChartWindow(String name) { iName = name; }
+		private DateFormat iFormat;
+		private ReadablePeriod iStart, iIncrement;
+		private int iWindow;
+		private String iOracleFormat, iOracleCondition;
+		private String iMySqlFormat, iMySqlCondition;
+		private String iAxeFormat, iBase;
+		private int iMinutes;
+		private DateTimeFieldType iAxeType; int iAxeMod, iAxeValue;
+		
+		ChartWindow(String name, String format,
+				ReadablePeriod start, int window, ReadablePeriod increment,
+				String axeFormat, DateTimeFieldType axeType, int axeMod, int axeValue, int minutes, String base,
+				String oracleFormat, String oracleCondition, String mySqlFormat, String mySqlCondition) {
+			iName = name;
+			iFormat = new SimpleDateFormat(format, Locale.US);
+			iStart = start; iWindow = window; iIncrement = increment;
+			iAxeFormat = axeFormat; iAxeType = axeType; iAxeMod = axeMod; iAxeValue = axeValue;
+			iMinutes = minutes; iBase = base;
+			iOracleFormat = oracleFormat; iOracleCondition = oracleCondition;
+			iMySqlFormat = mySqlFormat; iMySqlCondition = mySqlCondition;
+		}
 		public String getName() { return iName; }
+		public String getBase() { return iBase; }
+		public String format(DateTime date) { return iFormat.format(date.getMillis()); }
+		public DateTime getFirst(DateTime now) { return now.minus(iStart); }
+		public DateTime next(DateTime date, DateTime now) {
+			DateTime ret = date.plus(iIncrement);
+			return (ret.isAfter(now) ? null : ret);
+		}
+		public int getMinutes() { return iMinutes; }
+		
+		public Map<String, int[]> getUsersAndSessions(org.hibernate.Session hibSession) {
+			String query = null;
+			if (HibernateUtil.isMySQL()) {
+				query = "select " + iMySqlFormat + ", count(distinct uid), count(distinct sessionId) from " + 
+						"QueryLog where " + iMySqlCondition + " group by " + iMySqlFormat;
+			} else {
+				query = "select " + iOracleFormat + ", count(distinct uid), count(distinct sessionId) from " + 
+						"QueryLog where " + iOracleCondition + " group by " + iOracleFormat;
+			}
+			Map<String, int[]> ret = new HashMap<String, int[]>();
+			for (Object[] o: (List<Object[]>)hibSession.createQuery(query).list()) {
+				String dt = (String)o[0];
+				int users = ((Number)o[1]).intValue();
+				int sessions = ((Number)o[2]).intValue();
+				ret.put(dt, new int[] {users, sessions});
+			}
+			return ret;
+		}
+		
+		public Map<String, int[]> getQueriesPerType(org.hibernate.Session hibSession) {
+			String query = null;
+			if (HibernateUtil.isMySQL()) {
+				query = "select " + iMySqlFormat + ", type, count(uniqueId) from " + 
+						"QueryLog where " + iMySqlCondition + " group by type, " + iMySqlFormat;
+			} else {
+				query = "select " + iOracleFormat + ", type, count(uniqueId) from " + 
+						"QueryLog where " + iOracleCondition + " group by type, " + iOracleFormat;
+			}
+			Map<String, int[]> ret = new HashMap<String, int[]>();
+			for (Object[] o: (List<Object[]>)hibSession.createQuery(query).list()) {
+				String dt = (String)o[0];
+				int type = ((Number)o[1]).intValue();
+				int queries = ((Number)o[2]).intValue();
+				int[] counts = ret.get(dt);
+				if (counts == null) {
+					counts = new int[Type.values().length];
+					for (int i = 0; i < counts.length; i++) counts[i] = 0;
+					ret.put(dt, counts);
+				}
+				counts[type] = queries;
+			}
+			return ret;
+		}
+		
+		public Map<String, double[]> getTimes(org.hibernate.Session hibSession) {
+			String query = null;
+			if (HibernateUtil.isMySQL()) {
+				query = "select " + iMySqlFormat + ", type, count(uniqueId), sum(timeSpent), max(timeSpent) from " + 
+						"QueryLog where " + iMySqlCondition + " group by type, " + iMySqlFormat;
+			} else {
+				query = "select " + iOracleFormat + ", type, count(uniqueId), sum(timeSpent), max(timeSpent) from " + 
+						"QueryLog where " + iOracleCondition + " group by type, " + iOracleFormat;
+			}
+			Map<String, double[]> ret = new HashMap<String, double[]>();
+			for (Object[] o: (List<Object[]>)hibSession.createQuery(query).list()) {
+				String dt = (String)o[0];
+				int type = ((Number)o[1]).intValue();
+				int cnt = ((Number)o[2]).intValue();
+				double sum = ((Number)o[3]).doubleValue();
+				double max = ((Number)o[4]).doubleValue() / 1000.0;
+				double[] counts = ret.get(dt);
+				if (counts == null) {
+					counts = new double[3 * Type.values().length];
+					for (int i = 0; i < counts.length; i++) counts[i] = 0;
+					ret.put(dt, counts);
+				}
+				counts[3 * type] = sum;
+				counts[3 * type + 1] = cnt;
+				counts[3 * type + 2] = max;
+			}
+			return ret;
+		}
+		
+		public double[] countUsers(Map<String, int[]> table, DateTime date) {
+			DateTime d = date;
+			int[] ret = new int[2];
+			for (int i = 0; i < ret.length; i++) ret[i] = 0;
+			for (int i = 0; i < iWindow; i++) {
+				int[] count = table.get(format(d));
+				if (count != null)
+					for (int j = 0; j < count.length; j++) ret[j] += count[j];
+				d = d.plus(iIncrement);
+			}
+			return new double[] { ((double)ret[0]) / iWindow, ((double)ret[1]) / iWindow };
+		}
+		
+		public int[] countQueries(Map<String, int[]> table, DateTime date) {
+			DateTime d = date;
+			int[] ret = new int[Type.values().length];
+			for (int i = 0; i < ret.length; i++) ret[i] = 0;
+			for (int i = 0; i < iWindow; i++) {
+				int[] count = table.get(format(d));
+				if (count != null)
+					for (int j = 0; j < count.length; j++) ret[j] += count[j];
+				d = d.plus(iIncrement);
+			}
+			return ret;
+		}
+		
+		public double[] countTimes(Map<String, double[]> table, DateTime date) {
+			DateTime d = date;
+			double[] ret = new double[3 * Type.values().length];
+			for (int i = 0; i < ret.length; i++) ret[i] = 0;
+			for (int i = 0; i < iWindow; i++) {
+				double[] count = table.get(format(d));
+				if (count != null)
+					for (int j = 0; j < count.length; j++) {
+						if ((j % 3) == 2)
+							ret[j] = Math.max(ret[j], count[j]);
+						else
+							ret[j] += count[j];
+					}
+				d = d.plus(iIncrement);
+			}
+			return ret;
+		}
+		
+		public String axe(DateTime now) {
+			SimpleDateFormat format = new SimpleDateFormat(iAxeFormat, Localization.getJavaLocale());
+			DateTime dt = getFirst(now);
+			int i = 0;
+			StringBuffer ret = new StringBuffer();
+			while (dt != null) {
+				if (i > 0) ret.append("|");
+				if ((dt.get(iAxeType) % iAxeMod) == iAxeValue)
+					ret.append(format.format(dt.getMillis()));
+				i++;
+				dt = next(dt, now);
+			}
+			return ret.toString();
+		}
 	}
 	
 	public static enum ChartType {
@@ -164,120 +352,66 @@ public class QueryLog extends BaseQueryLog {
 	}
 	
 	public static String getChart(ChartWindow w, ChartType t) {
-		Date ts = new Date();
-		Calendar from = Calendar.getInstance(Locale.US);
-		from.setTime(ts);
-		switch (w) {
-		case SEVEN_DAYS:
-			from.add(Calendar.MONTH, - 3);
-			break;
-		case THREE_HOUR:
-			from.add(Calendar.DAY_OF_YEAR, - 7);
-			break;
-		case FIFTEEN_MINUTES:
-			from.add(Calendar.DAY_OF_YEAR, - 1);
-			break;
+		DateTime now = DateTime.now();
+		String axe = w.axe(now);
+
+		DateTime dt = w.getFirst(now);
+		List<Double>[] data = new List[] { new ArrayList<Double>(), new ArrayList<Double>(), new ArrayList<Double>(), new ArrayList<Double>()};
+		double max[] = new double[] { 0, 0 };
+		if (t == ChartType.USERS) {
+			Map<String, int[]> queries = w.getQueriesPerType(QueryLogDAO.getInstance().getSession());
+			Map<String, int[]> usersAndSessions = w.getUsersAndSessions(QueryLogDAO.getInstance().getSession());
+			while (dt != null) {
+				double[] us = w.countUsers(usersAndSessions, dt);
+				int[] q = w.countQueries(queries, dt);
+				
+				double users = us[0];
+				data[0].add(users);
+				double sessions = us[1];
+				data[1].add(sessions);
+				max[0] = Math.max(max[0], Math.max(users, sessions));
+				
+				double calls = ((double)(q[Type.STRUCTS.ordinal()] + q[Type.OTHER.ordinal()])) / w.getMinutes();
+				double gwtCalls = ((double)(q[Type.GWT.ordinal()] + q[Type.RPC.ordinal()])) / w.getMinutes();
+				data[2].add(calls);
+				data[3].add(gwtCalls);
+				max[1] = Math.max(max[1], Math.max(calls, gwtCalls));
+				
+				dt = w.next(dt, now);
+			}
+			sLog.debug("[" + w.name() + "] Users: " + max[0] + " / " + data[0]);
+			sLog.debug("[" + w.name() + "] Sessions: " + max[0] + " / " + data[1]);
+			sLog.debug("[" + w.name() + "] Calls: " + max[1] + " / " + data[2]);
+			sLog.debug("[" + w.name() + "] GWT: " + max[1] + " / " + data[3]);
+		} else {
+			Map<String, double[]> times = w.getTimes(QueryLogDAO.getInstance().getSession());
+			while (dt != null) {
+				double[] tm = w.countTimes(times, dt);
+				
+				double sumTime = (tm[3 * Type.STRUCTS.ordinal()] + tm[3 * Type.OTHER.ordinal()]);
+				double cntTime = (tm[3 * Type.STRUCTS.ordinal() + 1] + tm[3 * Type.OTHER.ordinal() + 1]);
+				double avgTime =  (cntTime > 0.0 ? sumTime / cntTime : 0.0);
+				double gwtSumTime = (tm[3 * Type.GWT.ordinal()] + tm[3 * Type.RPC.ordinal()]);
+				double gwtCntTime = (tm[3 * Type.GWT.ordinal() + 1] + tm[3 * Type.RPC.ordinal() + 1]);
+				double gwtAvgTime = (gwtCntTime > 0.0 ? gwtSumTime / gwtCntTime : 0.0);
+				double maxTime = Math.max(tm[3 * Type.STRUCTS.ordinal() + 2],tm[3 * Type.OTHER.ordinal() + 2]);
+				double gwtMaxTime = Math.max(tm[3 * Type.GWT.ordinal() + 2],tm[3 * Type.RPC.ordinal() + 2]);
+				
+				data[0].add(maxTime);
+				data[1].add(avgTime);
+				data[2].add(gwtMaxTime);
+				data[3].add(gwtAvgTime);
+				max[0] = Math.max(max[0], Math.max(maxTime, gwtMaxTime));
+				max[1] = Math.max(max[1], Math.max(avgTime, gwtAvgTime));
+				
+				dt = w.next(dt, now);
+			}
+			sLog.debug("[" + w.name() + "] Max Time: " + max[0] + " / " + data[0]);
+			sLog.debug("[" + w.name() + "] Avg Time: " + max[1] + " / " + data[1]);
+			sLog.debug("[" + w.name() + "] Gwt Max Time: " + max[0] + " / " + data[2]);
+			sLog.debug("[" + w.name() + "] Gwt Avg Time: " + max[1] + " / " + data[3]);
 		}
-		Calendar to = Calendar.getInstance(Locale.US);
-		to.setTime(from.getTime());
-		switch (w) {
-		case SEVEN_DAYS:
-			to.add(Calendar.DAY_OF_YEAR, + 7);
-			break;
-		case THREE_HOUR:
-			to.add(Calendar.HOUR_OF_DAY, + 3);
-			break;
-		case FIFTEEN_MINUTES:
-			to.add(Calendar.MINUTE, + 15);
-			break;
-		}
-		String axe = "";
-		List<Double>[] data = new List[] { new ArrayList<Double>(), new ArrayList<Double>(), new ArrayList<Double>(), new ArrayList<Double>()}; 
-		double max[] = new double[] { 0, 0};
-		int index = 0;
-		while (to.getTime().compareTo(ts) <= 0) {
-			if (index > 0) {
-				axe += "|";
-			}
-			switch (w) {
-			case SEVEN_DAYS:
-				if (from.get(Calendar.DAY_OF_MONTH) == 1)
-					axe += new SimpleDateFormat("MMM/dd").format(from.getTime());
-				break;
-			case THREE_HOUR:
-				if (from.get(Calendar.HOUR_OF_DAY) < 3)
-					axe += new SimpleDateFormat("MM/dd").format(from.getTime()).toLowerCase();
-				break;
-			case FIFTEEN_MINUTES:
-				if (from.get(Calendar.MINUTE) < 15)
-					axe += new SimpleDateFormat("H").format(from.getTime()).toLowerCase();
-				break;
-			}
-			switch (t) {
-			case USERS:
-				 Object[] o = (Object[])QueryLogDAO.getInstance().getSession().createQuery(
-					"select count(distinct uid), count(distinct sessionId), count(distinct uniqueId) from QueryLog where timeStamp > :from and timeStamp <= :to and not type = :type1 and not type = :type2")
-					.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type1", Type.GWT.ordinal()).setInteger("type2", Type.RPC.ordinal()).uniqueResult();
-				 double gwtCallsPerMinute = ((Number)QueryLogDAO.getInstance().getSession().createQuery(
-					"select count(distinct uniqueId) from QueryLog where timeStamp > :from and timeStamp <= :to and (type = :type1 or type = :type2)")
-					.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type1", Type.GWT.ordinal()).setInteger("type2", Type.RPC.ordinal()).uniqueResult()).doubleValue();
-				 double distinctUsers = ((Number)o[0]).doubleValue();
-				 data[0].add(distinctUsers);
-				 double distinctSessions = ((Number)o[1]).doubleValue();
-				 data[1].add(distinctSessions);
-				 max[0] = Math.max(max[0], Math.max(distinctUsers, distinctSessions));
-				 double callsPerMinute = ((Number)o[2]).doubleValue();
-				 switch (w) {
-				 case SEVEN_DAYS:
-					 callsPerMinute /= 7 * 24 * 60;
-					 gwtCallsPerMinute /= 7 * 24 * 60;
-					 break;
-				 case THREE_HOUR:
-					 callsPerMinute /= 3 * 60;
-					 gwtCallsPerMinute /= 3 * 60;
-					break;
-				 case FIFTEEN_MINUTES:
-					 callsPerMinute /= 15;
-					 gwtCallsPerMinute /= 15;
-					break;
-				 }
-				 data[2].add(callsPerMinute);
-				 data[3].add(gwtCallsPerMinute);
-				 max[1] = Math.max(max[1], Math.max(callsPerMinute, gwtCallsPerMinute));
-				 break;
-			case TIME:
-				o = (Object[])QueryLogDAO.getInstance().getSession().createQuery(
-					"select avg(q.timeSpent), max(q.timeSpent) from QueryLog q where q.timeStamp > :from and q.timeStamp <= :to and not type = :type1 and not type = :type2")
-					.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type1", Type.GWT.ordinal()).setInteger("type2", Type.RPC.ordinal()).uniqueResult();
-				Object[] p = (Object[])QueryLogDAO.getInstance().getSession().createQuery(
-				"select avg(q.timeSpent), max(q.timeSpent) from QueryLog q where q.timeStamp > :from and q.timeStamp <= :to and (type = :type1 or type = :type2)")
-				.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type1", Type.GWT.ordinal()).setInteger("type2", Type.RPC.ordinal()).uniqueResult();
-				double avgTime = (o[0] == null ? 0 : ((Number)o[0]).doubleValue());
-				double maxTime = (o[1] == null ? 0 : ((Number)o[1]).doubleValue()) / 1000.0;
-				double gwtAvgTime = (p[0] == null ? 0 : ((Number)p[0]).doubleValue());
-				double gwtMaxTime = (p[1] == null ? 0 : ((Number)p[1]).doubleValue()) / 1000.0;
-				data[0].add(avgTime);
-				data[1].add(maxTime);
-				data[2].add(gwtAvgTime);
-				data[3].add(gwtMaxTime);
-				max[0] = Math.max(max[0], Math.max(avgTime, gwtAvgTime));
-				max[1] = Math.max(max[1], Math.max(maxTime, gwtMaxTime));
-				break;			
-			}
-			switch (w) {
-			case SEVEN_DAYS:
-				from.add(Calendar.DAY_OF_YEAR, +1);
-				to.add(Calendar.DAY_OF_YEAR, + 1);
-				break;
-			case THREE_HOUR:
-				from.add(Calendar.HOUR_OF_DAY, +3);
-				to.add(Calendar.HOUR_OF_DAY, + 3);
-			case FIFTEEN_MINUTES:
-				from.add(Calendar.MINUTE, +15);
-				to.add(Calendar.MINUTE, + 15);
-			}
-			index++;
-		}
+
 		DecimalFormat df = new DecimalFormat("0.0");
 		double range[] = new double[] { 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 50000, 100000, 1000000, 10000000};
 		double step[] = new double[] { 1, 1};
@@ -292,17 +426,17 @@ public class QueryLog extends BaseQueryLog {
 			return "http://chart.apis.google.com/chart?" + 
 				"cht=lc&chd=e:" + encode(data[0], max[0]) + "," + encode(data[1], max[0]) + "," + encode(data[2], max[1]) + "," + encode(data[3], max[1]) +
 				"&chs=400x300&chl=" + axe + "&chxt=x,y,y,r,r&chxr=1,0," + df.format(max[0]) + "," + df.format(step[0]) + "|3,0," + df.format(max[1]) + "," + df.format(step[1]) +
-				"&chdl=Distinct+Users|Distinct+HTTP+Sessions|Pages+per+Minute|GWT+Calls+per+Minute&chco=0000FF,00FF00,FF0000,FFA500" +
+				"&chdl=Users+per+" + w.getBase() + "|HTTP+Sessions+per+" + w.getBase() + "|Pages+per+Minute|GWT+Calls+per+Minute&chco=0000FF,00FF00,FF0000,FFA500" +
 				"&chdlp=t&chds=0," + df.format(max[0]) + ",0," + df.format(max[0]) + ",0," + df.format(max[1]) + ",0," + df.format(max[1]) +
 				"&chxl=4:||e|t|u|n|i|M|+|r|e|p|+|s|l|l|a|C||2:|s|n|o|i|s|s|e|s|+|s|r|e|s|u|+|f|o|+|r|b|N" +
 				"&chxs=1,0000FF|2,00FF00|3,FF0000|4,FFA500";
 		case TIME:
 			return "http://chart.apis.google.com/chart?" +
-				"cht=lc&chd=e:" + encode(data[0], max[0]) + "," + encode(data[1], max[1]) + "," + encode(data[2], max[0]) + "," + encode(data[3], max[1]) +
+				"cht=lc&chd=e:" + encode(data[0], max[0]) + "," + encode(data[2], max[0]) + "," + encode(data[1], max[1]) + "," + encode(data[3], max[1]) +
 				"&chs=400x300&chl=" + axe + "&chxt=x,y,y,r,r&chxr=1,0," + df.format(max[0]) + "," + df.format(step[0]) + "|3,0," + df.format(max[1]) + "," + df.format(step[1]) +
-				"&chdlp=t&chds=0," + df.format(max[0]) + ",0," + df.format(max[1]) + ",0," + df.format(max[0]) + ",0," + df.format(max[1]) +
-				"&chdl=Average+Time+[ms]|Max+Time+[s]|GWT+Average+Time+[ms]|GWT+Max+Time+[s]&chco=0000FF,FF0000,00FF00,FFA500" + 
-				"&chxl=2:||e|m|i|T|+|e|g|a|r|e|v|A||4:||e|m|i|T|+|x|a|M|" +
+				"&chdlp=t&chds=0," + df.format(max[0]) + ",0," + df.format(max[0]) + ",0," + df.format(max[1]) + ",0," + df.format(max[1]) +
+				"&chdl=Max+Time+[s]|GWT+Max+Time+[s]|Average+Time+[ms]|GWT+Average+Time+[ms]&chco=0000FF,00FF00,FF0000,FFA500" + 
+				"&chxl=4:||e|m|i|T|+|e|g|a|r|e|v|A||2:||e|m|i|T|+|x|a|M|" +
 				"&chxs=1,0000FF|2,00FF00|3,FF0000|4,FFA500";
 		default:
 			return "";
