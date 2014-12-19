@@ -213,7 +213,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				}
 			} else if (subjects.isEmpty()) {
 				List<CourseOffering> courses = helper.getHibSession().createQuery("select c from CourseOffering c inner join c.subjectArea s where s.session.uniqueId = :sessionId and (" +
-						"lower(s.subjectAreaAbbreviation || '.' || c.courseNbr) like :name or lower(' ' || c.title) like :title) and c.instructionalOffering.notOffered = false " +
+						"lower(s.subjectAreaAbbreviation || ' ' || c.courseNbr) like :name or lower(' ' || c.title) like :title) and c.instructionalOffering.notOffered = false " +
 						"order by s.subjectAreaAbbreviation, c.courseNbr")
 						.setString("name", iRequest.getText().toLowerCase() + "%").setString("title", "% " + iRequest.getText().toLowerCase() + "%")
 						.setLong("sessionId", server.getAcademicSession().getUniqueId()).setMaxResults(20).list();
