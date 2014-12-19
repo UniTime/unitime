@@ -75,6 +75,7 @@ public class ExamPdfReportForm extends ExamReportForm {
     private boolean iEmailInstructors, iEmailStudents;
     private boolean iClassSchedule = false;
     private boolean iIgnoreEmptyExams = false;
+    private boolean iDispNote = true;
     
     public static Hashtable<String,Class> sRegisteredReports = new Hashtable();
     public static String[] sModes = {"PDF (Letter)", "PDF (Ledger)", "Text"};
@@ -139,6 +140,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         iClassSchedule = false;
         iIgnoreEmptyExams = false;
         iItype = false;
+        iDispNote = false;
     }
     
     public void load(SessionContext session) {
@@ -169,6 +171,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         setItype("1".equals(session.getUser().getProperty("ExamPdfReport.itype", ApplicationProperty.ExaminationReportsShowInstructionalType.isTrue() ? "1" : "0")));
         setClassSchedule("1".equals(session.getUser().getProperty("ExamPdfReport.cschedule", "1")));
         setIgnoreEmptyExams("1".equals(session.getUser().getProperty("ExamPdfReport.ignempty", "1")));
+        setDispNote("1".equals(session.getUser().getProperty("ExamPdfReport.dispNote", "0")));
     }
     
     public void save(SessionContext session) {
@@ -199,6 +202,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         session.getUser().setProperty("ExamPdfReport.itype", getItype() ? "1" : "0");
         session.getUser().setProperty("ExamPdfReport.cschedule", getClassSchedule() ? "1" : "0");
         session.getUser().setProperty("ExamPdfReport.ignempty", getIgnoreEmptyExams() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.dispNote", getDispNote() ? "1" : "0");
     }
 
     public String[] getReports() { return iReports;}
@@ -245,6 +249,8 @@ public class ExamPdfReportForm extends ExamReportForm {
     public void setMessage(String message) { iMessage = message; }
     public String getSubject() { return iSubject; }
     public void setSubject(String subject) { iSubject = subject; }
+    public boolean getDispNote() { return iDispNote; }
+    public void setDispNote(boolean dispNote) { iDispNote = dispNote; }
     
     public TreeSet<String> getAllReports() {
         return new TreeSet<String>(sRegisteredReports.keySet());
@@ -297,6 +303,7 @@ public class ExamPdfReportForm extends ExamReportForm {
 	    x.setShowSections(getShowSections());
 	    x.setSubjectArea(getSubjectArea());
 	    x.setExamType(getExamType());
+	    x.setDispNote(getDispNote());
     	return x;
     }
 }

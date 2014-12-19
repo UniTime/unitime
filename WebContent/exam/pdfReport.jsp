@@ -158,8 +158,11 @@
 		<TD>Room Codes: <html:text property="roomCodes" size="70" maxlength="200"/></TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top'>Verification Report:</TD>
+  		<TD width="10%" nowrap valign='top' rowspan="2">Verification Report:</TD>
 		<TD><html:checkbox property="dispLimit"/>Display Limits &amp; Enrollments</TD>
+	</TR>
+	<TR>
+		<TD><html:checkbox property="dispNote"/>Display Class Schedule Notes</TD>
 	</TR>
 	<TR>
   		<TD width="10%" nowrap valign='top' rowspan='2'>Individual Reports:</TD>
