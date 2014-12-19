@@ -450,7 +450,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				if (r instanceof XCourseRequest && ((XCourseRequest)r).getCourseIdByOfferingId(getOldOffering().getOfferingId()) != null) {
 					newRequest = (XCourseRequest)r;
 					newOffering = server.getOffering(getOldOffering().getOfferingId());
-					course = newOffering.getCourse(newRequest.getEnrollment().getCourseId());
+					if (newRequest.getEnrollment() != null)
+						course = newOffering.getCourse(newRequest.getEnrollment().getCourseId());
 					break;
 				}
 			}
