@@ -29,12 +29,12 @@ import com.google.gson.reflect.TypeToken;
 
 public class XEInterface {
 	
-	static class Registration {
-		String subject;
-		String subjectDescription;
-		String courseNumber;
-		String courseReferenceNumber;
-		String courseTitle;
+	public static class Registration {
+		public String subject;
+		public String subjectDescription;
+		public String courseNumber;
+		public String courseReferenceNumber;
+		public String courseTitle;
 		
 		/**
 		 * 40	CEC 40% refund
@@ -65,22 +65,22 @@ public class XEInterface {
 		 * WU	Withdrawn-WU
 		 * WL	Waitlist
 		 */
-		String courseRegistrationStatus;
-		String courseRegistrationStatusDescription;
-		Double creditHour;
+		public String courseRegistrationStatus;
+		public String courseRegistrationStatusDescription;
+		public Double creditHour;
 		
-		String gradingMode;
-		String gradingModeDescription;
+		public String gradingMode;
+		public String gradingModeDescription;
 		
-		String level;
-		String levelDescription;
+		public String level;
+		public String levelDescription;
 		
-		DateTime registrationStatusDate;
-		String scheduleDescription;
-		String scheduleType;
-		String sequenceNumber;
+		public DateTime registrationStatusDate;
+		public String scheduleDescription;
+		public String scheduleType;
+		public String sequenceNumber;
 		
-		String statusDescription;
+		public String statusDescription;
 		/**
 		 * P = pending
 		 * R = registered
@@ -89,50 +89,53 @@ public class XEInterface {
 		 * F = fatal error prevented registration
 		 * W = withdrawn 
 		 */
-		String statusIndicator;
+		public String statusIndicator;
 		
-		List<CrnError> crnErrors;
+		public List<CrnError> crnErrors;
+		
+		public String term;
+		public String campus;
 	}
 	
-	static class CrnError {
-		String errorFlag;
-		String message;
-		String messageType;
+	public static class CrnError {
+		public String errorFlag;
+		public String message;
+		public String messageType;
 	}
 	
-	static class RegistrationAction {
-		String courseRegistrationStatus;
-		String description;
-		Boolean remove;
-		String voiceType;
+	public static class RegistrationAction {
+		public String courseRegistrationStatus;
+		public String description;
+		public Boolean remove;
+		public String voiceType;
 	}
 	
-	static class TimeTicket {
-		DateTime beginDate;
-		DateTime endDate;
-		String startTime;
-		String endTime;
+	public static class TimeTicket {
+		public DateTime beginDate;
+		public DateTime endDate;
+		public String startTime;
+		public String endTime;
 	}
 	
-	static class FailedRegistration {
-		String failedCRN;
-		String failure;
-		Registration registration;
+	public static class FailedRegistration {
+		public String failedCRN;
+		public String failure;
+		public Registration registration;
 	}
 	
 	public static class RegisterResponse {
 		public static final Type TYPE_LIST = new TypeToken<ArrayList<RegisterResponse>>() {}.getType();
 		
-		List<FailedRegistration> failedRegistrations;
-		List<String> failureReasons;
-		List<Registration> registrations;
-		List<TimeTicket> timeTickets;
-		Boolean validStudent;
-		String registrationException;
+		public List<FailedRegistration> failedRegistrations;
+		public List<String> failureReasons;
+		public List<Registration> registrations;
+		public List<TimeTicket> timeTickets;
+		public Boolean validStudent;
+		public String registrationException;
 	}
 	
 	public static class CourseReferenceNumber {
-		String courseReferenceNumber;
+		public String courseReferenceNumber;
 		
 		public CourseReferenceNumber() {}
 		public CourseReferenceNumber(String crn) {
@@ -141,12 +144,12 @@ public class XEInterface {
 	}
 	
 	public static class RegisterAction {
-		String courseReferenceNumber;
-		String selectedAction;
-		String selectedLevel;
-		String selectedGradingMode;
-		String selectedStudyPath;
-		String selectedCreditHour;
+		public String courseReferenceNumber;
+		public String selectedAction;
+		public String selectedLevel;
+		public String selectedGradingMode;
+		public String selectedStudyPath;
+		public String selectedCreditHour;
 		
 		public RegisterAction(String action, String crn) {
 			selectedAction = action;
@@ -155,11 +158,11 @@ public class XEInterface {
 	}
 	
 	public static class RegisterRequest {
-		String bannerId;
-		String term;
-		String altPin;
-		List<CourseReferenceNumber> courseReferenceNumbers;
-		List<RegisterAction> actionsAndOptions;
+		public String bannerId;
+		public String term;
+		public String altPin;
+		public List<CourseReferenceNumber> courseReferenceNumbers;
+		public List<RegisterAction> actionsAndOptions;
 		
 		public RegisterRequest(String term, String bannerId, String pin) {
 			this.term = term; this.bannerId = bannerId; this.altPin = pin;
