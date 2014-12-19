@@ -115,6 +115,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return iExternalTermProvider.getExternalTerm(session);
 	}
 	
+	protected String getBannerCampus(AcademicSessionInfo session) {
+		return iExternalTermProvider.getExternalCampus(session);
+	}
+	
 	protected Gson getGson(OnlineSectioningHelper helper) {
 		GsonBuilder builder = new GsonBuilder()
 		.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
@@ -222,7 +226,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				if (current.get(0).registrations != null)
 					for (XEInterface.Registration reg: current.get(0).registrations) {
 						if ("R".equals(reg.statusIndicator)) {
-							if (!sectionExternalIds.remove(reg.courseReferenceNumber))
+							if (!sectionExternalIds.remove(reg.courseReferenceNumber) && !eligibilityIgnoreBannerRegistration(server, helper, student, reg))
 								added += (added.isEmpty() ? "" : ", ") + reg.courseReferenceNumber;
 							OnlineSectioningLog.Section.Builder section = external.addSectionBuilder()
 								.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
@@ -258,6 +262,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				resource.release();
 			}
 		}
+	}
+	
+	protected boolean eligibilityIgnoreBannerRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, XEInterface.Registration reg) {
+		return false;
 	}
 	
 	@Override
@@ -516,7 +524,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 		}
 	}
-
+	
 	@Override
 	public void dispose() {
 		try {
