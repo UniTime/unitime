@@ -111,6 +111,12 @@ try {
 			</TD>
 		</TR>
 		<TR>
+			<TD>Show times:</TD>
+			<TD>
+				<html:checkbox property="showTimes"/>
+			</TD>
+		</TR>
+		<TR>
 			<TD>Order By:</TD>
 			<TD>
 				<html:select property="orderBy">

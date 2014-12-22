@@ -46,6 +46,8 @@ import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.solver.Solver;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.util.Constants;
@@ -56,6 +58,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class SolverGridModel extends TimetableGridModel implements Serializable {
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	private static final long serialVersionUID = 1L;
 	private transient Long iRoomId = null;
 	
@@ -515,6 +518,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				nrMeetings,
 				placement.getTimeLocation().getDatePatternName(),
 				placement.getTimeLocation().getWeekCode(),
-				lecture.getInstructorName());
+				lecture.getInstructorName(),
+				placement.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()) + " - " + placement.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm()));
 	}
 }
