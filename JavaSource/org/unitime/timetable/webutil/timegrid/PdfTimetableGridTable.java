@@ -314,9 +314,11 @@ public class PdfTimetableGridTable {
 						c.setColspan(colSpan);
 						c.setBackgroundColor(getColor(bgColor));
 						addText(c, cell.getName());
+						if (iTable.getShowTimes())
+							addText(c, cell.getTime());
 						if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 							addText(c, cell.getRoomName());
-						if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors())
+						if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors() && !cell.getInstructor().isEmpty())
 							addText(c, cell.getInstructor());
 						if (iTable.getShowComments())
 							addText(c, cell.getShortCommentNoColors()==null?null:cell.getShortCommentNoColors());
@@ -371,9 +373,11 @@ public class PdfTimetableGridTable {
 							if (bgColor!=null)
 								c.setBackgroundColor(getColor(bgColor));
 							addText(c, cell.getName());
+							if (iTable.getShowTimes())
+								addText(c, cell.getTime());
 							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 								addText(c, cell.getRoomName());
-							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors())
+							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors() && !cell.getInstructor().isEmpty())
 								addText(c, cell.getInstructor());
 							if (iTable.getShowComments())
 								addText(c, cell.getShortCommentNoColors()==null?null:cell.getShortCommentNoColors());
@@ -444,9 +448,11 @@ public class PdfTimetableGridTable {
 							if (bgColor!=null)
 								c.setBackgroundColor(getColor(bgColor));
 							addText(c, cell.getName());
+							if (iTable.getShowTimes())
+								addText(c, cell.getTime());
 							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 								addText(c, cell.getRoomName());
-							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors())
+							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors() && !cell.getInstructor().isEmpty())
 								addText(c, cell.getInstructor());
 							if (iTable.getShowComments())
 								addText(c, cell.getShortCommentNoColors()==null?null:cell.getShortCommentNoColors());
@@ -496,9 +502,11 @@ public class PdfTimetableGridTable {
 								c.setBackgroundColor(getColor(bgColor));
 							if (iTable.getWeek()==-100 && cell.hasDays() && !cell.getDays().equals(iTable.getDefaultDatePatternName()))
 								addTextVertical(c, cell.getDays());
+							if (iTable.getShowTimes())
+								addText(c, cell.getTime());
 							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 								addTextVertical(c, cell.getRoomName());
-							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors())
+							if (iTable.getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iTable.getShowInstructors() && !cell.getInstructor().isEmpty())
 								addTextVertical(c, cell.getInstructor());
 							if (iTable.getShowComments())
 								addTextVertical(c, cell.getShortCommentNoColors()==null?null:cell.getShortCommentNoColors());

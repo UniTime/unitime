@@ -139,6 +139,7 @@ public class TimetableGridTable {
 	private boolean iShowInstructors = false;
 	private boolean iShowEvents = false;
 	private boolean iShowComments = false;
+	private boolean iShowTimes = false;
 	private org.unitime.timetable.gwt.server.Query iQuery = null;
 	private int iNrSlotsPerPeriod = -1;
 	
@@ -168,6 +169,8 @@ public class TimetableGridTable {
 	public void setShowUselessTimes(boolean showUselessTimes) { iShowUselessTimes = showUselessTimes; }
 	public boolean getShowInstructors() { return iShowInstructors; }
 	public void setShowInstructors(boolean showInstructors) { iShowInstructors = showInstructors; }
+	public boolean getShowTimes() { return iShowTimes; }
+	public void setShowTimes(boolean showTimes) { iShowTimes = showTimes; }
 	public boolean getShowComments() { return iShowComments; }
 	public void setShowComments(boolean showComments) { iShowComments = showComments; }
 	public boolean getShowEvents() { return iShowEvents; }
@@ -450,9 +453,11 @@ public class TimetableGridTable {
 									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
 	                    			">");
 							out.print(cell.getName());
+							if (iShowTimes)
+								out.print("<BR>"+cell.getTime());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom && cell.getRoomName() != null)
 								out.print("<BR>"+cell.getRoomName());
-							if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors)
+							if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors && !cell.getInstructor().isEmpty())
 								out.print("<BR>"+cell.getInstructor());
 							if (iShowComments)
 								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
@@ -519,9 +524,11 @@ public class TimetableGridTable {
 									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
 	                    			">");
 							out.print(cell.getName());
+							if (iShowTimes)
+								out.print("<BR>"+cell.getTime());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom && cell.getRoomName() != null)
 								out.print("<BR>"+cell.getRoomName());
-							if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors)
+							if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors && !cell.getInstructor().isEmpty())
 								out.print("<BR>"+cell.getInstructor());
 							if (iShowComments)
 								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
@@ -607,9 +614,11 @@ public class TimetableGridTable {
 									//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
 	                    			">");
 							out.print(cell.getName());
+							if (iShowTimes)
+								out.print("<BR>"+cell.getTime());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 								out.print("<BR>"+cell.getRoomName());
-							if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors)
+							if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors && !cell.getInstructor().isEmpty())
 								out.print("<BR>"+cell.getInstructor());
 							if (iShowComments)
 								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());
@@ -670,9 +679,11 @@ public class TimetableGridTable {
                     				//(cell.getTitle()==null?"":"title=\""+cell.getTitle()+"\" ")+
                             		">");
 							out.print(cell.getName());
+							if (iShowTimes)
+								out.print("<BR>"+cell.getTime());
 							if (getResourceType()!=TimetableGridModel.sResourceTypeRoom)
 								out.print("<BR>"+cell.getRoomName());
-							if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors)
+							if (getResourceType()!=TimetableGridModel.sResourceTypeInstructor && iShowInstructors && !cell.getInstructor().isEmpty())
 								out.print("<BR>"+cell.getInstructor());
 							if (iShowComments)
 								out.print(cell.getShortComment()==null?"":"<BR>"+cell.getShortComment());

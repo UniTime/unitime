@@ -50,6 +50,7 @@ public class TimetableForm extends ActionForm {
 	private boolean iShowInstructors = false;
 	private boolean iShowEvents = false;
 	private boolean iShowComments = false;
+	private boolean iShowTimes = false;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -73,6 +74,7 @@ public class TimetableForm extends ActionForm {
 		iShowInstructors = false;
 		iShowEvents = false;
 		iShowComments = false;
+		iShowTimes = false;
 	}
 	
 	public String getResource() { return iResource; }
@@ -107,12 +109,15 @@ public class TimetableForm extends ActionForm {
 	
 	public boolean getShowInstructors() { return iShowInstructors; }
 	public void setShowInstructors(boolean showInstructors) { iShowInstructors = showInstructors; }
-
+	
 	public boolean getShowComments() { return iShowComments; }
 	public void setShowComments(boolean showComments) { iShowComments = showComments; }
 
 	public boolean getShowEvents() { return iShowEvents; }
 	public void setShowEvents(boolean showEvents) { iShowEvents = showEvents; }
+
+	public boolean getShowTimes() { return iShowTimes; }
+	public void setShowTimes(boolean showTimes) { iShowTimes = showTimes; }
 
 	public String getFind() { return iFind; }
 	public void setFind(String find) { iFind = find; }
