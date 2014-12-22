@@ -110,6 +110,7 @@ public class TimetableAction extends Action {
 		form.setShowInstructors(table.getShowInstructors());
 		form.setShowEvents(table.getShowEvents());
 		form.setShowComments(table.getShowComments());
+		form.setShowTimes(table.getShowTimes());
 	}
 	
 	public void save(TimetableForm form) throws Exception {
@@ -129,6 +130,7 @@ public class TimetableAction extends Action {
 		table.setShowInstructors(form.getShowInstructors());
 		table.setShowComments(form.getShowComments());
 		table.setShowEvents(form.getShowEvents());
+		table.setShowTimes(form.getShowTimes());
 		if (form.getWeek() != null)
 			table.setWeek(form.getWeek());
 		table.save(sessionContext.getUser());

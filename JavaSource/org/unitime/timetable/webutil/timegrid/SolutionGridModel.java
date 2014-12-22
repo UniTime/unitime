@@ -196,7 +196,8 @@ public class SolutionGridModel extends TimetableGridModel {
 	        						1,
 	        						df.format(time.getStartTime()),
 	        						weekCode,
-	        						null);
+	        						null,
+	        						Constants.toTime(Constants.SLOT_LENGTH_MIN * startSlot + Constants.FIRST_SLOT_TIME_MIN) + " - " + Constants.toTime(Constants.SLOT_LENGTH_MIN  * endSlot + Constants.FIRST_SLOT_TIME_MIN));
 	        			} else {
 	        				cell = cell.copyCell(slot/Constants.SLOTS_PER_DAY,cell.getMeetingNumber()+1);
 	        			}
@@ -335,7 +336,8 @@ public class SolutionGridModel extends TimetableGridModel {
 	        						1,
 	        						df.format(time.getStartTime()),
 	        						weekCode,
-	        						null);
+	        						null,
+	        						Constants.toTime(Constants.SLOT_LENGTH_MIN * startSlot + Constants.FIRST_SLOT_TIME_MIN) + " - " + Constants.toTime(Constants.SLOT_LENGTH_MIN  * endSlot + Constants.FIRST_SLOT_TIME_MIN));
 	        			} else {
 	        				cell = cell.copyCell(slot/Constants.SLOTS_PER_DAY,cell.getMeetingNumber()+1);
 	        			}
@@ -558,6 +560,9 @@ public class SolutionGridModel extends TimetableGridModel {
 			instructors += instructor.getName(DepartmentalInstructor.sNameFormatShort);
 		}
 		
+		String time = Constants.toTime(assignment.getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN) +
+				" - " + Constants.toTime((assignment.getStartSlot() + assignment.getSlotPerMtg()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - assignment.getBreakTime());
+		
 		return new TimetableGridCell(
 				day,
 				slot,
@@ -575,6 +580,7 @@ public class SolutionGridModel extends TimetableGridModel {
 				nrMeetings,
 				TimetableGridCell.formatDatePattern(assignment.getDatePattern(), Constants.DAY_CODES[day]),
 				assignment.getDatePattern().getPatternBitSet(),
-				instructors);
+				instructors,
+				time);
 	}
 }

@@ -55,6 +55,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 	private String iDatePatternName;
 	private int iDay;
 	private int iSlot;
+	private String iTime;
 	
 	public static String sBgColorEmpty = "rgb(255,255,255)";
 	public static String sBgColorRequired = "rgb(80,80,200)";
@@ -69,7 +70,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 	
 	private TimetableGridCell iParent = null;
 	
-	public TimetableGridCell(int day, int slot, long assignmentId, long roomId, String roomName, String name, String shortComment, String shortCommentNoColors, String onClick, String title, String background, int length, int meetingNumber, int nrMeetings, String datePatternName, BitSet weekCode, String instructor) {
+	public TimetableGridCell(int day, int slot, long assignmentId, long roomId, String roomName, String name, String shortComment, String shortCommentNoColors, String onClick, String title, String background, int length, int meetingNumber, int nrMeetings, String datePatternName, BitSet weekCode, String instructor, String time) {
 		iDay = day;
 		iSlot = slot;
 		iAssignmentId = assignmentId;
@@ -87,6 +88,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 		iWeekCode = weekCode;
 		iDatePatternName = datePatternName;
 		iInstructor = instructor;
+		iTime = time;
 	}
 	
 	public TimetableGridCell copyCell(int day, int mtgNumber) {
@@ -107,7 +109,8 @@ public class TimetableGridCell implements Serializable, Comparable {
 				iNrMeetings,
 				iDatePatternName,
 				iWeekCode,
-				iInstructor);
+				iInstructor,
+				iTime);
 		cell.iParent = this;
 		return cell;
 	}
@@ -129,6 +132,7 @@ public class TimetableGridCell implements Serializable, Comparable {
 	public String getRoomName() { return iRoomName; }
 	public void setRoomName(String roomName) { iRoomName = roomName; }
 	public String getInstructor() { return (iInstructor==null?"":iInstructor); }
+	public String getTime() { return iTime; }
 	
     public static String pref2color(String pref) {
     	return PreferenceLevel.prolog2bgColor(pref);
