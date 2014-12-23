@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.mobile.client;
 
+import java.util.logging.Logger;
+
 import org.unitime.timetable.gwt.client.Client;
 
 import com.google.gwt.core.client.GWT;
@@ -40,7 +42,8 @@ import com.googlecode.mgwt.ui.client.MGWTSettings;
  * @author Tomas Muller
  */
 public class MobileClient extends Client {
-
+	public static Logger sLogger = Logger.getLogger(MobileClient.class.getName());
+	
 	@Override
 	public void onModuleLoadDeferred() {
 	    MGWTSettings settings = new MGWTSettings();
@@ -109,26 +112,19 @@ public class MobileClient extends Client {
 		});
 	}
 	
-	public native static int getDeviceWidth() /*-{
+	public native static int getScreenWidth() /*-{
 		if ($wnd.orientation == 90 || $wnd.orientation == -90)
-			return $wnd.screen.height / $wnd.devicePixelRatio;
+			return ($wnd.screen.width > $wnd.screen.height ? $wnd.screen.width : $wnd.screen.height);
 		else
-			return $wnd.screen.width / $wnd.devicePixelRatio;
-	}-*/;
-	
-	public native static int getDeviceHeight() /*-{
-		if ($wnd.orientation == 90 || $wnd.orientation == -90)
-			return $wnd.screen.width / $wnd.devicePixelRatio;
-		else
-			return $wnd.screen.height / $wnd.devicePixelRatio;
+			return ($wnd.screen.width < $wnd.screen.height ? $wnd.screen.width : $wnd.screen.height);
 	}-*/;
 	
 	public static class Viewport extends MGWTSettings.ViewPort {
 		@Override
 	    public String getContent() {
-			int dw = getDeviceWidth();
-			if (dw < 480) {
-				return "initial-scale=" + (dw / 480.0) + ",minimum-scale=" + (dw / 1920.0) + ",maximum-scale=" + (dw / 480.0) + ",width=480,user-scalable=yes";
+			int sw = getScreenWidth();
+			if (sw < 800) {
+				return "initial-scale=" + (sw / 800.0) + ",minimum-scale=" + (sw / 3200.0) + ",maximum-scale=" + (sw / 200.0) + ",width=800,user-scalable=yes";
 			} else {
 				return "initial-scale=1.0,minimum-scale=0.25,maximum-scale=1.0,width=device-width,user-scalable=yes";
 			}
