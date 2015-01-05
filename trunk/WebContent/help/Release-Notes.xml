@@ -28,6 +28,22 @@
 	<version>3.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Session Roll Forward</name>
+			<description>
+				<line>Distribution Preferences: fixed rolling forward of distribution preferences when an academic session is rolled forward multiple times.
+					<line>There can be multiple distribution preferences with the same value of the uniqueIdRolledForwardFrom attribute, one for each target academic session.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.5.187</version>
+	<release-date>Tue, 23 Dec 2014</release-date>
+	<category>
 		<title>Technology Update</title>
 		<item>
 			<name>Clustering</name>
