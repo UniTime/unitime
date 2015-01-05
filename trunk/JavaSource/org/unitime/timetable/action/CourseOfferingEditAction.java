@@ -351,7 +351,7 @@ public class CourseOfferingEditAction extends Action {
 								}
 								if (vfcuc instanceof VariableRangeCreditUnitConfig) {
 									VariableRangeCreditUnitConfig vrcuc = (VariableRangeCreditUnitConfig) vfcuc;
-									if (!vrcuc.isFractionalIncrementsAllowed().equals(frm.getFractionalIncrementsAllowed())){
+									if (vrcuc.isFractionalIncrementsAllowed() == null || !vrcuc.isFractionalIncrementsAllowed().equals(frm.getFractionalIncrementsAllowed())){
 										changed = true;
 									}
 								}
