@@ -1099,7 +1099,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
         	String creditFormat = getRequiredStringAttribute(credit, "creditFormat", elementName);     		
         	String creditType = getRequiredStringAttribute(credit, "creditType", elementName);  		
         	String creditUnitType = getRequiredStringAttribute(credit, "creditUnitType", elementName);
-	        Boolean fractionalIncrementsAllowed = getOptionalBooleanAttribute(credit, "fractionalCreditAllowed");
+	        Boolean fractionalIncrementsAllowed = getOptionalBooleanAttribute(credit, "fractionalCreditAllowed", false);
        	
 	        String minCreditStr = getOptionalStringAttribute(credit, "fixedCredit");
 	        if(minCreditStr == null) {
