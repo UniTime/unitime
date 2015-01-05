@@ -402,13 +402,14 @@ public class DistributionPref extends BaseDistributionPref {
     	return true;
     }
     
-    public static DistributionPref findByIdRolledForwardFrom(Long uidRolledForwardFrom) {
+    public static DistributionPref findByIdRolledForwardFrom(Long uidRolledForwardFrom, Long sessionId) {
         return (DistributionPref)new DistributionPrefDAO().
             getSession().
             createQuery(
-                "select dp from DistributionPref dp where "+
-                "dp.uniqueIdRolledForwardFrom=:uidRolledFrom").
+                "select dp from DistributionPref dp, Department d where "+
+                "dp.uniqueIdRolledForwardFrom=:uidRolledFrom and dp.owner=d and d.session.uniqueId=:sessionId").
             setLong("uidRolledFrom", uidRolledForwardFrom).
+            setLong("sessionId", sessionId).
             setCacheable(true).
             uniqueResult(); 
     }

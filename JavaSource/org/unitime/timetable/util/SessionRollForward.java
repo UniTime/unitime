@@ -1551,7 +1551,7 @@ public class SessionRollForward {
 				fromDistObj = (DistributionObject) it.next();
 				toDistObj = new DistributionObject();
 				fromDistributionPref = fromDistObj.getDistributionPref();
-				toDistributionPref = DistributionPref.findByIdRolledForwardFrom(fromDistributionPref.getUniqueId());
+				toDistributionPref = DistributionPref.findByIdRolledForwardFrom(fromDistributionPref.getUniqueId(), toSession.getUniqueId());
 				if (toDistributionPref == null){
 					toDistributionPref = new DistributionPref();
 					toDistributionPref.setDistributionType(fromDistributionPref.getDistributionType());
