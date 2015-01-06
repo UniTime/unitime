@@ -636,7 +636,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         List overlappingClassEvents = 
                 new EventDAO().getSession().createQuery(
                         "select distinct e.uniqueId, p.uniqueId, m from ClassEvent e inner join e.meetings m, ExamPeriod p where " +
-                        "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and "+
+                        "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and m.approvalStatus = 1 and "+
                         "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                         HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and "+
                         "(exists elements(e.clazz.studentEnrollments) or exists elements(e.clazz.classInstructors))"
@@ -662,7 +662,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         Hashtable<Long, Set<ExamStudent>> students = new Hashtable();
         for (Iterator i=new EventDAO().getSession().createQuery(
                 "select e.uniqueId, s.student.uniqueId from ClassEvent e inner join e.meetings m inner join e.clazz.studentEnrollments s, ExamPeriod p where " +
-                "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and "+
+                "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and m.approvalStatus = 1 and "+
                 "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                 .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())
@@ -682,7 +682,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         Hashtable<Long, Set<ExamInstructor>> instructors = new Hashtable();
         for (Iterator i=new EventDAO().getSession().createQuery(
                 "select e.uniqueId, i.instructor from ClassEvent e inner join e.meetings m inner join e.clazz.classInstructors i, ExamPeriod p where " +
-                "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and i.lead=true and "+
+                "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and m.approvalStatus = 1 and i.lead=true and "+
                 "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                 .setInteger("travelTime", ApplicationProperty.ExaminationTravelTimeClass.intValue())

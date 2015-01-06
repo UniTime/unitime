@@ -37,6 +37,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Timetabling</name>
+			<description>
+				<line>Load Availabilities: ignore class event meetings that are cancelled.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
