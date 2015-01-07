@@ -74,14 +74,18 @@ public class DistributionPrefsAjax extends Action {
 
     }
     
+    public String escapeXml(String s) {
+        return (s == null ? "" : s).replaceAll("&", "&amp;").replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
+    }
+    
     protected void print(PrintWriter out, String id, String value) throws IOException {
         //System.out.println("  <result id=\""+id+"\" value=\""+value+"\" />");
-        out.print("<result id=\""+id+"\" value=\""+value+"\" />");
+        out.print("<result id=\""+id+"\" value=\""+escapeXml(value)+"\" />");
     }
     
     protected void print(PrintWriter out, String id, String value, String extra) throws IOException {
         //System.out.println("  <result id=\""+id+"\" value=\""+value+"\" extra=\""+extra+"\" />");
-        out.print("<result id=\""+id+"\" value=\""+value+"\" extra=\""+extra+"\" />");
+        out.print("<result id=\""+id+"\" value=\""+escapeXml(value)+"\" extra=\""+escapeXml(extra)+"\" />");
     }
 
     protected void coumputeSuggestionList(HttpServletRequest request, PrintWriter out) throws Exception {
@@ -135,7 +139,7 @@ public class DistributionPrefsAjax extends Action {
             list();
         for (Iterator i=courseNumbers.iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
-            print(out, o[0].toString(), (o[1].toString() + " - " + (o[2] == null?"":o[2].toString().replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("\"", "&quot;").replaceAll("'", "&quot;").replaceAll("&", "&amp;"))));
+            print(out, o[0].toString(), (o[1].toString() + " - " + (o[2] == null?"":o[2])));
         }
     }
     
