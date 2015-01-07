@@ -43,6 +43,14 @@
 				<line>Load Availabilities: ignore class event meetings that are cancelled.</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Management</name>
+			<description>
+				<line>Course Related Events: class selection corrected when trying to select a class that has a parent class.
+					<line>Only top level classes showed up in the Class Number drop down.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 

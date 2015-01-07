@@ -1710,7 +1710,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 								for (int idx = 0; idx < result.size(); idx++) {
 									RelatedObjectLookupRpcResponse r = result.get(idx);
 									clazz.addItem(r.getLabel(), r.getUniqueId() == null ? "" : r.getUniqueId().toString());
-									if (selectedId != null && selectedId.equals(r.getUniqueId())) selectedIdx = idx;
+									if (selectedId != null && selectedId.equals(r.getUniqueId())) selectedIdx = idx + (result.size() > 1 ? 1 : 0);
 								}
 								if (selectedIdx >= 0)
 									clazz.setSelectedIndex(selectedIdx);

@@ -178,9 +178,10 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 				for (SchedulingSubpart subpart: subparts) {
 		            String name = subpart.getItype().getAbbv();
 		            String sufix = subpart.getSchedulingSubpartSuffix();
-		            while (subpart.getParentSubpart() != null) {
+		            SchedulingSubpart parent = subpart.getParentSubpart();
+		            while (parent != null) {
 		                name =  "\u00A0\u00A0\u00A0\u00A0" + name;
-		                subpart = subpart.getParentSubpart();
+		                parent = parent.getParentSubpart();
 		            }
 		            if (subpart.getInstrOfferingConfig().getInstructionalOffering().getInstrOfferingConfigs().size() > 1)
 		                name += " [" + subpart.getInstrOfferingConfig().getName() + "]";
