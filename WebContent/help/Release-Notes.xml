@@ -52,6 +52,17 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other Improvements</title>
+		<item>
+			<name>Suggestions</name>
+			<description>
+				<line>When a placement that conflicts with itself is selected, display the selected assignments and the conflict table, but no Assign button.
+					<line>This is to give the user more information on why the selected assignment cannot be used.</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
