@@ -67,6 +67,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private List<RelatedObjectInterface> iRelatedObjects = null;
 	private Set<EventInterface> iConflicts;
 	private String iMessage = null;
+	private Date iTimeStamp = null;
+	private int iSequence = 0;
 	
 	public static enum ResourceType implements IsSerializable {
 		ROOM("Room Timetable","room", true),
@@ -333,6 +335,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
 	public String getMessage() { return iMessage; }
 	public void setMessage(String message) { iMessage = message; }
+	
+	public int getSequence() { return iSequence; }
+	public void setSequence(int sequence) { iSequence = sequence; }
+	
+	public boolean hasTimeStamp() { return iTimeStamp != null; }
+	public Date getTimeStamp() { return iTimeStamp; }
+	public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
 	
 	public int hashCode() { return getId().hashCode(); }
 	public boolean equals(Object o) {

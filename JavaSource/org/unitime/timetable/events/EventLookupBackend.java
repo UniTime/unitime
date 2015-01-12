@@ -1256,6 +1256,11 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							}
 				    	}
 				    	
+				    	event.setSequence(m.getEvent().getNotes().size());
+				    	for (EventNote n: m.getEvent().getNotes())
+				    		if (n.getTimeStamp() != null && (!event.hasTimeStamp() || event.getTimeStamp().compareTo(n.getTimeStamp()) < 0))
+				    			event.setTimeStamp(n.getTimeStamp());
+				    	
 						ret.add(event);
 					}
 					MeetingInterface meeting = new MeetingInterface();

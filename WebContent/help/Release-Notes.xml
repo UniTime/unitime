@@ -49,6 +49,9 @@
 				<line>Course Related Events: class selection corrected when trying to select a class that has a parent class.
 					<line>Only top level classes showed up in the Class Number drop down.</line>
 				</line>
+				<line>iCalendar Export: fixed SEQUENCE and DTSTAMP attributes in the iCalendar feed.
+					<line>This change fixes the issue of DTSTAMP being blank in certain cases (and violating the RFC 5545).</line>
+				</line>
 			</description>
 		</item>
 	</category>
