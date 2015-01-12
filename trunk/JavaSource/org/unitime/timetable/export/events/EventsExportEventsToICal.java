@@ -214,13 +214,13 @@ public class EventsExportEventsToICal extends EventsExporter {
         }
         
         for (VEvent vevent: events) {
-            vevent.setSequence(event.hasNotes() ? event.getNotes().size() : 0);
+            vevent.setSequence(event.getSequence());
             vevent.setUid(event.getId().toString());
             vevent.setSummary(event.getName());
             vevent.setDescription(event.getInstruction() != null ? event.getInstruction() : event.getType().getName(CONSTANTS));
             
-            if (event.hasNotes()) {
-            	DateTimeStamp ts = new DateTimeStamp(event.getNotes().last().getDate());
+            if (event.hasTimeStamp()) {
+            	DateTimeStamp ts = new DateTimeStamp(event.getTimeStamp());
             	vevent.setDateTimeStamp(ts);
             }
             
