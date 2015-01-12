@@ -155,7 +155,7 @@ public class SuggestionsAction extends Action {
         if ("Assign".equals(op)) {
         	if (model.getSelectedSuggestion()!=null)
         		model.getSelectedSuggestion().assign(solver);
-        	else if (model.getCurrentSuggestion()!=null)
+        	else if (model.getCurrentSuggestion()!=null && model.getCurrentSuggestion().isCanAssign())
         		model.getCurrentSuggestion().assign(solver);
         	else
         		throw new Exception("Nothing to assign.");
@@ -268,7 +268,7 @@ public class SuggestionsAction extends Action {
             if (conflictAssignments!=null)
             	request.setAttribute("Suggestions.conflictAssignments",conflictAssignments);
             String selectedInfo = getInfoTable(model.getSimpleMode(), request,model.getEmptySuggestion(),(model.getSelectedSuggestion()!=null?model.getSelectedSuggestion():model.getCurrentSuggestion()));
-            if (selectedInfo!=null)
+            if (selectedInfo!=null && s.isCanAssign())
             	request.setAttribute("Suggestions.selectedInfo",selectedInfo);
             String suggestions = getSuggestionsTable(model.getSimpleMode(),request, sessionContext, solver,"Suggestions","Suggestion",model,model.getSuggestions());
             if (suggestions!=null)

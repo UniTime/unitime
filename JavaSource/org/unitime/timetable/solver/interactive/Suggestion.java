@@ -94,6 +94,7 @@ public class Suggestion implements Serializable, Comparable {
     private Vector iStudentConflictInfos = null;
     private Vector iGroupConstraintInfos = null;
     private Vector iBtbInstructorInfos = null;
+    private boolean iCanAssign = true;
     
     public Suggestion(Solver solver) {
     	this(solver, null, null, null);
@@ -812,6 +813,9 @@ public class Suggestion implements Serializable, Comparable {
 		}
 		return s;
 	}
+	
+	public boolean isCanAssign() { return iCanAssign; }
+	public void setCanAssign(boolean canAssign) { iCanAssign = canAssign; }
     
     public String toString() {
         return "Suggestion{value = "+sDF.format(iValue)+"\n"+
