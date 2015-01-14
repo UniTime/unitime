@@ -65,6 +65,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>CAS Authentication</name>
+			<description>
+				<line>Added ability to provide user external id and full name from the CAS response attributes.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

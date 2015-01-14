@@ -1797,6 +1797,17 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Reservations: Curriculum reservation allow time conflicts")
 	ReservationAllowOverlapCurriculum("unitime.reservation.allowOverlap.curriculum"),
+	
+	@Description("CAS Authentication: user external id attribute, if not set uid translation will take place instead")
+	AuthenticationCasIdAttribute("unitime.authentication.cas.id-attribute"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("CAS Authentication: trim leading zeros from the user external id")
+	AuthenticationCasIdTrimLeadingZerosFrom("unitime.authentication.cas.id-trim"),
+	
+	@Description("CAS Authentication: user full name attribute")
+	AuthenticationCasNameAttribute("unitime.authentication.cas.name-attribute"),
 
 	;
 
