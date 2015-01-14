@@ -136,6 +136,10 @@ public enum ApplicationProperty {
 	@DefaultValue("login.jsp")
 	@Description("Login: page url")
 	LoginPage("tmtbl.login_url"),
+	
+	@DefaultValue("forward")
+	@Description("Login: if set to \"forward\" login.do will be forwarded to the login page url, if set to \"redirect\" the page will be redirected instead")
+	LoginMethod("tmtbl.login_method"),
 
 	/**
 	 * Custom login page header, see http://help35.unitime.org/Customizations for more details. 

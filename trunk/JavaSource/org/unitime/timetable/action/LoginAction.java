@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -36,7 +38,15 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 public class LoginAction extends Action {
 	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		request.getRequestDispatcher(ApplicationProperty.LoginPage.value()).forward(request, response);
+		if ("forward".equalsIgnoreCase(ApplicationProperty.LoginMethod.value()))
+			request.getRequestDispatcher(ApplicationProperty.LoginPage.value()).forward(request, response);
+		else {
+			String target = request.getParameter("target");
+			if (target == null)
+				response.sendRedirect(ApplicationProperty.LoginPage.value());
+			else
+				response.sendRedirect(ApplicationProperty.LoginPage.value() + "?target=" + URLEncoder.encode(target, "UTF-8"));
+		}
 		return null;
 	}
 }
