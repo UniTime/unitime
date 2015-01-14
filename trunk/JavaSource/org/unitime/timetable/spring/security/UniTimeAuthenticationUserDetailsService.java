@@ -19,7 +19,11 @@
 */
 package org.unitime.timetable.spring.security;
 
-import org.springframework.security.core.Authentication;
+import java.util.List;
+import java.util.Map;
+
+import org.jasig.cas.client.validation.Assertion;
+import org.springframework.security.cas.authentication.CasAssertionAuthenticationToken;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,7 +35,7 @@ import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.security.context.UniTimeUserContext;
 
 @Service("unitimeAuthenticationUserDetailsService")
-public class UniTimeAuthenticationUserDetailsService implements AuthenticationUserDetailsService<Authentication> {
+public class UniTimeAuthenticationUserDetailsService implements AuthenticationUserDetailsService<CasAssertionAuthenticationToken> {
 	private ExternalUidTranslation iTranslation = null;
 	
 	public UniTimeAuthenticationUserDetailsService() {
@@ -43,11 +47,41 @@ public class UniTimeAuthenticationUserDetailsService implements AuthenticationUs
 	}
 
 	@Override
-	public UserDetails loadUserDetails(Authentication token) throws UsernameNotFoundException {
+	public UserDetails loadUserDetails(CasAssertionAuthenticationToken token) throws UsernameNotFoundException {
+		Assertion assertion = token.getAssertion();
+		Map attributes = assertion.getPrincipal().getAttributes();
 		String userId = token.getName();
-		if (iTranslation != null)
+		if (ApplicationProperty.AuthenticationCasIdAttribute.value() != null) {
+			Object value = attributes.get(ApplicationProperty.AuthenticationCasIdAttribute.value());
+			if (value != null) {
+				if (value instanceof List) {
+					for (Object o: ((List)value)) {
+						userId = o.toString(); break;
+					}
+				} else {
+					userId = value.toString();
+				}
+			}
+		} else if (iTranslation != null) {
 			userId = iTranslation.translate(userId, Source.LDAP, Source.User);
-		return new UniTimeUserContext(userId, token.getName(), null, null);
+		}
+		String name = null;
+		if (ApplicationProperty.AuthenticationCasNameAttribute.value() != null) {
+			Object value = attributes.get(ApplicationProperty.AuthenticationCasNameAttribute.value());
+			if (value != null) {
+				if (value instanceof List) {
+					for (Object o: ((List)value)) {
+						name = o.toString(); break;
+					}
+				} else {
+					name = value.toString();
+				}
+			}
+		}
+		if (ApplicationProperty.AuthenticationCasIdTrimLeadingZerosFrom.isTrue()) {
+			while (userId.startsWith("0")) userId = userId.substring(1);
+		}
+		return new UniTimeUserContext(userId, token.getName(), name, null);
 	}
 
 }
