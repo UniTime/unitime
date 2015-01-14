@@ -49,4 +49,7 @@
         	<property name="transactionManager" ref="arjunaTransactionManager"/>
         	<property name="userTransaction" ref="arjunaUserTransaction"/>
         </bean>
+        
+        <import resource="${unitime.spring.context.integration:integration.xml}"/>
+		<import resource="${unitime.spring.context.security:securityContext.xml}"/>
 </beans>
