@@ -542,9 +542,9 @@ spring-security-web-3.1.4.RELEASE.jar
 	URL: http://springsource.org/spring-security
 	License: Apache Software License (ASL), Version 2.0
 
-cpsolver-1.3.33.jar
+cpsolver-1.3.45.jar
 	CPSolver
-	Maven: org.unitime:cpsolver:1.3.33
+	Maven: org.unitime:cpsolver:1.3.45
 	URL: http://code.google.com/p/cpsolver
 	License: GNU Lesser General Public License (LGPL), Version 3
 
