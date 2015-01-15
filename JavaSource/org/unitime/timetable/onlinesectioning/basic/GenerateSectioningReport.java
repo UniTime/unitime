@@ -226,10 +226,9 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 				for (XRequest r: student.getRequests()) {
 					if (r instanceof XFreeTimeRequest) {
 						XFreeTimeRequest ft = (XFreeTimeRequest)r;
-						FreeTimeRequest ftr = new FreeTimeRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent,
+						new FreeTimeRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent,
 								new TimeLocation(ft.getTime().getDays(), ft.getTime().getSlot(), ft.getTime().getLength(), 0, 0.0,
 										-1l, "Free Time", server.getAcademicSession().getFreeTimePattern(), 0));
-						assignment.assign(0, ftr.createEnrollment());
 					} else {
 						XCourseRequest cr = (XCourseRequest)r;
 						List<Course> req = new ArrayList<Course>();
