@@ -54,6 +54,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling</name>
+			<description>
+				<line>Online Scheduling Reports: fixed null exception thrown when there is a student with free time request.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
