@@ -77,6 +77,17 @@
 				<line>Added ability to provide user external id and full name from the CAS response attributes.</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Management</name>
+			<description>
+				<line>Email Confirmation: Added ability to CC event managers in the confirmation email.
+					<line>This is only enabled when the unitime.email.event.managers application property is set to true (default is false).</line>
+					<line>If set to true, all timetable managers that are associated with the event department of a room in the event and
+						which have an event management role (that is a role with Event Lookup Contact permission) with the receive emails toggle checked
+						are carbon copied on the event confirmation email.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
