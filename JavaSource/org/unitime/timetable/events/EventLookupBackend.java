@@ -1030,6 +1030,11 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		}
 				    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 				    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
+				    		boolean instructing = false;
+				    		if (request.getResourceType() == ResourceType.PERSON && request.getResourceExternalId() != null) {
+				    			for (ClassInstructor i: clazz.getClassInstructors())
+				    				if (request.getResourceExternalId().equals(i.getInstructor().getExternalUniqueId())) { instructing = true; break; }
+				    		}
 				    		switch (request.getResourceType()) {
 				    		/*
 				    		case SUBJECT:
@@ -1075,7 +1080,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			    						if (!curriculumCourses.contains(correctedOffering.getUniqueId()))
 			    							correctedOffering = co;
 			    					} else {
-			    						i.remove();
+			    						if (!instructing) i.remove();
 			    					}
 			    				}
 				    			break;
