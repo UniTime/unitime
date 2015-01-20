@@ -426,6 +426,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onClick(ClickEvent event) {
 				clearMessage();
 				clear();
+				addHistory();
 				lastRequest(iSessionSelector.getAcademicSessionId(), null, true);
 			}
 		});
@@ -549,8 +550,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					}
 				}
 			});
-		
-			addHistory();
 		}
 		
 		iSessionSelector.addAcademicSessionChangeHandler(new AcademicSessionSelector.AcademicSessionChangeHandler() {
@@ -1190,7 +1189,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iShowUnassignments.setVisible(true);
 				if (request.isSaved()) {
 					fillIn(saved);
-					addHistory();
+					updateHistory();
 				} else {
 					iCourseRequests.validate(new AsyncCallback<Boolean>() {
 						@Override
@@ -1209,7 +1208,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									}
 									public void onSuccess(ClassAssignmentInterface result) {
 										fillIn(result);
-										addHistory();
+										updateHistory();
 									}
 								});
 							} else {
