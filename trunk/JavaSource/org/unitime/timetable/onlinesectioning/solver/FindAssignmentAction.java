@@ -141,17 +141,19 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
 
-		Set<Long> enrolled = null;
+		Set<IdPair> enrolled = null;
 		Lock readLock = server.readLock();
 		try {
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
-				enrolled = new HashSet<Long>();
+				enrolled = new HashSet<IdPair>();
 				for (XRequest r: original.getRequests()) {
-					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null)
-						for (Long s: ((XCourseRequest)r).getEnrollment().getSectionIds())
-							enrolled.add(s);
+					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
+						XEnrollment e = ((XCourseRequest)r).getEnrollment();
+						for (Long s: e.getSectionIds())
+							enrolled.add(new IdPair(e.getCourseId(), s));
+					}
 				}
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
@@ -526,7 +528,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	protected ClassAssignmentInterface convert(OnlineSectioningServer server, Assignment<Request, Enrollment> assignment, Enrollment[] enrollments,
 			Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse, HashSet<FreeTimeRequest> requiredFreeTimes,
 			boolean computeOverlaps,
-			DistanceConflict dc, Set<Long> savedClasses) throws SectioningException {
+			DistanceConflict dc, Set<IdPair> savedClasses) throws SectioningException {
 		DistanceMetric m = server.getDistanceMetric();
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
         ClassAssignmentInterface ret = new ClassAssignmentInterface();
@@ -742,7 +744,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setBackToBackDistance(dist);
 					a.setBackToBackRooms(from);
 					// if (dist > 0.0) a.setDistanceConflict(true);
-					if (savedClasses != null && savedClasses.contains(section.getId())) a.setSaved(true);
+					if (savedClasses != null && savedClasses.contains(new IdPair(course.getId(), section.getId()))) a.setSaved(true);
 					if (a.getParentSection() == null)
 						a.setParentSection(server.getCourse(course.getId()).getConsentLabel());
 					a.setExpected(overExp.getExpected(section.getLimit(), section.getSpaceExpected()));
@@ -769,7 +771,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 
     @SuppressWarnings("unchecked")
 	private ClassAssignmentInterface convert(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, BranchBoundNeighbour neighbour,
-			Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse, HashSet<FreeTimeRequest> requiredFreeTimes, Set<Long> savedClasses) throws SectioningException {
+			Hashtable<CourseRequest, Set<Section>> requiredSectionsForCourse, HashSet<FreeTimeRequest> requiredFreeTimes, Set<IdPair> savedClasses) throws SectioningException {
         Enrollment [] enrollments = neighbour.getAssignment();
         if (enrollments == null || enrollments.length < student.getRequests().size())
         	throw new SectioningException(MSG.exceptionNoSolution());
@@ -829,6 +831,24 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			if (cmp != 0) return cmp;
 			
 			return Double.compare(a.getId(), b.getId());
+		}
+	}
+	
+	public static class IdPair {
+		private Long iId1, iId2;
+		
+		public IdPair(Long id1, Long id2) {
+			iId1 = id1; iId2 = id2;
+		}
+		
+		public Long getId1() { return iId1; }
+		public Long getId2() { return iId2; }
+		@Override
+		public int hashCode() { return iId1.hashCode() ^ iId2.hashCode(); }
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof IdPair)) return false;
+			return iId1.equals(((IdPair)o).iId1) && iId2.equals(((IdPair)o).iId2);
 		}
 	}
 }
