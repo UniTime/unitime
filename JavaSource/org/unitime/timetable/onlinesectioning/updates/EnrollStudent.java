@@ -79,6 +79,7 @@ import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
 import org.unitime.timetable.onlinesectioning.solver.CheckAssignmentAction;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction.IdPair;
 
 /**
  * @author Tomas Muller
@@ -548,10 +549,10 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					priority++;
 				}
 				
-				Map<Long, StudentClassEnrollment> oldEnrollments = new HashMap<Long, StudentClassEnrollment>();
+				Map<IdPair, StudentClassEnrollment> oldEnrollments = new HashMap<IdPair, StudentClassEnrollment>();
 				Map<Long, Object[]> oldApprovals = new HashMap<Long, Object[]>();
 				for (StudentClassEnrollment e: student.getClassEnrollments()) {
-					oldEnrollments.put(e.getClazz().getUniqueId(), e);
+					oldEnrollments.put(new IdPair(e.getCourseOffering().getUniqueId(), e.getClazz().getUniqueId()), e);
 					if (e.getApprovedBy() != null && !oldApprovals.containsKey(e.getCourseOffering().getUniqueId())) {
 						oldApprovals.put(e.getCourseOffering().getUniqueId(), new Object[] {e.getApprovedBy(), e.getApprovedDate()});
 					}
@@ -560,7 +561,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				Map<Long, Class_> classes = new HashMap<Long, Class_>();
 				String classIds = null;
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
-					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || oldEnrollments.containsKey(ca.getClassId())) continue;
+					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || oldEnrollments.containsKey(new IdPair(ca.getCourseId(), ca.getClassId()))) continue;
 					if (classIds == null)
 						classIds = ca.getClassId().toString();
 					else
@@ -580,7 +581,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					CourseRequest cr = course2request.get(ca.getCourseId());
 					if (cr == null) continue;
 					
-					StudentClassEnrollment enrl = oldEnrollments.remove(ca.getClassId());
+					StudentClassEnrollment enrl = oldEnrollments.remove(new IdPair(ca.getCourseId(), ca.getClassId()));
 					if (enrl != null) {
 						if (!cr.equals(enrl.getCourseRequest())) {
 							enrl.setCourseRequest(cr);

@@ -62,6 +62,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XDistributionType;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
@@ -115,18 +116,20 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 					.setUniqueId(getRequest().getStudentId()));
 
 		Student student = new Student(getRequest().getStudentId() == null ? -1l : getRequest().getStudentId());
-		Set<Long> enrolled = null;
+		Set<IdPair> enrolled = null;
 
 		Lock readLock = server.readLock();
 		try {
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
 				action.getStudentBuilder().setUniqueId(original.getStudentId()).setExternalId(original.getExternalId()).setName(original.getName());
-				enrolled = new HashSet<Long>();
+				enrolled = new HashSet<IdPair>();
 				for (XRequest r: original.getRequests()) {
-					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null)
-						for (Long s: ((XCourseRequest)r).getEnrollment().getSectionIds())
-							enrolled.add(s);
+					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
+						XEnrollment e = ((XCourseRequest)r).getEnrollment();
+						for (Long s: e.getSectionIds())
+							enrolled.add(new IdPair(e.getCourseId(), s));
+					}
 				}
 				OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 				enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
