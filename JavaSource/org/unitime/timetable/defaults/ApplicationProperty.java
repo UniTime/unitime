@@ -1180,6 +1180,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Event Email Confirmations: include coordinators")
 	EmailConfirmationEventCoordinators("unitime.email.event.coordinator"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Event Email Confirmations: include event managers")
+	EmailConfirmationEventManagers("unitime.email.event.managers"),
 
 	@Description("Event Email Confirmations: default email suffix (e.g., @unitime.org)")
 	EmailDefaultAddressSuffix("unitime.email.event.suffix"),

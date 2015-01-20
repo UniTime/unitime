@@ -28,7 +28,9 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
@@ -40,9 +42,11 @@ import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.Logger;
+import org.hibernate.type.LongType;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.export.events.EventsExportEventsToICal;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -57,8 +61,12 @@ import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResp
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.NameFormat;
 
 import biweekly.Biweekly;
 import biweekly.ICalendar;
@@ -140,6 +148,31 @@ public class EventEmail {
 				for (ContactInterface contact: event().getCoordinators()) {
 					if (contact.getEmail() != null && !contact.getEmail().isEmpty())
 						email.addRecipientCC(contact.getEmail(), contact.getName(MESSAGES));
+				}
+			}
+			
+			if (ApplicationProperty.EmailConfirmationEventManagers.isTrue()) {
+				Set<Long> locationIds = new HashSet<Long>();
+				if (event().hasMeetings()) {
+					for (MeetingInterface m: event().getMeetings()) {
+						if (m.hasLocation()) 
+							locationIds.add(m.getLocation().getId());
+					}
+				}
+				if (response().hasDeletedMeetings()) {
+					for (MeetingInterface m: response().getDeletedMeetings())
+						if (m.hasLocation())
+							locationIds.add(m.getLocation().getId());
+				}
+				org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+				NameFormat nf = NameFormat.fromReference(context.getUser().getProperty(UserProperty.NameFormat));
+				for (TimetableManager m: (List<TimetableManager>)hibSession.createQuery(
+						"select distinct m from Location l inner join l.eventDepartment.timetableManagers m inner join m.managerRoles r where " +
+						"l.uniqueId in :locationIds and m.emailAddress is not null and r.receiveEmails = true and :permission in elements (r.role.rights)")
+						.setParameterList("locationIds", locationIds, new LongType())
+						.setString("permission", Right.EventLookupContact.name())
+						.list()) {
+					email.addRecipientCC(m.getEmailAddress(), nf.format(m));
 				}
 			}
 			
