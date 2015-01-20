@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Lookup;
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaDialogBox;
 import org.unitime.timetable.gwt.client.aria.AriaPasswordTextBox;
@@ -50,7 +51,9 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -322,6 +325,13 @@ public class UserAuthentication implements UserAuthenticationProvider {
 	}
 	
 	public void authenticate() {
+		if (!CONSTANTS.allowUserLogin()) {
+			if (isAllowLookup())
+				doLookup();
+			else
+				ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
+			return;
+		}
 		AriaStatus.getInstance().setText(ARIA.authenticationDialogOpened());
 		iError.setVisible(false);
 		iDialog.center();
