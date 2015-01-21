@@ -279,8 +279,12 @@ public class RequiredTimeTable {
     	sb.append("]");
     	return sb.toString();
     }
-
+    
     public String print(boolean editable, boolean timeVertical, boolean showLegend, boolean showTexts) {
+    	return print(editable, timeVertical, showLegend, showTexts, null);
+    }
+
+    public String print(boolean editable, boolean timeVertical, boolean showLegend, boolean showTexts, String name) {
         if (getModel().isExactTime()) {
         	return exactTime(editable);
         } else {
@@ -289,7 +293,7 @@ public class RequiredTimeTable {
         		"document.write(tpGenerate(\n\t"+
         		"'"+iName+"',\n\t"+
         		(timeVertical?"false":"true")+",\n\t"+
-        		(getModel().getName()==null?"null":"'"+getModel().getName()+"'")+",\n\t"+
+        		(name == null ? getModel().getName() == null ? "null" : "'" + getModel().getName() + "'" : "'" + name + "'") + ",\n\t" +
         		getModel().getNrTimes()+",\n\t"+
         		getModel().getNrDays()+",\n\t"+
         		getDays()+",\n\t"+
@@ -377,6 +381,10 @@ public class RequiredTimeTable {
     }
     
     public BufferedImage createBufferedImage(boolean timeVertical) {
+    	return createBufferedImage(timeVertical, false);
+    }
+    
+    public BufferedImage createBufferedImage(boolean timeVertical, boolean highlight) {
     	if (getModel().isExactTime()) return null;
     	int[] limit = getModel().getSelectionLimits(getModel().getDefaultSelection());
     	int minTime=limit[0], maxTime=limit[1], minDay=limit[2], maxDay=limit[3];
@@ -387,6 +395,8 @@ public class RequiredTimeTable {
         int cellsDown;
         int cellX = 0;
         int cellY = 0;
+        int dx = 0, dy = 0;
+        if (highlight) { dx = 3; dy = 3; }
 
         if (timeVertical) {
             cellsAcross = maxDay-minDay+1;
@@ -397,17 +407,32 @@ public class RequiredTimeTable {
         }
 
         BufferedImage image = new BufferedImage(
-                ((cellsAcross * cellWidth) + (cellsAcross) + 1) * lineWidth,
-                (cellsDown * cellWidth) + ((cellsDown + 1) * lineWidth),
+                ((cellsAcross * cellWidth) + (cellsAcross) + 1) * lineWidth + 2 * dx,
+                (cellsDown * cellWidth) + ((cellsDown + 1) * lineWidth + 2 * dy),
                 BufferedImage.TYPE_INT_RGB);
         WritableRaster raster = image.getRaster();
-        int width = image.getWidth();
-        int height = image.getHeight();
+        int width = image.getWidth() - 3 * dx;
+        int height = image.getHeight() - 3 * dy;
+        if (highlight) {
+        	Color color = Color.yellow;
+        	for (int i = 0; i < image.getWidth(); i++) {
+        		for (int j = 0; j < dx; j++) {
+        			putPixel(raster, i, j, color);
+        			putPixel(raster, i, raster.getHeight() - 1 - j, color);
+        		}
+        	}
+        	for (int i = 0; i < image.getHeight(); i++) {
+        		for (int j = 0; j < dx; j++) {
+        			putPixel(raster, j, i, color);
+        			putPixel(raster, raster.getWidth() - 1 - j, i, color);
+        		}
+        	}
+        }
 
         for (int cellY2 = 0; cellY2 < (cellsDown + 1); cellY2++) {
-            drawHline(raster, 0, cellY2 * (cellWidth + lineWidth), width, Color.darkGray);
+            drawHline(raster, dx, dy + cellY2 * (cellWidth + lineWidth), width, Color.darkGray);
             for (int cellX2 = 0; cellX2 < (cellsAcross + 1); cellX2++) {
-                drawVline(raster, cellX2 * (cellWidth + lineWidth), 0, height, Color.darkGray);
+                drawVline(raster, dx + cellX2 * (cellWidth + lineWidth), dy, height, Color.darkGray);
             }
         }
 
@@ -428,10 +453,10 @@ public class RequiredTimeTable {
                 Color color = iModel.getPreferenceColor(pref);
                 Color borderColor=iModel.getBorder(day,time);
                 if (borderColor!=null) {
-                	fillRect(raster, cellX * (cellWidth + lineWidth), cellY * (cellWidth + lineWidth), cellWidth + 2, cellWidth + 2, borderColor);
-                	fillRect(raster, (cellX * (cellWidth + lineWidth)) + 2, (cellY * (cellWidth + lineWidth)) + 2, cellWidth - 2, cellWidth - 2, color);
+                	fillRect(raster, dx + cellX * (cellWidth + lineWidth), dy + cellY * (cellWidth + lineWidth), cellWidth + 2, cellWidth + 2, borderColor);
+                	fillRect(raster, dx + (cellX * (cellWidth + lineWidth)) + 2, dy + (cellY * (cellWidth + lineWidth)) + 2, cellWidth - 2, cellWidth - 2, color);
                 } else {
-                	fillRect(raster, (cellX * (cellWidth + lineWidth)) + 1, (cellY * (cellWidth + lineWidth)) + 1, cellWidth, cellWidth, color);
+                	fillRect(raster, dx + (cellX * (cellWidth + lineWidth)) + 1, dy + (cellY * (cellWidth + lineWidth)) + 1, cellWidth, cellWidth, color);
                 }
             }
         }

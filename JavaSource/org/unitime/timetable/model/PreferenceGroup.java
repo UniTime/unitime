@@ -26,6 +26,7 @@ import java.util.Vector;
 
 import org.hibernate.ObjectNotFoundException;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BasePreferenceGroup;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -202,15 +203,31 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	for (Iterator i=timePrefList.iterator();i.hasNext();) {
     		TimePref tp = (TimePref)i.next();
     		RequiredTimeTable rtt = tp.getRequiredTimeTable(assignment == null ? null : assignment.getTimeLocation());
+    		String owner = "";
+    		if (tp.getOwner() != null && tp.getOwner() instanceof Class_) {
+    			owner = " (class)";
+    		} else if (tp.getOwner() != null && tp.getOwner() instanceof SchedulingSubpart) {
+    			owner = " (scheduling subpart)";
+    		} else if (tp.getOwner() != null && tp.getOwner() instanceof DepartmentalInstructor) {
+    			owner = " (instructor)";
+    		} else if (tp.getOwner() != null && tp.getOwner() instanceof Exam) {
+    			owner = " (examination)";
+    		} else if (tp.getOwner() != null && tp.getOwner() instanceof Department) {
+    			owner = " (department)";
+    		} else if (tp.getOwner() != null && tp.getOwner() instanceof Session) {
+    			owner = " (session)";
+    		} else {
+    			owner = " (combined)";
+    		}
+    		String hint = rtt.print(false, timeVertical, true, false, rtt.getModel().getName() + owner).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
         	if (gridAsText || rtt.getModel().isExactTime()) {
-    			String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
         		sb.append("<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">"+rtt.getModel().toString().replaceAll(", ","<br>")+"</span>");
         	} else {
         		rtt.getModel().setDefaultSelection(timeGridSize);
-    			String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
     			sb.append("<img border='0' src='" +
     					"pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&tp=" + tp.getTimePattern().getUniqueId() + "&p=" + rtt.getModel().getPreferences() +
     					(assignment == null || assignment.getTimeLocation() == null ? "" : "&as=" + assignment.getTimeLocation().getStartSlot() + "&ad=" + assignment.getTimeLocation().getDayCode()) +
+    					(tp.getOwner() != null && tp.getOwner() instanceof Class_ && ApplicationProperty.PreferencesHighlighClassPreferences.isTrue() ? "&hc=1" : "") +
     					"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">&nbsp;");
         	}
 			if (i.hasNext()) sb.append("<br>");
