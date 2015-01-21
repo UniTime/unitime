@@ -715,8 +715,8 @@
 							<fileTemplate>3rd_party/3rd_party.ftl</fileTemplate>
 							<useMissingFile>true</useMissingFile>
 							<sortArtifactByName>true</sortArtifactByName>
-							<outputDirectory>Documentation/License</outputDirectory>
-							<thirdPartyFilename>dependencies.txt</thirdPartyFilename>
+							<outputDirectory>.</outputDirectory>
+							<thirdPartyFilename>NOTICE</thirdPartyFilename>
 						</configuration>
 					</execution>
 				</executions>
