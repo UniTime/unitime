@@ -88,6 +88,17 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Entry</name>
+			<description>
+				<line>Classes, Instructional Offerings: Added ability to highlight preferences that are set directly on classes.
+					<line>Preferences that are set directly on classes have light yellow background.
+						<line>This is only enabled when the unitime.preferences.highlightClassPrefs property is set to true (default is false).</line>
+					</line>
+					<line>Preference owner (class, scheduling subpart, instructor, etc.) is also mentioned in the preference tooltip (this feature is always on).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 

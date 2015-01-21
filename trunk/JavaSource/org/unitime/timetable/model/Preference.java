@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BasePreference;
 
 
@@ -51,13 +52,30 @@ public abstract class Preference extends BasePreference implements Comparable {
 	}
 
     public String preferenceHtml() {
-	StringBuffer sb = new StringBuffer("<span ");
+    	StringBuffer sb = new StringBuffer("<span ");
+    	String style = "font-weight:bold;";
 		if (this.getPrefLevel().getPrefId().intValue() != 4) {
-			sb.append("style='color:"+this.getPrefLevel().prefcolor()+";font-weight:bold;' ");
-		} else {
-			sb.append("style='font-weight:bold;' ");
+			style += "color:" + this.getPrefLevel().prefcolor() + ";";
 		}
-		sb.append("onmouseover=\"showGwtHint(this, '" + preferenceTitle() + "');\" onmouseout=\"hideGwtHint();\">");
+		if (this.getOwner() != null && this.getOwner() instanceof Class_ && ApplicationProperty.PreferencesHighlighClassPreferences.isTrue()) {
+			style += "background: #ffa;";
+		}
+		sb.append("style='" + style + "' ");
+		String owner = "";
+		if (getOwner() != null && getOwner() instanceof Class_) {
+			owner = " (class)";
+		} else if (getOwner() != null && getOwner() instanceof SchedulingSubpart) {
+			owner = " (scheduling subpart)";
+		} else if (getOwner() != null && getOwner() instanceof DepartmentalInstructor) {
+			owner = " (instructor)";
+		} else if (getOwner() != null && getOwner() instanceof Exam) {
+			owner = " (examination)";
+		} else if (getOwner() != null && getOwner() instanceof Department) {
+			owner = " (department)";
+		} else if (getOwner() != null && getOwner() instanceof Session) {
+			owner = " (session)";
+		}
+		sb.append("onmouseover=\"showGwtHint(this, '" + preferenceTitle() + owner + "');\" onmouseout=\"hideGwtHint();\">");
 		
 		sb.append(this.preferenceAbbv());
 		sb.append("</span>");
