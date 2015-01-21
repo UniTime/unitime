@@ -16,7 +16,7 @@
   with this program.  If not, see <http://www.gnu.org/licenses/>.
   
   ----
-  This template is used to generate Documentation/License/dependencies.txt file:
+  This template is used to generate the NOTICE file:
      mvn license:add-third-party
 -->
 <#function artifactFormat p>
@@ -26,6 +26,28 @@
         <#return p.name + " (" + p.groupId + ":" + p.artifactId + ":" + p.version + ")">
     </#if>
 </#function>
+Copyright 2015, The Apereo Foundation
+This project includes software developed by The Apereo Foundation.
+http://www.apereo.org/
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this software except in compliance with the License.
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+===========================================================================
+
+This software originally granted to the Apereo Foundation by UniTime LLC.
+
+===========================================================================
+
 UniTime 3.5 third-party dependencies:
 <#list dependencyMap as e><#assign project = e.getKey()/><#assign licenses = e.getValue()/>
 
@@ -52,7 +74,8 @@ Onebit icon sets
 	URL: http://www.icojam.com/blog/?p=177
 	License: Public Domain
 
-----
+===========================================================================
+
 List of third-party dependencies grouped by their license type:
 <#list licenseMap as e><#assign license = e.getKey()/><#assign projects = e.getValue()/>
 
@@ -66,7 +89,8 @@ Creative Commons Attribution 3.0 License
 	The famfamfam Silk Icons
 	LED Icon Set
 
-----
+===========================================================================
+
 For the appropriate license, see
 
 Apache Software License (ASL), Version 2.0 
