@@ -49,7 +49,7 @@ This software originally granted to the Apereo Foundation by UniTime LLC.
 
 ===========================================================================
 
-UniTime 3.5 third-party dependencies:
+UniTime 4.0 third-party dependencies:
 <#list dependencyMap as e><#assign project = e.getKey()/><#assign licenses = e.getValue()/>
 
 ${project.artifactId}-${project.version}.jar<#if project.name??>
