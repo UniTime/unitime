@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
@@ -96,10 +95,11 @@ public class PatternServlet extends HttpServlet {
 				}
 			} if (request.getParameter("p") != null)
 				rtt.getModel().setPreferences(request.getParameter("p"));
+			boolean hc = ("1".equals(request.getParameter("hc")));
 			
 			response.setContentType("image/png");
 			response.setHeader( "Content-Disposition", "attachment; filename=\"pattern.png\"" );
-			BufferedImage image = rtt.createBufferedImage(vertical);
+			BufferedImage image = rtt.createBufferedImage(vertical, hc);
 			if (image != null)
 				ImageIO.write(image, "PNG", response.getOutputStream());
 		}

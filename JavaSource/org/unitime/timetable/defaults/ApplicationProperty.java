@@ -1286,6 +1286,12 @@ public enum ApplicationProperty {
 	@Description("Classes: if there are two or more scheduling subparts in a parent-child relation with the same instructional type (e.g., Lec - Lec a - Lec b stacked underneath), inherit preferences and the date pattern from the parent subpart whenever possible")
 	@Since(3.5)
 	PreferencesHierarchicalInheritance("unitime.preferences.hierarchicalInheritance"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Highlight preferences that are set directly on classes")
+	@Since(3.5)
+	PreferencesHighlighClassPreferences("unitime.preferences.highlightClassPrefs"),
 
 	@Type(Integer.class)
 	@DefaultValue("0")

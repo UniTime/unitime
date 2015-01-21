@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import org.cpsolver.ifs.util.ToolBox;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseRoomPref;
 
 
@@ -72,12 +73,29 @@ public class RoomPref extends BaseRoomPref {
     @Override
     public String preferenceHtml() {
     	StringBuffer sb = new StringBuffer("<span ");
-    	if (this.getPrefLevel().getPrefId().intValue() != 4) {
-    		sb.append("style='color:"+this.getPrefLevel().prefcolor()+";font-weight:bold;' ");
-    	} else {
-    		sb.append("style='font-weight:bold;' ");
-    	}
-    	sb.append("onmouseover=\"showGwtRoomHint(this, '" + getRoom().getUniqueId() + "', '" + getPrefLevel().getPrefName() + " Room');\" onmouseout=\"hideGwtRoomHint();\">");
+    	String style = "font-weight:bold;";
+		if (this.getPrefLevel().getPrefId().intValue() != 4) {
+			style += "color:" + this.getPrefLevel().prefcolor() + ";";
+		}
+		if (this.getOwner() != null && this.getOwner() instanceof Class_ && ApplicationProperty.PreferencesHighlighClassPreferences.isTrue()) {
+			style += "background: #ffa;";
+		}
+		sb.append("style='" + style + "' ");
+		String owner = "";
+		if (getOwner() != null && getOwner() instanceof Class_) {
+			owner = ", class";
+		} else if (getOwner() != null && getOwner() instanceof SchedulingSubpart) {
+			owner = ", scheduling subpart";
+		} else if (getOwner() != null && getOwner() instanceof DepartmentalInstructor) {
+			owner = ", instructor";
+		} else if (getOwner() != null && getOwner() instanceof Exam) {
+			owner = ", examination";
+		} else if (getOwner() != null && getOwner() instanceof Department) {
+			owner = ", department";
+		} else if (getOwner() != null && getOwner() instanceof Session) {
+			owner = ", session";
+		}
+    	sb.append("onmouseover=\"showGwtRoomHint(this, '" + getRoom().getUniqueId() + "', '" + getPrefLevel().getPrefName() + " Room {0} ({1}" + owner + ")');\" onmouseout=\"hideGwtRoomHint();\">");
     	sb.append(this.preferenceAbbv());
     	sb.append("</span>");
     	return (sb.toString());

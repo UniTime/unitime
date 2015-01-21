@@ -57,7 +57,14 @@ public class RoomHint {
 		}
 		SimpleForm form = new SimpleForm();
 		form.removeStyleName("unitime-NotPrintableBottomLine");
-		form.addRow(new Label((prefix == null || prefix.isEmpty() ? "" : prefix + " ") + (room.hasDisplayName() || room.hasRoomTypeLabel() ? MESSAGES.label(room.getLabel(), room.hasDisplayName() ? room.getDisplayName() : room.getRoomTypeLabel()) : room.getLabel()), false));
+		if (prefix != null && prefix.contains("{0}")) {
+			String label = prefix.replace("{0}", room.getLabel());
+			if (prefix.contains("{1}"))
+				label = label.replace("{1}", room.hasDisplayName() ? room.getDisplayName() : room.hasRoomTypeLabel() ? room.getRoomTypeLabel() : "");
+			form.addRow(new Label(label, false));
+		} else {
+			form.addRow(new Label((prefix == null || prefix.isEmpty() ? "" : prefix + " ") + (room.hasDisplayName() || room.hasRoomTypeLabel() ? MESSAGES.label(room.getLabel(), room.hasDisplayName() ? room.getDisplayName() : room.getRoomTypeLabel()) : room.getLabel()), false));
+		}
 		List<String> urls = new ArrayList<String>();
 		if (room.hasMiniMapUrl()) {
 			urls.add(room.getMiniMapUrl());
