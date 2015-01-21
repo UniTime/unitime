@@ -221,7 +221,9 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     		}
     		String hint = rtt.print(false, timeVertical, true, false, rtt.getModel().getName() + owner).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
         	if (gridAsText || rtt.getModel().isExactTime()) {
-        		sb.append("<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">"+rtt.getModel().toString().replaceAll(", ","<br>")+"</span>");
+        		sb.append("<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" "+
+        				(tp.getOwner() != null && tp.getOwner() instanceof Class_ && ApplicationProperty.PreferencesHighlighClassPreferences.isTrue() ? " style='background: #ffa;'" : "") +
+        				">"+rtt.getModel().toString().replaceAll(", ","<br>")+"</span>");
         	} else {
         		rtt.getModel().setDefaultSelection(timeGridSize);
     			sb.append("<img border='0' src='" +
