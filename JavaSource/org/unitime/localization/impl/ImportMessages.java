@@ -1,20 +1,20 @@
 /*
- * UniTime 3.3 - 3.5 (University Timetabling Application)
- * Copyright (C) 2011 - 2013, UniTime LLC, and individual contributors
- * as indicated by the @authors tag.
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along
- * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  * 
 */
 package org.unitime.localization.impl;
@@ -57,23 +57,23 @@ public class ImportMessages {
 		try {
 			PrintStream out = new PrintStream(System.out, true, "UTF-8");
 			
-			out.println("# UniTime 3.5 (University Timetabling Application)");
-			out.println("# Copyright (C) 2012 - 2014, UniTime LLC, and individual contributors");
-			out.println("# as indicated by the @authors tag.");
-			out.println("# ");
-			out.println("# This program is free software; you can redistribute it and/or modify");
-			out.println("# it under the terms of the GNU General Public License as published by");
-			out.println("# the Free Software Foundation; either version 3 of the License, or");
-			out.println("# (at your option) any later version.");
-			out.println("# ");
-			out.println("# This program is distributed in the hope that it will be useful,");
-			out.println("# but WITHOUT ANY WARRANTY; without even the implied warranty of");
-			out.println("# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
-			out.println("# GNU General Public License for more details.");
-			out.println("# ");
-			out.println("# You should have received a copy of the GNU General Public License along");
-			out.println("# with this program.  If not, see <http://www.gnu.org/licenses/>.");
-			out.println("# ");
+			out.println("# Licensed to The Apereo Foundation under one or more contributor license");
+			out.println("# agreements. See the NOTICE file distributed with this work for");
+			out.println("# additional information regarding copyright ownership.");
+			out.println("#");
+			out.println("# The Apereo Foundation licenses this file to you under the Apache License,");
+			out.println("# Version 2.0 (the \"License\"); you may not use this file except in");
+			out.println("# compliance with the License. You may obtain a copy of the License at:");
+			out.println("#");
+			out.println("# http://www.apache.org/licenses/LICENSE-2.0");
+			out.println("#");
+			out.println("# Unless required by applicable law or agreed to in writing, software");
+			out.println("# distributed under the License is distributed on an \"AS IS\" BASIS,");
+			out.println("# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.");
+			out.println("#");
+			out.println("# See the License for the specific language governing permissions and");
+			out.println("# limitations under the License.");
+			out.println("#");
 			
 			CSVFile csv = new CSVFile(new File(System.getProperty("file", System.getProperty("user.home") + "/Downloads/UniTime Localization Czech.csv")));
 			for (CSVLine line: csv.getLines()) {

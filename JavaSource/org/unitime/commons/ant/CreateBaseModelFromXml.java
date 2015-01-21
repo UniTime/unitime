@@ -1,20 +1,20 @@
 /*
- * UniTime 3.2 - 3.5 (University Timetabling Application)
- * Copyright (C) 2010 - 2013, UniTime LLC, and individual contributors
- * as indicated by the @authors tag.
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along
- * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  * 
 */
 package org.unitime.commons.ant;
@@ -212,22 +212,22 @@ public class CreateBaseModelFromXml extends Task {
 	
 	private void license(PrintWriter pw) {
 		pw.println("/*");
-		pw.println(" * UniTime 3.2 - 3.5 (University Timetabling Application)");
-		pw.println(" * Copyright (C) 2010 - 2014, UniTime LLC, and individual contributors");
-		pw.println(" * as indicated by the @authors tag.");
+		pw.println(" * Licensed to The Apereo Foundation under one or more contributor license");
+		pw.println(" * agreements. See the NOTICE file distributed with this work for");
+		pw.println(" * additional information regarding copyright ownership.");
 		pw.println(" *");
-		pw.println(" * This program is free software; you can redistribute it and/or modify");
-		pw.println(" * it under the terms of the GNU General Public License as published by");
-		pw.println(" * the Free Software Foundation; either version 3 of the License, or");
-		pw.println(" * (at your option) any later version.");
-		pw.println(" * ");
-		pw.println(" * This program is distributed in the hope that it will be useful,");
-		pw.println(" * but WITHOUT ANY WARRANTY; without even the implied warranty of");
-		pw.println(" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
-		pw.println(" * GNU General Public License for more details.");
-		pw.println(" * ");
-		pw.println(" * You should have received a copy of the GNU General Public License along");
-		pw.println(" * with this program.  If not, see <http://www.gnu.org/licenses/>.");
+		pw.println(" * The Apereo Foundation licenses this file to you under the Apache License,");
+		pw.println(" * Version 2.0 (the \"License\"); you may not use this file except in");
+		pw.println(" * compliance with the License. You may obtain a copy of the License at:");
+		pw.println(" *");
+		pw.println(" * http://www.apache.org/licenses/LICENSE-2.0");
+		pw.println(" *");
+		pw.println(" * Unless required by applicable law or agreed to in writing, software");
+		pw.println(" * distributed under the License is distributed on an \"AS IS\" BASIS,");
+		pw.println(" * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.");
+		pw.println(" *");
+		pw.println(" * See the License for the specific language governing permissions and");
+		pw.println(" * limitations under the License.");
 		pw.println(" * ");
 		pw.println("*/");
 	}
