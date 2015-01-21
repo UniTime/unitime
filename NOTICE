@@ -215,12 +215,6 @@ log4j-1.2.17.jar
 	URL: http://logging.apache.org/log4j/1.2/
 	License: Apache Software License (ASL), Version 2.0
 
-mysql-connector-java-5.1.26.jar
-	MySQL java connector
-	Maven: mysql:mysql-connector-java:5.1.26
-	URL: http://dev.mysql.com/usingmysql/java/
-	License: GNU General Public License (GPL), Version 2
-
 biweekly-0.3.3.jar
 	biweekly
 	Maven: net.sf.biweekly:biweekly:0.3.3
@@ -693,9 +687,6 @@ Eclipse Public License (EPL), Version 1.0
 	Restlet Core - API and Engine (org.restlet.jse:org.restlet:2.2.1)
 	Restlet Extension - JSON (org.restlet.jse:org.restlet.ext.json:2.2.1)
 
-GNU General Public License (GPL), Version 2
-	MySQL java connector (mysql:mysql-connector-java:5.1.26)
-
 GNU General Public License, Version 2 with the Classpath Exception
 	Java Transaction API (org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.0.0.Final)
 	JavaMail API (compat) (javax.mail:mail:1.4.7)
@@ -764,8 +755,6 @@ Creative Commons Attribution 3.0 License
 	http://creativecommons.org/licenses/by/3.0
 Eclipse Public License (EPL), Version 1.0
 	http://www.eclipse.org/legal/epl-v10.html
-GNU General Public License (GPL), Version 2
-	http://www.gnu.org/licenses/gpl-2.0.html
 GNU General Public License, Version 2 with the Classpath Exception
 	http://openjdk.java.net/legal/gplv2+ce.html
 GNU Lesser General Public License (LGPL), Version 2.1

@@ -261,12 +261,14 @@
 			<artifactId>javassist</artifactId>
 			<version>${javaassist.version}</version>
 		</dependency>
+		<!-- Uncomment to enable MySQL Connector/J depencency
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${mysql.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
@@ -686,10 +688,6 @@
 									LGPL 2.1 license|LGPL 2.1|
 									GNU LESSER GENERAL PUBLIC LICENSE|
 									GNU Lesser General Public License
-								</licenseMerge>
-								<licenseMerge>
-									GNU General Public License (GPL), Version 2|
-									The GNU General Public License, Version 2
 								</licenseMerge>
 								<licenseMerge>
 									Eclipse Public License (EPL), Version 1.0|

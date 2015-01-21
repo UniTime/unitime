@@ -108,8 +108,6 @@ Creative Commons Attribution 3.0 License
 	http://creativecommons.org/licenses/by/3.0
 Eclipse Public License (EPL), Version 1.0
 	http://www.eclipse.org/legal/epl-v10.html
-GNU General Public License (GPL), Version 2
-	http://www.gnu.org/licenses/gpl-2.0.html
 GNU General Public License, Version 2 with the Classpath Exception
 	http://openjdk.java.net/legal/gplv2+ce.html
 GNU Lesser General Public License (LGPL), Version 2.1
