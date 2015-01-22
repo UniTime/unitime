@@ -18,8 +18,8 @@
  * 
  -->
 # UniTime
-## Comprehensive University Timetabling System
 
+Comprehensive University Timetabling System
 <http://www.unitime.org>
 
 UniTime is a comprehensive educational scheduling system that supports developing
