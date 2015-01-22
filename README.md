@@ -17,7 +17,8 @@
  * limitations under the License.
  * 
  -->
-# Comprehensive University Timetabling System UniTime
+# UniTime
+## Comprehensive University Timetabling System
 
 <http://www.unitime.org>
 
@@ -36,13 +37,13 @@ e is distributed free under an open source license in hopes that other colleges
 and universities can benefit their students through better scheduling or wish to
 contribute to ongoing research in this area.
 
-## Components
+### Components
 - [Course Timetabling & Management][courses]
 - [Examination Timetabling][exams]
 - [Event Management][events]
 - [Student Scheduling][students]
 
-## Links
+### Links
 - [Online Documentation][help]
 - [Installation Notes][install]
 - [Online Demo][demo]
