@@ -94,7 +94,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 		iChannel.setUpHandler(new MuxUpHandler());
 		iDispatcher = new MuxRpcDispatcher(SCOPE_SERVER, channel, this, this, this);
 		
-		iCourseSolverContainer = new CourseSolverContainerRemote(channel, SCOPE_COURSE);
+		iCourseSolverContainer = new CourseSolverContainerRemote(channel, SCOPE_COURSE, local);
 		iExamSolverContainer = new ExaminationSolverContainerRemote(channel, SCOPE_EXAM);
 		iStudentSolverContainer = new StudentSolverContainerRemote(channel, SCOPE_STUDENT);
 		iOnlineStudentSchedulingContainer = new OnlineStudentSchedulingContainerRemote(channel, SCOPE_ONLINE);

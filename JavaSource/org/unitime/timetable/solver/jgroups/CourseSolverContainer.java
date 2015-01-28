@@ -25,7 +25,6 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
@@ -35,6 +34,8 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableSolver;
 import org.unitime.timetable.solver.TimetableSolver.SolverDisposeListener;
 import org.unitime.timetable.solver.remote.BackupFileFilter;
+import org.unitime.timetable.solver.ui.TimetableInfoFileProxy;
+import org.unitime.timetable.solver.ui.TimetableInfoUtil;
 import org.unitime.timetable.util.MemoryCounter;
 
 /**
@@ -176,5 +177,9 @@ public class CourseSolverContainer implements SolverContainer<SolverProxy> {
 			iContinue = false;
 			if (isAlive()) interrupt();
 		}
+	}
+	
+	public TimetableInfoFileProxy getFileProxy() {
+		return TimetableInfoUtil.getLocalInstance();
 	}
 }
