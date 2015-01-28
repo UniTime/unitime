@@ -23,7 +23,7 @@ package org.unitime.timetable.solver.ui;
  * @author Tomas Muller
  */
 public interface TimetableInfoFileProxy {
-	public void saveToFile(String name, TimetableInfo info) throws Exception;
-	public TimetableInfo loadFromFile(String name) throws Exception;
-	public void deleteFile(String name) throws Exception;
+	public boolean saveToFile(String name, TimetableInfo info);
+	public TimetableInfo loadFromFile(String name);
+	public boolean deleteFile(String name);
 }

@@ -110,7 +110,6 @@ import org.unitime.timetable.solver.ui.RoomReport;
 import org.unitime.timetable.solver.ui.SameSubpartBalancingReport;
 import org.unitime.timetable.solver.ui.SolverUnassignedClassesModel;
 import org.unitime.timetable.solver.ui.StudentConflictsReport;
-import org.unitime.timetable.solver.ui.TimetableInfoFileProxy;
 import org.unitime.timetable.solver.ui.ViolatedDistrPreferencesReport;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
@@ -139,7 +138,6 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 	private File iPassivationFolder = null;
 	private String iPassivationPuid = null;
 	private Thread iWorkThread = null;
-	private TimetableInfoFileProxy iFileProxy = null;
 	
 	private SolverDisposeListener iSolverDisposeListener;
 
@@ -1709,14 +1707,6 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	public void onDispose();
     }
     
-    public TimetableInfoFileProxy getFileProxy() {
-    	return iFileProxy;
-    }
-    
-    public void setFileProxy(TimetableInfoFileProxy fileProxy) {
-    	iFileProxy = fileProxy;
-    }
-
 	public Object exec(Object[] cmd) throws Exception {
 		Class[] types = new Class[(cmd.length-2)/2];
 		Object[] args = new Object[(cmd.length-2)/2];

@@ -119,10 +119,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     }
 	
 	public TimetableInfoFileProxy getFileProxy() {
-		TimetableInfoFileProxy proxy = null;
-		if (getSolver() instanceof TimetableSolver)
-			proxy = ((TimetableSolver)getSolver()).getFileProxy();
-		return (proxy != null ? proxy : TimetableInfoUtil.getInstance());
+		return TimetableInfoUtil.getInstance();
 	}
 	
 	private Solution getSolution(Lecture lecture, org.hibernate.Session hibSession) {
