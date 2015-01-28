@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.DataProperties;
@@ -38,6 +37,8 @@ import org.jgroups.JChannel;
 import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
+import org.jgroups.util.Rsp;
+import org.jgroups.util.RspList;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -45,7 +46,6 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.TimetableSolver;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.solver.ui.TimetableInfoFileProxy;
@@ -56,11 +56,13 @@ import org.unitime.timetable.solver.ui.TimetableInfoUtil;
  */
 public class CourseSolverContainerRemote extends CourseSolverContainer implements RemoteSolverContainer<SolverProxy> {
 	private static Log sLog = LogFactory.getLog(CourseSolverContainerRemote.class);
+	private boolean iSaveFileInfos = false;
 	
 	private RpcDispatcher iDispatcher;
 		
-	public CourseSolverContainerRemote(JChannel channel, short scope) {
+	public CourseSolverContainerRemote(JChannel channel, short scope, boolean saveFileInfos) {
 		iDispatcher = new MuxRpcDispatcher(scope, channel, null, null, this);
+		iSaveFileInfos = saveFileInfos;
 	}
 	
 	@Override
@@ -68,9 +70,7 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 	
 	@Override
 	public boolean createRemoteSolver(String user, DataProperties config, Address caller) {
-		TimetableSolver solver = (TimetableSolver)super.createSolver(user, config);
-		solver.setFileProxy(new FileProxy(caller));
-        return true;
+		return super.createSolver(user, config) != null;
 	}
 	
 	@Override
@@ -102,37 +102,82 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 		}
 	}
 	
-	public void saveToFile(String name, TimetableInfo info) throws Exception {
-		TimetableInfoUtil.getInstance().saveToFile(name, info);
+	public Boolean saveToFile(String name, TimetableInfo info) {
+		if (iSaveFileInfos) {
+			try {
+				return TimetableInfoUtil.getLocalInstance().saveToFile(name, info);
+			} catch (Exception e) {
+				sLog.error("Failed to save info " + name + ": " + e.getMessage(), e);
+			}
+		}
+		return false;
 	}
 	
-	public TimetableInfo loadFromFile(String name) throws Exception  {
-		return TimetableInfoUtil.getInstance().loadFromFile(name);
+	public TimetableInfo loadFromFile(String name) {
+		try {
+			return TimetableInfoUtil.getLocalInstance().loadFromFile(name);
+		} catch (Exception e) {
+			sLog.error("Failed to retrieve info " + name + ": " + e.getMessage(), e);
+		}
+		return null;
 	}
 	
-	public void deleteFile(String name) throws Exception {
-		TimetableInfoUtil.getInstance().deleteFile(name);
+	public Boolean deleteFile(String name) {
+		if (iSaveFileInfos)
+			return TimetableInfoUtil.getLocalInstance().deleteFile(name);
+		else
+			return false;
+	}
+	
+	@Override
+	public TimetableInfoFileProxy getFileProxy() {
+		return new FileProxy();
 	}
 
-	
     private class FileProxy implements TimetableInfoFileProxy {
-    	private Address iAddress;
-    	private FileProxy(Address address) {
-    		iAddress = address;
+    	private FileProxy() {
     	}
     	
     	@Override
-    	public void saveToFile(String name, TimetableInfo info) throws Exception {
-    		iDispatcher.callRemoteMethod(iAddress, "saveToFile", new Object[] { name, info } , new Class[] { String.class, TimetableInfo.class }, SolverServerImplementation.sFirstResponse);
+    	public boolean saveToFile(String name, TimetableInfo info) {
+    		try {
+        		RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "saveToFile", new Object[] { name, info } , new Class[] { String.class, TimetableInfo.class }, SolverServerImplementation.sAllResponses);
+        		for (Rsp<Boolean> rsp : ret) {
+    				if (rsp != null && rsp.getValue() != null && rsp.getValue().booleanValue())
+    					return true;
+        		}
+    		} catch (Exception e) {
+    			sLog.error("Failed to save info " + name + ": " + e.getMessage(), e);
+    		}
+    		return false;
     	}
     	
     	@Override
-    	public TimetableInfo loadFromFile(String name) throws Exception {
-    		return iDispatcher.callRemoteMethod(iAddress, "loadFromFile", new Object[] { name } , new Class[] { String.class }, SolverServerImplementation.sFirstResponse);
+    	public TimetableInfo loadFromFile(String name) {
+    		try {
+    			RspList<TimetableInfo> ret = iDispatcher.callRemoteMethods(null, "loadFromFile", new Object[] { name } , new Class[] { String.class }, SolverServerImplementation.sAllResponses);
+    			for (Rsp<TimetableInfo> rsp : ret) {
+    				if (rsp != null && rsp.getValue() != null)
+    					return rsp.getValue();
+    			}
+    		} catch (Exception e) {
+    			sLog.error("Failed to load info " + name + ": " + e.getMessage(), e);
+    		}
+			return null;
     	}
+    	
     	@Override
-        public void deleteFile(String name) throws Exception {
-    		iDispatcher.callRemoteMethod(iAddress, "deleteFile", new Object[] { name } , new Class[] { String.class }, SolverServerImplementation.sFirstResponse);
+        public boolean deleteFile(String name) {
+    		try {
+        		RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "deleteFile", new Object[] { name } , new Class[] { String.class }, SolverServerImplementation.sFirstResponse);
+        		for (Rsp<Boolean> rsp : ret) {
+    				if (rsp != null && rsp.getValue() != null && rsp.getValue().booleanValue())
+    					return true;
+        		}
+    		} catch (Exception e) {
+    			sLog.error("Failed to delete info " + name + ": " + e.getMessage(), e);
+    		}
+    		return false;
         }
     }
     
