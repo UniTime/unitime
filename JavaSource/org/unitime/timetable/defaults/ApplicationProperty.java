@@ -1840,6 +1840,10 @@ public enum ApplicationProperty {
 	@Description("CAS Authentication: user full name attribute")
 	AuthenticationCasNameAttribute("unitime.authentication.cas.name-attribute"),
 
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Conflict-statistics: save to file")
+	ConflictStatisticsSaveToFile("unitime.cbs.saveToFile"),
 	;
 
 	String iKey;

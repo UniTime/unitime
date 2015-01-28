@@ -34,7 +34,6 @@ import java.util.Set;
 
 import javax.servlet.jsp.JspWriter;
 
-
 import org.cpsolver.coursett.constraint.ClassLimitConstraint;
 import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
@@ -51,6 +50,7 @@ import org.cpsolver.ifs.extension.ConflictStatistics;
 import org.cpsolver.ifs.model.Constraint;
 import org.cpsolver.ifs.solver.Solver;
 import org.dom4j.Element;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
@@ -958,6 +958,6 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     }
 
 	public boolean saveToFile() {
-		return true;
+		return ApplicationProperty.ConflictStatisticsSaveToFile.isTrue();
 	}
 }
