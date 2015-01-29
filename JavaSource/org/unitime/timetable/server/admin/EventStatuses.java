@@ -84,7 +84,7 @@ public class EventStatuses implements AdminTable {
 		for (Department department: Department.getUserDepartments(context.getUser())) {
 			if (!department.isAllowEvents()) continue;
 			for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-					"select distinct r.roomType from Room r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
+					"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
 					.setLong("departmentId", department.getUniqueId()).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				Record r = data.addRecord(--id, false);
@@ -109,7 +109,7 @@ public class EventStatuses implements AdminTable {
 				}
 			}
 			for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-					"select distinct r.roomType from NonUniversityLocation r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
+					"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
 					.setLong("departmentId", department.getUniqueId()).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				Record r = data.addRecord(--id, false);
@@ -144,7 +144,7 @@ public class EventStatuses implements AdminTable {
 		for (Department department: Department.getUserDepartments(context.getUser())) {
 			if (!department.isAllowEvents()) continue;
 			for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-					"select distinct r.roomType from Room r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
+					"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
 					.setLong("departmentId", department.getUniqueId()).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				for (Record r: data.getRecords()) {
@@ -174,7 +174,7 @@ public class EventStatuses implements AdminTable {
 				}
 			}
 			for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-					"select distinct r.roomType from NonUniversityLocation r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
+					"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
 					.setLong("departmentId", department.getUniqueId()).setCacheable(true).list()) {
 				RoomTypeOption option = roomType.getOption(department);
 				for (Record r: data.getRecords()) {
@@ -260,7 +260,7 @@ public class EventStatuses implements AdminTable {
 			if (!department.isAllowEvents()) continue;
 			if (record.getField(1).equals(department.getLabel())) {
 				for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-						"select distinct r.roomType from Room r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
+						"select distinct t from Room r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
 						.setLong("departmentId", department.getUniqueId()).setCacheable(true).list()) {
 					if (record.getField(2).equals(roomType.getLabel())) {
 						RoomTypeOption option = roomType.getOption(department);
@@ -289,7 +289,7 @@ public class EventStatuses implements AdminTable {
 					}
 				}
 				for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
-						"select distinct r.roomType from NonUniversityLocation r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
+						"select distinct t from NonUniversityLocation r inner join r.roomType t where r.eventDepartment.uniqueId = :departmentId order by t.ord, t.label")
 						.setLong("departmentId", department.getUniqueId()).setCacheable(true).list()) {
 					if (record.getField(2).equals(roomType.getLabel())) {
 						RoomTypeOption option = roomType.getOption(department);
