@@ -68,6 +68,17 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Rooms</name>
+			<description>
+				<line>Edit Room Groups / Features (accessible from the Room Detail page): fixed the problem of removing the last departmental room feature or group.
+					<line>It was not possible to remove the last departmental room feature or room group using this page because the relation between the feature / group
+						and the location was not updated on both sides in this particular case.
+					</line>
+					<line>The other page (Edit Room Feature / Group) did not have the problem.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
