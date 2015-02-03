@@ -216,6 +216,7 @@ public class EditRoomFeatureAction extends Action {
 						String rfId = (String)iter.next();
 						DepartmentRoomFeature rf = DepartmentRoomFeatureDAO.getInstance().get(Long.valueOf(rfId), hibSession);
 						if (!departments.contains(rf.getDepartment())) continue;
+						location.getFeatures().remove(rf);
 						rf.getRooms().remove(location);
 						hibSession.saveOrUpdate(rf);
 					}

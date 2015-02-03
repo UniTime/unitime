@@ -199,7 +199,8 @@ public class CourseOfferingExport extends BaseExport {
             VariableRangeCreditUnitConfig variableCredit = (VariableRangeCreditUnitConfig)credit;
             creditElement.addAttribute("minimumCredit", variableCredit.getMinUnits().toString());
             creditElement.addAttribute("maximumCredit", variableCredit.getMaxUnits().toString());
-            creditElement.addAttribute("fractionalCreditAllowed", (variableCredit.isFractionalIncrementsAllowed().booleanValue()?"true":"false"));
+            if (variableCredit.isFractionalIncrementsAllowed() != null)
+            	creditElement.addAttribute("fractionalCreditAllowed", variableCredit.isFractionalIncrementsAllowed().booleanValue()?"true":"false");
         } else if (credit instanceof VariableFixedCreditUnitConfig) {
             VariableFixedCreditUnitConfig variableCredit = (VariableFixedCreditUnitConfig)credit;
             creditElement.addAttribute("minimumCredit", variableCredit.getMinUnits().toString());

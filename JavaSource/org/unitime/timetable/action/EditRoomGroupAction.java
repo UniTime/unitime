@@ -211,6 +211,7 @@ public class EditRoomGroupAction extends Action {
 						RoomGroup rg = RoomGroupDAO.getInstance().get(Long.valueOf(rgId), hibSession);
 						if (rg.getDepartment() == null || !departments.contains(rg.getDepartment())) continue;
 						rg.getRooms().remove(location);
+						location.getRoomGroups().remove(rg);
 						hibSession.saveOrUpdate(rg);
 					}
 				} else {	
