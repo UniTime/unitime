@@ -32,7 +32,6 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.Query;
@@ -496,8 +495,10 @@ public class SolutionGridModel extends TimetableGridModel {
 				else
 					background = TimetableGridCell.pref2color(assignmentInfo.getTooBigRoomPreference());
 				if (!assignment.getRooms().isEmpty()) {
-					shortComment = "<span style='color:rgb(200,200,200)'>"+(assignmentInfo.getNrRoomLocations()==1?"<u>":"")+roomCap+" / "+minRoomSize+" / "+roomSize+(assignmentInfo.getNrRoomLocations()==1?"</u>":"")+"</span>";
-					shortCommentNoColor = roomCap+" / "+minRoomSize+" / "+roomSize;
+					shortComment = "<span style='color:rgb(200,200,200)'>"+(assignmentInfo.getNrRoomLocations()==1?"<u>":"")+roomCap+" / "+
+							(minRoomSize == Integer.MAX_VALUE ? "-" : String.valueOf(minRoomSize))+" / "+
+							roomSize+(assignmentInfo.getNrRoomLocations()==1?"</u>":"")+"</span>";
+					shortCommentNoColor = roomCap+" / "+(minRoomSize == Integer.MAX_VALUE ? "-" : String.valueOf(minRoomSize))+" / "+roomSize;
 				}
 			}
 			
