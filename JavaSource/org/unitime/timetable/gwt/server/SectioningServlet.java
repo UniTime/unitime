@@ -1722,7 +1722,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return server.getAcademicSession().getUniqueId();
 			}
 			
-			EligibilityCheck check = checkEligibility(online, null, studentId, null);
+			EligibilityCheck check = checkEligibility(online, null, studentId, null, false);
 			if (check == null || !check.hasFlag(EligibilityFlag.CAN_ENROLL))
 				throw new SectioningException(check.getMessage());
 			
@@ -1928,6 +1928,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 	@Override
 	public EligibilityCheck checkEligibility(boolean online, Long sessionId, Long studentId, String pin) throws SectioningException, PageAccessException {
+		return checkEligibility(online, sessionId, studentId, pin, true);
+	}
+	
+	public EligibilityCheck checkEligibility(boolean online, Long sessionId, Long studentId, String pin, boolean includeCustomCheck) throws SectioningException, PageAccessException {
 		try {
 			if (pin != null && !pin.isEmpty()) getSessionContext().setAttribute("pin", pin);
 			
@@ -1974,7 +1978,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			check.setSessionId(sessionId);
 			check.setStudentId(studentId);
 			
-			return server.execute(server.createAction(CheckEligibility.class).forStudent(studentId).withCheck(check), currentUser());
+			return server.execute(server.createAction(CheckEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck), currentUser());
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
 			return new EligibilityCheck(MSG.exceptionUnknown(e.getMessage()));

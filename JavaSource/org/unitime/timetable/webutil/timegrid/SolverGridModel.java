@@ -450,8 +450,12 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			else
 				background = TimetableGridCell.pref2color(TooBigRooms.getTooBigRoomPreference(placement));
 			if (lecture.getNrRooms()>0) {
-				shortComment = "<span style='color:rgb(200,200,200)'>"+(lecture.nrRoomLocations()==1?"<u>":"")+lecture.minRoomUse()+(lecture.maxRoomUse()!=lecture.minRoomUse()?" - "+lecture.maxRoomUse():"")+" / "+minRoomSize+" / "+roomSize+(lecture.nrRoomLocations()==1?"</u>":"")+"</span>";
-				shortCommentNoColor = lecture.minRoomUse()+(lecture.maxRoomUse()!=lecture.minRoomUse()?" - "+lecture.maxRoomUse():"")+" / "+minRoomSize+" / "+roomSize;
+				shortComment = "<span style='color:rgb(200,200,200)'>"+(lecture.nrRoomLocations()==1?"<u>":"")+lecture.minRoomUse()+
+						(lecture.maxRoomUse()!=lecture.minRoomUse()?" - "+lecture.maxRoomUse():"")+" / "+
+						(minRoomSize == Integer.MAX_VALUE ? "-" : String.valueOf(minRoomSize))+" / "+
+						roomSize+(lecture.nrRoomLocations()==1?"</u>":"")+"</span>";
+				shortCommentNoColor = lecture.minRoomUse()+(lecture.maxRoomUse()!=lecture.minRoomUse()?" - "+lecture.maxRoomUse():"")+" / "+
+						(minRoomSize == Integer.MAX_VALUE ? "-" : String.valueOf(minRoomSize)) +" / "+roomSize;
 			}
 		}
 		

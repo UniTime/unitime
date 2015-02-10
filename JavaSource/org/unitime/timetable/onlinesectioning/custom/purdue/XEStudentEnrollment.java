@@ -319,6 +319,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 			
 			// Next, try to enroll student into the given courses
+			boolean changed = false;
 			Map<String, List<XSection>> id2section = new HashMap<String, List<XSection>>();
 			Map<String, XCourse> id2course = new HashMap<String, XCourse>();
 			Set<String> added = new HashSet<String>();
@@ -358,7 +359,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					// offering is not locked: propose the changes
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
-						registered.remove(id);
+						if (!registered.remove(id)) changed = true;
 						if (added.add(id)) req.add(id);
 						List<XSection> sections = id2section.get(id);
 						if (sections == null) {
@@ -372,6 +373,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			// drop old sections
 			for (String id: registered) {
+				changed = true;
 				req.drop(id);
 				for (XRequest r: student.getRequests())
 					if (r instanceof XCourseRequest) {
@@ -398,9 +400,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				helper.debug("Request: " + gson.toJson(req));
 			helper.getAction().addOptionBuilder().setKey("request").setValue(gson.toJson(req));
 			
-			if (req.isEmpty()) {
+			if (req.isEmpty() || !changed) {
 				// no classes to add or drop -> return no failures
-				return new ArrayList<EnrollmentFailure>();
+				return fails;
 			}
 
 			resource.post(new JsonRepresentation(gson.toJson(req)));

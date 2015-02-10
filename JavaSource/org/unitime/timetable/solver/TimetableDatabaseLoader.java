@@ -2638,9 +2638,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             				courseLimit = offeringLimit;
             			else {
             				iProgress.message(msglevel("crossListWithoutReservation", Progress.MSGLEVEL_INFO), "Cross-listed course "+getOfferingLabel(course)+" does not have any course reservation.");
-            				if (course.getProjectedDemand() != null)
+            				if (course.getProjectedDemand() != null && offering.getProjectedDemand() > 0)
             					courseLimit = course.getProjectedDemand();
-            				else if (course.getDemand() != null)
+            				else if (course.getDemand() != null && offering.getDemand() > 0)
             					courseLimit = course.getDemand();
             				else
             					courseLimit = offeringLimit / offering.getCourseOfferings().size();

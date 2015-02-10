@@ -48,6 +48,7 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 	
 	protected Long iStudentId;
 	protected EligibilityCheck iCheck;
+	protected boolean iCustomCheck = true;
 	
 	public CheckEligibility forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -56,6 +57,11 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 	
 	public CheckEligibility withCheck(EligibilityCheck check) {
 		iCheck = check;
+		return this;
+	}
+	
+	public CheckEligibility includeCustomCheck(boolean customCheck) {
+		iCustomCheck = customCheck;
 		return this;
 	}
 	
@@ -134,7 +140,7 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				if (!iCheck.hasMessage())
 					iCheck.setMessage(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
 				iCheck.setFlag(EligibilityFlag.CAN_ENROLL, false);
-			} else {
+			} else if (iCustomCheck) {
 				if (CustomStudentEnrollmentHolder.hasProvider())
 					CustomStudentEnrollmentHolder.getProvider().checkEligibility(server, helper, iCheck, xstudent);
 			}
