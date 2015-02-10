@@ -1504,10 +1504,13 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				dialog.setText(MESSAGES.opExportICalendar());
 				dialog.setEscapeToHide(true);
 				SimpleForm form = new SimpleForm();
+				HTML description = null;
 				if (personal)
-					form.addRow(new HTML(MESSAGES.exportICalendarDescriptionPersonal(), true));
+					description = new HTML(MESSAGES.exportICalendarDescriptionPersonal(), true);
 				else
-					form.addRow(new HTML(MESSAGES.exportICalendarDescriptionOther(iSession.getAcademicSessionName()), true));
+					description = new HTML(MESSAGES.exportICalendarDescriptionOther(iSession.getAcademicSessionName()), true);
+				description.getElement().getStyle().setProperty("max-width", "500px");
+				form.addRow(description);
 				final TextArea ta = new TextArea();
 				ta.setStyleName("unitime-TextArea");
 				ta.setVisibleLines(5);
@@ -1518,8 +1521,9 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				form.addRow(w);
 				w.getElement().getStyle().setMarginBottom(5, Unit.PX);
 				
-				form.addRow(new HTML(MESSAGES.exportICalendarDownload(MESSAGES.buttonDownload()), true));
-				form.getElement().getStyle().setProperty("max-width", "300px");
+				HTML message = new HTML(MESSAGES.exportICalendarDownload(MESSAGES.buttonDownload()), true);
+				message.getElement().getStyle().setProperty("max-width", "500px");
+				form.addRow(message);
 				
 				UniTimeHeaderPanel h = new UniTimeHeaderPanel();
 				h.addButton("download", MESSAGES.buttonDownload(), new ClickHandler() {
