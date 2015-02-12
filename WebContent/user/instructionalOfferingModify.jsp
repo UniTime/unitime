@@ -127,6 +127,7 @@
 	<html:hidden property="displayOptionForMaxLimit"/>
 	<html:hidden property="displayEnrollment"/>
 	<html:hidden property="displayExternalId"/>
+	<html:hidden property="editExternalId"/>
 	<html:hidden property="displayDisplayInstructors"/>
 	<html:hidden property="displayEnabledForStudentScheduling"/>
 	<INPUT type="hidden" name="hdnOp" value = "">
@@ -301,6 +302,10 @@
 							<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
 							<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnExternalId"/></TD>
 						</logic:equal>
+						<logic:equal name="<%=frmName%>" property="editExternalId" value="true" >
+							<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
+							<TD align="center" valign="bottom" rowspan="2" class='WebTableHeader'><loc:message name="columnExternalId"/></TD>
+						</logic:equal>
 						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
 						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
 						<TD rowspan="2" class='WebTableHeader'>&nbsp;</TD>
@@ -370,7 +375,9 @@
 									&nbsp;
 								</logic:equal></TD>
 							<TD nowrap valign="top">
-								<html:hidden property='<%= "externalIds[" + ctr + "]" %>'/>
+								<logic:notEqual name="<%=frmName%>" property="editExternalId" value="true" >
+									<html:hidden property='<%= "externalIds[" + ctr + "]" %>'/>
+								</logic:notEqual>
 								<html:hidden property='<%= "classIds[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "subpartIds[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "itypes[" + ctr + "]" %>'/>
@@ -391,6 +398,19 @@
 							<logic:equal name="<%=frmName%>" property="displayExternalId" value="true" >
 								<TD>&nbsp;</TD>
 								<TD align="left" valign="top" nowrap><%=frm.getExternalIds().get(ctr)%></TD>
+							</logic:equal>
+							<logic:equal name="<%=frmName%>" property="editExternalId" value="true" >
+								<TD>&nbsp;</TD>
+								<TD align="left" valign="top" nowrap>
+								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
+									<html:text name="<%=frmName%>" property='<%= "externalIds[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(1000 + ctr.intValue())%>" 
+										maxlength="10" size="10"/>
+								</logic:equal>
+								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
+									<bean:write name="<%=frmName%>" property='<%= "externalIds[" + ctr + "]" %>'/>
+									<html:hidden property='<%= "externalIds[" + ctr + "]" %>'/>
+								</logic:equal>
+								</TD>
 							</logic:equal>
 						
 							<TD>&nbsp;</TD>

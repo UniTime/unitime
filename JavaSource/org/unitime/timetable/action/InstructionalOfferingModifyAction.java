@@ -269,7 +269,8 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setInstrOfferingId(io.getUniqueId());
         frm.setDisplayDisplayInstructors(ApplicationProperty.ClassSetupDisplayInstructorFlags.isTrue());
         frm.setDisplayEnabledForStudentScheduling(ApplicationProperty.ClassSetupEnabledForStudentScheduling.isTrue());
-        frm.setDisplayExternalId(ApplicationProperty.ClassSetupShowExternalIds.isTrue());
+        frm.setDisplayExternalId(ApplicationProperty.ClassSetupShowExternalIds.isTrue() && !ApplicationProperty.ClassSetupEditExternalIds.isTrue());
+        frm.setEditExternalId(ApplicationProperty.ClassSetupEditExternalIds.isTrue());
        
 
         String name = io.getCourseNameWithTitle();
@@ -641,6 +642,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		Iterator it9 = frm.getRoomRatios().listIterator();
 		Iterator it10 = frm.getDisplayInstructors().listIterator();
 		Iterator it11 = frm.getEnabledForStudentScheduling().listIterator();
+		Iterator it12 = (frm.getEditExternalId() ? frm.getExternalIds().listIterator() : null);
 
 		for(;it1.hasNext();){
 			Long classId = new Long(it1.next().toString());
@@ -682,6 +684,8 @@ public class InstructionalOfferingModifyAction extends Action {
 			if (enabledForStudentSchedulingStr != null && enabledForStudentSchedulingStr.length() > 0){
 				enabledForStudentScheduling = new Boolean(true);
 			}
+			String suffix = (it12 == null ? null : it12.next().toString());
+			if (suffix != null && suffix.isEmpty()) suffix = null;
 
 			if (classId.longValue() < 0){
 				Class_ newClass = new Class_();
@@ -710,6 +714,7 @@ public class InstructionalOfferingModifyAction extends Action {
 				newClass.setRoomRatio(roomRatio);
 				newClass.setDisplayInstructor(displayInstructor);
 				newClass.setEnabledForStudentScheduling(enabledForStudentScheduling);
+				newClass.setClassSuffix(suffix);
 
 				hibSession.save(newClass);
 				hibSession.save(ss);
@@ -736,6 +741,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		Iterator it8 = frm.getDisplayInstructors().listIterator();
 		Iterator it9 = frm.getEnabledForStudentScheduling().listIterator();
 		Iterator it10 = frm.getParentClassIds().listIterator();
+		Iterator it11 = (frm.getEditExternalId() ? frm.getExternalIds().listIterator() : null);
 
 		for(;it1.hasNext();){
 			Long classId = new Long(it1.next().toString());
@@ -770,6 +776,7 @@ public class InstructionalOfferingModifyAction extends Action {
 			if (enabledForStudentSchedulingStr != null && enabledForStudentSchedulingStr.length() > 0){
 				enabledForStudentScheduling = new Boolean(true);
 			}
+			String suffix = (it11 != null ? it11.next().toString() : null);
 
 			Long parentClassId = null;
 			String parentClassIdString = (String) it10.next();
@@ -856,6 +863,13 @@ public class InstructionalOfferingModifyAction extends Action {
 				if (displayEnabledForStudentScheduling && !modifiedClass.isEnabledForStudentScheduling().equals(enabledForStudentScheduling)){
 					changed = true;
 					modifiedClass.setEnabledForStudentScheduling(enabledForStudentScheduling);
+				}
+				if (suffix != null) {
+					if (suffix.isEmpty()) suffix = null;
+					if (suffix == null ? modifiedClass.getClassSuffix() != null : !suffix.equals(modifiedClass.getClassSuffix())) {
+						modifiedClass.setClassSuffix(suffix);
+						changed = true;
+					}
 				}
 				if (changed)
 					hibSession.update(modifiedClass);

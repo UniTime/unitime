@@ -412,6 +412,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Class Setup: display external ids")
 	ClassSetupShowExternalIds("tmtbl.class_setup.show_display_external_ids"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Class Setup: edit external ids")
+	ClassSetupEditExternalIds("tmtbl.class_setup.edit_external_ids"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
