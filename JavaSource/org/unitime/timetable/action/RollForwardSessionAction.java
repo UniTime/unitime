@@ -146,7 +146,7 @@ public class RollForwardSessionAction extends Action {
 				new String[] { "left", "left", "right", "left", "left", "left", "left", "left", "center"},
 				new boolean[] { true, true, true, true, true, true, true, true, true});
 		Date now = new Date();
-		long timeToShow = 1000 * 60 * 60;
+		long timeToShow = 24 * 1000 * 60 * 60;
 		for (QueueItem item: queue) {
 			if (item.finished() != null && now.getTime() - item.finished().getTime() > timeToShow) continue;
 			if (item.getSession() == null) continue;
