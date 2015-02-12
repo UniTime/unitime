@@ -259,7 +259,18 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				if (limit() != null && ret.size() >= limit()) break;
 			}
 			
-			// if students.size() > 0) {
+			final Comparator noc = new NaturalOrderComparator();
+			Collections.sort(ret, new Comparator<EnrollmentInfo>() {
+				@Override
+				public int compare(EnrollmentInfo e1, EnrollmentInfo e2) {
+					int cmp = noc.compare(e1.getSubject(), e2.getSubject());
+					if (cmp != 0) return cmp;
+					cmp = e1.getCourseNbr().compareTo(e2.getCourseNbr());
+					if (cmp != 0) return cmp;
+					return 0;
+				}
+			});
+			
 			EnrollmentInfo t = new EnrollmentInfo();
 			t.setSubject(MSG.total());
 			t.setCourseNbr("");
@@ -279,20 +290,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			
 			t.setConsentNeeded(gConNeed);
 			t.setTotalConsentNeeded(gtConNeed);
-
 			ret.add(t);
-			
-			final Comparator noc = new NaturalOrderComparator();
-			Collections.sort(ret, new Comparator<EnrollmentInfo>() {
-				@Override
-				public int compare(EnrollmentInfo e1, EnrollmentInfo e2) {
-					int cmp = noc.compare(e1.getSubject(), e2.getSubject());
-					if (cmp != 0) return cmp;
-					cmp = e1.getCourseNbr().compareTo(e2.getCourseNbr());
-					if (cmp != 0) return cmp;
-					return 0;
-				}
-			});
 		} else {
 			XCourse info = server.getCourse(courseId());
 			if (info == null) return ret;
