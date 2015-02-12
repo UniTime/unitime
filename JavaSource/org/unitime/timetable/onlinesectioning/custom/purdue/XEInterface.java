@@ -95,6 +95,25 @@ public class XEInterface {
 		
 		public String term;
 		public String campus;
+		
+		public List<RegistrationAction> registrationActions;
+		
+		public boolean canDrop() {
+			if (registrationActions != null)
+				for (RegistrationAction action: registrationActions) {
+					if ("DW".equals(action.courseRegistrationStatus))
+						return true;
+				}
+			return false;
+		}
+		
+		public boolean canAdd() {
+			return !"DD".equals(courseRegistrationStatus);
+		}
+		
+		public boolean isRegistered() {
+			return "R".equals(statusIndicator);
+		}
 	}
 	
 	public static class CrnError {
@@ -184,6 +203,22 @@ public class XEInterface {
 		public boolean isEmpty() {
 			return (actionsAndOptions == null || actionsAndOptions.isEmpty()) && (courseReferenceNumbers == null || courseReferenceNumbers.isEmpty());
 		}
+	}
+	
+	public static class ErrorResponse {
+		public List<Error> errors;
+		
+		public Error getError() {
+			return (errors == null || errors.isEmpty() ? null : errors.get(0));
+		}
+	}
+	
+	public static class Error {
+		public String code;
+		public String message;
+		public String description;
+		public String type;
+		public String errorMessage;
 	}
 
 }

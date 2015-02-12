@@ -209,6 +209,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						for (EnrollmentFailure f: failures) {
 							if (!f.isEnrolled() && f.getSection().getSectionId().equals(ca.getClassId())) {
 								i.remove();
+								break;
 							}
 						}
 					}

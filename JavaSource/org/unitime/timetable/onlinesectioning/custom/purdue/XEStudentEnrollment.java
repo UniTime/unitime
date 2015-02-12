@@ -40,6 +40,7 @@ import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.ClientResource;
+import org.restlet.resource.ResourceException;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -173,11 +174,32 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
 			}
 			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, iBannerApiUser, iBannerApiPassword);
+			Gson gson = getGson(helper);
 			
-			resource.get(MediaType.APPLICATION_JSON);
+			try {
+				resource.get(MediaType.APPLICATION_JSON);
+			} catch (ResourceException exception) {
+				try {
+					XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
+					XEInterface.Error error = response.getError();
+					if (error != null && error.message != null) {
+						throw new SectioningException(error.message);
+					} else if (error != null && error.description != null) {
+						throw new SectioningException(error.description);
+					} else if (error != null && error.errorMessage != null) {
+						throw new SectioningException(error.errorMessage);
+					} else {
+						throw exception;
+					}
+				} catch (SectioningException e) {
+					throw e;
+				} catch (Throwable t) {
+					throw exception;
+				}
+			}
 			
 			// Check status, memorize enrolled sections
-			Gson gson = getGson(helper);
 			List<XEInterface.RegisterResponse> current = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.TYPE_LIST);
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
 			if (helper.isDebugEnabled())
@@ -225,7 +247,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				String added = "";
 				if (current.get(0).registrations != null)
 					for (XEInterface.Registration reg: current.get(0).registrations) {
-						if ("R".equals(reg.statusIndicator)) {
+						if (reg.isRegistered()) {
 							if (!sectionExternalIds.remove(reg.courseReferenceNumber) && !eligibilityIgnoreBannerRegistration(server, helper, student, reg))
 								added += (added.isEmpty() ? "" : ", ") + reg.courseReferenceNumber;
 							OnlineSectioningLog.Section.Builder section = external.addSectionBuilder()
@@ -255,7 +277,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			throw e;
 		} catch (Exception e) {
 			helper.warn("Banner eligibility failed: " + e.getMessage(), e);
-			throw new SectioningException(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
 		} finally {
 			if (resource != null) {
 				if (resource.getResponse() != null) resource.getResponse().release();
@@ -290,11 +312,32 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
 			}
 			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, iBannerApiUser, iBannerApiPassword);
+			Gson gson = getGson(helper);
 			
-			resource.get(MediaType.APPLICATION_JSON);
+			try {
+				resource.get(MediaType.APPLICATION_JSON);
+			} catch (ResourceException exception) {
+				try {
+					XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
+					XEInterface.Error error = response.getError();
+					if (error != null && error.message != null) {
+						throw new SectioningException(error.message);
+					} else if (error != null && error.description != null) {
+						throw new SectioningException(error.description);
+					} else if (error != null && error.errorMessage != null) {
+						throw new SectioningException(error.errorMessage);
+					} else {
+						throw exception;
+					}
+				} catch (SectioningException e) {
+					throw e;
+				} catch (Throwable t) {
+					throw exception;
+				}
+			}
 			
 			// Check status, memorize enrolled sections
-			Gson gson = getGson(helper);
 			List<XEInterface.RegisterResponse> current = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.TYPE_LIST);
 			if (current == null || current.isEmpty() || !current.get(0).validStudent) {
 				String reason = null;
@@ -309,13 +352,20 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				throw new SectioningException(reason == null ? "Failed to check student registration status." : reason);
 			}
 			Set<String> registered = new HashSet<String>();
+			Set<String> noadd = new HashSet<String>();
+			Set<String> nodrop = new HashSet<String>();
 			helper.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(current));
 			if (helper.isDebugEnabled())
 				helper.debug("Current registration: " + gson.toJson(current));
 			if (current.get(0).registrations != null)
 				for (XEInterface.Registration reg: current.get(0).registrations) {
-					if ("R".equals(reg.statusIndicator))
+					if (reg.isRegistered()) {
 						registered.add(reg.courseReferenceNumber);
+						if (!reg.canDrop())
+							nodrop.add(reg.courseReferenceNumber);
+					} else if (!reg.canAdd()) {
+						noadd.add(reg.courseReferenceNumber);
+					}
 				}
 			
 			// Next, try to enroll student into the given courses
@@ -325,6 +375,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			Set<String> added = new HashSet<String>();
 			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), pin);
 			List<EnrollmentFailure> fails = new ArrayList<EnrollmentFailure>();
+			Set<String> failed = new HashSet<String>();
 			Set<String> checked = new HashSet<String>();
 			for (EnrollmentRequest request: enrollments) {
 				XCourse course = request.getCourse();
@@ -345,7 +396,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						} else {
 							// student had a different section: just put warning on the new enrollment
 							fails.add(new EnrollmentFailure(course, section, MESSAGES.courseLocked(course.getCourseName()), false));
-							checked.add(id);
+							checked.add(id); failed.add(id);
 							List<XSection> sections = id2section.get(id);
 							if (sections == null) {
 								sections = new ArrayList<XSection>();
@@ -360,7 +411,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
 						if (!registered.remove(id)) changed = true;
-						if (added.add(id)) req.add(id);
+						if (added.add(id)) {
+							if (!section.isEnabledForScheduling() || noadd.contains(id)) {
+								fails.add(new EnrollmentFailure(course, section, "Section not available for student scheduling.", false));
+								checked.add(id); failed.add(id);
+							} else {
+								req.add(id);
+							}
+						}
 						List<XSection> sections = id2section.get(id);
 						if (sections == null) {
 							sections = new ArrayList<XSection>();
@@ -373,8 +431,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			// drop old sections
 			for (String id: registered) {
-				changed = true;
-				req.drop(id);
+				boolean drop = true;
 				for (XRequest r: student.getRequests())
 					if (r instanceof XCourseRequest) {
 						for (XCourseId c: ((XCourseRequest)r).getCourseIds()) {
@@ -391,9 +448,18 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 											}
 											sections.add(x);
 											id2course.put(id, offering.getCourse(c.getCourseId()));
+											if (!x.isEnabledForScheduling() || nodrop.contains(id)) {
+												fails.add(new EnrollmentFailure(offering.getCourse(c), x, "Section not available for student scheduling.", true));
+												checked.add(id); failed.add(id);
+												drop = false;
+											}
 										}
 						}
 					}
+				if (drop) {
+					changed = true;
+					req.drop(id);
+				}
 			}
 			
 			if (helper.isDebugEnabled())
@@ -405,7 +471,28 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				return fails;
 			}
 
-			resource.post(new JsonRepresentation(gson.toJson(req)));
+			try {
+				resource.post(new JsonRepresentation(gson.toJson(req)));
+			} catch (ResourceException exception) {
+				try {
+					XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
+					XEInterface.Error error = response.getError();
+					if (error != null && error.message != null) {
+						throw new SectioningException(error.message);
+					} else if (error != null && error.description != null) {
+						throw new SectioningException(error.description);
+					} else if (error != null && error.errorMessage != null) {
+						throw new SectioningException(error.errorMessage);
+					} else {
+						throw exception;
+					}
+				} catch (SectioningException e) {
+					throw e;
+				} catch (Throwable t) {
+ 					throw exception;
+				}
+			}
 			
 			// Finally, check the response
 			XEInterface.RegisterResponse response = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.class);
@@ -452,8 +539,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							if (error != null) {
 								XCourse course = id2course.get(id);
 								if (course != null)
-									for (XSection section: id2section.get(id))
+									for (XSection section: id2section.get(id)) {
 										fails.add(new EnrollmentFailure(course, section, error, true));
+										failed.add(id);
+									}
 							}
 							continue;
 						}
@@ -466,8 +555,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						error = response.registrationException;
 					XCourse course = id2course.get(id);
 					if (course != null)
-						for (XSection section: id2section.get(id))
+						for (XSection section: id2section.get(id)) {
+							if (error == null && !failed.add(id)) continue;
 							fails.add(new EnrollmentFailure(course, section, error == null ? added.contains(id) ? "Enrollment failed." : "Drop failed." : error, "Registered".equals(reg.statusDescription)));
+						}
 				}
 				helper.getAction().addEnrollment(external);
 			}
@@ -478,8 +569,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						String id = reg.failedCRN;
 						XCourse course = id2course.get(id);
 						if (course != null)
-							for (XSection section: id2section.get(id))
+							for (XSection section: id2section.get(id)) {
+								if (reg.failure == null && !failed.add(id)) continue;
 								fails.add(new EnrollmentFailure(course, section, reg.failure == null ? "Enrollment failed." : reg.failure, false));
+							}
 						checked.add(id);
 					} else {
 						if (reg.failure != null)
@@ -502,8 +595,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					XCourse course = request.getCourse();
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
-						if (!checked.contains(id))
+						if (!checked.contains(id) && (em != null || failed.add(id))) {
 							fails.add(new EnrollmentFailure(course, section, em == null ? "Enrollment failed." : em, false));
+						}
 					}
 				}
 			}
@@ -518,7 +612,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			throw e;
 		} catch (Exception e) {
 			helper.warn("Banner enrollment failed: " + e.getMessage(), e);
-			throw new SectioningException(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
 		} finally {
 			if (resource != null) {
 				if (resource.getResponse() != null) resource.getResponse().release();
