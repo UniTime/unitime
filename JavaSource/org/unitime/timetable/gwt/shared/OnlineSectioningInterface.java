@@ -33,6 +33,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private int iFlags = 0;
 		private String iMessage = null;
+		private String iCheckboxMessage = null;
 		private Long iSessionId = null, iStudentId = null;
 		
 		public static enum EligibilityFlag implements IsSerializable {
@@ -42,7 +43,6 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			PIN_REQUIRED,
 			CAN_WAITLIST,
 			RECHECK_AFTER_ENROLLMENT,
-			
 			;
 			
 			public int flag() { return 1 << ordinal(); }
@@ -77,6 +77,10 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
 		public String getMessage() { return iMessage; }
 		
+		public void setCheckboxMessage(String message) { iCheckboxMessage = message; }
+		public boolean hasCheckboxMessage() { return iCheckboxMessage != null && !iCheckboxMessage.isEmpty(); }
+		public String getCheckboxMessage() { return iCheckboxMessage; }
+
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public Long getSessionId() { return iSessionId; }
 		public void setStudentId(Long studentId) { iStudentId = studentId; }

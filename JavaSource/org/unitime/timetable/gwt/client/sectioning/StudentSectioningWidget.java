@@ -76,6 +76,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -123,6 +124,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private PinDialog iPinDialog = null;
 	private boolean iScheduleChanged = false;
 	private HTML iMessage = null;
+	
+	private CheckBox iCustomCheckbox = null;
 
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
@@ -188,7 +191,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		HorizontalPanel rightFooterPanel = new HorizontalPanel();
 		iFooter.add(rightFooterPanel);
 		iFooter.setCellHorizontalAlignment(rightFooterPanel, HasHorizontalAlignment.ALIGN_RIGHT);
-
+		
 		iStartOver = new AriaButton(MESSAGES.buttonStartOver());
 		iStartOver.setTitle(MESSAGES.hintStartOver());
 		if (mode.isSectioning())
@@ -513,6 +516,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 												iEligibilityCheck.setFlag(EligibilityFlag.CAN_ENROLL, false);
 												iEnroll.setEnabled(false);
 												iEnroll.setVisible(false);
+												if (iCustomCheckbox != null) {
+													iCustomCheckbox.setVisible(false);
+													iCustomCheckbox.setEnabled(false);
+												}
 											}
 										}
 									});
@@ -1046,7 +1053,25 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iRequests.setVisible(true); iRequests.setEnabled(true);
 			iReset.setVisible(true); iReset.setEnabled(true);
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
-			iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
+			if (iEligibilityCheck != null && iEligibilityCheck.hasCheckboxMessage()) {
+				if (iCustomCheckbox == null) {
+					iCustomCheckbox = new CheckBox(iEligibilityCheck.getCheckboxMessage(), true);
+					((HorizontalPanel)iFooter.getWidget(1)).insert(iCustomCheckbox, 0);
+					((HorizontalPanel)iFooter.getWidget(1)).setCellVerticalAlignment(iCustomCheckbox, HasVerticalAlignment.ALIGN_MIDDLE);
+					iCustomCheckbox.getElement().getStyle().setPaddingRight(10, Unit.PX);
+					iCustomCheckbox.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<Boolean> event) {
+							iEnroll.setEnabled(event.getValue());
+						}
+					});
+				}
+				iEnroll.setEnabled(iCustomCheckbox.getValue());
+				iCustomCheckbox.setEnabled(true);
+				iCustomCheckbox.setVisible(true);
+			} else {
+				iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
+			}
 			iPrint.setVisible(true); iPrint.setEnabled(true);
 			iStartOver.setVisible(iSavedAssignment != null); iStartOver.setEnabled(iSavedAssignment != null);
 			if (iExport != null) {
@@ -1098,6 +1123,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iRequests.setVisible(false); iRequests.setEnabled(false);
 		iReset.setVisible(false); iReset.setEnabled(false);
 		iEnroll.setVisible(false); iEnroll.setEnabled(false);
+		if (iCustomCheckbox != null) {
+			iCustomCheckbox.setVisible(false); iCustomCheckbox.setEnabled(false);
+		}
 		iPrint.setVisible(false); iPrint.setEnabled(false);
 		iStartOver.setVisible(false); iStartOver.setVisible(false);
 		if (iExport != null) {
