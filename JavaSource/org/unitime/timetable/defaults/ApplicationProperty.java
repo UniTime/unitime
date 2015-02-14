@@ -1854,7 +1854,27 @@ public enum ApplicationProperty {
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Online Student Scheduling: call custom eligibility check before enrollment")
-	OnlineSchedulingCustomEligibilityRecheck("unitime.enrollment.recheckCustomEligibility")
+	OnlineSchedulingCustomEligibilityRecheck("unitime.enrollment.recheckCustomEligibility"),
+	
+	@Type(String.class)
+	@DefaultValue("org/unitime/timetable/onlinesectioning/updates/StudentEmail.ftl")
+	@Description("Online Student Scheduling: confirmation email template")
+	OnlineSchedulingEmailTemplate("unitime.enrollment.email.teplate"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: confirmation email attach ICS (iCalendar) file")
+	OnlineSchedulingEmailICalendar("unitime.enrollment.email.ics"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: confirmation email attach timetable grid as image")
+	OnlineSchedulingEmailIncludeImage("unitime.enrollment.email.grid"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: confirmation email attach message as html file")
+	OnlineSchedulingEmailIncludeMessage("unitime.enrollment.email.message"),
 	;
 
 	String iKey;
