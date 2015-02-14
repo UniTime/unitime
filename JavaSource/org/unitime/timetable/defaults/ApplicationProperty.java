@@ -1850,6 +1850,11 @@ public enum ApplicationProperty {
 	@Implements(CourseMatcherProvider.class)
 	@Description("Customization: course matcher provider (interface CourseMatcherProvider)")
 	CustomizationCourseMatcher("unitime.custom.CourseMatcherProvider"),	
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: call custom eligibility check before enrollment")
+	OnlineSchedulingCustomEligibilityRecheck("unitime.enrollment.recheckCustomEligibility")
 	;
 
 	String iKey;

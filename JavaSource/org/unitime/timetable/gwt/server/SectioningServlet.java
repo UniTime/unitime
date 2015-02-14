@@ -1756,7 +1756,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return server.getAcademicSession().getUniqueId();
 			}
 			
-			EligibilityCheck check = checkEligibility(online, null, studentId, null, false);
+			EligibilityCheck check = checkEligibility(online, null, studentId, null, ApplicationProperty.OnlineSchedulingCustomEligibilityRecheck.isTrue());
 			if (check == null || !check.hasFlag(EligibilityFlag.CAN_ENROLL))
 				throw new SectioningException(check.getMessage());
 			
