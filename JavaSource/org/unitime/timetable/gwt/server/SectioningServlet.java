@@ -104,6 +104,7 @@ import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.basic.ListClasses;
 import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.DefaultCourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
@@ -145,6 +146,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static Logger sLog = Logger.getLogger(SectioningServlet.class);
 	private CourseDetailsProvider iCourseDetailsProvider;
+	private CourseMatcherProvider iCourseMatcherProvider;
 	
 	public SectioningServlet() {
 	}
@@ -161,6 +163,19 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 		}
 		return iCourseDetailsProvider;
+	}
+	
+	private CourseMatcherProvider getCourseMatcherProvider() {
+		if (iCourseMatcherProvider == null) {
+			try {
+				String providerClass = ApplicationProperty.CustomizationCourseMatcher.value();
+				if (providerClass != null)
+					iCourseMatcherProvider = (CourseMatcherProvider)Class.forName(providerClass).newInstance();
+			} catch (Exception e) {
+				sLog.warn("Failed to initialize course matcher provider: " + e.getMessage());
+			}
+		}
+		return iCourseMatcherProvider;
 	}
 	
 	private @Autowired AuthenticationManager authenticationManager;
@@ -275,10 +290,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public CourseMatcher getCourseMatcher(Long sessionId) {
 		boolean noCourseType = true, allCourseTypes = false;
 		Set<String> allowedCourseTypes = new HashSet<String>();
+		Long studentId = getStudentId(sessionId);
 		if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)) {
 			allCourseTypes = true;
 		} else {
-			Long studentId = getStudentId(sessionId);
 			Student student = (studentId == null ? null : StudentDAO.getInstance().get(studentId));
 			StudentSectioningStatus status = (student == null ? null : student.getSectioningStatus());
 			if (status == null) status = SessionDAO.getInstance().get(sessionId).getDefaultSectioningStatus();
@@ -288,7 +303,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				noCourseType = !status.hasOption(Option.notype);
 			}
 		}
-		return new CourseMatcher(allCourseTypes, noCourseType, allowedCourseTypes);
+		CourseMatcher matcher = new CourseMatcher(allCourseTypes, noCourseType, allowedCourseTypes);
+		
+		if (studentId != null) {
+			CourseMatcherProvider provider = getCourseMatcherProvider();
+			if (provider != null) matcher.setParentCourseMatcher(provider.getCourseMatcher(getSessionContext(), studentId));
+		}
+		
+		return matcher;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -479,12 +501,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public Collection<String> checkCourses(boolean online, CourseRequestInterface request) throws SectioningException, PageAccessException {
 		try {
 			if (request.getAcademicSessionId() == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
+			if (request.getStudentId() == null)
+				request.setStudentId(getStudentId(request.getAcademicSessionId()));
 			
 			if (!online) {
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
-				request.setStudentId(getStudentId(request.getAcademicSessionId()));
 				return server.execute(server.createAction(CheckCourses.class).forRequest(request), currentUser());
 			}
 			
@@ -1915,6 +1938,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	static class CourseMatcher extends AbstractCourseMatcher {
+		private org.unitime.timetable.onlinesectioning.match.CourseMatcher iParent;
 		private static final long serialVersionUID = 1L;
 		private boolean iAllCourseTypes, iNoCourseType;
 		private Set<String> iAllowedCourseTypes;
@@ -1930,10 +1954,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		public boolean hasAllowedCourseTypes() { return iAllowedCourseTypes != null && !iAllowedCourseTypes.isEmpty(); }
 		
 		public Set<String> getAllowedCourseTypes() { return iAllowedCourseTypes; }
+		
+		public org.unitime.timetable.onlinesectioning.match.CourseMatcher getParentCourseMatcher() { return iParent; }
+		
+		public void setParentCourseMatcher(org.unitime.timetable.onlinesectioning.match.CourseMatcher parent) { iParent = parent; }
 
 		@Override
 		public boolean match(XCourseId course) {
-			return course != null && course.matchType(iAllCourseTypes, iNoCourseType, iAllowedCourseTypes);
+			return course != null && course.matchType(iAllCourseTypes, iNoCourseType, iAllowedCourseTypes) && (iParent == null || iParent.match(course));
 		}
 	}
 

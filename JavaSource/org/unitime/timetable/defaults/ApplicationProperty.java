@@ -54,6 +54,7 @@ import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
@@ -1844,6 +1845,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Conflict-statistics: save to file")
 	ConflictStatisticsSaveToFile("unitime.cbs.saveToFile"),
+	
+	@Type(Class.class)
+	@Implements(CourseMatcherProvider.class)
+	@Description("Customization: course matcher provider (interface CourseMatcherProvider)")
+	CustomizationCourseMatcher("unitime.custom.CourseMatcherProvider"),	
 	;
 
 	String iKey;

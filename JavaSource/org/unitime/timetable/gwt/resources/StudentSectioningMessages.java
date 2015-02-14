@@ -178,7 +178,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("No first alternative provided.")
 	String validationSecondAltWithoutFirst();
 	
-	@DefaultMessage("Course {0} does not exist.")
+	@DefaultMessage("Course {0} is not allowed or does not exist.")
 	String validationCourseNotExists(String course);
 
 	@DefaultMessage("Course does not exist.")
