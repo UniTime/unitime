@@ -121,6 +121,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Timetabling</name>
+			<description>
+				<line>PDF Reports: Added compact mode for the period chart.
+					<line>No section information is printed, but the page fits up to 6 columns instead of just 4.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 

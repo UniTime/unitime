@@ -76,6 +76,7 @@ public class ExamPdfReportForm extends ExamReportForm {
     private boolean iClassSchedule = false;
     private boolean iIgnoreEmptyExams = false;
     private boolean iDispNote = true;
+    private boolean iCompact = false;
     
     public static Hashtable<String,Class> sRegisteredReports = new Hashtable();
     public static String[] sModes = {"PDF (Letter)", "PDF (Ledger)", "Text"};
@@ -141,6 +142,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         iIgnoreEmptyExams = false;
         iItype = false;
         iDispNote = false;
+        iCompact = false;
     }
     
     public void load(SessionContext session) {
@@ -172,6 +174,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         setClassSchedule("1".equals(session.getUser().getProperty("ExamPdfReport.cschedule", "1")));
         setIgnoreEmptyExams("1".equals(session.getUser().getProperty("ExamPdfReport.ignempty", "1")));
         setDispNote("1".equals(session.getUser().getProperty("ExamPdfReport.dispNote", "0")));
+        setCompact("1".equals(session.getUser().getProperty("ExamPdfReport.compact", "0")));
     }
     
     public void save(SessionContext session) {
@@ -203,6 +206,7 @@ public class ExamPdfReportForm extends ExamReportForm {
         session.getUser().setProperty("ExamPdfReport.cschedule", getClassSchedule() ? "1" : "0");
         session.getUser().setProperty("ExamPdfReport.ignempty", getIgnoreEmptyExams() ? "1" : "0");
         session.getUser().setProperty("ExamPdfReport.dispNote", getDispNote() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.compact", getCompact() ? "1" : "0");
     }
 
     public String[] getReports() { return iReports;}
@@ -251,6 +255,8 @@ public class ExamPdfReportForm extends ExamReportForm {
     public void setSubject(String subject) { iSubject = subject; }
     public boolean getDispNote() { return iDispNote; }
     public void setDispNote(boolean dispNote) { iDispNote = dispNote; }
+    public boolean getCompact() { return iCompact; }
+    public void setCompact(boolean compact) { iCompact = compact; }
     
     public TreeSet<String> getAllReports() {
         return new TreeSet<String>(sRegisteredReports.keySet());
@@ -304,6 +310,7 @@ public class ExamPdfReportForm extends ExamReportForm {
 	    x.setSubjectArea(getSubjectArea());
 	    x.setExamType(getExamType());
 	    x.setDispNote(getDispNote());
+	    x.setCompact(getCompact());
     	return x;
     }
 }

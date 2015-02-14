@@ -85,11 +85,18 @@ public class PeriodChartReport extends PdfLegacyExamReport {
         String timesThisPage = null;
         int nrCols = 0;
         if (!iTotals) {
-            setHeader(new String[] {
-                "Start Time Exam                     Enrl  Exam                     Enrl  Exam                     Enrl  Exam                     Enrl",
-                "---------- ------------------------ ----  ------------------------ ----  ------------------------ ----  ------------------------ ----"
-             //  .........1.........2.........3.........4.........5.........6.........7.........8.........9........10........11........12........13...
-            });
+        	if (iCompact) {
+                setHeader(new String[] {
+                		"Start Time  Exam            Enrl  Exam            Enrl  Exam            Enrl  Exam            Enrl  Exam            Enrl",
+                		"----------  --------------- ----  --------------- ----  --------------- ----  --------------- ----  --------------- ----"
+                    });
+        	} else {
+                setHeader(new String[] {
+                        "Start Time Exam                     Enrl  Exam                     Enrl  Exam                     Enrl  Exam                     Enrl",
+                        "---------- ------------------------ ----  ------------------------ ----  ------------------------ ----  ------------------------ ----"
+                     //  .........1.........2.........3.........4.........5.........6.........7.........8.........9........10........11........12........13...
+                    });
+        	}
             printHeader();
         }
         int lastDIdx = 0;
@@ -109,7 +116,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 for (Iterator<Integer> f = new TreeSet<Integer>(days.keySet()).iterator();f.hasNext();idx++) {
                 	int day = f.next();
                     String dayStr = days.get(day);
-                    if (idx<dIdx || (firstDay!=null && (dayStr.startsWith("Mon") || day>=firstDayOffset+7)) || nrCols==4) continue;
+                    if (idx<dIdx || (firstDay!=null && (dayStr.startsWith("Mon") || day>=firstDayOffset+7)) || nrCols==(iCompact?iTotals?6:5:4)) continue;
                     if (firstDay==null) {
                         firstDay = dayStr; firstDayOffset = day;
                         Calendar c = Calendar.getInstance(Locale.US);
@@ -121,9 +128,15 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                         }
                     } 
                     lastDay = dayStr;
-                    header1 += mpad(dayStr,29)+"  "; 
-                    header2 += "Exam                     Enrl  ";
-                    header3 += "======================== ====  ";
+                    if (iCompact) {
+                    	header1 += mpad(dayStr,20)+"  ";
+                    	header2 += "Exam            Enrl  ";
+                    	header3 += "=============== ====  ";
+                    } else {
+                        header1 += mpad(dayStr,29)+"  "; 
+                        header2 += "Exam                     Enrl  ";
+                        header3 += "======================== ====  ";
+                    }
                     ExamPeriod period = null;
                     nrCols++;
                     for (Iterator i=ExamPeriod.findAll(getSession().getUniqueId(), getExamType()).iterator();i.hasNext();) {
@@ -135,8 +148,8 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 }
                 if (iTotals)
                 	setHeader(new String[] {timeStr,header1,header2,header3});
-                else if (offset + periods.size() > 4)
-                	offset = Math.max(0, 4 - periods.size());
+                else if (offset + periods.size() > (iCompact?iTotals?6:5:4))
+                	offset = Math.max(0, (iCompact?iTotals?6:5:4) - periods.size());
                 int nextLines = 0;
                 for (Enumeration f=periods.elements();f.hasMoreElements();) {
                     ExamPeriod period = (ExamPeriod)f.nextElement();
@@ -173,10 +186,16 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     if (nextLines==0) continue;
                     if (!iNewPage && !firstLine) {
                         if (lastDIdx!=dIdx) {
-                            println("---------- ------------------------ ----  ------------------------ ----  ------------------------ ----  ------------------------ ----");
+                        	if (iCompact)
+                        		println("----------  --------------- ----  --------------- ----  --------------- ----  --------------- ----  --------------- ----");
+                        	else
+                        		println("---------- ------------------------ ----  ------------------------ ----  ------------------------ ----  ------------------------ ----");
                             lastDIdx = dIdx;
                         } else {
-                            println("           ------------------------ ----  ------------------------ ----  ------------------------ ----  ------------------------ ----");
+                        	if (iCompact)
+                        		println("            --------------- ----  --------------- ----  --------------- ----  --------------- ----  --------------- ----");
+                        	else
+                        		println("           ------------------------ ----  ------------------------ ----  ------------------------ ----  ------------------------ ----");
                         }
                     }
                     firstLine = false;
@@ -190,7 +209,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                     ExamPeriod period = (ExamPeriod)f.nextElement();
                     if (period==null) {
                         Vector linesThisPeriod = new Vector();
-                        linesThisPeriod.add(lpad("0",29));
+                        linesThisPeriod.add(lpad("0",iCompact ? 20 : 29));
                         lines.add(linesThisPeriod);
                         continue;
                     }
@@ -210,35 +229,54 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                                 if (c!=null) code = c; break;
                             }
                         }
-                        if (iItype) {
-                            if (iExternal) {
-                                linesThisPeriod.add(
-                                        rpad(section.getSubject(),7)+
-                                        rpad(section.getCourseNbr(),8)+
-                                        rpad(section.getItype(),9)+
-                                        (code==null||code.length()==0?' ':code.charAt(0))+
-                                        lpad(String.valueOf(section.getNrStudents()),4));
-                            } else {
-                                linesThisPeriod.add(
-                                        rpad(section.getName(),24)+(code==null||code.length()==0?' ':code.charAt(0))+
-                                        lpad(String.valueOf(section.getNrStudents()),4));
-                            }
-                        } else {
+                        if (iCompact) {
                             linesThisPeriod.add(
                                     rpad(section.getSubject(),7)+
                                     rpad(section.getCourseNbr(),8)+
-                                    rpad(section.getSection(),9)+
                                     (code==null||code.length()==0?' ':code.charAt(0))+
                                     lpad(String.valueOf(section.getNrStudents()),4));
+                        } else {
+                            if (iItype) {
+                                if (iExternal) {
+                                    linesThisPeriod.add(
+                                            rpad(section.getSubject(),7)+
+                                            rpad(section.getCourseNbr(),8)+
+                                            rpad(section.getItype(),9)+
+                                            (code==null||code.length()==0?' ':code.charAt(0))+
+                                            lpad(String.valueOf(section.getNrStudents()),4));
+                                } else {
+                                    linesThisPeriod.add(
+                                            rpad(section.getName(),24)+(code==null||code.length()==0?' ':code.charAt(0))+
+                                            lpad(String.valueOf(section.getNrStudents()),4));
+                                }
+                            } else {
+                                linesThisPeriod.add(
+                                        rpad(section.getSubject(),7)+
+                                        rpad(section.getCourseNbr(),8)+
+                                        rpad(section.getSection(),9)+
+                                        (code==null||code.length()==0?' ':code.charAt(0))+
+                                        lpad(String.valueOf(section.getNrStudents()),4));
+                            }
                         }
                     }
-                    if (iTotals) {
-                        if (totalListed!=total)
-                            linesThisPeriod.insertElementAt(mpad("("+totalListed+")",22)+" "+lpad(""+total,6), 0);
-                        else
-                            linesThisPeriod.insertElementAt(lpad(""+total,29), 0);
+                    if (iCompact) {
+                    	if (iTotals) {
+                            if (totalListed!=total)
+                                linesThisPeriod.insertElementAt(mpad("("+totalListed+")",13)+" "+lpad(""+total,6), 0);
+                            else
+                                linesThisPeriod.insertElementAt(lpad(""+total,20), 0);
+                        } else {
+                            linesThisPeriod.insertElementAt(rpad(period.getStartDateLabel(),13)+" "+lpad(total==0?"":(""+total),6), 0);
+                        }
                     } else {
-                        linesThisPeriod.insertElementAt(rpad(period.getStartDateLabel(),22)+" "+lpad(total==0?"":(""+total),6), 0);
+                        if (iTotals) {
+                            if (totalListed!=total)
+                                linesThisPeriod.insertElementAt(mpad("("+totalListed+")",22)+" "+lpad(""+total,6), 0);
+                            else
+                                linesThisPeriod.insertElementAt(lpad(""+total,29), 0);
+                        } else {
+                            linesThisPeriod.insertElementAt(rpad(period.getStartDateLabel(),22)+" "+lpad(total==0?"":(""+total),6), 0);
+                        }
                     }
                     max = Math.max(max, linesThisPeriod.size());
                     Integer td = (Integer)totalADay.get(period.getDateOffset());
@@ -248,17 +286,24 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 for (int i=0;i<max;i++) {
                     String line = "";
                     if (!iTotals) {
-                        if (i==0 || iNewPage)
-                            line += rpad(fixedTimes.get(time),11)+rpad("",offset*31);
-                        else
-                            line += rpad("",11)+rpad("",offset*31);
+                    	if (iCompact) {
+                            if (i==0 || iNewPage)
+                                line += rpad(fixedTimes.get(time),12)+rpad("",offset*22);
+                            else
+                                line += rpad("",12)+rpad("",offset*22);
+                    	} else {
+                            if (i==0 || iNewPage)
+                                line += rpad(fixedTimes.get(time),11)+rpad("",offset*31);
+                            else
+                                line += rpad("",11)+rpad("",offset*31);
+                    	}
                     }
                     for (Enumeration f=lines.elements();f.hasMoreElements();) {
                         Vector linesThisPeriod = (Vector)f.nextElement();
                         if (i<linesThisPeriod.size())
                             line += (String)linesThisPeriod.elementAt(i);
                         else
-                            line += rpad("",29);
+                            line += rpad("",iCompact ? 20 : 29);
                         if (f.hasMoreElements()) line += "  ";
                     }
                     println(line);
@@ -277,9 +322,15 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 for (Iterator<Integer> f = new TreeSet<Integer>(days.keySet()).iterator(); f.hasNext(); idx++) {
                     Integer day = f.next();
                     if (idx<dIdx || idx>=dIdx+nrCols) continue;
-                    line1 += mpad((String)days.get(day),29)+"  ";
-                    line2 += "======================== ====  ";
-                    line3 += lpad(totalADay.get(day)==null?"":totalADay.get(day).toString(),29)+"  ";
+                    if (iCompact) {
+                        line1 += mpad((String)days.get(day),20)+"  ";
+                        line2 += "=============== ====  ";
+                        line3 += lpad(totalADay.get(day)==null?"":totalADay.get(day).toString(),20)+"  ";
+                    } else {
+                        line1 += mpad((String)days.get(day),29)+"  ";
+                        line2 += "======================== ====  ";
+                        line3 += lpad(totalADay.get(day)==null?"":totalADay.get(day).toString(),29)+"  ";
+                    }
                 }
                 println(line1);
                 println(line2);

@@ -115,6 +115,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     protected boolean iFullTermCheckDatePattern = true;
     protected boolean iMeetingTimeUseEvents = false;
     protected boolean iDispNote = false;
+    protected boolean iCompact = false;
     
     protected static DecimalFormat sDF = new DecimalFormat("0.0");
     
@@ -151,6 +152,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iSubjectAreas = subjectAreas;
         iDispRooms = "true".equals(System.getProperty("room","true"));
         iDispNote = "true".equals(System.getProperty("note","false"));
+        iCompact = "true".equals(System.getProperty("compact", "false"));
         iNoRoom = System.getProperty("noroom", ApplicationProperty.ExaminationsNoRoomText.value());
         iDirect = "true".equals(System.getProperty("direct","true"));
         iM2d = "true".equals(System.getProperty("m2d",(examType == null || examType.getType() == ExamType.sExamTypeFinal?"true":"false")));
@@ -204,6 +206,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         }
     }
     public void setDispNote(boolean dispNote) { iDispNote = dispNote; }
+    
+    public void setCompact(boolean compact) { iCompact = compact; }
 
 
     public Collection<ExamAssignmentInfo> getExams() {
