@@ -143,6 +143,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iProjections = false;
 	private boolean iFixWeights = true;
 	private boolean iCheckForNoBatchStatus = true;
+	private boolean iCheckEnabledForScheduling = true;
     
     private Progress iProgress = null;
     
@@ -164,6 +165,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iProgress = Progress.getInstance(getModel());
         iFixWeights = model.getProperties().getPropertyBoolean("Load.FixWeights", iFixWeights);
         iCheckForNoBatchStatus = model.getProperties().getPropertyBoolean("Load.CheckForNoBatchStatus", iCheckForNoBatchStatus);
+        iCheckEnabledForScheduling = model.getProperties().getPropertyBoolean("Load.CheckEnabledForScheduling", iCheckEnabledForScheduling);
         
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -415,7 +417,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
                 	}
                     if (ioc.isUnlimitedEnrollment() || limit >= 9999) limit = -1;
-                    if (!c.isEnabledForStudentScheduling()) limit = 0;
+                    if (iCheckEnabledForScheduling && !c.isEnabledForStudentScheduling()) limit = 0;
                     Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix() : c.getExternalUniqueId()), subpart, p,
                     		getInstructorIds(c), getInstructorNames(c), parentSection);
                     class2section.put(c.getUniqueId(), section);
