@@ -499,6 +499,24 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (!result.hasMessages())
 							setMessage(MESSAGES.enrollOK());
 						updateHistory();
+						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.RECHECK_AFTER_ENROLLMENT)) {
+							iSectioningService.checkEligibility(iOnline, iSessionSelector.getAcademicSessionId(),
+									iEligibilityCheck.getStudentId(), (String)null,
+									new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
+										@Override
+										public void onFailure(Throwable caught) {
+										}
+
+										@Override
+										public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
+											if (!result.hasFlag(EligibilityFlag.CAN_ENROLL)) {
+												iEligibilityCheck.setFlag(EligibilityFlag.CAN_ENROLL, false);
+												iEnroll.setEnabled(false);
+												iEnroll.setVisible(false);
+											}
+										}
+									});
+						}
 					}
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();

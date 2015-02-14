@@ -41,6 +41,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			CAN_ENROLL,
 			PIN_REQUIRED,
 			CAN_WAITLIST,
+			RECHECK_AFTER_ENROLLMENT,
 			
 			;
 			
