@@ -100,6 +100,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public String getCourseNbr() { return iCourseNbr; }
 		public void setCourseNbr(String courseNbr) { iCourseNbr = courseNbr; }
+		public String getCourseNbr(boolean includeTitle) {
+			return getCourseNbr() + (includeTitle & hasTitle() ? " - " + getTitle() : "");
+		}
 		
 		public String getCourseName() {
 			return isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr();
@@ -107,6 +110,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public String getTitle() { return iTitle; }
 		public void setTitle(String title) { iTitle = title; }
+		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
 
 		public String getNote() { return iNote; }
 		public void setNote(String note) { iNote = note; }
@@ -206,7 +210,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private ArrayList<String> iRooms = new ArrayList<String>();
 		private boolean iAlternative = false, iHasAlternatives = true, iDistanceConflict = false;
 		private String iDatePattern = null;
-		private String iSubject, iCourseNbr, iSubpart, iSection, iParentSection, iNumber;
+		private String iSubject, iCourseNbr, iSubpart, iSection, iParentSection, iNumber, iTitle;
 		private int[] iLimit = null;
 		private boolean iPin = false;
 		private int iBackToBackDistance = 0;
@@ -224,6 +228,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iSubject = course.getSubject();
 			iCourseNbr = course.getCourseNbr();
 			iCourseAssigned = course.isAssigned();
+			iTitle = course.getTitle();
 		}
 		
 		public Long getCourseId() { return iCourseId; }
@@ -238,6 +243,13 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public String getCourseNbr() { return iCourseNbr; }
 		public void setCourseNbr(String courseNbr) { iCourseNbr = courseNbr; }
+		public String getCourseNbr(boolean includeTitle) {
+			return getCourseNbr() + (includeTitle & hasTitle() ? " - " + getTitle() : "");
+		}
+		
+		public String getTitle() { return iTitle; }
+		public void setTitle(String title) { iTitle = title; }
+		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
 		
 		public String getSubpart() { return iSubpart; }
 		public void setSubpart(String subpart) { iSubpart = subpart; }

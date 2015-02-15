@@ -99,7 +99,15 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 	private CourseFinderFactory iCourseFinderFactory = null;
 	private List<Validator<CourseSelection>> iValidators = new ArrayList<Validator<CourseSelection>>();
 	
+	private boolean iShowCourses = false;
+	
 	public CourseSelectionSuggestBox() {
+		this(false);
+	}
+	
+	public CourseSelectionSuggestBox(boolean showCourses) {
+		iShowCourses = showCourses;
+		
 		SuggestOracle courseOfferingOracle = new SuggestOracle() {
 			public void requestSuggestions(Request request, Callback callback) {
 				if (request.getQuery().equals(iHint)) return;
@@ -345,7 +353,7 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 			for (ClassAssignmentInterface.CourseAssignment suggestion: result) {
 				String courseName = MESSAGES.courseName(suggestion.getSubject(), suggestion.getCourseNbr());
 				String courseNameWithTitle = (suggestion.getTitle() == null ? courseName : MESSAGES.courseNameWithTitle(suggestion.getSubject(), suggestion.getCourseNbr(), suggestion.getTitle()));
-				if (suggestion.hasUniqueName()) {
+				if (suggestion.hasUniqueName() && !iShowCourses) {
 					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseName, suggestion.getTitle() == null ? courseName : courseName + " " + suggestion.getTitle()));
 					iValidCourseNames.add(courseName);
 				} else {

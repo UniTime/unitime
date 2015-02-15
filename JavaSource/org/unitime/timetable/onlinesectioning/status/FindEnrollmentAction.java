@@ -137,6 +137,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			c.setCourseId(course.getCourseId());
 			c.setSubject(course.getSubjectArea());
 			c.setCourseNbr(course.getCourseNumber());
+			c.setTitle(course.getTitle());
 			e.setCourse(c);
 			e.setWaitList(request.isWaitlist());
 			e.setEnrollmentMessage(request.getEnrollmentMessage());

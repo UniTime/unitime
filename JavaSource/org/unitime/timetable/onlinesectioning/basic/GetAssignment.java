@@ -128,6 +128,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 					ca.setSubject(course.getSubjectArea());
 					ca.setWaitListed(r.isWaitlist());
 					ca.setCourseNbr(course.getCourseNumber());
+					ca.setTitle(course.getTitle());
 					ca.setEnrollmentMessage(r.getEnrollmentMessage());
 					if (enrollment == null) {
 						TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {

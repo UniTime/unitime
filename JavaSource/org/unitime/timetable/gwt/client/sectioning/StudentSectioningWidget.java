@@ -701,7 +701,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 								new WebTable.CheckboxCell(clazz.isPinned(), course.isFreeTime() ? ARIA.freeTimePin(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours())) : ARIA.classPin(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection())), MESSAGES.hintLocked(), MESSAGES.hintUnlocked()),
 								new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : "").aria(firstClazz ? "" : course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-								new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : "").aria(firstClazz ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+								new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(firstClazz ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 								new WebTable.Cell(clazz.getSubpart()),
 								new WebTable.Cell(clazz.getSection()),
 								new WebTable.Cell(clazz.getLimitString()),
@@ -719,7 +719,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.CheckboxCell(clazz.isPinned() , course.isFreeTime() ? ARIA.freeTimePin(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours())) : ARIA.classPin(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection())), MESSAGES.hintLocked(), MESSAGES.hintUnlocked()),
 									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : ""),
-									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : ""),
+									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle()) : ""),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
@@ -823,7 +823,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
@@ -843,7 +843,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
@@ -860,7 +860,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
@@ -882,7 +882,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(course.getSubject()),
-									new WebTable.Cell(course.getCourseNbr()),
+									new WebTable.Cell(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(unassignedMessage, 11, null),
 									waitList,
 									icons);
@@ -890,7 +890,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(course.getSubject()),
-									new WebTable.Cell(course.getCourseNbr()),
+									new WebTable.Cell(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(unassignedMessage, 12, null),
 									icons);
 						}
@@ -924,7 +924,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								row = new WebTable.Row(
 										new WebTable.Cell(null),
 										new WebTable.Cell("").aria(course.getSubject()),
-										new WebTable.Cell("").aria(course.getCourseNbr()),
+										new WebTable.Cell("").aria(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 										new WebTable.Cell(clazz.getSubpart()),
 										new WebTable.Cell(clazz.getSection()),
 										new WebTable.Cell(clazz.getLimitString()),
@@ -942,7 +942,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								row = new WebTable.Row(
 										new WebTable.Cell(null),
 										new WebTable.Cell("").aria(course.getSubject()),
-										new WebTable.Cell("").aria(course.getCourseNbr()),
+										new WebTable.Cell("").aria(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 										new WebTable.Cell(clazz.getSubpart()),
 										new WebTable.Cell(clazz.getSection()),
 										new WebTable.Cell(clazz.getLimitString()),
@@ -987,7 +987,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(firstClazz ? course.getSubject() : "").aria(firstClazz ? "" : course.getSubject()),
-									new WebTable.Cell(firstClazz ? course.getCourseNbr() : "").aria(firstClazz ? "" : course.getCourseNbr()),
+									new WebTable.Cell(firstClazz ? course.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(firstClazz ? "" : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
@@ -1005,7 +1005,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(firstClazz ? course.getSubject() : "").aria(firstClazz ? "" : course.getSubject()),
-									new WebTable.Cell(firstClazz ? course.getCourseNbr() : "").aria(firstClazz ? "" : course.getCourseNbr()),
+									new WebTable.Cell(firstClazz ? course.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(firstClazz ? "" : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),

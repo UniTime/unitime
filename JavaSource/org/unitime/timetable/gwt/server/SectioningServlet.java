@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -144,6 +145,7 @@ import org.unitime.timetable.util.NameFormat;
 @Service("sectioning.gwt")
 public class SectioningServlet implements SectioningService, DisposableBean {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
+	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	private static Logger sLog = Logger.getLogger(SectioningServlet.class);
 	private CourseDetailsProvider iCourseDetailsProvider;
 	private CourseMatcherProvider iCourseMatcherProvider;
@@ -222,6 +224,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				course.setCourseId(c.getUniqueId());
 				course.setSubject(c.getSubjectAreaAbbv());
 				course.setCourseNbr(c.getCourseNbr());
+				course.setTitle(c.getTitle());
 				course.setNote(c.getScheduleBookNote());
 				if (c.getCredit() != null) {
 					course.setCreditText(c.getCredit().creditText());
@@ -259,6 +262,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					course.setCourseId(c.getCourseId());
 					course.setSubject(c.getSubjectArea());
 					course.setCourseNbr(c.getCourseNumber());
+					course.setTitle(c.getTitle());
 					course.setNote(c.getNote());
 					course.setCreditAbbv(c.getCreditAbbv());
 					course.setCreditText(c.getCreditText());
@@ -841,13 +845,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									if (c == null) continue;
 									switch (course.getOrder()) {
 									case 0: 
-										r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+										r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 										break;
 									case 1:
-										r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+										r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 										break;
 									case 2:
-										r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+										r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 									}
 								}
 								if (r.hasRequestedCourse()) {
@@ -874,7 +878,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						request.setAcademicSessionId(sessionId);
 						for (XCourse c: courses) {
 							CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-							r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+							r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 							request.getCourses().add(r);
 						}
 						if (!request.getCourses().isEmpty()) return request;
@@ -1128,6 +1132,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							c.setCourseId(enrollment.getCourseOffering().getUniqueId());
 							c.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
 							c.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
+							c.setTitle(enrollment.getCourseOffering().getTitle());
 							e.setCourse(c);
 							student2enrollment.put(enrollment.getStudent().getUniqueId(), e);
 							if (enrollment.getCourseRequest() != null) {
@@ -1223,6 +1228,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							c.setCourseId(request.getCourseOffering().getUniqueId());
 							c.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
 							c.setCourseNbr(request.getCourseOffering().getCourseNbr());
+							c.setTitle(request.getCourseOffering().getTitle());
 							e.setCourse(c);
 							e.setWaitList(request.getCourseDemand().isWaitlist());
 							student2enrollment.put(request.getCourseDemand().getStudent().getUniqueId(), e);
@@ -1329,6 +1335,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							clazz.setCourseId(enrollment.getCourseOffering().getUniqueId());
 							clazz.setCourseAssigned(true);
 							clazz.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
+							clazz.setTitle(enrollment.getCourseOffering().getTitle());
 							clazz.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
 							clazz.setSection(enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering()));
 							if (clazz.getSection() == null)
@@ -1427,6 +1434,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								clazz.setCourseId(request.getCourseOffering().getUniqueId());
 								clazz.setCourseAssigned(false);
 								clazz.setCourseNbr(request.getCourseOffering().getCourseNbr());
+								clazz.setTitle(request.getCourseOffering().getTitle());
 								clazz.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
 							}
 						}
