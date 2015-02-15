@@ -99,19 +99,27 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 	private CourseFinderFactory iCourseFinderFactory = null;
 	private List<Validator<CourseSelection>> iValidators = new ArrayList<Validator<CourseSelection>>();
 	
-	private boolean iShowCourses = false;
+	private boolean iShowCourses = false, iShowDefaultSuggestions = false;
 	
 	public CourseSelectionSuggestBox() {
-		this(false);
+		this(false, false);
 	}
 	
-	public CourseSelectionSuggestBox(boolean showCourses) {
+	public CourseSelectionSuggestBox(boolean showCourses, boolean showDefaultSuggestions) {
 		iShowCourses = showCourses;
+		iShowDefaultSuggestions = showDefaultSuggestions;
 		
 		SuggestOracle courseOfferingOracle = new SuggestOracle() {
 			public void requestSuggestions(Request request, Callback callback) {
 				if (request.getQuery().equals(iHint)) return;
 				iDataProvider.getData(request.getQuery(), new SuggestCallback(request, callback));
+			}
+			public void requestDefaultSuggestions(Request request, Callback callback) {
+				if (iShowDefaultSuggestions)
+					iDataProvider.getData("", new SuggestCallback(request, callback));
+				else
+					super.requestDefaultSuggestions(request, callback);
+				
 			}
 			public boolean isDisplayStringHTML() { return true; }			
 		};

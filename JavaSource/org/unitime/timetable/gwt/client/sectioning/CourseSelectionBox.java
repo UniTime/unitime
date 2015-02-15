@@ -65,7 +65,7 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
 	public CourseSelectionBox(AcademicSessionProvider acadSession, boolean enabled, boolean allowFreeTime) {
-		super(CONSTANTS.showCourseTitle());
+		super(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty());
 		iAcademicSessionProvider = acadSession;
 		
 		if (allowFreeTime) {
@@ -78,7 +78,7 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 			public CourseFinder createCourseFinder() {
 				CourseFinder finder = new CourseFinderDialog();
 				
-				CourseFinderCourses courses = new CourseFinderCourses(CONSTANTS.showCourseTitle());
+				CourseFinderCourses courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty());
 				courses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 					@Override
 					public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {

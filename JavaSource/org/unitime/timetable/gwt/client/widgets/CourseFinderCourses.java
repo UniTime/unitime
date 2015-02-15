@@ -69,16 +69,19 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	private CourseFinderCourseDetails[] iDetails = null;
 	private String iLastQuery = null;
-	private boolean iShowCourses = false;
+	
+	private boolean iShowCourses = false, iShowDefaultSuggestions = false;
 	
 	public CourseFinderCourses() {
-		this(false);
+		this(false, false);
 	}
 	
-	public CourseFinderCourses(boolean showCourses) {
+	public CourseFinderCourses(boolean showCourses, boolean showDefaultSuggestions) {
 		super();
 		
 		iShowCourses = showCourses;
+		iShowDefaultSuggestions = showDefaultSuggestions;
+		
 		iCourses = new WebTable();
 		iCourses.setHeader(new WebTable.Row(
 				new WebTable.Cell(MESSAGES.colSubject(), 1, "80px"),
@@ -169,7 +172,8 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 
 	@Override
 	public void setValue(String value, final boolean fireEvents) {
-		if (value == null || value.isEmpty()) {
+		if (value == null) value = "";
+		if (value.isEmpty() && !iShowDefaultSuggestions) {
 			iLastQuery = null;
 			iCourses.clearData(true);
 			iCourses.setEmptyMessage(MESSAGES.courseSelectionNoCourseFilter());

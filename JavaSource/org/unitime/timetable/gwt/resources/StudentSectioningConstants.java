@@ -142,4 +142,7 @@ public interface StudentSectioningConstants extends Constants {
 	
 	@DefaultBooleanValue(false)
 	boolean showCourseTitle();
+	
+	@DefaultBooleanValue(false)
+	boolean courseFinderSuggestWhenEmpty();
 }
