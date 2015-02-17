@@ -363,7 +363,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			boolean hasDefault = false;
 			for (String s: request.getOptions("status")) {
 				if ("Not Set".equals(s)) { hasDefault = true; continue; }
-				status = (status.isEmpty() ? "" : ",") + ":Xst" + id;
+				status += (status.isEmpty() ? "" : ",") + ":Xst" + id;
 				query.addParameter("status", "Xst" + id, s);
 				id++;
 			}
