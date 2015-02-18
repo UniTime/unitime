@@ -126,6 +126,17 @@
 						<line>This is only enabled when the unitime.preferences.highlightClassPrefs property is set to true (default is false).</line>
 					</line>
 					<line>Preference owner (class, scheduling subpart, instructor, etc.) is also mentioned in the preference tooltip (this feature is always on).</line>
+					<line>Multiple Class Setup: Added ability to edit class sufixes (labeled as External Ids in the user interface).
+						<line>This is only enabled when the tmtbl.class_setup.edit_external_ids property is set to true (default is false).</line>
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Timetabling</name>
+			<description>
+				<line>PDF Reports: Added compact mode for the period chart.
+					<line>No section information is printed, but the page fits up to 6 columns instead of just 4.</line>
 				</line>
 			</description>
 		</item>

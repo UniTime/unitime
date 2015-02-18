@@ -75,6 +75,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private String enableAllClassesForStudentScheduling;
 	private String displayAllClassesInstructors;
 	private Boolean displayExternalId;
+	private Boolean editExternalId;
 	private Boolean displayDisplayInstructors;
 	private Boolean displayEnabledForStudentScheduling;
 	
@@ -470,6 +471,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	displayDisplayInstructors = new Boolean(false);
     	displayEnabledForStudentScheduling = new Boolean(false);
     	displayExternalId = new Boolean(false);
+    	editExternalId = new Boolean(false);
     	enableAllClassesForStudentScheduling = "";
     	displayAllClassesInstructors = "";
     	resetLists();
@@ -1542,6 +1544,14 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 
 	public void setDisplayExternalId(Boolean displayExternalId) {
 		this.displayExternalId = displayExternalId;
+	}
+	
+	public Boolean getEditExternalId() {
+		return editExternalId;
+	}
+
+	public void setEditExternalId(Boolean editExternalId) {
+		this.editExternalId = editExternalId;
 	}
 
 	public Boolean getDisplayDisplayInstructors() {

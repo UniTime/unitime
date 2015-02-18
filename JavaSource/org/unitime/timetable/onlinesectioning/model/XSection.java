@@ -68,6 +68,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     private String iSubpartName = null;
     private String iExternalId = null;
     private Map<Long, String> iExternalIdByCourse = new HashMap<Long, String>();
+    private boolean iEnabledForScheduling = true;
 
     public XSection() {
     }
@@ -83,6 +84,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         iInstructionalType = clazz.getSchedulingSubpart().getItypeDesc();
         iSubpartName = clazz.getSchedulingSubpart().getItype().getAbbv().trim();
     	Assignment assignment = clazz.getCommittedAssignment();
+    	iEnabledForScheduling = clazz.isEnabledForStudentScheduling();
         if (!clazz.isEnabledForStudentScheduling()) {
         	iLimit = 0;
         } else if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment()) {
@@ -344,6 +346,10 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	return iInstructionalType;
     }
     
+    public boolean isEnabledForScheduling() {
+    	return iEnabledForScheduling;
+    }
+    
     /**
      * True, if this section overlaps with the given assignment in time and
      * space
@@ -423,6 +429,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 		iExternalIdByCourse.clear();
 		for (int i = 0; i < nrExtIds; i++)
 			iExternalIdByCourse.put(in.readLong(), (String)in.readObject());
+		iEnabledForScheduling = in.readBoolean();
 
 	}
 
@@ -464,6 +471,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 			out.writeLong(entry.getKey());
 			out.writeObject(entry.getValue());
 		}
+		out.writeBoolean(iEnabledForScheduling);
 	}
 	
 	public static class XSectionSerializer implements Externalizer<XSection> {

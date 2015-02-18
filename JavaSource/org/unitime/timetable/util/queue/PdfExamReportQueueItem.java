@@ -335,6 +335,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                     report.setItype(iForm.getItype());
                     report.setClassSchedule(iForm.getClassSchedule());
                     report.setDispNote(iForm.getDispNote());
+                    report.setCompact(iForm.getCompact());
                     report.printReport();
                     report.close();
                     output.put(reportName+"."+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);
@@ -368,6 +369,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         report.setItype(iForm.getItype());
                         report.setClassSchedule(iForm.getClassSchedule());
                         report.setDispNote(iForm.getDispNote());
+                        report.setCompact(iForm.getCompact());
                         report.printReport();
                         report.close();
                         output.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"),file);

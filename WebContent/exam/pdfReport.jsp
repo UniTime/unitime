@@ -149,7 +149,7 @@
 		<TD>No Room: <html:text property="noRoom" size="11" maxlength="11"/></TD>
 	</TR>
 	<TR>
-  		<TD width="10%" nowrap valign='top' rowspan='3'>Period Chart:</TD>
+  		<TD width="10%" nowrap valign='top' rowspan='4'>Period Chart:</TD>
 		<TD><html:checkbox property="totals"/>Display Totals</TD>
 	</TR>
 	<TR>
@@ -157,6 +157,9 @@
 	</TR>
 	<TR>
 		<TD>Room Codes: <html:text property="roomCodes" size="70" maxlength="200"/></TD>
+	</TR>
+	<TR>
+		<TD><html:checkbox property="compact"/>Compact Size <i>(no section information)</i></TD>
 	</TR>
 	<TR>
   		<TD width="10%" nowrap valign='top' rowspan="2">Verification Report:</TD>
