@@ -288,8 +288,9 @@
 
 	<target name="build-dist" depends="compile-war,help">
 		<tar destfile="${dist.dir}/unitime-4.0_bld${build.number}.tar">
-			<tarfileset dir="${basedir}/Documentation/License" includes="*.txt" prefix="license"/>
-			<tarfileset dir="${basedir}/Documentation" includes="ReadMe.txt" fullpath="doc/readme.txt"/>
+			<tarfileset dir="${basedir}" includes="LICENSE" fullpath="doc/license.txt"/>
+			<tarfileset dir="${basedir}" includes="NOTICE" fullpath="doc/notice.txt"/>
+			<tarfileset dir="${basedir}" includes="README.md" fullpath="doc/readme.txt"/>
 			<tarfileset dir="${basedir}/Documentation/Interfaces" includes="*.dtd" prefix="doc/dtd"/>
 			<tarfileset dir="${basedir}/Documentation/Interfaces/Examples" includes="*.xml" prefix="doc/dtd"/>
 			<tarfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
@@ -351,8 +352,9 @@
 		<gzip zipfile="${dist.dir}/unitime-4.0_bld${build.number}.tar.gz" src="${dist.dir}/unitime-4.0_bld${build.number}.tar"/>
 		<delete file="${dist.dir}/unitime-4.0_bld${build.number}.tar"/>
 		<zip destfile="${dist.dir}/unitime-4.0_bld${build.number}.zip">
-			<zipfileset dir="${basedir}/Documentation/License" includes="*.txt" prefix="license"/>
-			<zipfileset dir="${basedir}/Documentation" includes="ReadMe.txt" fullpath="doc/readme.txt"/>
+			<tarfileset dir="${basedir}" includes="LICENSE" fullpath="doc/license.txt"/>
+			<tarfileset dir="${basedir}" includes="NOTICE" fullpath="doc/notice.txt"/>
+			<tarfileset dir="${basedir}" includes="README.md" fullpath="doc/readme.txt"/>
 			<zipfileset dir="${basedir}/Documentation/Interfaces" includes="*.dtd" prefix="doc/dtd"/>
 			<zipfileset dir="${basedir}/Documentation/Interfaces/Examples" includes="*.xml" prefix="doc/dtd"/>
 			<zipfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
