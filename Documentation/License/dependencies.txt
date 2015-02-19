@@ -542,10 +542,10 @@ spring-security-web-3.1.4.RELEASE.jar
 	URL: http://springsource.org/spring-security
 	License: Apache Software License (ASL), Version 2.0
 
-cpsolver-1.3.45.jar
+cpsolver-1.3.47.jar
 	CPSolver
-	Maven: org.unitime:cpsolver:1.3.45
-	URL: http://code.google.com/p/cpsolver
+	Maven: org.unitime:cpsolver:1.3.47
+	URL: http://www.cpsolver.org
 	License: GNU Lesser General Public License (LGPL), Version 3
 
 oro-2.0.8.jar
@@ -691,7 +691,7 @@ GNU Lesser General Public License (LGPL), Version 2.1
 	iText, a Free Java-PDF library (com.lowagie:itext:2.1.7)
 
 GNU Lesser General Public License (LGPL), Version 3
-	CPSolver (org.unitime:cpsolver:1.3.33)
+	CPSolver (org.unitime:cpsolver:1.3.47)
 	Restlet Core - API and Engine (org.restlet.jse:org.restlet:2.2.1)
 	Restlet Extension - JSON (org.restlet.jse:org.restlet.ext.json:2.2.1)
 

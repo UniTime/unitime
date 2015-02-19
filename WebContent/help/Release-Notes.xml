@@ -66,6 +66,7 @@
 				<line>Database Save: Fixed SuspectedException thrown during save of the conflict statistics under certain condition.
 					<line>If run in a cluster, the remembered address of the web-server gets invalid when the web-server is restarted.</line>
 				</line>
+				<line>Group Constraint: Fixed an exception that can be thrown during the purge invalid placement phase because of a hard back-to-back constraint.</line>
 			</description>
 		</item>
 		<item>

@@ -129,7 +129,7 @@
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="org.unitime.timetable.solver.jgroups.SolverServerImplementation" />
-				<attribute name="Class-Path" value="antlr-2.7.7.jar commons-dbcp-1.4.jar commons-logging-1.0.4.jar commons-pool-1.5.4.jar cpsolver-1.3.45.jar dom4j-1.6.1.jar ehcache-core-2.6.6.jar ehcache-jgroupsreplication-1.7.jar gwt-servlet-2.6.1.jar hibernate-commons-annotations-4.0.4.Final.jar hibernate-core-4.3.5.Final.jar hibernate-ehcache-4.3.5.Final.jar hibernate-infinispan-4.3.5.Final.jar hibernate-jpa-2.1-api-1.0.0.Final.jar infinispan-commons-6.0.1.Final.jar infinispan-core-6.0.1.Final.jar javassist-3.18.0-GA.jar jboss-logging-3.1.3.GA.jar jboss-marshalling-1.3.18.GA.jar jboss-marshalling-river-1.3.18.GA.jar jboss-transaction-api_1.2_spec-1.0.0.Final.jar jgroups-3.4.1.Final.jar jsp-api-2.2.jar log4j-1.2.17.jar mail-1.4.7.jar mysql-connector-java-5.1.26.jar ojdbc14-10.2.0.4.0.jar protobuf-java-2.5.0.jar javax.servlet-api-3.0.1.jar slf4j-api-1.7.5.jar slf4j-log4j12-1.7.5.jar spring-security-core-3.1.4.RELEASE.jar jbossjta-4.16.6.Final.jar org.restlet-2.2.1.jar org.restlet.ext.json-2.2.1.jar json-20140107.jar gson-2.2.4.jar joda-time-2.3.jar spring-core-3.1.4.RELEASE.jar spring-web-3.1.4.RELEASE.jar freemarker-2.3.20.jar biweekly-0.3.3.jar jackson-core-2.3.3.jar" />
+				<attribute name="Class-Path" value="antlr-2.7.7.jar commons-dbcp-1.4.jar commons-logging-1.0.4.jar commons-pool-1.5.4.jar cpsolver-1.3.47.jar dom4j-1.6.1.jar ehcache-core-2.6.6.jar ehcache-jgroupsreplication-1.7.jar gwt-servlet-2.6.1.jar hibernate-commons-annotations-4.0.4.Final.jar hibernate-core-4.3.5.Final.jar hibernate-ehcache-4.3.5.Final.jar hibernate-infinispan-4.3.5.Final.jar hibernate-jpa-2.1-api-1.0.0.Final.jar infinispan-commons-6.0.1.Final.jar infinispan-core-6.0.1.Final.jar javassist-3.18.0-GA.jar jboss-logging-3.1.3.GA.jar jboss-marshalling-1.3.18.GA.jar jboss-marshalling-river-1.3.18.GA.jar jboss-transaction-api_1.2_spec-1.0.0.Final.jar jgroups-3.4.1.Final.jar jsp-api-2.2.jar log4j-1.2.17.jar mail-1.4.7.jar mysql-connector-java-5.1.26.jar ojdbc14-10.2.0.4.0.jar protobuf-java-2.5.0.jar javax.servlet-api-3.0.1.jar slf4j-api-1.7.5.jar slf4j-log4j12-1.7.5.jar spring-security-core-3.1.4.RELEASE.jar jbossjta-4.16.6.Final.jar org.restlet-2.2.1.jar org.restlet.ext.json-2.2.1.jar json-20140107.jar gson-2.2.4.jar joda-time-2.3.jar spring-core-3.1.4.RELEASE.jar spring-web-3.1.4.RELEASE.jar freemarker-2.3.20.jar biweekly-0.3.3.jar jackson-core-2.3.3.jar" />
 				<attribute name="Timetabling-Version" value="3.5_bld${build.number}"/>
 			</manifest>
 		</jar>
@@ -299,7 +299,7 @@
 				<include name="commons-dbcp-1.4.jar"/>
 				<include name="commons-logging-1.0.4.jar"/>
 				<include name="commons-pool-1.5.4.jar"/>
-				<include name="cpsolver-1.3.45.jar"/>
+				<include name="cpsolver-1.3.47.jar"/>
 				<include name="dom4j-1.6.1.jar"/>
 				<include name="ehcache-core-2.6.6.jar"/>
 				<include name="ehcache-jgroupsreplication-1.7.jar"/>
@@ -362,7 +362,7 @@
 				<include name="commons-dbcp-1.4.jar"/>
 				<include name="commons-logging-1.0.4.jar"/>
 				<include name="commons-pool-1.5.4.jar"/>
-				<include name="cpsolver-1.3.45.jar"/>
+				<include name="cpsolver-1.3.47.jar"/>
 				<include name="dom4j-1.6.1.jar"/>
 				<include name="ehcache-core-2.6.6.jar"/>
 				<include name="ehcache-jgroupsreplication-1.7.jar"/>
