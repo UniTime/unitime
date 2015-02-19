@@ -1875,6 +1875,10 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Online Student Scheduling: confirmation email attach message as html file")
 	OnlineSchedulingEmailIncludeMessage("unitime.enrollment.email.message"),
+	
+	@Type(String.class)
+	@Description("Online Student Scheduling: confirmation email CC addresses (comma separated)")
+	OnlineSchedulingEmailCarbonCopy("unitime.enrollment.email.cc")
 	;
 
 	String iKey;

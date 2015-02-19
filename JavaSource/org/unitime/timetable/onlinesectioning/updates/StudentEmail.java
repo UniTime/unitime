@@ -231,6 +231,18 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							}
 						}
 						
+						String additionalCC = ApplicationProperty.OnlineSchedulingEmailCarbonCopy.value();
+						if (additionalCC != null) {
+							String suffix = ApplicationProperty.EmailDefaultAddressSuffix.value();
+							for (String address: additionalCC.split("[\n,]")) {
+								String cc = address.trim();
+								if (cc.isEmpty()) continue;
+								if (suffix != null && cc.indexOf('@') < 0)
+									cc += suffix;
+								email.addRecipientCC(cc, null);
+							}
+						}
+						
 						final StringWriter buffer = new StringWriter();
 						if (ApplicationProperty.OnlineSchedulingEmailIncludeMessage.isTrue()) {
 							PrintWriter out = new PrintWriter(buffer);
