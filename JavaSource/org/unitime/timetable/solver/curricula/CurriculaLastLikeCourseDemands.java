@@ -343,6 +343,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 				for (int i = 0; i < studentsToMakeUp; i++) {
 					WeightedStudentId student = new WeightedStudentId(-iLastStudentId.newId());
 					student.setStats(iClassification.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), iClassification.getAcademicClassification().getCode(), majors);
+					student.setCurriculum(iClassification.getCurriculum().getAbbv());
 					iStudents.put(student, new HashSet<CourseOffering>());
 					iMadeUpStudents.add(student);
 				}
