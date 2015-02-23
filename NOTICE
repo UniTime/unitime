@@ -363,9 +363,9 @@ spring-security-web (spring-security-web-3.1.4.RELEASE.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://springsource.org/spring-security
 
-CPSolver (cpsolver-1.3.45.jar)
+CPSolver (cpsolver-1.3.47.jar)
 	under GNU Lesser General Public License (LGPL), Version 3
-	http://code.google.com/p/cpsolver
+	http://www.cpsolver.org
 
 oro (oro-2.0.8.jar)
 	under Apache Software License (ASL), Version 2.0
