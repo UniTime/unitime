@@ -60,6 +60,7 @@ public class StudentEnrollmentExport extends BaseExport {
 	        		String extId = (course == null ? clazz.getExternalUniqueId() : clazz.getExternalId(course));
 	        		if (extId != null && !extId.isEmpty())
 	        			classEl.addAttribute("externalId", extId);
+	        		classEl.addAttribute("id", clazz.getUniqueId().toString());
 	        		if (course != null) {
 	        			if (course.getExternalUniqueId() != null && !course.getExternalUniqueId().isEmpty())
 	        				classEl.addAttribute("courseId", course.getExternalUniqueId());

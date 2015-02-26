@@ -335,8 +335,8 @@ public class Assignment extends BaseAssignment {
             if (getClazz().getSession().getStatusType().isTestSession()) return null;
         }
         event.setEventName(getClassName());
-        event.setMinCapacity(clazz.getClassLimit());
-        event.setMaxCapacity(clazz.getClassLimit());
+        event.setMinCapacity(clazz.getClassLimit(this));
+        event.setMaxCapacity(clazz.getClassLimit(this));
         
         boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
 		Calendar cal = Calendar.getInstance(Locale.US);
