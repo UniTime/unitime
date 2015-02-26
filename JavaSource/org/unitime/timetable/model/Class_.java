@@ -865,43 +865,54 @@ public class Class_ extends BaseClass_ {
     public int getClassLimit() {
     	return getClassLimit(new CommitedClassAssignmentProxy());
     }
+    
+    public int getClassLimit(Assignment assignment) {
+        int minLimit = getExpectedCapacity();
+    	int maxLimit = getMaxExpectedCapacity();
+    	int limit = maxLimit;
+    	if (minLimit < maxLimit && assignment != null) {
+    		int roomLimit = (int) Math.floor(assignment.getPlacement().getRoomSize() / (getRoomRatio() == null ? 1.0f : getRoomRatio()));
+    		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+    	}
+    	
+    	return limit;
+    }
 
     public int getClassLimit(ClassAssignmentProxy proxy) {
-    	// MinClassLimit == MaxClassLimit == ClassLimit
-    	if (getExpectedCapacity().equals(getMaxExpectedCapacity())) return getExpectedCapacity().intValue();
+    	// min and max limits
+        int minLimit = getExpectedCapacity();
+    	int maxLimit = getMaxExpectedCapacity();
 
-    	// No assignment -> take MaxClassLimit
-    	int maxClassLimit = getMaxExpectedCapacity().intValue();
+    	// is there a twiggle room?
+    	if (minLimit == maxLimit) return maxLimit;
+
+    	// get assignment
     	Assignment assignment = null;
     	try {
-    		assignment = (proxy==null?null:proxy.getAssignment(this));
+    		assignment = (proxy == null ? null : proxy.getAssignment(this));
     	} catch (Exception e) {
     		Debug.error(e);
     	}
-    	if (assignment!=null) {
-    		// Assignment -> take smaller from MaxClassLimit and RoomSize / RoomRatio
-    		maxClassLimit = Math.min(
-    				getMaxExpectedCapacity().intValue(),
-    				(int)Math.floor(assignment.getPlacement().getRoomSize()/getRoomRatio().floatValue()));
+    	
+    	// if there is an assignment, check the room limit
+    	if (assignment != null) {
+    		int roomLimit = (int) Math.floor(assignment.getPlacement().getRoomSize() / (getRoomRatio() == null ? 1.0f : getRoomRatio()));
+    		if (roomLimit < maxLimit) maxLimit = roomLimit;
     	}
-
-    	if (getChildClasses().isEmpty()) return maxClassLimit;
 
     	// if there are children classes ...
-    	for (Iterator i=getSchedulingSubpart().getChildSubparts().iterator();i.hasNext();) {
-    		SchedulingSubpart childSubpart = (SchedulingSubpart)i.next();
+    	for (SchedulingSubpart childSubpart: getSchedulingSubpart().getChildSubparts()) {
     		// take all children classes of the same subpart, sum their class limit
-    		int maxChildrenLimit = 0;
-    		for (Iterator j=getChildClasses().iterator();j.hasNext();) {
-    			Class_ childClass = (Class_)j.next();
+    		int childrenLimit = 0;
+    		for (Class_ childClass: getChildClasses()) {
     			if (!childClass.getSchedulingSubpart().equals(childSubpart)) continue;
-    			maxChildrenLimit += childClass.getClassLimit(proxy);
+    			childrenLimit += childClass.getClassLimit(proxy);
     		}
     		// children class limit cannot be exceeded
-    		maxClassLimit = Math.min(maxClassLimit, maxChildrenLimit);
+    		if (childrenLimit < maxLimit) maxLimit = childrenLimit;
     	}
-
-    	return maxClassLimit;
+    	
+    	return Math.max(minLimit, maxLimit);
     }
 
     public int getClassLimit(CourseOffering offering) {
