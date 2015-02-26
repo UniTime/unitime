@@ -170,8 +170,11 @@ public class StudentEnrollmentImport extends BaseImport {
             		Class_ clazz = null;
             		CourseOffering course = null;
 
+            		if (clazz == null && classElement.attributeValue("id") != null)
+            			clazz = id2class.get(Long.valueOf(classElement.attributeValue("id")));
+            		
             		String classExternalId  = classElement.attributeValue("externalId");
-            		if (classExternalId != null) {
+            		if (clazz == null && classExternalId != null) {
             			clazz = extId2class.get(classExternalId);
             			course = extId2course.get(classExternalId);
             			if (clazz == null) {
@@ -186,14 +189,19 @@ public class StudentEnrollmentImport extends BaseImport {
             			course = name2course.get(className);
             		}
             		
-            		String courseName = classElement.attributeValue("course");
-            		if (courseName != null) {
-            			course = cname2course.get(courseName);
-            		} else {
-                		String subject = classElement.attributeValue("subject");
-                		String courseNbr = classElement.attributeValue("courseNbr");
-                		if (subject != null && courseNbr != null)
-                			course = cname2course.get(subject + " " + courseNbr);
+            		if (course == null && classElement.attributeValue("courseId") != null)
+            			course = cextId2course.get(classElement.attributeValue("courseId"));
+            		
+            		if (course == null) {
+                		String courseName = classElement.attributeValue("course");
+            			if (courseName != null) {
+            				course = cname2course.get(courseName);
+            			} else {
+                    		String subject = classElement.attributeValue("subject");
+                    		String courseNbr = classElement.attributeValue("courseNbr");
+                    		if (subject != null && courseNbr != null)
+                    			course = cname2course.get(subject + " " + courseNbr);
+                		}
             		}
             		
             		if (course != null  && clazz == null) {
@@ -202,9 +210,6 @@ public class StudentEnrollmentImport extends BaseImport {
                 		if (type != null && suffix != null)
                 			clazz = name2class.get(course.getCourseName() + " " + type.trim() + " " + suffix);
             		}
-            		
-            		if (clazz == null && classElement.attributeValue("id") != null)
-            			clazz = id2class.get(Long.valueOf(classElement.attributeValue("id")));
             		
             		if (clazz == null) {
             			warn("Class " + (classExternalId != null ? classExternalId : classElement.attributeValue("name",
