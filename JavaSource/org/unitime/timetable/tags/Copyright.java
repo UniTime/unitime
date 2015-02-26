@@ -43,7 +43,7 @@ public class Copyright extends BodyTagSupport {
     	String body = 
     		"<a class='unitime-FooterLink' href='http://www.unitime.org' tabIndex='-1'>&copy;&nbsp;2008&nbsp;-&nbsp;2015&nbsp;The&nbsp;Apereo&nbsp;Foundation</a>," + 
     		(isBr() ? "<br>" : " ") + 
-    		"<a class='unitime-FooterLink' href='http://www.unitime.org/uct_license.php' tabIndex='-1'>distributed&nbsp;under&nbsp;Apache&nbsp;License,&nbsp;Version&nbsp;2.</a>";
+    		"<a class='unitime-FooterLink' href='http://www.unitime.org/uct_license.php' tabIndex='-1'>distributed&nbsp;under&nbsp;the&nbsp;Apache&nbsp;License,&nbsp;Version&nbsp;2.</a>";
         try {
             pageContext.getOut().print(body);
         }
