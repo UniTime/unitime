@@ -236,19 +236,17 @@ public class ReplicatedServer extends AbstractServer {
 	public XCourseId getCourse(String course) {
 		Lock lock = readLock();
 		try {
-			if (course.indexOf('-') >= 0) {
-				String courseName = course.substring(0, course.indexOf('-')).trim();
-				String title = course.substring(course.indexOf('-') + 1).trim();
+			for (int idx = course.indexOf('-'); idx >= 0; idx = course.indexOf('-', idx + 1)) {
+				String courseName = course.substring(0, idx).trim();
+				String title = course.substring(idx + 1).trim();
 				TreeSet<XCourseId> infos = iCourseForName.get(courseName.toLowerCase());
 				if (infos!= null && !infos.isEmpty())
 					for (XCourseId info: infos)
 						if (title.equalsIgnoreCase(info.getTitle())) return info;
-				return null;
-			} else {
-				TreeSet<XCourseId> infos = iCourseForName.get(course.toLowerCase());
-				if (infos!= null && !infos.isEmpty()) return infos.first();
-				return null;
 			}
+			TreeSet<XCourseId> infos = iCourseForName.get(course.toLowerCase());
+			if (infos!= null && !infos.isEmpty()) return infos.first();
+			return null;
 		} finally {
 			lock.release();
 		}
