@@ -54,7 +54,6 @@
     	<tt:propertyEquals name="unitime.menu.style" user="true" value="Static On Top">
     		<span id='UniTimeGWT:TopMenu' style="display: block; height: 23px;"></span>
     	</tt:propertyEquals>
-    </logic:equal>
     </tt:form-factor>
     
     <tt:hasProperty name="tmtbl.global.warn">
