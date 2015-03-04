@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
+import org.cpsolver.coursett.Constants;
+import org.cpsolver.coursett.constraint.FlexibleConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
@@ -49,6 +51,11 @@ public class ViolatedDistrPreferencesReport implements Serializable {
 			if (!gc.isSatisfied(assignment))
 				iGroups.add(new ViolatedDistrPreference(solver, gc));
 		}
+		for (FlexibleConstraint fc: model.getFlexibleConstraints()) {
+			if (!fc.isHard() && fc.getContext(assignment).getPreference() > 0.0) {
+				iGroups.add(new ViolatedDistrPreference(solver, fc));
+			}
+		}
 	}
 	
 	public Set getGroups() {
@@ -59,6 +66,7 @@ public class ViolatedDistrPreferencesReport implements Serializable {
 		private static final long serialVersionUID = 1L;
 		Vector iClasses = new Vector();
 		int iPreference = 0;
+		int iViolations = 0;
 		String iType = null;
 		String iName = null;
 		
@@ -67,6 +75,7 @@ public class ViolatedDistrPreferencesReport implements Serializable {
 			iPreference = gc.getPreference();
 			iType = gc.getType().reference();
 			iName = gc.getName();
+			iViolations = gc.getCurrentPreference(assignment) / Math.abs(iPreference);
 			for (Lecture lecture: gc.variables()) {
 				if (assignment.getValue(lecture)==null) continue;
 				iClasses.add(new ClassAssignmentDetails(solver,lecture,false));
@@ -74,7 +83,21 @@ public class ViolatedDistrPreferencesReport implements Serializable {
 			Collections.sort(iClasses);
 		}
 		
+		public ViolatedDistrPreference(Solver solver, FlexibleConstraint fc) {
+			Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
+			iPreference = Constants.preference2preferenceLevel(fc.getPrologPreference());
+			iType = fc.getReference();
+			iName = fc.getName();
+			iViolations = (int)Math.round(fc.getNrViolations(assignment, null, null));
+			for (Lecture lecture: fc.variables()) {
+				if (assignment.getValue(lecture)==null) continue;
+				iClasses.add(new ClassAssignmentDetails(solver,lecture,false));
+			}
+			Collections.sort(iClasses);
+		}
+		
 		public int getPreference() { return iPreference; }
+		public int getNrViolations() { return iViolations; }
 		public String getName() { return iName; }
 		public String getType() { return iType; }
 		public Vector getClasses() { return iClasses; }
