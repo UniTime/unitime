@@ -482,10 +482,10 @@ public class SolutionReportAction extends Action {
 
 	public PdfWebTable getViolatedDistrPreferencesReportTable(HttpServletRequest request, ViolatedDistrPreferencesReport report, boolean noHtml) {
 		WebTable.setOrder(sessionContext,"solutionReports.violDistPrefReport.ord",request.getParameter("vdist_ord"),1);
-		PdfWebTable webTable = new PdfWebTable( 5,
+		PdfWebTable webTable = new PdfWebTable( 6,
    	        	"Violated Distribution Preferences", "solutionReport.do?vdist_ord=%%",
-   				new String[] {"Type", "Preference", "Class", "Time", "Room"},
-   				new String[] {"left", "left", "left", "left", "left"},
+   				new String[] {"Type", "Preference", "Violations", "Class", "Time", "Room"},
+   				new String[] {"left", "left", "right", "left", "left", "left"},
    				null);
         webTable.setRowStyle("white-space:nowrap");
         
@@ -526,11 +526,12 @@ public class SolutionReportAction extends Action {
         				(noHtml?"":"<font color='"+PreferenceLevel.int2color(g.getPreference())+"'>")+
         				PreferenceLevel.getPreferenceLevel(PreferenceLevel.int2prolog(g.getPreference())).getPrefName()+
         				(noHtml?"":"</font>"),
+        				String.valueOf(g.getNrViolations()),
         				cSB.toString(), tSB.toString(), rSB.toString()
         			},
         			new Comparable[] {
         				g.getName(),
-        				new Integer(g.getPreference()),
+        				new Integer(g.getPreference()), g.getNrViolations(),
         				ord, null, null
         			});
         	}
