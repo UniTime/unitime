@@ -26,7 +26,7 @@
 	
 	<groupId>org.unitime</groupId>
 	<artifactId>unitime</artifactId>
-	<version>4.0</version>
+	<version>4.1</version>
 	<packaging>jar</packaging>
 	
 	<name>UniTime</name>

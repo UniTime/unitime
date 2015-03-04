@@ -26,7 +26,7 @@ import com.google.gwt.i18n.client.Constants;
  */
 public interface GwtConstants extends Constants {
 	
-	@DefaultStringValue("4.0")
+	@DefaultStringValue("4.1")
 	String version();
 
 	@DefaultStringValue("&copy; 2008 - 2015 The Apereo Foundation")
