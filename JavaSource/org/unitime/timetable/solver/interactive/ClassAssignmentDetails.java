@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.cpsolver.coursett.constraint.FlexibleConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.InstructorConstraint;
 import org.cpsolver.coursett.constraint.JenrlConstraint;
@@ -226,6 +227,15 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			for (Constraint c: lecture.constraints()) {
 				if (c instanceof GroupConstraint) {
 					GroupConstraint gc = (GroupConstraint)c;
+					DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(assignment, gc));
+					for (Lecture another: gc.variables()) {
+						if (another.equals(lecture)) continue;
+						dist.addClass(another.getClassId());
+					}
+					iGroupConstraintInfos.add(dist);
+				}
+				if (c instanceof FlexibleConstraint) {
+					FlexibleConstraint gc = (FlexibleConstraint)c;
 					DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(assignment, gc));
 					for (Lecture another: gc.variables()) {
 						if (another.equals(lecture)) continue;
