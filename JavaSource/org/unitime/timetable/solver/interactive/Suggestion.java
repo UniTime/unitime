@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.cpsolver.coursett.constraint.FlexibleConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.InstructorConstraint;
 import org.cpsolver.coursett.constraint.JenrlConstraint;
@@ -40,6 +42,7 @@ import org.cpsolver.coursett.criteria.BackToBackInstructorPreferences;
 import org.cpsolver.coursett.criteria.BrokenTimePatterns;
 import org.cpsolver.coursett.criteria.DepartmentBalancingPenalty;
 import org.cpsolver.coursett.criteria.DistributionPreferences;
+import org.cpsolver.coursett.criteria.FlexibleConstraintCriterion;
 import org.cpsolver.coursett.criteria.Perturbations;
 import org.cpsolver.coursett.criteria.RoomPreferences;
 import org.cpsolver.coursett.criteria.SameSubpartBalancingPenalty;
@@ -116,6 +119,7 @@ public class Suggestion implements Serializable, Comparable {
             iBtbInstructorInfos = new Vector();
         	HashSet jenrls = new HashSet();
         	HashSet gcs = new HashSet();
+        	HashSet fcs = new HashSet();
         	Hashtable committed = new Hashtable();
         	for (Lecture lecture: assignment.assignedVariables()) {
         		Placement p = assignment.getValue(lecture);
@@ -138,6 +142,7 @@ public class Suggestion implements Serializable, Comparable {
         				committed.put(p,x);
         			}
         			gcs.addAll(lecture.groupConstraints());
+        			fcs.addAll(lecture.getFlexibleGroupConstraints());
         			for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
         			    for (Lecture other: ic.variables()) {
         			    	Placement otherPlacement = assignment.getValue(other);
@@ -196,6 +201,17 @@ public class Suggestion implements Serializable, Comparable {
 				}
 				iGroupConstraintInfos.addElement(dist);
             }
+            for (Iterator i=fcs.iterator();i.hasNext();) {
+            	FlexibleConstraint fc = (FlexibleConstraint)i.next();
+            	if (fc.isHard() || fc.getNrViolations(assignment, new HashSet<Placement>(unresolvedConflicts), new HashMap<Lecture, Placement>(initialAssignments)) == 0.0) continue;
+				DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(assignment, fc));
+				for (Lecture another: fc.variables()) {
+					Placement anotherPlacement = assignment.getValue(another);
+					if (anotherPlacement!=null)
+						dist.addHint(new Hint(solver, anotherPlacement));
+				}
+				iGroupConstraintInfos.addElement(dist);
+            }
         }
         iValue = solver.currentSolution().getModel().getTotalValue(assignment);
         TimetableModel m = (TimetableModel)solver.currentSolution().getModel();
@@ -203,7 +219,7 @@ public class Suggestion implements Serializable, Comparable {
         iUselessSlots = Math.round(m.getCriterion(UselessHalfHours.class).getValue(assignment) + m.getCriterion(BrokenTimePatterns.class).getValue(assignment));
         iGlobalTimePreference = m.getCriterion(TimePreferences.class).getValue(assignment);
         iGlobalRoomPreference = Math.round(m.getCriterion(RoomPreferences.class).getValue(assignment));
-        iGlobalGroupConstraintPreference = Math.round(m.getCriterion(DistributionPreferences.class).getValue(assignment));
+        iGlobalGroupConstraintPreference = Math.round(m.getCriterion(DistributionPreferences.class).getValue(assignment)) + Math.round(m.getCriterion(FlexibleConstraintCriterion.class).getValue(assignment));
         iViolatedStudentConflicts = Math.round(m.getCriterion(StudentConflict.class).getValue(assignment) + m.getCriterion(StudentCommittedConflict.class).getValue(assignment));
         iHardStudentConflicts = Math.round(m.getCriterion(StudentHardConflict.class).getValue(assignment));
         iDistanceStudentConflicts = Math.round(m.getCriterion(StudentDistanceConflict.class).getValue(assignment));
@@ -308,6 +324,20 @@ public class Suggestion implements Serializable, Comparable {
         		iGlobalGroupConstraintPreference += Math.abs(curPref==0?gc.getPreference():curPref);
     			DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(assignment, gc));
     			for (Lecture another: gc.variables()) {
+    				if (another.equals(lecture)) {
+    					//dist.addHint(new Hint(solver, dummyPlacement));
+    				} else if (assignment.getValue(another)!=null)
+    					dist.addHint(new Hint(solver, assignment.getValue(another)));
+    			}
+    			iGroupConstraintInfos.addElement(dist);
+        	}
+        	HashMap<Lecture, Placement> dummies = new HashMap<Lecture, Placement>();
+        	if (dummyPlacement != null) dummies.put(lecture, dummyPlacement);
+        	for (FlexibleConstraint fc: lecture.getFlexibleGroupConstraints()) {
+        		if (fc.isHard() || fc.getNrViolations(assignment, null, dummies) == 0.0) continue;
+        		iGlobalGroupConstraintPreference += Math.abs(fc.getCurrentPreference(assignment, null, dummies));
+    			DistributionInfo dist = new DistributionInfo(new GroupConstraintInfo(assignment, fc));
+    			for (Lecture another: fc.variables()) {
     				if (another.equals(lecture)) {
     					//dist.addHint(new Hint(solver, dummyPlacement));
     				} else if (assignment.getValue(another)!=null)
