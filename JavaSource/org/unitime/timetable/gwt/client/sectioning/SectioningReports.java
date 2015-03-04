@@ -89,6 +89,7 @@ public class SectioningReports extends Composite {
 		UNBALANCED_SECTIONS("Unbalanced Classes", "org.cpsolver.studentsct.report.UnbalancedSectionsTable"),
 		DISTANCE_CONFLICTS("Distance Conflicts", "org.cpsolver.studentsct.report.DistanceConflictTable"),
 		TIME_OVERLAPS("Time Overlaps", "org.cpsolver.studentsct.report.TimeOverlapConflictTable"),
+		REQUEST_GROUPS("Request Groups", "org.cpsolver.studentsct.report.RequestGroupTable")
 		;
 		
 		String iName, iImplementation;
