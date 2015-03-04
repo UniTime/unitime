@@ -60,6 +60,7 @@ import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.RequestGroup;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
@@ -144,6 +145,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iFixWeights = true;
 	private boolean iCheckForNoBatchStatus = true;
 	private boolean iCheckEnabledForScheduling = true;
+	private boolean iLoadRequestGroups = false;
     
     private Progress iProgress = null;
     
@@ -166,6 +168,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iFixWeights = model.getProperties().getPropertyBoolean("Load.FixWeights", iFixWeights);
         iCheckForNoBatchStatus = model.getProperties().getPropertyBoolean("Load.CheckForNoBatchStatus", iCheckForNoBatchStatus);
         iCheckEnabledForScheduling = model.getProperties().getPropertyBoolean("Load.CheckEnabledForScheduling", iCheckEnabledForScheduling);
+        iLoadRequestGroups = model.getProperties().getPropertyBoolean("Load.RequestGroups", iLoadRequestGroups);
         
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -696,6 +699,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         	StudentClassEnrollment enrl = i.next();
                         	Section section = course.getOffering().getSection(enrl.getClazz().getUniqueId());
                             if (section!=null) {
+                            	if (getModel().isMPP())
+                            		selChoices.add(section.getChoice());
                                 assignedSections.add(section);
                                 if (assignedConfig != null && assignedConfig.getId() != section.getSubpart().getConfig().getId()) {
                                 	iProgress.error("There is a problem assigning " + course.getName() + " to " + nameFormat.format(s) + " (" + s.getExternalUniqueId() + "): classes from different configurations.");
@@ -1126,6 +1131,24 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	student.getMinors().add(new AcademicAreaCode("A", a.getAbbreviation()));
     }
     
+    public void loadRequestGroups(Student student, org.unitime.timetable.model.Student s) {
+        for (StudentGroup g: s.getGroups()) {
+        	for (Request r: student.getRequests()) {
+        		if (r instanceof CourseRequest) {
+        			CourseRequest cr = (CourseRequest)r;
+        			Course course = cr.getCourses().get(0);
+        			RequestGroup group = null;
+        			for (RequestGroup rg: course.getRequestGroups()) {
+        				if (rg.getId() == g.getUniqueId()) { group = rg; break; }
+        			}
+        			if (group == null)
+        				group = new RequestGroup(g.getUniqueId(), g.getGroupName(), course);
+        			cr.addRequestGroup(group);
+        		}
+        	}
+        }
+    }
+    
 	public static BitSet getFreeTimeBitSet(Session session) {
 		int startMonth = session.getPatternStartMonth();
 		int endMonth = session.getPatternEndMonth();
@@ -1417,6 +1440,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 		}
                 	}
                 } else {
+                	if (iLoadRequestGroups) loadRequestGroups(student, s);
                     getModel().addStudent(student);
                     assignStudent(student);
                 }
