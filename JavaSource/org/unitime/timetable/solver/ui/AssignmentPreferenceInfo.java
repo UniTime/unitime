@@ -20,12 +20,14 @@
 package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
 import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
+import org.cpsolver.coursett.constraint.FlexibleConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.InstructorConstraint;
 import org.cpsolver.coursett.criteria.BrokenTimePatterns;
@@ -163,11 +165,15 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 				placement.variable().getModel().getCriterion(UselessHalfHours.class).getValue(assignment, placement, null) + 
 				placement.variable().getModel().getCriterion(BrokenTimePatterns.class).getValue(assignment, placement, null));
 		DepartmentSpreadConstraint deptConstraint = null;
+		HashMap<Lecture, Placement> assignments = new HashMap<Lecture, Placement>();
+		if (placement != null) assignments.put(placement.variable(), placement);
 		for (Constraint c: lecture.constraints()) {
 			if (c instanceof DepartmentSpreadConstraint)
 				deptConstraint = (DepartmentSpreadConstraint)c;
 			if (c instanceof GroupConstraint)
 				iGroupConstraintPref += ((GroupConstraint)c).getCurrentPreference(assignment, placement);
+			if (c instanceof FlexibleConstraint)
+				iGroupConstraintPref += ((FlexibleConstraint)c).getCurrentPreference(assignment, null, assignments);
 		}
 		if (deptConstraint!=null) {
 			iDeptBalancPenalty = ((double)deptConstraint.getPenalty(assignment, placement))/12.0;

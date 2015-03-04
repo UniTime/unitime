@@ -21,7 +21,7 @@ package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
 
-
+import org.cpsolver.coursett.constraint.FlexibleConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
@@ -47,6 +47,12 @@ public class GroupConstraintInfo implements TimetableInfo, Serializable {
 		super();
 		setPreference(gc.getPrologPreference());
 		setIsSatisfied(gc.isSatisfied(assignment));
+		setName(gc.getName());
+	}
+	public GroupConstraintInfo(Assignment<Lecture, Placement> assignment, FlexibleConstraint gc) {
+		super();
+		setPreference(gc.getPrologPreference());
+		setIsSatisfied(gc.isHard() || gc.getContext(assignment).getPreference() <= 0.0);
 		setName(gc.getName());
 	}
 	
