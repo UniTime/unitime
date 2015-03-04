@@ -1825,16 +1825,17 @@ public class TimetableDatabaseLoader extends TimetableLoader {
    		addGroupConstraint(gc);
     }
     
-    private void loadInstructorGroupConstraints(DepartmentalInstructor instructor) {
+    private void loadInstructorGroupConstraints(DepartmentalInstructor instructor, Set<Long> checkedDistPrefIds) {
     	Set prefs = instructor.getPreferences(DistributionPref.class);
     	if (prefs==null || prefs.isEmpty()) return;
     	for (Iterator i=prefs.iterator();i.hasNext();) {
     		DistributionPref pref = (DistributionPref)i.next();
-    		loadInstructorGroupConstraint(instructor, pref);
+    		if (checkedDistPrefIds.add(pref.getUniqueId()))
+    			loadInstructorGroupConstraint(instructor, pref);
     	}
     }
 
-    private void loadInstructorGroupConstraints(Department department, org.hibernate.Session hibSession) {
+    private void loadInstructorGroupConstraints(Department department, Set<Long> checkedDistPrefIds, org.hibernate.Session hibSession) {
     	if (!department.isInheritInstructorPreferences()) return;
     	List instructors = null;
     	if (department.isExternalManager()) {
@@ -1850,7 +1851,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	iProgress.setPhase("Loading instructor distr. constraints for "+department.getShortLabel()+" ...", instructors.size());
     	for (Iterator i=instructors.iterator();i.hasNext();) {
     		DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
-    		loadInstructorGroupConstraints(instructor);
+    		loadInstructorGroupConstraints(instructor, checkedDistPrefIds);
     		iProgress.incProgress();
     	}
     }
@@ -2491,9 +2492,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			iProgress.incProgress();
 		}
 		
+		Set<Long> checkedDistPrefIds = new HashSet<Long>();
 		for (int i=0;i<iSolverGroup.length;i++) {
 			for (Iterator j=iSolverGroup[i].getDepartments().iterator();j.hasNext();) {
-				loadInstructorGroupConstraints((Department)j.next(), hibSession);
+				loadInstructorGroupConstraints((Department)j.next(), checkedDistPrefIds, hibSession);
 			}
 		}
 		
