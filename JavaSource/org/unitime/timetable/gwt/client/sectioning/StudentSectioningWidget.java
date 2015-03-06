@@ -491,7 +491,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onClick(ClickEvent event) {
 				clearMessage();
 				LoadingWidget.getInstance().show(MESSAGES.waitEnroll());
-				iSectioningService.enroll(iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+				iSectioningService.enroll(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
 					public void onSuccess(ClassAssignmentInterface result) {
 						LoadingWidget.getInstance().hide();
 						iSavedAssignment = result;
@@ -1104,7 +1104,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	public void checkEligibility(final Long sessionId, final Long studentId, final boolean saved, final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret) {
-		if (!iOnline || !iMode.isSectioning()) {
+		if (!iMode.isSectioning()) {
 			lastRequest(sessionId, studentId, saved);
 			if (ret != null) ret.onSuccess(null);
 			return;

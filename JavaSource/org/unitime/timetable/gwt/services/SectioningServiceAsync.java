@@ -55,7 +55,7 @@ public interface SectioningServiceAsync {
 	void lastRequest(boolean online, Long sessionId, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
 	void lastResult(boolean online, Long sessionId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
     void saveRequest(CourseRequestInterface request, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
-	void enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
+	void enroll(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 	void getProperties(Long sessionId, AsyncCallback<SectioningProperties> callback) throws SectioningException, PageAccessException;
 	void listEnrollments(Long offeringId, AsyncCallback<List<ClassAssignmentInterface.Enrollment>> callback) throws SectioningException, PageAccessException;
 	void getEnrollment(boolean online, Long studentId, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;

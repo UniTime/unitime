@@ -132,6 +132,7 @@ import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.solver.studentsct.BatchEnrollStudent;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.util.NameFormat;
@@ -447,7 +448,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				request.setStudentId(getStudentId(request.getAcademicSessionId()));
 				ClassAssignmentInterface ret = server.execute(server.createAction(FindAssignmentAction.class).forRequest(request).withAssignment(currentAssignment), currentUser()).get(0);
 				if (ret != null)
-					ret.setCanEnroll(false);
+					ret.setCanEnroll(getStudentId(request.getAcademicSessionId()) != null);
 				return ret;
 			}
 			
@@ -561,11 +562,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				ClassAssignmentInterface.ClassAssignment selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
 				
 				Collection<ClassAssignmentInterface> ret = server.execute(server.createAction(ComputeSuggestionsAction.class).forRequest(request).withAssignment(currentAssignment).withSelection(selectedAssignment).withFilter(filter), currentUser());
-				
-				if (ret != null)
+				if (ret != null) {
+					boolean canEnroll = (getStudentId(request.getAcademicSessionId()) != null);
 					for (ClassAssignmentInterface ca: ret)
-						ca.setCanEnroll(false);
-				
+						ca.setCanEnroll(canEnroll);
+				}
 				return ret;
 			}
 			
@@ -882,7 +883,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				throw new SectioningException(MSG.exceptionNoSolver());
 
 			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
-			ret.setCanEnroll(false);
+			if (ret != null)
+				ret.setCanEnroll(getStudentId(sessionId) != null);
 			return ret;
 		}
 		
@@ -976,15 +978,24 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 	}
 	
-	public ClassAssignmentInterface enroll(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException {
+	public ClassAssignmentInterface enroll(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException {
 		if (request.getStudentId() == null) {
 			Long sessionId = request.getAcademicSessionId();
 			if (sessionId == null) sessionId = getLastSessionId();
 			if (sessionId != null) request.setStudentId(getStudentId(sessionId));
 		}
-		Long sessionId = canEnroll(true, request.getStudentId());
+		
+		Long sessionId = canEnroll(online, request.getStudentId());
 		if (!request.getAcademicSessionId().equals(sessionId))
 			throw new SectioningException(MSG.exceptionBadSession());
+		
+		if (!online) {
+			OnlineSectioningServer server = getStudentSolver();
+			if (server == null) 
+				throw new SectioningException(MSG.exceptionNoSolver());
+
+			return server.execute(server.createAction(BatchEnrollStudent.class).forStudent(request.getStudentId()).withRequest(request).withAssignment(currentAssignment), currentUser());
+		}
 		
 		OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId());
 		if (server == null) throw new SectioningException(MSG.exceptionBadStudentId());
@@ -1780,7 +1791,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 			ClassAssignmentInterface ret = server.execute(server.createAction(GetAssignment.class).forStudent(studentId), currentUser());
 			if (ret != null)
-				ret.setCanEnroll(false);
+				ret.setCanEnroll(getStudentId(sessionId) != null);
 			return ret;
 		}
 	}
@@ -1943,6 +1954,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				EligibilityCheck check = new EligibilityCheck();
 				check.setSessionId(server.getAcademicSession().getUniqueId());
 				check.setStudentId(studentId);
+				check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
+				check.setFlag(EligibilityFlag.CAN_ENROLL, true);
 				return check;
 			}
 			

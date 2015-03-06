@@ -340,7 +340,7 @@ public class OnlineSectioningTest extends Composite {
 			ArrayList<ClassAssignment> assignments = new ArrayList<ClassAssignment>();
 			for (CourseAssignment cx: assignment.getCourseAssignments())
 				assignments.addAll(cx.getClassAssignments());
-			iSectioningService.enroll(request, assignments, new AsyncCallback<ClassAssignmentInterface>() {
+			iSectioningService.enroll(false, request, assignments, new AsyncCallback<ClassAssignmentInterface>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;enroll(" + assignment.getCourseAssignments() + ") failed: " + caught.getMessage());
