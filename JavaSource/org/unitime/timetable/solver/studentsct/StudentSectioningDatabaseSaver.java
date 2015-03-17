@@ -20,9 +20,12 @@
 package org.unitime.timetable.solver.studentsct;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,8 +33,10 @@ import org.cpsolver.ifs.solver.Solver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.studentsct.StudentSectioningSaver;
 import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
+import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
@@ -43,6 +48,7 @@ import org.hibernate.Transaction;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -68,6 +74,8 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     private Date iTimeStamp = null;
     private StudentSectioningStatus iStatusToSet = null;
     private boolean iResetStatus = false;
+    private boolean iUpdateCourseRequests = true;
+    private String iOwnerId = null;
     
     private int iInsert = 0;
     
@@ -82,6 +90,8 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         iTerm = solver.getProperties().getProperty("Data.Term");
         iProgress = Progress.getInstance(getModel());
         iProjections = "Projection".equals(solver.getProperties().getProperty("StudentSctBasic.Mode", "Initial"));
+        iUpdateCourseRequests = solver.getProperties().getPropertyBoolean("Interactive.UpdateCourseRequests", true);
+        iOwnerId = solver.getProperties().getProperty("General.OwnerPuid");
     }
     
     public void save() {
@@ -151,6 +161,78 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
         for (Iterator<WaitList> i = s.getWaitlists().iterator(); i.hasNext(); ) {
             WaitList wl = i.next();
             hibSession.delete(wl); i.remove();
+        }
+        
+        if (iUpdateCourseRequests && BatchEnrollStudent.sRequestsChangedStatus.equals(student.getStatus())) {
+        	Set<CourseDemand> remaining = new TreeSet<CourseDemand>(s.getCourseDemands());
+        	Date ts = new Date();
+        	for (Request request: student.getRequests()) {
+        		CourseDemand cd = null;
+        		for (Iterator<CourseDemand> i = remaining.iterator(); i.hasNext(); ) {
+        			CourseDemand adept = i.next();
+        			if (adept.getUniqueId().equals(request.getId())) {
+        				cd = adept; i.remove(); break;
+        			}
+        		}
+        		if (cd != null) {
+        			cd.setPriority(request.getPriority());
+        			cd.setWaitlist(request instanceof CourseRequest && ((CourseRequest)request).isWaitlist());
+        			hibSession.update(cd);
+        		} else {
+    				cd = new CourseDemand();
+					cd.setTimestamp(ts);
+					cd.setChangedBy(iOwnerId);
+					s.getCourseDemands().add(cd);
+					cd.setStudent(s);
+					cd.setAlternative(request.isAlternative());
+					cd.setPriority(request.getPriority());
+        			if (request instanceof FreeTimeRequest) {
+        				FreeTimeRequest ft = (FreeTimeRequest)request;
+    					cd.setWaitlist(false);
+    					FreeTime free = new FreeTime();
+    					cd.setFreeTime(free);
+    					free.setCategory(0);
+    					free.setDayCode(ft.getTime().getDayCode());
+    					free.setStartSlot(ft.getTime().getStartSlot());
+    					free.setLength(ft.getTime().getLength());
+    					free.setSession(s.getSession());
+    					free.setName("Free " + ft.getTime().getDayHeader() + " " + ft.getTime().getStartTimeHeader(true) + " - " + ft.getTime().getEndTimeHeader(true));
+    					hibSession.saveOrUpdate(free);
+        			} else {
+        				CourseRequest cr = (CourseRequest)request;
+        				cd.setWaitlist(cr.isWaitlist());
+        				cd.setCourseRequests(new HashSet<org.unitime.timetable.model.CourseRequest>());
+        				cd.setTimestamp(new Date(cr.getTimeStamp()));
+        				int order = 0;
+        				for (Course course: cr.getCourses()) {
+        					CourseOffering co = iCourses.get(course.getId());
+        					if (co == null) continue;
+        					org.unitime.timetable.model.CourseRequest crq = new org.unitime.timetable.model.CourseRequest();
+        					cd.getCourseRequests().add(crq);
+        					crq.setCourseDemand(cd);
+        					crq.setAllowOverlap(false);
+        					crq.setCredit(0);
+        					crq.setOrder(order++);
+        					crq.setCourseOffering(co);
+						}
+        			}
+					Long demandId = (Long)hibSession.save(cd);
+					for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
+	                    iRequests.put(demandId+":"+cr.getCourseOffering().getInstructionalOffering().getUniqueId(), cr);
+	                }
+        		}
+        	}
+        	
+        	for (CourseDemand cd: remaining) {
+				if (cd.getFreeTime() != null)
+					hibSession.delete(cd.getFreeTime());
+				for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests()) {
+					iRequests.remove(cd.getUniqueId() + ":" + cr.getCourseOffering().getInstructionalOffering().getUniqueId());
+					hibSession.delete(cr);
+				}
+				s.getCourseDemands().remove(cd);
+				hibSession.delete(cd);
+			}
         }
         
         for (Iterator e=student.getRequests().iterator();e.hasNext();) {

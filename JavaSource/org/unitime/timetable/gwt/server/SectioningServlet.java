@@ -1956,6 +1956,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				check.setStudentId(studentId);
 				check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
 				check.setFlag(EligibilityFlag.CAN_ENROLL, true);
+				check.setFlag(EligibilityFlag.CAN_WAITLIST, true);
 				return check;
 			}
 			
