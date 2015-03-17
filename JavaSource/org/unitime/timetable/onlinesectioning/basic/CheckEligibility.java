@@ -95,7 +95,8 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 			
 			Student student = (iStudentId == null ? null : StudentDAO.getInstance().get(iStudentId, helper.getHibSession()));
 			if (student == null) {
-				if (!iCheck.hasFlag(EligibilityFlag.IS_ADMIN) && !iCheck.hasFlag(EligibilityFlag.IS_ADVISOR))
+				if (!iCheck.hasFlag(EligibilityFlag.IS_ADMIN) && !iCheck.hasFlag(EligibilityFlag.IS_ADVISOR)
+						&& server.getAcademicSession().isSectioningEnabled())
 					iCheck.setMessage(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
 				logCheck(action, iCheck);
 				action.setResult(OnlineSectioningLog.Action.ResultType.NULL);

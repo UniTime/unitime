@@ -746,7 +746,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("You are not authenticated, please log in first.")
 	String exceptionEnrollNotAuthenticated();
 	
-	@DefaultMessage("You are not registered as a student in {0}.")
+	@DefaultMessage("You are not eligible to register in {0}.")
 	String exceptionEnrollNotStudent(String session);
 	
 	@DefaultMessage("Unable to register for {0}, the class is no longer available.")
