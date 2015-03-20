@@ -383,6 +383,10 @@ public class SessionRestore implements SessionRestoreInterface {
 			if (department.isInheritInstructorPreferences() == null)
 				department.setInheritInstructorPreferences(!department.isExternalManager());
 		}
+		if (entity.getObject() instanceof ItypeDesc) {
+			ItypeDesc itype = (ItypeDesc)entity.getObject();
+			itype.setItype(new Integer(entity.getId()));
+		}
 		return true;
 	}
 	
