@@ -29,8 +29,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Formats;
 
 /**
@@ -42,6 +45,13 @@ public class LocaleFilter implements Filter {
 	@Override
 	public void init(FilterConfig fc) throws ServletException {
 		iUseBrowserSettings = "true".equals(fc.getInitParameter("use-browser-settings"));
+	}
+	
+	private UserContext getUser() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserContext)
+			return (UserContext)authentication.getPrincipal();
+		return null;
 	}
 
 	@Override
@@ -64,8 +74,13 @@ public class LocaleFilter implements Filter {
 				}
 				
 				// Fall back to unitime.locale
-				if (locale == null)
+				if (locale == null) {
 					locale = ApplicationProperty.Locale.value();
+					
+					UserContext user = getUser();
+					if (user != null)
+						locale = user.getProperty(ApplicationProperty.Locale.key(), locale);
+				}
 				
 				Localization.setLocale(locale);
 			}
