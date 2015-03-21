@@ -62,6 +62,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRespons
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MessageInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
@@ -823,7 +824,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iMeetingsHeader.addButton("add", MESSAGES.buttonAddMeetings(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iEventAddMeetings.showDialog(getEventId());
+				iEventAddMeetings.showDialog(getEventId(), getConflicts());
 			}
 		});
 		iMeetingsHeader.addButton("operations", MESSAGES.buttonMoreOperations(), 75, new ClickHandler() {
@@ -1892,7 +1893,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	public void execute(EventMeetingTable source, OperationType operation, List<EventMeetingRow> selection) {
 		switch (operation) {
 		case AddMeetings:
-			iEventAddMeetings.showDialog(getEventId());
+			iEventAddMeetings.showDialog(getEventId(), getConflicts());
 			break;
 		case Delete:
 		case Cancel:
@@ -1903,10 +1904,32 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iSelection = new ArrayList<MeetingInterface>();
 			for (EventMeetingRow row: selection)
 				iSelection.add(row.getMeeting());
+			List<MeetingConflictInterface> conflicts = new ArrayList<MeetingConflictInterface>();
+			for (MeetingInterface m: source.getMeetings()) {
+				if ((m.getApprovalStatus() == ApprovalStatus.Approved || m.getApprovalStatus() == ApprovalStatus.Pending) && !iSelection.contains(m))
+					conflicts.add(generateConflict(m));
+			}
 			iEventModifyMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter(), iSelection, iProperties == null ? null : iProperties.getSelectedDates(), iProperties == null ? null : iProperties.getSelectedTime());
-			iEventModifyMeetings.showDialog(getEventId());
+			iEventModifyMeetings.showDialog(getEventId(), conflicts);
 			break;
 		}
+	}
+	
+	protected MeetingConflictInterface generateConflict(MeetingInterface m) {
+		MeetingConflictInterface conflict = new MeetingConflictInterface(m);
+		conflict.setEventId(getEventId());
+		conflict.setName(iName.getWidget().getText());
+		conflict.setType(getEventType());
+		return conflict;
+	}
+	
+	protected List<MeetingConflictInterface> getConflicts() {
+		List<MeetingConflictInterface> conflicts = new ArrayList<MeetingConflictInterface>();
+		for (MeetingInterface m: iMeetings.getMeetings()) {
+			if (m.getApprovalStatus() == ApprovalStatus.Approved || m.getApprovalStatus() == ApprovalStatus.Pending)
+				conflicts.add(generateConflict(m));
+		}
+		return conflicts;
 	}
 
 	@Override

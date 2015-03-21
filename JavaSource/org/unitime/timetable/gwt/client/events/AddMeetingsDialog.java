@@ -133,7 +133,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	private AsyncCallback<List<MeetingInterface>> iCallback;
 	private AcademicSessionProvider iSession;
 	private EventPropertiesProvider iProperties;
-	
+	private List<MeetingConflictInterface> iConflicts;
 	
 	public AddMeetingsDialog(AcademicSessionProvider session, EventPropertiesProvider propeties, AsyncCallback<List<MeetingInterface>> callback) {
 		super(true, true);
@@ -202,7 +202,8 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 								@Override
 								public void onSuccess(EventRoomAvailabilityRpcResponse result) {
 									LoadingWidget.getInstance().hide();
-									populate(result, 0, EventCookie.getInstance().getRoomsSortBy());
+									iResponse = result;
+									populate(0, EventCookie.getInstance().getRoomsSortBy());
 									setWidget(iAvailabilityForm);
 									recenter();
 									iText.setFocus(true);
@@ -256,14 +257,14 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iAvailabilityHeader.addButton("prev", MESSAGES.buttonLeft(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				populate(iResponse, iIndex - iStep, null);
+				populate(iIndex - iStep, null);
 				recenter();
 			}
 		});
 		iAvailabilityHeader.addButton("next", MESSAGES.buttonRight(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				populate(iResponse, iIndex + iStep, null);
+				populate(iIndex + iStep, null);
 				recenter();
 			}
 		});
@@ -286,7 +287,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 							} else {
 								EventCookie.getInstance().setSortRoomsBy(sortBy.ordinal());
 							}
-							populate(iResponse, 0, EventCookie.getInstance().getRoomsSortBy());
+							populate(0, EventCookie.getInstance().getRoomsSortBy());
 							recenter();
 						}
 					});
@@ -299,7 +300,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					public void execute() {
 						popup.hide();
 						EventCookie.getInstance().setRoomsHorizontal(!EventCookie.getInstance().areRoomsHorizontal());
-						populate(iResponse, 0, EventCookie.getInstance().getRoomsSortBy());
+						populate(0, EventCookie.getInstance().getRoomsSortBy());
 						recenter();
 					}
 				});
@@ -310,7 +311,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					public void execute() {
 						popup.hide();
 						EventCookie.getInstance().setExpandRoomConflicts(!EventCookie.getInstance().isExpandRoomConflicts());
-						populate(iResponse, iIndex, EventCookie.getInstance().getRoomsSortBy());
+						populate(iIndex, EventCookie.getInstance().getRoomsSortBy());
 						recenter();
 					}
 				});
@@ -443,11 +444,11 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	            		break;
 	            	case KeyCodes.KEY_PAGEDOWN:
 	            		if (iIndex + iStep < getRooms().size())
-	            			populate(iResponse, iIndex + iStep, null);
+	            			populate(iIndex + iStep, null);
 	            		break;
 	            	case KeyCodes.KEY_PAGEUP:
 	            		if (iIndex > 0)
-	            			populate(iResponse, iIndex - iStep, null);
+	            			populate(iIndex - iStep, null);
 	            		break;
 	            	case 32:
 	            	case KeyCodes.KEY_ENTER:
@@ -511,11 +512,11 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	            		break;
 	            	case KeyCodes.KEY_PAGEDOWN:
 	            		if (iIndex + iStep < getDates().size())
-	            			populate(iResponse, iIndex + iStep, null);
+	            			populate(iIndex + iStep, null);
 	            		break;
 	            	case KeyCodes.KEY_PAGEUP:
 	            		if (iIndex > 0)
-	            			populate(iResponse, iIndex - iStep, null);
+	            			populate(iIndex - iStep, null);
 	            		break;
 	            	case 32:
 	            	case KeyCodes.KEY_ENTER:
@@ -596,7 +597,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		}
 	}
 	
-	public static Comparator<Entity> getSortRoomsComparator(SortRoomsBy sortBy, final boolean preferSize, final List<Integer> dates, final EventRoomAvailabilityRpcResponse availability) {
+	public Comparator<Entity> getSortRoomsComparator(SortRoomsBy sortBy, final boolean preferSize, final List<Integer> dates) {
 		switch (sortBy) {
 		case CAPACITY:
 			return new Comparator<Entity>() {
@@ -636,13 +637,11 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			return new Comparator<Entity>() {
 				@Override
 				public int compare(Entity r1, Entity r2) {
-					if (dates != null && availability != null) {
-						Long p1 = Long.valueOf(r1.getProperty("permId", "-1"));
-						Long p2 = Long.valueOf(r2.getProperty("permId", "-1"));
+					if (dates != null) {
 						int a1 = 0, a2 = 0;
 						for (Integer date: dates) {
-							Set<MeetingConflictInterface> c1 = availability.getOverlaps(date, p1);
-							Set<MeetingConflictInterface> c2 = availability.getOverlaps(date, p2);
+							Set<MeetingConflictInterface> c1 = getConflicts(date, r1);
+							Set<MeetingConflictInterface> c2 = getConflicts(date, r2);
 							if (c1 == null || c1.isEmpty()) a1 ++;
 							if (c2 == null || c2.isEmpty()) a2 ++;
 						}
@@ -674,12 +673,13 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		};
 	}
 	
-	public void showDialog(Long eventId) {
+	public void showDialog(Long eventId, List<MeetingConflictInterface> conflicts) {
 		iStep = (Window.getClientWidth() - 300) / 105;
 		ToolBox.setMaxHeight(iScrollRooms.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
 		ToolBox.setMaxHeight(iScrollDates.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
 		int nrMonths = Math.max(3, Math.min(5, (Window.getClientWidth() - 300) / 225));
 		iDates.setWidth((225 * nrMonths) + "px");
+		iConflicts = conflicts;
 		
 		iResponse = null;
 		iEventId = eventId;
@@ -746,21 +746,21 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	private Integer iHoverDate = null;
 	private Entity iHoverLoc = null;
 	
-	private void populate(EventRoomAvailabilityRpcResponse response, int index, Integer sortBy) {
+	private void populate(int index, Integer sortBy) {
 		if (sortBy != null && sortBy >= 0 && sortBy < SortRoomsBy.values().length) {
-			Comparator<Entity> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy], iRooms.getChip("size") != null, getDates(), response);
+			Comparator<Entity> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy], iRooms.getChip("size") != null, getDates());
 			if (comparator != null)
 				Collections.sort(iMatchingRooms, comparator);
 		} else if (sortBy != null && sortBy >= SortRoomsBy.values().length && sortBy < 2 * SortRoomsBy.values().length) {
-			Comparator<Entity> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy - SortRoomsBy.values().length], iRooms.getChip("size") != null, getDates(), response);
+			Comparator<Entity> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy - SortRoomsBy.values().length], iRooms.getChip("size") != null, getDates());
 			if (comparator != null)
 				Collections.sort(iMatchingRooms, inverse(comparator));
 		}
 		
 		if (EventCookie.getInstance().areRoomsHorizontal())
-			populateHorizontal(response, index);
+			populateHorizontal(index);
 		else
-			populateVertical(response, index);
+			populateVertical(index);
 		AriaStatus.getInstance().setText(toAriaLabel(false, true, true));
 	}
 	
@@ -838,8 +838,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		return message;
 	}
 	
-	private void populateHorizontal(EventRoomAvailabilityRpcResponse response, int index) {
-		iResponse = response;
+	private void populateHorizontal(int index) {
 		iIndex = index;
 		if (iIndex < 0) iIndex = 0;
 		if (iIndex >= getRooms().size()) iIndex = iStep * (getRooms().size() / iStep);
@@ -951,7 +950,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			
 			for (int i = iIndex; i < iIndex + iStep && i < getRooms().size(); i++) {
 				final Entity room = getRooms().get(i);
-				final Set<MeetingConflictInterface> conflicts = response.getOverlaps(date, Long.valueOf(room.getProperty("permId", null)));
+				final Set<MeetingConflictInterface> conflicts = getConflicts(date, room);
 				
 				final P p = new P("cell");
 				
@@ -1019,8 +1018,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		}
 	}
 	
-	private void populateVertical(EventRoomAvailabilityRpcResponse response, int index) {
-		iResponse = response;
+	private void populateVertical(int index) {
 		iIndex = index;
 		if (iIndex < 0) iIndex = 0;
 		if (iIndex >= getDates().size()) iIndex = iStep * (getDates().size() / iStep);
@@ -1133,7 +1131,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			
 			for (int i = iIndex; i < iIndex + iStep && i < getDates().size(); i++) {
 				final Integer date = getDates().get(i);
-				final Set<MeetingConflictInterface> conflicts = response.getOverlaps(date, Long.valueOf(room.getProperty("permId", null)));
+				final Set<MeetingConflictInterface> conflicts = getConflicts(date, room);
 				final Date d = iDates.getDate(date);
 				
 				final P p = new P("cell");
@@ -1203,7 +1201,21 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	}
 		
 	public Set<MeetingConflictInterface> getConflicts(Integer date, Entity room) {
-		return iResponse.getOverlaps(date, Long.valueOf(room.getProperty("permId", null)));
+		Set<MeetingConflictInterface> conflicts = new HashSet<MeetingConflictInterface>();
+		if (iConflicts != null) {
+			for (MeetingConflictInterface m: iConflicts) {
+				if (m.getDayOfYear() == date && m.getLocation() != null && m.getLocation().getId().equals(room.getUniqueId()) &&
+					getStartSlot() < m.getEndSlot() && m.getStartSlot() < getEndSlot()) {
+					conflicts.add(m);
+				}
+			}
+		}
+		if (iResponse != null) {
+			Set<MeetingConflictInterface> overlaps = iResponse.getOverlaps(date, Long.valueOf(room.getProperty("permId", null)));
+			if (overlaps != null)
+				conflicts.addAll(overlaps);
+		}
+		return conflicts;
 	}
 	
 	public void setSelected(Integer date, Entity room, boolean selected) {

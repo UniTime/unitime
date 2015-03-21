@@ -602,6 +602,30 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public MeetingInterface() {}
 		
+		public MeetingInterface(MeetingInterface m) {
+			setLocation(m.getLocation());
+			setMeetingDate(m.getMeetingDate());
+			setId(m.getId());
+			setStartSlot(m.getStartSlot());
+			setEndSlot(m.getEndSlot());
+			setStartOffset(m.getStartOffset());
+			setEndOffset(m.getEndOffset());
+			setDayOfWeek(m.getDayOfWeek());
+			setDayOfYear(m.getDayOfYear());
+			setPast(m.isPast());
+			setCanEdit(m.isCanEdit());
+			setCanDelete(m.isCanDelete());
+			setCanCancel(m.isCanCancel());
+			setCanApprove(m.isCanApprove());
+			setCanInquire(m.isCanInquire());
+			setGridIndex(m.getGridIndex());
+			setApprovalDate(m.getApprovalDate());
+			setApprovalStatus(m.getApprovalStatus());
+			setStartTime(m.getStartTime());
+			setStopTime(m.getStopTime());
+			setConflicts(m.getConflicts());
+		}
+		
 		public Long getId() { return iMeetingId; }
 		public void setId(Long id) { iMeetingId = id; }
 		public Date getMeetingDate() { return iMeetingDate; }
@@ -757,6 +781,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private List<ContactInterface> iInstructors;
 		
 		public MeetingConflictInterface() {}
+		
+		public MeetingConflictInterface(MeetingInterface m) {
+			super(m);
+		}
 		
 		public Long getEventId() { return iEventId; }
 		public void setEventId(Long id) { iEventId = id; }
