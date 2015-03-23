@@ -58,9 +58,19 @@ public class SavedHQL extends BaseSavedHQL {
 	
 	private static interface OptionImplementation {
 		public Map<Long, String> getValues(UserContext user);
-		
 	}
-	
+
+	private static class RefTableOptions implements OptionImplementation {
+		private Class<? extends RefTableEntry> iReference;
+		RefTableOptions(Class<? extends RefTableEntry> reference) { iReference = reference; }
+		public Map<Long, String> getValues(UserContext user) {
+			Map<Long, String> ret = new Hashtable<Long, String>();
+			for (RefTableEntry ref: (List<RefTableEntry>)SessionDAO.getInstance().getSession().createCriteria(iReference).list())
+				ret.put(ref.getUniqueId(), ref.getLabel());
+			return ret;
+		}
+	}
+
 	public static enum Option {
 		SESSION("Academic Session", false, false, new OptionImplementation() {
 			@Override
@@ -129,7 +139,34 @@ public class SavedHQL extends BaseSavedHQL {
 				return ret;
 			}
 		}),
-		ROOMS("Rooms", true, true, ROOM.iImplementation)
+		ROOMS("Rooms", true, true, ROOM.iImplementation),
+		
+		DistributionType(DistributionType.class, false),
+		DistributionTypes(DistributionType.class, true),
+		DemandOfferingType(DemandOfferingType.class, false),
+		DemandOfferingTypes(DemandOfferingType.class, true),
+		OfferingConsentType(OfferingConsentType.class, false),
+		OfferingConsentTypes(OfferingConsentType.class, true),
+		CourseCreditFormat(CourseCreditFormat.class, false),
+		CourseCreditFormats(CourseCreditFormat.class, true),
+		CourseCreditType(CourseCreditType.class, false),
+		CourseCreditTypes(CourseCreditType.class, true),
+		CourseCreditUnitType(CourseCreditUnitType.class, false),
+		CourseCreditUnitTypes(CourseCreditUnitType.class, true),
+		PositionType(PositionType.class, false),
+		PositionTypes(PositionType.class, true),
+		DepartmentStatusType(DepartmentStatusType.class, false),
+		DepartmentStatusTypes(DepartmentStatusType.class, true),
+		RoomType(RoomType.class, false),
+		RoomTypes(RoomType.class, true),
+		StudentSectioningStatus(StudentSectioningStatus.class, false),
+		StudentSectioningStatuses(StudentSectioningStatus.class, true),
+		ExamType(ExamType.class, false),
+		ExamTypes(ExamType.class, true),
+		RoomFeatureType(RoomFeatureType.class, false),
+		RoomFeatureTypes(RoomFeatureType.class, true),
+		CourseType(CourseType.class, false),
+		CourseTypes(CourseType.class, true),
 		;
 		
 		String iName;
@@ -139,6 +176,11 @@ public class SavedHQL extends BaseSavedHQL {
 			iName = name;
 			iAllowSelection = allowSelection; iMultiSelect = multiSelect;
 			iImplementation = impl;
+		}
+		Option(Class<? extends RefTableEntry> reference, boolean multiSelect) {
+			iName = name().replaceAll("(?<=[^A-Z])([A-Z])"," $1");
+			iAllowSelection = true; iMultiSelect = multiSelect;
+			iImplementation = new RefTableOptions(reference);
 		}
 		
 		public String text() { return iName; }

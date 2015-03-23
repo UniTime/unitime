@@ -2831,6 +2831,84 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Rooms")
 	String optionRooms();
 	
+	@DefaultMessage("Distribution Type")
+	String optionDistributionType();
+
+	@DefaultMessage("Distribution Types")
+	String optionDistributionTypes();
+
+	@DefaultMessage("Demand Offering Type")
+	String optionDemandOfferingType();
+
+	@DefaultMessage("Demand Offering Types")
+	String optionDemandOfferingTypes();
+
+	@DefaultMessage("Offering Consent Type")
+	String optionOfferingConsentType();
+
+	@DefaultMessage("Offering Consent Types")
+	String optionOfferingConsentTypes();
+
+	@DefaultMessage("Course Credit Format")
+	String optionCourseCreditFormat();
+
+	@DefaultMessage("Course Credit Formats")
+	String optionCourseCreditFormats();
+
+	@DefaultMessage("Course Credit Type")
+	String optionCourseCreditType();
+
+	@DefaultMessage("Course Credit Types")
+	String optionCourseCreditTypes();
+
+	@DefaultMessage("Course Credit Unit Type")
+	String optionCourseCreditUnitType();
+
+	@DefaultMessage("Course Credit Unit Types")
+	String optionCourseCreditUnitTypes();
+
+	@DefaultMessage("Position Type")
+	String optionPositionType();
+
+	@DefaultMessage("Position Types")
+	String optionPositionTypes();
+
+	@DefaultMessage("Department Status Type")
+	String optionDepartmentStatusType();
+
+	@DefaultMessage("Department Status Types")
+	String optionDepartmentStatusTypes();
+
+	@DefaultMessage("Room Type")
+	String optionRoomType();
+
+	@DefaultMessage("Room Types")
+	String optionRoomTypes();
+
+	@DefaultMessage("Student Sectioning Status")
+	String optionStudentSectioningStatus();
+
+	@DefaultMessage("Student Sectioning Statuses")
+	String optionStudentSectioningStatuses();
+
+	@DefaultMessage("Exam Type")
+	String optionExamType();
+
+	@DefaultMessage("Exam Types")
+	String optionExamTypes();
+
+	@DefaultMessage("Room Feature Type")
+	String optionRoomFeatureType();
+
+	@DefaultMessage("Room Feature Types")
+	String optionRoomFeatureTypes();
+
+	@DefaultMessage("Course Type")
+	String optionCourseType();
+
+	@DefaultMessage("Course Types")
+	String optionCourseTypes();
+	
 	@DefaultMessage("Individual Reservation")
 	String reservationIndividual();
 	

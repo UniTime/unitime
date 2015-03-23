@@ -101,6 +101,58 @@ public class HQLOptionsBackend implements GwtRpcImplementation<HQLOptionsRpcRequ
 			return MESSAGES.optionSubjectArea();
 		case SUBJECTS:
 			return MESSAGES.optionSubjectAreas();
+		case DistributionType:
+			return MESSAGES.optionDistributionType();
+		case DistributionTypes:
+			return MESSAGES.optionDistributionTypes();
+		case DemandOfferingType:
+			return MESSAGES.optionDemandOfferingType();
+		case DemandOfferingTypes:
+			return MESSAGES.optionDemandOfferingTypes();
+		case OfferingConsentType:
+			return MESSAGES.optionOfferingConsentType();
+		case OfferingConsentTypes:
+			return MESSAGES.optionOfferingConsentTypes();
+		case CourseCreditFormat:
+			return MESSAGES.optionCourseCreditFormat();
+		case CourseCreditFormats:
+			return MESSAGES.optionCourseCreditFormats();
+		case CourseCreditType:
+			return MESSAGES.optionCourseCreditType();
+		case CourseCreditTypes:
+			return MESSAGES.optionCourseCreditTypes();
+		case CourseCreditUnitType:
+			return MESSAGES.optionCourseCreditUnitType();
+		case CourseCreditUnitTypes:
+			return MESSAGES.optionCourseCreditUnitTypes();
+		case PositionType:
+			return MESSAGES.optionPositionType();
+		case PositionTypes:
+			return MESSAGES.optionPositionTypes();
+		case DepartmentStatusType:
+			return MESSAGES.optionDepartmentStatusType();
+		case DepartmentStatusTypes:
+			return MESSAGES.optionDepartmentStatusTypes();
+		case RoomType:
+			return MESSAGES.optionRoomType();
+		case RoomTypes:
+			return MESSAGES.optionRoomTypes();
+		case StudentSectioningStatus:
+			return MESSAGES.optionStudentSectioningStatus();
+		case StudentSectioningStatuses:
+			return MESSAGES.optionStudentSectioningStatuses();
+		case ExamType:
+			return MESSAGES.optionExamType();
+		case ExamTypes:
+			return MESSAGES.optionExamTypes();
+		case RoomFeatureType:
+			return MESSAGES.optionRoomFeatureType();
+		case RoomFeatureTypes:
+			return MESSAGES.optionRoomFeatureTypes();
+		case CourseType:
+			return MESSAGES.optionCourseType();
+		case CourseTypes:
+			return MESSAGES.optionCourseTypes();
 		default:
 			return option.text();
 		}
