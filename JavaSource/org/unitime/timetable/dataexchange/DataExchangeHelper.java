@@ -89,6 +89,8 @@ public class DataExchangeHelper {
         sImportRegister.put("traveltimes", TravelTimesImport.class);
         sImportRegister.put("timetable", CourseTimetableImport.class);
         sImportRegister.put("roomSharing", RoomSharingImport.class);
+        sImportRegister.put("scripts", ScriptImport.class);
+        sImportRegister.put("script", ScriptImport.class);
     }
     
     public DataExchangeHelper() {
