@@ -308,6 +308,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Update")
 	String opScriptUpdate();
 	
+	@DefaultMessage("Export")
+	String opScriptExport();
+	
 	@DefaultMessage("Back")
 	String opScriptBack();
 	

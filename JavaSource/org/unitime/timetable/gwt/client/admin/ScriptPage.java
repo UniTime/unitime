@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -43,6 +44,8 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.ScriptInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.ScriptInterface.DeleteScriptRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ExecuteScriptRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.GetScriptOptionsRpcRequest;
@@ -584,6 +587,20 @@ public class ScriptPage extends Composite {
 			iBottom = new UniTimeHeaderPanel();
 			iBottom.addButton("save", MESSAGES.opScriptSave(), save);
 			iBottom.addButton("update", MESSAGES.opScriptUpdate(), save);
+			iBottom.addButton("export", MESSAGES.opScriptExport(), new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					RPC.execute(EncodeQueryRpcRequest.encode("output=script.xml&script=" + iScriptId), new AsyncCallback<EncodeQueryRpcResponse>() {
+						@Override
+						public void onFailure(Throwable caught) {
+						}
+						@Override
+						public void onSuccess(EncodeQueryRpcResponse result) {
+							ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+						}
+					});
+				}
+			});
 			iBottom.addButton("delete", MESSAGES.opScriptDelete(), new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -746,6 +763,7 @@ public class ScriptPage extends Composite {
 			iBottom.setEnabled("save", true);
 			iBottom.setEnabled("update", false);
 			iBottom.setEnabled("delete", false);
+			iBottom.setEnabled("export", false);
 		}
 		
 		public void editScript(ScriptInterface script) {
@@ -781,6 +799,7 @@ public class ScriptPage extends Composite {
 			iBottom.setEnabled("save", false);
 			iBottom.setEnabled("update", script.canEdit());
 			iBottom.setEnabled("delete", script.canDelete());
+			iBottom.setEnabled("export", true);
 		}
 		
 		public void setup(ScriptOptionsInterface options) {
