@@ -82,6 +82,15 @@
 				&nbsp;<html:errors property="type"/>
 			</TD>
 		</TR>
+		
+		<TR>
+			<TD>Number of Weeks:</TD>
+			<TD>
+				<html:text property="numberOfWeeks" size="10" maxlength="10"/>
+				&nbsp;<html:errors property="numberOfWeeks"/>
+				<i>The number of weeks will be computed from the pattern when left blank.</i>
+			</TD>
+		</TR>
 
 		<TR>
 			<TD>Visible:</TD>

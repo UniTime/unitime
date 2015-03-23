@@ -56,6 +56,7 @@ public class DatePatternEditForm extends ActionForm {
     private Vector iParentIds = new Vector();
     private Long iParentId;
     private Long iSessionId;
+    private Integer iNumberOfWeeks;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -99,7 +100,7 @@ public class DatePatternEditForm extends ActionForm {
 	
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iOp = null; iUniqueId = new Long(-1); iType = DatePattern.sTypes[0]; 
-		iIsUsed = false; iVisible = false; iName = ""; iIsDefault = false;
+		iIsUsed = false; iVisible = false; iName = ""; iIsDefault = false; iNumberOfWeeks = null;
 		iDp = null; iDepartmentId = null; iDepartmentIds.clear(); iParentId = null; iParentIds.clear(); 
 	}
 	
@@ -116,6 +117,7 @@ public class DatePatternEditForm extends ActionForm {
 			setUniqueId(dp.getUniqueId());
 			setIsDefault(dp.isDefault());
 			setSessionId(dp.getSession().getUniqueId());
+			setNumberOfWeeks(dp.getNumberOfWeeks());
 			
 			iParentIds.clear();
 			TreeSet parents = new TreeSet(dp.getParents());
@@ -138,6 +140,7 @@ public class DatePatternEditForm extends ActionForm {
 		dp.setVisible(new Boolean(getVisible()));
 		dp.setType(new Integer(getTypeInt()));
 		dp.setPatternAndOffset(request);
+		dp.setNumberOfWeeks(getNumberOfWeeks() == null || getNumberOfWeeks() == 0 ? null : getNumberOfWeeks());
 		
 		HashSet oldParents = new HashSet(dp.getParents());
 		for (Enumeration e=iParentIds.elements();e.hasMoreElements();) {
@@ -186,6 +189,7 @@ public class DatePatternEditForm extends ActionForm {
 		dp.setVisible(new Boolean(getVisible()));
 		dp.setType(new Integer(getTypeInt()));
 		dp.setPatternAndOffset(request);
+		dp.setNumberOfWeeks(getNumberOfWeeks() == null || getNumberOfWeeks() == 0 ? null : getNumberOfWeeks());
 		
 		HashSet newParents = new HashSet();
 		for (Enumeration e=iParentIds.elements();e.hasMoreElements();) {
@@ -272,6 +276,8 @@ public class DatePatternEditForm extends ActionForm {
 	public void setParentId(Long parentId) {iParentId = parentId;}
 	public Vector getParentIds() {return iParentIds;}
 	public void setParentIds(Vector parentIds) {iParentIds = parentIds;}
+	public Integer getNumberOfWeeks() { return iNumberOfWeeks; }
+	public void setNumberOfWeeks(Integer numberOfWeeks) { iNumberOfWeeks = numberOfWeeks; }
 	
 	public Long getSessionId() { return iSessionId; }
 	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
@@ -292,6 +298,7 @@ public class DatePatternEditForm extends ActionForm {
 			iDp.setVisible(new Boolean(getVisible()));
 			iDp.setType(new Integer(getTypeInt()));
 			iDp.setPatternAndOffset(request);
+			iDp.setNumberOfWeeks(getNumberOfWeeks());
 		}
 		return iDp;
 	}

@@ -40,6 +40,7 @@ public abstract class BaseDatePattern implements Serializable {
 	private Integer iOffset;
 	private Integer iType;
 	private Boolean iVisible;
+	private Integer iNumberOfWeeks;
 
 	private Session iSession;
 	private Set<DatePattern> iParents;
@@ -51,6 +52,7 @@ public abstract class BaseDatePattern implements Serializable {
 	public static String PROP_OFFSET = "offset";
 	public static String PROP_TYPE = "type";
 	public static String PROP_VISIBLE = "visible";
+	public static String PROP_NR_WEEKS = "numberOfWeeks";
 
 	public BaseDatePattern() {
 		initialize();
@@ -81,6 +83,9 @@ public abstract class BaseDatePattern implements Serializable {
 	public Boolean isVisible() { return iVisible; }
 	public Boolean getVisible() { return iVisible; }
 	public void setVisible(Boolean visible) { iVisible = visible; }
+
+	public Integer getNumberOfWeeks() { return iNumberOfWeeks; }
+	public void setNumberOfWeeks(Integer numberOfWeeks) { iNumberOfWeeks = numberOfWeeks; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -117,6 +122,7 @@ public abstract class BaseDatePattern implements Serializable {
 	public String toDebugString() {
 		return "DatePattern[" +
 			"\n	Name: " + getName() +
+			"\n	NumberOfWeeks: " + getNumberOfWeeks() +
 			"\n	Offset: " + getOffset() +
 			"\n	Pattern: " + getPattern() +
 			"\n	Session: " + getSession() +

@@ -9857,4 +9857,8 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventLookupContact'
 		</sql>
 	</update>
+	<update version="142" date="23-Mar-2015" comment="Date Pattern Number of Weeks">
+		<plsql>alter table %SCHEMA%.date_pattern add nr_weeks number(10,0)</plsql>
+		<mysql>alter table %SCHEMA%.date_pattern add nr_weeks bigint(10)</mysql>
+	</update>
 </dbupdate>

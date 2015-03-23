@@ -824,17 +824,17 @@ public class DatePatternEditAction extends Action {
 		WebTable.setOrder(sessionContext,"datePatterns.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = (hasSet ?
-        		new WebTable( 6,
+        		new WebTable( 7,
         				null, 
         				"datePatternEdit.do?ord=%%",
-        				new String[] {"Name", "Type", "Used", "Dates / Patterns", "Pattern Sets", "Departments"},
-        				new String[] {"left", "left", "left", "left", "left", "left"},
+        				new String[] {"Name", "Type", "Used", "Weeks", "Dates / Patterns", "Pattern Sets", "Departments"},
+        				new String[] {"left", "left", "left", "left", "left", "left", "left"},
         				null ) :
-			    new WebTable( 5,
+			    new WebTable( 6,
 			    		null,
 			    		"datePatternEdit.do?ord=%%",
-						new String[] {"Name", "Type", "Used", "Dates", "Departments"},
-						new String[] {"left", "left", "left", "left", "left"},
+						new String[] {"Name", "Type", "Used", "Weeks", "Dates", "Departments"},
+						new String[] {"left", "left", "left", "left", "left", "left"},
 						null ) );
         
         List<DatePattern> patterns = DatePattern.findAll(sessionContext.getUser(), null, null);
@@ -900,6 +900,13 @@ public class DatePatternEditAction extends Action {
             	}
             }
             
+            String nbrWeeks = null;
+            if (pattern.getNumberOfWeeks() == null) {
+            	nbrWeeks = "<i>" + pattern.getComputedNumberOfWeeks() + "</i>";
+            } else {
+            	nbrWeeks = pattern.getNumberOfWeeks().toString();
+            }
+            
         	boolean isUsed = used.contains(pattern) || pattern.isDefault();
         	if (hasSet)
             	webTable.addLine(onClick, new String[] {
@@ -907,6 +914,7 @@ public class DatePatternEditAction extends Action {
             	        (pattern.isVisible()?"":"</font>")+(pattern.isDefault()?"</B>":""),
             	        (pattern.isVisible()?"":"<font color='gray'>")+DatePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
             			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/accept.png'>":""),
+            			(pattern.isVisible()?"":"<font color='gray'>")+nbrWeeks+(pattern.isVisible()?"":"</font>"),
             			(pattern.isVisible()?"":"<font color='gray'>")+pattStr+(pattern.isVisible()?"":"</font>"),
             			(pattern.isVisible()?"":"<font color='gray'>")+datePatternStr+(pattern.isVisible()?"":"</font>"),
             			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")        			
@@ -914,6 +922,7 @@ public class DatePatternEditAction extends Action {
             			pattern.getName(),
             			pattern.getType(),
             			(isUsed?"0":"1"),
+            			pattern.getEffectiveNumberOfWeeks(),
             			pattStr,
             			datePatternStr,
             			deptCmp,
@@ -924,12 +933,14 @@ public class DatePatternEditAction extends Action {
             	        (pattern.isVisible()?"":"</font>")+(pattern.isDefault()?"</B>":""),
             	        (pattern.isVisible()?"":"<font color='gray'>")+DatePattern.sTypes[pattern.getType().intValue()].replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
             			(isUsed?"<IMG border='0' title='This date pattern is being used.' alt='Default' align='absmiddle' src='images/accept.png'>":""),
+            			(pattern.isVisible()?"":"<font color='gray'>")+nbrWeeks+(pattern.isVisible()?"":"</font>"),
             			(pattern.isVisible()?"":"<font color='gray'>")+pattStr+(pattern.isVisible()?"":"</font>"),
             			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")        			
             		},new Comparable[] {
             			pattern.getName(),
             			pattern.getType(),
             			(isUsed?"0":"1"),
+            			pattern.getEffectiveNumberOfWeeks(),
             			pattStr,
             			deptCmp,
             		});

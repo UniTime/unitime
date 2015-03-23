@@ -96,5 +96,10 @@
                 foreign-key="fk_date_pattern_dept_dept"/>
         </set>
 
+        <property
+            name="numberOfWeeks"
+            column="nr_weeks"
+            type="java.lang.Integer"
+            not-null="false"/>
     </class>
 </hibernate-mapping>

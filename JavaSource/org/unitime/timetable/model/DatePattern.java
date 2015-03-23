@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
@@ -667,5 +668,19 @@ public class DatePattern extends BaseDatePattern implements Comparable {
         endDateCal.set(Calendar.SECOND, 59);
         return new Date[] { startDateCal.getTime(), endDateCal.getTime()};
 	}
-
+	
+	public int getComputedNumberOfWeeks() {
+		int daysInWeek[] = new int[7];
+		for (int i = 0; i < 7; i++) daysInWeek[i] = 0;
+		for (int i = 0; i < getPattern().length(); i++) {
+			if (getPattern().charAt(i) == '1')
+				daysInWeek[i % 7]++;
+		}
+		Arrays.sort(daysInWeek);
+		return daysInWeek[2];
+	}
+	
+	public int getEffectiveNumberOfWeeks() {
+		return (getNumberOfWeeks() == null ? getComputedNumberOfWeeks() : getNumberOfWeeks());
+	}
 }
