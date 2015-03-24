@@ -36,6 +36,21 @@
 				<line>Get course by name or by name and title: fix the case when there is a dash in the subject area abbreviation or a course number.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Database Load</name>
+			<description>
+				<line>Ensure that an instructor distribution preference is loaded in only once when the following two conditions are met:
+					<line>a) inherited instructor preferences is enabled on an external department,</line>
+					<line>b) both the external department and the instructor's department are being loaded in.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange: Session Restore</name>
+			<description>
+				<line>Fixed ability to import a new instructional type (id was not set).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
@@ -48,7 +63,111 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Solution Reports: Violated Distribution Preferences</name>
+			<description>
+				<line>Added a column counting the number of violations (violated pairs).</line>
+				<line>Include flexible group constraints in the list.</line>
+			</description>
+		</item>
+		<item>
+			<name>Suggestions: Flexible Constraints</name>
+			<description>
+				<line>Include flexible group constraints in the Distribution Preferences counters.</line>
+				<line>Include flexible group constraints on the Violated Constraints list.</line>
+			</description>
+		</item>
+		<item>
+			<name>Batch Student Sectioning: Database Loader</name>
+			<description>
+				<line>Minimal Perturbation Problem: Add current class assignments as selected choices.
+					<line>This helps keeping students close to their original enrolment when the original enrolment is not in the domain.</line>
+				</line>
+				<line>Added ability to load student groups as request groups.
+					<line>Request groups are loaded in only when the solver paramter Load.RequestGroups is set to true, default is false.</line>
+					<line>Solver parameter StudentWeights.SameGroup (defaults to 0.1) can be used to change the impact of the same group criterion.</line>
+					<line>Request Groups solver report has been also added.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Localization</name>
+			<description>
+				<line>Added ability to let users to choose the locale by defining the unitime.locale manager settings.</line>
+			</description>
+		</item>
+		<item>
+			<name>HQL Reports: Reference Tables</name>
+			<description>
+				<line>Added ability to include any reference table (room type, distribution type, etc.) as query parameter.</line>
+			</description>
+		</item>
+		<item>
+			<name>Scripts: Import / Export XML</name>
+			<description>
+				<line>Added ability to export a script in XML format.</line>
+				<line>Added ability to import XML with one ore more scripts.</line>
+			</description>
+		</item>
 	</category>
+	<category>
+		<title>CPSolver updated to version 1.3.52 (was 1.3.47)</title>
+		<item>
+			<name>Student Sectioning: Minimal Perturbation Problem</name>
+			<description>
+				<line>Priority and equal weighting: added ability to minimise perturbations.</line>
+				<line>Difference of an enrollment (from the initial one) is computed as a number between 0 (completely different) and 1 (the initial enrollment).</line>
+				<line>It is computed as average using the following schema (over all sections of the enrollment):
+					<line>An initial section counts as 1,</line>
+					<line>same choice section counts as 0.9 (parameter StudentWeights.SameChoice),</line>
+					<line>same time section counts as 0.7 (parameter StudentWeights.SameTime),</line>
+					<line>and different time section counts as 0.</line>
+				</line>
+				<line>Non-initial enrollment weight is penalized with weight StudentWeights.Perturbation (defaults to 0.100) using the following formula
+					<line>weights *= (1 - difference * StudentWeights.Perturbation)</line>
+				</line>
+				<line>When MPP is enabled, solution info contains the following three new properties:
+					<line>Perturbations: same section assigned (% of initial section assigned over all course requests with initial enrollment)</line>
+					<line>Perturbations: same choice assigned (% of same choice section assigned over all course requests with initial enrollment)</line>
+					<line>Perturbations: same time assigned (% of same time section assigned over all course requests with initial enrollment)</line>
+				</line>
+				<line>Note: same choice means same time and instructor.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Sectioning: Reservations</name>
+			<description>
+				<line>If reservations are allowed to assign students over the limit during the batch student sectioning, do not count the enrollments with such reservations towards course, configuration, and section limits.</line>
+				<line>This is to avoid issues with the order in which enrollemnts were made.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Sectioning: Parallel Solver</name>
+			<description>
+				<line>Course, Config, Section, and Reservation contexts now implement the CanInheritContext interface.</line>
+				<line>This speeds up the creation of an inherited context.</line>
+			</description>
+		</item>
+		<item>
+			<name>Batch Student Sectioning: Request Groups</name>
+			<description>
+				<line>Added ability to keep students of the same group together.</line>
+				<line>Measured as an average probability of two students (of a group) that are requesting the same course being given the same section (of the same subpart).</line>
+				<line>There is a new weight (named StudentWeights.SameGroup, defaults to 0.1) expressing how much this criterion affects the student weight (in both priority and equal weighting).</line>
+				<line>This means that if a student is being enrolled into a completely different section, weight of such an enrollment is decreased by 10%.
+					<line>(the metric reflects how much are the students spread between the sections of the course)</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling: Added MaxDays Flexible Constraint</name>
+			<description>
+				<line>The MaxDays constraint limits the number of days of week during which the given set of classes are taught.</line>
+				<line>It has one parameters: a maximal number of week days during which the given set of classes can be placed.</line>
+				<line>For instance, reference _MaxDays:2_ translates to a maximum number of 2 days a week.</line>
+			</description>
+		</item>
+	</category>	
 </release>
 
 <release>
