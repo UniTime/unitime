@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE script PUBLIC "-//UniTime//UniTime Scrip DTD/EN" "http://www.unitime.org/interface/Script.dtd">
+
+<!-- 
+ * UniTime 3.5 (University Timetabling Application)
+ * Copyright (C) 2015, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<scripts created="Mon Mar 23 18:28:22 CET 2015">
+	<script name="Example Script (JavaScript)" permission="Scripts" engine="ECMAScript" created="Mon Mar 23 18:28:22 CET 2015">
+		<description><![CDATA[This scripts shows a few perks that are available.]]></description>
+		<parameter name="greeting" label="Select greeting" type="enum(Ahoj,Hello,Hola,Bonjour,Guten Tag)" default="Hello"/>
+		<parameter name="subjects" label="Subject area(s)" type="subjects"/>
+		<parameter name="file" label="Input file" type="file"/>
+		<parameter name="name" label="Enter your name" type="string"/>
+		<parameter name="dept" label="Department" type="department"/>
+		<parameter name="type" label="Room type" type="reference(RoomType)"/>
+		<body><![CDATA[// Logging
+if (name != null) {
+  log.info(greeting + ' ' + name + '!');
+} else {
+  log.info(greeting + '!');
+  log.warn('No name was given.');
+}
+
+// Reading an input (text) file
+if (file != null) {
+  var lines = file.getString('utf-8').split('\n');
+  for (var i = 0; i < lines.length; i++) {
+    log.debug((1 + i) + ': ' + lines[i]);
+  }
+} else {
+  log.error('No file to read.', null);
+}
+
+// Writing an output file
+importPackage(java.io);
+var file = log.createOutput('test', 'txt');
+var out = new PrintWriter(new FileWriter(file));
+out.println('This is a test.');
+out.println('Žlutoucký kun úpel dábelské ódy.');
+out.flush(); out.close();
+
+// Special parameters
+log.info('Current academic session: ' + session.getLabel());
+if (dept != null) {
+  log.info('Selected department: ' + dept.getDeptCode() + ' - ' + dept.getLabel());
+}
+if (subjects != null) {
+  log.info('Selected subject areas:');
+  for (var i = 0; i < subjects.size(); i++) {
+    var subject = subjects.get(i);
+    log.info('&nbsp;&nbsp;&nbsp;' + subject.getSubjectAreaAbbreviation() + ' - ' + subject.getTitle());
+  }
+}
+if (type != null) {
+  var t = hibSession.createQuery('from RoomType where reference = :reference').setString('reference', type).uniqueResult();
+  log.info('Room type: ' + t.getLabel() + ' (' + t.countRooms(session.getUniqueId()) + ' rooms in ' + session.getLabel() + ')');
+}
+
+// Progress
+log.setStatus('Counting to ten. Slowly.', 10);
+importClass(java.lang.Thread);
+for (var i = 0; i < 9; i++) {
+  Thread.sleep(i * 1000);
+  log.incProgress();
+  log.debug('-- ' + (1 + i));
+}]]></body>
+	</script>
+	<script name="Example Script (Python)" permission="Scripts" engine="python">
+		<description><![CDATA[This scripts shows a few perks that are available.]]></description>
+		<parameter name="greeting" label="Select greeting" type="enum(Ahoj,Hello,Hola,Bonjour,Guten Tag)" default="Hello"/>
+		<parameter name="subjects" label="Subject area(s)" type="subjects"/>
+		<parameter name="file" label="Input file" type="file"/>
+		<parameter name="name" label="Enter your name" type="string"/>
+		<parameter name="dept" label="Department" type="department"/>
+		<parameter name="type" label="Room type" type="reference(RoomType)"/>
+		<body><![CDATA[# Logging
+if name:
+  print '%s %s!' % (greeting, name)
+else:
+  print '%s!' % greeting
+  log.warn('No name was given.')
+
+# Reading an input (text) file
+if file:
+  i = 1
+  for line in file.getString('utf-8').split('\n'):
+    log.debug('%d: %s' % (i, line))
+    i = i + 1
+else:
+  log.error('No file to read.', None)
+
+# Writing an output file
+f = open(log.createOutput('test','txt').getAbsolutePath(), 'w')
+f.write('This is a test.\n')
+f.close()
+
+# Special parameters
+print 'Current academic session: %s' % session.getLabel()
+if dept:
+  print 'Selected department: %s - %s' % (dept.getDeptCode(), dept.getLabel())
+if subjects:
+  for subject in subjects:
+    print '&nbsp;&nbsp;&nbsp;%s - %s' % (subject.getSubjectAreaAbbreviation(), subject.getTitle())
+if type:
+  t = hibSession.createQuery('from RoomType where reference = :reference').setString('reference', type).uniqueResult()
+  print 'Room type: %s (%d rooms in %s)' % (t.getLabel(), t.countRooms(session.getUniqueId()), session.getLabel())
+
+# Progress
+log.setStatus('Counting to ten. Slowly.', 10)
+from java.lang import Thread
+for i in range(10):
+  Thread.sleep(i * 1000)
+  log.incProgress()
+  log.debug('-- %d' % (1 + i))]]></body>
+	</script>
+</scripts>
