@@ -28,6 +28,23 @@
 	<version>3.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Other Improvements</title>
+		<item>
+			<name>Online Student Scheduling: Eligibility Check</name>
+			<description>
+				<line>When there is no student record matching with the external id of the authenticated user:
+					<line>"You are not registered as a student in {0}." message changed to "You are not eligible to register in {0}.".</line>
+					<line>Do not display the message when in the assistant mode (enrollment is not enabled).</line>
+				</line>
+			</description>
+		</item>
+	</category>	
+</release>
+
+<release>
+	<version>3.5.210</version>
+	<release-date>Sat, 28 Feb 2015</release-date>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Session Roll Forward</name>
