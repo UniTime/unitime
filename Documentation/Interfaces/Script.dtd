@@ -1,0 +1,34 @@
+<!-- 
+ * UniTime 3.5 (University Timetabling Application)
+ * Copyright (C) 2015, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<!ELEMENT script (description?, parameter*, body) >
+<!ATTLIST script created CDATA #IMPLIED >
+<!ATTLIST script name CDATA #REQUIRED >
+<!ATTLIST script engine CDATA #REQUIRED >
+<!ATTLIST script permission CDATA #IMPLIED >
+<!ELEMENT description (#PCDATA) >
+<!ELEMENT parameter EMPTY >
+<!ATTLIST parameter name CDATA #REQUIRED >
+<!ATTLIST parameter label CDATA #IMPLIED >
+<!ATTLIST parameter type CDATA #REQUIRED >
+<!ATTLIST parameter default CDATA #IMPLIED >
+<!ELEMENT body (#PCDATA) >
+
+<!ELEMENT scripts (script+) >
+<!ATTLIST scripts created CDATA #IMPLIED >
