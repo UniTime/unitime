@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -41,6 +42,7 @@ public abstract class BaseInstrOfferingConfig implements Serializable {
 	private Long iUniqueIdRolledForwardFrom;
 
 	private InstructionalOffering iInstructionalOffering;
+	private ClassDurationType iClassDurationType;
 	private Set<SchedulingSubpart> iSchedulingSubparts;
 
 	public static String PROP_UNIQUEID = "uniqueId";
@@ -79,6 +81,9 @@ public abstract class BaseInstrOfferingConfig implements Serializable {
 	public InstructionalOffering getInstructionalOffering() { return iInstructionalOffering; }
 	public void setInstructionalOffering(InstructionalOffering instructionalOffering) { iInstructionalOffering = instructionalOffering; }
 
+	public ClassDurationType getClassDurationType() { return iClassDurationType; }
+	public void setClassDurationType(ClassDurationType classDurationType) { iClassDurationType = classDurationType; }
+
 	public Set<SchedulingSubpart> getSchedulingSubparts() { return iSchedulingSubparts; }
 	public void setSchedulingSubparts(Set<SchedulingSubpart> schedulingSubparts) { iSchedulingSubparts = schedulingSubparts; }
 	public void addToschedulingSubparts(SchedulingSubpart schedulingSubpart) {
@@ -103,6 +108,7 @@ public abstract class BaseInstrOfferingConfig implements Serializable {
 
 	public String toDebugString() {
 		return "InstrOfferingConfig[" +
+			"\n	ClassDurationType: " + getClassDurationType() +
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
 			"\n	Name: " + getName() +

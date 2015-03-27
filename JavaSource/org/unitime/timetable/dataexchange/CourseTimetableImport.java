@@ -61,6 +61,7 @@ import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.duration.DurationModel;
 
 /**
  * @author Tomas Muller
@@ -385,10 +386,11 @@ public class CourseTimetableImport extends BaseImport {
 			}
 		}
 		
+		DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 		if (timePattern == null) {
 			TimePatternModel model = null;
 			tp: for (TimePattern tp: iTimePatterns) {
-				if (tp.getMinPerMtg() * tp.getNrMeetings() == clazz.getSchedulingSubpart().getMinutesPerWk() || tp.getType() == TimePattern.sTypeExactTime) {
+				if (tp.getType() == TimePattern.sTypeExactTime || dm.isValidCombination(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, tp)) {
 					TimePatternModel m = tp.getTimePatternModel();
 					if (m.isExactTime()) {
 						m.setExactDays(dayCode); m.setExactStartSlot(startSlot);

@@ -178,7 +178,13 @@ public class ClassDetailAction extends PreferencesAction {
 	        doLoad(request, frm, c, op);
 
 	        // Initialize Preferences for initial load
-	        frm.setAvailableTimePatterns(TimePattern.findApplicable(sessionContext.getUser(),c.getSchedulingSubpart().getMinutesPerWk().intValue(),true,c.getManagingDept()));
+	        frm.setAvailableTimePatterns(TimePattern.findApplicable(
+	        		sessionContext.getUser(),
+	        		c.getSchedulingSubpart().getMinutesPerWk(),
+	        		c.effectiveDatePattern(),
+	        		c.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel(),
+	        		true,
+	        		c.getManagingDept()));
 			Set timePatterns = null;
         	initPrefs(frm, c, null, false);
 		    timePatterns = c.effectiveTimePatterns();
@@ -193,7 +199,11 @@ public class ClassDetailAction extends PreferencesAction {
 			processPrefAction(request, frm, errors);
 
 	        // Generate Time Pattern Grids
-			super.generateTimePatternGrids(request, frm, c, timePatterns, "init", timeVertical, false, null);
+			super.generateTimePatternGrids(request, frm, c, 
+					c.getSchedulingSubpart().getMinutesPerWk(),
+	        		c.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel(),
+	        		c.effectiveDatePattern(),
+	        		timePatterns, "init", timeVertical, false, null);
 
 			// Instructors
 	        setupInstructors(request, frm, c);

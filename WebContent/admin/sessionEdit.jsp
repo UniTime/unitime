@@ -209,6 +209,15 @@
 				</html:select>
 			</TD>
 		</TR>
+		<TR>
+			<TD>Default Class Duration:</TD>
+			<TD colspan="2">
+				<html:select property="durationType">
+					<html:option value="-1">System Default (Minutes per Week)</html:option>
+					<html:optionsCollection property="durationTypes" value="id" label="value" />
+				</html:select>
+			</TD>
+		</TR>		
 		
 		<% if (request.getAttribute("Sessions.holidays")!=null) { %>
 			<TR>

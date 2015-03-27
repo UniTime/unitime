@@ -86,5 +86,11 @@
             not-null="false"
             length="20"/>
 
+		<many-to-one
+			name="classDurationType"
+			class="ClassDurationType"
+			column="duration_type_id"
+			not-null="false"
+			foreign-key="fk_ioconfig_durtype"/>
     </class>
 </hibernate-mapping>

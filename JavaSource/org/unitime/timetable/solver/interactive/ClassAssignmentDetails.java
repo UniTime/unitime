@@ -72,6 +72,7 @@ import org.unitime.timetable.solver.ui.BtbInstructorConstraintInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.solver.ui.JenrlInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.timegrid.SolutionGridModel;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 
@@ -274,8 +275,10 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			int length = assignment.getTimePattern().getSlotsPerMtg().intValue();
 			int breakTime = assignment.getTimePattern().getBreakTime().intValue();
 			if (assignment.getTimePattern().getType().intValue()==TimePattern.sTypeExactTime) {
-				length = ExactTimeMins.getNrSlotsPerMtg(assignment.getDays().intValue(), assignment.getClazz().getSchedulingSubpart().getMinutesPerWk().intValue());
-				breakTime = ExactTimeMins.getBreakTime(assignment.getDays().intValue(), assignment.getClazz().getSchedulingSubpart().getMinutesPerWk().intValue());
+				DurationModel dm = assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+				int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays()); 
+				length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
+				breakTime = ExactTimeMins.getBreakTime(minsPerMeeting);
 			}
 			int min = Constants.SLOT_LENGTH_MIN*length-breakTime;
 			DatePattern datePattern = assignment.getDatePattern();

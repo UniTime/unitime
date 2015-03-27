@@ -30,6 +30,8 @@ import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.util.duration.DurationModel;
+import org.unitime.timetable.util.duration.MinutesPerWeek;
 
 
 
@@ -237,6 +239,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
     	newInstrOffrConfig.setLimit(getLimit());
     	newInstrOffrConfig.setName(getName());
     	newInstrOffrConfig.setUnlimitedEnrollment(isUnlimitedEnrollment());
+    	newInstrOffrConfig.setClassDurationType(getClassDurationType());
     	return(newInstrOffrConfig);
     }
     
@@ -276,4 +279,15 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
             setCacheable(true).
             uniqueResult();
     }
+    
+	public ClassDurationType getEffectiveDurationType() {
+		if (getClassDurationType() != null) return getClassDurationType();
+		return getSession().getDefaultClassDurationType();
+	}
+	
+	public DurationModel getDurationModel() {
+		ClassDurationType type = getEffectiveDurationType();
+		if (type == null) return new MinutesPerWeek(null);
+		else return type.getModel();
+	}
 }

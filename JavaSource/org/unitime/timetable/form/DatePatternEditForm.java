@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.form;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,6 +34,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.dao.DatePatternDAO;
@@ -50,13 +54,12 @@ public class DatePatternEditForm extends ActionForm {
     private boolean iIsUsed;
     private boolean iIsDefault;
     private boolean iVisible;
-    private DatePattern iDp = null;
     private Vector iDepartmentIds = new Vector();
     private Long iDepartmentId;
     private Vector iParentIds = new Vector();
     private Long iParentId;
     private Long iSessionId;
-    private Integer iNumberOfWeeks;
+    private String iNumberOfWeeks;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -78,6 +81,15 @@ public class DatePatternEditForm extends ActionForm {
 		
 		if (getTypeInt()!=DatePattern.sTypeExtended && !iDepartmentIds.isEmpty())
 			errors.add("type", new ActionMessage("errors.generic", "Only extended pattern can contain relations with departments."));
+		
+		if (getNumberOfWeeks() != null && !getNumberOfWeeks().isEmpty()) {
+			DecimalFormat df = new DecimalFormat("0.##", new DecimalFormatSymbols(Localization.getJavaLocale()));
+			try {
+				df.parse(getNumberOfWeeks());
+			} catch (ParseException e) {
+				errors.add("numberOfWeeks", new ActionMessage("errors.generic", "Not a number."));
+			}
+		}
 		
 		try {
 			DatePattern dp = getDatePattern(request);
@@ -101,7 +113,7 @@ public class DatePatternEditForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iOp = null; iUniqueId = new Long(-1); iType = DatePattern.sTypes[0]; 
 		iIsUsed = false; iVisible = false; iName = ""; iIsDefault = false; iNumberOfWeeks = null;
-		iDp = null; iDepartmentId = null; iDepartmentIds.clear(); iParentId = null; iParentIds.clear(); 
+		iDepartmentId = null; iDepartmentIds.clear(); iParentId = null; iParentIds.clear(); 
 	}
 	
 	public void load(DatePattern dp) {
@@ -117,7 +129,8 @@ public class DatePatternEditForm extends ActionForm {
 			setUniqueId(dp.getUniqueId());
 			setIsDefault(dp.isDefault());
 			setSessionId(dp.getSession().getUniqueId());
-			setNumberOfWeeks(dp.getNumberOfWeeks());
+			DecimalFormat df = new DecimalFormat("0.##", new DecimalFormatSymbols(Localization.getJavaLocale()));
+			setNumberOfWeeks(dp.getNumberOfWeeks() == null ? "" : df.format(dp.getNumberOfWeeks()));
 			
 			iParentIds.clear();
 			TreeSet parents = new TreeSet(dp.getParents());
@@ -140,7 +153,16 @@ public class DatePatternEditForm extends ActionForm {
 		dp.setVisible(new Boolean(getVisible()));
 		dp.setType(new Integer(getTypeInt()));
 		dp.setPatternAndOffset(request);
-		dp.setNumberOfWeeks(getNumberOfWeeks() == null || getNumberOfWeeks() == 0 ? null : getNumberOfWeeks());
+		if (getNumberOfWeeks() != null && !getNumberOfWeeks().isEmpty()) {
+			try {
+				DecimalFormat df = new DecimalFormat("0.##", new DecimalFormatSymbols(Localization.getJavaLocale()));
+				dp.setNumberOfWeeks(df.parse(getNumberOfWeeks()).floatValue());
+			} catch (ParseException e) {
+				dp.setNumberOfWeeks(null);
+			}
+		} else {
+			dp.setNumberOfWeeks(null);
+		}
 		
 		HashSet oldParents = new HashSet(dp.getParents());
 		for (Enumeration e=iParentIds.elements();e.hasMoreElements();) {
@@ -189,7 +211,16 @@ public class DatePatternEditForm extends ActionForm {
 		dp.setVisible(new Boolean(getVisible()));
 		dp.setType(new Integer(getTypeInt()));
 		dp.setPatternAndOffset(request);
-		dp.setNumberOfWeeks(getNumberOfWeeks() == null || getNumberOfWeeks() == 0 ? null : getNumberOfWeeks());
+		if (getNumberOfWeeks() != null && !getNumberOfWeeks().isEmpty()) {
+			try {
+				DecimalFormat df = new DecimalFormat("0.##", new DecimalFormatSymbols(Localization.getJavaLocale()));
+				dp.setNumberOfWeeks(df.parse(getNumberOfWeeks()).floatValue());
+			} catch (ParseException e) {
+				dp.setNumberOfWeeks(null);
+			}
+		} else {
+			dp.setNumberOfWeeks(null);
+		}
 		
 		HashSet newParents = new HashSet();
 		for (Enumeration e=iParentIds.elements();e.hasMoreElements();) {
@@ -276,30 +307,40 @@ public class DatePatternEditForm extends ActionForm {
 	public void setParentId(Long parentId) {iParentId = parentId;}
 	public Vector getParentIds() {return iParentIds;}
 	public void setParentIds(Vector parentIds) {iParentIds = parentIds;}
-	public Integer getNumberOfWeeks() { return iNumberOfWeeks; }
-	public void setNumberOfWeeks(Integer numberOfWeeks) { iNumberOfWeeks = numberOfWeeks; }
+	public String getNumberOfWeeks() { return iNumberOfWeeks; }
+	public void setNumberOfWeeks(String numberOfWeeks) { iNumberOfWeeks = numberOfWeeks; }
 	
 	public Long getSessionId() { return iSessionId; }
 	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 	
 	public DatePattern getDatePattern(HttpServletRequest request) throws Exception {
+		DatePattern dp = null;
 		if (getUniqueId()!=null) {
-			iDp = (new DatePatternDAO()).get(getUniqueId());
-			if (iDp!=null) iDp = (DatePattern)iDp.clone();
+			dp = (new DatePatternDAO()).get(getUniqueId());
+			if (dp!=null) dp = (DatePattern)dp.clone();
 		}
-		if (iDp==null) {
-			iDp = new DatePattern();
+		if (dp==null) {
+			dp = new DatePattern();
 		}
-		if (iDp.getSession()==null) {
-			iDp.setSession(SessionDAO.getInstance().get(getSessionId()));
+		if (dp.getSession()==null) {
+			dp.setSession(SessionDAO.getInstance().get(getSessionId()));
 		}
 		if (request.getParameter("cal_select")!=null) {
-			iDp.setName(getName());
-			iDp.setVisible(new Boolean(getVisible()));
-			iDp.setType(new Integer(getTypeInt()));
-			iDp.setPatternAndOffset(request);
-			iDp.setNumberOfWeeks(getNumberOfWeeks());
+			dp.setName(getName());
+			dp.setVisible(new Boolean(getVisible()));
+			dp.setType(new Integer(getTypeInt()));
+			dp.setPatternAndOffset(request);
+			if (getNumberOfWeeks() != null && !getNumberOfWeeks().isEmpty()) {
+				try {
+					DecimalFormat df = new DecimalFormat("0.##", new DecimalFormatSymbols(Localization.getJavaLocale()));
+					dp.setNumberOfWeeks(df.parse(getNumberOfWeeks()).floatValue());
+				} catch (ParseException e) {
+					dp.setNumberOfWeeks(null);
+				}
+			} else {
+				dp.setNumberOfWeeks(null);
+			}
 		}
-		return iDp;
+		return dp;
 	}
 }

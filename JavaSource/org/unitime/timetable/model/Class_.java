@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-
 import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.FlushMode;
@@ -64,6 +63,7 @@ import org.unitime.timetable.solver.course.ui.ClassRoomInfo;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DefaultExternalClassNameHelper;
+import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.Navigation;
 
 
@@ -362,14 +362,57 @@ public class Class_ extends BaseClass_ {
     	}
     	return prefs;
     }
+    
+    private Set fixDurationInTimePreferences(Set prefs) {
+    	if (prefs == null || prefs.isEmpty()) return prefs;
+    	DatePattern dp = effectiveDatePattern();
+    	if (dp == null) return prefs;
+    	DurationModel dm = getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+    	
+    	Set ret = new TreeSet(prefs);
+    	List<TimePref> fixed = new ArrayList<TimePref>();
+		for (Iterator i=ret.iterator();i.hasNext();) {
+			Preference pref = (Preference)i.next();
+			if (pref instanceof TimePref) {
+				TimePref tp = (TimePref) pref;
+				if (tp.getTimePattern().getType() != null && tp.getTimePattern().getType() == TimePattern.sTypeExactTime) continue;
+				Set<Integer> days = dm.getDayCodes(getSchedulingSubpart().getMinutesPerWk(), dp, tp.getTimePattern());
+				if (days.isEmpty()) {
+					i.remove();
+				} else if (days.size() < tp.getTimePattern().getDays().size()) {
+					TimePatternModel model = tp.getTimePatternModel();
+					boolean req = model.hasRequiredPreferences();
+					for (int d = 0; d < model.getNrDays(); d++) {
+						if (!days.contains(model.getDayCode(d))) {
+							for (int t = 0; t < model.getNrTimes(); t++)
+								model.setPreference(d, t, PreferenceLevel.sNotAvailable);
+						}
+					}
+					if (req && !model.hasRequiredPreferences()) {
+						for (int d = 0; d < model.getNrDays(); d++)
+							if (days.contains(model.getDayCode(d))) {
+								for (int t = 0; t < model.getNrTimes(); t++)
+									model.setPreference(d, t, PreferenceLevel.sProhibited);
+							}
+					}
+					i.remove();
+					TimePref copy = (TimePref)tp.clone();
+					copy.setPreference(model.getPreferences());
+					fixed.add(copy);
+				}
+			}
+		}
+		ret.addAll(fixed);
+		return ret;
+    }
 
-    public Set effectivePreferences(Class type, Vector leadInstructors) {
+    public Set effectivePreferences(Class type, Vector leadInstructors, boolean fixDurationInTimePreferences) {
     	Department mngDept = getManagingDept();
     	if (DistributionPref.class.equals(type)) {
     		return effectiveDistributionPreferences(mngDept);
     	}
 
-    	if (leadInstructors==null || leadInstructors.isEmpty()) return effectivePreferences(type);
+    	if (leadInstructors==null || leadInstructors.isEmpty()) return effectivePreferences(type, fixDurationInTimePreferences);
 
     	Set instrPrefs = null;
     	for (Enumeration e=leadInstructors.elements();e.hasMoreElements();) {
@@ -408,10 +451,11 @@ public class Class_ extends BaseClass_ {
     		}
 		}
 		
-		return removeNeutralPreferences(combinePreferences(type, subpartPrefs, instrPrefs));
+		Set ret = removeNeutralPreferences(combinePreferences(type, subpartPrefs, instrPrefs));
+		return fixDurationInTimePreferences ? fixDurationInTimePreferences(ret) : ret;
     }
     
-    public Set effectivePreferences(Class type) {
+    public Set effectivePreferences(Class type, boolean fixDurationInTimePreferences) {
     	Department mngDept = getManagingDept();
     	// special handling of distribution preferences
     	if (DistributionPref.class.equals(type)) {
@@ -474,7 +518,8 @@ public class Class_ extends BaseClass_ {
     		}
 		}
 		
-		return removeNeutralPreferences(combinePreferences(type, classPrefs, subpartPrefs, instrPrefs));
+		Set ret = removeNeutralPreferences(combinePreferences(type, classPrefs, subpartPrefs, instrPrefs));
+		return fixDurationInTimePreferences ? fixDurationInTimePreferences(ret) : ret;
     }
 
     public String instructorHtml(String instructorNameFormat){
@@ -520,11 +565,12 @@ public class Class_ extends BaseClass_ {
 			}
 		}
         if (patterns == null || patterns.isEmpty()) {
-            if (getSchedulingSubpart().getMinutesPerWk().intValue()<=0) {
+        	DurationModel dm = getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+			Integer ah = dm.getArrangedHours(getSchedulingSubpart().getMinutesPerWk(), effectiveDatePattern());
+            if (ah == null) {
                 sb.append("<span title='Arrange Hours'>Arr Hrs</span>");
             } else {
-                int nrHours = Math.round(getSchedulingSubpart().getMinutesPerWk().intValue()/50.0f);
-                sb.append("<span title='Arrange "+nrHours+" Hours'>Arr "+nrHours+" Hrs</span>");
+                sb.append("<span title='Arrange "+ah+" Hours'>Arr "+ah+" Hrs</span>");
             }
         }
 		return(sb.toString());
@@ -1344,11 +1390,12 @@ public class Class_ extends BaseClass_ {
 				sb.append(a.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm()));
 		} else {
 			if (getEffectiveTimePreferences().isEmpty()){
-	            if (getSchedulingSubpart().getMinutesPerWk().intValue()<=0) {
+				DurationModel dm = getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+				Integer ah = dm.getArrangedHours(getSchedulingSubpart().getMinutesPerWk(), effectiveDatePattern());
+	            if (ah == null) {
 	                sb.append("Arr Hrs");
 	            } else {
-	                int nrHours = Math.round(getSchedulingSubpart().getMinutesPerWk().intValue()/50.0f);
-	                sb.append("Arr "+nrHours+" Hrs");
+	                sb.append("Arr "+ah+" Hrs");
 	            }	
 			}
 		}

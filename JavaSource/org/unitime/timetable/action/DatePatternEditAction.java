@@ -22,6 +22,8 @@ package org.unitime.timetable.action;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -51,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.DatePatternEditForm;
 import org.unitime.timetable.model.ChangeLog;
@@ -842,6 +845,7 @@ public class DatePatternEditAction extends Action {
 		    webTable.addLine(null, new String[] {"No date pattern defined for this session."}, null, null);			    
 		}
 		
+		DecimalFormat df = new DecimalFormat("0.##", new DecimalFormatSymbols(Localization.getJavaLocale()));
         for (DatePattern pattern: patterns) {
         	String onClick = "onClick=\"document.location='datePatternEdit.do?op=Edit&id=" + pattern.getUniqueId() + "';\"";
         	String deptStr = "";
@@ -902,9 +906,9 @@ public class DatePatternEditAction extends Action {
             
             String nbrWeeks = null;
             if (pattern.getNumberOfWeeks() == null) {
-            	nbrWeeks = "<i>" + pattern.getComputedNumberOfWeeks() + "</i>";
+            	nbrWeeks = "<i>" + df.format(pattern.getComputedNumberOfWeeks()) + "</i>";
             } else {
-            	nbrWeeks = pattern.getNumberOfWeeks().toString();
+            	nbrWeeks = df.format(pattern.getNumberOfWeeks());
             }
             
         	boolean isUsed = used.contains(pattern) || pattern.isDefault();

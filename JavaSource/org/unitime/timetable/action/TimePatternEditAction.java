@@ -63,6 +63,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.duration.DurationModel;
 
 
 /** 
@@ -274,7 +275,8 @@ public class TimePatternEditAction extends Action {
             		name += " ";
             		int startSlot = tpref.getTimePatternModel().getExactStartSlot();
                     name+= Constants.toTime(Constants.FIRST_SLOT_TIME_MIN + (Constants.SLOT_LENGTH_MIN*startSlot));
-            		int minPerMtg = (nrDays==0?0:clazz.getSchedulingSubpart().getMinutesPerWk().intValue()/nrDays);
+                    DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+            		int minPerMtg = (nrDays==0?0:dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern(), dayCode)); 
             		if (nrDays==0)
 	                    Debug.warning("Class "+clazz.getClassLabel()+" has zero number of days.");
             		

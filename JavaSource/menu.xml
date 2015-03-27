@@ -707,6 +707,12 @@
 					<hasPermission name="InstructionalTypes"/>
 				</condition>
 			</item>
+			<item name="Class Duration Types" page="admin" type="gwt">
+				<parameter name="type">durationType</parameter>
+				<condition>
+					<hasPermission name="DurationTypes"/>
+				</condition>
+			</item>
 			<item name="Status Types" page="deptStatusTypeEdit.do">
 				<condition>
 					<hasPermission name="StatusTypes"/>

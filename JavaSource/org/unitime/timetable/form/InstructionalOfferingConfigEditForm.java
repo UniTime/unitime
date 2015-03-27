@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,10 +35,12 @@ import org.apache.struts.util.MessageResources;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SimpleItypeConfig;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.IdValue;
 
 
 /** 
@@ -74,6 +78,9 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
     private Integer configCount;
     private String catalogLinkLabel;
     private String catalogLinkLocation;
+    private String durationTypeDefault;
+    private Long durationType;
+    private boolean durationTypeEditable;
     
     // Error Codes
     private final short NO_ERR = 0;
@@ -326,6 +333,9 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
         name=null;
         catalogLinkLabel = null;
         catalogLinkLocation = null;
+        durationType = null;
+        durationTypeDefault = null;
+        durationTypeEditable = false;
     }
 
     /**
@@ -496,4 +506,24 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
 	public void setCatalogLinkLocation(String catalogLinkLocation) {
 		this.catalogLinkLocation = catalogLinkLocation;
 	}
+	
+    public Long getDurationType() { return durationType; }
+    public void setDurationType(Long durationType) { this.durationType = durationType; }
+    public String getDurationTypeDefault() { return durationTypeDefault; }
+    public void setDurationTypeDefault(String durationTypeDefault) { this.durationTypeDefault = durationTypeDefault; }
+    public List<IdValue> getDurationTypes() {
+    	List<IdValue> ret = new ArrayList<IdValue>();
+    	for (ClassDurationType type: ClassDurationType.findAll())
+    		if (type.isVisible() || type.getUniqueId().equals(durationType))
+    			ret.add(new IdValue(type.getUniqueId(), type.getLabel()));
+    	return ret;
+    }
+    public String getDurationTypeText() {
+    	for (ClassDurationType type: ClassDurationType.findAll())
+    		if (type.getUniqueId().equals(durationType))
+    			return type.getLabel();
+    	return durationTypeDefault;
+    }
+    public boolean isDurationTypeEditable() { return durationTypeEditable; }
+    public void setDurationTypeEditable(boolean durationTypeEditable) { this.durationTypeEditable = durationTypeEditable; }
 }

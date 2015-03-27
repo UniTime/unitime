@@ -69,6 +69,7 @@ import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.duration.DurationModel;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -204,8 +205,10 @@ public class PdfWorksheet {
         if (assgn==null) {
             Set timePrefs = clazz.getEffectiveTimePreferences();
             if (timePrefs.isEmpty()) {
-                if (clazz.getSchedulingSubpart().getMinutesPerWk().intValue()>0)
-                    return new String[]{"Arr "+((clazz.getSchedulingSubpart().getMinutesPerWk().intValue()+59)/60)+" Hrs"+dpat};
+            	DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+            	Integer ah = dm.getArrangedHours(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern());
+                if (ah != null)
+                    return new String[]{"Arr "+ah+" Hrs"+dpat};
                 else
                     return new String[]{"Arr Hrs"+dpat};
             }
@@ -217,8 +220,10 @@ public class PdfWorksheet {
                 if (model.isExactTime()) {
                     if (req!=null) onlyOneReq=false;
                     else {
-                        int length = ExactTimeMins.getNrSlotsPerMtg(model.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue());
-                        int breakTime = ExactTimeMins.getBreakTime(model.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue()); 
+            			DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+            			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern(), model.getExactDays());
+                        int length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
+                        int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting); 
                         req = new TimeLocation(model.getExactDays(), model.getExactStartSlot(), length,PreferenceLevel.sIntLevelNeutral,0,dp.getUniqueId(),dp.getName(),dp.getPatternBitSet(),breakTime);
                     }
                 } else {

@@ -99,7 +99,7 @@
         <property
             name="numberOfWeeks"
             column="nr_weeks"
-            type="java.lang.Integer"
+            type="java.lang.Float"
             not-null="false"/>
     </class>
 </hibernate-mapping>

@@ -36,6 +36,7 @@ import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -77,6 +78,7 @@ import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
+import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 import org.unitime.timetable.webutil.WebInstructionalOfferingTableBuilder;
 
@@ -286,7 +288,8 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}
     	if (isShowMinPerWk()){
     		PdfPCell c = createCell();
-    		addText(c, MSG.columnMinPerWk(), true, Element.ALIGN_RIGHT);
+    		ClassDurationType dtype = ClassDurationType.findDefaultType(sessionId, null);
+    		addText(c, dtype == null ? MSG.columnMinPerWk() : dtype.getLabel(), true, Element.ALIGN_RIGHT);
     		iPdfTable.addCell(c);
     	}
     	if (isShowTimePattern()){
@@ -538,11 +541,13 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		addText(cell, tp.getName(), false, false, Element.ALIGN_CENTER, color, true);  
     	}
         if (prefGroup instanceof Class_ && prefGroup.effectiveTimePatterns().isEmpty()) {
-            if (((Class_)prefGroup).getSchedulingSubpart().getMinutesPerWk().intValue()<=0) {
+        	Class_ clazz = (Class_)prefGroup;
+        	DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+        	Integer ah = dm.getArrangedHours(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern());
+            if (ah == null) {
                 addText(cell, "Arr Hrs", false, false, Element.ALIGN_CENTER, color, true);
             } else {
-                int nrHours = Math.round(((Class_)prefGroup).getSchedulingSubpart().getMinutesPerWk().intValue()/50.0f);
-                addText(cell, "Arr "+nrHours+" Hrs", false, false, Element.ALIGN_CENTER, color, true);
+                addText(cell, "Arr "+ah+" Hrs", false, false, Element.ALIGN_CENTER, color, true);
             }
         }
         return cell;
@@ -854,10 +859,20 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 
     	if (prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
-    		addText(cell, aClass.getSchedulingSubpart().getMinutesPerWk().toString(), false, false, Element.ALIGN_RIGHT, color, true);
+    		String suffix = "";
+    		ClassDurationType dtype = aClass.getSchedulingSubpart().getInstrOfferingConfig().getEffectiveDurationType();
+    		if (dtype != null && !dtype.equals(aClass.getSchedulingSubpart().getSession().getDefaultClassDurationType())) {
+    			suffix = " " + dtype.getAbbreviation();
+    		}
+    		addText(cell, aClass.getSchedulingSubpart().getMinutesPerWk() + suffix, false, false, Element.ALIGN_RIGHT, color, true);
     	} else if (prefGroup instanceof SchedulingSubpart) {
     		SchedulingSubpart aSchedulingSubpart = (SchedulingSubpart) prefGroup;
-    		addText(cell, aSchedulingSubpart.getMinutesPerWk().toString(), false, false, Element.ALIGN_RIGHT, color, true);
+    		String suffix = "";
+    		ClassDurationType dtype = aSchedulingSubpart.getInstrOfferingConfig().getEffectiveDurationType();
+    		if (dtype != null && !dtype.equals(aSchedulingSubpart.getSession().getDefaultClassDurationType())) {
+    			suffix = " " + dtype.getAbbreviation();
+    		}
+    		addText(cell, aSchedulingSubpart.getMinutesPerWk() + suffix, false, false, Element.ALIGN_RIGHT, color, true);
     	} 
 
         return cell;

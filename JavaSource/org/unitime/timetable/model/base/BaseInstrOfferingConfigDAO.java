@@ -46,4 +46,9 @@ public abstract class BaseInstrOfferingConfigDAO extends _RootDAO<InstrOfferingC
 	public List<InstrOfferingConfig> findByInstructionalOffering(org.hibernate.Session hibSession, Long instructionalOfferingId) {
 		return hibSession.createQuery("from InstrOfferingConfig x where x.instructionalOffering.uniqueId = :instructionalOfferingId").setLong("instructionalOfferingId", instructionalOfferingId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<InstrOfferingConfig> findByClassDurationType(org.hibernate.Session hibSession, Long classDurationTypeId) {
+		return hibSession.createQuery("from InstrOfferingConfig x where x.classDurationType.uniqueId = :classDurationTypeId").setLong("classDurationTypeId", classDurationTypeId).list();
+	}
 }

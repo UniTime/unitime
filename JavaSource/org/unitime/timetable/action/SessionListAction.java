@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -84,13 +83,12 @@ public class SessionListAction extends Action {
 				11, "", "sessionList.do?order=%%",					
 				new String[] {
 					"Default", "Academic<br>Session", "Academic<br>Initiative", "Session<br>Begins",
-					"Classes<br>End", "Session<br>Ends", "Exams<br>Begins", "Date<br>Pattern", "Status", "Subject<br>Areas", 
+					"Classes<br>End", "Session<br>Ends", "Exams<br>Begins", "Date<br>Pattern", "Status", "Class<br>Duration", 
 					"Events<br>Begins", "Events<br>Ends", "<br>Enrollment", "Deadline<br>Change", "<br>Drop", "Sectioning<br>Status" },
 				new String[] { "center", "left", "left", "left", "left",
 					"left", "left", "left", "left", "right", "left", "left", "left", "left", "left", "left" }, 
 				new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true, true, true, true });
 		
-		DecimalFormat df5 = new DecimalFormat("####0");
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.SESSION_DATE);
 		
 		TreeSet<Session> sessions = new TreeSet<Session>(SessionDAO.getInstance().findAll());
@@ -118,7 +116,7 @@ public class SessionListAction extends Action {
 						(s.getExamBeginDate()==null?"N/A":df.format(s.getExamBeginDate()).replace(" ", "&nbsp;")),
 						s.getDefaultDatePattern()!=null ? s.getDefaultDatePattern().getName() : "-", 
 						s.statusDisplayString(),
-						df5.format(s.getSubjectAreas().size()),
+						s.getDefaultClassDurationType() == null ? "&nbsp;" : s.getDefaultClassDurationType().getAbbreviation(),
 						(s.getEventBeginDate()==null?"N/A":df.format(s.getEventBeginDate()).replace(" ", "&nbsp;")),
 						(s.getEventEndDate()==null?"N/A":df.format(s.getEventEndDate()).replace(" ", "&nbsp;")),
 						df.format(ce.getTime()).replace(" ", "&nbsp;"),
@@ -136,7 +134,7 @@ public class SessionListAction extends Action {
 						s.getExamBeginDate(),
 						s.getDefaultDatePattern()!=null ? s.getDefaultDatePattern().getName() : "-", 
 						s.statusDisplayString(),
-						df5.format(s.getSubjectAreas().size()),
+						s.getDefaultClassDurationType() == null ? " " : s.getDefaultClassDurationType().getAbbreviation(),
 						s.getEventBeginDate(),
 						s.getEventEndDate(),
 						ce.getTime(), cc.getTime(), cd.getTime(),

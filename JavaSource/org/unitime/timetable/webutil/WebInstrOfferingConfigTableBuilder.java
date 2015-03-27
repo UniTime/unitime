@@ -32,6 +32,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -214,7 +215,8 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        } else {
 		        setVisibleColumns(COLUMNS);	        	
 	        }
-        	TableStream configTable = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId());
+	        ClassDurationType dtype = ioc.getEffectiveDurationType();
+        	TableStream configTable = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId(), dtype == null ? MSG.columnMinPerWk() : dtype.getLabel());
         	this.buildConfigRow(subpartIds, classAssignment, examAssignment,  configTable, ioc.getInstructionalOffering().getControllingCourseOffering(), ioc, context, !getDisplayConfigOpButtons(), true);
         	configTable.tableComplete();
 	    }
@@ -277,5 +279,22 @@ public class WebInstrOfferingConfigTableBuilder extends
     	if ("PreferenceGroup".equals(getBackType()) && prefGroup.getUniqueId().toString().equals(getBackId()))
     		cell.addContent("<A name=\"back\"></A>");
     	return cell;
+    }
+    
+    @Override
+    protected TableCell buildMinPerWeek(PreferenceGroup prefGroup, boolean isEditable){
+    	TableCell cell = null;
+    	if (prefGroup instanceof Class_) {
+    		Class_ aClass = (Class_) prefGroup;
+    		cell = initNormalCell(aClass.getSchedulingSubpart().getMinutesPerWk().toString(), isEditable);
+            cell.setAlign("right");	
+    	} else if (prefGroup instanceof SchedulingSubpart) {
+    			SchedulingSubpart aSchedulingSubpart = (SchedulingSubpart) prefGroup;
+        		cell = initNormalCell(aSchedulingSubpart.getMinutesPerWk().toString(), isEditable);
+                cell.setAlign("right");	
+    	} else {
+    		cell = this.initNormalCell("&nbsp;" ,isEditable);
+    	}
+        return(cell);
     }
 }    

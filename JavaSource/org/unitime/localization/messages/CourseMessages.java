@@ -2072,5 +2072,13 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Area [ft2]")
 	String columnAreaPDF();
-
+	
+	@DefaultMessage("System Default (Minutes per Week)")
+	String systemDefaultDurationType();
+	
+	@DefaultMessage("Session Default ({0})")
+	String sessionDefault(String value);
+	
+	@DefaultMessage("Class Duration:")
+	String propertyClassDurationType();
 }

@@ -498,8 +498,12 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     }
     
     public List<DatePattern> findChildren() {
+    	return findChildren(null);
+    }
+    
+    public List<DatePattern> findChildren(org.hibernate.Session hibSession) {
     	if (getType() != null && getType() != sTypePatternSet) return new ArrayList<DatePattern>();
-    	return (List<DatePattern>)DatePatternDAO.getInstance().getSession().
+    	return (List<DatePattern>)(hibSession != null ? hibSession : DatePatternDAO.getInstance().getSession()).
         		createQuery("select dp from DatePattern dp, IN (dp.parents) parent where parent.uniqueId = :parentId").
         		setLong("parentId",getUniqueId()).setCacheable(true).list();
     }
@@ -669,7 +673,11 @@ public class DatePattern extends BaseDatePattern implements Comparable {
         return new Date[] { startDateCal.getTime(), endDateCal.getTime()};
 	}
 	
-	public int getComputedNumberOfWeeks() {
+	public float getComputedNumberOfWeeks() {
+		if (getType() != null && getType() == sTypePatternSet) {
+			for (DatePattern dp: findChildren())
+				return dp.getEffectiveNumberOfWeeks();
+		}
 		int daysInWeek[] = new int[7];
 		for (int i = 0; i < 7; i++) daysInWeek[i] = 0;
 		for (int i = 0; i < getPattern().length(); i++) {
@@ -680,7 +688,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		return daysInWeek[2];
 	}
 	
-	public int getEffectiveNumberOfWeeks() {
+	public float getEffectiveNumberOfWeeks() {
 		return (getNumberOfWeeks() == null ? getComputedNumberOfWeeks() : getNumberOfWeeks());
 	}
 }

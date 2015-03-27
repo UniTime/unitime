@@ -52,6 +52,7 @@ import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
 import org.unitime.timetable.interfaces.ExternalLinkLookup;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
@@ -60,7 +61,6 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
-import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
@@ -72,6 +72,7 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SicComparator;
+import org.unitime.timetable.model.dao.ClassDurationTypeDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
@@ -183,7 +184,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             if(sp!=null && sp.size()>0) {
 	            sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
-	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), configId.toString(), createAsNew, frm.getUnlimited().booleanValue());
+	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), configId.toString(), createAsNew, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
 	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
             } else {
             	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
@@ -241,7 +242,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	            Vector sp = loadOriginalConfig(frm.getConfigId(), frm);
 	            if(sp!=null && sp.size()>0) {
 	            	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
-		            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), courseOfferingId, false, frm.getUnlimited().booleanValue());
+		            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), courseOfferingId, false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
 		            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
 	            } else {
 	            	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
@@ -255,7 +256,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             ActionMessages errors = frm.validate(mapping, request);
             if(!errors.isEmpty()) {
-                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
                 request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
                 saveErrors(request, errors);
                 return mapping.findForward("displayForm");
@@ -264,7 +265,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             addInstructionalType(frm);
             frm.setItype(Constants.BLANK_OPTION_VALUE);
 
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
         }
 
@@ -285,14 +286,14 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             processShiftOrDelete(request.getParameter("id"), op);
 
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
         }
 
         // Multiple Limits
         if (op.equalsIgnoreCase("multipleLimits")) {
 
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
         }
 
@@ -300,10 +301,10 @@ public class InstructionalOfferingConfigEditAction extends Action {
         if(op.equals(MSG.actionSaveConfiguration())
                 || op.equals(MSG.actionUpdateConfiguration()) ) {
 
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
             ActionMessages errors = frm.validate(mapping, request);
             if(!errors.isEmpty()) {
-                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
                 request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
                 saveErrors(request, errors);
                 return mapping.findForward("displayForm");
@@ -312,7 +313,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             try {
                 updateConfig(request, frm);
 
-	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
 	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
 
 	            // Redirect to instr offering detail on success
@@ -322,7 +323,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 return redirect;
             }
             catch (Exception e) {
-                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
                 request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
                 errors.add(
                         "subparts",
@@ -352,7 +353,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
         // User clicks Unlimited Enrollment
 		if(op.equalsIgnoreCase("unlimitedEnrollment")) {
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue(), frm.getDurationTypeText());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
             return mapping.findForward("displayForm");
 		}
@@ -382,6 +383,18 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
         Long courseOfferingId = ioc.getControllingCourseOffering().getUniqueId();
         loadDetailFromCourseOffering(frm, courseOfferingId, init, false);
+        
+        frm.setDurationType(ioc.getClassDurationType() == null ? -1l : ioc.getClassDurationType().getUniqueId());
+        for (SchedulingSubpart subpart: ioc.getSchedulingSubparts())
+        	if (!sessionContext.hasPermission(subpart, Right.InstrOfferingConfigEditSubpart)) {
+        		frm.setDurationTypeEditable(false);
+        		break;
+        	}
+        if (frm.getDurationTypes().size() <= 1) {
+        	ClassDurationType dtype = ioc.getEffectiveDurationType();
+        	if (dtype != null && dtype.isVisible())
+        		frm.setDurationTypeEditable(false);
+        }
     }
 
     /**
@@ -416,6 +429,9 @@ public class InstructionalOfferingConfigEditAction extends Action {
         frm.setInstrOfferingName(co.getCourseNameWithTitle());
         frm.setInstrOfferingId(io.getUniqueId().toString());
         frm.setNotOffered(io.isNotOffered());
+        frm.setDurationType(io.getSession().getDefaultClassDurationType() == null ? -1 : io.getSession().getDefaultClassDurationType().getUniqueId());
+        frm.setDurationTypeDefault(io.getSession().getDefaultClassDurationType() == null ? MSG.systemDefaultDurationType() : MSG.sessionDefault(io.getSession().getDefaultClassDurationType().getLabel()));
+        frm.setDurationTypeEditable(true);
 
 	    Set configs = io.getInstrOfferingConfigs();
 	    frm.setConfigCount(new Integer (configs.size()));
@@ -874,6 +890,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             Long configId = frm.getConfigId();
             Boolean unlimitedEnroll = (frm.getUnlimited()==null) ? new Boolean(false) : frm.getUnlimited();
             int limit = (unlimitedEnroll.booleanValue()) ? 0 : frm.getLimit();
+            ClassDurationType dtype = (frm.getDurationType() == null || frm.getDurationType() < 0 ? null : ClassDurationTypeDAO.getInstance().get(frm.getDurationType(), hibSession));
 
             if (configId==null || configId.intValue()==0) {
                 ioc = new InstrOfferingConfig();
@@ -881,6 +898,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 ioc.setName(frm.getName());
                 ioc.setUnlimitedEnrollment(unlimitedEnroll);
                 ioc.setInstructionalOffering(io);
+                ioc.setClassDurationType(dtype);
                 io.addToinstrOfferingConfigs(ioc);
 
                 hibSession.saveOrUpdate(ioc);
@@ -891,6 +909,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 ioc.setLimit(new Integer(limit));
                 ioc.setName(frm.getName());
                 ioc.setUnlimitedEnrollment(unlimitedEnroll);
+                ioc.setClassDurationType(dtype);
             }
 
             HashMap notDeletedSubparts = new HashMap();
@@ -1171,7 +1190,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             InstrOfferingConfig ioc,
             SchedulingSubpart parent,
             RoomGroup rg,
-            HashMap notDeletedSubparts ) throws Exception {
+            HashMap notDeletedSubparts) throws Exception {
 
         // Set attributes
         String subpartId = request.getParameter("subpartId" + sic.getId());
@@ -1294,30 +1313,33 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	            if (subpart.getMinutesPerWk().intValue()!=mpw) {
 	                Debug.debug("Minutes per week changed ... Deleting time prefs on subpart and classes");
 		            subpart.setMinutesPerWk(new Integer(mpw));
-		            Set prefs = subpart.getPreferences();
-		            for (Iterator i=prefs.iterator(); i.hasNext(); ) {
-		                Preference pref = (Preference) i.next();
-		                if (pref instanceof TimePref) {
+	            }
+	            
+	            /*
+	            DurationModel model = subpart.getInstrOfferingConfig().getDurationModel();
+	            for (Iterator i=subpart.getPreferences().iterator(); i.hasNext(); ) {
+	                Preference pref = (Preference) i.next();
+	                if (pref instanceof TimePref && !model.isValidCombination(mpw, subpart.effectiveDatePattern(), ((TimePref)pref).getTimePattern())) {
+		                pref.setOwner(null);
+		                hibSession.delete(pref);
+		                i.remove();
+	                }
+	            }
+
+	            for (Iterator i=classes.iterator(); i.hasNext(); ) {
+	                Class_ c = (Class_) i.next();
+		            Set cPrefs = c.getPreferences();
+		            for (Iterator j=cPrefs.iterator(); j.hasNext(); ) {
+		                Preference pref = (Preference) j.next();
+		                if (pref instanceof TimePref && !model.isValidCombination(mpw, c.effectiveDatePattern(), ((TimePref)pref).getTimePattern())) {
 			                pref.setOwner(null);
 			                hibSession.delete(pref);
-			                i.remove();
+			                j.remove();
 		                }
 		            }
-
-		            for (Iterator i=classes.iterator(); i.hasNext(); ) {
-		                Class_ c = (Class_) i.next();
-			            Set cPrefs = c.getPreferences();
-			            for (Iterator j=cPrefs.iterator(); j.hasNext(); ) {
-			                Preference pref = (Preference) j.next();
-			                if (pref instanceof TimePref) {
-				                pref.setOwner(null);
-				                hibSession.delete(pref);
-				                j.remove();
-			                }
-			            }
-		                hibSession.saveOrUpdate(c);
-		            }
+	                hibSession.saveOrUpdate(c);
 	            }
+	            */
 
 	            // Manager changed
 	            boolean managerChanged = false;

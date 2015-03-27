@@ -244,6 +244,23 @@
 				</TD>
 			</TR>
 		</tt:hasProperty>
+		
+		<html:hidden property="durationTypeEditable"/>
+		<html:hidden property="durationTypeDefault"/>
+		<logic:notEqual value="true" name="instructionalOfferingConfigEditForm" property="durationTypeEditable">
+			<html:hidden property="durationType"/>
+		</logic:notEqual>
+		<logic:equal value="true" name="instructionalOfferingConfigEditForm" property="durationTypeEditable">
+			<TR>
+				<TD><loc:message name="propertyClassDurationType"/></TD>
+				<TD colspan="2">
+					<html:select property="durationType" onchange="var el = document.getElementById('durationColumn'); if (el != null) el.innerText = this.options[this.selectedIndex].text;">
+						<html:option value="-1"><bean:write name="instructionalOfferingConfigEditForm" property="durationTypeDefault"/></html:option>
+						<html:optionsCollection property="durationTypes" value="id" label="value" />
+					</html:select>
+				</TD>
+			</TR>
+		</logic:equal>
 
 		<TR>
 			<TD colspan="2">

@@ -207,6 +207,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 					toInstrOffrConfig.setName(fromInstrOffrConfig.getName());
 					toInstrOffrConfig.setUnlimitedEnrollment(fromInstrOffrConfig.isUnlimitedEnrollment());
 					toInstrOffrConfig.setUniqueIdRolledForwardFrom(fromInstrOffrConfig.getUniqueId());
+					toInstrOffrConfig.setClassDurationType(fromInstrOffrConfig.getClassDurationType());
 					toInstructionalOffering.addToinstrOfferingConfigs(toInstrOffrConfig);
 					hibSession.saveOrUpdate(toInstrOffrConfig);
 					hibSession.update(toInstructionalOffering);

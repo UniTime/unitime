@@ -24,7 +24,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
-import org.hibernate.criterion.Order;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base.BasePreferenceLevel;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
@@ -66,6 +65,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
     public static String sPreferred = Constants.sPreferencePreferred;
     public static String sStronglyPreferred = Constants.sPreferenceStronglyPreferred;
     public static String sNeutral = Constants.sPreferenceNeutral;
+    public static String sNotAvailable = "N";
     
     public static final char sCharLevelProhibited = 'P';
     public static final char sCharLevelRequired = 'R';
@@ -74,6 +74,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
     public static final char sCharLevelPreferred = '1';
     public static final char sCharLevelStronglyPreferred = '0';
     public static final char sCharLevelNeutral = '2';
+    public static final char sCharLevelNotAvailable = 'N';
 
     public static int sIntLevelProhibited = Constants.sPreferenceLevelProhibited;
     public static int sIntLevelRequired = Constants.sPreferenceLevelRequired;
@@ -82,6 +83,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
     public static int sIntLevelPreferred = Constants.sPreferenceLevelDiscouraged;
     public static int sIntLevelStronglyPreferred = Constants.sPreferenceLevelStronglyPreferred;
     public static int sIntLevelNeutral = Constants.sPreferenceLevelNeutral;
+    public static int sIntLevelNotAvailable = Constants.sPreferenceLevelProhibited;
 
     /** static initialization */
     static {
@@ -93,6 +95,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
         sPref2color.put(sDiscouraged,"rgb(220,180,20)"); //rgb(240,200,40)
         sPref2color.put(sStronglyDiscouraged,"rgb(240,100,40)");
         sPref2color.put(sProhibited,"rgb(200,30,20)");
+        sPref2color.put(sNotAvailable,"rgb(150,150,150)");
         sAwtPref2color = new Hashtable();
         sAwtPref2color.put(sRequired,new Color(60,60,180));
         sAwtPref2color.put(sStronglyPreferred,new Color(15,130,30));
@@ -101,6 +104,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
         sAwtPref2color.put(sDiscouraged,new Color(220,180,20));
         sAwtPref2color.put(sStronglyDiscouraged,new Color(240,100,40));
         sAwtPref2color.put(sProhibited,new Color(200,30,20));
+        sAwtPref2color.put(sNotAvailable,new Color(150,150,150));
         sBgPref2color = new Hashtable();
         sBgPref2color.put(sRequired,"rgb(80,80,200)");
         sBgPref2color.put(sStronglyPreferred,"rgb(30,160,60)"); //rgb(40,180,60)
@@ -109,6 +113,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
         sBgPref2color.put(sDiscouraged,"rgb(240,210,60)");
         sBgPref2color.put(sStronglyDiscouraged,"rgb(240,120,60)");
         sBgPref2color.put(sProhibited,"rgb(220,50,40)");
+        sBgPref2color.put(sNotAvailable,"rgb(150,150,150)");
         sHexPref2color = new Hashtable();
         sHexPref2color.put(sRequired,"#3c3cb4");
         sHexPref2color.put(sStronglyPreferred,"#0f821e"); //14a028
@@ -117,6 +122,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
         sHexPref2color.put(sDiscouraged,"#dcb414"); //f0c828
         sHexPref2color.put(sStronglyDiscouraged,"#f06428");
         sHexPref2color.put(sProhibited,"#c81e14");
+        sHexPref2color.put(sNotAvailable,"#696969");
         sPref2abbv = new Hashtable();
         sPref2abbv.put(sRequired,"Req");
         sPref2abbv.put(sStronglyPreferred,"StrPref");
@@ -125,6 +131,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
         sPref2abbv.put(sDiscouraged,"Disc"); //f0c828
         sPref2abbv.put(sStronglyDiscouraged,"StrDisc");
         sPref2abbv.put(sProhibited,"Proh");
+        sPref2abbv.put(sNotAvailable,"N/A");
     }
     
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -169,12 +176,24 @@ public class PreferenceLevel extends BasePreferenceLevel {
 	 * ordered by column pref_id
 	 * @return Vector of PreferenceLevel objects
 	 */
-    public static synchronized List<PreferenceLevel> getPreferenceLevelList() {
-    	return PreferenceLevelDAO.getInstance().findAll(Order.asc("prefId"));
+	public static synchronized List<PreferenceLevel> getPreferenceLevelList() {
+		return getPreferenceLevelList(false);
+	}
+	
+    public static synchronized List<PreferenceLevel> getPreferenceLevelList(boolean includeNotAvailable) {
+    	if (includeNotAvailable) {
+    		return (List<PreferenceLevel>)PreferenceLevelDAO.getInstance().getSession().createQuery(
+    				"from PreferenceLevel order by prefId")
+    				.setCacheable(true).list();
+    	} else {
+    		return (List<PreferenceLevel>)PreferenceLevelDAO.getInstance().getSession().createQuery(
+    				"from PreferenceLevel where prefProlog != :na order by prefId")
+    				.setString("na", sNotAvailable).setCacheable(true).list();
+    	}
     }
 
     public static List<PreferenceLevel> getPreferenceLevelListSoftOnly() {
-    	List<PreferenceLevel> ret = getPreferenceLevelList();
+    	List<PreferenceLevel> ret = getPreferenceLevelList(false);
     	for (Iterator<PreferenceLevel> i = ret.iterator(); i.hasNext(); ) {
     		PreferenceLevel level = i.next();
     		if (sRequired.equals(level.getPrefProlog()) || sProhibited.equals(level.getPrefProlog())) i.remove();
@@ -223,7 +242,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
      * @return PreferenceLevel object
      */
     public static PreferenceLevel getPreferenceLevel(String prologId) {
-        for (PreferenceLevel p: getPreferenceLevelList())
+        for (PreferenceLevel p: getPreferenceLevelList(true))
             if (p.getPrefProlog().equalsIgnoreCase(prologId)) return p;
         return null;
     }
@@ -352,6 +371,8 @@ public class PreferenceLevel extends BasePreferenceLevel {
 			return sCharLevelStronglyDiscouraged;
 		if (sProhibited.equals(prologPref))
 			return sCharLevelProhibited;
+		if (sNotAvailable.equals(prologPref))
+			return sCharLevelNotAvailable;
 		return sCharLevelNeutral;
 	}
 	
@@ -364,6 +385,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
 			case sCharLevelPreferred : return sPreferred;
 			case sCharLevelStronglyPreferred : return sStronglyPreferred;
 			case sCharLevelRequired : return sRequired;
+			case sCharLevelNotAvailable : return sNotAvailable;
 			default : return sNeutral;
 		}
 	}

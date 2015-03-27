@@ -48,6 +48,7 @@ import org.unitime.timetable.form.InstructionalOfferingListFormInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
@@ -367,7 +368,7 @@ public class WebInstructionalOfferingTableBuilder {
     } 
     //MSG.columnNote(): if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
-    protected void buildTableHeader(TableStream table, Long sessionId){  
+    protected void buildTableHeader(TableStream table, Long sessionId, String durationColName){  
     	TableRow row = new TableRow();
     	TableRow row2 = new TableRow();
     	TableHeaderCell cell = null;
@@ -408,7 +409,7 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(cell);
     	}
     	if (isShowMinPerWk()){
-    		cell = this.headerCell(MSG.columnMinPerWk(), 2, 1);
+    		cell = this.headerCell(durationColName, 2, 1);
     		row.addContent(cell);
     	}
     	if (isShowTimePattern()){
@@ -989,15 +990,25 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
 
-    private TableCell buildMinPerWeek(PreferenceGroup prefGroup, boolean isEditable){
+    protected TableCell buildMinPerWeek(PreferenceGroup prefGroup, boolean isEditable){
     	TableCell cell = null;
     	if (prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
-    		cell = initNormalCell(aClass.getSchedulingSubpart().getMinutesPerWk().toString(), isEditable);
+    		String suffix = "";
+    		ClassDurationType dtype = aClass.getSchedulingSubpart().getInstrOfferingConfig().getEffectiveDurationType();
+    		if (dtype != null && !dtype.equals(aClass.getSchedulingSubpart().getSession().getDefaultClassDurationType())) {
+    			suffix = " " + dtype.getAbbreviation();
+    		}
+    		cell = initNormalCell(aClass.getSchedulingSubpart().getMinutesPerWk() + suffix, isEditable);
             cell.setAlign("right");	
     	} else if (prefGroup instanceof SchedulingSubpart) {
     			SchedulingSubpart aSchedulingSubpart = (SchedulingSubpart) prefGroup;
-        		cell = initNormalCell(aSchedulingSubpart.getMinutesPerWk().toString(), isEditable);
+        		String suffix = "";
+        		ClassDurationType dtype = aSchedulingSubpart.getInstrOfferingConfig().getEffectiveDurationType();
+        		if (dtype != null && !dtype.equals(aSchedulingSubpart.getSession().getDefaultClassDurationType())) {
+        			suffix = " " + dtype.getAbbreviation();
+        		}
+        		cell = initNormalCell(aSchedulingSubpart.getMinutesPerWk() + suffix, isEditable);
                 cell.setAlign("right");	
     	} else {
     		cell = this.initNormalCell("&nbsp;" ,isEditable);
@@ -1677,15 +1688,20 @@ public class WebInstructionalOfferingTableBuilder {
         }
     }
     
-    protected TableStream initTable(JspWriter outputStream, Long sessionId){
+    protected TableStream initTable(JspWriter outputStream, Long sessionId, String durationColName){
     	TableStream table = new TableStream(outputStream);
         table.setWidth("100%");
         table.setBorder(0);
         table.setCellSpacing(0);
         table.setCellPadding(3);
         table.tableDefComplete();
-        this.buildTableHeader(table, sessionId);
+        this.buildTableHeader(table, sessionId, durationColName);
         return(table);
+    }
+    
+    protected TableStream initTable(JspWriter outputStream, Long sessionId){
+    	ClassDurationType dtype = ClassDurationType.findDefaultType(sessionId, null);
+    	return initTable(outputStream, sessionId, dtype == null ? MSG.columnMinPerWk() : dtype.getLabel());
     }
     
     public void htmlTableForInstructionalOffering(

@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Locale;
 
-
 import org.cpsolver.coursett.model.TimeLocation;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
@@ -42,6 +41,7 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.duration.DurationModel;
 
 /**
  * @author Tomas Muller
@@ -68,8 +68,10 @@ public class XTime implements Serializable, Externalizable {
 		iDays = assignment.getDays();
 		iSlot = assignment.getStartSlot();
 		if (assignment.getTimePattern().getType() == TimePattern.sTypeExactTime) {
-			iLength = conversion.getLength(assignment.getDays(), assignment.getClazz().getSchedulingSubpart().getMinutesPerWk());
-			iBreakTime = conversion.getBreakTime(assignment.getDays(), assignment.getClazz().getSchedulingSubpart().getMinutesPerWk());
+			DurationModel dm = assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+			int minPerMtg = dm.getExactTimeMinutesPerMeeting(assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays());
+			iLength = conversion.getLength(minPerMtg);
+			iBreakTime = conversion.getBreakTime(minPerMtg);
 		} else {
 			iLength = assignment.getTimePattern().getSlotsPerMtg();
 			iBreakTime = assignment.getTimePattern().getBreakTime();

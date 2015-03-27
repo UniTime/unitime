@@ -29,7 +29,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.Vector;
 
-
 import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
@@ -45,6 +44,7 @@ import org.unitime.timetable.model.dao.AssignmentInfoDAO;
 import org.unitime.timetable.model.dao.ConstraintInfoDAO;
 import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.duration.DurationModel;
 
 
 
@@ -189,8 +189,11 @@ public class Assignment extends BaseAssignment {
 		if (iSlotsPerMtg>=0) return iSlotsPerMtg;
 		TimePattern pattern = getTimePattern();
 		iSlotsPerMtg = pattern.getSlotsPerMtg().intValue();
-		if (pattern.getType().intValue()==TimePattern.sTypeExactTime)
-			iSlotsPerMtg = ExactTimeMins.getNrSlotsPerMtg(getDays().intValue(),getClazz().getSchedulingSubpart().getMinutesPerWk().intValue()); 
+		if (pattern.getType().intValue()==TimePattern.sTypeExactTime) {
+			DurationModel dm = getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(getClazz().getSchedulingSubpart().getMinutesPerWk(), getDatePattern(), getDays());
+			iSlotsPerMtg = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
+		}
 		return iSlotsPerMtg;
 	}
 	
@@ -202,8 +205,11 @@ public class Assignment extends BaseAssignment {
 		if (iBreakTime>=0) return iBreakTime;
 		TimePattern pattern = getTimePattern();
 		iBreakTime = pattern.getBreakTime().intValue();
-		if (pattern.getType().intValue()==TimePattern.sTypeExactTime)
-			iBreakTime = ExactTimeMins.getBreakTime(getDays().intValue(),getClazz().getSchedulingSubpart().getMinutesPerWk().intValue()); 
+		if (pattern.getType().intValue()==TimePattern.sTypeExactTime) {
+			DurationModel dm = getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(getClazz().getSchedulingSubpart().getMinutesPerWk(), getDatePattern(), getDays());
+			iBreakTime = ExactTimeMins.getBreakTime(minsPerMeeting); 
+		}
 		return iBreakTime;
 	}
 
@@ -327,6 +333,16 @@ public class Assignment extends BaseAssignment {
 	       return true;
    }
 	
+	public int getMinutesPerMeeting() {
+		TimePattern pattern = getTimePattern();
+		if (pattern.getType().intValue() == TimePattern.sTypeExactTime) {
+			DurationModel dm = getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+			return dm.getExactTimeMinutesPerMeeting(getClazz().getSchedulingSubpart().getMinutesPerWk(), getDatePattern(), getDays());
+		} else {
+			return pattern.getMinPerMtg();
+		}
+	}
+	
     public ClassEvent generateCommittedEvent(ClassEvent event, boolean createNoRoomMeetings) {
     	Class_ clazz = getClazz();
         if (event==null) {
@@ -357,6 +373,47 @@ public class Assignment extends BaseAssignment {
 			event.setMeetings(new HashSet());
         }
 		
+		DurationModel dm = getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+		TimeLocation time = getTimeLocation();
+		for (Date meetingDate: dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), getDatePattern(), time.getDayCode(), getMinutesPerMeeting())) {
+            if (changePast || !meetingDate.before(today)) {
+                boolean created = false;
+                for (Iterator i=getRooms().iterator();i.hasNext();) {
+                    Location location = (Location)i.next();
+                    if (location.getPermanentId()!=null) {
+                        Meeting m = new Meeting();
+                        m.setMeetingDate(meetingDate);
+                        m.setStartPeriod(time.getStartSlot());
+                        m.setStartOffset(0);
+                        m.setStopPeriod(time.getStartSlot()+time.getLength());
+                        m.setStopOffset(-time.getBreakTime());
+                        m.setClassCanOverride(false);
+                        m.setLocationPermanentId(location.getPermanentId());
+                        m.setStatus(Meeting.Status.APPROVED);
+                        m.setApprovalDate(getSolution().getCommitDate());
+                        m.setEvent(event);
+                        event.getMeetings().add(m);
+                        created = true;
+                    }
+                }
+                if (!created && createNoRoomMeetings) {
+                    Meeting m = new Meeting();
+                    m.setMeetingDate(meetingDate);
+                    m.setStartPeriod(time.getStartSlot());
+                    m.setStartOffset(0);
+                    m.setStopPeriod(time.getStartSlot()+time.getLength());
+                    m.setStopOffset(-time.getBreakTime());
+                    m.setClassCanOverride(false);
+                    m.setLocationPermanentId(null);
+                    m.setStatus(Meeting.Status.APPROVED);
+                    m.setApprovalDate(getSolution().getCommitDate());
+                    m.setEvent(event);
+                    event.getMeetings().add(m);
+                }
+            }
+		}
+		
+		/*
         DatePattern dp = getDatePattern();
         cal.setTime(dp.getStartDate()); cal.setLenient(true);
         TimeLocation time = getTimeLocation(); 
@@ -411,7 +468,7 @@ public class Assignment extends BaseAssignment {
                 }
             }
             cal.add(Calendar.DAY_OF_YEAR, 1);
-        }
+        }*/
         return event;
     }
 }

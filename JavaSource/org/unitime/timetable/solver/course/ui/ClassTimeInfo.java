@@ -23,8 +23,8 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
-import java.util.Vector;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -56,15 +56,17 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     private int iLength;
     private int iNrMeetings;
     private int iBreakTime;
+    private int iMinsPerMtg;
     
     private ClassDateInfo iDate = null;
     
-    private transient Vector<Date> iDates = null;
+    private List<Date> iDates = null;
 
-    public ClassTimeInfo(int dayCode, int startTime, int length, int pref, TimePattern timePattern, ClassDateInfo date, int breakTime) {
+    public ClassTimeInfo(int dayCode, int startTime, int length, int minsPerMtg, int pref, TimePattern timePattern, ClassDateInfo date, int breakTime, List<Date> dates) {
         iPreference = pref;
         iStartSlot = startTime;
         iDayCode = dayCode;
+        iMinsPerMtg = minsPerMtg;
         iLength = length;
         iBreakTime = breakTime;
         iNrMeetings = 0;
@@ -76,22 +78,27 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
         iDate = date;
         iTimePatternId = timePattern.getUniqueId();
         iTimePattern = timePattern;
+        iDates = dates;
     }
     
     public ClassTimeInfo(Assignment assignment, int preference, int datePreference) {
 		this(assignment.getDays().intValue(),
 				assignment.getStartSlot().intValue(),
 				assignment.getSlotPerMtg(),
+				assignment.getMinutesPerMeeting(),
 				preference,
 				assignment.getTimePattern(),
 				new ClassDateInfo(assignment, datePreference),
-				assignment.getBreakTime());
+				assignment.getBreakTime(),
+				assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel().getDates(
+						assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays(), assignment.getMinutesPerMeeting()));
     }
     
-    public ClassTimeInfo(ClassTimeInfo time, ClassDateInfo date) {
+    public ClassTimeInfo(ClassTimeInfo time, ClassDateInfo date, List<Date> dates) {
     	iPreference = time.getPreference();
     	iStartSlot = time.getStartSlot();
     	iDayCode = time.getDayCode();
+    	iMinsPerMtg = time.getMinutesPerMeeting();
     	iLength = time.getLength();
     	iBreakTime = time.getBreakTime();
     	iNrMeetings = time.getNrMeetings();
@@ -100,6 +107,7 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     	if (time.iTimePattern != null)
     		iTimePattern = time.iTimePattern;
     	iHashCode = combine(combine(iDayCode, iStartSlot),combine(iLength, date.getId().hashCode()));
+    	iDates = dates;
     }
     
     public ClassTimeInfo(Assignment assignment) {
@@ -115,6 +123,8 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     }
     
     public int getDayCode() { return iDayCode; }
+    
+    public int getMinutesPerMeeting() { return iMinsPerMtg; }
 
     public String getDayHeader() { 
         StringBuffer sb = new StringBuffer();
@@ -238,30 +248,7 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     	return getDatePatternId()+":"+getTimePatternId()+":"+getDayCode()+":"+getStartSlot();
     }
     
-    public Vector<Date> getDates() {
-    	if (iDates==null) {
-        	iDates = new Vector();
-            Calendar cal = Calendar.getInstance(Locale.US);
-            cal.setTime(getDatePattern().getStartDate()); cal.setLenient(true);
-            for (int idx=0;idx<getDatePattern().getPattern().length();idx++) {
-            	if (getDatePattern().getPattern().charAt(idx)=='1') {
-            		boolean offered = false;
-                    switch (cal.get(Calendar.DAY_OF_WEEK)) {
-                    	case Calendar.MONDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_MON]) != 0); break;
-                    	case Calendar.TUESDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_TUE]) != 0); break;
-                    	case Calendar.WEDNESDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_WED]) != 0); break;
-                    	case Calendar.THURSDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_THU]) != 0); break;
-                    	case Calendar.FRIDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_FRI]) != 0); break;
-                    	case Calendar.SATURDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_SAT]) != 0); break;
-                    	case Calendar.SUNDAY : offered = ((getDayCode() & Constants.DAY_CODES[Constants.DAY_SUN]) != 0); break;
-                    }
-                    if (offered) {
-                    	iDates.add(cal.getTime());
-                    }
-                }
-            	cal.add(Calendar.DAY_OF_YEAR, 1);
-            }
-    	}
+    public List<Date> getDates() {
     	return iDates; 
     }
     

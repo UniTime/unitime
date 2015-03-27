@@ -38,6 +38,7 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -74,6 +75,7 @@ import org.unitime.timetable.test.MakeAssignmentsForClassEvents;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
+import org.unitime.timetable.util.duration.DurationModel;
 
 
 /**
@@ -1494,6 +1496,14 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					changed = true;
 				}
 				
+				String durationTypeStr = getOptionalStringAttribute(configElement, "durationType");
+				if ((ioc.getClassDurationType() == null && durationTypeStr != null) ||
+						(ioc.getClassDurationType() != null && !ioc.getClassDurationType().getReference().equals(durationTypeStr))) {
+						ioc.setClassDurationType(durationTypeStr == null ? null : ClassDurationType.findByReference(durationTypeStr, getHibSession()));
+						addNote("\tduration type changed");
+						changed = true;
+				}
+				
 				if (changed){
 					this.getHibSession().saveOrUpdate(ioc);
 				}
@@ -1885,8 +1895,20 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				days += Constants.DAY_CODES[Constants.DAY_SUN];
 			}
 		}
-		String timePatternLookupString = days+"x"+(clazz.getSchedulingSubpart().getMinutesPerWk()/timeObject.getDays().size()+"x"+timeObject.getStartPeriod().toString());
-		return(timePatterns.get(timePatternLookupString));
+		DatePattern datePattern = clazz.effectiveDatePattern();
+		if (datePattern == null) return null;
+		DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+		if (datePattern.getType() != null && datePattern.getType() == DatePattern.sTypePatternSet) {
+			for (DatePattern child: datePattern.findChildren(getHibSession())) {
+				String timePatternLookupString = days+"x"+dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), child, days)+"x"+timeObject.getStartPeriod().toString();
+				TimePattern pattern = timePatterns.get(timePatternLookupString);
+				if (pattern != null) return pattern;
+			}
+			return null;
+		} else {
+			String timePatternLookupString = days+"x"+dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, days)+"x"+timeObject.getStartPeriod().toString();
+			return(timePatterns.get(timePatternLookupString));
+		}
 	}
 	protected abstract boolean handleCustomClassChildElements(Element classElement, InstrOfferingConfig ioc, Class_ clazz)  throws Exception ;
 	protected abstract boolean handleCustomInstrOffrConfigChildElements(InstrOfferingConfig instrOfferingConfig, Element instrOfferingConfigElement)  throws Exception ;

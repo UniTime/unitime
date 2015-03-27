@@ -32,6 +32,9 @@
 <!ELEMENT config ( (subpart|class)* ) >
 <!ATTLIST config limit NMTOKEN #REQUIRED >
 <!ATTLIST config name CDATA #REQUIRED >
+<!-- durationType was introduced in UniTime 4.1, if not present the class duration type defaults to minutes per week -->
+<!-- the value of this field has to match ClassDurationType.reference (one of MIN_PER_WEEK, SEMESTER_MIN, SEMESTER_HRS, MEETING_MIN, MEETING_HRS )-->
+<!ATTLIST config durationType CDATA #IMPLIED >
 
 <!ELEMENT consent EMPTY >
 <!ATTLIST consent type CDATA #REQUIRED >

@@ -502,6 +502,9 @@ public enum Right {
 	EventDefaults,
 	EventDefaultsEditOther,
 	
+	DurationTypes,
+	DurationTypeEdit,
+	
 	/** Administration: Defaults */
 	
 	ApplicationConfig,

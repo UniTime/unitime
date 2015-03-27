@@ -1859,6 +1859,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Roles")
 	String pageRoles();
 	
+	@DefaultMessage("Class Duration Type")
+	String pageDurationType();
+
+	@DefaultMessage("Class Duration Types")
+	String pageDurationTypes();
+	
 	@DefaultMessage("Add Curriculum")
 	String pageAddCurriculum();
 	
@@ -2587,6 +2593,15 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Version")
 	String fieldVersion();
+	
+	@DefaultMessage("Implementation")
+	String fieldImplementation();
+	
+	@DefaultMessage("Parameters")
+	String fieldParameters();
+	
+	@DefaultMessage("Visible")
+	String fieldVisible();
 
 	@DefaultMessage("Access")
 	String toggleAccess();

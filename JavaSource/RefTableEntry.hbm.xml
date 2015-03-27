@@ -276,5 +276,33 @@
         	table="course_type"
         	abstract="false">
         </union-subclass>
+        
+        <union-subclass name="ClassDurationType" table="duration_type" abstract="false">
+        	<property
+        		name="abbreviation"
+        		column="abbreviation"
+        		type="string"
+        		not-null="true"
+        		length="20"/>
+        		
+        	<property
+        		name="implementation"
+        		column="implementation"
+        		type="string"
+        		not-null="true"
+        		length="255"/>
+
+        	<property
+        		name="parameter"
+        		column="parameter"
+        		type="string"
+        		not-null="false"
+        		length="200"/>
+
+        	<property
+        		name="visible"
+        		column="visible"
+        		type="boolean"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>

@@ -19,12 +19,12 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
 
 import org.cpsolver.coursett.model.TimeLocation;
 import org.hibernate.Query;
@@ -33,6 +33,7 @@ import org.unitime.timetable.model.base.BaseTimePattern;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
@@ -92,15 +93,18 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
         return v;
     }
     
+    @Deprecated
     public static List<TimePattern> findApplicable(UserContext user, int minPerWeek, boolean includeExactTime, Department department) throws Exception {
     	boolean includeExtended = user.getCurrentAuthority().hasRight(Right.ExtendedTimePatterns);
     	return findByMinPerWeek(user.getCurrentAcademicSessionId(), false, includeExtended, includeExactTime, minPerWeek, (includeExtended ? null : department));
     }
     
+    @Deprecated
     public static List<TimePattern> findByMinPerWeek(Session session, boolean includeHidden, boolean includeExtended, boolean includeExactTime, int minPerWeek, Department department) {
     	return findByMinPerWeek(session.getUniqueId(),includeHidden,includeExtended,includeExactTime,minPerWeek,department); 
     }
     
+    @Deprecated
     public static List<TimePattern> findByMinPerWeek(Long sessionId, boolean includeHidden, boolean includeExtended, boolean includeExactTime, int minPerWeek, Department department) {
     	List<TimePattern> list = null;
     	if (includeExactTime && department==null) {
@@ -149,6 +153,36 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	Collections.sort(list);
     	
         return list;
+    }
+    
+    public static List<TimePattern> findApplicable(UserContext user, int minutes, DatePattern datePattern, DurationModel model, boolean includeExactTime, Department department) {
+    	boolean includeExtended = user.getCurrentAuthority().hasRight(Right.ExtendedTimePatterns);
+    	return findApplicable(user.getCurrentAcademicSessionId(), false, includeExtended, includeExactTime, minutes, datePattern, model, (includeExtended ? null : department));
+    }
+    
+    public static List<TimePattern> findApplicable(Session session, boolean includeHidden, boolean includeExtended, boolean includeExactTime, int minutes, DatePattern datePattern, DurationModel model, Department department) {
+    	return findApplicable(session.getUniqueId(), includeHidden, includeExtended, includeExactTime, minutes, datePattern, model, department);
+    }
+    
+    public static List<TimePattern> findApplicable(Long sessionId, boolean includeHidden, boolean includeExtended, boolean includeExactTime, int minutes, DatePattern datePattern, DurationModel model, Department department) {
+    	List<TimePattern> list = new ArrayList<TimePattern>();
+    	for (TimePattern pattern: (List<TimePattern>)TimePatternDAO.getInstance().getSession().createQuery(
+    			"from TimePattern where session.uniqueId = :sessionId")
+    			.setLong("sessionId", sessionId).setCacheable(true).list()) {
+    		if (!includeHidden && !pattern.isVisible()) continue;
+    		if (!includeExtended && pattern.getType() == sTypeExtended) continue;
+    		if (!includeExtended) {
+    			if (department != null) {
+    				if (!department.getTimePatterns().contains(pattern)) continue;
+    			} else {
+    				continue;
+    			}
+    		}
+    		if (model.isValidCombination(minutes, datePattern, pattern))
+    			list.add(pattern);
+    	}
+    	Collections.sort(list);
+    	return list;
     }
     
     public static TimePattern findByName(Session session, String name) {

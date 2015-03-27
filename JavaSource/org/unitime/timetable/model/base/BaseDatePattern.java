@@ -40,7 +40,7 @@ public abstract class BaseDatePattern implements Serializable {
 	private Integer iOffset;
 	private Integer iType;
 	private Boolean iVisible;
-	private Integer iNumberOfWeeks;
+	private Float iNumberOfWeeks;
 
 	private Session iSession;
 	private Set<DatePattern> iParents;
@@ -84,8 +84,8 @@ public abstract class BaseDatePattern implements Serializable {
 	public Boolean getVisible() { return iVisible; }
 	public void setVisible(Boolean visible) { iVisible = visible; }
 
-	public Integer getNumberOfWeeks() { return iNumberOfWeeks; }
-	public void setNumberOfWeeks(Integer numberOfWeeks) { iNumberOfWeeks = numberOfWeeks; }
+	public Float getNumberOfWeeks() { return iNumberOfWeeks; }
+	public void setNumberOfWeeks(Float numberOfWeeks) { iNumberOfWeeks = numberOfWeeks; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }

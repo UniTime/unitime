@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +37,7 @@ import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.Navigation;
 
 
@@ -394,11 +397,54 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		return ret;
     }
     
+    private Set fixDurationInTimePreferences(Set prefs) {
+    	if (prefs == null || prefs.isEmpty()) return prefs;
+    	DatePattern dp = effectiveDatePattern();
+    	if (dp == null) return prefs;
+    	DurationModel dm = getInstrOfferingConfig().getDurationModel();
+    	
+    	Set ret = new TreeSet(prefs);
+    	List<TimePref> fixed = new ArrayList<TimePref>();
+		for (Iterator i=ret.iterator();i.hasNext();) {
+			Preference pref = (Preference)i.next();
+			if (pref instanceof TimePref) {
+				TimePref tp = (TimePref) pref;
+				if (tp.getTimePattern().getType() != null && tp.getTimePattern().getType() == TimePattern.sTypeExactTime) continue;
+				Set<Integer> days = dm.getDayCodes(getMinutesPerWk(), dp, tp.getTimePattern());
+				if (days.isEmpty()) {
+					i.remove();
+				} else if (days.size() < tp.getTimePattern().getDays().size()) {
+					TimePatternModel model = tp.getTimePatternModel();
+					boolean req = model.hasRequiredPreferences();
+					for (int d = 0; d < model.getNrDays(); d++) {
+						if (!days.contains(model.getDayCode(d))) {
+							for (int t = 0; t < model.getNrTimes(); t++)
+								model.setPreference(d, t, PreferenceLevel.sNotAvailable);
+						}
+					}
+					if (req && !model.hasRequiredPreferences()) {
+						for (int d = 0; d < model.getNrDays(); d++)
+							if (days.contains(model.getDayCode(d))) {
+								for (int t = 0; t < model.getNrTimes(); t++)
+									model.setPreference(d, t, PreferenceLevel.sProhibited);
+							}
+					}
+					i.remove();
+					TimePref copy = (TimePref)tp.clone();
+					copy.setPreference(model.getPreferences());
+					fixed.add(copy);
+				}
+			}
+		}
+		ret.addAll(fixed);
+		return ret;
+    }
+    
     public boolean canInheritParentPreferences() {
     	return getParentSubpart() != null && getParentSubpart().getItype().equals(getItype()) && ApplicationProperty.PreferencesHierarchicalInheritance.isTrue();
     }
     
-    public Set effectivePreferences(Class type) {
+    public Set effectivePreferences(Class type, boolean fixDurationInTimePreferences) {
     	if (DistributionPref.class.equals(type)) {
     		return effectiveDistributionPreferences(getManagingDept());
     	}
@@ -424,16 +470,17 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
         		}
     		}
     		
-    		return removeNeutralPreferences(combinePreferences(type, subpartPrefs, parentPrefs));
+    		Set ret = removeNeutralPreferences(combinePreferences(type, subpartPrefs, parentPrefs));
+    		return fixDurationInTimePreferences ? fixDurationInTimePreferences(ret) : ret;
     	}
     	
-    	return subpartPrefs;
+    	return fixDurationInTimePreferences ? fixDurationInTimePreferences(subpartPrefs) : subpartPrefs;
     }
     
     public Set effectivePreferences(Class type, PreferenceGroup appliesTo) {
     	if (appliesTo == null) return effectivePreferences(type);
     	Set ret = new TreeSet();
-    	for (Iterator i = effectivePreferences(type).iterator(); i.hasNext(); ) {
+    	for (Iterator i = effectivePreferences(type, false).iterator(); i.hasNext(); ) {
     		Preference preference = (Preference)i.next();
     		if (!preference.appliesTo(appliesTo)) continue;
     		ret.add(preference);
@@ -780,5 +827,35 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     
 	@Override
 	public Department getDepartment() { return getManagingDept(); }
-
+	
+	/**
+	 * Check if the given selection is valid.
+	 * @param datePattern selected date pattern (alternative pattern sets are allowed)
+	 * @param timePattern selected time pattern
+	 * @return true if there is a valid combinations of days meeting the given criteria
+	 */
+	public boolean isValidCombination(DatePattern datePattern, TimePattern timePattern) {
+		return getInstrOfferingConfig().getDurationModel().isValidCombination(getMinutesPerWk(), datePattern, timePattern);
+	}
+	
+	/**
+	 * Get combinations of days that meet the given selection.
+	 * @param datePattern selected date pattern (alternative pattern sets are NOT allowed)
+	 * @param timePattern selected time pattern
+	 * @return list of day codes (days of week, given by {@link TimePattern#getDays()}) that meet the selected minutes and date pattern
+	 */
+	public Set<Integer> getDayCodes(DatePattern datePattern, TimePattern timePattern) {
+		return getInstrOfferingConfig().getDurationModel().getDayCodes(getMinutesPerWk(), datePattern, timePattern);
+	}
+	
+	/**
+	 * Get all dates meeting the given selection.
+	 * @param datePattern selected date pattern
+	 * @param dayCode selected days of week (alternative pattern sets are NOT allowed)
+	 * @param minutesPerMeeting minutes per meeting
+	 * @return list of dates that meet the selected minutes and date pattern
+	 */
+	public List<Date> getDates(DatePattern datePattern, int dayCode, int minutesPerMeeting) {
+		return getInstrOfferingConfig().getDurationModel().getDates(getMinutesPerWk(), datePattern, dayCode, minutesPerMeeting);
+	}
 }

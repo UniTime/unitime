@@ -189,7 +189,6 @@
                 type="java.lang.Long"
                 not-null="false"
                 length="20"/>
-
         </union-subclass>
 
         <union-subclass
@@ -792,6 +791,14 @@
         	    column="sect_status"
     	        foreign-key="fk_session_sect_status"
 	            not-null="false"/>
+
+                
+			<many-to-one
+                name="defaultClassDurationType"
+                class="ClassDurationType"
+                column="duration_type_id"
+                not-null="false"
+                foreign-key="fk_session_durtype"/>
 
         </union-subclass>
 

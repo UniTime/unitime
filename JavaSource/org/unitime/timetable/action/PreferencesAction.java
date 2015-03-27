@@ -92,6 +92,7 @@ import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
+import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
@@ -501,7 +502,7 @@ public class PreferencesAction extends Action {
         		s.add(tp);
         	}
         } else {
-        	Set parentTimePrefs = pg.effectivePreferences(TimePref.class);
+        	Set parentTimePrefs = pg.effectivePreferences(TimePref.class, false);
             List lst = frm.getTimePatterns();
             for(int i=0; i<lst.size(); i++) {
             	String id = (String)lst.get(i);
@@ -909,6 +910,9 @@ public class PreferencesAction extends Action {
             HttpServletRequest request,
             PreferencesForm frm,
             PreferenceGroup pg, 
+            int minutes,
+            DurationModel dmod,
+            DatePattern dpat,
             Set tpat,
             String op, 
             boolean timeVertical, boolean editable, Vector leadInstructors ) throws Exception {
@@ -917,7 +921,7 @@ public class PreferencesAction extends Action {
 		List tps = null;
 
 		if(op.equals("init")) {
-		    Set tp = pg.effectivePreferences(TimePref.class, leadInstructors);
+		    Set tp = pg.effectivePreferences(TimePref.class, leadInstructors, !editable);
 		    
 		    if(tp.size()>0) {
 		    	timePrefs = new Vector(tp);
@@ -927,6 +931,7 @@ public class PreferencesAction extends Action {
 		        
 		        for (Enumeration e=timePrefs.elements();e.hasMoreElements();) {
 		        	TimePref timePref = (TimePref)e.nextElement();
+		        	if (timePref.getTimePatternModel().hasNotAvailablePreference()) frm.setHasNotAvailable(true);
 		        	tps.add(timePref.getTimePattern()==null?"-1":timePref.getTimePattern().getUniqueId().toString());
 		        }
 		    } else if (tpat.size()>0) {
@@ -1002,7 +1007,7 @@ public class PreferencesAction extends Action {
 				rtt.getModel().setDefaultSelection(sessionContext.getUser().getProperty(UserProperty.GridSize));
 
 				rtt.setName("p"+idx);
-
+				
 			// 	Reload all preferences selected
 				String reloadCause = request.getParameter("reloadCause");
 
@@ -1024,7 +1029,29 @@ public class PreferencesAction extends Action {
 					rtt.getModel().setPreferences(((TimePref)timePrefs.elementAt(idx)).getPreference());
 				}
 				
-				request.setAttribute(TIME_PATTERN_GRID_ATTR+"_"+idx, rtt.print(editable, timeVertical, editable, false));
+				String name = null;
+				if (timePattern != null && !rtt.getModel().isExactTime()) {
+					if (dpat.getType() != null && dpat.getType() == DatePattern.sTypePatternSet) {
+						boolean allPatterns = true;
+						String matching = "";
+						for (DatePattern dch: dpat.findChildren()) {
+							if (dmod.isValidCombination(minutes, dch, timePattern)) {
+								matching += (matching.isEmpty() ? "" : ", ") + dch.getName();
+							} else {
+								allPatterns = false;
+							}
+						}
+						if (matching.isEmpty())
+							name = timePattern.getName() + " <font color=\\'red\\'>No matching date pattern!</font>";
+						else if (!allPatterns)
+							name = timePattern.getName() + " (" + matching + ")";
+					} else {
+						if (!dmod.isValidCombination(minutes, dpat, timePattern))
+							name = timePattern.getName() + " <font color=\\'red\\'>No matching date pattern!</font>";
+					}
+				}
+				
+				request.setAttribute(TIME_PATTERN_GRID_ATTR+"_"+idx, rtt.print(editable, timeVertical, editable, false, name));
 			}
 		}
     }

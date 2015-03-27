@@ -38,6 +38,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.util.duration.DurationModel;
 
 
 /**
@@ -104,7 +105,8 @@ public class CsvClassAssignmentExport {
 						new CSVField(clazz.getSchedulePrintNote()==null?"":clazz.getSchedulePrintNote())
 				});
 			} else {
-                int arrHrs = Math.round(clazz.getSchedulingSubpart().getMinutesPerWk().intValue()/50f);
+				DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+                Integer arrHrs = dm.getArrangedHours(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern());
 				file.addLine(new CSVField[] {
 						new CSVField(co.getCourseName()),
 						new CSVField(clazz.getItypeDesc()),
@@ -114,7 +116,7 @@ public class CsvClassAssignmentExport {
 						new CSVField(clazz.getEnrollment()),
 						new CSVField(clazz.getClassLimit(proxy)),
 						new CSVField(clazz.effectiveDatePattern().getName()),
-						new CSVField("Arr "+(arrHrs<=0?"":arrHrs+" ")+"Hrs"),
+						new CSVField("Arr "+(arrHrs==null?"":arrHrs+" ")+"Hrs"),
 						new CSVField(""),
 						new CSVField(""),
 						new CSVField(""),
@@ -252,7 +254,8 @@ public class CsvClassAssignmentExport {
                         new CSVField(crossListSb)
                 });
             } else {
-                int arrHrs = Math.round(clazz.getSchedulingSubpart().getMinutesPerWk().intValue()/50f);
+            	DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+                Integer arrHrs = dm.getArrangedHours(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern());
                 file.addLine(new CSVField[] {
                         new CSVField(idx++),
                         new CSVField(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getCourseNbr()),
@@ -260,7 +263,7 @@ public class CsvClassAssignmentExport {
                         new CSVField(titleSb),
                         new CSVField(clazz.effectiveDatePattern().getName()),
                         new CSVField(""),
-                        new CSVField("Arr "+(arrHrs<=0?"":arrHrs+" ")+"Hrs"),
+                        new CSVField("Arr "+(arrHrs==null?"":arrHrs+" ")+"Hrs"),
                         new CSVField(""),
                         new CSVField(""),
                         new CSVField(lastNameSb),

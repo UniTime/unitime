@@ -77,6 +77,7 @@ import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -130,6 +131,7 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.RoomAvailability;
+import org.unitime.timetable.util.duration.DurationModel;
 
 /**
  * @author Tomas Muller
@@ -151,7 +153,6 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	private Hashtable<Long, SchedulingSubpart> iSubparts = new Hashtable<Long, SchedulingSubpart>();
 	private Hashtable<Long, Student> iStudents = new Hashtable<Long, Student>();
 	private Hashtable<Long, String> iDeptNames = new Hashtable<Long, String>();
-	private Hashtable<Integer, List<TimePattern>> iPatterns = new Hashtable<Integer, List<TimePattern>>();
 	private Hashtable<Long, Class_> iClasses = new Hashtable<Long, Class_>();
 	private Set<DatePattern> iAllUsedDatePatterns = new HashSet<DatePattern>();
 	private Set<Class_> iAllClasses = null;
@@ -593,8 +594,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         Set timePrefs = clazz.effectivePreferences(TimePref.class);
         
         if (timePrefs.isEmpty()) {
-            if (clazz.getSchedulingSubpart().getMinutesPerWk().intValue()!=0)
-                iProgress.message(msglevel("noTimePattern", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" has no time pattern selected (class not loaded). <i>If not changed, this class will be treated as Arrange "+Math.round(clazz.getSchedulingSubpart().getMinutesPerWk().intValue()/50.0)+" Hours.</i>");
+            if (clazz.getSchedulingSubpart().getMinutesPerWk().intValue()!=0) {
+            	DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+                iProgress.message(msglevel("noTimePattern", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" has no time pattern selected (class not loaded). <i>If not changed, this class will be treated as Arrange "+dm.getArrangedHours(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern())+" Hours.</i>");
+            }
             return null;
         }
         
@@ -849,13 +852,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	iProgress.trace("time pattern has requred times");
         }
         
+        ClassDurationType dtype = clazz.getSchedulingSubpart().getInstrOfferingConfig().getEffectiveDurationType();
+        DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
         for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
         	TimePref timePref = (TimePref)i1.next();
         	TimePatternModel pattern = timePref.getTimePatternModel();
         	if (pattern.isExactTime()) {
-        		int length = ExactTimeMins.getNrSlotsPerMtg(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue());
-        		int breakTime = ExactTimeMins.getBreakTime(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue());
-        		
                 if (datePattern.getType() == DatePattern.sTypePatternSet) {
                 	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
                 	boolean hasReq = false;
@@ -863,6 +865,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 		if (PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog())) { hasReq = true; break; }
                 	}
                 	for (DatePattern child: datePattern.findChildren()) {
+                		int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), child, pattern.getExactDays());
+                		int length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
+                		int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting);
                 		String pr = PreferenceLevel.sNeutral;
                 		for (DatePatternPref p: datePatternPrefs) {
                 			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
@@ -891,6 +896,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         timeLocations.add(loc);
                 	}
                 } else {
+            		int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getExactDays());
+            		int length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
+            		int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting);
                     TimeLocation  loc = new TimeLocation(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,0,datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),breakTime);
                     loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
                     timeLocations.add(loc);
@@ -906,8 +914,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 onlyReq = false;
             }
         	
-        	if (clazz.getSchedulingSubpart().getMinutesPerWk().intValue()!=pattern.getMinPerMtg()*pattern.getNrMeetings()) {
-        		iProgress.message(msglevel("noTimePattern", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" has "+clazz.getSchedulingSubpart().getMinutesPerWk()+" minutes per week, but "+pattern.getName()+" time pattern selected.");
+            if (!dm.isValidCombination(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, timePref.getTimePattern())) {
+        		iProgress.message(msglevel("noTimePattern", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" has "+clazz.getSchedulingSubpart().getMinutesPerWk()+" "+(dtype == null ? "minutes per week" : dtype.getLabel()) + " , but "+pattern.getName()+" time pattern selected.");
         		minPerWeek = pattern.getMinPerMtg()*pattern.getNrMeetings();
         		if (iFixMinPerWeek)
         			clazz.getSchedulingSubpart().setMinutesPerWk(new Integer(minPerWeek));
@@ -923,6 +931,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 for (int day=0;day<pattern.getNrDays(); day++) {
                     String pref = pattern.getPreference(day,time);
                 	iProgress.trace("checking time "+pattern.getDayHeader(day)+" "+pattern.getTimeHeaderShort(time)+" ("+pref+")");
+                	if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, timePref.getTimePattern(), pattern.getDayCode(day))) {
+                		iProgress.trace("time is not valid :-(");
+                		continue;
+                	}
                     if (!iInteractiveMode && pref.equals(PreferenceLevel.sProhibited)) {
                     	iProgress.trace("time is prohibited :-(");
                     	continue;
@@ -938,6 +950,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     		if (PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog())) { hasReq = true; break; }
                     	}
                     	for (DatePattern child: datePattern.findChildren()) {
+                    		if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), child, timePref.getTimePattern(), pattern.getDayCode(day)))
+                    			continue;
                     		String pr = PreferenceLevel.sNeutral;
                     		for (DatePatternPref p: datePatternPrefs) {
                     			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
@@ -1009,12 +1023,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             }
         }
         if (iInteractiveMode) {
-        	List<TimePattern> allPatterns = iPatterns.get(new Integer(minPerWeek));
-        	if (allPatterns==null) {
-        		allPatterns = TimePattern.findByMinPerWeek(iSession,false,false,false,minPerWeek,clazz.getManagingDept());
-        		iPatterns.put(new Integer(minPerWeek),allPatterns);
-        	}
-        	for (TimePattern pattern: allPatterns) {
+        	for (TimePattern pattern: TimePattern.findApplicable(iSession, false, false, false, minPerWeek, datePattern, dm, clazz.getManagingDept())) {
         		if (patterns.contains(pattern)) continue;
         		TimePatternModel model = pattern.getTimePatternModel();
         		iProgress.trace("adding prohibited pattern "+model.getName());
@@ -1023,6 +1032,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                     	if (datePattern.getType() == DatePattern.sTypePatternSet) {
                         	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
                         	for (DatePattern child: datePattern.findChildren()) {
+                        		if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), child, pattern, model.getDayCode(day))) continue;
                         		String pr = PreferenceLevel.sNeutral;
                         		for (DatePatternPref p: datePatternPrefs)
                         			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
@@ -1043,6 +1053,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                                 timeLocations.add(loc);
                     		}
                     	} else {
+                    		if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern, model.getDayCode(day))) continue;
                             TimeLocation  loc = new TimeLocation(
                                     model.getDayCode(day),
                                     model.getStartSlot(time),

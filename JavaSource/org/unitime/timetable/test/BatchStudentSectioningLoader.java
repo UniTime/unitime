@@ -76,6 +76,7 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.duration.DurationModel;
 
 
 /**
@@ -155,8 +156,10 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
             TimePref tp = (TimePref)i.next();
             TimePatternModel pattern = tp.getTimePatternModel();
             if (pattern.isExactTime()) {
-                int length = ExactTimeMins.getNrSlotsPerMtg(pattern.getExactDays(),c.getSchedulingSubpart().getMinutesPerWk().intValue());
-                int breakTime = ExactTimeMins.getBreakTime(pattern.getExactDays(),c.getSchedulingSubpart().getMinutesPerWk().intValue()); 
+    			DurationModel dm = c.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+    			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(c.getSchedulingSubpart().getMinutesPerWk(), c.effectiveDatePattern(), pattern.getExactDays());
+                int length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
+                int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting); 
                 return new TimeLocation(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,0,datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),breakTime);
             } else {
                 for (int time=0;time<pattern.getNrTimes(); time++) {

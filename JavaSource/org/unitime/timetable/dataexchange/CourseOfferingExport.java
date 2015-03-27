@@ -228,6 +228,8 @@ public class CourseOfferingExport extends BaseExport {
     protected void exportConfig(Element configElement, InstrOfferingConfig config, Session session) {
         configElement.addAttribute("name", config.getName());
         configElement.addAttribute("limit", (config.isUnlimitedEnrollment()?"inf":config.getLimit().toString()));
+        if (config.getClassDurationType() != null)
+        	configElement.addAttribute("durationType", config.getClassDurationType().getReference());
         for (Iterator i=config.getSchedulingSubparts().iterator();i.hasNext();) {
             SchedulingSubpart subpart = (SchedulingSubpart)i.next();
             if (subpart.getParentSubpart()==null) {

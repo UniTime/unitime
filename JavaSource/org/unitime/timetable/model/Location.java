@@ -808,7 +808,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     	return new HashSet<Long>(q.setCacheable(true).list());
     }
 
-    public static Hashtable<Long,Set<Long>> findClassLocationTable(Long sessionId, Set<Long> permanentIds, int startSlot, int length, Vector<Date> dates) {
+    public static Hashtable<Long,Set<Long>> findClassLocationTable(Long sessionId, Set<Long> permanentIds, int startSlot, int length, List<Date> dates) {
     	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable<Long,Set<Long>>();
     	EventDateMapping.Class2EventDateMap class2eventMap = EventDateMapping.getMapping(sessionId);
     	String datesStr = "";
@@ -837,7 +837,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 	            .setInteger("startSlot", startSlot)
 	            .setInteger("endSlot", startSlot + length);
 	    	for (int i=0; i<dates.size(); i++) {
-	    		q.setDate("date"+i, class2eventMap.getEventDate(dates.elementAt(i)));
+	    		q.setDate("date"+i, class2eventMap.getEventDate(dates.get(i)));
 	    	}
 	        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
 	            Object[] o = (Object[])i.next();
@@ -852,7 +852,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         return table;
     }
 
-    public static Hashtable<Long,Set<Event>> findEventTable(Long sessionId, Set<Long> permanentIds, int startSlot, int length, Vector<Date> dates) {
+    public static Hashtable<Long,Set<Event>> findEventTable(Long sessionId, Set<Long> permanentIds, int startSlot, int length, List<Date> dates) {
     	if (permanentIds.isEmpty() || dates.isEmpty()) return new Hashtable<Long,Set<Event>>();
     	EventDateMapping.Class2EventDateMap class2eventMap = EventDateMapping.getMapping(sessionId);
     	String datesStr = "";
@@ -884,7 +884,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 	            .setInteger("startSlot", startSlot)
 	            .setInteger("endSlot", startSlot + length);
 	    	for (int i=0; i<dates.size(); i++) {
-	    		q.setDate("date"+i, class2eventMap.getEventDate(dates.elementAt(i)));
+	    		q.setDate("date"+i, class2eventMap.getEventDate(dates.get(i)));
 	    	}
 	        for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
 	            Object[] o = (Object[])i.next();

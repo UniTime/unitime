@@ -9861,4 +9861,105 @@
 		<plsql>alter table %SCHEMA%.date_pattern add nr_weeks number(10,0)</plsql>
 		<mysql>alter table %SCHEMA%.date_pattern add nr_weeks bigint(10)</mysql>
 	</update>
+	<update version="143" date="27-Mar-2015" comment="Class Duration Type">
+		<plsql>
+			create table %SCHEMA%.duration_type (
+				uniqueid number(20,0) constraint nn_duration_uniqueid not null,
+				reference varchar2(20 char) constraint nn_duration_reference not null,
+				abbreviation varchar2(20 char) constraint nn_duration_abbv not null,
+				label varchar2(60 char) constraint nn_duration_label not null,
+				implementation varchar2(255 char) constraint nn_duration_impl not null,
+				parameter varchar2(200 char),
+				visible number(1) default 1 constraint nn_duration_visible not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.duration_type add constraint pk_duration_type primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.duration_type (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				abbreviation varchar(20) not null,
+				label varchar(60) not null,
+				implementation varchar(255) not null,
+				parameter varchar(200),
+				visible int(1) not null default 1
+			) engine = INNODB
+		</mysql>
+		<plsql>alter table %SCHEMA%.instr_offering_config add duration_type_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.instr_offering_config add duration_type_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.instr_offering_config add constraint fk_ioconfig_durtype foreign key (duration_type_id)
+			references %SCHEMA%.duration_type (uniqueid) on delete set null
+		</sql>
+		<plsql>alter table %SCHEMA%.sessions add duration_type_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.sessions add duration_type_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.sessions add constraint fk_session_durtype foreign key (duration_type_id)
+			references %SCHEMA%.duration_type (uniqueid) on delete set null
+		</sql>
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.duration_type
+			(uniqueid, reference, abbreviation, label, implementation, parameter, visible) values
+			(%ID%+0, 'MIN_PER_WEEK', 'Mins', 'Minutes per Week', 'org.unitime.timetable.util.duration.MinutesPerWeek', null, 1),
+			(%ID%+1, 'WEEKLY_MIN', 'Wk Mins', 'Average Weekly Minutes', 'org.unitime.timetable.util.duration.WeeklyMinutes', null, 1),
+			(%ID%+2, 'SEMESTER_MIN', 'Sem Mins', 'Semester Minutes', 'org.unitime.timetable.util.duration.SemesterMinutes', null, 1),
+			(%ID%+3, 'SEMESTER_HRS', 'Sem Hrs', 'Semester Hours', 'org.unitime.timetable.util.duration.SemesterHours', '50', 1),
+			(%ID%+4, 'MEETING_MIN', 'Mtg Mins', 'Meeting Minutes', 'org.unitime.timetable.util.duration.MeetingMinutes', '0.95,1.10', 1),
+			(%ID%+5, 'MEETING_HRS', 'Mtg Hrs', 'Meeting Hours', 'org.unitime.timetable.util.duration.MeetingHours', '50,0.95,1.10', 1)
+		</mysql>
+		<mysql>
+			update %SCHEMA%.sessions set duration_type_id = %ID%
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+		<plsql>
+			insert into %SCHEMA%.duration_type
+			(uniqueid, reference, abbreviation, label, implementation, parameter, visible) values
+			(%SCHEMA%.ref_table_seq.nextval, 'MIN_PER_WEEK', 'Mins', 'Minutes per Week', 'org.unitime.timetable.util.duration.MinutesPerWeek', null, 1)
+		</plsql>
+		<plsql>update %SCHEMA%.sessions set duration_type_id = ref_table_seq.currval</plsql>
+		<plsql>
+			insert into %SCHEMA%.duration_type
+			(uniqueid, reference, abbreviation, label, implementation, parameter, visible) values
+			(%SCHEMA%.ref_table_seq.nextval, 'WEEKLY_MIN', 'Wk Mins', 'Average Weekly Minutes', 'org.unitime.timetable.util.duration.WeeklyMinutes', null, 1)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.duration_type
+			(uniqueid, reference, abbreviation, label, implementation, parameter, visible) values
+			(%SCHEMA%.ref_table_seq.nextval, 'SEMESTER_MIN', 'Sem Mins', 'Semester Minutes', 'org.unitime.timetable.util.duration.SemesterMinutes', null, 1)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.duration_type
+			(uniqueid, reference, abbreviation, label, implementation, parameter, visible) values
+			(%SCHEMA%.ref_table_seq.nextval, 'SEMESTER_HRS', 'Sem Hrs', 'Semester Hours', 'org.unitime.timetable.util.duration.SemesterHours', '50', 1)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.duration_type
+			(uniqueid, reference, abbreviation, label, implementation, parameter, visible) values
+			(%SCHEMA%.ref_table_seq.nextval, 'MEETING_MIN', 'Mtg Mins', 'Meeting Minutes', 'org.unitime.timetable.util.duration.MeetingMinutes', '0.95,1.10', 1)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.duration_type
+			(uniqueid, reference, abbreviation, label, implementation, parameter, visible) values
+			(%SCHEMA%.ref_table_seq.nextval, 'MEETING_HRS', 'Mtg Hrs', 'Meeting Hours', 'org.unitime.timetable.util.duration.MeetingHours', '50,0.95,1.10', 1)
+		</plsql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'DurationTypes'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypes'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'DurationTypeEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypeEdit'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.preference_level(pref_id, pref_prolog, pref_name, uniqueid) values (8, 'N', 'Not Available', 8)
+		</sql>
+		<sql>alter table %SCHEMA%.date_pattern modify nr_weeks float</sql>
+	</update>
 </dbupdate>

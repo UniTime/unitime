@@ -29,6 +29,7 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
+import org.unitime.timetable.util.duration.DurationModel;
 
 /**
  * @author Tomas Muller
@@ -58,14 +59,17 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 				assignment.getDatePattern().getName(),
 				assignment.getDatePattern().getPatternBitSet(),
 				(info == null ? 0 : info.getDatePatternPref()));
+		DurationModel dm = assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 		iTime = new ClassTimeInfo(
 				assignment.getDays().intValue(),
 				assignment.getStartSlot().intValue(),
 				assignment.getSlotPerMtg(),
+				assignment.getMinutesPerMeeting(),
 				info.getTimePreference(),
 				assignment.getTimePattern(),
 				iDate,
-				assignment.getBreakTime());
+				assignment.getBreakTime(),
+				dm.getDates(assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays(), assignment.getMinutesPerMeeting()));
 	}
 	
 	public ClassAssignment(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms) {

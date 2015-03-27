@@ -32,6 +32,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
@@ -74,6 +75,7 @@ public class SessionEditForm extends ActionForm {
 	Integer wkEnroll = 1, wkChange = 1, wkDrop = 4;
 	Long sectStatus;
 	boolean includeTestSession;
+	Long durationType;
 	
 	// --------------------------------------------------------- Methods
 	
@@ -392,6 +394,16 @@ public class SessionEditForm extends ActionForm {
     	List<IdValue> ret = new ArrayList<IdValue>();
     	for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll())
     		ret.add(new IdValue(status.getUniqueId(), status.getLabel()));
+    	return ret;
+    }
+    
+    public Long getDurationType() { return durationType; }
+    public void setDurationType(Long durationType) { this.durationType = durationType; }
+    public List<IdValue> getDurationTypes() {
+    	List<IdValue> ret = new ArrayList<IdValue>();
+    	for (ClassDurationType type: ClassDurationType.findAll())
+    		if (type.isVisible() || type.getUniqueId().equals(durationType))
+    			ret.add(new IdValue(type.getUniqueId(), type.getLabel()));
     	return ret;
     }
     

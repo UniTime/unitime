@@ -36,6 +36,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
@@ -56,6 +57,7 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.RoomAvailability;
+import org.unitime.timetable.util.duration.DurationModel;
 
 
 /**
@@ -425,11 +427,10 @@ public class SolutionGridModel extends TimetableGridModel {
 		int length = assignment.getTimePattern().getSlotsPerMtg().intValue();
 		int nrMeetings = assignment.getTimePattern().getNrMeetings().intValue();
 		if (assignment.getTimePattern().getType().intValue()==TimePattern.sTypeExactTime) {
-			length = ExactTimeMins.getNrSlotsPerMtg(assignment.getDays().intValue(), assignment.getClazz().getSchedulingSubpart().getMinutesPerWk().intValue());
-			nrMeetings = 0;
-			for (int i=0;i<Constants.NR_DAYS;i++)
-				if ((assignment.getDays().intValue() & Constants.DAY_CODES[i])!=0)
-					nrMeetings ++;
+			DurationModel dm = assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays()); 
+			length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
+			nrMeetings = DayCode.nrDays(assignment.getDays());
 		}
 		String shortComment = null;
 		String shortCommentNoColor = null;

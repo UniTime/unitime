@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -59,6 +60,7 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	private DepartmentStatusType iStatusType;
 	private DatePattern iDefaultDatePattern;
 	private StudentSectioningStatus iDefaultSectioningStatus;
+	private ClassDurationType iDefaultClassDurationType;
 	private Set<SubjectArea> iSubjectAreas;
 	private Set<Building> iBuildings;
 	private Set<Department> iDepartments;
@@ -138,6 +140,9 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	public StudentSectioningStatus getDefaultSectioningStatus() { return iDefaultSectioningStatus; }
 	public void setDefaultSectioningStatus(StudentSectioningStatus defaultSectioningStatus) { iDefaultSectioningStatus = defaultSectioningStatus; }
 
+	public ClassDurationType getDefaultClassDurationType() { return iDefaultClassDurationType; }
+	public void setDefaultClassDurationType(ClassDurationType defaultClassDurationType) { iDefaultClassDurationType = defaultClassDurationType; }
+
 	public Set<SubjectArea> getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Set<SubjectArea> subjectAreas) { iSubjectAreas = subjectAreas; }
 	public void addTosubjectAreas(SubjectArea subjectArea) {
@@ -194,6 +199,7 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 			"\n	AcademicTerm: " + getAcademicTerm() +
 			"\n	AcademicYear: " + getAcademicYear() +
 			"\n	ClassesEndDateTime: " + getClassesEndDateTime() +
+			"\n	DefaultClassDurationType: " + getDefaultClassDurationType() +
 			"\n	DefaultDatePattern: " + getDefaultDatePattern() +
 			"\n	DefaultSectioningStatus: " + getDefaultSectioningStatus() +
 			"\n	EventBeginDate: " + getEventBeginDate() +

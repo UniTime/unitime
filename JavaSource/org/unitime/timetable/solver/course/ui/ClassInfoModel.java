@@ -57,6 +57,7 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
@@ -86,6 +87,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.course.ui.ClassAssignmentInfo.StudentConflict;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.RoomAvailability;
+import org.unitime.timetable.util.duration.DurationModel;
 
 /**
  * @author Tomas Muller
@@ -391,12 +393,15 @@ public class ClassInfoModel implements Serializable {
     public void setDate(String dateId) throws Exception {
         iRooms = null; iTimes = null;
         if (iChange==null) iChange = new ClassProposedChange();
+        Class_ clazz = getClazz().getClazz();
+        DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
         ClassTimeInfo time = (getSelectedAssignment() == null ? null : getSelectedAssignment().getTime());
         Collection<ClassRoomInfo> rooms = (getSelectedAssignment() == null ? null : getSelectedAssignment().getRooms());
         for (ClassAssignment date : getDates()) {
             if (dateId.equals(date.getDateId())) {
+                List<Date> dates = (time == null || !date.hasDate() ? null : dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), date.getDate().getDatePattern(), time.getDayCode(), time.getMinutesPerMeeting()));
                 iChange.addChange(
-                		new ClassAssignmentInfo(getClazz().getClazz(), (time == null ? null : new ClassTimeInfo(time, date.getDate())), date.getDate(), rooms, iChange.getAssignmentTable()), 
+                		new ClassAssignmentInfo(getClazz().getClazz(), (time == null ? null : new ClassTimeInfo(time, date.getDate(), dates)), date.getDate(), rooms, iChange.getAssignmentTable()), 
                 		getClassOldAssignment());
             }
         }
@@ -867,7 +872,8 @@ public class ClassInfoModel implements Serializable {
     
     public Collection<ClassAssignment> getTimes(ClassDateInfo date) {
         Class_ clazz = getClazz().getClazz();
-    	Vector<ClassAssignment> times = new Vector<ClassAssignment>();
+        DatePattern datePattern = date.getDatePattern();
+        Vector<ClassAssignment> times = new Vector<ClassAssignment>();
         boolean onlyReq = false;
         Set timePrefs = clazz.effectivePreferences(TimePref.class);
         for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
@@ -879,13 +885,16 @@ public class ClassInfoModel implements Serializable {
         if (onlyReq) {
         	sLog.debug("Class "+getClazz().getClassName()+" has required times");
         }
+		DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
         for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
         	TimePref timePref = (TimePref)i1.next();
         	TimePatternModel pattern = timePref.getTimePatternModel();
         	if (pattern.isExactTime()) {
-        		int length = ExactTimeMins.getNrSlotsPerMtg(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue());
-        		int breakTime = ExactTimeMins.getBreakTime(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue()); 
-        		ClassTimeInfo time = new ClassTimeInfo(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,timePref.getTimePattern(),date,breakTime);
+    			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getExactDays());
+        		int length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
+        		int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting); 
+        		List<Date> dates = dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getExactDays(), minsPerMeeting);
+        		ClassTimeInfo time = new ClassTimeInfo(pattern.getExactDays(),pattern.getExactStartSlot(),length,minsPerMeeting,PreferenceLevel.sIntLevelNeutral,timePref.getTimePattern(),date,breakTime,dates);
         		if (iShowStudentConflicts)
         			times.add(new ClassAssignmentInfo(clazz, time, date, null, (iChange==null?null:iChange.getAssignmentTable())));
         		else
@@ -893,24 +902,25 @@ public class ClassInfoModel implements Serializable {
                 continue;
         	}
 
-        	if (clazz.getSchedulingSubpart().getMinutesPerWk().intValue()!=pattern.getMinPerMtg()*pattern.getNrMeetings()) {
-        		sLog.warn("Class "+getClazz().getClassName()+" has "+clazz.getSchedulingSubpart().getMinutesPerWk()+" minutes per week, but "+pattern.getName()+" time pattern selected.");
-        	}
-            
             for (int time=0;time<pattern.getNrTimes(); time++) {
             	times: for (int day=0;day<pattern.getNrDays(); day++) {
+            		if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, timePref.getTimePattern(), pattern.getDayCode(day)))
+            			continue;
                     String pref = pattern.getPreference(day,time);
                     if (onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
                         pref = PreferenceLevel.sProhibited;
                     }
+                    List<Date> dates = dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getDayCode(day), timePref.getTimePattern().getMinPerMtg());
                     ClassTimeInfo loc = new ClassTimeInfo(
                             pattern.getDayCode(day),
                             pattern.getStartSlot(time),
                             pattern.getSlotsPerMtg(),
+                            timePref.getTimePattern().getMinPerMtg(),
                             PreferenceLevel.prolog2int(pref),
                             timePref.getTimePattern(),
                             date,
-                            pattern.getBreakTime());
+                            pattern.getBreakTime(),
+                            dates);
                     
                     if (iChange!=null) {
                         for (ClassAssignment current : iChange.getAssignments()) {
@@ -1186,9 +1196,9 @@ public class ClassInfoModel implements Serializable {
  			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
  			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
 
- 			Vector <Date>datesToCheck = null;
+ 			List<Date> datesToCheck = null;
  			if (ignorePast || !changePast) {
- 				datesToCheck = new Vector<Date>();
+ 				datesToCheck = new ArrayList<Date>();
  	 			for(Date aDate : period.getDates()){
  	 				if (aDate.compareTo(today) > 0)
  	 					datesToCheck.add(aDate);

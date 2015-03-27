@@ -56,4 +56,9 @@ public abstract class BaseSessionDAO extends _RootDAO<Session,Long> {
 	public List<Session> findByDefaultSectioningStatus(org.hibernate.Session hibSession, Long defaultSectioningStatusId) {
 		return hibSession.createQuery("from Session x where x.defaultSectioningStatus.uniqueId = :defaultSectioningStatusId").setLong("defaultSectioningStatusId", defaultSectioningStatusId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<Session> findByDefaultClassDurationType(org.hibernate.Session hibSession, Long defaultClassDurationTypeId) {
+		return hibSession.createQuery("from Session x where x.defaultClassDurationType.uniqueId = :defaultClassDurationTypeId").setLong("defaultClassDurationTypeId", defaultClassDurationTypeId).list();
+	}
 }

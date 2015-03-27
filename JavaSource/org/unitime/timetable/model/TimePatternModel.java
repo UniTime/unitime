@@ -361,6 +361,9 @@ public class TimePatternModel implements RequiredTimeTableModel {
     
     public double getNormalizedPreference(int day, int time, double decreaseFactor) {
         if (iPreferences[day][time].equalsIgnoreCase(PreferenceLevel.sRequired)) return 0.0;
+        if (iPreferences[day][time].equalsIgnoreCase(PreferenceLevel.sNotAvailable)) {
+        	return 100.0;
+        }
         if (iPreferences[day][time].equalsIgnoreCase(PreferenceLevel.sProhibited)) return 100.0;
         
         int pref = Integer.parseInt(iPreferences[day][time]);
@@ -377,6 +380,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
         	for (int j = 0; j < iMinutes.length; j++) {
         		String p = iPreferences[i][j];
                 if (PreferenceLevel.sRequired.equalsIgnoreCase(p)) continue;
+                if (PreferenceLevel.sNotAvailable.equalsIgnoreCase(p)) continue;
                 if (PreferenceLevel.sProhibited.equalsIgnoreCase(p) || Integer.parseInt(p)!=0) nrOfPreferencesThisDay+=increment;
             }
             nrOfPreferences = Math.max(nrOfPreferences,nrOfPreferencesThisDay);
@@ -582,6 +586,22 @@ public class TimePatternModel implements RequiredTimeTableModel {
     
     public void setExactStartSlot(int slot) {
     	iPref = getExactDays()+","+slot;
+    }
+    
+    public boolean hasRequiredPreferences() {
+    	for (int d=0;d<getNrDays();d++)
+    		for (int t=0;t<getNrTimes();t++)
+    			if (PreferenceLevel.sRequired.equals(iPreferences[d][t]))
+    				return true;
+    	return false;
+    }
+    
+    public boolean hasNotAvailablePreference() {
+    	for (int d=0;d<getNrDays();d++)
+    		for (int t=0;t<getNrTimes();t++)
+    			if (PreferenceLevel.sNotAvailable.equals(iPreferences[d][t]))
+    				return true;
+    	return false;
     }
     
     public boolean changeRequired2Prohibited() {
@@ -887,6 +907,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
 	    	if (!hasProhibited)
 	    		prefs.remove(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sProhibited));
 		}
+		if (hasNotAvailablePreference()) prefs.add(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNotAvailable));
 		String[] ret = new String[prefs.size()];
 		int idx=0;
 		for (PreferenceLevel p: prefs) {

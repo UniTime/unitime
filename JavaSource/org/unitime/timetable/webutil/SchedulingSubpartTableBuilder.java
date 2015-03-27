@@ -59,7 +59,7 @@ public class SchedulingSubpartTableBuilder {
      * @return Html code for displaying user defined config
      */
     public static String buildSubpartsTable(
-            HttpServletRequest request, SessionContext context, int limit, String uid, boolean createAsNew, boolean unlimitedEnroll) throws Exception {
+            HttpServletRequest request, SessionContext context, int limit, String uid, boolean createAsNew, boolean unlimitedEnroll, String durationColumnName) throws Exception {
         
         // Check if variable limits is selected 
 		boolean varLimits = "y".equals(request.getParameter("varLimits"));
@@ -103,7 +103,7 @@ public class SchedulingSubpartTableBuilder {
                     				!varLimits ? "<<1>>" : MSG.columnSubpartMinLimitPerClass(), 
                     				!varLimits ? "<<11>>" : MSG.columnSubpartMaxLimitPerClass(), 
                     										MSG.columnSubpartNumberOfClasses(),
-                    										MSG.columnSubpartMinutesPerWeek(), 
+                    										"<span id='durationColumn' style='max-width:65px; display: inherit;'>" + durationColumnName + "</span>", 
                     										MSG.columnSubpartNumberOfRooms(),
                     										MSG.columnSubpartRoomRatio(), 
                     										MSG.columnSubpartManagingDepartment()},

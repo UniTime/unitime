@@ -29,6 +29,41 @@
 	<version>4.1.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Class Duration Types</name>
+			<description>
+				<line>Added ability to define different ways how class duration is entered and used in the system (to extend the formal Minutes per Week selection).</line>
+				<line>There is a new page (Administration > Other > Class Duration Types), where the class duration types can be managed.
+					<line>Permission ClassDurationTypes is needed to access the page, ClassDurationTypeEdit is needed to make changes.</line>
+				</line>
+				<line>Default duration type can be defined on an academic session, it can be overriden on the instructional offering configuration level (Instructional Offering Configuration page).
+					<line>Name of the default duration type is used in the column headers (Classes, Instructional Offerings), abbreviation is used to suffix durations that are using a non-default duration type.</line>
+				</line>
+				<line>Following class duration types have been implemented:
+					<line>Minutes per Week (default): this is the existing behaviour (minutes per week == number of meetings x minutes per meeting)</line>
+					<line>Average Weekly Mintes: average number of minutes a class takes during a week (weekly minutes = number of meetings x minutes per meeting x number of weeks of the data pattern / number of weeks in the term)
+						<line>Paramter: number of weeks in the term (defaults to the number of weeks of the default date pattern)</line>
+					</line>
+					<line>Semester Minutes: number of minutes in the semester (semester minutes == number of meetings x minutes per meeting x number of weeks of the data pattern)</line>
+					<line>Semester Hours: number of hours in the semester (semester hours == number of meetings x minutes per meeting x number of weeks of the data pattern / minutes in an hour)
+						<line>Paramter: number of minutes in an hour (defaults to 50)</line>
+					</line>
+					<line>Meetings Minutes: number of minutes of all the meetings, excluding vacations (meeting minutes == number of meetings based on the date pattern x minutes per meeting)
+						<line>Parameters: allowed variation of the meeting minutes, expressed as lower and upper bound (defaults to 0.95,1.10 -- meaning a class can have 5% less time, combinations with 10% more time will be also considered).</line>
+						<line>If the number of meetings based on the date pattern exceeds the desired number of meeting minutes, only meetings covering the given number of meeting minutes are created.</line>
+					</line>
+					<line>Meeting Hours: just like meeting minutes, but with hours (semester hours == number of meetings based on the date pattern x minutes per meeting / minutes in an hour)
+						<line>Paramters: number of minutes in an hour and the allowed variation of the meeting minutes (defaults to 50,0.95,1.10 -- 50 minutes in an hour, 5% less time allowed, combinations with up to 10% excess time are considered).</line>
+					</line>
+				</line>
+				<line>It is possible to hide class duration types that are not to be used by the users.
+					<line>If only one type is visible, there is no selection of the class duration type on the Instructional Offering Configuration page.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Batch Student Scheduling</title>
 		<item>
 			<name>Minimal Perturbation Mode</name>

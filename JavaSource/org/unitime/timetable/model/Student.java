@@ -25,7 +25,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import org.hibernate.Query;
 import org.unitime.timetable.model.base.BaseStudent;
@@ -166,7 +165,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
         return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(student.getUniqueId() == null ? -1 : student.getUniqueId());
     }
     
-    public static Hashtable<Long,Set<Long>> findConflictingStudents(Long classId, int startSlot, int length, Vector<Date> dates) {
+    public static Hashtable<Long,Set<Long>> findConflictingStudents(Long classId, int startSlot, int length, List<Date> dates) {
     	Hashtable<Long,Set<Long>> table = new Hashtable();
     	if (dates.isEmpty()) return table;
     	String datesStr = "";
@@ -185,7 +184,7 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
             .setInteger("startSlot", startSlot)
             .setInteger("endSlot", startSlot + length);
     	for (int i=0; i<dates.size(); i++) {
-    		q.setDate("date"+i, dates.elementAt(i));
+    		q.setDate("date"+i, dates.get(i));
     	}
         for (Iterator i = q.setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();

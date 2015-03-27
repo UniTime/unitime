@@ -243,7 +243,13 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 
         // Initialize Preferences for initial load
 		Set timePatterns = null;
-		frm.setAvailableTimePatterns(TimePattern.findApplicable(sessionContext.getUser(),ss.getMinutesPerWk().intValue(),false,ss.getManagingDept()));
+		frm.setAvailableTimePatterns(TimePattern.findApplicable(
+        		sessionContext.getUser(),
+        		ss.getMinutesPerWk(),
+        		 (frm.getDatePattern() < 0 ? ss.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern())),
+        		ss.getInstrOfferingConfig().getDurationModel(),
+        		true,
+        		ss.getManagingDept()));
         if(op.equals("init")) {
         	initPrefs(frm, ss, null, true);
         	timePatterns = ss.getTimePatterns();
@@ -279,14 +285,17 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 						frm.addToDatePatternPrefs(dp.getUniqueId().toString(), PreferenceLevel.PREF_LEVEL_NEUTRAL);
 				}
 			}
-			
 		}
 
 		// Process Preferences Action
 		processPrefAction(request, frm, errors);
 
         // Generate Time Pattern Grids
-		super.generateTimePatternGrids(request, frm, ss, timePatterns, op, timeVertical, true, null);
+		super.generateTimePatternGrids(request, frm, ss,
+				ss.getMinutesPerWk(),
+        		ss.getInstrOfferingConfig().getDurationModel(),
+        		(frm.getDatePattern() < 0 ? ss.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern())),
+				timePatterns, op, timeVertical, true, null);
 		setupChildren(frm, request, ss); // Date patterns allowed in the DDL for Date pattern preferences
 		LookupTables.setupDatePatterns(request, sessionContext.getUser(), "Default", (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()), ss.getManagingDept(), ss.effectiveDatePattern());
 

@@ -296,10 +296,18 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     }
     
     public Set effectivePreferences(Class type, Vector leadInstructors) {
-    	return effectivePreferences(type);
+    	return effectivePreferences(type, leadInstructors, TimePref.class.equals(type));
+    }
+    
+    public Set effectivePreferences(Class type, Vector leadInstructors, boolean fixDurationInTimePreferences) {
+    	return effectivePreferences(type, fixDurationInTimePreferences);
     }
     
     public Set effectivePreferences(Class type) {
+    	return effectivePreferences(type, TimePref.class.equals(type));
+    }
+    
+    public Set effectivePreferences(Class type, boolean fixDurationInTimePreferences) {
     	return getPreferences(type, null);
     }
     
