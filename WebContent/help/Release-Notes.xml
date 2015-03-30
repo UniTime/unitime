@@ -98,6 +98,15 @@
 				<line>Request groups are loaded in only when the solver paramter Load.RequestGroups is set to true, default is false</line>
 			</description>
 		</item>
+		<item>
+			<name>Interactive Changes</name>
+			<description>
+				<line>Added ability to use the Scheduling Assistant page to make changes in a student's schedule (current solution).</line>
+				<line>It is also possible to change input data (course and free time requests of a student).
+					<line>This possibility can be disabled by setting the solver configuration parameter Interactive.UpdateCourseRequests to false (defaults to true).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 </release-history>
