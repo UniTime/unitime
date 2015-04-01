@@ -4,3 +4,5 @@
 /.gwt/
 /target/
 /WebContent/WEB-INF/classes/
+/.tern-project
+.DS_Store
