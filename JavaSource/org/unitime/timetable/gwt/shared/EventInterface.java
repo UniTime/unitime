@@ -2359,7 +2359,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			WEEKEND,
 			DATE_MAPPING_CLASS,
 			DATE_MAPPING_EVENT,
-			CLASSES;
+			CLASSES,
+			MIDTERMS;
 			
 			public int flag() { return 1 << ordinal(); }
 		}

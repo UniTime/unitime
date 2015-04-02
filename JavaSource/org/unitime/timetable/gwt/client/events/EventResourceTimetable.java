@@ -2014,6 +2014,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				if (month.hasFlag(d, SessionMonth.Flag.BREAK)) return SessionMonth.Flag.BREAK;
 				if (month.hasFlag(d, SessionMonth.Flag.WEEKEND)) return SessionMonth.Flag.WEEKEND;
 				if (month.hasFlag(d, SessionMonth.Flag.HOLIDAY)) return SessionMonth.Flag.HOLIDAY;
+				if (month.hasFlag(d, SessionMonth.Flag.MIDTERMS) && type != EventType.MidtermExam) return SessionMonth.Flag.MIDTERMS;
 				return null;
 			}
 		return null;

@@ -32,9 +32,11 @@ public abstract class BaseExamType extends RefTableEntry implements Serializable
 	private static final long serialVersionUID = 1L;
 
 	private Integer iType;
+	private Boolean iHighlightInEvents;
 
 
 	public static String PROP_XTYPE = "type";
+	public static String PROP_EVENTS = "highlightInEvents";
 
 	public BaseExamType() {
 		initialize();
@@ -49,6 +51,10 @@ public abstract class BaseExamType extends RefTableEntry implements Serializable
 
 	public Integer getType() { return iType; }
 	public void setType(Integer type) { iType = type; }
+
+	public Boolean isHighlightInEvents() { return iHighlightInEvents; }
+	public Boolean getHighlightInEvents() { return iHighlightInEvents; }
+	public void setHighlightInEvents(Boolean highlightInEvents) { iHighlightInEvents = highlightInEvents; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof ExamType)) return false;
@@ -67,6 +73,7 @@ public abstract class BaseExamType extends RefTableEntry implements Serializable
 
 	public String toDebugString() {
 		return "ExamType[" +
+			"\n	HighlightInEvents: " + getHighlightInEvents() +
 			"\n	Label: " + getLabel() +
 			"\n	Reference: " + getReference() +
 			"\n	Type: " + getType() +

@@ -66,7 +66,8 @@ public class ExaminationTypes implements AdminTable {
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldReference(), FieldType.text, 160, 20, Flag.UNIQUE),
 				new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE),
-				new Field(MESSAGES.fieldType(), FieldType.list, 300, types, Flag.NOT_EMPTY)
+				new Field(MESSAGES.fieldType(), FieldType.list, 300, types, Flag.NOT_EMPTY),
+				new Field(MESSAGES.fieldHighlightInEvents(), FieldType.toggle, 40)
 				);
 		data.setSortBy(2, 1);
 		for (ExamType xtype: ExamTypeDAO.getInstance().findAll()) {
@@ -74,6 +75,7 @@ public class ExaminationTypes implements AdminTable {
 			r.setField(0, xtype.getReference(), !xtype.getReference().equals("final") && !xtype.getReference().equals("midterm"));
 			r.setField(1, xtype.getLabel());
 			r.setField(2, xtype.getType().toString(), !xtype.isUsed(null) && !xtype.getReference().equals("final") && !xtype.getReference().equals("midterm"));
+			r.setField(3, xtype.isHighlightInEvents() != null && xtype.isHighlightInEvents() ? "true": "false");
 			r.setDeletable(!xtype.isUsed(null) && !xtype.getReference().equals("final") && !xtype.getReference().equals("midterm"));
 		}
 		data.setEditable(context.hasPermission(Right.ExamTypeEdit));
@@ -101,6 +103,7 @@ public class ExaminationTypes implements AdminTable {
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
 		type.setType(Integer.valueOf(record.getField(2)));
+		type.setHighlightInEvents("true".equalsIgnoreCase(record.getField(3)));
 		record.setUniqueId((Long)hibSession.save(type));
 		ChangeLog.addChange(hibSession,
 				context,
@@ -116,10 +119,12 @@ public class ExaminationTypes implements AdminTable {
 		if (type == null) return;
 		if (ToolBox.equals(type.getReference(), record.getField(0)) &&
 				ToolBox.equals(type.getLabel(), record.getField(1)) &&
-				ToolBox.equals(type.getType(), Integer.valueOf(record.getField(2)))) return;
+				ToolBox.equals(type.getType(), Integer.valueOf(record.getField(2))) &&
+				ToolBox.equals(type.isHighlightInEvents(), "true".equalsIgnoreCase(record.getField(3)))) return;
 		type.setReference(record.getField(0));
 		type.setLabel(record.getField(1));
 		type.setType(Integer.valueOf(record.getField(2)));
+		type.setHighlightInEvents("true".equalsIgnoreCase(record.getField(3)));
 		hibSession.saveOrUpdate(type);
 		ChangeLog.addChange(hibSession,
 				context,

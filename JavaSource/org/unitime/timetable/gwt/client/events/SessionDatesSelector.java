@@ -130,7 +130,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	
 	public void init(List<SessionMonth> months) {
 		iPanel.getWidget().clear();
-		int firstOutside = -1, start = -1, end = -1, exam = -1, firstHoliday = - 1, firstBreak = -1, today = -1, firstPast = -1, firstEventDate = -1, firstClassDate = -1;
+		int firstOutside = -1, start = -1, end = -1, finals = -1, midterms = -1, firstHoliday = - 1, firstBreak = -1, today = -1, firstPast = -1, firstEventDate = -1, firstClassDate = -1;
 		int idx = 0;
 		P lastWeek = null;
 		for (SessionMonth month: months) {
@@ -140,7 +140,8 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			iPanel.getWidget().add(m);
 			if (start < 0) start = month.getFirst(SessionMonth.Flag.START);
 			if (end < 0) end = month.getFirst(SessionMonth.Flag.END);
-			if (exam < 0) exam = month.getFirst(SessionMonth.Flag.FINALS);
+			if (finals < 0) finals = month.getFirst(SessionMonth.Flag.FINALS);
+			if (midterms < 0) midterms = month.getFirst(SessionMonth.Flag.MIDTERMS);
 			if (firstHoliday < 0) firstHoliday = month.getFirst(SessionMonth.Flag.HOLIDAY);
 			if (firstBreak < 0) firstBreak = month.getFirst(SessionMonth.Flag.BREAK);
 			if (firstOutside < 0) firstOutside = month.getFirst(SessionMonth.Flag.DISABLED);
@@ -152,7 +153,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				today = Integer.parseInt(DateTimeFormat.getFormat("dd").format(new Date()));
 			if (month.getFirst(SessionMonth.Flag.START) >= 0) iSessionYear = month.getYear();
 		}
-		iPanel.getWidget().add(new Legend(firstOutside, start, exam, firstHoliday, firstBreak, iCanSelectPast ? -1 : firstPast, today, firstClassDate, firstEventDate));
+		iPanel.getWidget().add(new Legend(firstOutside, start, finals, midterms, firstHoliday, firstBreak, iCanSelectPast ? -1 : firstPast, today, firstClassDate, firstEventDate));
 		iPanel.getWidget().setCursor(new Date());
 	}
 	
@@ -510,6 +511,9 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				} else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.FINALS)) {
 					d.addStyleName("exam");
 					d.setAriaLabel(d.getAriaLabel() + " " + MESSAGES.legendFinals());
+				} else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.MIDTERMS)) {
+					d.addStyleName("midterm");
+					d.setAriaLabel(d.getAriaLabel() + " " + MESSAGES.legendMidterms());
 				} else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.HOLIDAY)) {
 					d.addStyleName("holiday");
 					d.setAriaLabel(d.getAriaLabel() + " " + MESSAGES.legendHoliday());
@@ -550,7 +554,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	}
 	
 	public class Legend extends AbsolutePanel {
-		public Legend(int firstOutside, int start, int exam, int firstHoliday, int firstBreak, int firstPast, int today, int firstClassDate, int firstEventDate) {
+		public Legend(int firstOutside, int start, int finals, int midterms, int firstHoliday, int firstBreak, int firstPast, int today, int firstClassDate, int firstEventDate) {
 			addStyleName("legend");
 			P box = new P(null, "box");
 			add(box);
@@ -586,10 +590,17 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				box.add(line);
 			}
 			
-			if (exam >= 0) {
+			if (finals >= 0) {
 				line = new P(null, "row");
-				line.add(new P(String.valueOf(exam + 1), "cell", "exam"));
+				line.add(new P(String.valueOf(finals + 1), "cell", "exam"));
 				line.add(new P(MESSAGES.legendFinals(), "title"));
+				box.add(line);
+			}
+			
+			if (midterms >= 0) {
+				line = new P(null, "row");
+				line.add(new P(String.valueOf(finals + 1), "cell", "midterm"));
+				line.add(new P(MESSAGES.legendMidterms(), "title"));
 				box.add(line);
 			}
 			

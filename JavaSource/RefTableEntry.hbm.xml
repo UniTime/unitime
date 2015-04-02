@@ -260,6 +260,11 @@
                 column="xtype"
                 type="java.lang.Integer"
                 not-null="true"/>
+            <property
+                name="highlightInEvents"
+                column="events"
+                type="java.lang.Boolean"
+                not-null="true"/>
         </union-subclass>
 
         <union-subclass name="RoomFeatureType"

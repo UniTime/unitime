@@ -666,6 +666,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 								case FINALS:
 									mtg[0] = "<span class='finals' title=\"" + MESSAGES.hintFinals() + "\">" + mtg[0] + "</span>";
 									break;
+								case MIDTERMS:
+									mtg[0] = "<span class='midterms' title=\"" + MESSAGES.hintMidterms() + "\">" + mtg[0] + "</span>";
+									break;
 								case BREAK:
 									mtg[0] = "<span class='break' title=\"" + MESSAGES.hintBreak() + "\">" + mtg[0] + "</span>";
 									break;
@@ -997,6 +1000,10 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 								meetingDate.setTitle(MESSAGES.hintWeekend());
 								meetingDate.addStyleName("weekend");
 								break;
+							case MIDTERMS:
+								meetingDate.setTitle(MESSAGES.hintMidterms());
+								meetingDate.addStyleName("midterms");
+								break;
 							}
 						}
 						row.add(meetingDate);
@@ -1053,6 +1060,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						switch (dateFlag) {
 						case FINALS:
 							mtg[0] = "<span class='finals' title=\"" + MESSAGES.hintFinals() + "\">" + mtg[0] + "</span>";
+							break;
+						case MIDTERMS:
+							mtg[0] = "<span class='midterms' title=\"" + MESSAGES.hintMidterms() + "\">" + mtg[0] + "</span>";
 							break;
 						case BREAK:
 							mtg[0] = "<span class='break' title=\"" + MESSAGES.hintBreak() + "\">" + mtg[0] + "</span>";

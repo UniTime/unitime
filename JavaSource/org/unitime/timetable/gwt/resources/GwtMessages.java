@@ -2063,6 +2063,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Finals")
 	String legendFinals();
 	
+	@DefaultMessage("Midterms")
+	String legendMidterms();
+	
 	@DefaultMessage("Holiday")
 	String legendHoliday();
 	
@@ -2095,6 +2098,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Too Early?")
 	String hintTooEarly();
+	
+	@DefaultMessage("Midterms")
+	String hintMidterms();
 	
 	@DefaultMessage("<span title='Conflicting event' style='font-style:normal;' aria-label='Conflicting event'>&#9785;</span>")
 	String signConflict();
@@ -2608,6 +2614,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Visible")
 	String fieldVisible();
+	
+	@DefaultMessage("Highlight In Events")
+	String fieldHighlightInEvents();
 
 	@DefaultMessage("Access")
 	String toggleAccess();

@@ -703,6 +703,8 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 						d.addStyleName("start");
 					else if (sessionMonth.hasFlag(i - 1, SessionMonth.Flag.FINALS))
 						d.addStyleName("exam");
+					else if (sessionMonth.hasFlag(i - 1, SessionMonth.Flag.MIDTERMS))
+						d.addStyleName("midterm");
 					else if (sessionMonth.hasFlag(i - 1, SessionMonth.Flag.HOLIDAY))
 						d.addStyleName("holiday");
 					else if (sessionMonth.hasFlag(i - 1, SessionMonth.Flag.BREAK))

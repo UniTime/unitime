@@ -51,11 +51,19 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 
 		List<Date> finals = new ArrayList<Date>();
 		for (Number dateOffset: (List<Number>)SessionDAO.getInstance().getSession().createQuery(
-				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :finalType")
+				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :finalType and examType.highlightInEvents = true")
 				.setLong("sessionId", command.getSessionId()).setInteger("finalType", ExamType.sExamTypeFinal).setCacheable(true).list()) {
 		    calendar.setTime(session.getExamBeginDate());
 		    calendar.add(Calendar.DAY_OF_YEAR, dateOffset.intValue());
 		    finals.add(calendar.getTime());
+		}
+		List<Date> midterms = new ArrayList<Date>();
+		for (Number dateOffset: (List<Number>)SessionDAO.getInstance().getSession().createQuery(
+				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :midtermType and examType.highlightInEvents = true")
+				.setLong("sessionId", command.getSessionId()).setInteger("midtermType", ExamType.sExamTypeMidterm).setCacheable(true).list()) {
+		    calendar.setTime(session.getExamBeginDate());
+		    calendar.add(Calendar.DAY_OF_YEAR, dateOffset.intValue());
+		    midterms.add(calendar.getTime());
 		}
 		
 		EventDateMapping.Class2EventDateMap class2eventDateMap = (context.hasPermission(Right.EventDateMappings) ? EventDateMapping.getMapping(command.getSessionId()) : null);
@@ -91,6 +99,10 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 				for (Date finalDate: finals) {
 					if (compare(calendar.getTime(), finalDate) == 0)
 						m.setFlag(i, SessionMonth.Flag.FINALS);
+				}
+				for (Date midtermDate: midterms) {
+					if (compare(calendar.getTime(), midtermDate) == 0)
+						m.setFlag(i, SessionMonth.Flag.MIDTERMS);
 				}
 				
 				if (compare(calendar.getTime(), session.getEventBeginDate()) < 0 || compare(calendar.getTime(), session.getEventEndDate()) > 0)

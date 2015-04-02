@@ -10068,4 +10068,9 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('Examinations', 'ExaminationSchedule')
 		</sql>
 	</update>
+	<update version="145" date="2-Apr-2015" comment="Examination Type Highlight In Events">
+		<plsql>alter table %SCHEMA%.exam_type add events number(1) default 1</plsql>
+		<mysql>alter table %SCHEMA%.exam_type add events int(1) default 1</mysql>
+		<sql>update %SCHEMA%.exam_type set events = 0 where xtype = 1</sql>
+	</update>
 </dbupdate>
