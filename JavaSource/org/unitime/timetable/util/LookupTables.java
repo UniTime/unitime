@@ -40,6 +40,7 @@ import org.unitime.timetable.model.CourseCreditUnitType;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.ExamPeriod;
@@ -373,6 +374,10 @@ public class LookupTables {
     
     public static void setupExamTypes(HttpServletRequest request, Long sessionId) {
     	request.setAttribute("examTypes", sessionId == null ? ExamType.findAll() : ExamType.findAllUsed(sessionId));
+    }
+    
+    public static void setupExamTypes(HttpServletRequest request, UserContext user, DepartmentStatusType.Status... status) {
+    	request.setAttribute("examTypes", ExamType.findAllApplicable(user, status));
     }
     
     public static void setupCourseTypes(HttpServletRequest request) {

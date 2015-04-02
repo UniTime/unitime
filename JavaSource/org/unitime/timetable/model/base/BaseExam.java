@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamConflict;
@@ -54,6 +55,7 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	private Session iSession;
 	private ExamPeriod iAssignedPeriod;
 	private ExamType iExamType;
+	private DepartmentStatusType iStatusType;
 	private Set<ExamOwner> iOwners;
 	private Set<Location> iAssignedRooms;
 	private Set<DepartmentalInstructor> iInstructors;
@@ -119,6 +121,9 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 
 	public ExamType getExamType() { return iExamType; }
 	public void setExamType(ExamType examType) { iExamType = examType; }
+
+	public DepartmentStatusType getStatusType() { return iStatusType; }
+	public void setStatusType(DepartmentStatusType statusType) { iStatusType = statusType; }
 
 	public Set<ExamOwner> getOwners() { return iOwners; }
 	public void setOwners(Set<ExamOwner> owners) { iOwners = owners; }

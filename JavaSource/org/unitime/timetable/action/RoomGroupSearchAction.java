@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomGroupListForm;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ExportUtils;
@@ -108,7 +109,7 @@ public class RoomGroupSearchAction extends Action {
 			}
 			
 			LookupTables.setupDepartments(request, sessionContext, true);
-			LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+			LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 			
 			return mapping.findForward("showRoomGroupSearch");
 		}

@@ -27,7 +27,6 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -38,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamChangesForm;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -142,7 +142,7 @@ public class ExamChangesAction extends Action {
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
         
-        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+        LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable);
 
         return mapping.findForward("showReport");
 	}

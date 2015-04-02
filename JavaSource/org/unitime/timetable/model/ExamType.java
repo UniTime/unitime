@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -27,6 +28,9 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.model.base.BaseExamType;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
+import org.unitime.timetable.security.UserAuthority;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.permissions.SimpleExaminationPermission;
 
 /**
  * @author Tomas Muller
@@ -65,8 +69,50 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
 				.setLong("sessionId", sessionId).setCacheable(true).list());
 	}
 
+	public static List<ExamType> findAllApplicable(UserContext user, DepartmentStatusType.Status... status) {
+		List<ExamType> types = new ArrayList<ExamType>();
+		UserAuthority authority = (user == null ? null : user.getCurrentAuthority());
+		if (authority == null) return types;
+		SimpleExaminationPermission p = new SimpleExaminationPermission();
+		
+		for (ExamType type: findAll()) {
+			ExamStatus examStatus = ExamStatus.findStatus(user.getCurrentAcademicSessionId(), type.getUniqueId());
+			if (examStatus != null) {
+				if (p.checkManager(authority, examStatus, status) && p.checkStatus(authority, examStatus.effectiveStatus(), status))
+					types.add(type);
+			} else {
+				types.add(type);
+			}
+		}
+		
+		return types;
+	}
+	
+	public static List<ExamType> findAllUsedApplicable(UserContext user, DepartmentStatusType.Status... status) {
+		List<ExamType> types = new ArrayList<ExamType>();
+		UserAuthority authority = (user == null ? null : user.getCurrentAuthority());
+		if (authority == null) return types;
+		SimpleExaminationPermission p = new SimpleExaminationPermission();
+		
+		for (ExamType type: findAllUsed(user.getCurrentAcademicSessionId())) {
+			ExamStatus examStatus = ExamStatus.findStatus(user.getCurrentAcademicSessionId(), type.getUniqueId());
+			if (examStatus != null) {
+				if (p.checkManager(authority, examStatus, status) && p.checkStatus(authority, examStatus.effectiveStatus(), status))
+					types.add(type);
+			} else {
+				types.add(type);
+			}
+		}
+		
+		return types;
+	}
+	
 	public static List<ExamType> findAll() {
-		return (List<ExamType>)ExamTypeDAO.getInstance().getSession().createQuery(
+		return findAll(null);
+	}
+
+	public static List<ExamType> findAll(org.hibernate.Session hibSession) {
+		return (List<ExamType>)(hibSession != null ? hibSession : ExamTypeDAO.getInstance().getSession()).createQuery(
 				"from ExamType order by type, label")
 				.setCacheable(true).list();
 	}

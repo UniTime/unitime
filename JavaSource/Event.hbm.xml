@@ -118,6 +118,13 @@
             type="java.util.Date"
             not-null="false"/>
 
+		<property
+			name="examStatus"
+			type="java.lang.Integer"
+			not-null="false"
+			lazy="true"
+			formula=" ( select t.status from %SCHEMA%.exam x, %SCHEMA%.exam_status s, %SCHEMA%.dept_status_type t where x.uniqueid = exam_id and s.session_id = x.session_id and s.type_id = x.exam_type_id and s.status_id = t.uniqueid) "/>
+
         <subclass
             name="ClassEvent"
             abstract="false"
@@ -190,8 +197,6 @@
             	discriminator-value="5"/>
 
         </subclass>
-
-
     </class>
 
 </hibernate-mapping>

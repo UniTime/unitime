@@ -32,10 +32,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.UniTimeUserContext;
@@ -106,11 +103,11 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 					session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative(),
 					df.format(session.getEventBeginDate()) + " - " + df.format(session.getEventEndDate()),
 					session.equals(selected));
-			if (session.getStatusType().canNoRoleReportClass() && Solution.hasTimetable(session.getUniqueId()))
+			if (session.canNoRoleReportClass())
 				acadSession.set(AcademicSession.Flag.HasClasses);
-			if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(), ExamType.sExamTypeFinal))
+			if (session.canNoRoleReportExamFinal())
 				acadSession.set(AcademicSession.Flag.HasFinalExams);
-			if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(), ExamType.sExamTypeMidterm))
+			if (session.canNoRoleReportExamMidterm())
 				acadSession.set(AcademicSession.Flag.HasMidtermExams);
 			if (context.hasPermissionAnyAuthority(session, Right.Events, new SimpleQualifier("Session", session.getUniqueId())))
 				acadSession.set(AcademicSession.Flag.HasEvents);

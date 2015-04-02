@@ -233,12 +233,17 @@ public class DeptStatusTypeEditAction extends Action {
         	String rights = "";
             String apply = "";
             if (s.applyDepartment()) {
-                if (s.applySession())
-                    apply = "Both";
-                else
+                if (s.applySession()) {
+                	if (s.applyExamStatus())
+                		apply = "All";
+                	else
+                		apply = "Session &amp; Department";
+                } else
                     apply = "Department";
             } else if (s.applySession())
                 apply = "Session";
+            else if (s.applyExamStatus())
+            	apply = "Examinations";
             if (s.isAllowRollForward()) {
             	if (rights.length()>0) rights+="; ";
                 rights += "roll-forward";

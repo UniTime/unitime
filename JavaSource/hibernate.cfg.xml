@@ -211,5 +211,6 @@
 	<mapping resource="MessageLog.hbm.xml"/>
 	<mapping resource="Script.hbm.xml"/>
 	<mapping resource="ClusterDiscovery.hbm.xml"/>
+	<mapping resource="ExamStatus.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>

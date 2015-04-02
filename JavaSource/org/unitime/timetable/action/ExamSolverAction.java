@@ -27,7 +27,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -38,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamSolverForm;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -88,7 +88,7 @@ public class ExamSolverAction extends Action {
         
         RoomAvailability.setAvailabilityWarning(request, acadSession, (solver==null?myForm.getExamType():solver.getExamTypeId()), true, false);
         
-        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+        LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable);
 
         if (op==null) {
         	myForm.init("y".equals(request.getParameter("reload")));

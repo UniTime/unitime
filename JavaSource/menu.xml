@@ -626,6 +626,12 @@
 				</condition>
 			</item>
 			<separator/>
+			<item name="Examination Statuses" page="admin" type="gwt">
+				<parameter name="type">examStatus</parameter>
+				<condition>
+					<hasPermission name="ExaminationStatuses"/>
+				</condition>
+			</item>
 			<item name="Examination Periods" page="examPeriodEdit.do">
 				<condition>
 					<hasPermission name="ExaminationPeriods"/>

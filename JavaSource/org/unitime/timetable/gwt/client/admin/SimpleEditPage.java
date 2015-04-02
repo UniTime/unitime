@@ -1087,8 +1087,8 @@ public class SimpleEditPage extends Composite {
 					break;
 				case multi:
 					final ListBox multi = new ListBox(true);
-					multi.setStyleName("unitime-TextBox");
-					multi.setVisibleItemCount(3);
+					multi.setStyleName("unitime-TextArea");
+					multi.setVisibleItemCount(5);
 					for (ListItem item: field.getValues())
 						multi.addItem(item.getText(), item.getValue());
 					String[] vals = record.getValues(index);

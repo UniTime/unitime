@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
@@ -305,7 +306,7 @@ public class ExamDetailAction extends PreferencesAction {
             LookupTables.setupRoomFeatures(request, exam); // Preference Levels
             LookupTables.setupRoomGroups(request, exam);   // Room Groups
             
-            LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+            LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamView);
             
             return mapping.findForward("showExamDetail");
             

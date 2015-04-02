@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.form.ExamGridForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
@@ -110,7 +111,7 @@ public class ExamGridAction extends Action {
 
         myForm.setOp("Change");
         
-        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+        LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable);
         
         return mapping.findForward("showGrid");
 	}

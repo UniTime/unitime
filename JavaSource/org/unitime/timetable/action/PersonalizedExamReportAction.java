@@ -37,7 +37,6 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.struts.action.Action;
@@ -65,6 +64,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
@@ -73,7 +73,6 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -298,24 +297,23 @@ public class PersonalizedExamReportAction extends Action {
                             "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
                             ")").
                             setLong("studentId", student.getUniqueId()).setCacheable(true).list());
-            if (!student.getSession().getStatusType().canNoRoleReportExamFinal()) {
-                for (Iterator<ExamOwner> i=studentExams.iterator();i.hasNext();) {
-                    if (i.next().getExam().getExamType().getType() == ExamType.sExamTypeFinal) i.remove();
-                }
-            }
-            if (!student.getSession().getStatusType().canNoRoleReportExamMidterm()) {
-                for (Iterator<ExamOwner> i=studentExams.iterator();i.hasNext();) {
-                    if (i.next().getExam().getExamType().getType() == ExamType.sExamTypeMidterm) i.remove();
-                }
+            for (Iterator<ExamOwner> i=studentExams.iterator();i.hasNext();) {
+            	Exam exam = i.next().getExam();
+            	DepartmentStatusType type = exam.effectiveStatusType();
+            	if (type == null || !type.can(exam.getExamType().getType() == ExamType.sExamTypeFinal ? DepartmentStatusType.Status.ReportExamsFinal : DepartmentStatusType.Status.ReportExamsMidterm))
+            		i.remove();
             }
         }
         
         HashSet<Exam> instructorExams = new HashSet<Exam>();
         if (instructor!=null) {
-            if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamMidterm())
-                instructorExams.addAll(instructor.getExams(ExamType.sExamTypeMidterm));
-            if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamFinal())
-                instructorExams.addAll(instructor.getExams(ExamType.sExamTypeFinal));
+        	instructorExams.addAll(instructor.getAllExams());
+        	for (Iterator<Exam> i=instructorExams.iterator();i.hasNext();) {
+        		Exam exam = i.next();
+        		DepartmentStatusType type = exam.effectiveStatusType();
+        		if (type == null || !type.can(exam.getExamType().getType() == ExamType.sExamTypeFinal ? DepartmentStatusType.Status.ReportExamsFinal : DepartmentStatusType.Status.ReportExamsMidterm))
+        			i.remove();
+        	}
         }
         
         WebTable.setOrder(sessionContext,"exams.o0",request.getParameter("o0"),1);
@@ -328,7 +326,7 @@ public class PersonalizedExamReportAction extends Action {
         WebTable.setOrder(sessionContext,"exams.o7",request.getParameter("o7"),1);
         
         boolean hasClasses = false;
-        if (student!=null && student.getSession().getStatusType().canNoRoleReportClass() && !student.getClassEnrollments().isEmpty()) {
+        if (student!=null && student.getSession().canNoRoleReportClass() && !student.getClassEnrollments().isEmpty()) {
             PdfWebTable table =  getStudentClassSchedule(true, student);
             if (!table.getLines().isEmpty()) {
                 request.setAttribute("clsschd", table.printTable(WebTable.getOrder(sessionContext,"exams.o6")));
@@ -336,7 +334,7 @@ public class PersonalizedExamReportAction extends Action {
                 myForm.setCanExport(true);
             }
         }
-        if (instructor!=null && instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
+        if (instructor!=null && instructor.getDepartment().getSession().canNoRoleReportClass()) {
             PdfWebTable table = getInstructorClassSchedule(true, instructor);
             if (!table.getLines().isEmpty()) {
                 request.setAttribute("iclsschd", table.printTable(Math.abs(WebTable.getOrder(sessionContext,"exams.o7"))));
@@ -384,7 +382,7 @@ public class PersonalizedExamReportAction extends Action {
                         InstructorExamReport.sModeNormal, out, instructor.getDepartment().getSession(),
                         null, null, exams);
                 ir.setM2d(true); ir.setDirect(true);
-                ir.setClassSchedule(instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass());
+                ir.setClassSchedule(instructor.getDepartment().getSession().canNoRoleReportClass());
                 ir.printHeader();
                 ir.printReport(ExamInfo.createInstructorInfo(instructor), exams);
                 ir.lastPage();
@@ -403,7 +401,7 @@ public class PersonalizedExamReportAction extends Action {
                         StudentExamReport.sModeNormal, out, student.getSession(),
                         null, null, exams);
                 sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
-                sr.setClassSchedule(student.getSession().getStatusType().canNoRoleReportClass());
+                sr.setClassSchedule(student.getSession().canNoRoleReportClass());
                 sr.printHeader();
                 sr.printReport(student, sections);
                 sr.lastPage();
@@ -414,7 +412,7 @@ public class PersonalizedExamReportAction extends Action {
                             InstructorExamReport.sModeNormal, out, instructor.getDepartment().getSession(),
                             null, null, new TreeSet<ExamAssignmentInfo>());
                     ir.setM2d(true); ir.setDirect(true);
-                    ir.setClassSchedule(instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass());
+                    ir.setClassSchedule(instructor.getDepartment().getSession().canNoRoleReportClass());
                     ir.printHeader();
                     ir.printReport(ExamInfo.createInstructorInfo(instructor), new TreeSet<ExamAssignmentInfo>());
                     ir.lastPage();
@@ -424,7 +422,7 @@ public class PersonalizedExamReportAction extends Action {
                             StudentExamReport.sModeNormal, out, student.getSession(),
                             null, null, new TreeSet<ExamAssignmentInfo>());
                     sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
-                    sr.setClassSchedule(student.getSession().getStatusType().canNoRoleReportClass());
+                    sr.setClassSchedule(student.getSession().canNoRoleReportClass());
                     sr.printHeader();
                     sr.printReport(student, new TreeSet<ExamSectionInfo>());
                     sr.lastPage();
@@ -497,9 +495,9 @@ public class PersonalizedExamReportAction extends Action {
     
     public static boolean canDisplay(Session session) {
         if (session.getStatusType()==null) return false;
-        if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(),ExamType.sExamTypeFinal)) return true;
-        if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(),ExamType.sExamTypeMidterm)) return true;
-        if (session.getStatusType().canNoRoleReportClass() && Solution.hasTimetable(session.getUniqueId())) return true;
+        if (session.canNoRoleReportExamFinal()) return true;
+        if (session.canNoRoleReportExamMidterm()) return true;
+        if (session.canNoRoleReportClass()) return true;
         return false;
     }
     
@@ -1553,7 +1551,7 @@ public class PersonalizedExamReportAction extends Action {
             out.println("X-WR-CALNAME:"+student.getName(DepartmentalInstructor.sNameFormatLastFist));
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
             out.println("PRODID:-//UniTime "+Constants.getVersion()+"/UniTime Personal Schedule//NONSGML v1.0//EN");
-            if (student.getSession().getStatusType().canNoRoleReportClass()) {
+            if (student.getSession().canNoRoleReportClass()) {
                 for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
                     StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
                     if (sce.getClazz().getEvent()!=null) {
@@ -1619,7 +1617,7 @@ public class PersonalizedExamReportAction extends Action {
             out.println("X-WR-CALNAME:"+instructor.getName(DepartmentalInstructor.sNameFormatLastFist));
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
             out.println("PRODID:-//UniTime "+Constants.getVersion()+"/UniTime Personal Schedule//NONSGML v1.0//EN");
-            if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
+            if (instructor.getDepartment().getSession().canNoRoleReportClass()) {
                 for (Iterator i=DepartmentalInstructor.getAllForInstructor(instructor, instructor.getDepartment().getSession().getUniqueId()).iterator();i.hasNext();) {
                     DepartmentalInstructor di = (DepartmentalInstructor)i.next();
                     for (Iterator j=di.getClasses().iterator();j.hasNext();) {

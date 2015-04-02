@@ -1865,6 +1865,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Class Duration Types")
 	String pageDurationTypes();
 	
+	@DefaultMessage("Examination Status")
+	String pageExaminationStatus();
+
+	@DefaultMessage("Examination Statuses")
+	String pageExaminationStatuses();
+	
 	@DefaultMessage("Add Curriculum")
 	String pageAddCurriculum();
 	
@@ -3124,4 +3130,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Or you can download an iCalendar file by clicking the {0} button below. While it is often easier to import an iCalendar file, such a&nbsp;calendar will not get updated automatically.")
 	String exportICalendarDownload(String button);
+	
+	@DefaultMessage("Session Default")
+	String examStatusDefault();
 }

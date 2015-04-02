@@ -41,6 +41,7 @@ import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomFeatureListForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
@@ -123,7 +124,7 @@ public class RoomFeatureListAction extends Action {
 
 		//set request attribute for department
 		LookupTables.setupDepartments(request, sessionContext, true);
-		LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+		LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 
 		// Validation fails
 		if (errors.size() > 0) {

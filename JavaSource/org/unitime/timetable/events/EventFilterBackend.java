@@ -46,9 +46,9 @@ import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.FinalExamEvent;
 import org.unitime.timetable.model.MidtermExamEvent;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.UnavailableEvent;
+import org.unitime.timetable.model.DepartmentStatusType.Status;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
@@ -195,6 +195,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		Date today = cal.getTime();
 		
 		if (!context.hasPermission(Right.HasRole)) {
+			/*
 			Session session = SessionDAO.getInstance().get(request.getSessionId());
 			String prohibitedTypes = null;
 			if (!session.getStatusType().canNoRoleReportClass())
@@ -204,7 +205,16 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			if (!session.getStatusType().canNoRoleReportExamMidterm())
 				prohibitedTypes = (prohibitedTypes == null ? "MidtermExamEvent": prohibitedTypes + ",MidtermExamEvent");
 			if (prohibitedTypes != null)
-				query.addWhere("xtype", "e.class not in (" + prohibitedTypes + ")");						
+				query.addWhere("xtype", "e.class not in (" + prohibitedTypes + ")");
+			*/
+			query.addWhere("xstatus",
+					"(e.class != ClassEvent or bit_and(s.statusType.status, :XstClass) > 0) and " +
+					"(e.class != FinalExamEvent or (e.examStatus is null and bit_and(s.statusType.status, :XstFinal) > 0) or bit_and(e.examStatus, :XstFinal) > 0) and " +
+					"(e.class != MidtermExamEvent or (e.examStatus is null and bit_and(s.statusType.status, :XstMidtr) > 0) or bit_and(e.examStatus, :XstMidtr) > 0)"
+					);
+			query.addParameter("xstatus", "XstClass", Status.ReportClasses.toInt());
+			query.addParameter("xstatus", "XstFinal", Status.ReportExamsFinal.toInt());
+			query.addParameter("xstatus", "XstMidtr", Status.ReportExamsMidterm.toInt());
 		}
 		
 		if (request.getText() != null && !request.getText().isEmpty()) {
@@ -463,7 +473,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			String from = "";
 			for (Map.Entry<String, String> entry: iFrom.entrySet()) {
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
-				from += ", " + entry.getValue();
+				from += (entry.getValue().startsWith("inner join") || entry.getValue().startsWith("left outer join") ? " " : ", ") + entry.getValue();
 			}
 			return from;
 		}

@@ -34,6 +34,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
@@ -147,8 +148,8 @@ public class ExamEditForm extends PreferencesForm {
         if (request.getSession().getAttribute("Exam.Type")!=null)
         	examType = (Long)request.getSession().getAttribute("Exam.Type");
         if (examType == null) {
-        	TreeSet<ExamType> types = ExamType.findAllUsed(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
-        	if (!types.isEmpty()) examType = types.first().getUniqueId();
+        	List<ExamType> types = ExamType.findAllUsedApplicable(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser(), DepartmentStatusType.Status.ExamEdit, DepartmentStatusType.Status.ExamTimetable);
+        	if (!types.isEmpty()) examType = types.get(0).getUniqueId();
         }
         clone = false;
         accommodation = null;

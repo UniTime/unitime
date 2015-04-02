@@ -40,6 +40,7 @@ import org.unitime.timetable.form.RoomFeatureEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.dao.DepartmentRoomFeatureDAO;
@@ -110,7 +111,7 @@ public class RoomFeatureAddAction extends Action {
 		
 		//get depts owned by user
 		LookupTables.setupDepartments(request, sessionContext, false);
-		LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+		LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 		request.setAttribute("featureTypes", RoomFeatureTypeDAO.getInstance().findAll(Order.asc("label")));
 		
         //set default department

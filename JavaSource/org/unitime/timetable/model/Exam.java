@@ -1288,5 +1288,14 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 
 	@Override
 	public Department getDepartment() { return null; }
+	
+	public DepartmentStatusType effectiveStatusType() {
+		return getStatusType() == null ? getSession().getStatusType() : getStatusType();
+	}
+	
+	public boolean canView() {
+		DepartmentStatusType type = effectiveStatusType();
+		return type != null && (getExamType().getType() == ExamType.sExamTypeFinal ? type.canNoRoleReportExamFinal() : type.canNoRoleReportExamMidterm());
+	}
 
 }

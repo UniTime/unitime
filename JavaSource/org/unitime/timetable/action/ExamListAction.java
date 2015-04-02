@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -42,6 +43,7 @@ import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamListForm;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.ExamType;
@@ -101,9 +103,9 @@ public class ExamListAction extends Action {
         	myForm.setExamType((Long)sessionContext.getAttribute(SessionAttribute.ExamType));
         }
         if (myForm.getExamType() == null) {
-			TreeSet<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			List<ExamType> types = ExamType.findAllUsedApplicable(sessionContext.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 			if (!types.isEmpty())
-				myForm.setExamType(types.first().getUniqueId());
+				myForm.setExamType(types.get(0).getUniqueId());
         }
         
         WebTable.setOrder(sessionContext, "ExamList.ord", request.getParameter("ord"), 1);
@@ -176,7 +178,7 @@ public class ExamListAction extends Action {
                         ")", 
                     true, true);
         
-        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+        LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 
         return mapping.findForward("list");
     }

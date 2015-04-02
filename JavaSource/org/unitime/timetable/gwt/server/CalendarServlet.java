@@ -58,9 +58,11 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamStatus;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
@@ -225,14 +227,17 @@ public class CalendarServlet extends HttpServlet {
                 		"where i.externalUniqueId = :externalId and i.department.session.uniqueId = :sessionId").
                 		setLong("sessionId", sessionId).setString("externalId", userId).list()) {
                 	if (!PersonalizedExamReportAction.canDisplay(instructor.getDepartment().getSession())) continue;
-                    if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamMidterm())
-                    	for (Exam exam: instructor.getExams(ExamType.sExamTypeMidterm)) {
-                    		printExam(exam, ical);
-                    	}
-                    if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamFinal())
-                    	for (Exam exam: instructor.getExams(ExamType.sExamTypeFinal)) {
-                    		printExam(exam, ical);
-                    	}
+                	for (ExamType t: ExamType.findAll(hibSession)) {
+                		ExamStatus status = ExamStatus.findStatus(hibSession, instructor.getSession().getUniqueId(), t.getUniqueId());
+                		DepartmentStatusType type = (status == null || status.getStatus() == null ? instructor.getSession().getStatusType() : status.getStatus());
+                		if (t.getType() == ExamType.sExamTypeFinal && type.canNoRoleReportExamFinal()) {
+                			for (Exam exam: instructor.getExams(t))
+                				printExam(exam, ical);
+                		} else if (t.getType() == ExamType.sExamTypeMidterm && type.canNoRoleReportExamMidterm()) {
+                			for (Exam exam: instructor.getExams(t))
+                				printExam(exam, ical);
+                		}
+                	}
                     if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
                         for (ClassInstructor ci: instructor.getClasses()) {
                             printClass(ci.getClassInstructing().getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering(), ci.getClassInstructing(), ical);
@@ -243,13 +248,16 @@ public class CalendarServlet extends HttpServlet {
                 		"s.externalUniqueId=:externalId and s.session.uniqueId = :sessionId").
                 		setLong("sessionId", sessionId).setString("externalId", userId).list()) {
                 	if (!PersonalizedExamReportAction.canDisplay(student.getSession())) continue;
-                	if (student.getSession().getStatusType().canNoRoleReportExamFinal()) {
-                		for (Exam exam: student.getExams(ExamType.sExamTypeFinal))
-                			printExam(exam, ical);
-                	}
-                	if (student.getSession().getStatusType().canNoRoleReportExamMidterm()) {
-                		for (Exam exam: student.getExams(ExamType.sExamTypeMidterm))
-                			printExam(exam, ical);
+                	for (ExamType t: ExamType.findAll(hibSession)) {
+                		ExamStatus status = ExamStatus.findStatus(hibSession, student.getSession().getUniqueId(), t.getUniqueId());
+                		DepartmentStatusType type = (status == null || status.getStatus() == null ? student.getSession().getStatusType() : status.getStatus());
+                		if (t.getType() == ExamType.sExamTypeFinal && type.canNoRoleReportExamFinal()) {
+                			for (Exam exam: student.getExams(t))
+                				printExam(exam, ical);
+                		} else if (t.getType() == ExamType.sExamTypeMidterm && type.canNoRoleReportExamMidterm()) {
+                			for (Exam exam: student.getExams(t))
+                				printExam(exam, ical);
+                		}
                 	}
                     if (student.getSession().getStatusType().canNoRoleReportClass()) {
                         for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {

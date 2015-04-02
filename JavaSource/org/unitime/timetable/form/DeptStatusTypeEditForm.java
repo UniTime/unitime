@@ -136,7 +136,9 @@ public class DeptStatusTypeEditForm extends ActionForm {
         Vector options = new Vector();
         options.add(new IdValue(new Long(DepartmentStatusType.Apply.Session.toInt()), "Session"));
         options.add(new IdValue(new Long(DepartmentStatusType.Apply.Department.toInt()), "Department"));
-        options.add(new IdValue(new Long(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt()), "Both"));
+        options.add(new IdValue(new Long(DepartmentStatusType.Apply.ExamStatus.toInt()), "Examinations"));
+        options.add(new IdValue(new Long(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt()), "Session & Department"));
+        options.add(new IdValue(new Long(DepartmentStatusType.Apply.Session.toInt() | DepartmentStatusType.Apply.Department.toInt() | DepartmentStatusType.Apply.ExamStatus.toInt()), "All"));
         return options;
     }
     public void setCanManagerView(boolean canManagerView) { iCanManagerView = canManagerView; }

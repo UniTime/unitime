@@ -268,6 +268,7 @@ public enum Right {
 	
 	Examinations(Session.class),
 
+	ExaminationView(Exam.class),
     ExaminationDetail(Exam.class),
     ExaminationEdit(Exam.class),
     ExaminationEditClearPreferences(Exam.class),
@@ -504,6 +505,9 @@ public enum Right {
 	
 	DurationTypes,
 	DurationTypeEdit,
+	
+	ExaminationStatuses,
+	ExaminationStatusEdit,
 	
 	/** Administration: Defaults */
 	

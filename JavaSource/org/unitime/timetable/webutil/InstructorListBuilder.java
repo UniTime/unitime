@@ -44,6 +44,7 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassInstructorComparator;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 
@@ -222,6 +223,7 @@ public class InstructorListBuilder {
 				String examsStr = "";
 				for (Iterator i=exams.iterator();i.hasNext();) {
 				    Exam exam = (Exam)i.next();
+				    if (!context.hasPermission(exam, Right.ExaminationView)) continue;
                     String examName = exam.getLabel();
                     if (exam.getExamType().getType()==ExamType.sExamTypeMidterm) {
                         examsStr += "<span title='"+examName+" "+MSG.titleMidtermExamination()+"'>"+examName+"</span>";

@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamReportForm;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
@@ -112,7 +113,7 @@ public class AssignedExamsAction extends Action {
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
         
-        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+        LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable);
 
         return mapping.findForward("showReport");
 	}

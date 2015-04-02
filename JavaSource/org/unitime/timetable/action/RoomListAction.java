@@ -37,7 +37,6 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -66,6 +65,7 @@ import org.unitime.timetable.form.RoomListForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.GlobalRoomFeature;
@@ -160,7 +160,7 @@ public class RoomListAction extends Action {
 		
 		//set request attribute for department
 		LookupTables.setupDepartments(request, sessionContext, true);
-		LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+		LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 
 		// Validate input
 		errors = roomListForm.validate(mapping, request);
@@ -208,7 +208,7 @@ public class RoomListAction extends Action {
 	public void lookupRooms(RoomListForm form, String op) {
 		String from = "Location l" +
 				" left join l.roomDepts rd" +
-				" left join fetch l.examTypes xt" +
+				" left join l.examTypes xt" +
 				" left join fetch l.features f" +
 				" left join fetch l.roomGroups g" +
 				" left join fetch l.roomType t";

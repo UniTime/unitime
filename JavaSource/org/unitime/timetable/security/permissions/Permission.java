@@ -21,6 +21,7 @@ package org.unitime.timetable.security.permissions;
 
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.UserContext;
 
@@ -39,5 +40,10 @@ public interface Permission<T> {
 	
 	public static interface PermissionSession extends Permission<Session> {
 		public boolean check(UserContext user, Session session, DepartmentStatusType.Status... status);
+	}
+	
+	public static interface PermissionExamination extends Permission<Session> {
+		public boolean check(UserContext user, Session session, ExamType examType, DepartmentStatusType.Status... status);
+		public boolean check(UserContext user, Department department, ExamType examType, DepartmentStatusType.Status... status);
 	}
 }

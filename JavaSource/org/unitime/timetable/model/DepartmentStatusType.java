@@ -63,7 +63,8 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	
 	public static enum Apply {
 		Session,
-		Department;
+		Department,
+		ExamStatus;
 		
 		public int toInt() { return 1 << ordinal(); }
 	}
@@ -240,6 +241,10 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 
 	public boolean applyDepartment() {
 		return apply(Apply.Department.toInt());
+	}
+	
+	public boolean applyExamStatus() {
+		return apply(Apply.ExamStatus.toInt());
 	}
 	
 	public boolean isAllowNoRole() {

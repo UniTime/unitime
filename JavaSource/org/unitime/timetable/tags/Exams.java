@@ -113,6 +113,10 @@ public class Exams extends BodyTagSupport {
             Long objectId = Long.parseLong(objectIdStr);
             
             List exams = Exam.findAllRelated(getType(),objectId);
+            for (Iterator<Exam> i = exams.iterator(); i.hasNext(); ) {
+            	if (!getSessionContext().hasPermission(i.next(), Right.ExaminationView))
+            		i.remove();
+            }
             if (exams==null || exams.isEmpty()) {
                 if (!iAdd || !getSessionContext().hasPermission(Right.ExaminationAdd)) return EVAL_PAGE;
             }

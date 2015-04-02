@@ -41,7 +41,6 @@
 
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<% if (request.getAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR)==null) { %>	
-		<html:hidden property="examType"/>
 		<TR>
 			<TD valign="middle" colspan='3'>
 				<tt:section-header>
@@ -110,6 +109,26 @@
 			</TD>
 		</TR>
 		</logic:messagesPresent>
+		
+		<TR>
+			<TD nowrap valign='top'>Type: <font class="reqField">*</font></TD>
+			<TD colspan='2' width='100%'>
+				<logic:empty name="examDistributionPrefsForm" property="distPrefId">
+					<html:select property="examType" onchange="javascript: doDel('examType', this.value); submit();">
+						<html:options collection="examTypesAdd" property="uniqueId" labelProperty="label"/>
+					</html:select>
+				</logic:empty>
+				<logic:notEmpty name="examDistributionPrefsForm" property="distPrefId">
+					<html:hidden property="examType"/>
+					<logic:iterate name="examTypes" scope="request" id="type">
+						<bean:define name="type" property="uniqueId" id="typeId" type="Long"/>
+						<logic:equal name="examDistributionPrefsForm" property="examType" value="<%=typeId.toString()%>">
+							<bean:write name="type" property="label"/>
+						</logic:equal>
+					</logic:iterate>
+				</logic:notEmpty>
+			</TD>
+		</TR>
 		
 		<TR>
 			<TD nowrap valign='top'>Distribution Type: <font class="reqField">*</font></TD>

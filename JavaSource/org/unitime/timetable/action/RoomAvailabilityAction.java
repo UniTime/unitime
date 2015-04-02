@@ -45,6 +45,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.RoomAvailabilityForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
@@ -124,7 +125,7 @@ public class RoomAvailabilityAction extends Action {
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
         
-        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+        LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 
         return mapping.findForward("showReport");
     }

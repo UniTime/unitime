@@ -43,6 +43,7 @@ public abstract class BaseEvent implements Serializable {
 	private Integer iMaxCapacity;
 	private String iEmail;
 	private Date iExpirationDate;
+	private Integer iExamStatus;
 
 	private EventContact iMainContact;
 	private SponsoringOrganization iSponsoringOrganization;
@@ -85,6 +86,9 @@ public abstract class BaseEvent implements Serializable {
 
 	public Date getExpirationDate() { return iExpirationDate; }
 	public void setExpirationDate(Date expirationDate) { iExpirationDate = expirationDate; }
+
+	public Integer getExamStatus() { return iExamStatus; }
+	public void setExamStatus(Integer examStatus) { iExamStatus = examStatus; }
 
 	public EventContact getMainContact() { return iMainContact; }
 	public void setMainContact(EventContact mainContact) { iMainContact = mainContact; }

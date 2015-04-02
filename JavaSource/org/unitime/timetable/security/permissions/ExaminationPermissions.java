@@ -25,9 +25,11 @@ import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamStatus;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -38,7 +40,7 @@ public class ExaminationPermissions {
 
 	@PermissionForRight(Right.Examinations)
 	public static class Examinations implements Permission<Session> {
-		@Autowired PermissionSession permissionSession;
+		@Autowired PermissionExamination permissionExaminationStatus;
 
 		@Override
 		public boolean check(UserContext user, Session source) {
@@ -47,9 +49,9 @@ public class ExaminationPermissions {
 			if (ExamType.findAllUsed(source.getUniqueId()).isEmpty()) return false;
 			
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
-				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
+				return permissionExaminationStatus.check(user, source, null, DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 			else
-				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamView);
+				return permissionExaminationStatus.check(user, source, null, DepartmentStatusType.Status.ExamView);
 		}
 
 		@Override
@@ -57,18 +59,45 @@ public class ExaminationPermissions {
 		
 	}
 	
+	@PermissionForRight(Right.ExaminationView)
+	public static class ExaminationView implements Permission<Exam> {
+		@Autowired PermissionExamination permissionExaminationStatus;
+
+		@Override
+		public boolean check(UserContext user, Exam source) {
+			SimpleExaminationPermission p = new SimpleExaminationPermission() {
+				@Override
+				public boolean checkManager(UserAuthority authority, ExamStatus examStatus, DepartmentStatusType.Status... status) {
+					return true;
+				}
+			};
+			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
+				return p.check(user, source.getSession(), source.getExamType(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
+			else {
+				for (ExamOwner owner: source.getOwners()) {
+					if (p.check(user, owner.getCourse().getSubjectArea().getDepartment(), source.getExamType(), DepartmentStatusType.Status.ExamView))
+						return true;
+				}
+				return false;
+			}
+		}
+
+		@Override
+		public Class<Exam> type() { return Exam.class; }
+		
+	}
+	
 	@PermissionForRight(Right.ExaminationDetail)
 	public static class ExaminationDetail implements Permission<Exam> {
-		@Autowired PermissionSession permissionSession;
-		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired PermissionExamination permissionExaminationStatus;
 
 		@Override
 		public boolean check(UserContext user, Exam source) {
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
-				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
+				return permissionExaminationStatus.check(user, source.getSession(), source.getExamType(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 			else {
 				for (ExamOwner owner: source.getOwners()) {
-					if (permissionDepartment.check(user, owner.getCourse().getSubjectArea().getDepartment(), DepartmentStatusType.Status.ExamView))
+					if (permissionExaminationStatus.check(user, owner.getCourse().getSubjectArea().getDepartment(), source.getExamType(), DepartmentStatusType.Status.ExamView))
 						return true;
 				}
 				return false;
@@ -82,16 +111,16 @@ public class ExaminationPermissions {
 	
 	@PermissionForRight(Right.ExaminationAdd)
 	public static class AddExamination implements Permission<Session> {
-		@Autowired PermissionSession permissionSession;
+		@Autowired PermissionExamination permissionExaminationStatus;
 
 		@Override
 		public boolean check(UserContext user, Session source) {
 			if (ExamType.findAllUsed(source.getUniqueId()).isEmpty()) return false;
 			
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
-				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable);
+				return permissionExaminationStatus.check(user, source, null, DepartmentStatusType.Status.ExamTimetable);
 			else
-				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamEdit);
+				return permissionExaminationStatus.check(user, source, null, DepartmentStatusType.Status.ExamEdit);
 		}
 
 		@Override
@@ -101,17 +130,15 @@ public class ExaminationPermissions {
 	
 	@PermissionForRight(Right.ExaminationEdit)
 	public static class EditExamination implements Permission<Exam> {
-		@Autowired PermissionSession permissionSession;
+		@Autowired PermissionExamination permissionExaminationStatus;
 		
-		@Autowired PermissionDepartment permissionDepartment;
-
 		@Override
 		public boolean check(UserContext user, Exam source) {
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
-				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamTimetable);
+				return permissionExaminationStatus.check(user, source.getSession(), source.getExamType(), DepartmentStatusType.Status.ExamTimetable);
 			else {
 				for (ExamOwner owner: source.getOwners()) {
-					if (permissionDepartment.check(user, owner.getCourse().getDepartment(), DepartmentStatusType.Status.ExamEdit))
+					if (permissionExaminationStatus.check(user, owner.getCourse().getDepartment(), source.getExamType(), DepartmentStatusType.Status.ExamEdit))
 						return true;
 				}
 				return false;
@@ -137,12 +164,12 @@ public class ExaminationPermissions {
 	
 	@PermissionForRight(Right.ExaminationAssignment)
 	public static class ExaminationAssignment implements Permission<Exam> {
-		@Autowired PermissionSession permissionSession;
+		@Autowired PermissionExamination permissionExaminationStatus;
 
 		@Override
 		public boolean check(UserContext user, Exam source) {
 			return user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) &&
-				 permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamTimetable);
+				 permissionExaminationStatus.check(user, source.getSession(), source.getExamType(), DepartmentStatusType.Status.ExamTimetable);
 		}
 
 		@Override
@@ -152,12 +179,11 @@ public class ExaminationPermissions {
 
 	@PermissionForRight(Right.ExaminationSchedule)
 	public static class ExaminationSchedule implements Permission<Session> {
-		
-		@Autowired PermissionSession permissionSession;
+		@Autowired PermissionExamination permissionExaminationStatus;
 
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return permissionSession.check(user, source, DepartmentStatusType.Status.ReportExamsFinal, DepartmentStatusType.Status.ReportExamsMidterm);
+			return permissionExaminationStatus.check(user, source, null, DepartmentStatusType.Status.ReportExamsFinal, DepartmentStatusType.Status.ReportExamsMidterm);
 		}
 
 		@Override

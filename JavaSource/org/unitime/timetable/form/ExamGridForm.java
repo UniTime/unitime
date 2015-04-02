@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
@@ -123,7 +124,7 @@ public class ExamGridForm extends ActionForm {
         iSessionBeginDate = session.getSessionBeginDateTime();
         iExamBeginDate = session.getExamBeginDate();
         iPeriods.clear();
-        for (ExamType type: ExamType.findAllUsed(context.getUser().getCurrentAcademicSessionId())) {
+        for (ExamType type: ExamType.findAllUsedApplicable(context.getUser(), DepartmentStatusType.Status.ExamTimetable)) {
         	iPeriods.put(type.getUniqueId().toString(), ExamPeriod.findAll(session.getUniqueId(), type.getUniqueId()));
         	setDate(type.getUniqueId().toString(), Integer.parseInt(context.getUser().getProperty("ExamGrid.date."+type.getUniqueId(), String.valueOf(Integer.MIN_VALUE))));
         	setStartTime(type.getUniqueId().toString(), Integer.parseInt(context.getUser().getProperty("ExamGrid.start."+type.getUniqueId(), String.valueOf(getFirstStart(type.getUniqueId().toString())))));
@@ -140,7 +141,7 @@ public class ExamGridForm extends ActionForm {
     }
     
     public void save(SessionContext context) throws Exception {
-    	for (ExamType type: ExamType.findAllUsed(context.getUser().getCurrentAcademicSessionId())) {
+    	for (ExamType type: ExamType.findAllUsedApplicable(context.getUser(), DepartmentStatusType.Status.ExamTimetable)) {
     		context.getUser().setProperty("ExamGrid.date."+type.getUniqueId(), String.valueOf(getDate(type.getUniqueId().toString())));
     		context.getUser().setProperty("ExamGrid.start."+type.getUniqueId(), String.valueOf(getStartTime(type.getUniqueId().toString())));
     		context.getUser().setProperty("ExamGrid.end."+type.getUniqueId(), String.valueOf(getEndTime(type.getUniqueId().toString())));

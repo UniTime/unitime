@@ -39,6 +39,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomGroupListForm;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomDept;
@@ -115,7 +116,7 @@ public class RoomGroupListAction extends Action {
 
 		//set request attribute for department
 		LookupTables.setupDepartments(request, sessionContext, true);
-		LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+		LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 		
 		// Validate input
 		errors = roomGroupListForm.validate(mapping, request);

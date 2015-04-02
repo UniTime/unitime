@@ -696,4 +696,40 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	
 	@Override
 	public Department getDepartment() { return null; }
+	
+	public boolean canNoRoleReportExamFinal() {
+		return ((Number)new ExamDAO().getSession().
+                createQuery("select count(x) from Exam x " +
+                		"where x.session.uniqueId = :sessionId and x.assignedPeriod != null and x.examType.type = :examType and " +
+                		"((x.statusType is null and bit_and(x.session.statusType.status, :flag) > 0) or bit_and(x.statusType.status, :flag) > 0)"
+                		)
+                .setLong("sessionId", getUniqueId())
+                .setInteger("examType", ExamType.sExamTypeFinal)
+                .setInteger("flag", DepartmentStatusType.Status.ReportExamsFinal.toInt())
+                .setCacheable(true).uniqueResult()).longValue() > 0;
+	}
+	
+	public boolean canNoRoleReportExamMidterm() {
+		return ((Number)new ExamDAO().getSession().
+                createQuery("select count(x) from Exam x " +
+                		"where x.session.uniqueId = :sessionId and x.assignedPeriod != null and x.examType.type = :examType and " +
+                		"((x.statusType is null and bit_and(x.session.statusType.status, :flag) > 0) or bit_and(x.statusType.status, :flag) > 0)"
+                		)
+                .setLong("sessionId", getUniqueId())
+                .setInteger("examType", ExamType.sExamTypeMidterm)
+                .setInteger("flag", DepartmentStatusType.Status.ReportExamsMidterm.toInt())
+                .setCacheable(true).uniqueResult()).longValue() > 0;
+	}
+	
+	public boolean canNoRoleReportClass() {
+		return getStatusType() != null && getStatusType().can(DepartmentStatusType.Status.ReportClasses) && Solution.hasTimetable(getUniqueId());
+	}
+	
+    public boolean canNoRoleReportExam() {
+        return canNoRoleReportExamFinal() || canNoRoleReportExamMidterm();
+    }
+
+    public boolean canNoRoleReport() {
+        return canNoRoleReportClass() || canNoRoleReportExam();
+    }
 }

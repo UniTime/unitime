@@ -478,6 +478,24 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
         }
     }
     
+    public List<Exam> getAllExams() {
+        if (getExternalUniqueId()!=null) {
+            return (new DepartmentalInstructorDAO()).getSession()
+                .createQuery("select distinct x from Exam x inner join x.instructors i where " +
+                		"(i.uniqueId=:instructorId or (i.externalUniqueId=:externalId and i.department.session.uniqueId=:sessionId))")
+                .setLong("instructorId", getUniqueId())
+                .setLong("sessionId", getDepartment().getSession().getUniqueId())
+                .setString("externalId", getExternalUniqueId())
+                .setCacheable(true).list();
+        } else {
+            return (new DepartmentalInstructorDAO()).getSession()
+            .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId")
+            .setLong("instructorId", getUniqueId())
+            .setCacheable(true).list();
+            
+        }
+    }
+    
     public Collection<Assignment> getCommitedAssignments() {
     	return new DepartmentalInstructorDAO().getSession().createQuery(
                 "select a from Assignment a inner join a.instructors i where " +

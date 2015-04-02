@@ -43,7 +43,9 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamsForm;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamStatus;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -138,8 +140,9 @@ public class ExamsAction extends Action {
         
         if (myForm.getSession()!=null && myForm.getSubjectArea()!=null && myForm.getSubjectArea().length()>0 && myForm.getExamType() != null) {
             org.unitime.timetable.model.Session session = new SessionDAO().get(myForm.getSession());
-            if ((myForm.isFinals() && session.getStatusType().canNoRoleReportExamFinal()) ||
-                (!myForm.isFinals() && session.getStatusType().canNoRoleReportExamMidterm())) {
+            ExamStatus status = ExamStatus.findStatus(myForm.getSession(), myForm.getExamType());
+            DepartmentStatusType type = (status == null || status.getStatus() == null ? session.getStatusType() : status.getStatus());
+            if (type != null && type.can(myForm.isFinals() ? DepartmentStatusType.Status.ReportExamsFinal : DepartmentStatusType.Status.ReportExamsMidterm)) {
                 List exams = null;
                 if ("--ALL--".equals(myForm.getSubjectArea())) 
                     exams = Exam.findAll(myForm.getSession(), myForm.getExamType());

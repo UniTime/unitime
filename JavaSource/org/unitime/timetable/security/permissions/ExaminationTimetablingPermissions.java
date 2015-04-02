@@ -35,11 +35,11 @@ public class ExaminationTimetablingPermissions {
 
 	@PermissionForRight(Right.ExaminationTimetabling)
 	public static class ExaminationTimetabling implements Permission<Session> {
-		@Autowired PermissionSession permissionSession;
+		@Autowired PermissionExamination permissionExaminationStatus;
 
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable) &&
+			return permissionExaminationStatus.check(user, source, null, DepartmentStatusType.Status.ExamTimetable) &&
 					(Exam.hasFinalExams(source.getUniqueId()) || Exam.hasMidtermExams(source.getUniqueId()));
 		}
 
@@ -77,7 +77,7 @@ public class ExaminationTimetablingPermissions {
 
 	@PermissionForRight(Right.ExaminationPdfReports)
 	public static class ExaminationPdfReports implements Permission<Session> {
-		@Autowired PermissionSession permissionSession;
+		@Autowired PermissionExamination permissionExaminationStatus;
 
 		@Override
 		public boolean check(UserContext user, Session source) {
@@ -85,7 +85,7 @@ public class ExaminationTimetablingPermissions {
 			
 			if (ExamType.findAllUsed(source.getUniqueId()).isEmpty()) return false;
 
-			return permissionSession.check(user, source);
+			return permissionExaminationStatus.check(user, source, null, DepartmentStatusType.Status.ExamView);
 		}
 
 		@Override

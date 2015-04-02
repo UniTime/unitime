@@ -1252,6 +1252,10 @@ public class WebInstructionalOfferingTableBuilder {
     	if (isShowExam()) {
     	    if (prefGroup instanceof Class_) {
     	        TreeSet exams = getExams((Class_)prefGroup);
+    	        for (Iterator<Exam> i = exams.iterator(); i.hasNext(); ) {
+                	if (!context.hasPermission(i.next(), Right.ExaminationView))
+                		i.remove();
+                }
     	        if (isShowExamName()) {
     	            row.addContent(this.buildExamName(exams, isEditable));
     	        }
@@ -1441,6 +1445,10 @@ public class WebInstructionalOfferingTableBuilder {
         	
             if (isShowExam()) {
                 TreeSet exams = new TreeSet(Exam.findAll(ExamOwner.sOwnerTypeConfig,ioc.getUniqueId()));
+                for (Iterator<Exam> i = exams.iterator(); i.hasNext(); ) {
+                	if (!context.hasPermission(i.next(), Right.ExaminationView))
+                		i.remove();
+                }
                 if (isShowExamName()) {
                     row.addContent(this.buildExamName(exams, isEditable));
                 }
@@ -1671,6 +1679,10 @@ public class WebInstructionalOfferingTableBuilder {
                     InstrOfferingConfig ioc = (InstrOfferingConfig)i.next();
                     exams.addAll(Exam.findAll(ExamOwner.sOwnerTypeConfig,ioc.getUniqueId()));
                 }
+            }
+            for (Iterator<Exam> i = exams.iterator(); i.hasNext(); ) {
+            	if (!context.hasPermission(i.next(), Right.ExaminationView))
+            		i.remove();
             }
             if (isShowExamName()) {
                 row.addContent(this.buildExamName(exams, isEditable));

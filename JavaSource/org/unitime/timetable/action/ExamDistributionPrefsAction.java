@@ -45,6 +45,7 @@ import org.unitime.timetable.form.DistributionPrefsForm;
 import org.unitime.timetable.form.ExamDistributionPrefsForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
@@ -95,7 +96,10 @@ public class ExamDistributionPrefsAction extends Action {
         
 		String op = frm.getOp();
 		if(op==null || op.trim().length()==0) {
-		    op = "view";
+			if (deleteType!=null && deleteType.length()>0)
+				op = "delete";
+			else
+				op = "view";
 		    frm.setOp(op);
 		}
 		
@@ -111,11 +115,13 @@ public class ExamDistributionPrefsAction extends Action {
 		// Set lookup tables lists
         //LookupTables.setupPrefLevels(request);	 // Preference Levels
         LookupTables.setupExamDistribTypes(request, sessionContext); // Distribution Types
-        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId()); // Exam Types
+        LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamView); // Exam Types
+        request.setAttribute("examTypesAdd", ExamType.findAllApplicable(sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamEdit));
 
         // Add / Update distribution pref
         if(op.equals(rsc.getMessage("button.save")) || op.equals(rsc.getMessage("button.update")) ) {
             Debug.debug("Saving distribution pref ...");
+            sessionContext.setAttribute(SessionAttribute.ExamType, frm.getExamType());
             errors = frm.validate(mapping, request);
             if(errors.size()==0) {
             	try {
@@ -138,7 +144,7 @@ public class ExamDistributionPrefsAction extends Action {
         }
         
         // Delete distribution object / pref
-        if(op.equals(rsc.getMessage("button.delete"))) {
+        if(op.equals(rsc.getMessage("button.delete")) || op.equals("delete")) {
             if(deleteType.equals("distObject")) {
                 frm.deleteExam(Integer.parseInt(deleteId));
             }
@@ -148,6 +154,9 @@ public class ExamDistributionPrefsAction extends Action {
                 frm.reset(mapping, request);            
                 if (BackTracker.doBack(request, response)) return null;
 	            op = "view"; //in case no back is available
+            }
+            if (deleteType.equals("examType")) {
+            	sessionContext.setAttribute(SessionAttribute.ExamType, frm.getExamType());
             }
         }
         
@@ -258,12 +267,14 @@ public class ExamDistributionPrefsAction extends Action {
         
         request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));
         
-        if (sessionContext.getAttribute(SessionAttribute.ExamType) != null)
-        	frm.setExamType((Long)sessionContext.getAttribute(SessionAttribute.ExamType));
         if (frm.getExamType() == null) {
-			TreeSet<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
-			if (!types.isEmpty())
-				frm.setExamType(types.first().getUniqueId());
+            if (sessionContext.getAttribute(SessionAttribute.ExamType) != null)
+            	frm.setExamType((Long)sessionContext.getAttribute(SessionAttribute.ExamType));
+            else {
+            	TreeSet<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+            	if (!types.isEmpty())
+            		frm.setExamType(types.first().getUniqueId());
+            }
         }
         
         frm.setFilterSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
@@ -286,7 +297,7 @@ public class ExamDistributionPrefsAction extends Action {
         	        frm.setFilterSubjectAreaId(Constants.ALL_OPTION_VALUE);        	        
         	}
         	
-        	if (frm.getFilterSubjectAreaId()!=null && frm.getFilterSubjectAreaId().length()>0) {
+        	if (frm.getFilterSubjectAreaId()!=null && frm.getFilterSubjectAreaId().length()>0 && !"null".equals(frm.getFilterSubjectAreaId())) {
         	    String html = tbl.getDistPrefsTable(request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId())?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
         	    if (html!=null)
         	        request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);

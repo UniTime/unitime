@@ -64,6 +64,27 @@
 		</item>
 	</category>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination Status</name>
+			<description>
+				<line>Added ability to set examination status individually for each examination type.
+					<line>This examination status, if set, overrides the academic session status (for all users).</line>
+					<line>Examination statues can be defined on the Administration > Other > Status Types page (Apply: Examinations).</line>
+					<line>Following statuses are created by default: Examination Distabled, Examination Data Entry, Examination Timetabling, and Examination Published.</line>
+					<line>Examination statuses can be set on the Administration > Academic Sessions > Examination Statuses page.</line>
+				</line>
+				<line>This allows for each examination problem to be viewed, edited, timetabled, and published at a different time.</line>
+				<line>It is also possible to attach examination managers to each examination type (for the current academic session).
+					<line>If this relation is defined, only the selected manager(s) can view, edit, or timetable the given examination problem (based on the status).</line>
+					<line>If this relation is NOT defined, all examination managers can view, edit, or timetable all examination problems.</line>
+					<line>This relation is also to be edited on the Administration > Academic Sessions > Examination Statuses page.</line>
+					<line>Only managers with a role that is academic session dependent and that allows to access the examination solver are listed.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Batch Student Scheduling</title>
 		<item>
 			<name>Minimal Perturbation Mode</name>

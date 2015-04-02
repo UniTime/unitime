@@ -46,6 +46,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
@@ -280,7 +281,7 @@ public class ExamEditAction extends PreferencesAction {
             
             setupInstructors(request, frm, exam);
             
-            LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+            LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamEdit);
             
             if (exam!=null) {
                 LookupTables.setupRooms(request, exam);      // Room Prefs

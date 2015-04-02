@@ -1083,6 +1083,11 @@
                 not-null="false"
                 length="20"/>
 
+			<many-to-one
+                name="statusType"
+                class="DepartmentStatusType"
+                lazy="proxy"
+                formula=" ( select s.status_id from %SCHEMA%.exam_status s where s.session_id = session_id and s.type_id = exam_type_id ) "/>
         </union-subclass>
     </class>
 </hibernate-mapping>

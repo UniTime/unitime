@@ -17,37 +17,12 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.model;
+package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseClassWaitList;
+import org.unitime.timetable.model.base.BaseExamStatusDAO;
 
+public class ExamStatusDAO extends BaseExamStatusDAO {
 
-
-/**
- * @author Tomas Muller
- */
-public class ClassWaitList extends BaseClassWaitList {
-    public static Integer TYPE_WAITLIST = new Integer(0);
-    public static Integer TYPE_SELECTION = new Integer(1);
-	private static final long serialVersionUID = 1L;
-
-/*[CONSTRUCTOR MARKER BEGIN]*/
-	public ClassWaitList () {
-		super();
-	}
-
-	/**
-	 * Constructor for primary key
-	 */
-	public ClassWaitList (java.lang.Long uniqueId) {
-		super(uniqueId);
-	}
-
-/*[CONSTRUCTOR MARKER END]*/
-
-	public static enum Type {
-		LOCKED,
-		LEGACY,
-	}
+	public ExamStatusDAO() {}
 
 }
