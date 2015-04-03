@@ -783,7 +783,7 @@
 					<hasPermission name="PositionTypes"/>
 				</condition>
 			</item>
-			<item name="Student Scheduling Status Types" page="admin" type="gwt">
+			<item name="Student Status Types" page="admin" type="gwt">
 				<parameter name="type">sectioning</parameter>
 				<condition>
 					<hasPermission name="StudentSchedulingStatusTypes"/>
