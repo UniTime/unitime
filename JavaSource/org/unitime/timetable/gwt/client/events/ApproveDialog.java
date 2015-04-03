@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.events;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.MeetingFilter;
@@ -37,7 +38,11 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.StandardEventNoteInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
@@ -47,6 +52,7 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.ListBox;
@@ -68,12 +74,13 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 	private UniTimeFileUpload iFileUpload;
 	private UniTimeHeaderPanel iFooter;
 	private CheckBox iEmailConfirmation;
+	private Button iStandardNotesSelection;
 	
 	public ApproveDialog(EventPropertiesProvider properties) {
 		super(true, false);
 		iTable = new EventMeetingTable(EventMeetingTable.Mode.ApprovalOfSingleEventMeetings, false, properties);
 		
-		iForm = new SimpleForm();
+		iForm = new SimpleForm(3);
 		
 		if (iTable instanceof Widget) {
 			ScrollPanel scroll = new ScrollPanel((Widget)iTable);
@@ -84,7 +91,14 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		iStandardNotes = new ListBox();
 		iStandardNotes.setVisibleItemCount(4);
 		iStandardNotes.setWidth("480px");
-		iForm.addRow(MESSAGES.propStandardNotes(), iStandardNotes);
+		iStandardNotesSelection = new Button(MESSAGES.buttonSelect());
+		ToolBox.setWhiteSpace(iStandardNotesSelection.getElement().getStyle(), "nowrap");
+		Character accessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonSelect());
+		if (accessKey != null)
+			iStandardNotesSelection.setAccessKey(accessKey);
+		iStandardNotesSelection.setEnabled(false);
+		int row = iForm.addRow(MESSAGES.propStandardNotes(), iStandardNotes, 1);
+		iForm.setWidget(row, 2, iStandardNotesSelection);
 		iStandardNotes.addDoubleClickHandler(new DoubleClickHandler() {
 			@Override
 			public void onDoubleClick(DoubleClickEvent event) {
@@ -108,6 +122,30 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 					event.preventDefault();
 					event.stopPropagation();
 				}
+			}
+		});
+		iStandardNotes.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iStandardNotesSelection.setEnabled(iStandardNotes.getSelectedIndex() >= 0);
+			}
+		});
+		iStandardNotesSelection.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iStandardNotes.getSelectedIndex() >= 0) {
+					String text = iNotes.getText();
+					if (!text.isEmpty() && !text.endsWith("\n"))
+						text += "\n";
+					text += iStandardNotes.getValue(iStandardNotes.getSelectedIndex());
+					iNotes.setText(text);
+				}
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						iNotes.setFocus(true);							
+					}
+				});
 			}
 		});
 		

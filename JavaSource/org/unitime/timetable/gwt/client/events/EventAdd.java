@@ -623,9 +623,51 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		});
 		UniTimeWidget<ListBox> standardNotesWithHint = new UniTimeWidget<ListBox>(iStandardNotes);
 		standardNotesWithHint.setHint(MESSAGES.hintStandardNoteDoubleClickToSelect());
+		SimpleForm standardNotesForm = new SimpleForm();
+		standardNotesForm.addRow(standardNotesWithHint);
+		final UniTimeHeaderPanel standardNotesFooter = new UniTimeHeaderPanel();
+		standardNotesForm.addRow(standardNotesFooter);
 		iStandardNotesBox = new UniTimeDialogBox(true, false);
 		iStandardNotesBox.setText(MESSAGES.dialogStandardNotes());
-		iStandardNotesBox.setWidget(standardNotesWithHint);
+		iStandardNotesBox.setWidget(standardNotesForm);
+		standardNotesFooter.addButton("select", MESSAGES.buttonSelect(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iStandardNotes.getSelectedIndex() >= 0) {
+					String text = iNotes.getText();
+					if (!text.isEmpty() && !text.endsWith("\n"))
+						text += "\n";
+					text += iStandardNotes.getValue(iStandardNotes.getSelectedIndex());
+					iNotes.setText(text);
+				}
+				iStandardNotesBox.hide();
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						iNotes.setFocus(true);							
+					}
+				});
+			}
+		});
+		standardNotesFooter.addButton("cancel", MESSAGES.buttonCancel(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iStandardNotesBox.hide();
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						iNotes.setFocus(true);							
+					}
+				});				
+			}
+		});
+		standardNotesFooter.setEnabled("select", false);
+		iStandardNotes.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				standardNotesFooter.setEnabled("select", iStandardNotes.getSelectedIndex() >= 0);
+			}
+		});
 		
 		iNotes = new TextArea();
 		iNotes.setStyleName("unitime-TextArea");
