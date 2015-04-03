@@ -108,6 +108,13 @@
 				<line>Added ability to import XML with one ore more scripts.</line>
 			</description>
 		</item>
+		<item>
+			<name>Events: Standard Notes</name>
+			<description>
+				<line>Added Select button when selecting a standard note (both Standard Notes dialog and Approval dialog).</line>
+				<line>This fixes the issue of not being able to select a standard note on a mobile device (due to the inability to double click).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>CPSolver updated to version 1.3.52 (was 1.3.47)</title>
