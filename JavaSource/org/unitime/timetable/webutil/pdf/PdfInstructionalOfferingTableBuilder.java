@@ -1197,7 +1197,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     protected void pdfBuildClassRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, CourseOffering co, Class_ aClass, String indentSpaces, SessionContext context, String prevLabel){
         boolean isEditable = context.hasPermission(aClass, Right.ClassDetail);
         iBgColor = sBgColorClass;
-        pdfBuildClassOrSubpartRow(classAssignment, examAssignment, co, aClass, indentSpaces, isEditable, prevLabel, context);
+        pdfBuildClassOrSubpartRow(classAssignment, examAssignment, co, aClass, indentSpaces, isEditable && !aClass.isCancelled(), prevLabel, context);
     }
     
     private void pdfBuildClassRows(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, CourseOffering co, Class_ aClass, String indentSpaces, SessionContext context, String prevLabel){

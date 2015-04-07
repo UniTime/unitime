@@ -327,6 +327,9 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	        if (!form.getShowCrossListedClasses()) {
 	        	query.append(" and co.isControl = true ");
 	        }
+	        if (!form.getIncludeCancelledClasses()) {
+	        	query.append(" and c.cancelled = false");
+	        }
 			Query q = hibSession.createQuery(query.toString());
 			q.setFetchSize(1000);
 			q.setCacheable(true);

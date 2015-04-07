@@ -367,7 +367,12 @@
 						<TD align="center" valign="bottom" rowSpan="1" class='WebTableHeaderSecondRow'><loc:message name="columnAssignedRoom"/></TD>
 					</TR>					
 					<logic:iterate name="<%=frmName%>" property="classIds" id="c" indexId="ctr">
-						<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
+						<logic:equal name="<%=frmName%>" property='<%= "isCancelled[" + ctr + "]" %>' value="true" >
+							<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';" style="color: gray;">
+						</logic:equal>
+						<logic:notEqual name="<%=frmName%>" property='<%= "isCancelled[" + ctr + "]" %>' value="true" >
+							<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
+						</logic:notEqual>
 							<TD nowrap valign="top">
 								<logic:equal name="<%=frmName%>" property='<%= "classHasErrors[" + ctr + "]" %>' value="true" >
 									<IMG src="images/cancel.png">
@@ -392,6 +397,9 @@
 								<html:hidden property='<%= "classHasErrors[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "classLabels[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "classLabelIndents[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "canDelete[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "canCancel[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "isCancelled[" + ctr + "]" %>'/>
 								<%=frm.getClassLabelIndents().get(ctr.intValue()).toString()%>
 								<bean:write name="<%=frmName%>" property='<%= "classLabels[" + ctr + "]" %>'/> 
 								&nbsp;
@@ -435,21 +443,52 @@
 							</TD>
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
-									<IMG border="0" src="images/action_delete.png" align='absmiddle' title="<%=MSG.titleRemoveClassFromIO()%>"
-										onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
-										onclick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
+									<logic:equal name="<%=frmName%>" property='<%= "canDelete[" + ctr + "]" %>' value="true" >
+										<IMG border="0" src="images/action_delete.png" align='absmiddle' title="<%=MSG.titleRemoveClassFromIO()%>"
+											onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+											onclick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
+									</logic:equal>
 								</logic:equal>
 							</TD>
 							<TD align="center" valign="top" nowrap>
-								<IMG border="0" src="images/action_add.png" align='absmiddle' title="<%=MSG.titleAddClassToIO()%>"
-									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
-									onclick="document.forms[0].elements['hdnOp'].value='add';document.forms[0].elements['addTemplateClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
+								<logic:notEqual name="<%=frmName%>" property='<%= "isCancelled[" + ctr + "]" %>' value="true" >
+									<IMG border="0" src="images/action_add.png" align='absmiddle' title="<%=MSG.titleAddClassToIO()%>"
+										onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+										onclick="document.forms[0].elements['hdnOp'].value='add';document.forms[0].elements['addTemplateClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
+								</logic:notEqual>
 							</TD>
-							<TD>&nbsp;</TD>
+							<TD align="center" valign="top" nowrap>
+								<logic:equal name="<%=frmName%>" property='<%= "canCancel[" + ctr + "]" %>' value="true" >
+									<logic:equal name="<%=frmName%>" property='<%= "isCancelled[" + ctr + "]" %>' value="true" >
+										<IMG border="0" src="images/reopen.png" align='absmiddle' title="<%=MSG.titleReopenClass()%>"
+											onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+											onclick="document.forms[0].elements['hdnOp'].value='reopen';document.forms[0].elements['deletedClassId'].value='<%=c.toString()%>';document.forms[0].submit();">											
+									</logic:equal>
+									<logic:notEqual name="<%=frmName%>" property='<%= "isCancelled[" + ctr + "]" %>' value="true" >
+										<IMG border="0" src="images/cancel.png" align='absmiddle' title="<%=MSG.titleCancelClass()%>"
+											onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+											onclick="document.forms[0].elements['hdnOp'].value='cancel';document.forms[0].elements['deletedClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
+									</logic:notEqual>
+								</logic:equal>
+							</TD>
 							<logic:equal name="<%=frmName%>" property="displayEnrollment" value="true" >
 								<TD align="right" valign="top" nowrap><bean:write name="<%=frmName%>" property='<%= "enrollments[" + ctr + "]" %>'/></TD>
 								<TD>&nbsp;</TD>
 							</logic:equal>
+							<logic:equal name="<%=frmName%>" property='<%= "isCancelled[" + ctr + "]" %>' value="true" >
+								<html:hidden property='<%= "minClassLimits[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "maxClassLimits[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "roomRatios[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "numberOfRooms[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "departments[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "datePatterns[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "displayInstructors[" + ctr + "]" %>'/>
+								<html:hidden property='<%= "enabledForStudentScheduling[" + ctr + "]" %>'/>
+								<TD colspan="8" style="font-style: italic;">
+									<loc:message name="classNoteCancelled"><bean:write name="<%=frmName%>" property='<%= "classLabels[" + ctr + "]" %>'/></loc:message>
+								</TD>
+							</logic:equal>
+							<logic:notEqual name="<%=frmName%>" property='<%= "isCancelled[" + ctr + "]" %>' value="true" >
 							<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
 								<html:hidden property='<%= "minClassLimits[" + ctr + "]" %>'/>
 								<html:hidden property='<%= "maxClassLimits[" + ctr + "]" %>'/>
@@ -575,6 +614,7 @@
 									<html:hidden property='<%= "enabledForStudentScheduling[" + ctr + "]" %>'/>
 								</logic:equal>
 							</TD>
+							</logic:notEqual>
 							<TD align="left" valign="top" nowrap>
 								<%=frm.getTimes().get(ctr)%>&nbsp;&nbsp;
 								<html:hidden property='<%= "times[" + ctr + "]" %>'/>

@@ -134,6 +134,8 @@ public enum Right {
 	ClassDetail(Class_.class),
 	ClassEdit(Class_.class),
 	ClassEditClearPreferences(Class_.class),
+	ClassDelete(Class_.class),
+	ClassCancel(Class_.class),
 	
     ExtendedDatePatterns,
     ExtendedTimePatterns,

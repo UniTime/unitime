@@ -1506,6 +1506,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Back to Instructors (Alt+{0})")
 	String titleBackToInstructors(String accessKey);
 	
+	@DefaultMessage("Cancel this class.")
+	String titleCancelClass();
+	
+	@DefaultMessage("Reopen this class.")
+	String titleReopenClass();
+	
 	@DefaultMessage("Course numbers can be specified using wildcard (*). E.g. 2*")
 	String tooltipCourseNumber();
 	
@@ -2081,4 +2087,10 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Class Duration:")
 	String propertyClassDurationType();
+	
+	@DefaultMessage("Class {0} is cancelled.")
+	String classNoteCancelled(String name);
+	
+	@DefaultMessage("Class {0} is reopened.")
+	String classNoteReopened(String name);
 }

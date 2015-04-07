@@ -52,6 +52,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	private Long iUniqueIdRolledForwardFrom;
 	private String iExternalUniqueId;
 	private Integer iEnrollment;
+	private Boolean iCancelled;
 
 	private Department iControllingDept;
 	private Department iManagingDept;
@@ -76,6 +77,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public static String PROP_ROOM_RATIO = "roomRatio";
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
+	public static String PROP_CANCELLED = "cancelled";
 
 	public BaseClass_() {
 		initialize();
@@ -128,6 +130,10 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 
 	public Integer getEnrollment() { return iEnrollment; }
 	public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
+
+	public Boolean isCancelled() { return iCancelled; }
+	public Boolean getCancelled() { return iCancelled; }
+	public void setCancelled(Boolean cancelled) { iCancelled = cancelled; }
 
 	public Department getControllingDept() { return iControllingDept; }
 	public void setControllingDept(Department controllingDept) { iControllingDept = controllingDept; }
@@ -192,6 +198,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 
 	public String toDebugString() {
 		return "Class_[" +
+			"\n	Cancelled: " + getCancelled() +
 			"\n	ClassSuffix: " + getClassSuffix() +
 			"\n	DatePattern: " + getDatePattern() +
 			"\n	DisplayInstructor: " + getDisplayInstructor() +

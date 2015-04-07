@@ -565,6 +565,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private Lecture loadClass(Class_ clazz, org.hibernate.Session hibSession) {
+    	if (clazz.isCancelled()) {
+    		iProgress.message(msglevel("cancelledClass", Progress.MSGLEVEL_WARN), "Class "+getClassLabel(clazz)+" is cancelled (class not loaded).");
+    		return null;
+    	}
+    	
     	List<TimeLocation> timeLocations = new ArrayList<TimeLocation>();
     	List<RoomLocation> roomLocations = new ArrayList<RoomLocation>();
     	

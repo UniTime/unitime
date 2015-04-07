@@ -1072,6 +1072,7 @@ public class Class_ extends BaseClass_ {
 		newClass.setRoomRatio(getRoomRatio());
 		newClass.setSchedulePrintNote(getSchedulePrintNote());
 		newClass.setSchedulingSubpart(getSchedulingSubpart());
+		newClass.setCancelled(isCancelled());
 		return(newClass);
 	}
 	
@@ -1140,6 +1141,42 @@ public class Class_ extends BaseClass_ {
     }
     public ClassEvent getCachedEvent() {
     	return iEvent;
+    }
+    
+    public void cancelEvent(UserContext user, org.hibernate.Session hibSession, boolean cancelled) {
+        ClassEvent event = getEvent();
+        if (event != null) {
+    		Calendar cal = Calendar.getInstance(Locale.US);
+    		cal.set(Calendar.HOUR_OF_DAY, 0);
+    		cal.set(Calendar.MINUTE, 0);
+    		cal.set(Calendar.SECOND, 0);
+    		cal.set(Calendar.MILLISECOND, 0);
+    		Date today = cal.getTime();
+
+        	for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); ) {
+        		Meeting meeting = i.next();
+        		if (meeting.getMeetingDate().before(today) && !ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue())
+        			continue;
+        		meeting.setStatus(cancelled ? Meeting.Status.CANCELLED : Meeting.Status.APPROVED);
+        		hibSession.saveOrUpdate(meeting);
+        	}
+        	
+			if (event.getNotes() == null)
+				event.setNotes(new HashSet<EventNote>());
+			EventNote note = new EventNote();
+			note.setEvent(event);
+			note.setNoteType(cancelled ? EventNote.sEventNoteTypeCancel : EventNote.sEventNoteTypeApproval);
+			note.setTimeStamp(new Date());
+			note.setUser(user.getName());
+			note.setUserId(user.getExternalUserId());
+			note.setTextNote(cancelled ? MSG.classNoteCancelled(getClassLabel(hibSession)) : MSG.classNoteReopened(getClassLabel(hibSession)));
+			if (getCommittedAssignment() == null)
+				note.setMeetings(MSG.classMeetingsNotApplicable());
+			else
+				note.setMeetings(getCommittedAssignment().getPlacement().getLongName(CONSTANTS.useAmPm()));
+			event.getNotes().add(note);
+    		hibSession.saveOrUpdate(event);
+        }
     }
     
     public String unassignCommited(UserContext user, org.hibernate.Session hibSession) {

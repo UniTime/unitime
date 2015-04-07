@@ -746,6 +746,7 @@ public class ImportPreferences {
 			if (clazz==null) {
 				clazz = new Class_();
 				clazz.setSchedulingSubpart(subpart);
+				clazz.setCancelled(false);
 				if (x.attributeValue("manager")!=null) {
 					clazz.setManagingDept(getDepartment(x.attributeValue("manager")));
 				}

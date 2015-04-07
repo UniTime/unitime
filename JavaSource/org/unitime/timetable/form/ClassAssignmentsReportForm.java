@@ -413,4 +413,8 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	public void setShowCrossListedClasses(boolean showCrossListedClasses) {
 		this.showCrossListedClasses = showCrossListedClasses;
 	}
+	@Override
+	public boolean getIncludeCancelledClasses() {
+		return false;
+	}
 }

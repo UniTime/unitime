@@ -540,5 +540,8 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	public void setShowCrossListedClasses(boolean showCrossListedClasses) {
 		this.showCrossListedClasses = showCrossListedClasses;
 	}
-
+	@Override
+	public boolean getIncludeCancelledClasses() {
+		return true;
+	}
 }

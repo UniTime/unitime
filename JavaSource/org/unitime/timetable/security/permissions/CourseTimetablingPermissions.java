@@ -185,6 +185,9 @@ public class CourseTimetablingPermissions {
 		
 		@Override
 		public boolean check(UserContext user, Class_ source) {
+			// cancelled classes cannot be assigned
+			if (source.isCancelled()) return false;
+
 			// Must have a committed solution (not the class per se, but the managing department)
 			if (source.getManagingDept() == null || source.getManagingDept().getSolverGroup() == null || source.getManagingDept().getSolverGroup().getCommittedSolution() == null)
 				return false;

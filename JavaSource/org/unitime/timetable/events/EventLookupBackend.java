@@ -1703,30 +1703,30 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					case SUBJECT:
 					case COURSE:
 						arrageHourClasses = hibSession.createQuery(
-								"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where c.committedAssignment is null and " +
+								"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where c.committedAssignment is null and c.cancelled = false and " +
 								(request.getResourceType() == ResourceType.SUBJECT ? "co.subjectArea.uniqueId = :resourceId" : "co.uniqueId = :resourceId")).setLong("resourceId", request.getResourceId())
 								.setCacheable(true).list();
 						break;
 					case DEPARTMENT:
 						arrageHourClasses = hibSession.createQuery(
-								"select c from Class_ c inner join c.managingDept d where c.committedAssignment is null and d.uniqueId = :resourceId").setLong("resourceId", request.getResourceId())
+								"select c from Class_ c inner join c.managingDept d where c.committedAssignment is null and c.cancelled = false and d.uniqueId = :resourceId").setLong("resourceId", request.getResourceId())
 								.setCacheable(true).list();
 						break;
 					case CURRICULUM:
 						arrageHourClasses = hibSession.createQuery(
 								"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, CurriculumCourse cc " +
-								"where c.committedAssignment is null and co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId)")
+								"where c.committedAssignment is null and c.cancelled = false and co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId)")
 								.setLong("resourceId", request.getResourceId())
 								.setCacheable(true).list();
 						break;
 					case PERSON:
 						arrageHourClasses = hibSession.createQuery(
-								"select c from StudentClassEnrollment e inner join e.clazz c where c.committedAssignment is null and e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
+								"select c from StudentClassEnrollment e inner join e.clazz c where c.committedAssignment is null and c.cancelled = false and e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
 								.setString("externalId", request.getResourceExternalId()).setLong("sessionId", request.getSessionId())
 								.setCacheable(true).list();
 						
 						arrageHourClasses.addAll(
-								hibSession.createQuery("select c from ClassInstructor ci inner join ci.classInstructing c where c.committedAssignment is null and ci.instructor.department.session.uniqueId = :sessionId and  ci.instructor.externalUniqueId = :externalId")
+								hibSession.createQuery("select c from ClassInstructor ci inner join ci.classInstructing c where c.committedAssignment is null and c.cancelled = false and ci.instructor.department.session.uniqueId = :sessionId and  ci.instructor.externalUniqueId = :externalId")
 								.setString("externalId", request.getResourceExternalId()).setLong("sessionId", request.getSessionId())
 								.setCacheable(true).list());
 

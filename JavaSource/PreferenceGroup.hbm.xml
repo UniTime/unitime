@@ -390,6 +390,12 @@
             	lazy="true"
             	formula="(select /*+ RULE */ count(e.student_id) from %SCHEMA%.student_class_enrl e where e.class_id = uniqueid)"/>
 
+            <property
+                name="cancelled"
+                type="java.lang.Boolean"
+                column="cancelled"
+                not-null="true"/>
+
         </union-subclass>
 
         <union-subclass

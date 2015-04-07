@@ -833,7 +833,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 	    	    		"ClassEvent e inner join e.meetings m where " +
 	            		"m.locationPermanentId in ("+permIds+") and " +
 	            		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
-	            		"m.meetingDate in ("+datesStr+")") // and date
+	            		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1") // and date
 	            .setInteger("startSlot", startSlot)
 	            .setInteger("endSlot", startSlot + length);
 	    	for (int i=0; i<dates.size(); i++) {

@@ -10073,4 +10073,18 @@
 		<mysql>alter table %SCHEMA%.exam_type add events int(1) default 1</mysql>
 		<sql>update %SCHEMA%.exam_type set events = 0 where xtype = 1</sql>
 	</update>
+	<update version="146" date="7-Apr-2015" comment="Cancelled Classes">
+		<plsql>alter table %SCHEMA%.class_ add cancelled number(1) default 0</plsql>
+		<mysql>alter table %SCHEMA%.class_ add cancelled int(1) default 0</mysql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'ClassDelete'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('ClassEdit', 'MultipleClassSetupClass')
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'ClassCancel'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('ClassEdit', 'MultipleClassSetupClass')
+		</sql>
+	</update>
 </dbupdate>

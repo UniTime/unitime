@@ -170,6 +170,7 @@ public class ClassInfoModel implements Serializable {
 	            if (assignment.getRooms()!=null) for (ClassRoomInfo room : assignment.getRooms()) {
 	            	if (!room.isIgnoreRoomChecks()){
 		            	for (Assignment a : room.getLocation().getCommitedAssignments()) {
+		            		if (a.getClazz().isCancelled()) continue;
 		            		if (assignment.getTime().overlaps(new ClassTimeInfo(a))) {
 		            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
 		            				iChange.getConflicts().add(new ClassAssignment(a));
@@ -186,7 +187,7 @@ public class ClassInfoModel implements Serializable {
 		            	for (ClassInstructor ci : di.getClasses()) {
 		            		if (ci.equals(instructor.getInstructor())) continue;
 		            		Assignment a = ci.getClassInstructing().getCommittedAssignment();
-		            		if (a == null) continue;
+		            		if (a == null || a.getClazz().isCancelled()) continue;
 		            		if (assignment.getTime() != null && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
 		            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
 		            				iChange.getConflicts().add(new ClassAssignment(a));
@@ -223,7 +224,7 @@ public class ClassInfoModel implements Serializable {
             while (parent!=null) {
             	if (iChange.getCurrent(parent.getUniqueId())==null && iChange.getConflict(parent.getUniqueId())==null) {
             		Assignment a = parent.getCommittedAssignment();
-            		if (a!=null && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
+            		if (a!=null && !a.getClazz().isCancelled() && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
             			iChange.getConflicts().add(new ClassAssignment(a));
             		}
             	}
@@ -242,7 +243,7 @@ public class ClassInfoModel implements Serializable {
             while ((child=children.poll())!=null) {
             	if (iChange.getCurrent(child.getUniqueId())==null && iChange.getConflict(child.getUniqueId())==null) {
             		Assignment a = child.getCommittedAssignment();
-            		if (a!=null && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
+            		if (a!=null && !a.getClazz().isCancelled() && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
             			iChange.getConflicts().add(new ClassAssignment(a));
             		}
             	}
@@ -256,7 +257,7 @@ public class ClassInfoModel implements Serializable {
             		child = (Class_)ss.getClasses().iterator().next();
                 	if (iChange.getCurrent(child.getUniqueId())==null && iChange.getConflict(child.getUniqueId())==null) {
                 		Assignment a = child.getCommittedAssignment();
-                		if (a!=null && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
+                		if (a!=null && !a.getClazz().isCancelled() && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
                 			iChange.getConflicts().add(new ClassAssignment(a));
                 		}
                 	}

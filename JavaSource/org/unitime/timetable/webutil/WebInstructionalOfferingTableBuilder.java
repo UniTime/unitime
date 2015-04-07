@@ -1325,8 +1325,12 @@ public class WebInstructionalOfferingTableBuilder {
         if (isEditable) {
             	row.setOnClick("document.location='classDetail.do?cid=" + aClass.getUniqueId().toString() + "&sec=" + aClass.getSectionNumberString() + "'");
         }
+        if (aClass.isCancelled()) {
+        	row.setStyle("color: gray; font-style: italic;");
+        	row.setTitle(MSG.classNoteCancelled(aClass.getClassLabel(co)));
+        }
         
-        this.buildClassOrSubpartRow(classAssignment, examAssignment, row, co, aClass, indentSpaces, isEditable, prevLabel, context);
+        this.buildClassOrSubpartRow(classAssignment, examAssignment, row, co, aClass, indentSpaces, isEditable && !aClass.isCancelled(), prevLabel, context);
         table.addContent(row);
     }
     

@@ -1734,6 +1734,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         	        c.setPreferences(new HashSet());
         	        if (md>0)
         	            c.setManagingDept(new DepartmentDAO().get(new Long(md)));
+        	        c.setCancelled(false);
         	        subpart.addToclasses(c);
                 }
 

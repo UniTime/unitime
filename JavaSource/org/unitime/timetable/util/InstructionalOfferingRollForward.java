@@ -288,6 +288,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toClass.setSchedulePrintNote(fromClass.getSchedulePrintNote());
 		toClass.setSchedulingSubpart(toSubpart);
 		toClass.setUniqueIdRolledForwardFrom(fromClass.getUniqueId());
+		toClass.setCancelled(fromClass.isCancelled());
 		toSubpart.addToclasses(toClass);
 		if (fromClass.getManagingDept() != null && !fromClass.getManagingDept().equals(fromClass.getControllingDept())){
 			toClass.setManagingDept(Department.findByDeptCode(fromClass.getManagingDept().getDeptCode(), toSession.getUniqueId()));

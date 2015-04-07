@@ -108,6 +108,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private List rooms;
 	private List instructors;	
 	private List externalIds;
+	private List canDelete;
+	private List canCancel;
+	private List isCancelled;
 	
 	private List classHasErrors;
 	private Long addTemplateClassId;
@@ -139,6 +142,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private static String ROOMS_TOKEN = "rooms";
 	private static String INSTRUCTORS_TOKEN = "instructors";
 	private static String EXTERNAL_IDS_TOKEN = "externalIds";
+	private static String CAN_DELETE_TOKEN = "canDelete";
+	private static String CAN_CANCEL_TOKEN = "canCancel";
+	private static String IS_CANCELLED_TOKEN = "isCancelled";
 	
 
     // --------------------------------------------------------- Classes
@@ -508,6 +514,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	rooms = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	instructors = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	externalIds = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	canDelete = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	canCancel = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	isCancelled = DynamicList.getInstance(new ArrayList(), factoryClasses);
 }
     
 //    private int numberOfClassesOfSubpartWithParentClassId(String parentClassId, String classSubpartId){
@@ -866,6 +875,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		Iterator it19 = this.rooms.listIterator();
 		Iterator it20 = this.instructors.listIterator();
 		Iterator it21 = this.externalIds.listIterator();
+		Iterator it22 = this.canDelete.listIterator();
+		Iterator it23 = this.canCancel.listIterator();
+		Iterator it24 = this.isCancelled.listIterator();
 		boolean canRemoveFromDisplayInstructors;
 		boolean canRemoveFromEnableForStudentScheduling;
 		boolean canRemoveFromEnrollment;
@@ -907,6 +919,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 			it19.next();
 			it20.next();
 			it21.next();
+			it22.next();
+			it23.next();
+			it24.next();
 			if (cls1.equals(classId)){				
 				it1.remove();
 				it2.remove();
@@ -933,6 +948,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 				it19.remove();
 				it20.remove();
 				it21.remove();
+				it22.remove();
+				it23.remove();
+				it24.remove();
 			} else if (pCls1.equals(classId)){
 				classesToDel.add(cls1);
 			}
@@ -944,7 +962,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		}
 	}
 	    
-	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy, String nameFormat){
+	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy, String nameFormat, boolean canDelete, boolean canCancel){
 		this.classLabels.add(cls.htmlLabel());
 		this.classLabelIndents.add(indent);
 		this.classIds.add(cls.getUniqueId().toString());
@@ -1010,6 +1028,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.rooms.add(cls.buildAssignedRoomHtml(proxy));
 		this.instructors.add(cls.buildInstructorHtml(nameFormat));
 		this.externalIds.add(cls.getClassSuffix() == null?"":cls.getClassSuffix());
+		this.canDelete.add(canDelete ? "true" : "false");
+		this.canCancel.add(canCancel ? "true" : "false");
+		this.isCancelled.add(cls.isCancelled().toString());
 	}
 	
 	private int indexOfLastChildClass(String classId){
@@ -1058,6 +1079,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		hm.put(ROOMS_TOKEN, this.getRooms());
 		hm.put(INSTRUCTORS_TOKEN, this.getInstructors());
 		hm.put(EXTERNAL_IDS_TOKEN, this.getExternalIds());
+		hm.put(CAN_DELETE_TOKEN, this.getCanDelete());
+		hm.put(CAN_CANCEL_TOKEN, this.getCanCancel());
+		hm.put(IS_CANCELLED_TOKEN, this.getIsCancelled());
 		
 		return(hm);
 	}
@@ -1101,6 +1125,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.getRooms().add((String) getObjectFromListMapAtIndex(originalClassesMap, ROOMS_TOKEN, classIndex));
 		this.getInstructors().add((String) getObjectFromListMapAtIndex(originalClassesMap, INSTRUCTORS_TOKEN, classIndex));
 		this.getExternalIds().add((String) getObjectFromListMapAtIndex(originalClassesMap, EXTERNAL_IDS_TOKEN, classIndex));
+		this.getCanDelete().add((String) getObjectFromListMapAtIndex(originalClassesMap, CAN_DELETE_TOKEN, classIndex));
+		this.getCanCancel().add((String) getObjectFromListMapAtIndex(originalClassesMap, CAN_CANCEL_TOKEN, classIndex));
+		this.getIsCancelled().add((String) getObjectFromListMapAtIndex(originalClassesMap, IS_CANCELLED_TOKEN, classIndex));
 	}
 	
 	public void addNewClassesBasedOnTemplate(String clsId){
@@ -1263,6 +1290,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		for(Iterator it = childClasses.iterator(); it.hasNext();){
 			addNewClassesBasedOnTemplate(it.next().toString(), nextTmpClassId(null).toString(), tmpClassId);
 		}
+		this.canDelete.add("true");
+		this.canCancel.add("false");
+		this.isCancelled.add("false");
 	}
 	
 	private Long nextTmpClassId(List origClassIds){
@@ -1577,5 +1607,40 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	public void setExternalIds(List externalIds) {
 		this.externalIds = externalIds;
 	}
-
+	
+	public List getCanDelete() { return canDelete; }
+	public void setCanDelete(List canDelete) { this.canDelete = canDelete; }
+	public List getCanCancel() { return canCancel; }
+	public void setCanCancel(List canCancel) { this.canCancel = canCancel; }
+	public List getIsCancelled() { return isCancelled; }
+	public void setIsCancelled(List isCancelled) { this.isCancelled = isCancelled; }
+	public void setCancelled(String classId, boolean cancelled) {
+		if (classId == null || classId.isEmpty()) return;
+		if (cancelled && Long.valueOf(classId) < 0) {
+			removeFromClasses(classId);
+			return;
+		}
+		for (int i = 0; i < classIds.size(); i++) {
+    		if (classId.equals(classIds.get(i))) {
+    			boolean wasCancelled = "true".equals(isCancelled.get(i));
+    			isCancelled.set(i, cancelled ? "true" : "false");
+    			if (wasCancelled && !cancelled) setCancelled((String)parentClassIds.get(i), false);
+    			if (!wasCancelled && cancelled) {
+    				boolean allCancelled = true;
+    				for (int j = 0; j < subpartIds.size(); j++) {
+    					if (i != j && subpartIds.get(i).equals(subpartIds.get(j)) && parentClassIds.get(i).equals(parentClassIds.get(j)) && !"true".equals(isCancelled.get(j))) {
+    						allCancelled = false; break;
+    					}
+    				}
+    				if (allCancelled)
+    					setCancelled((String)parentClassIds.get(i), true);
+    			}
+    		}
+    	}
+		for (int i = 0; i < parentClassIds.size(); i++) {
+    		if (classId.equals(parentClassIds.get(i))) {
+    			setCancelled((String)classIds.get(i), cancelled);
+    		}
+    	}
+	}
 }

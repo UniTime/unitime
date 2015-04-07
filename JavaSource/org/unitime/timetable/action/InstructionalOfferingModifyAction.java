@@ -197,6 +197,14 @@ public class InstructionalOfferingModifyAction extends Action {
             if(deletedClass!=null && deletedClass.trim().length()>0)
                 frm.removeFromClasses(deletedClass);
         }
+        
+        if ("cancel".equals(op)) {
+            frm.setCancelled(request.getParameter("deletedClassId"), true);
+        }
+
+        if ("reopen".equals(op)) {
+        	frm.setCancelled(request.getParameter("deletedClassId"), false);
+        }
 
         if (op.equalsIgnoreCase("multipleLimits")){
         	frm.setDisplayMaxLimit(new Boolean(!frm.getDisplayMaxLimit().booleanValue()));
@@ -320,7 +328,9 @@ public class InstructionalOfferingModifyAction extends Action {
 	    			readOnlyClass = new Boolean(!sessionContext.hasPermission(cls, Right.MultipleClassSetupClass));
 	    		}
 	    		if (readOnlyClass) frm.setInstrOffrConfigUnlimitedReadOnly(true);
-				frm.addToClasses(cls, readOnlyClass, indent, proxy, UserProperty.NameFormat.get(sessionContext.getUser()));
+				frm.addToClasses(cls, readOnlyClass && !cls.isCancelled(), indent, proxy, UserProperty.NameFormat.get(sessionContext.getUser()),
+						!readOnlyClass && sessionContext.hasPermission(cls, Right.ClassDelete),
+						sessionContext.hasPermission(cls, Right.ClassCancel));
 	    		loadClasses(frm, cls.getChildClasses(), new Boolean(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", proxy);
 	    	}
     	}
@@ -715,6 +725,7 @@ public class InstructionalOfferingModifyAction extends Action {
 				newClass.setDisplayInstructor(displayInstructor);
 				newClass.setEnabledForStudentScheduling(enabledForStudentScheduling);
 				newClass.setClassSuffix(suffix);
+				newClass.setCancelled(false);
 
 				hibSession.save(newClass);
 				hibSession.save(ss);
@@ -742,6 +753,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		Iterator it9 = frm.getEnabledForStudentScheduling().listIterator();
 		Iterator it10 = frm.getParentClassIds().listIterator();
 		Iterator it11 = (frm.getEditExternalId() ? frm.getExternalIds().listIterator() : null);
+		Iterator it12 = frm.getIsCancelled().listIterator();
 
 		for(;it1.hasNext();){
 			Long classId = new Long(it1.next().toString());
@@ -777,6 +789,7 @@ public class InstructionalOfferingModifyAction extends Action {
 				enabledForStudentScheduling = new Boolean(true);
 			}
 			String suffix = (it11 != null ? it11.next().toString() : null);
+			Boolean cancelled = new Boolean("true".equals(it12.next()));
 
 			Long parentClassId = null;
 			String parentClassIdString = (String) it10.next();
@@ -871,6 +884,12 @@ public class InstructionalOfferingModifyAction extends Action {
 						changed = true;
 					}
 				}
+				if (!modifiedClass.isCancelled().equals(cancelled)) {
+					modifiedClass.setCancelled(cancelled);
+					modifiedClass.cancelEvent(sessionContext.getUser(), hibSession, cancelled);
+					changed = true;
+				}
+				
 				if (changed)
 					hibSession.update(modifiedClass);
 			}

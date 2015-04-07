@@ -279,6 +279,9 @@ public class CoursePermissions {
 
 		@Override
 		public boolean check(UserContext user, Class_ source) {
+			// cancelled classes cannot be edited
+			if (source.isCancelled()) return false;
+			
 			return !permissionOfferingLockNeeded.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()) &&
 					permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerEdit,
 							source.getManagingDept(), DepartmentStatusType.Status.ManagerEdit);
@@ -876,5 +879,46 @@ public class CoursePermissions {
 
 		@Override
 		public Class<DistributionPref> type() { return DistributionPref.class;}
+	}
+	
+	@PermissionForRight(Right.ClassDelete)
+	public static class ClassDelete implements Permission<Class_> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+
+		@Override
+		public boolean check(UserContext user, Class_ source) {
+			// There is a committed solution -> class with enrollment cannot be edited
+			if (source.getManagingDept() != null && source.getManagingDept().getSolverGroup() != null && source.getManagingDept().getSolverGroup().getCommittedSolution() != null) {
+				if (source.getEnrollment() > 0) return false;
+			}
+
+			return !permissionOfferingLockNeeded.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()) &&
+					permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerEdit,
+							source.getManagingDept(), DepartmentStatusType.Status.ManagerEdit);
+		}
+
+		@Override
+		public Class<Class_> type() { return Class_.class; }
+	}
+
+	@PermissionForRight(Right.ClassCancel)
+	public static class ClassCancel implements Permission<Class_> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+
+		@Override
+		public boolean check(UserContext user, Class_ source) {
+			// Must have a committed solution (not the class per se, but the managing department)
+			if (source.getManagingDept() == null || source.getManagingDept().getSolverGroup() == null || source.getManagingDept().getSolverGroup().getCommittedSolution() == null)
+				return false;
+
+			return !permissionOfferingLockNeeded.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()) &&
+					permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerEdit,
+							source.getManagingDept(), DepartmentStatusType.Status.ManagerEdit);
+		}
+
+		@Override
+		public Class<Class_> type() { return Class_.class; }
 	}
 }

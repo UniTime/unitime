@@ -1692,6 +1692,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					clazz = new Class_();
 					clazz.setExternalUniqueId(id);
 					clazz.setClassSuffix(suffix);
+					clazz.setCancelled(false);
 					try {
 						clazz.setSectionNumberCache(new Integer(suffix));
 					} catch (Exception e) {
