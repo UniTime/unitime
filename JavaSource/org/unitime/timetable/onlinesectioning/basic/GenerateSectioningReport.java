@@ -143,6 +143,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
         							(section.getParentId() == null ? null : sections.get(section.getParentId())));
         					clonedSection.setName(-1l, section.getName(-1l));
         					clonedSection.setNote(section.getNote());
+        					clonedSection.setCancelled(section.isCancelled());
         					for (XDistribution distribution: offering.getDistributions()) {
         						if (distribution.getDistributionType() == XDistributionType.IngoreConflicts && distribution.hasSection(section.getSectionId())) {
         							for (Long id: distribution.getSectionIds())

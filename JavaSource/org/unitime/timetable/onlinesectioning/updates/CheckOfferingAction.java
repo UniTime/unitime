@@ -334,6 +334,10 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 								}
 					}
 				}
+		if (!server.getConfig().getPropertyBoolean("Enrollment.CanKeepCancelledClass", false))
+			for (XSection section: sections)
+				if (section.isCancelled())
+					return false;
 		return true;
 	}
 

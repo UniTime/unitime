@@ -97,7 +97,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 		List<EnrollmentRequest> requests = new ArrayList<EnrollmentRequest>();
 		Hashtable<Long, EnrollmentRequest> courseId2request = new Hashtable<Long, EnrollmentRequest>();
 		Hashtable<Long, XOffering> courseId2offering = new Hashtable<Long, XOffering>();
-		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
+		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {	
 			// Skip free times
 			if (ca == null || ca.isFreeTime() || ca.getClassId() == null) continue;
 			
@@ -112,6 +112,23 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 			XSection section = offering.getSection(ca.getClassId());
 			if (section == null)
 				throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
+			
+			// Check cancelled flag
+			if (section.isCancelled()) {
+				if (server.getConfig().getPropertyBoolean("Enrollment.CanKeepCancelledClass", false)) {
+					boolean contains = false;
+					for (XRequest r: student.getRequests())
+						if (r instanceof XCourseRequest) {
+							XCourseRequest cr = (XCourseRequest)r;
+							if (cr.getEnrollment() != null && cr.getEnrollment().getSectionIds().contains(section.getSectionId())) { contains = true; break; }
+						}
+					if (!contains)
+						throw new SectioningException(MSG.exceptionEnrollCancelled(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
+				} else {
+					throw new SectioningException(MSG.exceptionEnrollCancelled(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
+				}
+			}
+
 			
 			EnrollmentRequest request = courseId2request.get(ca.getCourseId());
 			if (request == null) {

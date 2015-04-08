@@ -69,6 +69,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     private String iExternalId = null;
     private Map<Long, String> iExternalIdByCourse = new HashMap<Long, String>();
     private boolean iEnabledForScheduling = true;
+    private boolean iCancelled = false;
 
     public XSection() {
     }
@@ -85,6 +86,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         iSubpartName = clazz.getSchedulingSubpart().getItype().getAbbv().trim();
     	Assignment assignment = clazz.getCommittedAssignment();
     	iEnabledForScheduling = clazz.isEnabledForStudentScheduling();
+    	iCancelled = clazz.isCancelled();
         if (!clazz.isEnabledForStudentScheduling()) {
         	iLimit = 0;
         } else if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment()) {
@@ -138,6 +140,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	iInstructionalType = section.getSubpart().getInstructionalType();
     	iNote = section.getNote();
     	iTime = section.getTime() == null ? null : new XTime(section.getTime());
+    	iCancelled = section.isCancelled();
     	if (section.getNrRooms() > 0)
     		for (RoomLocation room: section.getRooms())
     			iRooms.add(new XRoom(room));
@@ -350,6 +353,10 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	return iEnabledForScheduling;
     }
     
+    public boolean isCancelled() {
+    	return iCancelled;
+    }
+    
     /**
      * True, if this section overlaps with the given assignment in time and
      * space
@@ -430,7 +437,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 		for (int i = 0; i < nrExtIds; i++)
 			iExternalIdByCourse.put(in.readLong(), (String)in.readObject());
 		iEnabledForScheduling = in.readBoolean();
-
+		iCancelled = in.readBoolean();
 	}
 
 	@Override
@@ -472,6 +479,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 			out.writeObject(entry.getValue());
 		}
 		out.writeBoolean(iEnabledForScheduling);
+		out.writeBoolean(iCancelled);
 	}
 	
 	public static class XSectionSerializer implements Externalizer<XSection> {

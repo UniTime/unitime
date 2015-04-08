@@ -752,6 +752,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Unable to register for {0}, the class is no longer available.")
 	String exceptionEnrollNotAvailable(String clazz);
 	
+	@DefaultMessage("Unable to register for {0}, the class is no longer available (it has been cancelled).")
+	String exceptionEnrollCancelled(String clazz);
+	
 	@DefaultMessage("Unable to register for {0}, the class is no longer available (it is after the deadline).")
 	String exceptionEnrollDeadlineChange(String clazz);
 
