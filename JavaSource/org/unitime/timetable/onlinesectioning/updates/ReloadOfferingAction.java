@@ -501,6 +501,10 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					}
 				}
 			}
+		if (!server.getConfig().getPropertyBoolean("Enrollment.CanKeepCancelledClass", false))
+			for (XSection section: sections)
+				if (section.isCancelled())
+					return false;
 		return true;
 	}
 
