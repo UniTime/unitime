@@ -426,6 +426,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     if (iCheckEnabledForScheduling && !c.isEnabledForStudentScheduling()) limit = 0;
                     Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix() : c.getExternalUniqueId()), subpart, p,
                     		getInstructorIds(c), getInstructorNames(c), parentSection);
+                    section.setCancelled(c.isCancelled());
                     class2section.put(c.getUniqueId(), section);
                     classTable.put(c.getUniqueId(), section);
                 }
