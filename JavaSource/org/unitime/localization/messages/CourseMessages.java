@@ -390,6 +390,9 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Examination")
 	String columnExam();
+	
+	@DefaultMessage("Class")
+	String columnClass();
 
 	@DefaultMessage("{0} {1} Examination")
 	String tooltipExam(String label, String type);
@@ -1923,6 +1926,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Staff File Matches")
 	String sectionTitleStaffFileMatches();
 	
+	@DefaultMessage("Conflicting Classes")
+	String sectionTitleClassConflicts();
+	
 	@DefaultMessage("Instructor Displayed")
 	String titleInstructorDisplayed();
 	
@@ -2093,4 +2099,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Class {0} is reopened.")
 	String classNoteReopened(String name);
+	
+	@DefaultMessage("Class {0} conflicts with {1}.")
+	String classIsConflicting(String name, String conflicts);
 }

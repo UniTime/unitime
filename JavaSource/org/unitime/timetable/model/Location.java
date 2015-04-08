@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,12 +33,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
+import org.hibernate.type.LongType;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -654,6 +655,42 @@ public abstract class Location extends BaseLocation implements Comparable {
                 "a.solution.commited=true and r.uniqueId=:locationId")
                 .setLong("locationId", getUniqueId())
                 .setCacheable(true).list();
+    }
+    
+    public Collection<Assignment> getAssignments(Long... solutionId) {
+    	if (solutionId.length == 0) return getCommitedAssignments();
+    	List<Assignment> ret = new ArrayList<Assignment>(new LocationDAO().getSession().createQuery(
+    			"select a from Assignment a inner join a.rooms r where " +
+    			"r.uniqueId = :locationId and a.solution.uniqueId in :solutionIds")
+    			.setLong("locationId", getUniqueId())
+    			.setParameterList("solutionIds", solutionId, new LongType())
+    			.setCacheable(true).list());
+    	ret.addAll(new LocationDAO().getSession().createQuery(
+    			"select a from Assignment a inner join a.rooms r where " +
+                "r.uniqueId = :locationId and a.solution.commited = true and " +
+    			"a.solution.owner.uniqueId not in (select s.owner.uniqueId from Solution s where s.uniqueId in :solutionIds)")
+    			.setLong("locationId", getUniqueId())
+    			.setParameterList("solutionIds", solutionId, new LongType())
+                .setCacheable(true).list());
+    	return ret;
+    }
+    
+    public Collection<Assignment> getAssignments(Collection<Long> solutionId) {
+    	if (solutionId.isEmpty()) return getCommitedAssignments();
+    	List<Assignment> ret = new ArrayList<Assignment>(new LocationDAO().getSession().createQuery(
+    			"select a from Assignment a inner join a.rooms r where " +
+    			"r.uniqueId = :locationId and a.solution.uniqueId in :solutionIds")
+    			.setLong("locationId", getUniqueId())
+    			.setParameterList("solutionIds", solutionId, new LongType())
+    			.setCacheable(true).list());
+    	ret.addAll(new LocationDAO().getSession().createQuery(
+    			"select a from Assignment a inner join a.rooms r where " +
+                "r.uniqueId = :locationId and a.solution.commited = true and " +
+    			"a.solution.owner.uniqueId not in (select s.owner.uniqueId from Solution s where s.uniqueId in :solutionIds)")
+    			.setLong("locationId", getUniqueId())
+    			.setParameterList("solutionIds", solutionId, new LongType())
+                .setCacheable(true).list());
+    	return ret;
     }
     
     public static TreeSet findAllAvailableExamLocations(ExamPeriod period) {

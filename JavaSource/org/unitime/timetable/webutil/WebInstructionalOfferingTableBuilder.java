@@ -180,6 +180,7 @@ public class WebInstructionalOfferingTableBuilder {
     
     private boolean iDisplayDistributionPrefs = true;
     private boolean iDisplayTimetable = true;
+    private boolean iDisplayConflicts = false;
     
     private String iBackType = null;
     private String iBackId = null;
@@ -204,6 +205,11 @@ public class WebInstructionalOfferingTableBuilder {
     	iDisplayTimetable = displayTimetable;
     }
     public boolean getDisplayTimetable() { return iDisplayTimetable; }
+    
+    public void setDisplayConflicts(boolean displayConflicts) {
+    	iDisplayConflicts = displayConflicts;
+    }
+    public boolean getDisplayConflicts() { return iDisplayConflicts; }
     
     private boolean iTimeVertical = false;
     public void setTimeVertival(boolean timeVertical) {
@@ -1328,6 +1334,20 @@ public class WebInstructionalOfferingTableBuilder {
         if (aClass.isCancelled()) {
         	row.setStyle("color: gray; font-style: italic;");
         	row.setTitle(MSG.classNoteCancelled(aClass.getClassLabel(co)));
+        }
+        if (getDisplayConflicts() && classAssignment != null) {
+        	Set<Assignment> conflicts = null;
+        	try { conflicts = classAssignment.getConflicts(aClass); } catch (Exception e) {}
+        	if (conflicts != null && !conflicts.isEmpty()) {
+        		row.setBgColor("#fff0f0");
+        		row.setOnMouseOut("this.style.backgroundColor='#fff0f0';");
+    			String s = "";
+    			for (Assignment c: conflicts) {
+    				if (!s.isEmpty()) s += ", ";
+    				s += (c.getClassName() + " " + c.getPlacement().getName(CONSTANTS.useAmPm())).trim();
+    			}
+				row.setTitle(MSG.classIsConflicting(aClass.getClassLabel(co), s));
+        	}
         }
         
         this.buildClassOrSubpartRow(classAssignment, examAssignment, row, co, aClass, indentSpaces, isEditable && !aClass.isCancelled(), prevLabel, context);

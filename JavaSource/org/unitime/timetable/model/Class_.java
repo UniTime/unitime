@@ -549,6 +549,23 @@ public class Class_ extends BaseClass_ {
     	}
     	return (sb.toString());
     }
+    
+    public String instructorText(String instructorNameFormat, String separator){
+    	if (getClassInstructors() == null) return "";
+    	
+    	TreeSet sortedInstructors = new TreeSet(new InstructorComparator());
+    	sortedInstructors.addAll(this.getClassInstructors());
+
+    	StringBuffer sb = new StringBuffer();
+    	
+    	for (Iterator it = sortedInstructors.iterator(); it.hasNext();) {
+    		ClassInstructor ci = (ClassInstructor) it.next();
+    		sb.append(ci.getInstructor().getName(instructorNameFormat));
+    		if (it.hasNext()) sb.append(separator);
+    	}
+    	
+    	return sb.toString();
+    }
 
 
 	private String htmlForTimePatterns(Set patterns){

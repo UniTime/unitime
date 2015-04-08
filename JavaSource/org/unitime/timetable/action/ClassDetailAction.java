@@ -21,28 +21,36 @@ package org.unitime.timetable.action;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.TimeLocation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
+import org.unitime.commons.MultiComparable;
+import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassEditForm;
+import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -54,13 +62,18 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
+import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
@@ -79,10 +92,13 @@ import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
 public class ClassDetailAction extends PreferencesAction {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	protected final static GwtConstants CONST = Localization.create(GwtConstants.class);
 	
 	@Autowired SessionContext sessionContext;
 	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
+	
+	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
 	
     // --------------------------------------------------------- Class Constants
 
@@ -217,6 +233,89 @@ public class ClassDetailAction extends PreferencesAction {
 	        LookupTables.setupBldgs(request, c);		 // Building Prefs
 	        LookupTables.setupRoomFeatures(request, c); // Preference Levels
 	        LookupTables.setupRoomGroups(request, c);   // Room Groups
+	        
+	        try {
+	        	ClassAssignmentProxy proxy = classAssignmentService.getAssignment();
+	        	Set<Assignment> conflicts = (proxy == null ? null : proxy.getConflicts(c));
+	        	if (conflicts != null && !conflicts.isEmpty()) {
+	        		TreeSet<Assignment> orderedConflicts = new TreeSet<Assignment>(new Comparator<Assignment>() {
+	        			ClassComparator cc = new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY);
+						@Override
+						public int compare(Assignment a1, Assignment a2) {
+							return cc.compare(a1.getClazz(), a2.getClazz());
+						}
+					});
+	        		orderedConflicts.addAll(conflicts);
+	        		WebTable table = new WebTable(7, MSG.sectionTitleClassConflicts(), new String[] {
+        					MSG.columnClass(),
+        					MSG.columnExternalId(),
+        					MSG.columnDemand(),
+        					MSG.columnInstructor(),
+        					MSG.columnDatePattern(),
+        					MSG.columnAssignedTime(),
+        					MSG.columnAssignedRoom()
+	        			}, new String[] {
+	        				"left",
+	        				"left",
+	        				"right",
+	        				"left",
+	        				"left",
+	        				"left",
+	        				"left"
+	        			}, new boolean[] {
+	        				true,
+	        				true,
+	        				true,
+	        				true,
+	        				true,
+	        				true,
+	        				true
+	        		});
+	        		String nameFormat = UserProperty.NameFormat.get(sessionContext.getUser());
+	        		Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
+	        		for (Assignment assignment: orderedConflicts) {
+	        			String suffix = assignment.getClazz().getClassSuffix();
+	        			DatePattern dp = assignment.getDatePattern();
+	        			TimeLocation t = assignment.getTimeLocation();
+	        			String time = "";
+	        			if (t != null) {
+	           				Enumeration<Integer> e = t.getDays();
+	           				while (e.hasMoreElements()){
+	           					time += Constants.DAY_NAMES_SHORT[e.nextElement()];
+	           				}
+	           				time += " " + t.getStartTimeHeader(CONST.useAmPm()) + "-" + t.getEndTimeHeader(CONST.useAmPm());
+	        			}
+	        			String roomsHtml = "", roomsText = "";
+	        			for (Location r: assignment.getRooms()) {
+	        				if (!roomsHtml.isEmpty()) { roomsHtml += ", "; roomsText += ", "; }
+	        				roomsHtml += "<span onmouseover=\"showGwtRoomHint(this, '" + r.getUniqueId() + "', '');\" onmouseout=\"hideGwtRoomHint();\">" + r.getLabel() + "</span>";
+	        				roomsText += r.getLabel();
+	        			}
+	        			table.addLine(
+	        					sessionContext.hasPermission(assignment.getClazz(), Right.ClassDetail) ? "onClick=\"document.location='classDetail.do?cid=" + assignment.getClassId() + "';\"": null,
+	        					new String[] {
+	        							assignment.getClazz().getClassLabel(),
+	        							suffix == null ? "&nbsp;" : suffix,
+	        							assignment.getClazz().getEnrollment().toString(),
+	        							assignment.getClazz().instructorHtml(nameFormat),
+	        							dp == null ? "&nbsp;" : "<span title='" + dateFormat.format(dp.getStartDate()) + " - " + dateFormat.format(dp.getEndDate()) + "'>" + dp.getName() + "</span>",
+	        							time,
+	        							roomsHtml
+	        					}, new Comparable[] {
+	        							assignment.getClazz().getClassLabel(),
+	        							suffix == null ? "" : suffix,
+	        							assignment.getClazz().getEnrollment(),
+	        							assignment.getClazz().instructorText(nameFormat, ","),
+	        							dp == null ? "" : dp.getName(),
+	        							new MultiComparable(t == null ? 0 : t.getDayCode(), t == null ? 0 : t.getStartSlot()),
+	        							roomsText
+								});
+	        		}
+	        		request.setAttribute("CLASS_CONFLICTS", table.printTable());
+	        	}
+	        } catch (Exception e) {
+	        	Debug.error("Failed to compute conflicts: " + e.getMessage(), e);
+	        }
 
 	        BackTracker.markForBack(
 	        		request,

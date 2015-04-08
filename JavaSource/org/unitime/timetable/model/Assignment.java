@@ -471,4 +471,21 @@ public class Assignment extends BaseAssignment {
         }*/
         return event;
     }
+    
+    public boolean shareDays(Assignment another) {
+        return ((getDays() & another.getDays()) !=0 );
+    }
+
+    public boolean shareHours(Assignment another) {
+    	return (getStartSlot() + getSlotPerMtg() > another.getStartSlot()) && (another.getStartSlot() + another.getSlotPerMtg() > getStartSlot());
+    }
+
+    public boolean shareWeeks(Assignment another) {
+    	return getDatePattern() == null || another.getDatePattern() == null || getDatePattern().getPatternBitSet().intersects(another.getDatePattern().getPatternBitSet());
+    }
+
+    public boolean overlaps(Assignment another) {
+        return shareDays(another) && shareHours(another) && shareWeeks(another);
+    }    
+    
 }

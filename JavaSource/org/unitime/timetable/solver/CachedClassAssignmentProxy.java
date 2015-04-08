@@ -22,6 +22,7 @@ package org.unitime.timetable.solver;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Set;
 import java.util.Vector;
 import java.util.Enumeration;
 
@@ -150,5 +151,10 @@ public class CachedClassAssignmentProxy implements ClassAssignmentProxy {
 			AssignmentPreferenceInfo info = (AssignmentPreferenceInfo) newInfos.get(classId);
 			iAssignmentInfoTable.put(classId, (info==null?sNULL:info));
 		}
+	}
+
+	@Override
+	public Set<Assignment> getConflicts(Class_ clazz) throws Exception {
+		return iProxy.getConflicts(clazz);
 	}
 }

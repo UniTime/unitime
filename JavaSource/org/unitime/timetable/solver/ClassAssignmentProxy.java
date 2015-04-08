@@ -21,6 +21,7 @@ package org.unitime.timetable.solver;
 
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.Set;
 
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
@@ -38,4 +39,5 @@ public interface ClassAssignmentProxy {
 	
 	public Hashtable getAssignmentTable(Collection classesOrClassIds) throws Exception;
 	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) throws Exception;
+	public Set<Assignment> getConflicts(Class_ clazz) throws Exception;
 }

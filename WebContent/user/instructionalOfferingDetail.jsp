@@ -483,6 +483,7 @@
 		WebInstrOfferingConfigTableBuilder ioTableBuilder = new WebInstrOfferingConfigTableBuilder();
 		ioTableBuilder.setDisplayDistributionPrefs(false);
 		ioTableBuilder.setDisplayConfigOpButtons(true);
+		ioTableBuilder.setDisplayConflicts(true);
 		ioTableBuilder.htmlConfigTablesForInstructionalOffering(
 									sessionContext,
 				    		        WebSolver.getClassAssignmentProxy(session),

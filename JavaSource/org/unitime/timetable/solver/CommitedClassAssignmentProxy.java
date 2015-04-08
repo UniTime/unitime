@@ -20,11 +20,19 @@
 package org.unitime.timetable.solver;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 
@@ -113,6 +121,66 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 				infos.put(classOrClassId instanceof Class_ ? ((Class_)classOrClassId).getUniqueId() : (Long)classOrClassId, info);
 		}
 		return infos;
+	}
+
+	@Override
+	public Set<Assignment> getConflicts(Class_ clazz) throws Exception {
+		if (clazz == null || clazz.isCancelled()) return null;
+		Assignment assignment = getAssignment(clazz);
+		if (assignment == null) return null;
+		Set<Assignment> conflicts = new HashSet<Assignment>();
+		if (assignment.getRooms() != null)
+			for (Location room : assignment.getRooms()) {
+				if (!room.isIgnoreRoomCheck()) {
+					for (Assignment a : room.getCommitedAssignments())
+						if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a))
+							conflicts.add(a);
+            	}
+            }
+		
+		if (clazz.getClassInstructors() != null)
+			for (ClassInstructor instructor: clazz.getClassInstructors()) {
+				if (!instructor.isLead()) continue;
+				for (DepartmentalInstructor di: DepartmentalInstructor.getAllForInstructor(instructor.getInstructor())) {
+					for (ClassInstructor ci : di.getClasses()) {
+	            		if (ci.equals(instructor)) continue;
+	            		Assignment a = getAssignment(ci.getClassInstructing());
+	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
+	            			conflicts.add(a);
+	            	}
+            	}
+			}
+		
+        Class_ parent = clazz.getParentClass();
+        while (parent!=null) {
+        	Assignment a = getAssignment(parent);
+        	if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
+    			conflicts.add(a);
+        	parent = parent.getParentClass();
+        }
+        
+        Queue<Class_> children = new LinkedList(clazz.getChildClasses());
+        Class_ child = null;
+        while ((child=children.poll())!=null) {
+        	Assignment a = getAssignment(child);
+        	if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
+    			conflicts.add(a);
+        	if (!child.getChildClasses().isEmpty())
+        		children.addAll(child.getChildClasses());
+        }
+        
+        for (Iterator<SchedulingSubpart> i = clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts().iterator(); i.hasNext();) {
+        	SchedulingSubpart ss = i.next();
+        	if (ss.getClasses().size() == 1) {
+        		child = ss.getClasses().iterator().next();
+        		if (clazz.equals(child)) continue;
+        		Assignment a = getAssignment(child);
+        		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
+        			conflicts.add(a);
+        	}
+        }
+        
+        return conflicts;
 	}
     
 }

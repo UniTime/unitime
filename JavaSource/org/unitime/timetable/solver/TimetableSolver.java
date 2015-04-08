@@ -1740,4 +1740,9 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 	public boolean hasFinalSectioning() {
 		return ((TimetableModel)currentSolution().getModel()).getStudentSectioning().hasFinalSectioning();
 	}
+
+	@Override
+	public Set<Assignment> getConflicts(Class_ clazz) throws Exception {
+		return null;
+	}
 }
