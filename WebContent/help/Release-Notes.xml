@@ -62,6 +62,21 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Cancelled Classes</name>
+			<description>
+				<line>Added ability to cancel a class.</line>
+				<line>Multiple Class Setup page: class with enrolments cannot be deleted, but it could be cancelled instead.</line>
+				<line>Cancelled classes retain their committed assignment, but the appropriate class event is cancelled.</line>
+				<line>Cancelled classes are not loaded into the course timetabling solver.</line>
+				<line>Cancelled classes cannot be edited or re-assigned and they do not block the room or instructor.</line>
+				<line>When a cancelled classes is reopened, the appropriate event is also re-approved.
+					<line>This could cause conflicts, that have to be manually resolved.</line>
+				</line>
+				<line>In student scheduling, cancelled classes are avoided (no valid enrollment can contain a cancelled class).</line>
+				<line>In online student scheduling, it is possible to keep existing students in cancelled classes when solver configuration parameter named Enrollment.CanKeepCancelledClass is set to true (defaults to false).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
