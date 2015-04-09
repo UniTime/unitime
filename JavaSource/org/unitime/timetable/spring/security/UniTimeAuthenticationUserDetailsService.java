@@ -52,17 +52,28 @@ public class UniTimeAuthenticationUserDetailsService implements AuthenticationUs
 		Map attributes = assertion.getPrincipal().getAttributes();
 		String userId = token.getName();
 		if (ApplicationProperty.AuthenticationCasIdAttribute.value() != null) {
-			Object value = attributes.get(ApplicationProperty.AuthenticationCasIdAttribute.value());
-			if (value != null) {
-				if (value instanceof List) {
-					for (Object o: ((List)value)) {
-						userId = o.toString(); break;
+			String[] keys = ApplicationProperty.AuthenticationCasIdAttribute.value().split(",");
+			String[] translate = ApplicationProperty.AuthenticationCasIdAlwaysTranslate.value().split(",");
+			boolean found = false;
+			for (int i = 0; i < keys.length; i++) {
+				String key = keys[i];
+				String tr = translate[i < translate.length ? i : translate.length - 1];
+				Object value = attributes.get(key);
+				if (value != null) {
+					if (value instanceof List) {
+						for (Object o: ((List)value)) {
+							userId = o.toString(); break;
+						}
+					} else {
+						userId = value.toString();
 					}
-				} else {
-					userId = value.toString();
+					if ("true".equalsIgnoreCase(tr) && iTranslation != null)
+						userId = iTranslation.translate(userId, Source.LDAP, Source.User);
+					found = true;
+					break;
 				}
 			}
-			if (ApplicationProperty.AuthenticationCasIdAlwaysTranslate.isTrue())
+			if (!found && iTranslation != null)
 				userId = iTranslation.translate(userId, Source.LDAP, Source.User);
 		} else if (iTranslation != null) {
 			userId = iTranslation.translate(userId, Source.LDAP, Source.User);
