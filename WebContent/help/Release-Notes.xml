@@ -120,6 +120,9 @@
 			<name>CAS Authentication</name>
 			<description>
 				<line>Added ability to always translate the returned external user id by setting unitime.authentication.cas.id-translate to true (defaults to false).</line>
+				<line>Added ability to lookup multiple attributes in the CAS ticket (the unitime.authentication.cas.id-translate can contain a comma separated list of attributes).
+					<line>Each attribute may or may not be translated (the unitime.authentication.cas.id-translate can contain a comma separated list of true and false values, one for each attribute).</line>
+				</line>
 			</description>
 		</item>
 		<item>
