@@ -329,7 +329,7 @@ public class InstructionalOfferingModifyAction extends Action {
 	    		}
 	    		if (readOnlyClass) frm.setInstrOffrConfigUnlimitedReadOnly(true);
 				frm.addToClasses(cls, readOnlyClass && !cls.isCancelled(), indent, proxy, UserProperty.NameFormat.get(sessionContext.getUser()),
-						!readOnlyClass && sessionContext.hasPermission(cls, Right.ClassDelete),
+						sessionContext.hasPermission(cls, Right.ClassDelete),
 						sessionContext.hasPermission(cls, Right.ClassCancel));
 	    		loadClasses(frm, cls.getChildClasses(), new Boolean(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", proxy);
 	    	}

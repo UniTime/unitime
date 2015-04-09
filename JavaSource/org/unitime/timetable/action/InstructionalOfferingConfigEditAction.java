@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -80,6 +81,7 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.SchedulingSubpartTableBuilder;
@@ -1029,6 +1031,9 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
 	                    }
 	                    else {
+	                    	if (!sessionContext.hasPermission(childClass, Right.ClassDelete))
+	                    		throw new AccessDeniedException("Class " + childClass.getClassLabel(hibSession) + " cannot be deleted.");
+	                    	
 	    	                Debug.debug("Deleting class " + childClass.getClassLabel());
 		                    if (childClass.getParentClass()!=null) {
 		                        Class_ pc = childClass.getParentClass();
@@ -1054,6 +1059,9 @@ public class InstructionalOfferingConfigEditAction extends Action {
 		    			            hibSession.saveOrUpdate(childClass);
 	   		                    }
 	   		                    else {
+	   		                    	if (!sessionContext.hasPermission(childClass, Right.ClassDelete))
+	   		                    		throw new AccessDeniedException("Class " + childClass.getClassLabel(hibSession) + " cannot be deleted.");
+	   		                    	
 	   		    	                Debug.debug("Deleting ODD class " + childClass.getClassLabel());
 	   			                    if (childClass.getParentClass()!=null) {
 	   			                        Class_ pc = childClass.getParentClass();
@@ -1135,7 +1143,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 Set classes = tmpSubpart.getClasses();
                 for (Iterator j=classes.iterator(); j.hasNext();) {
                     Class_ c = (Class_) j.next();
-                    deleteChildClasses(c, hibSession, 1);
+                    deleteChildClasses(c, hibSession, 1, false);
                     Class_ pc = c.getParentClass();
                     if (pc!=null) {
                         pc.getChildClasses().remove(c);
@@ -1604,6 +1612,17 @@ public class InstructionalOfferingConfigEditAction extends Action {
         if (request.getParameter("varLimits")==null) {
             mnlpc = mxlpc;
         }
+        
+        Comparator<Class_> classComparator = new Comparator<Class_>() {
+			@Override
+			public int compare(Class_ c1, Class_ c2) {
+				if (c1.isCancelled() && !c2.isCancelled()) return 1;
+				if (!c1.isCancelled() && c2.isCancelled()) return -1;
+				if (c1.getEnrollment() == 0 && c2.getEnrollment() != 0) return 1;
+				if (c1.getEnrollment() != 0 && c2.getEnrollment() == 0) return -1;
+				return c1.getUniqueId().compareTo(c2.getUniqueId());
+			}
+		};
 
        SchedulingSubpart subpart = null;
 
@@ -1672,31 +1691,24 @@ public class InstructionalOfferingConfigEditAction extends Action {
                         int deleteCount = parentClassCount - classesPerParent;
                         Debug.debug("Deleting " + deleteCount + " classes for parent class: " + parentClassId.toString());
 
-                        ArrayList uids = new ArrayList();
-        	            for (Iterator i=classes.iterator(); i.hasNext(); ) {
+                        ArrayList<Class_> adepts = new ArrayList<Class_>();
+                        for (Iterator i=classes.iterator(); i.hasNext(); ) {
         	                Class_ c1 = (Class_) i.next();
         	                if (c1.getParentClass().getUniqueId().equals(parentClassId))
-        	                    uids.add(c1.getUniqueId());
-        	            }
-        	            Collections.sort(uids);
+        	                	adepts.add(c1);
+                        }
+                        Collections.sort(adepts, classComparator);
 
-        	            for (int ct=(uids.size()-deleteCount); ct<uids.size(); ct++) {
-        	                Long uid = (Long) uids.get(ct);
-            	            for (Iterator i=classes.iterator(); i.hasNext(); ) {
-            	                Class_ c = (Class_) i.next();
-            	                if (c.getUniqueId().equals(uid)) {
-            	                    deleteChildClasses(c, hibSession, 1);
-            	                    Class_ pc = c.getParentClass();
-            	                    if (pc!=null) {
-            	                        pc.getChildClasses().remove(c);
-            	                        hibSession.saveOrUpdate(pc);
-            	                    }
-            	                    i.remove();
-    	    	                    //hibSession.delete(c);
-    	    	                    //hibSession.flush();
-            	                    break;
-            	                }
-            	            }
+        	            for (int ct=(adepts.size()-deleteCount); ct<adepts.size(); ct++) {
+        	            	Class_ c = adepts.get(ct);
+    	                    if (deleteChildClasses(c, hibSession, 1, true)) {
+    	                    	Class_ pc = c.getParentClass();
+    	                    	if (pc != null) {
+    	                    		pc.getChildClasses().remove(c);
+    	                    		hibSession.saveOrUpdate(pc);
+    	                    	}
+    		                    classes.remove(c);
+    	                    }
         	            }
 
         	            hibSession.saveOrUpdate(subpart);
@@ -1747,30 +1759,21 @@ public class InstructionalOfferingConfigEditAction extends Action {
             // Decreased - delete last class created
             else {
                 Debug.debug("No. of classes decreased ... Deleting " + (numCls-nc) + " classes");
-                ArrayList uids = new ArrayList();
-	            for (Iterator i=classes.iterator(); i.hasNext(); ) {
-	                uids.add(((Class_) i.next()).getUniqueId());
-	            }
-	            Collections.sort(uids);
+                ArrayList<Class_> adepts = new ArrayList<Class_>(classes);
+                Collections.sort(adepts, classComparator);
 
 	            // Delete last class(es) if no parent or just one class to be deleted
 	            if (parent==null || (numCls-nc)==1) {
 		            for (int ct=nc; ct<numCls; ct++) {
-		                Long uid = (Long) uids.get(ct);
-	    	            for (Iterator i=classes.iterator(); i.hasNext(); ) {
-	    	                Class_ c = (Class_) i.next();
-	    	                if (c.getUniqueId().equals(uid)) {
-	    	                    deleteChildClasses(c, hibSession, 1);
-        	                    Class_ pc = c.getParentClass();
-        	                    if (pc!=null) {
-        	                        pc.getChildClasses().remove(c);
-        	                        hibSession.saveOrUpdate(pc);
-        	                    }
-	    	                    i.remove();
-	    	                    //hibSession.delete(c);
-	    	                    break;
-	    	                }
-	    	            }
+		                Class_ c = adepts.get(ct);
+	                    if (deleteChildClasses(c, hibSession, 1, true)) {
+	                    	Class_ pc = c.getParentClass();
+	                    	if (pc != null) {
+	                    		pc.getChildClasses().remove(c);
+	                    		hibSession.saveOrUpdate(pc);
+	                    	}
+		                    classes.remove(c);
+	                    }
 		            }
 	            }
 
@@ -1796,30 +1799,24 @@ public class InstructionalOfferingConfigEditAction extends Action {
                         Long parentClassId = (Long) ci.next();
                         Debug.debug("Deleting " + diff + " classes for parent class: " + parentClassId.toString());
 
-                        uids.clear();
-        	            for (Iterator i=classes.iterator(); i.hasNext(); ) {
+                        adepts.clear();
+                        for (Iterator i=classes.iterator(); i.hasNext(); ) {
         	                Class_ c1 = (Class_) i.next();
         	                if (c1.getParentClass().getUniqueId().equals(parentClassId))
-        	                    uids.add(c1.getUniqueId());
-        	            }
-        	            Collections.sort(uids);
+        	                	adepts.add(c1);
+                        }
+                        Collections.sort(adepts, classComparator);
 
-        	            for (int ct=(uids.size()-diff); ct<uids.size(); ct++) {
-        	                Long uid = (Long) uids.get(ct);
-            	            for (Iterator i=classes.iterator(); i.hasNext(); ) {
-            	                Class_ c = (Class_) i.next();
-            	                if (c.getUniqueId().equals(uid)) {
-            	                    deleteChildClasses(c, hibSession, 1);
-            	                    Class_ pc = c.getParentClass();
-            	                    if (pc!=null) {
-            	                        pc.getChildClasses().remove(c);
-            	                        hibSession.saveOrUpdate(pc);
-            	                    }
-            	                    i.remove();
-            	                    //hibSession.delete(c);
-            	                    break;
-            	                }
-            	            }
+        	            for (int ct=(adepts.size()-diff); ct<adepts.size(); ct++) {
+        	            	Class_ c = adepts.get(ct);
+    	                    if (deleteChildClasses(c, hibSession, 1, true)) {
+    	                    	Class_ pc = c.getParentClass();
+    	                    	if (pc != null) {
+    	                    		pc.getChildClasses().remove(c);
+    	                    		hibSession.saveOrUpdate(pc);
+    	                    	}
+    		                    classes.remove(c);
+    	                    }
         	            }
 
         	            hibSession.saveOrUpdate(subpart);
@@ -1840,19 +1837,29 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
     }
 
-    public void deleteChildClasses(
+    public boolean deleteChildClasses(
             Class_ c,
             org.hibernate.Session hibSession,
-            int recurseLevel) {
-
+            int recurseLevel,
+            boolean canCancel) {
+    	
         Set childClasses = c.getChildClasses();
-        if (childClasses==null || childClasses.size()==0) {
+        if (childClasses == null || childClasses.isEmpty()) {
             if (recurseLevel==1) {
-                Debug.debug("Deleting class (1) ... " +  c.getClassLabel() + " - " + c.getUniqueId());
-                c.deleteAllDependentObjects(hibSession, false);
-                hibSession.delete(c);
+        		Debug.debug("Deleting class (1) ... " +  c.getClassLabel() + " - " + c.getUniqueId());
+            	if (sessionContext.hasPermission(c, Right.ClassDelete)) {
+            		c.deleteAllDependentObjects(hibSession, false);
+            		hibSession.delete(c);
+            		return true;
+            	} else if (canCancel && sessionContext.hasPermission(c, Right.ClassCancel)) {
+            		c.setCancelled(true);
+            		c.cancelEvent(sessionContext.getUser(), hibSession, true);
+            		hibSession.saveOrUpdate(c);
+            		return false;
+            	} else {
+            		throw new AccessDeniedException("Class " + c.getClassLabel(hibSession) + " cannot be deleted or cancelled.");
+            	}
             }
-            return;
         }
 
         for (Iterator cci=childClasses.iterator(); cci.hasNext(); ) {
@@ -1862,11 +1869,19 @@ public class InstructionalOfferingConfigEditAction extends Action {
             for (Iterator iPs = psClasses.iterator(); iPs.hasNext(); ) {
                 Class_ psCls = (Class_) iPs.next();
                 if (psCls.equals(cc)) {
-                    deleteChildClasses(psCls, hibSession, recurseLevel+1);
+                    deleteChildClasses(psCls, hibSession, recurseLevel+1, canCancel);
                     Debug.debug("Deleting class (2) ... " +  cc.getClassLabel() + " - " + cc.getUniqueId());
-                    cc.deleteAllDependentObjects(hibSession, false);
-                    hibSession.delete(cc);
-                    iPs.remove();
+                	if (sessionContext.hasPermission(cc, Right.ClassDelete)) {
+                		cc.deleteAllDependentObjects(hibSession, false);
+                		hibSession.delete(cc);
+                        iPs.remove();
+                	} else if (canCancel && sessionContext.hasPermission(cc, Right.ClassCancel)) {
+                		cc.setCancelled(true);
+                		cc.cancelEvent(sessionContext.getUser(), hibSession, true);
+                		hibSession.saveOrUpdate(cc);
+                	} else {
+                		throw new AccessDeniedException("Class " + c.getClassLabel(hibSession) + " cannot be deleted or cancelled.");
+                	}
                     hibSession.saveOrUpdate(ps);
                     hibSession.saveOrUpdate(c);
                     break;
@@ -1877,9 +1892,18 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
 
         Debug.debug("Deleting class (3) ... " +  c.getClassLabel() + " - " + c.getUniqueId());
-        c.deleteAllDependentObjects(hibSession, false);
-        hibSession.delete(c);
-        //hibSession.flush();
+    	if (sessionContext.hasPermission(c, Right.ClassDelete)) {
+    		c.deleteAllDependentObjects(hibSession, false);
+    		hibSession.delete(c);
+    		return true;
+    	} else if (canCancel && sessionContext.hasPermission(c, Right.ClassCancel)) {
+    		c.setCancelled(true);
+    		c.cancelEvent(sessionContext.getUser(), hibSession, true);
+    		hibSession.saveOrUpdate(c);
+    		return false;
+    	} else {
+    		throw new AccessDeniedException("Class " + c.getClassLabel(hibSession) + " cannot be deleted or cancelled.");
+    	}
     }
 
     public void setParentClass(
@@ -2045,6 +2069,11 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 sic.setDisabled(true);
                 sic.setNotOwned(true);
                 return true;
+        } else {
+        	for (Class_ c: subpart.getClasses())
+        		if (!sessionContext.hasPermission(c, Right.ClassDelete)) {
+        			sic.setNotOwned(true); break;
+        		}
         }
         
         return false;

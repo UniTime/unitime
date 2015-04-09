@@ -316,7 +316,7 @@ public class SchedulingSubpartTableBuilder {
                         	+ (hasError ? "&nbsp; <IMG align=\"absmiddle\" src=\"images/cancel.png\">" : ""),
                         
                         (!disabled) 
-                        	? getIcons(sic, level, rowNum, maxRows, spRowNum, maxSp) 
+                        	? getIcons(sic, level, rowNum, maxRows, spRowNum, maxSp, !notOwned) 
                         	: (notOwned)
                         		? "<img align=\"absmiddle\" border=\"0\" src=\"images/lock.png\">"
                         		: "",
@@ -448,7 +448,7 @@ public class SchedulingSubpartTableBuilder {
      * @param maxSp Max subparts
      * @return Html code for arrow images
      */
-    private static String getIcons(SimpleItypeConfig sic, int level, int rowNum, int maxRows, int spRowNum, int maxSp) {
+    private static String getIcons(SimpleItypeConfig sic, int level, int rowNum, int maxRows, int spRowNum, int maxSp, boolean canDelete) {
         
         String html = "";
                
@@ -484,8 +484,10 @@ public class SchedulingSubpartTableBuilder {
             html += "<IMG align=\"absmiddle\" src=\"images/blank.png\">";
 
         // Delete
-        html += "<IMG border=\"0\" alt=\""+MSG.altDelete()+"\" title=\""+MSG.titleDeleteInstructionalType()+"\" align=\"absmiddle\" src=\"images/action_delete.png\" " +
-        		"onClick=\"doClick('delete', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">&nbsp; ";
+        if (canDelete) {
+        	html += "<IMG border=\"0\" alt=\""+MSG.altDelete()+"\" title=\""+MSG.titleDeleteInstructionalType()+"\" align=\"absmiddle\" src=\"images/action_delete.png\" " +
+        			"onClick=\"doClick('delete', " + sic.getId() + ");\" onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\">&nbsp; ";
+        }
 
         html += "&nbsp; &nbsp;";
         
