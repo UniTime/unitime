@@ -742,6 +742,16 @@ public enum ApplicationProperty {
 	@Implements(ExternalUidTranslation.class)
 	@Description("ExternalUidTranslation interface for translating user external ids from different sources")
 	ExternalUserIdTranslation("tmtbl.externalUid.translation"),
+	
+	@Description("Custom SQL User Id Translation: SQL to translate the user name (as returned by the authentication) to the external user id that is used by UniTime.\n"+
+			"This parameter is used by the CustomSQLExternalUidTranslation. You also need to set tmtbl.externalUid.translation to org.unitime.timetable.spring.security.CustomSQLExternalUidTranslation")
+	@DefaultValue("select external_uid from %SCHEMA%.users where username = ?")
+	CustomSQLUidToExternalTranslation("unitime.custom.sql.uid2ext"),
+	
+	@Description("Custom SQL User Id Translation: SQL to translate the external user id that is used by UniTime to the user name (as returned by the authentication).\n"+
+			"This parameter is used by the CustomSQLExternalUidTranslation. You also need to set tmtbl.externalUid.translation to org.unitime.timetable.spring.security.CustomSQLExternalUidTranslation")
+	@DefaultValue("select username from %SCHEMA%.users where external_uid = ?")
+	CustomSQLExternalToUidTranslation("unitime.custom.sql.ext2uid"),
 
 	@Type(Class.class)
 	@Implements(DatabaseUpdate.class)

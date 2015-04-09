@@ -121,6 +121,20 @@
 				<line>Added ability to always translate the returned external user id by setting unitime.authentication.cas.id-translate to true (defaults to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>External User Id Translation</name>
+			<description>
+				<line>Added ability to translate user names (as returned by the authentication) to the external user ids that are used by UniTime.</line>
+				<line>Configuration (default SQLs are using the users table):
+					<line># Enable custom SQL user id translation</line>
+					<line>tmtbl.externalUid.translation=org.unitime.timetable.spring.security.CustomSQLExternalUidTranslation</line>
+					<line># SQL query converting user name to external user id</line>
+					<line>unitime.custom.sql.uid2ext=select external_uid from %SCHEMA%.users where username = ?</line>
+					<line># SQL query converting external user id to user name</line>
+					<line>unitime.custom.sql.ext2uid=select username from %SCHEMA%.users where external_uid = ?</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>CPSolver updated to version 1.3.52 (was 1.3.47)</title>
