@@ -44,13 +44,8 @@ import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
  * @author Tomas Muller
  */
 public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
-	private Set iSolutionIds = new HashSet();
-	private Hashtable iDepartmentIds = new Hashtable();
-	/*
-	private Hashtable iCachedAssignments = new Hashtable();
-	private HashSet iCachedSubjects =  new HashSet();
-	*/
-	
+	private Set<Long> iSolutionIds = new HashSet<Long>();
+	private Hashtable<Long, Long> iDepartmentIds = new Hashtable<Long, Long>();
 	
 	public SolutionClassAssignmentProxy(Collection solutionIds) {
 		super();
@@ -117,14 +112,14 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
     	return (a==null?null:(AssignmentPreferenceInfo)a.getAssignmentInfo("AssignmentInfo"));
     }
     
-    public Set getSolutionIds() {
+    public Set<Long> getSolutionIds() {
     	return iSolutionIds;
     }
     
-    public boolean equals(Collection solutionIds) {
+    public boolean equals(Collection<Long> solutionIds) {
     	if (solutionIds.size()!=iSolutionIds.size()) return false;
-    	for (Iterator i=solutionIds.iterator();i.hasNext();) {
-            Long solutionId = (Long)i.next();
+    	for (Iterator<Long> i=solutionIds.iterator();i.hasNext();) {
+            Long solutionId = i.next();
     		if (!iSolutionIds.contains(solutionId)) return false;
     	}
     	return true;

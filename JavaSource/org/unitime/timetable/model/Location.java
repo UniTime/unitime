@@ -657,20 +657,19 @@ public abstract class Location extends BaseLocation implements Comparable {
                 .setCacheable(true).list();
     }
     
-    public Collection<Assignment> getAssignments(Long... solutionId) {
-    	if (solutionId.length == 0) return getCommitedAssignments();
+    public Collection<Assignment> getAssignments(Solution solution) {
     	List<Assignment> ret = new ArrayList<Assignment>(new LocationDAO().getSession().createQuery(
     			"select a from Assignment a inner join a.rooms r where " +
-    			"r.uniqueId = :locationId and a.solution.uniqueId in :solutionIds")
+    			"r.uniqueId = :locationId and a.solution.uniqueId = :solutionId")
     			.setLong("locationId", getUniqueId())
-    			.setParameterList("solutionIds", solutionId, new LongType())
+    			.setLong("solutionId", solution.getUniqueId())
     			.setCacheable(true).list());
     	ret.addAll(new LocationDAO().getSession().createQuery(
-    			"select a from Assignment a inner join a.rooms r where " +
+    			"select a from Assignment a, Solution x inner join a.rooms r where " +
                 "r.uniqueId = :locationId and a.solution.commited = true and " +
-    			"a.solution.owner.uniqueId not in (select s.owner.uniqueId from Solution s where s.uniqueId in :solutionIds)")
+    			"x.uniqueId = :solutionId and a.solution.owner != x.owner")
     			.setLong("locationId", getUniqueId())
-    			.setParameterList("solutionIds", solutionId, new LongType())
+    			.setLong("solutionId", solution.getUniqueId())
                 .setCacheable(true).list());
     	return ret;
     }

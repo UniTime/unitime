@@ -1373,7 +1373,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		if (assignment.getRooms() != null)
 			for (Location room : assignment.getRooms()) {
 				if (!room.isIgnoreRoomCheck()) {
-					for (Assignment a : room.getAssignments(getUniqueId()))
+					for (Assignment a : room.getAssignments(this))
 						if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a))
 							conflicts.add(a);
             	}
