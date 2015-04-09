@@ -62,6 +62,8 @@ public class UniTimeAuthenticationUserDetailsService implements AuthenticationUs
 					userId = value.toString();
 				}
 			}
+			if (ApplicationProperty.AuthenticationCasIdAlwaysTranslate.isTrue())
+				userId = iTranslation.translate(userId, Source.LDAP, Source.User);
 		} else if (iTranslation != null) {
 			userId = iTranslation.translate(userId, Source.LDAP, Source.User);
 		}
