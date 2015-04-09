@@ -1819,6 +1819,11 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("CAS Authentication: always translate the id-attribute using the provided external user id translation class (see tmtbl.externalUid.translation property)")
+	AuthenticationCasIdAlwaysTranslate("unitime.authentication.cas.id-translate"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("CAS Authentication: trim leading zeros from the user external id")
 	AuthenticationCasIdTrimLeadingZerosFrom("unitime.authentication.cas.id-trim"),
 	
