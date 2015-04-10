@@ -33,10 +33,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.FlushMode;
+import org.hibernate.Query;
 import org.hibernate.Transaction;
+import org.hibernate.type.StringType;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -1572,5 +1575,81 @@ public class Class_ extends BaseClass_ {
 
 	@Override
 	public Department getDepartment() { return getManagingDept(); }
+	
+	public List<DistributionPref> getSharedPreferences(Long classId, Long subpartId, String[] preferences,  String[] types) {
+		if (classId == null) return null;
+		Query q1 = Class_DAO.getInstance().getSession().createQuery(
+				"select o1.distributionPref from DistributionObject o1, DistributionObject o2" + 
+				(subpartId == null ? ", Class_ c2" : "") + " where " +
+				"o1.distributionPref = o2.distributionPref and o1.prefGroup.uniqueId in (:c1, :s1)" +
+				(subpartId == null ? " and o2.prefGroup.uniqueId in (c2.uniqueId, c2.schedulingSubpart.uniqueId) and c2.uniqueId = :c2" : " and o2.prefGroup.uniqueId in (:c2, :s2)") +
+				(preferences == null || preferences.length == 0 ? "" : " and o1.distributionPref.prefLevel.prefProlog " + (preferences.length == 1 ? "=" : "in" ) + " :p") +
+				(types == null || types.length == 0 ? "" : " and o1.distributionPref.distributionType.reference " + (types.length == 1 ? "=" : "in") + " :t")
+				);
+		Query q2 = Class_DAO.getInstance().getSession().createQuery(
+				"select p from ClassInstructor c1 inner join c1.instructor.preferences p, ClassInstructor c2 where " +
+				"c1.classInstructing = :c1 and c2.classInstructing = :c2 and c1.instructor = c2.instructor and p.class = DistributionPref" +
+				(preferences == null || preferences.length == 0 ? "" : " and p.prefLevel.prefProlog " + (preferences.length == 1 ? "=" : "in" ) + " :p") +
+				(types == null || types.length == 0 ? "" : " and p.distributionType.reference " + (types.length == 1 ? "=" : "in") + " :t")
+				);
+		q1.setLong("c1", getUniqueId()).setLong("s1", getSchedulingSubpart().getUniqueId()).setLong("c2", classId);
+		q2.setLong("c1", getUniqueId()).setLong("c2", classId);
+		if (subpartId != null)
+			q1.setLong("s2", subpartId);
+		if (preferences != null) {
+			if (preferences.length == 1) {
+				q1.setString("p", preferences[0]);
+				q2.setString("p", preferences[0]);
+			} else if (preferences.length > 1) {
+				q1.setParameterList("p", preferences, new StringType());
+				q2.setParameterList("p", preferences, new StringType());
+			}
+		}
+		if (types != null) {
+			if (types.length == 1) {
+				q1.setString("t", types[0]);
+				q2.setString("t", types[0]);
+			} else if (types.length > 1) {
+				q1.setParameterList("t", types, new StringType());
+				q2.setParameterList("t", types, new StringType());
+			}
+		}
+		
+		List<DistributionPref> ret = new ArrayList<DistributionPref>(q1.setCacheable(true).list());
+		ret.addAll(q2.setCacheable(true).list());
+		
+		return ret;
+	}
 
+	public boolean canShareRoom(Class_ other) {
+		if (other == null) return false;
+		return !getSharedPreferences(other.getUniqueId(), other.getSchedulingSubpart().getUniqueId(),
+				new String[] { PreferenceLevel.sRequired },
+				new String[] { "CAN_SHARE_ROOM", "MEET_WITH"}
+				).isEmpty();
+	}
+	
+	public boolean canShareInstructor(Class_ other) {
+		if (other == null) return false;
+		return !getSharedPreferences(other.getUniqueId(), other.getSchedulingSubpart().getUniqueId(),
+				new String[] { PreferenceLevel.sRequired },
+				new String[] { "MEET_WITH"}
+				).isEmpty();
+	}
+	
+	public boolean canShareRoom(Long other) {
+		if (other == null) return false;
+		return !getSharedPreferences(other, null,
+				new String[] { PreferenceLevel.sRequired },
+				new String[] { "CAN_SHARE_ROOM", "MEET_WITH"}
+				).isEmpty();
+	}
+	
+	public boolean canShareInstructor(Long other) {
+		if (other == null) return false;
+		return !getSharedPreferences(other, null,
+				new String[] { PreferenceLevel.sRequired },
+				new String[] { "MEET_WITH"}
+				).isEmpty();
+	}
 }

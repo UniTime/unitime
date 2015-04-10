@@ -170,7 +170,7 @@ public class ClassInfoModel implements Serializable {
 	            	if (!room.isIgnoreRoomChecks()){
 		            	for (Assignment a : room.getLocation().getCommitedAssignments()) {
 		            		if (a.getClazz().isCancelled()) continue;
-		            		if (assignment.getTime().overlaps(new ClassTimeInfo(a))) {
+		            		if (assignment.getTime().overlaps(new ClassTimeInfo(a)) && !a.getClazz().canShareRoom(assignment.getClazz())) {
 		            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
 		            				iChange.getConflicts().add(new ClassAssignment(a));
 		            		}
@@ -187,7 +187,7 @@ public class ClassInfoModel implements Serializable {
 		            		if (ci.equals(instructor.getInstructor())) continue;
 		            		Assignment a = ci.getClassInstructing().getCommittedAssignment();
 		            		if (a == null || a.getClazz().isCancelled()) continue;
-		            		if (assignment.getTime() != null && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
+		            		if (assignment.getTime() != null && assignment.getTime().overlaps(new ClassTimeInfo(a)) && !a.getClazz().canShareInstructor(assignment.getClazz())) {
 		            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
 		            				iChange.getConflicts().add(new ClassAssignment(a));
 		            		}
@@ -1242,17 +1242,25 @@ public class ClassInfoModel implements Serializable {
                 }
 
                 if (!allowConflicts && classIds!=null && !classIds.isEmpty()) {
-                	Long classId = (Long)classIds.iterator().next();
-        			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel()+".");
-                	continue;
+                	for (Long classId: classIds) {
+                		if (!clazz.canShareRoom(classId)) {
+                			if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel()+".");
+                			continue rooms;
+                		}
+                	}
                 }
-                if (classIds!=null && !classIds.isEmpty()) {
-                	prefInt += 10000;
-                	note = "Conflicts with "+Class_DAO.getInstance().get(classIds.iterator().next()).getClassLabel();
+                if (allowConflicts && classIds!=null && !classIds.isEmpty()) {
+                	for (Long classId: classIds) {
+                		if (!clazz.canShareRoom(classId)) {
+                			prefInt += 10000;
+                			note = "Conflicts with " + Class_DAO.getInstance().get(classId).getClassLabel();
+                			break;
+                		}
+                	}
                 }
                 if (classIds!=null && iChange!=null) {
                 	for (Long classId: classIds) {
-                		if (iChange.getCurrent(classId)!=null) {
+                		if (iChange.getCurrent(classId)!=null && !clazz.canShareRoom(classId)) {
                         	if (room.getLabel().equals(filter)) iForm.setMessage("Room "+room.getLabel()+" is not available for "+period.getLongName()+" due to the class "+Class_DAO.getInstance().get(classId).getClassLabel()+".");
                         	continue rooms;
                 		}

@@ -77,6 +77,20 @@
 				<line>In online student scheduling, it is possible to keep existing students in cancelled classes when solver configuration parameter named Enrollment.CanKeepCancelledClass is set to true (defaults to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>Conficting Classes</name>
+			<description>
+				<line>Class Detail: Display conflicting classes.
+					<line>There is a new table called Conflicting Classes, just bellow the Timetable section.</line>
+					<line>The table is only visible when the class is conflicting with some other class (or classes).</line>
+					<line>The same checking as on the Class Assignment page is used.</line>
+				</line>
+				<line>Instructional Offering Detail: Highlight conflicting classes with light red background.
+					<line>Conflicting classes are listed in the tooltip (more details are provided on the Class Detail page, see above).</line>
+				</line>
+				<line>Conflict checking: avoid showing conflicts between classes that can overlap because of the Can Share Room or the Meet Together distribution.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

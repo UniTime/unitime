@@ -1374,7 +1374,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			for (Location room : assignment.getRooms()) {
 				if (!room.isIgnoreRoomCheck()) {
 					for (Assignment a : room.getAssignments(this))
-						if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a))
+						if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareRoom(a.getClazz()))
 							conflicts.add(a);
             	}
             }
@@ -1386,7 +1386,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					for (ClassInstructor ci : di.getClasses()) {
 	            		if (ci.equals(instructor)) continue;
 	            		Assignment a = getAssignment(ci.getClassInstructing());
-	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
+	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareInstructor(a.getClazz()))
 	            			conflicts.add(a);
 	            	}
             	}
