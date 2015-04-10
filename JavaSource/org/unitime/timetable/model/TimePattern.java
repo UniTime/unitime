@@ -178,6 +178,10 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     				continue;
     			}
     		}
+    		if (pattern.getType() == sTypeExactTime) {
+    			if (includeExactTime) list.add(pattern);
+    			continue;
+    		}
     		if (model.isValidCombination(minutes, datePattern, pattern))
     			list.add(pattern);
     	}
