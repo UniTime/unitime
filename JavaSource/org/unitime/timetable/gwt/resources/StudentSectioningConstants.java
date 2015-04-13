@@ -139,4 +139,10 @@ public interface StudentSectioningConstants extends Constants {
 		"All", "Enrolled", "Not Enrolled", "Wait-Listed"
 	})
 	String[] enrollmentFilterValues();
+	
+	@DefaultBooleanValue(false)
+	boolean showCourseTitle();
+	
+	@DefaultBooleanValue(false)
+	boolean courseFinderSuggestWhenEmpty();
 }

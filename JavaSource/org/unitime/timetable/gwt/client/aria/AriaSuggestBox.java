@@ -176,9 +176,16 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 	        	  }
 	        	  break;
 	          case KeyCodes.KEY_ENTER:
-	          case KeyCodes.KEY_TAB:
 	        	  if (isSuggestionListShowing())
 	        		  iSuggestionMenu.executeSelected();
+	        	  break;
+	          case KeyCodes.KEY_TAB:
+	        	  if (isSuggestionListShowing()) {
+	        		  if (getText().isEmpty())
+	        			  hideSuggestionList();
+	        		  else
+	        			  iSuggestionMenu.executeSelected();
+	        	  }
 	        	  break;
 	          case KeyCodes.KEY_ESCAPE:
 	        	  if (isSuggestionListShowing())

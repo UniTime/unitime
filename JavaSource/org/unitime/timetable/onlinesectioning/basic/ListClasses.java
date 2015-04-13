@@ -84,6 +84,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			ClassAssignmentInterface.CourseAssignment courseAssign = new ClassAssignmentInterface.CourseAssignment();
 			courseAssign.setCourseId(c.getCourseId());
 			courseAssign.setCourseNbr(c.getCourseNumber());
+			courseAssign.setTitle(c.getTitle());
 			courseAssign.setSubject(c.getSubjectArea());
 			for (XConfig config: offering.getConfigs())
 				for (XSubpart subpart: config.getSubparts())

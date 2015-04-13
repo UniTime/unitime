@@ -70,8 +70,17 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 	private CourseFinderCourseDetails[] iDetails = null;
 	private String iLastQuery = null;
 	
+	private boolean iShowCourses = false, iShowDefaultSuggestions = false;
+	
 	public CourseFinderCourses() {
+		this(false, false);
+	}
+	
+	public CourseFinderCourses(boolean showCourses, boolean showDefaultSuggestions) {
 		super();
+		
+		iShowCourses = showCourses;
+		iShowDefaultSuggestions = showDefaultSuggestions;
 		
 		iCourses = new WebTable();
 		iCourses.setHeader(new WebTable.Row(
@@ -155,15 +164,16 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 		} else {
 			WebTable.Row row = iCourses.getRows()[iCourses.getSelectedRow()];
 			String courseName = MESSAGES.courseName(row.getCell(0).getValue(), row.getCell(1).getValue());
-			if ("false".equals(row.getId()))
-				courseName = MESSAGES.courseNameWithTitle(row.getCell(0).getValue(), row.getCell(1).getValue(), row.getCell(2).getValue());
+			if ("false".equals(row.getId()) || iShowCourses)
+				courseName = MESSAGES.courseNameWithTitle(row.getCell(0).getValue(), row.getCell(1).getValue(), row.getCell(3).getValue());
 			return courseName;
 		}
 	}
 
 	@Override
 	public void setValue(String value, final boolean fireEvents) {
-		if (value == null || value.isEmpty()) {
+		if (value == null) value = "";
+		if (value.isEmpty() && !iShowDefaultSuggestions) {
 			iLastQuery = null;
 			iCourses.clearData(true);
 			iCourses.setEmptyMessage(MESSAGES.courseSelectionNoCourseFilter());
@@ -254,12 +264,12 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 		} else {
 			WebTable.Row row = iCourses.getRows()[iCourses.getSelectedRow()];
 			String courseName = MESSAGES.courseName(row.getCell(0).getValue(), row.getCell(1).getValue());
-			if ("false".equals(row.getId()))
-				courseName = MESSAGES.courseNameWithTitle(row.getCell(0).getValue(), row.getCell(1).getValue(), row.getCell(2).getValue());
+			if ("false".equals(row.getId()) || iShowCourses)
+				courseName = MESSAGES.courseNameWithTitle(row.getCell(0).getValue(), row.getCell(1).getValue(), row.getCell(3).getValue());
 			for (CourseFinderCourseDetails detail: iDetails)
 				detail.setValue(courseName);
 			String title = row.getCell(3).getValue();
-			String note = row.getCell(4).getValue();
+			String note = row.getCell(5).getValue();
 			if (title.isEmpty()) {
 				if (note.isEmpty()) {
 					AriaStatus.getInstance().setHTML(ARIA.courseFinderSelected(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue()));

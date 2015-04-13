@@ -76,6 +76,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -123,6 +124,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private PinDialog iPinDialog = null;
 	private boolean iScheduleChanged = false;
 	private HTML iMessage = null;
+	
+	private CheckBox iCustomCheckbox = null;
 
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
@@ -188,7 +191,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		HorizontalPanel rightFooterPanel = new HorizontalPanel();
 		iFooter.add(rightFooterPanel);
 		iFooter.setCellHorizontalAlignment(rightFooterPanel, HasHorizontalAlignment.ALIGN_RIGHT);
-
+		
 		iStartOver = new AriaButton(MESSAGES.buttonStartOver());
 		iStartOver.setTitle(MESSAGES.hintStartOver());
 		if (mode.isSectioning())
@@ -499,6 +502,28 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (!result.hasMessages())
 							setMessage(MESSAGES.enrollOK());
 						updateHistory();
+						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.RECHECK_AFTER_ENROLLMENT)) {
+							iSectioningService.checkEligibility(iOnline, iSessionSelector.getAcademicSessionId(),
+									iEligibilityCheck.getStudentId(), (String)null,
+									new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
+										@Override
+										public void onFailure(Throwable caught) {
+										}
+
+										@Override
+										public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
+											if (!result.hasFlag(EligibilityFlag.CAN_ENROLL)) {
+												iEligibilityCheck.setFlag(EligibilityFlag.CAN_ENROLL, false);
+												iEnroll.setEnabled(false);
+												iEnroll.setVisible(false);
+												if (iCustomCheckbox != null) {
+													iCustomCheckbox.setVisible(false);
+													iCustomCheckbox.setEnabled(false);
+												}
+											}
+										}
+									});
+						}
 					}
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
@@ -676,7 +701,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 								new WebTable.CheckboxCell(clazz.isPinned(), course.isFreeTime() ? ARIA.freeTimePin(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours())) : ARIA.classPin(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection())), MESSAGES.hintLocked(), MESSAGES.hintUnlocked()),
 								new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : "").aria(firstClazz ? "" : course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-								new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : "").aria(firstClazz ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+								new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(firstClazz ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 								new WebTable.Cell(clazz.getSubpart()),
 								new WebTable.Cell(clazz.getSection()),
 								new WebTable.Cell(clazz.getLimitString()),
@@ -694,7 +719,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.CheckboxCell(clazz.isPinned() , course.isFreeTime() ? ARIA.freeTimePin(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours())) : ARIA.classPin(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection())), MESSAGES.hintLocked(), MESSAGES.hintUnlocked()),
 									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : ""),
-									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : ""),
+									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle()) : ""),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
@@ -798,7 +823,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
@@ -818,7 +843,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
@@ -835,7 +860,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
@@ -857,7 +882,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(course.getSubject()),
-									new WebTable.Cell(course.getCourseNbr()),
+									new WebTable.Cell(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(unassignedMessage, 11, null),
 									waitList,
 									icons);
@@ -865,7 +890,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(course.getSubject()),
-									new WebTable.Cell(course.getCourseNbr()),
+									new WebTable.Cell(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(unassignedMessage, 12, null),
 									icons);
 						}
@@ -899,7 +924,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								row = new WebTable.Row(
 										new WebTable.Cell(null),
 										new WebTable.Cell("").aria(course.getSubject()),
-										new WebTable.Cell("").aria(course.getCourseNbr()),
+										new WebTable.Cell("").aria(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 										new WebTable.Cell(clazz.getSubpart()),
 										new WebTable.Cell(clazz.getSection()),
 										new WebTable.Cell(clazz.getLimitString()),
@@ -917,7 +942,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								row = new WebTable.Row(
 										new WebTable.Cell(null),
 										new WebTable.Cell("").aria(course.getSubject()),
-										new WebTable.Cell("").aria(course.getCourseNbr()),
+										new WebTable.Cell("").aria(course.getCourseNbr(CONSTANTS.showCourseTitle())),
 										new WebTable.Cell(clazz.getSubpart()),
 										new WebTable.Cell(clazz.getSection()),
 										new WebTable.Cell(clazz.getLimitString()),
@@ -962,7 +987,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(firstClazz ? course.getSubject() : "").aria(firstClazz ? "" : course.getSubject()),
-									new WebTable.Cell(firstClazz ? course.getCourseNbr() : "").aria(firstClazz ? "" : course.getCourseNbr()),
+									new WebTable.Cell(firstClazz ? course.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(firstClazz ? "" : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
@@ -980,7 +1005,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							row = new WebTable.Row(
 									new WebTable.Cell(null),
 									new WebTable.Cell(firstClazz ? course.getSubject() : "").aria(firstClazz ? "" : course.getSubject()),
-									new WebTable.Cell(firstClazz ? course.getCourseNbr() : "").aria(firstClazz ? "" : course.getCourseNbr()),
+									new WebTable.Cell(firstClazz ? course.getCourseNbr(CONSTANTS.showCourseTitle()) : "").aria(firstClazz ? "" : course.getCourseNbr(CONSTANTS.showCourseTitle())),
 									new WebTable.Cell(clazz.getSubpart()),
 									new WebTable.Cell(clazz.getSection()),
 									new WebTable.Cell(clazz.getLimitString()),
@@ -1028,7 +1053,25 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iRequests.setVisible(true); iRequests.setEnabled(true);
 			iReset.setVisible(true); iReset.setEnabled(true);
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
-			iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
+			if (iEligibilityCheck != null && iEligibilityCheck.hasCheckboxMessage()) {
+				if (iCustomCheckbox == null) {
+					iCustomCheckbox = new CheckBox(iEligibilityCheck.getCheckboxMessage(), true);
+					((HorizontalPanel)iFooter.getWidget(1)).insert(iCustomCheckbox, 0);
+					((HorizontalPanel)iFooter.getWidget(1)).setCellVerticalAlignment(iCustomCheckbox, HasVerticalAlignment.ALIGN_MIDDLE);
+					iCustomCheckbox.getElement().getStyle().setPaddingRight(10, Unit.PX);
+					iCustomCheckbox.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<Boolean> event) {
+							iEnroll.setEnabled(event.getValue());
+						}
+					});
+				}
+				iEnroll.setEnabled(iCustomCheckbox.getValue());
+				iCustomCheckbox.setEnabled(true);
+				iCustomCheckbox.setVisible(true);
+			} else {
+				iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
+			}
 			iPrint.setVisible(true); iPrint.setEnabled(true);
 			iStartOver.setVisible(iSavedAssignment != null); iStartOver.setEnabled(iSavedAssignment != null);
 			if (iExport != null) {
@@ -1080,6 +1123,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iRequests.setVisible(false); iRequests.setEnabled(false);
 		iReset.setVisible(false); iReset.setEnabled(false);
 		iEnroll.setVisible(false); iEnroll.setEnabled(false);
+		if (iCustomCheckbox != null) {
+			iCustomCheckbox.setVisible(false); iCustomCheckbox.setEnabled(false);
+		}
 		iPrint.setVisible(false); iPrint.setEnabled(false);
 		iStartOver.setVisible(false); iStartOver.setVisible(false);
 		if (iExport != null) {

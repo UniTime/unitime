@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
@@ -41,6 +42,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.activation.DataSource;
 import javax.imageio.ImageIO;
@@ -228,32 +231,46 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							}
 						}
 						
+						String additionalCC = ApplicationProperty.OnlineSchedulingEmailCarbonCopy.value();
+						if (additionalCC != null) {
+							String suffix = ApplicationProperty.EmailDefaultAddressSuffix.value();
+							for (String address: additionalCC.split("[\n,]")) {
+								String cc = address.trim();
+								if (cc.isEmpty()) continue;
+								if (suffix != null && cc.indexOf('@') < 0)
+									cc += suffix;
+								email.addRecipientCC(cc, null);
+							}
+						}
+						
 						final StringWriter buffer = new StringWriter();
-						PrintWriter out = new PrintWriter(buffer);
-						generateTimetable(out, server, helper);
-						out.flush(); out.close();							
-						email.addAttachement(new DataSource() {
-							@Override
-							public OutputStream getOutputStream() throws IOException {
-								throw new IOException("No output stream.");
-							}
-							
-							@Override
-							public String getName() {
-								return "message.html";
-							}
-							
-							@Override
-							public InputStream getInputStream() throws IOException {
-								return new ByteArrayInputStream(
-										html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Grid'/>", buffer.toString()).getBytes("UTF-8"));
-							}
-							
-							@Override
-							public String getContentType() {
-								return "text/html; charset=UTF-8";
-							}
-						});
+						if (ApplicationProperty.OnlineSchedulingEmailIncludeMessage.isTrue()) {
+							PrintWriter out = new PrintWriter(buffer);
+							generateTimetable(out, server, helper);
+							out.flush(); out.close();
+							email.addAttachement(new DataSource() {
+								@Override
+								public OutputStream getOutputStream() throws IOException {
+									throw new IOException("No output stream.");
+								}
+								
+								@Override
+								public String getName() {
+									return "message.html";
+								}
+								
+								@Override
+								public InputStream getInputStream() throws IOException {
+									return new ByteArrayInputStream(
+											html.replace("<img src='cid:timetable.png' border='0' alt='Timetable Grid'/>", buffer.toString()).getBytes("UTF-8"));
+								}
+								
+								@Override
+								public String getContentType() {
+									return "text/html; charset=UTF-8";
+								}
+							});							
+						}
 						
 						if (iTimetableImage != null) {
 							email.addAttachement(new DataSource() {
@@ -279,32 +296,34 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							});
 						}
 						
-						try {
-							final String calendar = CalendarExport.getCalendar(server, student);
-							if (calendar != null)
-								email.addAttachement(new DataSource() {
-									@Override
-									public OutputStream getOutputStream() throws IOException {
-										throw new IOException("No output stream.");
-									}
-									
-									@Override
-									public String getName() {
-										return "timetable.ics";
-									}
-									
-									@Override
-									public InputStream getInputStream() throws IOException {
-										return new ByteArrayInputStream(calendar.getBytes("UTF-8"));
-									}
-									
-									@Override
-									public String getContentType() {
-										return "text/calendar; charset=UTF-8";
-									}
-								});
-						} catch (IOException e) {
-							helper.warn("Unable to create calendar for student " + student.getStudentId() + ":" + e.getMessage());
+						if (ApplicationProperty.OnlineSchedulingEmailICalendar.isTrue()) {
+							try {
+								final String calendar = CalendarExport.getCalendar(server, student);
+								if (calendar != null)
+									email.addAttachement(new DataSource() {
+										@Override
+										public OutputStream getOutputStream() throws IOException {
+											throw new IOException("No output stream.");
+										}
+										
+										@Override
+										public String getName() {
+											return "timetable.ics";
+										}
+										
+										@Override
+										public InputStream getInputStream() throws IOException {
+											return new ByteArrayInputStream(calendar.getBytes("UTF-8"));
+										}
+										
+										@Override
+										public String getContentType() {
+											return "text/calendar; charset=UTF-8";
+										}
+									});
+							} catch (IOException e) {
+								helper.warn("Unable to create calendar for student " + student.getStudentId() + ":" + e.getMessage());
+							}							
 						}
 						
 						String lastMessageId = sLastMessage.get(student.getStudentId());
@@ -406,10 +425,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	private String generateMessage(org.unitime.timetable.model.Student student, OnlineSectioningServer server, OnlineSectioningHelper helper)  throws IOException, TemplateException {
 		Configuration cfg = new Configuration();
-		cfg.setClassForTemplateLoading(StudentEmail.class, "");
+		cfg.setClassForTemplateLoading(StudentEmail.class, "/");
 		cfg.setLocale(Localization.getJavaLocale());
 		cfg.setOutputEncoding("utf-8");
-		Template template = cfg.getTemplate("StudentEmail.ftl");
+		Template template = cfg.getTemplate(ApplicationProperty.OnlineSchedulingEmailTemplate.value());
 		Map<String, Object> input = new HashMap<String, Object>();
 		
 		input.put("msg", MSG);
@@ -422,10 +441,22 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		input.put("message", getMessage());
 		input.put("dfConsentApproval", sConsentApprovalDateFormat);
 		
-		input.put("classes", generateListOfClasses(student, server, helper));
-
+		Table classes = generateListOfClasses(student, server, helper);
+		input.put("classes", classes);
 		
-		if (!getStudent().getRequests().isEmpty()) {
+		// Total credit
+		float totalCredit = 0f;
+		Pattern pattern = Pattern.compile("\\d+\\.?\\d*");
+		for (TableLine line: classes) {
+			String credit = line.getCredit();
+			if (credit == null) continue;
+			Matcher m = pattern.matcher(credit);
+			if (m.find())
+				totalCredit += Float.parseFloat(m.group());
+		}
+		input.put("credit", new DecimalFormat("0.#").format(totalCredit));
+		
+		if (!getStudent().getRequests().isEmpty() && ApplicationProperty.OnlineSchedulingEmailIncludeImage.isTrue()) {
 			try {
 				iTimetableImage = generateTimetableImage(server);
 			} catch (Exception e) {
@@ -1129,6 +1160,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		
 		public String getSubject();
 		public String getCourseNumber();
+		public String getCourseTitle();
 		public String getType();
 		public String getName();
 		
@@ -1173,6 +1205,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 		@Override
 		public String getCourseNumber() { return getCourse().getCourseNumber(); }
+		
+		@Override
+		public String getCourseTitle() { return getCourse().getTitle(); }
 		
 		@Override
 		public String getType() { return null; }
@@ -1344,6 +1379,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 		@Override
 		public String getCourseNumber() { return MSG.freeTimeSubject(); }
+		
+		@Override
+		public String getCourseTitle() { return null; }
 		
 		@Override
 		public String getType() { return null; }

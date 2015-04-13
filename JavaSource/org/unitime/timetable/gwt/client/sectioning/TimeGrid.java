@@ -382,6 +382,10 @@ public class TimeGrid extends Composite {
 		String time = row.getDaysString(CONSTANTS.shortDays()) + " " + row.getStartString(CONSTANTS.useAmPm()) + " - " + row.getEndString(CONSTANTS.useAmPm());
 		ArrayList<String> notes = new ArrayList<String>();
 		ArrayList<String> notesNoHtml = new ArrayList<String>();
+		if (row.hasTitle() && CONSTANTS.showCourseTitle()) {
+			notes.add(row.getTitle());
+			notesNoHtml.add(row.getTitle());
+		}
 		if (row.hasRoom()) {
 			notes.add(row.getRooms(", "));
 			notesNoHtml.add(row.getRooms(", "));

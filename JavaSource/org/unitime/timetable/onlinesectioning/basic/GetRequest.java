@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.onlinesectioning.basic;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
@@ -37,6 +39,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
  * @author Tomas Muller
  */
 public class GetRequest implements OnlineSectioningAction<CourseRequestInterface> {
+	protected static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	private static final long serialVersionUID = 1L;
 	
 	private Long iStudentId;
@@ -92,13 +95,13 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						if (c == null) continue;
 						switch (order) {
 							case 0: 
-								r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+								r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 								break;
 							case 1:
-								r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+								r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 								break;
 							case 2:
-								r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+								r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 							}
 						order++;
 						}

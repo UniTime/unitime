@@ -54,6 +54,7 @@ import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
@@ -1844,6 +1845,40 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Conflict-statistics: save to file")
 	ConflictStatisticsSaveToFile("unitime.cbs.saveToFile"),
+	
+	@Type(Class.class)
+	@Implements(CourseMatcherProvider.class)
+	@Description("Customization: course matcher provider (interface CourseMatcherProvider)")
+	CustomizationCourseMatcher("unitime.custom.CourseMatcherProvider"),	
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: call custom eligibility check before enrollment")
+	OnlineSchedulingCustomEligibilityRecheck("unitime.enrollment.recheckCustomEligibility"),
+	
+	@Type(String.class)
+	@DefaultValue("org/unitime/timetable/onlinesectioning/updates/StudentEmail.ftl")
+	@Description("Online Student Scheduling: confirmation email template")
+	OnlineSchedulingEmailTemplate("unitime.enrollment.email.teplate"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: confirmation email attach ICS (iCalendar) file")
+	OnlineSchedulingEmailICalendar("unitime.enrollment.email.ics"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: confirmation email attach timetable grid as image")
+	OnlineSchedulingEmailIncludeImage("unitime.enrollment.email.grid"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: confirmation email attach message as html file")
+	OnlineSchedulingEmailIncludeMessage("unitime.enrollment.email.message"),
+	
+	@Type(String.class)
+	@Description("Online Student Scheduling: confirmation email CC addresses (comma separated)")
+	OnlineSchedulingEmailCarbonCopy("unitime.enrollment.email.cc")
 	;
 
 	String iKey;
