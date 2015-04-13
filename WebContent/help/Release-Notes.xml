@@ -75,6 +75,12 @@
 				</line>
 				<line>In student scheduling, cancelled classes are avoided (no valid enrollment can contain a cancelled class).</line>
 				<line>In online student scheduling, it is possible to keep existing students in cancelled classes when solver configuration parameter named Enrollment.CanKeepCancelledClass is set to true (defaults to false).</line>
+				<line>New permissions:
+					<line>Class Delete: ability to delete a class (class cannot be deleted when there is a committed solution and at least one student enrolled in the class)</line>
+					<line>Class Delete No Enrollment Check: this permission overrides the enrollment check from the Class Delete permission (not given to any role by default)</line>
+					<line>Class Cancel: ability to cancel a class (there must be a committed solution)</line>
+					<line>The Class Delete and Class Cancel permissions are by default given to all roles that have Multiple Class Setup Class and / or Class Edit permissions.</line>
+				</line>
 			</description>
 		</item>
 		<item>

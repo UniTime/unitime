@@ -135,6 +135,7 @@ public enum Right {
 	ClassEdit(Class_.class),
 	ClassEditClearPreferences(Class_.class),
 	ClassDelete(Class_.class),
+	ClassDeleteNoEnrollmentCheck(Class_.class),
 	ClassCancel(Class_.class),
 	
     ExtendedDatePatterns,

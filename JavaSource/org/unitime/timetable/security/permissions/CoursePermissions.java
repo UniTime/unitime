@@ -882,17 +882,27 @@ public class CoursePermissions {
 	}
 	
 	@PermissionForRight(Right.ClassDelete)
-	public static class ClassDelete implements Permission<Class_> {
+	public static class ClassDelete extends ClassDeleteNoEnrollmentCheck {
+		@Override
+		public boolean check(UserContext user, Class_ source) {
+			if (!user.getCurrentAuthority().hasRight(Right.ClassDeleteNoEnrollmentCheck)) {
+				// There is a committed solution -> class with enrollment cannot be edited
+				if (source.getManagingDept() != null && source.getManagingDept().getSolverGroup() != null && source.getManagingDept().getSolverGroup().getCommittedSolution() != null) {
+					if (source.getEnrollment() > 0) return false;
+				}
+			}
+			
+			return super.check(user, source);
+		}
+	}
+	
+	@PermissionForRight(Right.ClassDeleteNoEnrollmentCheck)
+	public static class ClassDeleteNoEnrollmentCheck implements Permission<Class_> {
 		@Autowired PermissionDepartment permissionDepartment;
 		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
 
 		@Override
 		public boolean check(UserContext user, Class_ source) {
-			// There is a committed solution -> class with enrollment cannot be edited
-			if (source.getManagingDept() != null && source.getManagingDept().getSolverGroup() != null && source.getManagingDept().getSolverGroup().getCommittedSolution() != null) {
-				if (source.getEnrollment() > 0) return false;
-			}
-
 			return !permissionOfferingLockNeeded.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()) &&
 					permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerEdit,
 							source.getManagingDept(), DepartmentStatusType.Status.ManagerEdit);
