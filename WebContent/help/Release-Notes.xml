@@ -33,6 +33,7 @@
 			<name>Online Student Scheduling Server</name>
 			<description>
 				<line>Get course by name or by name and title: fix the case when there is a dash in the subject area abbreviation or a course number.</line>
+				<line>Improved handling of the case when a student is enrolled into the same offering multiple times, under different course names.</line>
 			</description>
 		</item>
 		<item>

@@ -130,7 +130,7 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 									helper.getHibSession().saveOrUpdate(e);
 								}
 								
-								server.execute(server.createAction(NotifyStudentAction.class).forStudent(enrollment.getStudentId()).oldEnrollment(offering, oldEnrollment), helper.getUser());
+								server.execute(server.createAction(NotifyStudentAction.class).forStudent(enrollment.getStudentId()).oldEnrollment(offering, offering.getCourse(oldEnrollment.getCourseId()), oldEnrollment), helper.getUser());
 							}
 						}
 					}
