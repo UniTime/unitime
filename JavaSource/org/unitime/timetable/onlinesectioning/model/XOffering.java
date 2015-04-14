@@ -175,6 +175,11 @@ public class XOffering implements Serializable, Externalizable {
     
     /** Course of this offering with the given id */
     public XCourse getCourse(Long courseId) {
+    	if (courseId == null) {
+    		for (XCourse course: getCourses())
+    			if (course.getCourseName().equals(getName())) return course;
+    		return getCourses().get(0);
+    	}
     	for (XCourse course: getCourses())
     		if (course.getCourseId().equals(courseId)) return course;
     	return null;
@@ -189,6 +194,7 @@ public class XOffering implements Serializable, Externalizable {
     
     /** List of sections of the given enrollment */
     public List<XSection> getSections(XEnrollment enrollment) {
+    	if (enrollment == null) return null;
     	List<XSection> sections = new ArrayList<XSection>();
         for (XConfig config : getConfigs()) {
             for (XSubpart subpart : config.getSubparts()) {

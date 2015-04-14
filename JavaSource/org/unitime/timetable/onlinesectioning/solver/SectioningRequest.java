@@ -82,6 +82,8 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 		iAction = action;
 	}
 	
+	public XCourseId getCourseId() { return getRequest().getCourseIdByOfferingId(getOffering().getOfferingId()); }
+	
 	public XOffering getOffering() { return (iOffering == null ? iOldOffering : iOffering); }
 	public SectioningRequest setOldOffering(XOffering offering) { iOldOffering = offering; return this; }
 	public XOffering getOldOffering() { return (iOldOffering != null ? iOldOffering : iOffering); }

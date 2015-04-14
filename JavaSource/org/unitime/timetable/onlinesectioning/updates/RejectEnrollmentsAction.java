@@ -125,7 +125,7 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 						student.getRequests().remove(request);
 						server.update(student, true);
 						
-						server.execute(server.createAction(NotifyStudentAction.class).forStudent(enrollment.getStudentId()).oldEnrollment(offering, enrollment), helper.getUser());
+						server.execute(server.createAction(NotifyStudentAction.class).forStudent(enrollment.getStudentId()).oldEnrollment(offering, offering.getCourse(enrollment.getCourseId()), enrollment), helper.getUser());
 					}
 					
 				}
