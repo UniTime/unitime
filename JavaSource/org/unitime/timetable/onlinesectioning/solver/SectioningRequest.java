@@ -62,20 +62,17 @@ import org.unitime.timetable.onlinesectioning.model.XTime;
  * @author Tomas Muller
  */
 public class SectioningRequest implements Comparable<SectioningRequest>, LastSectionProvider {
-	private XCourseRequest iRequest;
-	private XStudent iOldStudent;
-	private XEnrollment iLastEnrollment;
-	private XOffering iOffering;
+	private XCourseRequest iOldRequest, iRequest;
+	private XStudent iOldStudent, iStudent;
+	private XEnrollment iLastEnrollment, iNewEnrollment;
+	private XOffering iOldOffering, iOffering;
 	private boolean iHasIndividualReservation;
 	private OnlineSectioningLog.Action.Builder iAction;
-	private OnlineSectioningLog.CourseRequestOption iOriginal;
 	private List<Section> iLastSections = new ArrayList<Section>();
 
-	public SectioningRequest(XOffering offering, XCourseRequest request, XStudent oldStudent, XEnrollment lastEnrollment,
-			OnlineSectioningLog.Action.Builder action, OnlineSectioningLog.CourseRequestOption original) {
+	public SectioningRequest(XOffering offering, XCourseRequest request, XStudent student, OnlineSectioningLog.Action.Builder action) {
 		iRequest = request;
-		iOldStudent = oldStudent;
-		iLastEnrollment = lastEnrollment;
+		iStudent = student;
 		iOffering = offering;
 		iHasIndividualReservation = false;
 		for (XReservation reservation: iOffering.getReservations())
@@ -83,19 +80,32 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 				iHasIndividualReservation = true; break;
 			}
 		iAction = action;
-		iOriginal = original;
 	}
 	
-	public XCourseRequest getRequest() { return iRequest; }
+	public XOffering getOffering() { return (iOffering == null ? iOldOffering : iOffering); }
+	public SectioningRequest setOldOffering(XOffering offering) { iOldOffering = offering; return this; }
+	public XOffering getOldOffering() { return (iOldOffering != null ? iOldOffering : iOffering); }
+	
+	public XStudent getStudent() { return (iStudent == null ? iOldStudent : iStudent); }
+	public SectioningRequest setOldStudent(XStudent student) { iOldStudent = student; return this; }
+	public XStudent getOldStudent() { return (iOldStudent == null ? iStudent : iOldStudent); }
+	
+	public SectioningRequest setLastEnrollment(XEnrollment enrollment) { iLastEnrollment = enrollment; return this; }
+	public XEnrollment getLastEnrollment() { return iLastEnrollment == null ? iNewEnrollment : iLastEnrollment; }
+	public SectioningRequest setNewEnrollment(XEnrollment enrollment) { iNewEnrollment = enrollment; return this; }
+	public XEnrollment getNewEnrollment() { return iNewEnrollment == null ? iLastEnrollment : iNewEnrollment; }
+	
+	public XCourseRequest getRequest() { return (iRequest == null ? iOldRequest : iRequest); }
+	public SectioningRequest setOldRequest(XCourseRequest request) { iOldRequest = request; return this; }
+	public XCourseRequest getOldRequest() { return (iOldRequest == null ? iRequest : iOldRequest); }
+
 	public void setRequest(XCourseRequest request) { iRequest = request; }
-	public XStudent getOldStudent() { return iOldStudent; }
-	public XEnrollment getLastEnrollment() { return iLastEnrollment; }
-	public XOffering getOffering() { return iOffering; }
 	public boolean hasIndividualReservation() { return iHasIndividualReservation; }
 	public OnlineSectioningLog.Action.Builder getAction() { return iAction; }
-	public OnlineSectioningLog.CourseRequestOption getOriginalEnrollment() { return iOriginal; }
-	public void setOriginalEnrollment(OnlineSectioningLog.CourseRequestOption original) { iOriginal = original; }
 	
+	public OnlineSectioningLog.CourseRequestOption getOriginalEnrollment() {
+		return getOldRequest().getOptions(getOldOffering().getOfferingId());
+	}
 	
 	public int hashCode() { return new Long(getRequest().getStudentId()).hashCode(); }
 	

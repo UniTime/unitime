@@ -151,7 +151,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						.setName(offering.getName())
 						.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
 				action.addRequest(OnlineSectioningHelper.toProto(request));
-				queue.add(new SectioningRequest(offering, request, null, null, action, null));
+				queue.add(new SectioningRequest(offering, request, student, action));
 			} else if (!check(server, student, offering, request)) {
 				OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 				action.setStudent(
@@ -165,7 +165,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				for (XSection section: offering.getSections(request.getEnrollment()))
 					enrollment.addSection(OnlineSectioningHelper.toProto(section, request.getEnrollment()));
 				action.addEnrollment(enrollment);
-				queue.add(new SectioningRequest(offering, request, student, request.getEnrollment(), action, null));
+				queue.add(new SectioningRequest(offering, request, student, action).setLastEnrollment(request.getEnrollment()));
 			}
 		}
 		
@@ -178,13 +178,34 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 			Date ts = new Date();
 			for (SectioningRequest r: queue) {
 				// helper.info("Resectioning " + r.getRequest() + " (was " + (r.getLastEnrollment() == null ? "not assigned" : r.getLastEnrollment().getAssignments()) + ")");
-				r.setOriginalEnrollment(r.getRequest().getOptions(offering.getOfferingId()));
 				long c0 = OnlineSectioningHelper.getCpuTime();
 				XEnrollment enrollment = r.resection(server, w, dc, toc);
+				
+				if (enrollment != null) {
+					enrollment.setTimeStamp(ts);
+					OnlineSectioningLog.Enrollment.Builder e = OnlineSectioningLog.Enrollment.newBuilder();
+					e.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
+					for (Long sectionId: enrollment.getSectionIds())
+						e.addSection(OnlineSectioningHelper.toProto(offering.getSection(sectionId), enrollment));
+					r.getAction().addEnrollment(e);
+				}
+				
+				if (CustomStudentEnrollmentHolder.hasProvider()) {
+					try {
+						enrollment = CustomStudentEnrollmentHolder.getProvider().resection(server, helper, r, enrollment);
+					} catch (Exception e) {
+						r.getAction().setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+						r.getAction().addMessage(OnlineSectioningLog.Message.newBuilder()
+								.setLevel(OnlineSectioningLog.Message.Level.FATAL)
+								.setText(e.getMessage() == null ? "null" : e.getMessage()));
+						helper.error("Unable to resection student: " + e.getMessage(), e);
+						continue;
+					}
+				}
+				
 				XCourseRequest prev = r.getRequest();
 				Long studentId = prev.getStudentId();
 				if (enrollment != null) {
-					enrollment.setTimeStamp(ts);
 					r.setRequest(server.assign(r.getRequest(), enrollment));
 				} else if (r.getRequest() != null) {
 					r.setRequest(server.assign(r.getRequest(), null));
@@ -192,13 +213,6 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				if (r.getRequest() == null) {
 					helper.fatal("Failed to assign " + studentId + ": " + (enrollment == null ? prev.toString() : enrollment.toString()));
 					continue;
-				}
-				if (enrollment != null) {
-					OnlineSectioningLog.Enrollment.Builder e = OnlineSectioningLog.Enrollment.newBuilder();
-					e.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
-					for (Long sectionId: enrollment.getSectionIds())
-						e.addSection(OnlineSectioningHelper.toProto(offering.getSection(sectionId), enrollment));
-					r.getAction().addEnrollment(e);
 				}
 				// helper.info("New: " + (r.getRequest().getAssignment() == null ? "not assigned" : r.getRequest().getAssignment().getAssignments()));
 				if (r.getLastEnrollment() == null && r.getRequest().getEnrollment() == null) continue;
@@ -220,10 +234,6 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 								approvedDate = enrl.getApprovedDate();
 							}
 							enrl.getClazz().getStudentEnrollments().remove(enrl);
-							/*
-							if (enrl.getCourseRequest() != null)
-								enrl.getCourseRequest().getClassEnrollments().remove(enrl);
-								*/
 							helper.getHibSession().delete(enrl);
 							i.remove();
 						}
@@ -274,7 +284,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 					helper.getHibSession().save(student);
 		
 					EnrollStudent.updateSpace(server,
-							r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(server.getStudent(r.getRequest().getStudentId()), r.getRequest(), server, offering, r.getRequest().getEnrollment()),
+							r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(r.getStudent(), r.getRequest(), server, offering, r.getRequest().getEnrollment()),
 							r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getRequest(), server, offering, r.getLastEnrollment()),
 							offering);
 					server.persistExpectedSpaces(offering.getOfferingId());

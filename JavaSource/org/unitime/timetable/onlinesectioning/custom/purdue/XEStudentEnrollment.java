@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +65,7 @@ import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -643,5 +645,209 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	@Override
 	public boolean isCanRequestUpdates() {
 		return false;
+	}
+
+	@Override
+	public XEnrollment resection(OnlineSectioningServer server, OnlineSectioningHelper helper, SectioningRequest sectioningRequest, XEnrollment enrollment) throws SectioningException {
+		ClientResource resource = null;
+		try {
+			// Start with a few lookups
+			XStudent student = sectioningRequest.getStudent();
+			XCourseId course = sectioningRequest.getRequest().getCourseIdByOfferingId(sectioningRequest.getOffering().getOfferingId());
+			
+			// Remove sections that are to be kept (they are included in both enrollments)
+			Set<String> idsToAdd = new TreeSet<String>(), idsToDrop = new TreeSet<String>();
+			if (sectioningRequest.getLastEnrollment() != null)
+				for (XSection section: sectioningRequest.getOldOffering().getSections(sectioningRequest.getLastEnrollment()))
+					idsToDrop.add(section.getExternalId(course.getCourseId()));
+			if (enrollment != null) {
+				for (XSection section: sectioningRequest.getOffering().getSections(enrollment))
+					idsToAdd.add(section.getExternalId(course.getCourseId()));
+			}
+			for (Iterator<String> i = idsToDrop.iterator(); i.hasNext(); )
+				if (idsToAdd.remove(i.next())) i.remove();
+			
+			// Return the new enrollment when there is no change detected
+			if (idsToAdd.isEmpty() && idsToDrop.isEmpty())
+				return enrollment;
+			
+			// Retrieve pin, academic session, banner term etc.
+			String pin = helper.getPin(); // FIXME: Is there a pin to use?
+			AcademicSessionInfo session = server.getAcademicSession();
+			String term = getBannerTerm(session);
+			if (helper.isDebugEnabled()) {
+				if (!idsToAdd.isEmpty())
+					helper.debug("Enrolling " + student.getName() + " to " + course.getCourseName() + " (term: " + term + ", id:" + getBannerId(student) + ", pin:" + pin + (idsToDrop.isEmpty() ? "" : ", drop: " + idsToDrop) + ", add: " + idsToAdd + ")");
+				else
+					helper.debug("Dropping " + student.getName() + " from " + course.getCourseName() + " (term: " + term + ", id:" + getBannerId(student) + ", pin:" + pin + ", drop: " + idsToDrop + ")");
+			}
+			
+			// First, check student registration status
+			resource = new ClientResource(iBannerApiUrl);
+			resource.setNext(iClient);
+			resource.addQueryParameter("term", term);
+			resource.addQueryParameter("bannerId", getBannerId(student));
+			sectioningRequest.getAction().addOptionBuilder().setKey("term").setValue(term);
+			sectioningRequest.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
+			if (pin != null && !pin.isEmpty()) {
+				resource.addQueryParameter("altPin", pin);
+				sectioningRequest.getAction().addOptionBuilder().setKey("pin").setValue(pin);
+			}
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, iBannerApiUser, iBannerApiPassword);
+			Gson gson = getGson(helper);
+			
+			try {
+				resource.get(MediaType.APPLICATION_JSON);
+			} catch (ResourceException exception) {
+				try {
+					XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+					sectioningRequest.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
+					XEInterface.Error error = response.getError();
+					if (error != null && error.message != null) {
+						throw new SectioningException(error.message);
+					} else if (error != null && error.description != null) {
+						throw new SectioningException(error.description);
+					} else if (error != null && error.errorMessage != null) {
+						throw new SectioningException(error.errorMessage);
+					} else {
+						throw exception;
+					}
+				} catch (SectioningException e) {
+					throw e;
+				} catch (Throwable t) {
+					throw exception;
+				}
+			}
+			
+			// Check status, memorize enrolled sections
+			List<XEInterface.RegisterResponse> current = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.TYPE_LIST);
+			if (current == null || current.isEmpty() || !current.get(0).validStudent) {
+				String reason = null;
+				if (current != null && current.size() > 0 && current.get(0).failureReasons != null) {
+					for (String m: current.get(0).failureReasons) {
+						if (reason == null)
+							reason = m;
+						else
+							reason += "\n" + m;
+					}
+				}
+				throw new SectioningException(reason == null ? "Failed to check student registration status." : reason);
+			}
+			
+			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), pin);
+			boolean changed = false;
+			sectioningRequest.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(current));
+			if (helper.isDebugEnabled())
+				helper.debug("Current registration: " + gson.toJson(current));
+			if (current.get(0).registrations != null)
+				for (XEInterface.Registration reg: current.get(0).registrations) {
+					if (reg.isRegistered()) {
+						if (idsToDrop.contains(reg.courseReferenceNumber)) {
+							if (!reg.canDrop())
+								throw new SectioningException("Section " + reg.courseReferenceNumber + " is not available for student scheduling.");
+							req.drop(reg.courseReferenceNumber);
+							changed = true;
+						} else {
+							req.add(reg.courseReferenceNumber);
+						}
+					} else if (!reg.canAdd() && idsToAdd.contains(reg.courseReferenceNumber)) {
+						throw new SectioningException("Section " + reg.courseReferenceNumber + " is not available for student scheduling.");
+					}
+				}
+			for (String id: idsToAdd) {
+				req.add(id);
+				changed = true;
+			}
+			
+			if (helper.isDebugEnabled())
+				helper.debug("Request: " + gson.toJson(req));
+			sectioningRequest.getAction().addOptionBuilder().setKey("request").setValue(gson.toJson(req));
+			
+			if (req.isEmpty() || !changed) {
+				// no classes to add or drop -> return no failures
+				return enrollment;
+			}
+
+			try {
+				resource.post(new JsonRepresentation(gson.toJson(req)));
+			} catch (ResourceException exception) {
+				try {
+					XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+					sectioningRequest.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
+					XEInterface.Error error = response.getError();
+					if (error != null && error.message != null) {
+						throw new SectioningException(error.message);
+					} else if (error != null && error.description != null) {
+						throw new SectioningException(error.description);
+					} else if (error != null && error.errorMessage != null) {
+						throw new SectioningException(error.errorMessage);
+					} else {
+						throw exception;
+					}
+				} catch (SectioningException e) {
+					throw e;
+				} catch (Throwable t) {
+					throw exception;
+				}
+			}
+			
+			// Finally, check the response
+			XEInterface.RegisterResponse response = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.class);
+			if (helper.isDebugEnabled())
+				helper.debug("Response: " + gson.toJson(response));
+			sectioningRequest.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));
+			if (response == null || !response.validStudent) {
+				String reason = null;
+				if (current != null && current.size() > 0 && current.get(0).failureReasons != null) {
+					for (String m: current.get(0).failureReasons) {
+						if (reason == null)
+							reason = m;
+						else
+							reason += "\n" + m;
+					}
+				}
+				throw new SectioningException(reason == null ? "Failed to enroll student." : reason);
+			}
+			
+			XEnrollment ret = new XEnrollment(enrollment == null ? sectioningRequest.getLastEnrollment() : enrollment);
+			ret.getSectionIds().clear();
+			Set<String> registered = new TreeSet<String>();
+			if (response.registrations != null) {
+				OnlineSectioningLog.Enrollment.Builder external = OnlineSectioningLog.Enrollment.newBuilder();
+				external.setType(OnlineSectioningLog.Enrollment.EnrollmentType.EXTERNAL);
+				for (XEInterface.Registration reg: response.registrations) {
+					String id = reg.courseReferenceNumber;
+					List<XSection> sections = sectioningRequest.getOffering().getSections(course.getCourseId(), id);
+					if (!sections.isEmpty() && "Registered".equals(reg.statusDescription)) {
+						for (XSection section: sections)
+							ret.getSectionIds().add(section.getSectionId());
+						registered.add(id);
+					}
+					if ("Registered".equals(reg.statusDescription)) {
+						external.addSectionBuilder()
+							.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
+							.setCourse(OnlineSectioningLog.Entity.newBuilder().setName(reg.subject + " " + reg.courseNumber))
+							.setSubpart(OnlineSectioningLog.Entity.newBuilder().setName(reg.scheduleType));
+					}
+				}
+				sectioningRequest.getAction().addEnrollment(external);
+			}
+			
+			if (helper.isDebugEnabled())
+				helper.debug("Return: " + registered);
+
+			return (ret.getSectionIds().isEmpty() ? null : ret);
+		} catch (SectioningException e) {
+			helper.info("Banner enrollment failed: " + e.getMessage());
+			throw e;
+		} catch (Exception e) {
+			helper.warn("Banner enrollment failed: " + e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
+		}
 	}
 }

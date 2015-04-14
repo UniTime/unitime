@@ -219,6 +219,23 @@ public class XOffering implements Serializable, Externalizable {
     }
     
     /**
+     * Return sections of the given external id, if it is part of one of this offering
+     * configurations.
+     */
+    public List<XSection> getSections(Long courseId, String externalId) {
+    	List<XSection> ret = new ArrayList<XSection>();
+    	for (XConfig config : getConfigs()) {
+            for (XSubpart subpart : config.getSubparts()) {
+                for (XSection section : subpart.getSections()) {
+                    if (externalId.equals(section.getExternalId(courseId)))
+                    	ret.add(section);
+                }
+            }
+        }
+    	return ret;
+    }
+    
+    /**
      * Return subpart of the given id, if it is part of this offering configuraions.
      */
     public XSubpart getSubpart(Long subpartId) {
