@@ -43,6 +43,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;
 	private Long iStudentId;
 	private XOffering iOldOffering;
+	private XCourseId iOldCourseId;
 	private XEnrollment iOldEnrollment;
 	private XStudent iOldStudent;
 	
@@ -51,8 +52,9 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 		return this;
 	}
 	
-	public NotifyStudentAction oldEnrollment(XOffering oldOffering, XEnrollment oldEnrollment) {
+	public NotifyStudentAction oldEnrollment(XOffering oldOffering, XCourseId oldCourseId, XEnrollment oldEnrollment) {
 		iOldOffering = oldOffering;
+		iOldCourseId = oldCourseId;
 		iOldEnrollment = oldEnrollment;
 		return this;
 	}
@@ -72,13 +74,15 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 				if (iOldEnrollment != null && !iOldOffering.getOfferingId().equals(iOldEnrollment.getOfferingId()))
 					iOldOffering = server.getOffering(iOldEnrollment.getOfferingId());
 				String message = "Student " + student.getName() + " (" + student.getStudentId() + ") changed.";
-				String courseName = (iOldEnrollment == null ? iOldOffering.getName() : iOldOffering.getCourse(iOldEnrollment.getCourseId()).getCourseName());
+				String courseName = (iOldCourseId != null ? iOldCourseId.getCourseName() : iOldEnrollment == null ? iOldOffering.getName() : iOldOffering.getCourse(iOldEnrollment.getCourseId()).getCourseName());
 				XCourseRequest request = null;
 				for (XRequest r: student.getRequests()) {
 					if (r instanceof XCourseRequest) {
 						XCourseRequest cr = (XCourseRequest)r;
 						XCourseId id = cr.getCourseIdByOfferingId(iOldOffering.getOfferingId());
-						if (id != null) { courseName = id.getCourseName(); request = cr; break; }
+						if (id != null && (iOldCourseId == null || id.equals(iOldCourseId)) && (iOldEnrollment == null || id.getCourseId().equals(iOldEnrollment.getCourseId()))) {
+							courseName = id.getCourseName(); request = cr; break;
+						}
 					}
 				}
 				message += "\n  Previous assignment:";
@@ -105,7 +109,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 				}
 				helper.debug(message);
 				if (server.getAcademicSession().isSectioningEnabled() && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue()) {
-					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).oldEnrollment(iOldOffering, iOldEnrollment), helper.getUser(), new ServerCallback<Boolean>() {
+					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).oldEnrollment(iOldOffering, iOldCourseId, iOldEnrollment), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
 							helper.error("Failed to notify student: " + exception.getMessage(), exception);

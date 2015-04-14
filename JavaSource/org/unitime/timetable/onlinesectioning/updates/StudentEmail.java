@@ -63,6 +63,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
@@ -104,6 +105,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	private Long iStudentId;
 	private XOffering iOldOffering;
+	private XCourseId iOldCourseId;
 	private XEnrollment iOldEnrollment;
 	private XStudent iOldStudent;
 	private XStudent iStudent;
@@ -113,8 +115,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		return this;
 	}
 	
-	public StudentEmail oldEnrollment(XOffering oldOffering, XEnrollment oldEnrollment) {
+	public StudentEmail oldEnrollment(XOffering oldOffering, XCourseId oldCourseId, XEnrollment oldEnrollment) {
 		iOldOffering = oldOffering;
+		iOldCourseId = oldCourseId;
 		iOldEnrollment = oldEnrollment;
 		return this;
 	}
@@ -138,6 +141,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	public XEnrollment getOldEnrollment() { return iOldEnrollment; }
 	public XOffering getOldOffering() { return iOldOffering; }
+	public XCourse getOldCourse() { return (iOldOffering == null || iOldCourseId == null ? null : iOldOffering.getCourse(iOldCourseId)); }
 	public XStudent getOldStudent() { return iOldStudent; }
 	public XStudent getStudent() { return iStudent; }
 	public void setStudent(XStudent student) { iStudent = student; }
@@ -445,9 +449,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 			XCourseRequest newRequest = null;
 			XOffering newOffering = null;
-			XCourse course = (getOldEnrollment() != null ? getOldOffering().getCourse(getOldEnrollment().getCourseId()) : null);
+			XCourse course = (getOldEnrollment() != null ? getOldOffering().getCourse(getOldEnrollment().getCourseId()) : getOldCourse());
 			for (XRequest r: getStudent().getRequests()) {
-				if (r instanceof XCourseRequest && ((XCourseRequest)r).getCourseIdByOfferingId(getOldOffering().getOfferingId()) != null) {
+				if (r instanceof XCourseRequest && (
+						(getOldCourse() == null && ((XCourseRequest)r).getCourseIdByOfferingId(getOldOffering().getOfferingId()) != null) ||
+						(getOldCourse() != null && ((XCourseRequest)r).hasCourse(getOldCourse().getCourseId()))
+						)) {
 					newRequest = (XCourseRequest)r;
 					newOffering = server.getOffering(getOldOffering().getOfferingId());
 					if (newRequest.getEnrollment() != null)

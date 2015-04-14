@@ -95,7 +95,7 @@ public class SectioningRequest implements Comparable<SectioningRequest>, LastSec
 	public OnlineSectioningLog.Action.Builder getAction() { return iAction; }
 	public OnlineSectioningLog.CourseRequestOption getOriginalEnrollment() { return iOriginal; }
 	public void setOriginalEnrollment(OnlineSectioningLog.CourseRequestOption original) { iOriginal = original; }
-	
+	public XCourseId getCourseId() { return getRequest().getCourseIdByOfferingId(iOffering.getOfferingId()); }
 	
 	public int hashCode() { return new Long(getRequest().getStudentId()).hashCode(); }
 	
