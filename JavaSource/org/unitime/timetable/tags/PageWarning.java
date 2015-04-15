@@ -45,6 +45,13 @@ public class PageWarning extends TagSupport {
 	public String getPageWarning(ServletRequest request) {
 		String page = request.getParameter("page");
 		if (page != null) {
+			if ("admin".equals(page)) {
+				String type = request.getParameter("type");
+				if (type != null) {
+					String warning = ApplicationProperties.getProperty(getPrefix() + page + "." + type);
+					if (warning != null && !warning.isEmpty()) return warning;
+				}
+			}
 			String warning = ApplicationProperties.getProperty(getPrefix() + page);
 			if (warning != null && !warning.isEmpty()) return warning;
 		}
