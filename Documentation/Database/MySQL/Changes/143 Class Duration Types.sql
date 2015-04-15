@@ -62,7 +62,9 @@ insert into rights (role_id, value)
 	from roles r, rights g where g.role_id = r.role_id and g.value = 'CourseTypeEdit';
 
 insert into preference_level(pref_id, pref_prolog, pref_name, uniqueid) values (8, 'N', 'Not Available', 8);
-	
+
+alter table date_pattern modify nr_weeks float;
+
 /*
  * Update database version
  */
