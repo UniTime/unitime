@@ -66,15 +66,9 @@
 	<tt:hasProperty name="tmtbl.global.error">
     	<div class='unitime-PageError'><tt:property name="tmtbl.global.error"/></div>
 	</tt:hasProperty>
-	<tt:hasProperty name="tmtbl.page.warn.main">
-		<div class='unitime-PageWarn'><tt:property name="tmtbl.page.warn.main"/></div>
-	</tt:hasProperty>
-	<tt:hasProperty name="tmtbl.page.info.main">
-		<div class='unitime-PageMessage'><tt:property name="tmtbl.page.info.main"/></div>
-	</tt:hasProperty>
-	<tt:hasProperty name="tmtbl.page.error.main">
-		<div class='unitime-PageError'><tt:property name="tmtbl.page.error.main"/></div>
-	</tt:hasProperty>
+	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-PageWarn" page="main"/>
+	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage" page="main"/>
+	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError" page="main"/>
 	<tt:offering-locks/>
   	
 <%
