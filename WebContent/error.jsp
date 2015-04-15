@@ -73,14 +73,23 @@
     	</tt:propertyEquals>
     </tt:form-factor>
     
-    <tt:hasProperty name="tmtbl.global.warn">
+    <tt:hasProperty name="tmtbl.global.info">
+    	<div class='unitime-PageMessage'><tt:property name="tmtbl.global.info"/></div>
+	</tt:hasProperty>
+	<tt:hasProperty name="tmtbl.global.warn">
     	<div class='unitime-PageWarn'><tt:property name="tmtbl.global.warn"/></div>
+	</tt:hasProperty>
+	<tt:hasProperty name="tmtbl.global.error">
+    	<div class='unitime-PageError'><tt:property name="tmtbl.global.error"/></div>
 	</tt:hasProperty>
 	<tt:hasProperty name="tmtbl.page.warn.error">
 		<div class='unitime-PageWarn'><tt:property name="tmtbl.page.warn.error"/></div>
 	</tt:hasProperty>
 	<tt:hasProperty name="tmtbl.page.info.error">
 		<div class='unitime-PageMessage'><tt:property name="tmtbl.page.info.error"/></div>
+	</tt:hasProperty>
+	<tt:hasProperty name="tmtbl.page.error.error">
+		<div class='unitime-PageError'><tt:property name="tmtbl.page.error.error"/></div>
 	</tt:hasProperty>
 	<tt:offering-locks/>
 	

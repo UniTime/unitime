@@ -3421,6 +3421,14 @@ unitime-RoomSharingWidget .legend .blank {
 	border-bottom: 1px black solid;	
 }
 
+.unitime-PageError {
+	display: block;
+	padding: 2px 2px 2px 10px;
+	width: 100%;
+	background: #ffbcb3;
+	border-bottom: 1px solid black;
+}
+
 .unitime-PageHeader {
 	display: table;
 	width: 100%;

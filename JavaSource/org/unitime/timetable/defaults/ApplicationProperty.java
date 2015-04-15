@@ -159,9 +159,15 @@ public enum ApplicationProperty {
 	 */
 	@Description("Main Page: welcome message (e.g., Welcome to Woebegon College test suite.)")
 	SystemMessage("tmtbl.system_message"),
+	
+	@Description("All Pages: an info message can be included at the top of each page (yellow stripe on the top of the page)")
+	GlobalInfoMessage("tmtbl.global.info"),
 
-	@Description("All Pages: a (warning) message can be included at the top of each page")
+	@Description("All Pages: a warning message can be included at the top of each page (yellow stripe on the top of the page)")
 	GlobalWarningMessage("tmtbl.global.warn"),
+	
+	@Description("All Pages: an error message can be included at the top of each page (red stripe on the top of the page)")
+	GlobalErrorMessage("tmtbl.global.error"),
 
 	@Description("All Pages: a disclaimer message can be added at the bottom of each page")
 	DisclaimerMessage("tmtbl.page.disclaimer"),
@@ -315,6 +321,10 @@ public enum ApplicationProperty {
 	@Description("Page %: info message (blue stripe on the top of the page)")
 	@Parameter("page name")
 	PageInfo("tmtbl.page.info.%"),
+	
+	@Description("Page %: error message (red stripe on the top of the page)")
+	@Parameter("page name")
+	PageError("tmtbl.page.error.%"),
 
 	@Description("Configuration: UniTime URL (e.g., used in email notifications where URL cannot be deducted from the http request)")
 	UniTimeUrl("unitime.url"),

@@ -56,11 +56,18 @@
     	</tt:propertyEquals>
     </tt:form-factor>
     
-    <tt:hasProperty name="tmtbl.global.warn">
+	<tt:hasProperty name="tmtbl.global.info">
+    	<div class='unitime-PageMessage'><tt:property name="tmtbl.global.info"/></div>
+	</tt:hasProperty>
+	<tt:hasProperty name="tmtbl.global.warn">
     	<div class='unitime-PageWarn'><tt:property name="tmtbl.global.warn"/></div>
+	</tt:hasProperty>
+	<tt:hasProperty name="tmtbl.global.error">
+    	<div class='unitime-PageError'><tt:property name="tmtbl.global.error"/></div>
 	</tt:hasProperty>
 	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-PageWarn"/>
 	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage"/>
+	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError"/>
 	<tt:offering-locks/>
   	
 <tt:form-factor value="mobile">
