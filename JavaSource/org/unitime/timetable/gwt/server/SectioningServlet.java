@@ -130,6 +130,7 @@ import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.context.AnonymousUserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
@@ -704,8 +705,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
 		if (principal != null) return principal.getName();
 		UserContext user = getSessionContext().getUser();
-		if (user != null) return (user.getName() == null ? user.getUsername() : user.getName());
-		return "Guest";
+		if (user == null || user instanceof AnonymousUserContext) return null;
+		return (user.getName() == null ? user.getUsername() : user.getName());
 	}
 	
 	public Long getStudentId(Long sessionId) {
@@ -2025,6 +2026,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			EligibilityCheck check = new EligibilityCheck();
 			check.setFlag(EligibilityFlag.IS_ADMIN, getSessionContext().hasPermission(Right.StudentSchedulingAdmin));
 			check.setFlag(EligibilityFlag.IS_ADVISOR, getSessionContext().hasPermission(Right.StudentSchedulingAdvisor));
+			check.setFlag(EligibilityFlag.IS_GUEST, user instanceof AnonymousUserContext);
 			check.setSessionId(sessionId);
 			check.setStudentId(studentId);
 			
