@@ -36,7 +36,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Long iSessionId = null, iStudentId = null;
 		
 		public static enum EligibilityFlag implements IsSerializable {
-			IS_ADMIN, IS_ADVISOR,
+			IS_ADMIN, IS_ADVISOR, IS_GUEST,
 			CAN_USE_ASSISTANT,
 			CAN_ENROLL,
 			PIN_REQUIRED,

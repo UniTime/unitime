@@ -274,17 +274,7 @@ public class UserAuthentication implements UserAuthenticationProvider {
 				iSkip.setEnabled(true);
 				iError.setVisible(false);
 				iDialog.hide();
-				iPanel.setText(MESSAGES.userLabel(result));
-				iLastUser = result;
-				if (isAllowLookup() && !CONSTANTS.allowUserLogin()) {
-					iPanel.setHint(MESSAGES.userHintLookup());
-					iPanel.setAriaLabel(ARIA.userAuthenticatedLookup(getUser()));
-				} else {
-					iPanel.setHint(MESSAGES.userHintLogout());
-					iPanel.setAriaLabel(ARIA.userAuthenticated(result));
-				}
-				iLoggedIn = true;
-				iGuest = false;
+				authenticated(result);
 				UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
 				for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 					h.onLogIn(e);
@@ -346,12 +336,31 @@ public class UserAuthentication implements UserAuthenticationProvider {
 	
 	public void authenticated(String user) {
 		if (iDialog.isShowing()) iDialog.hide();
-		iLoggedIn = true;
-		iGuest = MESSAGES.userGuest().equals(user);
-		iPanel.setText(MESSAGES.userLabel(user));
+		if (user == null) {
+			if (iAllowGuest) {
+				iGuest = true;
+				iPanel.setText(MESSAGES.userLabel(MESSAGES.userGuest()));
+				iPanel.setAriaLabel(ARIA.userGuest());
+			} else {
+				iGuest = false;
+				iPanel.setText(MESSAGES.userNotAuthenticated());
+				iPanel.setAriaLabel(ARIA.userNotAuthenticated());
+			}
+			iLoggedIn = false;
+			iPanel.setHint(MESSAGES.userHintLogin());
+		} else {
+			iLoggedIn = true;
+			iGuest = false;
+			iPanel.setText(MESSAGES.userLabel(user));	
+			if (isAllowLookup() && !CONSTANTS.allowUserLogin()) {
+				iPanel.setHint(MESSAGES.userHintLookup());
+				iPanel.setAriaLabel(ARIA.userAuthenticatedLookup(getUser()));
+			} else {
+				iPanel.setHint(MESSAGES.userHintLogout());
+				iPanel.setAriaLabel(ARIA.userAuthenticated(user));
+			}
+		}
 		iLastUser = user;
-		iPanel.setHint(iGuest ? MESSAGES.userHintLogin() : MESSAGES.userHintLogout());
-		iPanel.setAriaLabel(iGuest ? ARIA.userGuest() : ARIA.userAuthenticated(user));
 	}
 	
 	private void logIn(boolean guest) {
@@ -360,12 +369,8 @@ public class UserAuthentication implements UserAuthenticationProvider {
 			sSectioningService.logOut(new AsyncCallback<Boolean>() {
 				public void onFailure(Throwable caught) { }
 				public void onSuccess(Boolean result) {
-					iLoggedIn = true; iGuest = true;
 					iDialog.hide();
-					iPanel.setText(MESSAGES.userLabel(MESSAGES.userGuest()));
-					iPanel.setHint(MESSAGES.userHintLogin());
-					iPanel.setAriaLabel(ARIA.userGuest());
-					iLastUser = MESSAGES.userGuest();
+					authenticated(null);
 					UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
 					for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 						h.onLogIn(e);
@@ -389,27 +394,19 @@ public class UserAuthentication implements UserAuthenticationProvider {
 			public void onFailure(Throwable caught) { }
 			public void onSuccess(Boolean result) {
 				if (result) {
+					authenticated(null);
 					UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
-					iPanel.setHint(MESSAGES.userHintClose());
-					iPanel.setText(MESSAGES.userNotAuthenticated());
-					iPanel.setAriaLabel(ARIA.userNotAuthenticated());
-					iLastUser = null;
 					for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 						h.onLogOut(e);
-					iLoggedIn = false;
 					Client.reloadMenu();
 				} else {
 					sSectioningService.whoAmI(new AsyncCallback<String>() {
 						@Override
 						public void onFailure(Throwable caught) {
+							authenticated(null);
 							UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
-							iPanel.setHint(MESSAGES.userHintClose());
-							iPanel.setText(MESSAGES.userNotAuthenticated());
-							iPanel.setAriaLabel(ARIA.userNotAuthenticated());
-							iLastUser = null;
 							for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 								h.onLogOut(e);
-							iLoggedIn = false;
 							Client.reloadMenu();
 						}
 
@@ -434,12 +431,16 @@ public class UserAuthentication implements UserAuthenticationProvider {
 	public void setUser(final String user, final AsyncCallback<Boolean> callback) {
 		iOnLoginCommand = null;
 		if (user == null) {
-			callback.onSuccess(false);
-			authenticate();
+			if (iLastUser == null) {
+				callback.onSuccess(true);
+			} else if (iAllowGuest) {
+				logIn(true);
+				callback.onSuccess(true);
+			} else {
+				callback.onSuccess(false);
+				authenticate();
+			}
 		} else if (user.equals(iLastUser)) {
-			callback.onSuccess(true);
-		} else if (user.equals(MESSAGES.userGuest())) {
-			logIn(true);
 			callback.onSuccess(true);
 		} else {
 			iOnLoginCommand = new Command() {

@@ -63,10 +63,17 @@ public class StudentSectioningPage extends Composite {
 		if (Window.Location.getParameter("student") == null)
 			iSectioningService.whoAmI(new AsyncCallback<String>() {
 				public void onFailure(Throwable caught) {
-					userAuthentication.authenticate();
+					if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired() || CONSTANTS.tryAuthenticationWhenGuest()) {
+						if (CONSTANTS.allowUserLogin())
+							userAuthentication.authenticate();
+						else if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired())
+							ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
+						else
+							userAuthentication.authenticated(null);
+					}
 				}
 				public void onSuccess(String result) {
-					if (MESSAGES.userGuest().equals(result)) { // user is guest (i.e., not truly authenticated)
+					if (result == null) { // not authenticated
 						if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired() || CONSTANTS.tryAuthenticationWhenGuest()) {
 							if (CONSTANTS.allowUserLogin())
 								userAuthentication.authenticate();
@@ -74,8 +81,9 @@ public class StudentSectioningPage extends Composite {
 								ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
 							else
 								userAuthentication.authenticated(result);
-						} else
+						} else {
 							userAuthentication.authenticated(result);
+						}
 					} else {
 						userAuthentication.authenticated(result);
 					}
@@ -134,10 +142,10 @@ public class StudentSectioningPage extends Composite {
 						userAuthentication.authenticate();
 				} else if (userAuthentication.isAllowLookup()) {
 					userAuthentication.doLookup();
-				} else if (userAuthentication.isGuest()) {
-					ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
-				} else {
+				} else if (userAuthentication.isLoggedIn()) {
 					ToolBox.open(GWT.getHostPageBaseURL() + "logOut.do");
+				} else {
+					ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
 				}
 			}
 		});
