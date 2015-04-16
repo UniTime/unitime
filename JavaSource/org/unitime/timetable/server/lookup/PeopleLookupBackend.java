@@ -47,6 +47,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface.LookupRequest;
+import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -62,6 +63,7 @@ import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
@@ -70,7 +72,7 @@ import org.unitime.timetable.util.NameInterface;
  * @author Tomas Muller
  */
 @GwtRpcImplements(PersonInterface.LookupRequest.class)
-public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface.LookupRequest, GwtRpcResponseList<PersonInterface>> {
+public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface.LookupRequest, GwtRpcResponseList<PersonInterface>>, ExternalUidLookup {
 	private static Logger sLog = Logger.getLogger(PeopleLookupBackend.class);
 	private ExternalUidTranslation iTranslation;
 	private LdapTemplate iLdapTemplate;
@@ -328,7 +330,11 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 	protected LdapTemplate getLdapTemplate() {
 		if (iLdapTemplate == null) {
 			try {
-				iLdapTemplate = applicationContext.getBean("ldapPeopleLookupTemplate", LdapTemplate.class);
+				if (applicationContext != null) {
+					iLdapTemplate = applicationContext.getBean("ldapPeopleLookupTemplate", LdapTemplate.class);
+				} else {
+					iLdapTemplate = (LdapTemplate)SpringApplicationContextHolder.getBean("ldapPeopleLookupTemplate");
+				}
 				if (iLdapTemplate != null) return iLdapTemplate;
 			} catch (BeansException e) {}
 			String url = ApplicationProperty.PeopleLookupLdapUrl.value();
@@ -464,4 +470,57 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 		}
     	
     }
+
+	@Override
+	public UserInfo doLookup(String uid) throws Exception {
+		try {
+			if (uid == null || uid.isEmpty()) return null;
+        	if (getLdapTemplate() == null) return null;
+        	
+			if (iTranslation != null)
+				uid = iTranslation.translate(uid, Source.User, Source.LDAP);
+			
+			return (UserInfo)getLdapTemplate().lookup("uid=" + uid, new AttributesMapper() {
+        		protected String getAttribute(Attributes attrs, String name) {
+        	        if (attrs==null) return null;
+        	        if (name == null || name.isEmpty()) return null;
+        	        for (StringTokenizer stk = new StringTokenizer(name,",");stk.hasMoreTokens();) {
+        	            Attribute a = attrs.get(stk.nextToken());
+        	            try {
+        	                if (a!=null && a.get()!=null) return a.get().toString();
+        	            } catch (NamingException e) {
+        	            }
+        	        }
+        	        return null;
+        	    }
+				@Override
+				public Object mapFromAttributes(Attributes a) throws NamingException {
+		        	UserInfo info = new UserInfo();
+		        	info.setUserName(getAttribute(a,"uid"));
+		        	if (iTranslation == null)
+		        		info.setExternalId(info.getUserName());
+		        	else
+		        		info.setExternalId(iTranslation.translate(info.getUserName(), Source.LDAP, Source.User));
+		        	info.setFirstName(Constants.toInitialCase(getAttribute(a,"givenName")));
+		        	info.setName(Constants.toInitialCase(getAttribute(a,"cn")));
+		        	info.setLastName(Constants.toInitialCase(getAttribute(a,"sn")));
+		        	info.setEmail(getAttribute(a, ApplicationProperty.PeopleLookupLdapEmailAttribute.value()));
+		        	info.setPhone(getAttribute(a, ApplicationProperty.PeopleLookupLdapPhoneAttribute.value()));
+		        	info.setAcademicTitle(getAttribute(a, ApplicationProperty.PeopleLookupLdapAcademicTitleAttribute.value()));
+		        	if (info.getName() != null) {
+		        		String middle = info.getName();
+		        		if (info.getFirstName() != null && middle.indexOf(info.getFirstName()) >= 0)
+		        			middle = middle.replaceAll(info.getFirstName() + " ?", "");
+		        		if (info.getLastName() != null && middle.indexOf(info.getLastName()) >= 0)
+		        			middle = middle.replaceAll(" ?" + info.getLastName(), "");
+		        		info.setMiddleName(middle);
+		        	}
+					return info;
+				}
+			});
+    	} catch (Exception e) {
+    		sLog.warn("Failed to lookup a person: " + e.getMessage(), e);
+    		return null;
+    	}
+	}
 }
