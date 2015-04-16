@@ -1232,6 +1232,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		AsyncCallback<CourseRequestInterface> callback =  new AsyncCallback<CourseRequestInterface>() {
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
+				clear();
 			}
 			public void onSuccess(final CourseRequestInterface request) {
 				if (request.isSaved() && request.getCourses().isEmpty()) {
