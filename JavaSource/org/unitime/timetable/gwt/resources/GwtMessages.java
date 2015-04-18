@@ -3142,4 +3142,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Session Default")
 	String examStatusDefault();
+	
+	@DefaultMessage("<i>{0} -- not approved</i>")
+	String gridEventHeaderNotApproved(String header);
 }

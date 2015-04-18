@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.shared.EventInterface;
@@ -216,8 +217,21 @@ public class EventsExportEventsToICal extends EventsExporter {
         for (VEvent vevent: events) {
             vevent.setSequence(event.getSequence());
             vevent.setUid(event.getId().toString());
-            vevent.setSummary(event.getName());
-            vevent.setDescription(event.getInstruction() != null ? event.getInstruction() : event.getType().getName(CONSTANTS));
+            String name = event.getName();
+            String description = (event.hasInstruction() ? event.getInstruction() : event.getType().getName(CONSTANTS));
+			if (event.hasCourseTitles() && event.getType() == EventType.Class && ApplicationProperty.EventGridDisplayTitle.isTrue()) {
+				name = event.getCourseTitles().get(0);
+				if (event.hasInstruction() && event.hasExternalIds())
+					description = event.getInstruction() + " " + event.getExternalIds().get(0);
+				else if (event.hasInstruction() && event.hasSectionNumber())
+					description = event.getInstruction() + " " + event.getSectionNumber();
+			}
+			if (event.hasInstructors() && ApplicationProperty.EventCalendarDisplayInstructorsInDescription.isTrue()) {
+				for (ContactInterface instructor: event.getInstructors())
+					description += "\n" + instructor.getName(MESSAGES);
+			}
+			vevent.setSummary(name);
+            vevent.setDescription(description);
             
             if (event.hasTimeStamp()) {
             	DateTimeStamp ts = new DateTimeStamp(event.getTimeStamp());

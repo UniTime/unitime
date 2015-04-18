@@ -1101,6 +1101,16 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Room Timetable: allow to see all the rooms (when set to false)")
 	EventRoomTimetableAllRooms("unitime.event_timetable.event_rooms_only"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Event Time Grid: display event title instead of event name in the header")
+	EventGridDisplayTitle("unitime.events.grid_display_title"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Event ICS Calendar: include instructor names in the event description")
+	EventCalendarDisplayInstructorsInDescription("unitime.events.ics_instructors_in_description"),
 
 	@Type(Class.class)
 	@Implements(Email.class)
