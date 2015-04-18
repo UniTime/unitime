@@ -3109,4 +3109,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Or you can download an iCalendar file by clicking the {0} button below. While it is often easier to import an iCalendar file, such a&nbsp;calendar will not get updated automatically.")
 	String exportICalendarDownload(String button);
+	
+	@DefaultMessage("<i>{0} -- not approved</i>")
+	String gridEventHeaderNotApproved(String header);
 }

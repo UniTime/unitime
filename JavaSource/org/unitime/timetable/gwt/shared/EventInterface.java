@@ -1751,6 +1751,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Map<String, String> iFilterDefaults = null;
 		private Integer iTooEarlySlot = null;
 		private boolean iCanEditAcademicTitle = false;
+		private boolean iGridDisplayTitle = false;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -1821,6 +1822,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public boolean isCanEditAcademicTitle() { return iCanEditAcademicTitle; }
 		public void setCanEditAcademicTitle(boolean canEditAcademicTitle) { iCanEditAcademicTitle = canEditAcademicTitle; }
+		
+		public boolean isGridDisplayTitle() { return iGridDisplayTitle; }
+		public void setGridDisplayTitle(boolean gridDisplayTitle) { iGridDisplayTitle = gridDisplayTitle; }
 	}
 	
 	public static class EventDetailRpcRequest extends EventRpcRequest<EventInterface> {

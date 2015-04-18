@@ -29,6 +29,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -113,6 +114,7 @@ public class TimeGrid extends Composite {
 	
 	private List<ResourceInterface> iRoomResources = null;
 	private List<WeekInterface> iSelectedWeeks = null;
+	private EventPropertiesProvider iPropertiesProvider = null;
 	
 	private List<HandlerRegistration> iHandlerRegistrations = new ArrayList<HandlerRegistration>();
 	
@@ -124,17 +126,18 @@ public class TimeGrid extends Composite {
 	
 	private Mode iMode = Mode.FILLSPACE;
 	
-	public TimeGrid() {
-		this(new HashMap<Long, String>(), new int[] {0, 1, 2, 3, 4}, (int) (0.9 * ToolBox.getClientWidth() / 5), false, false, 0, 24);
+	public TimeGrid(EventPropertiesProvider properties) {
+		this(new HashMap<Long, String>(), new int[] {0, 1, 2, 3, 4}, (int) (0.9 * ToolBox.getClientWidth() / 5), false, false, 0, 24, properties);
 	}
 	
-	public TimeGrid(HashMap<Long, String> colors, int[] days, int cellWidth, boolean print, boolean scroll, int start, int end) {
-		this(colors, days, cellWidth, 60, print, scroll, start, end);
+	public TimeGrid(HashMap<Long, String> colors, int[] days, int cellWidth, boolean print, boolean scroll, int start, int end, EventPropertiesProvider properties) {
+		this(colors, days, cellWidth, 60, print, scroll, start, end, properties);
 	}
 	
 	private List<P> iDayLabels = new ArrayList<P>();
 	
-	public TimeGrid(HashMap<Long, String> colors, int[] days, int cellWidth, int cellHeight, boolean print, boolean scroll, int start, int end) {
+	public TimeGrid(HashMap<Long, String> colors, int[] days, int cellWidth, int cellHeight, boolean print, boolean scroll, int start, int end, EventPropertiesProvider properties) {
+		iPropertiesProvider = properties;
 		iColors = colors;
 		iDays = days;
 		iCellWidth = cellWidth;
@@ -284,7 +287,7 @@ public class TimeGrid extends Composite {
 		int firstHour = firstSlot / 12;
 		if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
 		int lastHour = (11 + lastSlot()) / 12;
-		TimeGrid tg = new TimeGrid(iColors, iDays, (int) (1000 / iDays.length), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
+		TimeGrid tg = new TimeGrid(iColors, iDays, (int) (1000 / iDays.length), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18), iPropertiesProvider);
 		tg.setSelectedWeeks(getSelectedWeeks());
 		tg.setRoomResources(getRoomResources());
 		tg.setResourceType(getResourceType());
@@ -728,12 +731,34 @@ public class TimeGrid extends Composite {
 			if (event.hasSponsor())
 				notes.add(event.getSponsor().getName());
 			
+			String eventName = event.getName();
+			if (iPropertiesProvider.getProperties() != null && iPropertiesProvider.getProperties().isGridDisplayTitle() && event.hasCourseTitles() && event.getType() == EventType.Class) {
+				eventName = event.getCourseTitles().get(0);
+				if (event.hasInstruction()) {
+					if (event.hasExternalIds()) {
+						eventName += " (" + event.getInstruction() + " " + event.getExternalIds().get(0) + ")";
+					} else if (event.hasSectionNumber())
+						eventName += " (" + event.getInstruction() + " " + event.getSectionNumber() + ")";
+					else
+						eventName += " (" + event.getInstruction() + ")";
+				} else if (event.getType() != EventType.Unavailabile) {
+					eventName += " (" + CONSTANTS.eventTypeShort()[event.getType().ordinal()] + ")";
+				}
+			} else {
+				if (event.hasInstruction()) 
+					eventName += " (" + event.getInstruction() + ")";
+				else if (event.getType() != EventType.Unavailabile)
+					eventName += " (" + CONSTANTS.eventTypeShort()[event.getType().ordinal()] + ")";
+			}
+			if (!meeting.isApproved())
+				eventName = MESSAGES.gridEventHeaderNotApproved(eventName);
+			
 			Meeting m = addMeeting(
 					event, meeting,
 					meeting.getGridIndex(), meeting.getStartSlot(), 
 					meeting.getEndSlot() - meeting.getStartSlot(),
 					meeting.getStartOffset(), meeting.getEndOffset(),
-					(meeting.isApproved() ? "" : "<i>") + event.getName() + (event.getType() == EventType.Unavailabile ? "" : " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>")), 
+					eventName, 
 					notes, color, weekIndex(meeting), !isVerticalSplitByWeek() && iMode == Mode.OVERLAP ? rooms.size() : days.size(), done, dateString, roomString);
 			if (m != null) done.add(m);
 		}

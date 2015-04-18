@@ -104,6 +104,8 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		if (tooEarly > 0)
 			response.setTooEarlySlot(tooEarly);
 		
+		response.setGridDisplayTitle(ApplicationProperty.EventGridDisplayTitle.isTrue());
+		
 		return response;
 	}
 	
