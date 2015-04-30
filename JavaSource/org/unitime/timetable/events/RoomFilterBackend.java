@@ -21,8 +21,10 @@ package org.unitime.timetable.events;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -33,8 +35,11 @@ import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.hibernate.type.StringType;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
@@ -43,6 +48,8 @@ import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Room;
@@ -66,6 +73,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 	private static double EPSILON = 0.000001;
 	private static DecimalFormat sCDF = new DecimalFormat("0.000000");
 	private static DecimalFormat sNF = new DecimalFormat("0000");
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	private static enum Size {
 		eq, lt, gt, le, ge
@@ -104,7 +112,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, null)) {
 			for (RoomFeature rf: location.getFeatures()) {
 				if (rf instanceof GlobalRoomFeature || (rf instanceof DepartmentRoomFeature && departments != null && departments.contains(((DepartmentRoomFeature)rf).getDepartment().getDeptCode()))) {
-					if (rf.getFeatureType() == null || rf.getFeatureType().isShowInEventManagement()) {
+					if (showRoomFeature(rf.getFeatureType())) {
 						String type = (rf.getFeatureType() == null ? "feature" : rf.getFeatureType().getReference());
 						Map<Long, Entity> features = featuresByType.get(type);
 						if (features == null) {
@@ -154,9 +162,15 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		}
 		response.add("building", new TreeSet<Entity>(buildings.values()));
 
-		Entity managed = new Entity(-2l, "Managed", "Managed Rooms");
-		Entity examFinal = new Entity(-3l, "Final", "Final Examination Rooms");
-		Entity examMidterm = new Entity(-4l, "Midterm", "Midterm Examination Rooms");
+		Entity managed = new Entity(0l, "Managed", "Managed Rooms");
+		Map<Long, Entity> exams = null;
+		if (context.hasPermission(request.getSessionId(), Right.Examinations) || context.hasPermission(request.getSessionId(), Right.ExaminationSchedule)) {
+			exams = new HashMap<Long, Entity>();
+			for (ExamType type: ExamType.findAllApplicable(context.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable)) {
+				Entity e = new Entity(-type.getUniqueId(), type.getReference(), MESSAGES.examinationRooms(type.getLabel()));
+				exams.put(type.getUniqueId(), e);
+			}
+		}
 		Map<Long, Entity> depts = new HashMap<Long, Entity>();
 		boolean eventRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("event") || request.getOptions("flag").contains("Event")));
 		boolean allRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("all") || request.getOptions("flag").contains("All")));
@@ -193,154 +207,56 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					department.incCount();					
 				}
 			}
-			if (location.hasFinalExamsEnabled())
-				examFinal.incCount();
-			if (location.hasMidtermExamsEnabled())
-				examMidterm.incCount();
+			if (exams != null && !exams.isEmpty()) {
+				for (ExamType type: location.getExamTypes()) {
+					Entity e = exams.get(type.getUniqueId());
+					if (e != null) e.incCount();
+				}
+			}
 			if (isManaged)
 				managed.incCount();
 		}
 		if (managed.getCount() > 0)
 			response.add("department",managed);
-		if (examFinal.getCount() > 0)
-			response.add("department",examFinal);
-		if (examMidterm.getCount() > 0)
-			response.add("department", examMidterm);
+		if (exams != null && !exams.isEmpty())
+			for (Entity e: new TreeSet<Entity>(exams.values()))
+				if (e.getCount() > 0)
+					response.add("department", e);
 		response.add("department", new TreeSet<Entity>(depts.values()));
 	}
 	
-	private void fixRoomFeatureTypes(RoomFilterRpcRequest request) {
+	protected void fixRoomFeatureTypes(RoomFilterRpcRequest request) {
 		for (RoomFeatureType type: RoomFeatureTypeDAO.getInstance().findAll())
-			if (type.isShowInEventManagement() && request.hasOptions(type.getReference().replace(' ', '_')))
+			if (showRoomFeature(type) && request.hasOptions(type.getReference().replace(' ', '_')))
 				for (String option: request.getOptions(type.getReference().replace(' ', '_')))
 					request.addOption("feature", option);
 	}
 	
 	public List<Location> locations(Long sessionId, RoomFilterRpcRequest filter, int limit, Map<Long, Double> room2distance) {
 		fixRoomFeatureTypes(filter);
-		return locations(sessionId, filter.getOptions(), new Query(filter.getText()), 1000, room2distance, null);
+		return locations(sessionId, filter.getOptions(), new Query(filter.getText()), limit, room2distance, null);
 	}
 	
-	private List<Location> locations(Long sessionId, Map<String, Set<String>> options, Query query, int limit, Map<Long, Double> room2distance, String ignoreCommand) {
+	protected List<Location> locations(Long sessionId, Map<String, Set<String>> options, Query query, int limit, Map<Long, Double> room2distance, String ignoreCommand) {
 		org.hibernate.Session hibSession = RoomDAO.getInstance().getSession();
 
-		Set<String> type = (options == null || "type".equals(ignoreCommand) ? null : options.get("type"));
-		Set<String> feature = (options == null || "feature".equals(ignoreCommand) ? null : options.get("feature"));
-		Set<String> group = (options == null || "group".equals(ignoreCommand) ? null : options.get("group"));
+		RoomQuery rq = getQuery(sessionId, options);
+		org.hibernate.Query q = rq.select().exclude(ignoreCommand).query(hibSession);
+		List<Location> locations = q.setCacheable(true).list();
+		
 		Set<String> building = (options == null || "building".equals(ignoreCommand) ? null : options.get("building"));
-		Set<String> department = (options == null || "department".equals(ignoreCommand) ? null : options.get("department"));
-		Set<String> groupFeaturedept = (options == null ? null : options.get("department"));
 		Set<String> size = (options == null || "size".equals(ignoreCommand) ? null : options.get("size"));
 		Set<String> flag = (options == null || "flag".equals(ignoreCommand) ? null : options.get("flag"));
-		Set<String> user = (options == null || "user".equals(ignoreCommand) ? null : options.get("user"));
-		Set<String> ids = (options == null || "id".equals(ignoreCommand) ? null : options.get("id"));
-		
-		int min = 0, max = Integer.MAX_VALUE;
 		boolean nearby = (flag != null && (flag.contains("nearby") || flag.contains("Nearby")));
-		boolean eventRooms = (flag != null && (flag.contains("event") || flag.contains("Event")));
-		boolean allRooms = (flag != null && (flag.contains("all") || flag.contains("All")));
-		if (size != null && !size.isEmpty()) {
-			Size prefix = Size.eq;
-			String number = size.iterator().next();
-			if (number.startsWith("<=")) { prefix = Size.le; number = number.substring(2); }
-			else if (number.startsWith(">=")) { prefix = Size.ge; number = number.substring(2); }
-			else if (number.startsWith("<")) { prefix = Size.lt; number = number.substring(1); }
-			else if (number.startsWith(">")) { prefix = Size.gt; number = number.substring(1); }
-			else if (number.startsWith("=")) { prefix = Size.eq; number = number.substring(1); }
-			try {
-				int a = Integer.parseInt(number);
-				switch (prefix) {
-					case eq: min = max = a; break; // = a
-					case le: max = a; break; // <= a
-					case ge: min = a; break; // >= a
-					case lt: max = a - 1; break; // < a
-					case gt: min = a + 1; break; // > a
-				}
-			} catch (NumberFormatException e) {}
-			if (number.contains("..")) {
-				try {
-					String a = number.substring(0, number.indexOf('.'));
-					String b = number.substring(number.indexOf("..") + 2);
-					min = Integer.parseInt(a); max = Integer.parseInt(b);
-				} catch (NumberFormatException e) {}
-			}
-		}
-		
-		List<Location> locations = null;
-		if (department != null && department.contains("Managed") && user != null && !user.isEmpty()) {
-			locations = (List<Location>)hibSession.createQuery("select distinct l from Location l" +
-					(eventRooms ? " inner join l.eventDepartment.timetableManagers m" : " inner join l.roomDepts rd inner join rd.department.timetableManagers m") +
-					(group != null && !group.isEmpty() ? " left join fetch l.roomGroups g" : "") +
-					(feature != null && !feature.isEmpty() ? " left join fetch l.features f" : "") +
-					(department.contains("Final") || department.contains("Midterm") ?" left join fetch l.examTypes x" : "") +
-					(eventRooms ? " ,RoomTypeOption o" : "") +
-					" where l.session.uniqueId = :sessionId and m.externalUniqueId = :user" +
-					(eventRooms ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment) or l.eventStatus != 0)" : ""))
-					.setLong("sessionId", sessionId)
-					.setString("user", user.iterator().next())
-					.setCacheable(true).list();
-		} else {
-			locations = (List<Location>)hibSession.createQuery("select distinct l from Location l" +
-					(department != null && !department.isEmpty() ? 
-							(department.contains("Final") || department.contains("Midterm") ?" left join fetch l.examTypes x" : " left join fetch l.roomDepts rd") : "") +
-					(group != null && !group.isEmpty() ? " left join fetch l.roomGroups g" : "") +
-					(feature != null && !feature.isEmpty() ? " left join fetch l.features f" : "") +
-					(eventRooms ? " ,RoomTypeOption o" : "") +
-					" where l.session.uniqueId = :sessionId" +
-					(eventRooms ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment) or l.eventStatus != 0)" : ""))
-					.setLong("sessionId", sessionId)
-					.setCacheable(true).list();
-		}
-		
+
 		Set<String> featureTypes = new HashSet<String>();
 		for (RoomFeatureType ft: RoomFeatureTypeDAO.getInstance().findAll())
-			if (ft.isShowInEventManagement()) featureTypes.add(ft.getReference().toLowerCase().replace(' ', '_'));
+			if (showRoomFeature(ft)) featureTypes.add(ft.getReference().toLowerCase().replace(' ', '_'));
 		
 		List<Location> ret = new ArrayList<Location>();
-		locations: for (Location location: locations) {
-			if (ids != null && !ids.isEmpty() && !ids.contains(location.getUniqueId().toString())) continue;
-			if (size != null && !size.isEmpty() && (location.getCapacity() < min || location.getCapacity() > max)) continue;
+		for (Location location: locations) {
 			if (query != null && !query.match(new LocationMatcher(location, featureTypes))) continue;
-			if (type != null && !type.isEmpty() && !type.contains(location.getRoomType().getLabel())) continue;
-			if (building != null && !building.isEmpty() && (!(location instanceof Room) || !building.contains(((Room)location).getBuilding().getAbbreviation()))) continue;
-			if (feature != null && !feature.isEmpty()) {
-				for (String f: feature) {
-					boolean found = false;
-					for (RoomFeature rf: location.getFeatures())
-						if (rf instanceof GlobalRoomFeature) {
-							if (f.equals(rf.getLabel())) { found = true; break; }
-						} else if (rf instanceof DepartmentRoomFeature && groupFeaturedept != null && !groupFeaturedept.isEmpty()) {
-							if (f.equals(rf.getLabel()) && groupFeaturedept.contains(((DepartmentRoomFeature)rf).getDepartment().getDeptCode())) { found = true; break; }
-						}
-					if (!found) continue locations;
-				}
-			}
-			if (group != null && !group.isEmpty()) {
-				boolean found = false;
-				for (RoomGroup rg: location.getRoomGroups()) {
-					if (rg.isGlobal()) {
-						if (group.contains(rg.getName())) { found = true; break; }
-					} else if (groupFeaturedept != null && !groupFeaturedept.isEmpty()) {
-						if (group.contains(rg.getName()) && groupFeaturedept.contains(rg.getDepartment().getDeptCode())) { found = true; break; }	
-					}
-				}
-				if (!found) continue;
-			}
-			if (department == null || department.isEmpty()) {
-			} else if (department.contains("Final")) {
-				if (!location.hasFinalExamsEnabled()) continue;
-			} else if (department.contains("Midterm")) {
-				if (!location.hasMidtermExamsEnabled()) continue;
-			} else if (!department.contains("Managed")) {
-				boolean found = false;
-				if ((eventRooms || allRooms) && location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() && department.contains(location.getEventDepartment().getDeptCode()))
-					found = true;
-				if (!found && !eventRooms) {
-					for (RoomDept rd: location.getRoomDepts())
-						if (department.contains(rd.getDepartment().getDeptCode())) { found = true; break; }
-				}
-				if (!found) continue;
-			}
+			if (nearby && building != null && !building.isEmpty() && (!(location instanceof Room) || !building.contains(((Room)location).getBuilding().getAbbreviation()))) continue;
 			ret.add(location);
 		}
 		
@@ -351,62 +267,20 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			for (Location location: ret)
 				coord.add(new Coordinates(location));
 
-			String buildingOnlyFilter = "";
-			for (String b: building)
-				buildingOnlyFilter += (buildingOnlyFilter.isEmpty() ? "" : " or ") + "b.abbreviation = '" + b + "'";
-			
 			if (coord.isEmpty()) {
 				for (Building b: (List<Building>)hibSession.createQuery("select b from Building b where" +
-						" b.session.uniqueId = :sessionId and (" + buildingOnlyFilter + ")").setLong("sessionId", sessionId).list()) {
+						" b.session.uniqueId = :sessionId and b.abbreviation in :building")
+						.setLong("sessionId", sessionId)
+						.setParameterList("building", building, new StringType())
+						.list()) {
 					coord.add(new Coordinates(-b.getUniqueId(), b.getCoordinateX(), b.getCoordinateY()));
 				}
 			}
 			
 			if (!coord.isEmpty()) {
-				locations: for (Location location: locations) {
-					if (ids != null && !ids.isEmpty() && !ids.contains(location.getUniqueId().toString())) continue;
+				for (Location location: locations) {
 					if (building != null && !building.isEmpty() && (location instanceof Room) && building.contains(((Room)location).getBuilding().getAbbreviation())) continue;
-					if (size != null && !size.isEmpty() && (location.getCapacity() < min || location.getCapacity() > max)) continue;
 					if (query != null && !query.match(new LocationMatcher(location, featureTypes))) continue;
-					if (type != null && !type.isEmpty() && !type.contains(location.getRoomType().getLabel())) continue;
-					if (feature != null && !feature.isEmpty()) {
-						for (String f: feature) {
-							boolean found = false;
-							for (RoomFeature rf: location.getFeatures())
-								if (rf instanceof GlobalRoomFeature) {
-									if (f.equals(rf.getLabel())) { found = true; break; }
-								} else if (rf instanceof DepartmentRoomFeature && groupFeaturedept != null && !groupFeaturedept.isEmpty()) {
-									if (groupFeaturedept.contains(((DepartmentRoomFeature)rf).getDepartment().getDeptCode()) && f.equals(rf.getLabel())) { found = true; break; }
-								}
-							if (!found) continue locations;
-						}
-					}
-					if (group != null && !group.isEmpty()) {
-						boolean found = false;
-						for (RoomGroup rg: location.getRoomGroups()) {
-							if (rg.isGlobal()) {
-								if (group.contains(rg.getName())) { found = true; break; }
-							} else if (groupFeaturedept != null && !groupFeaturedept.isEmpty() && groupFeaturedept.contains(rg.getDepartment().getDeptCode())) {
-								if (group.contains(rg.getName())) { found = true; break; }	
-							}
-						}
-						if (!found) continue;
-					}
-					if (department == null || department.isEmpty()) {
-					} else if (department.contains("Final")) {
-						if (!location.hasFinalExamsEnabled()) continue;
-					} else if (department.contains("Midterm")) {
-						if (!location.hasMidtermExamsEnabled()) continue;
-					} else if (!department.contains("Managed")) {
-						boolean found = false;
-						if ((eventRooms || allRooms) && location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() && department.contains(location.getEventDepartment().getDeptCode()))
-							found = true;
-						if (!found && !eventRooms) {
-							for (RoomDept rd: location.getRoomDepts())
-								if (department.contains(rd.getDepartment().getDeptCode())) { found = true; break; }
-						}
-						if (!found) continue;
-					}
 					Coordinates c = new Coordinates(location);
 					Double distance = null;
 					for (Coordinates x: coord) {
@@ -601,11 +475,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			} else if ("flag".equals(attr) && "event".equalsIgnoreCase(term)) {
 				return getLocation().getEventDepartment() != null && getLocation().getEventDepartment().isAllowEvents() && getLocation().getEffectiveEventStatus() != RoomTypeOption.Status.NoEventManagement;
 			} else if ("department".equals(attr) || "dept".equals(attr) || "event".equals(attr) || "control".equals(attr)) {
-				if ("midterm".equalsIgnoreCase(term))
-					return getLocation().hasMidtermExamsEnabled();
-				else if ("final".equalsIgnoreCase(term))
-					return getLocation().hasFinalExamsEnabled();
-				else if ("event".equalsIgnoreCase(term))
+				if ("event".equalsIgnoreCase(term))
 					return getLocation().getEventDepartment() != null && getLocation().getEventDepartment().isAllowEvents() && getLocation().getEffectiveEventStatus() != RoomTypeOption.Status.NoEventManagement;
 				else if ("managed".equals(term))
 					return false; // not supported
@@ -613,13 +483,18 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					if (!"control".equals(attr))
 						if (getLocation().getEventDepartment() != null && (eq(getLocation().getEventDepartment().getDeptCode(), term) || eq(getLocation().getEventDepartment().getAbbreviation(), term) || has(getLocation().getEventDepartment().getName(), term)))
 							return true;
-					if (!"event".equals(attr))
+					if (!"event".equals(attr)) {
 						for (RoomDept rd: getLocation().getRoomDepts()) {
 							if ("control".equals(attr) && !rd.isControl()) continue;
 							if (eq(rd.getDepartment().getDeptCode(), term) || eq(rd.getDepartment().getAbbreviation(), term) || has(rd.getDepartment().getName(), term)
 									|| (rd.getDepartment().isExternalManager() && (eq(rd.getDepartment().getExternalMgrAbbv(), term) || has(rd.getDepartment().getExternalMgrLabel(), term))))
 								return true;
 						}
+						if (!"control".equals(attr))
+							for (ExamType t: getLocation().getExamTypes()) {
+								if (eq(t.getReference(), term) || has(t.getLabel(), term)) return true;
+							}
+					}
 					return false;
 				}
 			} else {
@@ -654,8 +529,300 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		return ret;
 	}
 	
-	public static void main(String[] args) {
-		String s = "TOto je divny Test ale mOOC d iv  n y T es T 5";
-		System.out.println(toCommand(s));
+	protected boolean checkEventStatus() { return true; }
+	
+	protected boolean showRoomFeature(RoomFeatureType type) {
+		return type == null || type.isShowInEventManagement(); 
+	}
+	
+	public RoomQuery getQuery(Long sessionId, Map<String, Set<String>> options) {
+		RoomQuery query = new RoomQuery(sessionId);
+		
+		Set<String> types = (options == null ? null : options.get("type"));
+		if (types != null && !types.isEmpty()) {
+			String type = "";
+			int id = 0;
+			for (String s: types) {
+				type += (type.isEmpty() ? "" : ",") + ":Xt" + id;
+				query.addParameter("type", "Xt" + id, s);
+				id++;
+			}
+			query.addWhere("type", "l.roomType.label in (" + type + ")");
+		}
+		
+		Set<String> departments = (options == null ? null : options.get("department"));
+		String department = (departments == null || departments.isEmpty() ? null : departments.iterator().next());
+		Set<String> features = (options == null ? null : options.get("feature"));
+		if (features != null && !features.isEmpty()) {
+			String from = "";
+			String where = "";
+			int id = 0;
+			for (String s: features) {
+				if (department == null) {
+					from += (from.isEmpty() ? "" : " ") + "inner join l.features f" + id;
+					where += (where.isEmpty() ? "" : " and ") + " f" + id + ".label = :Xf" + id + " and f" + id + ".class = GlobalRoomFeature";
+				} else {
+					from += (from.isEmpty() ? "" : " ") + "inner join l.features f" + id + " left outer join f" + id + ".department fd" + id;
+					where += (where.isEmpty() ? "" : " and ") + " f" + id + ".label = :Xf" + id + " and (f" + id + ".class = GlobalRoomFeature or fd" + id +".deptCode = :Xfd)";
+				}
+				query.addParameter("feature", "Xf" + id, s);
+				id++;
+			}
+			if (department != null)
+				query.addParameter("feature", "Xfd", department);
+			query.addFrom("feature", from);
+			query.addWhere("feature", where);
+		}
+		
+		Set<String> groups = (options == null ? null : options.get("group"));
+		if (groups != null && !groups.isEmpty()) {
+			String group = "";
+			int id = 0;
+			for (String s: groups) {
+				group += (group.isEmpty() ? "" : ", ") + ":Xg" + id;
+				query.addParameter("group", "Xg" + id, s);
+				id++;
+			}
+			query.addFrom("group", "inner join l.roomGroups g left outer join g.department gd");
+			if (department == null)
+				query.addWhere("group", "g.name in (" + group + ") and g.global = true");
+			else {
+				query.addWhere("group", "g.name in (" + group + ") and (g.global = true or gd.deptCode = :Xgd)");
+				query.addParameter("group", "Xgd", department);
+			}
+		}
+		
+		Set<String> size = (options == null ? null : options.get("size"));
+		if (size != null && !size.isEmpty()) {
+			String term = size.iterator().next();
+			int min = 0, max = Integer.MAX_VALUE;
+			Size prefix = Size.eq;
+			String number = term;
+			if (number.startsWith("<=")) { prefix = Size.le; number = number.substring(2); }
+			else if (number.startsWith(">=")) { prefix = Size.ge; number = number.substring(2); }
+			else if (number.startsWith("<")) { prefix = Size.lt; number = number.substring(1); }
+			else if (number.startsWith(">")) { prefix = Size.gt; number = number.substring(1); }
+			else if (number.startsWith("=")) { prefix = Size.eq; number = number.substring(1); }
+			try {
+				int a = Integer.parseInt(number);
+				switch (prefix) {
+					case eq: min = max = a; break; // = a
+					case le: max = a; break; // <= a
+					case ge: min = a; break; // >= a
+					case lt: max = a - 1; break; // < a
+					case gt: min = a + 1; break; // > a
+				}
+			} catch (NumberFormatException e) {}
+			if (term.contains("..")) {
+				try {
+					String a = term.substring(0, term.indexOf('.'));
+					String b = term.substring(term.indexOf("..") + 2);
+					min = Integer.parseInt(a); max = Integer.parseInt(b);
+				} catch (NumberFormatException e) {}
+			}
+			if (min > 0) {
+				if (max < Integer.MAX_VALUE) {
+					query.addWhere("size", "l.capacity >= :Xmin and l.capacity <= :Xmax");
+					query.addParameter("size", "Xmin", min);
+					query.addParameter("size", "Xmax", max);
+				} else {
+					query.addWhere("size", "l.capacity >= :Xmin");
+					query.addParameter("size", "Xmin", min);
+				}
+			} else if (max < Integer.MAX_VALUE) {
+				query.addWhere("size", "l.capacity <= :Xmax");
+				query.addParameter("size", "Xmax", max);
+			}
+		}
+		
+		Set<String> flags = (options == null ? null : options.get("flag"));
+		boolean nearby = (flags != null && (flags.contains("nearby") || flags.contains("Nearby")));
+		
+		Set<String> buildings = (options == null ? null : options.get("building"));
+		if (buildings != null && !buildings.isEmpty() && !nearby) {
+			String building = "";
+			int id = 0;
+			for (String s: buildings) {
+				building += (building.isEmpty() ? "" : ", ") + ":Xb" + id;
+				query.addParameter("building", "Xb" + id, s);
+			}
+			query.addWhere("building", "l.building.abbreviation in (" + building + ")");
+		}
+		
+		boolean eventRooms = (flags != null && (flags.contains("event") || flags.contains("Event")));
+		boolean allRooms = (flags != null && (flags.contains("all") || flags.contains("All")));
+		
+		if (department != null) {
+			Set<String> users = (options == null ? null : options.get("user"));
+			String user = (users == null || users.isEmpty() ? null : users.iterator().next());
+			if ("Managed".equalsIgnoreCase(department) && user != null) {
+				query.addFrom("department", (eventRooms ? "inner join l.eventDepartment.timetableManagers m" : "inner join l.roomDepts rd inner join rd.department.timetableManagers m"));
+				query.addWhere("department", "m.externalUniqueId = :Xu");
+				query.addParameter("department", "Xu", user);
+			} else {
+				query.addFrom("department", "left outer join l.examTypes x " + (eventRooms ? "" : "left outer join l.roomDepts rd"));
+				query.addParameter("department", "Xd", department);
+				if (eventRooms) {
+					query.addWhere("department", "l.eventDepartment.deptCode = :Xd or x.reference = :Xd");
+				} else if (allRooms) {
+					query.addWhere("department", "rd.department.deptCode = :Xd or l.eventDepartment.deptCode = :Xd or x.reference = :Xd");
+				} else {
+					query.addWhere("department", "rd.department.deptCode = :Xd or x.reference = :Xd");
+				}
+			}
+		}
+		
+		if (eventRooms) {
+			if (checkEventStatus()) {
+				query.addFrom("flag", "RoomTypeOption o");
+				query.addWhere("flag", "l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment) or l.eventStatus != 0)");
+			} else
+				query.addWhere("flag", "l.eventDepartment is not null");
+		}
+		
+		Set<String> ids = (options == null ? null : options.get("id"));
+		if (ids != null && !groups.isEmpty()) {
+			String list = "";
+			int id = 0;
+			for (String s: ids) {
+				list += (list.isEmpty() ? "" : ", ") + ":Xi" + id;
+				query.addParameter("id", "Xi" + id, s);
+				id++;
+			}
+			query.addWhere("id", "l.uniqueId in (" + ids + ")");
+		}
+		
+		return query;
+	}
+	
+	public static class RoomQuery {
+		private Long iSessionId;
+		private Map<String, String> iFrom = new HashMap<String, String>();
+		private Map<String, String> iWhere = new HashMap<String, String>();
+		private Map<String, Map<String, Object>> iParams = new HashMap<String, Map<String,Object>>();
+		
+		public RoomQuery(Long sessionId) {
+			iSessionId = sessionId;
+		}
+		
+		public void addFrom(String option, String from) { iFrom.put(option, from); }
+		public void addWhere(String option, String where) { iWhere.put(option, where); }
+
+		protected void addParameter(String option, String name, Object value) {
+			Map<String, Object> params = iParams.get(option);
+			if (params == null) { params = new HashMap<String, Object>(); iParams.put(option, params); }
+			params.put(name, value);
+		}
+		
+		public String getFrom(Collection<String> excludeOption) {
+			String from = "";
+			for (Map.Entry<String, String> entry: iFrom.entrySet()) {
+				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
+				from += (entry.getValue().startsWith("inner join") || entry.getValue().startsWith("left outer join") || entry.getValue().startsWith("left join fetch") ? " " : ", ") + entry.getValue();
+			}
+			return from;
+		}
+		
+		public String getWhere(Collection<String> excludeOption) {
+			String where = "";
+			for (Map.Entry<String, String> entry: iWhere.entrySet()) {
+				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
+				where += " and (" + entry.getValue() + ")";
+			}
+			return where;
+		}
+		
+		public org.hibernate.Query setParams(org.hibernate.Query query, Collection<String> excludeOption) {
+			for (Map.Entry<String, Map<String, Object>> entry: iParams.entrySet()) {
+				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
+				for (Map.Entry<String, Object> param: entry.getValue().entrySet()) {
+					if (param.getValue() instanceof Integer) {
+						query.setInteger(param.getKey(), (Integer)param.getValue());
+					} else if (param.getValue() instanceof Long) {
+						query.setLong(param.getKey(), (Long)param.getValue());
+					} else if (param.getValue() instanceof String) {
+						query.setString(param.getKey(), (String)param.getValue());
+					} else if (param.getValue() instanceof Boolean) {
+						query.setBoolean(param.getKey(), (Boolean)param.getValue());
+					} else if (param.getValue() instanceof Date) {
+						query.setDate(param.getKey(), (Date)param.getValue());
+					} else {
+						query.setString(param.getKey(), param.getValue().toString());
+					}
+				}
+			}
+			return query;
+		}
+		
+		public RoomInstance select(String select) {
+			return new RoomInstance(select);
+		}
+		
+		public RoomInstance select() {
+			return select(null);
+		}
+		
+		public class RoomInstance {
+			private String iSelect = null, iFrom = null, iWhere = null, iOrderBy = null, iGroupBy = null, iType = "Location";
+			private Integer iLimit = null;
+			private Set<String> iExclude = new HashSet<String>();
+			private Map<String, Object> iParams = new HashMap<String, Object>();
+			
+			private RoomInstance(String select) {
+				iSelect = select;
+			}
+			
+			public RoomInstance from(String from) { iFrom = from; return this; }
+			public RoomInstance where(String where) { 
+				if (iWhere == null)
+					iWhere = "(" + where + ")";
+				else
+					iWhere += " and (" + where + ")";
+				return this;
+			}
+			public RoomInstance type(String type) { iType = type; return this; }
+			public RoomInstance order(String orderBy) { iOrderBy = orderBy; return this; }
+			public RoomInstance group(String groupBy) { iGroupBy = groupBy; return this; }
+			public RoomInstance exclude(String excludeOption) { 
+				if (excludeOption != null && !excludeOption.isEmpty()) iExclude.add(excludeOption);
+				return this;
+			}
+			public RoomInstance set(String param, Object value) { iParams.put(param, value); return this; }
+			public RoomInstance limit(Integer limit) { iLimit = (limit == null || limit <= 0 ? null : limit); return this; }
+			
+			public String query() {
+				return
+					"select " + (iSelect == null ? "distinct l" : iSelect) +
+					" from " + iType + " l " + 
+					(iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
+					" where l.session.uniqueId = :sessionId " +
+					getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
+					(iGroupBy == null ? "" : " group by " + iGroupBy) +
+					(iOrderBy == null ? "" : " order by " + iOrderBy);
+			}
+			
+			public org.hibernate.Query query(org.hibernate.Session hibSession) {
+				//System.out.println("Q: " + query());
+				org.hibernate.Query query = setParams(hibSession.createQuery(query()), iExclude).setLong("sessionId", iSessionId).setCacheable(true);
+				for (Map.Entry<String, Object> param: iParams.entrySet()) {
+					if (param.getValue() instanceof Integer) {
+						query.setInteger(param.getKey(), (Integer)param.getValue());
+					} else if (param.getValue() instanceof Long) {
+						query.setLong(param.getKey(), (Long)param.getValue());
+					} else if (param.getValue() instanceof String) {
+						query.setString(param.getKey(), (String)param.getValue());
+					} else if (param.getValue() instanceof Boolean) {
+						query.setBoolean(param.getKey(), (Boolean)param.getValue());
+					} else if (param.getValue() instanceof Date) {
+						query.setDate(param.getKey(), (Date)param.getValue());
+					} else {
+						query.setString(param.getKey(), param.getValue().toString());
+					}
+				}
+				if (iLimit != null)
+					query.setMaxResults(iLimit);
+				return query;
+			}
+		}
 	}
 }
