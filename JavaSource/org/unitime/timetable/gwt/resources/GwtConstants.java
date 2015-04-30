@@ -208,4 +208,7 @@ public interface GwtConstants extends Constants {
 		"Time Conflict", "Over Limit", "Time & Limit"
 	})
 	String[] reservationOverrideTypeAbbv();
+
+	@DefaultBooleanValue(false)
+	boolean displayMidtermPeriodPreferencesAsCalendar();
 }

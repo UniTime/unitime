@@ -1985,6 +1985,12 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-size: small;
 }
 
+.unitime-DateSelector .month .title {
+	text-align: center;
+	font-size: x-small;
+	font-weight: bold;
+}
+
 .unitime-DateSelector .box {
 	display: table;
 	overflow: hidden;
@@ -2040,6 +2046,11 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	color: #202020;
 }
 
+.unitime-DateSelector .box .unavailable {
+	background-color: #969696;
+	font-style: italic;
+	color: #202020;
+}
 .unitime-DateSelector .box .past {
 	font-style: normal;
 }
@@ -2984,6 +2995,26 @@ div.gwt-MenuBarPopup {
 	white-space: nowrap;
 	max-width: 38px;
 	color: white;
+}
+
+.unitime-RoomSharingWidget .disabled {
+	background-color: #969696;
+}
+
+.unitime-RoomSharingWidget .container {
+	display: -moz-inline-box;
+	display: inline-block;
+	padding: 3px 5px 3px 5px;
+	vertical-align: top;
+}
+
+.unitime-RoomSharingWidget .intable {
+	display: block;
+}
+
+.unitime-RoomSharingWidget .intable .title {
+	font-weight: bold;
+	padding-left: 45px;
 }
 
 .unitime-RoomSharingWidget .legend {
