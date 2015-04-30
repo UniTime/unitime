@@ -645,6 +645,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			for (String s: buildings) {
 				building += (building.isEmpty() ? "" : ", ") + ":Xb" + id;
 				query.addParameter("building", "Xb" + id, s);
+				id++;
 			}
 			query.addWhere("building", "l.building.abbreviation in (" + building + ")");
 		}
