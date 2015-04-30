@@ -1565,8 +1565,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			}
 			
 			public Long getUniqueId() { return iUniqueId; }
+			public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
+			
 			public String getAbbreviation() { return iAbbv; }
+			public void setAbbreviation(String abbreviation) { iAbbv = abbreviation; }
+			
 			public String getName() { return iName; }
+			public void setName(String name) { iName = name; }
+			
 			public int getCount() { return iCount; }
 			public void setCount(int count) { iCount = count; }
 			public void incCount() { iCount ++; }

@@ -211,4 +211,32 @@ public interface GwtConstants extends Constants {
 
 	@DefaultBooleanValue(false)
 	boolean displayMidtermPeriodPreferencesAsCalendar();
+	
+	@DefaultStringArrayValue({
+		"No Event Management",
+		"Authenticated Users Can Request Events Managers Can Approve",
+		"Departmental Users Can Request Events Managers Can Approve",
+		"Event Managers Can Request Or Approve Events",
+		"Authenticated Users Can Request Events No Approval",
+		"Departmental Users Can Request Events No Approval",
+		"Event Managers Can Request Events No Approval",
+	})
+	String[] eventStatusName();
+	
+	@DefaultStringArrayValue({
+		"Disabled",
+		"Enabled",
+		"Only Department",
+		"Only Managers",
+		"Enabled<br>No Approval",
+		"Only Department<br>No Approval",
+		"Only Managers<br>No Approval",
+	})
+	String[] eventStatusAbbv();
+	
+	@DefaultStringValue("#,##0.##")
+	String roomAreaFormat();
+	
+	@DefaultStringValue("#0.0###")
+	String roomCoordinateFormat();
 }

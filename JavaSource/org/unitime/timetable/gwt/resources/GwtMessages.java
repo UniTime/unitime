@@ -409,6 +409,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Capacity")
 	String colCapacity();
+	
+	@DefaultMessage("Exam<br>Capacity")
+	String colExaminationCapacity();
 
 	@DefaultMessage("Approved")
 	String colApproval();
@@ -604,6 +607,69 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Picture")
 	String colPicture();
+	
+	@DefaultMessage("Building")
+	String colBuilding();
+	
+	@DefaultMessage("Room")
+	String colRoom();
+	
+	@DefaultMessage("Area [ft&sup2;]")
+	String colArea();
+	
+	@DefaultMessage("Coordinates")
+	String colCoordinates();
+	
+	@DefaultMessage("Longitude")
+	String colCoordinateX();
+	
+	@DefaultMessage("Latitude")
+	String colCoordinateY();
+	
+	@DefaultMessage("Distances")
+	String colDistances();
+	
+	@DefaultMessage("Room<br>Check")
+	String colRoomCheck();
+	
+	@DefaultMessage("Preference")
+	String colPreference();
+	
+	@DefaultMessage("Availability")
+	String colAvailability();
+	
+	@DefaultMessage("Departments")
+	String colDepartments();
+	
+	@DefaultMessage("Control")
+	String colControl();
+	
+	@DefaultMessage("Examination<br>Types")
+	String colExamTypes();
+	
+	@DefaultMessage("Period<br>Preferences")
+	String colPeriodPreferences();
+	
+	@DefaultMessage("Event<br>Department")
+	String colEventDepartment();
+	
+	@DefaultMessage("Event<br>Availability")
+	String colEventAvailability();
+	
+	@DefaultMessage("Event<br>Status")
+	String colEventStatus();
+	
+	@DefaultMessage("Event<br>Message")
+	String colEventMessage();
+	
+	@DefaultMessage("Break<br>Time")
+	String colBreakTime();
+	
+	@DefaultMessage("Groups")
+	String colGroups();
+	
+	@DefaultMessage("Features")
+	String colFeatures();
 	
 	@DefaultMessage("Last Change")
 	String colLastChange();
@@ -1159,6 +1225,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Loading room pictures...")
 	String waitLoadingRoomPictures();
+	
+	@DefaultMessage("Loading rooms...")
+	String waitLoadingRooms();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -1363,6 +1432,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to upload room picture: {0}")
 	String failedToUploadRoomPicture(String reason);
+	
+	@DefaultMessage("Failed to load period preferences: {0}")
+	String failedToLoadPeriodPreferences(String reason);
+	
+	@DefaultMessage("Failed to initialize: {0}")
+	String failedToInitialize(String reason);
 	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -1975,6 +2050,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Room Pictures")
 	String pageRoomPictures();
+	
+	@DefaultMessage("Rooms")
+	String pageRooms();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -3145,4 +3223,19 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<i>{0} -- not approved</i>")
 	String gridEventHeaderNotApproved(String header);
+	
+	@DefaultMessage("{0,number,#,##0.##} ft&sup2;")
+	String roomArea(Double area);
+	
+	@DefaultMessage("{0,number,#0.0###}, {1,number,#0.0###}")
+	String coordinates(Double x, Double y);
+	
+	@DefaultMessage("{0} Examination Rooms")
+	String examinationRooms(String examTypeName);
+	
+	@DefaultMessage("No")
+	String exportFalse();
+	
+	@DefaultMessage("Yes")
+	String exportTrue();
 }

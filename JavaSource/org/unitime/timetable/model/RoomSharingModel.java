@@ -336,7 +336,7 @@ public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingMod
 		iDefaultSelection = 0;
 		if (selection==null) return;
 		for (int i=0;i<getNrSelections();i++) {
-			if (selection.equalsIgnoreCase(getSelectionName(i).replaceAll("&times;","x").replaceAll("×", "x"))) {
+			if (selection.equals(iModes.get(i).toHex()) || selection.equalsIgnoreCase(getSelectionName(i).replaceAll("&times;","x").replaceAll("×", "x"))) {
 				iDefaultSelection = i;
 				break;
 			}

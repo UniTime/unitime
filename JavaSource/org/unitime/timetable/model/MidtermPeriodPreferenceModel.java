@@ -41,13 +41,13 @@ import org.unitime.timetable.util.Formats;
  */
 public class MidtermPeriodPreferenceModel {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
-    private TreeSet<Integer> iDates = new TreeSet<Integer>();
-    private TreeSet<Integer> iStarts = new TreeSet<Integer>();
-    private Hashtable<Integer,Hashtable<Integer,String>> iPreferences = new Hashtable<Integer,Hashtable<Integer,String>>();
-    private Hashtable<Integer,Integer> iLength = new Hashtable<Integer,Integer>();
+	protected TreeSet<Integer> iDates = new TreeSet<Integer>();
+    protected TreeSet<Integer> iStarts = new TreeSet<Integer>();
+    protected Hashtable<Integer,Hashtable<Integer,String>> iPreferences = new Hashtable<Integer,Hashtable<Integer,String>>();
+    protected Hashtable<Integer,Integer> iLength = new Hashtable<Integer,Integer>();
     private TreeSet iPeriods = null;
     private Date iFirstDate = null, iLastDate = null;
-    private boolean iLocation = false;
+    protected boolean iLocation = false;
     
     private ExamPeriod iPeriod = null;
     private Date iExamBeginDate = null;

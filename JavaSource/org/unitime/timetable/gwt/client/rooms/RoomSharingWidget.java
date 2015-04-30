@@ -50,7 +50,6 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
@@ -169,15 +168,13 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		
 		iModeSelection.setSelectedIndex(0);
 		
-		String cookie = Cookies.getCookie("UniTime:RoomSharing");
-		if (cookie != null) {
-			try {
-				for (int i = 0; i < iModel.getModes().size(); i++)
-					if (cookie.startsWith(iModel.getModes().get(i).toString())) {
-						iModeSelection.setSelectedIndex(i); break;
-					}
-				iHorizontal.setValue(cookie.endsWith("|1"));
-			} catch (Exception e) {}
+		RoomCookie cookie = RoomCookie.getInstance();
+		if (cookie.hasMode()) {
+			for (int i = 0; i < iModel.getModes().size(); i++)
+				if (cookie.getMode().equals(iModel.getModes().get(i).toHex())) {
+					iModeSelection.setSelectedIndex(i); break;
+				}
+			iHorizontal.setValue(cookie.areRoomsHorizontal());
 		} else {
 			iHorizontal.setValue(model.isDefaultHorizontal());
 			iModeSelection.setSelectedIndex(iModel.getDefaultMode());
@@ -259,7 +256,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 	
 	public void setMode(final RoomSharingDisplayMode mode, final boolean horizontal) {
 		iMode = mode;
-		Cookies.setCookie("UniTime:RoomSharing", mode.toString() + "|" + (horizontal ? "1" : "0"));
+		RoomCookie.getInstance().setMode(horizontal, mode.toHex());
 		iPanel.clear();
 		
 		if (horizontal) {

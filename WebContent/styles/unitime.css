@@ -3651,3 +3651,29 @@ unitime-RoomSharingWidget .legend .blank {
 	color: gray;
 	font-style: italic;
 }
+
+.unitime-Rooms {
+	width: 100%;
+}
+
+.unitime-Rooms .row {
+	vertical-align: top;
+}
+
+.unitime-Rooms .cell {
+}
+
+.unitime-Rooms .note {
+	max-width: 200px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.unitime-Rooms .default {
+	font-style: italic;	
+}
+
+.unitime-Rooms .departments .control {
+	text-decoration: underline;	
+}

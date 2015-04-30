@@ -29,6 +29,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.cpsolver.coursett.model.TimeLocation;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
@@ -38,6 +42,8 @@ import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 /**
@@ -45,9 +51,21 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  */
 public class PatternServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	
+	protected SessionContext getSessionContext() {
+		return HttpSessionContext.getSessionContext(getServletContext());
+	}
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		boolean vertical = "1".equals(request.getParameter("v"));
+		SessionContext context = getSessionContext();
+		boolean vertical = true;
+		if (request.getParameter("v") != null)
+			vertical = "1".equals(request.getParameter("v"));
+		else if (request.getParameter("c") != null)
+			vertical = "0".equals(request.getParameter("c").split("\\|")[5]);
+		else
+			vertical = CommonValues.VerticalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation));
 		RequiredTimeTable rtt = null;
 		if (request.getParameter("tp") != null) {
 			TimePattern p = TimePatternDAO.getInstance().get(Long.valueOf(request.getParameter("tp")));
@@ -93,7 +111,12 @@ public class PatternServlet extends HttpServlet {
 				} catch (NumberFormatException e) {
 					rtt.getModel().setDefaultSelection(request.getParameter("s"));
 				}
-			} if (request.getParameter("p") != null)
+			} else {
+				String defaultGridSize = RequiredTimeTable.getTimeGridSize(context.getUser());
+				if (defaultGridSize != null)
+					rtt.getModel().setDefaultSelection(defaultGridSize);
+			}
+			if (request.getParameter("p") != null)
 				rtt.getModel().setPreferences(request.getParameter("p"));
 			boolean hc = ("1".equals(request.getParameter("hc")));
 			
