@@ -33,6 +33,7 @@ import org.unitime.timetable.export.Exporter.Printer;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 
+import com.google.gwt.dom.client.Style.FontStyle;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -188,9 +189,11 @@ public class PDFPrinter implements Printer {
 			}
 
 			if (f.hasText()) {
-				Font font = PdfFont.getFont(f.has(F.BOLD), f.has(F.ITALIC), f.has(F.UNDERLINE), f.getColor());
-				Paragraph ch = new Paragraph(f.getText(), font);
-				ch.setLeading(0f, 1f);
+				Font font = PdfFont.getFont(f.has(F.BOLD), f.has(F.ITALIC));
+				if (f.getColor() != null) font.setColor(f.getColor());
+				if (f.has(F.UNDERLINE)) font.setStyle(Font.UNDERLINE);
+				Chunk ch = new Chunk(f.getText(), font);
+				//ch.setLeading(0f, 1f);
 				cell.addElement(ch);
 				float width = 0; 
 				if (f.getText().indexOf('\n')>=0) {
@@ -202,6 +205,7 @@ public class PDFPrinter implements Printer {
 			}
 			
 			if (f.hasChunks()) {
+				boolean underline = false;
 				for (A g: f.getChunks()) {
 					if (g.hasImage()) {
 						try {
@@ -212,9 +216,11 @@ public class PDFPrinter implements Printer {
 						} catch (Exception e) {}
 					}
 					if (g.hasText()) {
-						Font font = PdfFont.getFont(g.has(F.BOLD), g.has(F.ITALIC), g.has(F.UNDERLINE), g.getColor());
+						Font font = PdfFont.getFont(g.has(F.BOLD), g.has(F.ITALIC));
+						if (g.getColor() != null) font.setColor(g.getColor());
+						if (g.has(F.UNDERLINE)) font.setStyle(Font.UNDERLINE);
 						Paragraph ch = new Paragraph(g.getText(), font);
-						ch.setLeading(0f, 1f);
+						ch.setLeading(0f, underline ? 1.4f : 1.0f);
 						cell.addElement(ch);
 						float width = 0; 
 						if (g.getText().indexOf('\n')>=0) {
@@ -223,6 +229,7 @@ public class PDFPrinter implements Printer {
 						} else 
 							width = Math.max(width,font.getBaseFont().getWidthPoint(g.getText(), font.getSize()));
 						iMaxWidth[idx] = Math.max(iMaxWidth[idx], width + rpad);
+						underline = g.has(F.UNDERLINE);
 					}
 				}
 			}
