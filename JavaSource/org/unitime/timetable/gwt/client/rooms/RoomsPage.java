@@ -30,7 +30,11 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimeResponse;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimesRequest;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.AriaOperation;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.HasColumnName;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -46,6 +50,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
@@ -81,7 +86,7 @@ public class RoomsPage extends Composite {
 	private RoomFilterBox iFilter = null;
 	private AriaButton iSearch = null;
 	private AriaButton iNew = null;
-	private AriaButton iExport = null;
+	private AriaButton iMore = null;
 	private RoomsTable iRoomsTable = null;
 	
 	private VerticalPanel iRoomsPanel = null;
@@ -114,10 +119,10 @@ public class RoomsPage extends Composite {
 		iSearch.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iSearch);
 		
-		iExport = new AriaButton(MESSAGES.buttonExport());
-		iExport.addStyleName("unitime-NoPrint");
-		iExport.setEnabled(false);
-		iFilterPanel.add(iExport);		
+		iMore = new AriaButton(MESSAGES.buttonMoreOperations());
+		iMore.setEnabled(false);
+		iMore.addStyleName("unitime-NoPrint");
+		iFilterPanel.add(iMore);
 
 		iNew = new AriaButton(MESSAGES.buttonAddNew());
 		iNew.setEnabled(false);
@@ -146,6 +151,109 @@ public class RoomsPage extends Composite {
 			}
 		});
 		
+		iMore.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				MenuBar menu = new MenuBar(true);
+				
+				boolean first = true;
+				List<Operation> showHide = iRoomsTable.getShowHideOperations();
+				if (!showHide.isEmpty()) {
+					MenuBar submenu = new MenuBar(true);
+					for (final Operation op: showHide) {
+						MenuItem item = new MenuItem(op.getName(), true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								op.execute();
+							}
+						});
+						if (op instanceof AriaOperation)
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+						else
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+						submenu.addItem(item);
+					}
+					MenuItem columns = new MenuItem(MESSAGES.opColumns(), submenu);
+					columns.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(columns);
+					first = false;
+				}
+				
+				List<Operation> sorts = iRoomsTable.getSortOperations();
+				if (!sorts.isEmpty()) {
+					MenuBar submenu = new MenuBar(true);
+					for (final Operation op: sorts) {
+						String name = op.getName();
+						if (op instanceof HasColumnName)
+							name = ((HasColumnName)op).getColumnName();
+						MenuItem item = new MenuItem(name, true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								op.execute();
+							}
+						});
+						if (op instanceof AriaOperation)
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+						else
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+						submenu.addItem(item);
+					}
+					MenuItem columns = new MenuItem(MESSAGES.opSort(), submenu);
+					columns.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(columns);
+					first = false;
+				}
+				
+				List<Operation> depts = iRoomsTable.getDepartmentOperations();
+				if (!depts.isEmpty()) {
+					MenuBar submenu = new MenuBar(true);
+					for (final Operation op: depts) {
+						MenuItem item = new MenuItem(op.getName(), true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								op.execute();
+							}
+						});
+						if (op instanceof AriaOperation)
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+						else
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+						submenu.addItem(item);
+					}
+					MenuItem columns = new MenuItem(MESSAGES.opDepartmentFormat(), submenu);
+					columns.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(columns);
+					first = false;
+				}
+				
+				for (final Operation op: iRoomsTable.getOtherOperations()) {
+					MenuItem item = new MenuItem(op.getName(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							op.execute();
+						}
+					});
+					if (op instanceof AriaOperation)
+						Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+					else
+						Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+					if (op.hasSeparator() && !first)
+						menu.addSeparator();
+					menu.addItem(item);
+					first = false;
+				}
+				
+				popup.add(menu);
+				popup.showRelativeTo((UIObject)event.getSource());
+				menu.focus();
+			}
+		});
+		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
@@ -168,41 +276,50 @@ public class RoomsPage extends Composite {
 			@Override
 			public void onSuccess(RoomPropertiesInterface result) {
 				iProperties = result;
-				if (iProperties.isCanExportCsv() || iProperties.isCanExportPdf())
-					iExport.setEnabled(true);
 			}
 		});
 		
-		iExport.addClickHandler(new ClickHandler() {
+		iRoomsTable.addOperation(new Operation() {
 			@Override
-			public void onClick(ClickEvent event) {
-				final PopupPanel popup = new PopupPanel(true);
-				MenuBar menu = new MenuBar(true);
-				if (iProperties.isCanExportPdf()) {
-					MenuItem exportPdf = new MenuItem(MESSAGES.opExportPDF(), true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							export("rooms.pdf");
-						}
-					});
-					exportPdf.getElement().getStyle().setCursor(Cursor.POINTER);
-					menu.addItem(exportPdf);
-				}
-				if (iProperties.isCanExportCsv()) {
-					MenuItem exportCsv = new MenuItem(MESSAGES.opExportCSV(), true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							export("rooms.csv");
-						}
-					});
-					exportCsv.getElement().getStyle().setCursor(Cursor.POINTER);
-					menu.addItem(exportCsv);
-				}
-				popup.add(menu);
-				popup.showRelativeTo((UIObject)event.getSource());
-				menu.focus();
+			public void execute() {
+				export("rooms.pdf");
+			}
+			
+			@Override
+			public boolean isApplicable() {
+				return iRoomsTable.getRowCount() > 0 && (iProperties != null && iProperties.isCanExportPdf());
+			}
+			
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			
+			@Override
+			public String getName() {
+				return MESSAGES.opExportPDF();
+			}
+		});
+		
+		iRoomsTable.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				export("rooms.csv");
+			}
+			
+			@Override
+			public boolean isApplicable() {
+				return iRoomsTable.getRowCount() > 0 && (iProperties != null && iProperties.isCanExportCsv());
+			}
+			
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			
+			@Override
+			public String getName() {
+				return MESSAGES.opExportCSV();
 			}
 		});
 	}
@@ -247,6 +364,7 @@ public class RoomsPage extends Composite {
 	}
 	
 	protected void search() {
+		iMore.setEnabled(false);
 		iRoomsTable.clearTable(1);
 		LoadingWidget.execute(iFilter.getElementsRequest(), new AsyncCallback<FilterRpcResponse>() {
 			@Override
@@ -261,9 +379,12 @@ public class RoomsPage extends Composite {
 					iFilter.setErrorHint(MESSAGES.errorNoRoomsMatchingFilter());
 				} else {
 					Chip dept = iFilter.getChip("department");
+					iRoomsTable.setDepartment(dept == null ? null : dept.getValue());
 					for (FilterRpcResponse.Entity entity: result.getResults())
-						iRoomsTable.addRoom((RoomDetailInterface)entity, dept == null ? null : dept.getValue());
+						iRoomsTable.addRoom((RoomDetailInterface)entity);
+					iRoomsTable.sort();
 				}
+				iMore.setEnabled(iRoomsTable.getRowCount() > 1);
 			}
 		}, MESSAGES.waitLoadingRooms());
 	}

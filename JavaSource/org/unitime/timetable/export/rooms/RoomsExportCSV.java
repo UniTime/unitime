@@ -124,8 +124,8 @@ public class RoomsExportCSV extends RoomsExporter {
 					room.getEventAvailability(),
 					room.getEventNote() != null ? room.getEventNote() : room.getDefaultEventNote(),
 					room.getBreakTime() != null ? room.getBreakTime().toString() : room.getDefaultBreakTime() != null ? room.getDefaultBreakTime().toString() : "",
-					groups2string(room.getGroups(), "\n"),
-					features2string(room.getFeatures(), "\n")
+					groups2string(room.getGroups(), deptMode, "\n"),
+					features2string(room.getFeatures(), deptMode, "\n")
 					);
 			out.flush();
 		}

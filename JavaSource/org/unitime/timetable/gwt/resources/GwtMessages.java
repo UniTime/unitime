@@ -359,6 +359,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Condense Repetitions")
 	String opHideRepeatingInformation();
 	
+	@DefaultMessage("Columns")
+	String opColumns();
+	
+	@DefaultMessage("Sort By")
+	String opSort();
+	
+	@DefaultMessage("Department")
+	String opDepartmentFormat();
+	
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
 

@@ -204,25 +204,25 @@ public abstract class RoomsExporter implements Exporter {
 		return ret;
 	}
 	
-	protected String features2string(Collection<FeatureInterface> features, String separator) {
+	protected String features2string(Collection<FeatureInterface> features, int deptMode, String separator) {
 		if (features == null || features.isEmpty()) return "";
 		String ret = "";
 		for (FeatureInterface f: features) {
 			if (f.getType() != null)
 				ret += (ret.isEmpty() ? "" : separator) + f.getLabel() + " (" + f.getType().getAbbreviation() + ")";
 			else if (f.getDepartment() != null)
-				ret += (ret.isEmpty() ? "" : separator) + f.getLabel() + " (" + f.getDepartment().getExtAbbreviationWhenExist() + ")";
+				ret += (ret.isEmpty() ? "" : separator) + f.getLabel() + " (" + dept2string(f.getDepartment(), deptMode) + ")";
 			else
 				ret += (ret.isEmpty() ? "" : separator) + f.getLabel();
 		}
 		return ret;
 	}
 	
-	protected String groups2string(Collection<GroupInterface> groups, String separator) {
+	protected String groups2string(Collection<GroupInterface> groups, int deptMode, String separator) {
 		if (groups == null || groups.isEmpty()) return "";
 		String ret = "";
 		for (GroupInterface g: groups) {
-			ret += (ret.isEmpty() ? "" : separator) + g.getLabel() + (g.getDepartment() == null ? "" : " (" + g.getDepartment().getExtAbbreviationWhenExist() + ")");
+			ret += (ret.isEmpty() ? "" : separator) + g.getLabel() + (g.getDepartment() == null ? "" : " (" + dept2string(g.getDepartment(), deptMode) + ")");
 		}
 		return ret;
 	}

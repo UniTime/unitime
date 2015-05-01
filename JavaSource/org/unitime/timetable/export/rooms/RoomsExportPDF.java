@@ -139,12 +139,12 @@ public class RoomsExportPDF extends RoomsExporter {
 					examTypes2a(room.getExamTypes()),
 					periodPreferences(room, department, gridAsText, vertical),
 					new A(dept2string(room.getEventDepartment(), deptMode)).color(room.getEventDepartment() == null ? null : room.getEventDepartment().getColor()),
-					new A(room.getEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getEventStatus()] : room.getDefaultEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()] : "").italic(),
+					room.getEventStatus() != null ? new A(CONSTANTS.eventStatusAbbv()[room.getEventStatus()]) : room.getDefaultEventStatus() != null ? new A(CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()]).italic() : new A(),
 					availability(room, true, gridAsText, vertical, mode),
-					new A(room.getEventNote() != null ? room.getEventNote() : room.getDefaultEventNote()),
-					new A(room.getBreakTime() != null ? room.getBreakTime().toString() : room.getDefaultBreakTime() != null ? room.getDefaultBreakTime().toString() : ""),
-					groups2a(room.getGroups()),
-					features2a(room.getFeatures())
+					room.getEventNote() != null ? new A(room.getEventNote()) : new A(room.getDefaultEventNote()).italic(),
+					room.getBreakTime() != null ? new A(room.getBreakTime().toString()) : room.getDefaultBreakTime() != null ? new A(room.getDefaultBreakTime().toString()).italic() : new A(),
+					groups2a(room.getGroups(), deptMode),
+					features2a(room.getFeatures(), deptMode)
 					);
 			out.flush();
 		}
@@ -223,25 +223,25 @@ public class RoomsExportPDF extends RoomsExporter {
 		return a;
 	}
 	
-	protected A features2a(Collection<FeatureInterface> features) {
+	protected A features2a(Collection<FeatureInterface> features, int deptMode) {
 		if (features == null || features.isEmpty()) return new A();
 		A a = new A();
 		for (FeatureInterface f: features) {
 			if (f.getType() != null)
 				a.add(new A(f.getLabel() + " (" + f.getType().getAbbreviation() + ")").color(f.getDepartment() == null ? null : f.getDepartment().getColor()));
 			else if (f.getDepartment() != null)
-				a.add(new A(f.getLabel() + " (" + f.getDepartment().getExtAbbreviationWhenExist() + ")").color(f.getDepartment().getColor()));
+				a.add(new A(f.getLabel() + " (" + dept2string(f.getDepartment(), deptMode) + ")").color(f.getDepartment().getColor()));
 			else
 				a.add(new A(f.getLabel()));
 		}
 		return a;
 	}
 	
-	protected A groups2a(Collection<GroupInterface> groups) {
+	protected A groups2a(Collection<GroupInterface> groups, int deptMode) {
 		if (groups == null || groups.isEmpty()) return new A();
 		A a = new A();
 		for (GroupInterface g: groups) {
-			a.add(new A(g.getLabel() + (g.getDepartment() == null ? "" : " (" + g.getDepartment().getExtAbbreviationWhenExist() + ")")
+			a.add(new A(g.getLabel() + (g.getDepartment() == null ? "" : " (" + dept2string(g.getDepartment(), deptMode) + ")")
 					).color(g.getDepartment() == null ? null : g.getDepartment().getColor()));
 		}
 		return a;

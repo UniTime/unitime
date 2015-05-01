@@ -173,6 +173,10 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 		public String getAriaLabel();
 	}
 	
+	public static interface HasColumnName {
+		public String getColumnName();
+	}
+	
 	public String getHint() {
 		return null;
 	}

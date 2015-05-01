@@ -24,10 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.AriaOperation;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.HasColumnName;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -45,10 +48,13 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertyInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -71,6 +77,11 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	private RoomsComparator.Column iSortBy = null;
 	private boolean iAsc = true;
 	private RoomsPageMode iMode = null;
+	private String iDepartment = null;
+	private List<Operation> iSortOperations = new ArrayList<Operation>();
+	private List<Operation> iShowHideOperations = new ArrayList<Operation>();
+	private List<Operation> iDepartmentOperations = new ArrayList<Operation>();
+	private List<Operation> iOtherOperations = new ArrayList<Operation>();
 	
 	public RoomsTable(RoomsPageMode mode) {
 		setStyleName("unitime-Rooms");
@@ -172,8 +183,8 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 					for (int r = 1; r < getRowCount(); r++) {
 						for (int c = 0; c < getCellCount(r); c++) {
 							Widget w = getWidget(r, c);
-							if (w instanceof DepartmentCell)
-								((DepartmentCell)w).refresh();
+							if (w instanceof HasRefresh)
+								((HasRefresh)w).refresh();
 						}
 					}
 				}
@@ -193,6 +204,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 						return MESSAGES.opCheck(d.getName());
 				}
 			};
+			iDepartmentOperations.add(op);
 			hDepartments.addOperation(op);
 			hControl.addOperation(op);
 			hEventDepartment.addOperation(op);
@@ -210,11 +222,92 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		addSortByOperation(hEventMessage, RoomsComparator.Column.EVENT_MESSAGE);
 		addSortByOperation(hBreakTime, RoomsComparator.Column.BREAK_TIME);
 		
+		addOperation(new Operation() {
+
+			@Override
+			public void execute() {
+				final RoomsTable table = new RoomsTable(iMode);
+				table.setDepartment(iDepartment);
+				for (int i = 1; i < getRowCount(); i++)
+					table.addRoom(getData(i));
+				table.getElement().getStyle().setWidth(1040, Unit.PX);
+				
+				// Move header row to thead
+				Element headerRow = table.getRowFormatter().getElement(0);
+				Element tableElement = table.getElement();
+				Element thead = DOM.createTHead();
+				tableElement.insertFirst(thead);
+				headerRow.getParentElement().removeChild(headerRow);
+				thead.appendChild(headerRow);
+				
+				ToolBox.print(
+						new ToolBox.Page() {
+							@Override
+							public String getName() { return MESSAGES.pageRooms(); }
+							@Override
+							public String getUser() { return UniTimePageHeader.getInstance().getMiddle().getText(); }
+							@Override
+							public String getSession() { return UniTimePageHeader.getInstance().getRight().getText(); }
+							@Override
+							public Element getBody() { return table.getElement(); }
+						}
+						);
+			}
+
+			@Override
+			public String getName() {
+				return MESSAGES.buttonPrint();
+			}
+
+			@Override
+			public boolean isApplicable() {
+				return getRowCount() > 1;
+			}
+
+			@Override
+			public boolean hasSeparator() {
+				return true;
+			}
+		});
+		
+		
 		for (int i = 0; i < getCellCount(0); i++)
 			getCellFormatter().setStyleName(0, i, "unitime-ClickableTableHeader");
 		
 		resetVisibility();
 		setSortBy(RoomCookie.getInstance().getRoomsSortBy());
+	}
+	
+	public List<Operation> getSortOperations() {
+		ArrayList<Operation> operations = new ArrayList<Operation>();
+		for (Operation operation: iSortOperations)
+			if (operation.isApplicable())
+				operations.add(operation);
+		return operations;
+	}
+	
+	public List<Operation> getShowHideOperations() {
+		ArrayList<Operation> operations = new ArrayList<Operation>();
+		for (Operation operation: iShowHideOperations)
+			if (operation.isApplicable())
+				operations.add(operation);
+		return operations;
+	}
+	
+	public List<Operation> getDepartmentOperations() {
+		ArrayList<Operation> operations = new ArrayList<Operation>();
+		for (Operation operation: iDepartmentOperations)
+			if (operation.isApplicable())
+				operations.add(operation);
+		return operations;
+	}
+	
+	public List<Operation> getOtherOperations() {
+		ArrayList<Operation> operations = new ArrayList<Operation>();
+		for (Operation operation: iOtherOperations)
+			if (operation.isApplicable())
+				operations.add(operation);
+		return operations;
 	}
 	
 	public boolean hasSortBy() { return iSortBy != null; }
@@ -233,8 +326,13 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		sort();
 	}
 	
+	protected void addOperation(Operation op) {
+		iOtherOperations.add(op);
+		getHeader(MESSAGES.colName()).addOperation(op);
+	}
+	
 	protected void addSortByOperation(final UniTimeTableHeader header, final RoomsComparator.Column sortBy) {
-		header.addOperation(new Operation() {
+		Operation op = new SortOperation() {
 			@Override
 			public void execute() {
 				if (header.getOrder() != null)
@@ -246,12 +344,16 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				sort();
 			}
 			@Override
-			public boolean isApplicable() { return getRowCount() > 1; }
+			public boolean isApplicable() { return getRowCount() > 1 && header.isVisible(); }
 			@Override
 			public boolean hasSeparator() { return true; }
 			@Override
-			public String getName() { return MESSAGES.opSortBy(header.getHTML()); }
-		});
+			public String getName() { return MESSAGES.opSortBy(getColumnName()); }
+			@Override
+			public String getColumnName() { return header.getHTML().replace("<br>", " "); }
+		};
+		iSortOperations.add(op);
+		header.addOperation(op);
 	}
 	
 	public void sort() {
@@ -292,7 +394,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			header = getHeader(MESSAGES.colBreakTime()); 
 			break;
 		}
-		sort(header, new RoomsComparator(iSortBy, iAsc), true);
+		sort(header, new RoomsComparator(iSortBy, true), iAsc);
 	}
 	
 	protected Operation addHideOperation(final UniTimeTableHeader header, final RoomFlag flag, final Check separator) {
@@ -318,6 +420,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			@Override
 			public String getAriaLabel() { return isColumnVisible(header.getColumn()) ? ARIA.opHide(header.getHTML().replace("<br>", " ")) : ARIA.opShow(header.getHTML().replace("<br>", " ")); }
 		};
+		iShowHideOperations.add(op);
 		getHeader(MESSAGES.colName()).addOperation(op);
 		switch (flag) {
 		case SHOW_EVENT_AVAILABILITY:
@@ -376,7 +479,9 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		return null;
 	}
 	
-	public int addRoom(final RoomDetailInterface room, String department) {
+	public void setDepartment(String department) { iDepartment = department; }
+	
+	public int addRoom(final RoomDetailInterface room) {
 		RoomCookie cookie = RoomCookie.getInstance();
 		
 		List<Widget> widgets = new ArrayList<Widget>();
@@ -393,9 +498,9 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				RoomHint.hideHint();
 			}
 		});
-		if (department != null) {
+		if (iDepartment != null) {
 			for (DepartmentInterface d: room.getDepartments()) {
-				if (department.equals(d.getDeptCode()) && d.getPreference() != null) {
+				if (iDepartment.equals(d.getDeptCode()) && d.getPreference() != null) {
 					roomLabel.getElement().getStyle().setColor(d.getPreference().getColor());
 					room.setPrefix(d.getPreference().getName());
 				}
@@ -419,7 +524,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		widgets.add(new Image(!room.isIgnoreRoomCheck() ? RESOURCES.on() : RESOURCES.off()));
 		
 		widgets.add(new PreferenceCell(room.getDepartments()));
-		if (room.hasPreference(department)) show(RoomFlag.SHOW_PREFERENCE);
+		if (room.hasPreference(iDepartment)) show(RoomFlag.SHOW_PREFERENCE);
 		
 		if (room.getAvailability() != null) {
 			final HTML availability = new HTML(room.getAvailability());
@@ -483,7 +588,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		if (room.getPeriodPreference() != null) {
 			final HTML availability = new HTML(room.getPeriodPreference());
 			for (final ExamTypeInterface t: room.getExamTypes()) {
-				if (t.getReference().equals(department)) {
+				if (t.getReference().equals(iDepartment)) {
 					availability.addMouseOverHandler(new MouseOverHandler() {
 						@Override
 						public void onMouseOver(MouseOverEvent event) {
@@ -503,7 +608,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			show(RoomFlag.SHOW_PERIOD_PREFERENCES);
 		} else {
 			for (final ExamTypeInterface t: room.getExamTypes()) {
-				if (t.getReference().equals(department)) {
+				if (t.getReference().equals(iDepartment)) {
 					final Image pattern = new Image("pattern?loc=" + room.getUniqueId() + "&xt=" + t.getId() + "&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
 					show(RoomFlag.SHOW_PERIOD_PREFERENCES);
 					pattern.addMouseOverHandler(new MouseOverHandler() {
@@ -722,7 +827,9 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		}
 	}
 	
-	public static class FeaturesCell extends P {
+	public static class FeaturesCell extends P implements HasRefresh {
+		Map<FeatureInterface, P> iFeatures = new HashMap<FeatureInterface, P>();
+		
 		public FeaturesCell(List<? extends FeatureInterface> features) {
 			super();
 			setStyleName("features");
@@ -731,18 +838,31 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				p.setText(feature.getLabel());
 				if (feature.getTitle() != null) p.setTitle(feature.getTitle());
 				if (feature.getDepartment() != null) {
-					p.setText(feature.getLabel() + " (" + feature.getDepartment().getExtAbbreviationWhenExist() + ")");
+					p.setText(feature.getLabel() + " (" + RoomsTable.toString(feature.getDepartment()) + ")");
 					if (feature.getDepartment().getColor() != null)
 						p.getElement().getStyle().setColor(feature.getDepartment().getColor());
 				}
 				if (feature.getType() != null)
 					p.setText(feature.getLabel() + " (" + feature.getType().getAbbreviation() + ")");
+				iFeatures.put(feature, p);
 				add(p);
+			}
+		}
+
+		@Override
+		public void refresh() {
+			for (Map.Entry<FeatureInterface, P> e: iFeatures.entrySet()) {
+				P p = e.getValue();
+				FeatureInterface feature = e.getKey();
+				if (feature.getType() == null && feature.getDepartment() != null)
+					p.setText(feature.getLabel() + " (" + RoomsTable.toString(feature.getDepartment()) + ")");
 			}
 		}
 	}
 	
-	public static class GroupsCell extends P {
+	public static class GroupsCell extends P implements HasRefresh {
+		Map<GroupInterface, P> iGroups = new HashMap<GroupInterface, P>();
+		
 		public GroupsCell(List<? extends GroupInterface> groups) {
 			super();
 			setStyleName("groups");
@@ -751,11 +871,22 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				p.setText(group.getLabel());
 				if (group.getTitle() != null) p.setTitle(group.getTitle());
 				if (group.getDepartment() != null) {
-					p.setText(group.getLabel() + " (" + group.getDepartment().getExtAbbreviationWhenExist() + ")");
+					p.setText(group.getLabel() + " (" + RoomsTable.toString(group.getDepartment()) + ")");
 					if (group.getDepartment().getColor() != null)
 						p.getElement().getStyle().setColor(group.getDepartment().getColor());
 				}
+				iGroups.put(group, p);
 				add(p);
+			}
+		}
+		
+		@Override
+		public void refresh() {
+			for (Map.Entry<GroupInterface, P> e: iGroups.entrySet()) {
+				P p = e.getValue();
+				GroupInterface group = e.getKey();
+				if (group.getDepartment() != null)
+					p.setText(group.getLabel() + " (" + RoomsTable.toString(group.getDepartment()) + ")");
 			}
 		}
 	}
@@ -805,7 +936,25 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		}
 	}
 	
-	public static class DepartmentCell extends P {
+	public static String toString(DepartmentInterface d) {
+		RoomCookie cookie = RoomCookie.getInstance();
+		switch (DeptMode.values()[cookie.getDeptMode()]) {
+		case ABBV:
+			return d.getExtAbbreviationWhenExist();
+		case CODE:
+			return d.getDeptCode();
+		case ABBV_NAME:
+			return d.getExtAbbreviationWhenExist() + " - " + d.getExtLabelWhenExist();
+		case CODE_NAME:
+			return d.getDeptCode() + " - " + d.getLabel();
+		case NAME:
+			return d.getExtLabelWhenExist();
+		default:
+			return d.getExtAbbreviationWhenExist();
+		}
+	}
+	
+	public static class DepartmentCell extends P implements HasRefresh {
 		Map<DepartmentInterface, P> iP = new HashMap<DepartmentInterface, P>();
 		
 		public DepartmentCell(DepartmentInterface... departments) {
@@ -813,7 +962,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			for (DepartmentInterface department: departments) {
 				if (department == null) continue;
 				P p = new P("department");
-				p.setText(toString(department));
+				p.setText(RoomsTable.toString(department));
 				if (department.getTitle() != null) p.setTitle(department.getTitle());
 				if (department.getColor() != null)
 					p.getElement().getStyle().setColor(department.getColor());
@@ -826,7 +975,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			super("departments");
 			for (DepartmentInterface department: departments) {
 				P p = new P("department");
-				p.setText(toString(department));
+				p.setText(RoomsTable.toString(department));
 				if (department.getTitle() != null) p.setTitle(department.getTitle());
 				if (department.getColor() != null)
 					p.getElement().getStyle().setColor(department.getColor());
@@ -837,27 +986,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			}
 		}
 		
-		protected String toString(DepartmentInterface d) {
-			RoomCookie cookie = RoomCookie.getInstance();
-			switch (DeptMode.values()[cookie.getDeptMode()]) {
-			case ABBV:
-				return d.getExtAbbreviationWhenExist();
-			case CODE:
-				return d.getDeptCode();
-			case ABBV_NAME:
-				return d.getExtAbbreviationWhenExist() + " - " + d.getExtLabelWhenExist();
-			case CODE_NAME:
-				return d.getDeptCode() + " - " + d.getLabel();
-			case NAME:
-				return d.getExtLabelWhenExist();
-			default:
-				return d.getExtAbbreviationWhenExist();
-			}
-		}
-		
+		@Override
 		public void refresh() {
 			for (Map.Entry<DepartmentInterface, P> e: iP.entrySet())
-				e.getValue().setText(toString(e.getKey()));
+				e.getValue().setText(RoomsTable.toString(e.getKey()));
 		}
 	}
 	
@@ -867,7 +999,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			for (DepartmentInterface department: departments) {
 				if (department.getPreference() == null) continue;
 				P p = new P("department");
-				p.setText(toString(department));
+				p.setText(RoomsTable.toString(department));
 				p.setTitle(department.getPreference().getName() + " " + department.getLabel());
 				p.getElement().getStyle().setColor(department.getPreference().getColor());
 				iP.put(department, p);
@@ -928,5 +1060,11 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		DeptMode(String name) { iName = name; }
 		
 		public String getName() { return iName; }
+	}
+	
+	public static interface SortOperation extends Operation, HasColumnName {}
+	
+	public static interface HasRefresh {
+		public void refresh();
 	}
 }
