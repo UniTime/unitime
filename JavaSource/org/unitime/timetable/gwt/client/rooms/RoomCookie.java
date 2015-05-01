@@ -87,6 +87,19 @@ public class RoomCookie {
 		iFlags[mode.ordinal()] = (value ? f.set(iFlags[mode.ordinal()]) : f.clear(iFlags[mode.ordinal()]));
 		save();
 	}
+	public boolean get(RoomsPageMode mode, int ftIndex) {
+		int flag = (1 << (RoomFlag.values().length + ftIndex));
+		return (iFlags[mode.ordinal()] & flag) == 0;
+	}
+	public void set(RoomsPageMode mode, int ftIndex, boolean value) {
+		int flag = (1 << (RoomFlag.values().length + ftIndex));
+		boolean in = ((iFlags[mode.ordinal()] & flag) != 0);
+		if (!value && !in)
+			iFlags[mode.ordinal()] += flag;
+		if (value && in)
+			iFlags[mode.ordinal()] -= flag;
+		save();
+	}
 	public int getFlags(RoomsPageMode mode) { return iFlags[mode.ordinal()]; }
 	
 	public boolean hasHash(RoomsPageMode mode) {

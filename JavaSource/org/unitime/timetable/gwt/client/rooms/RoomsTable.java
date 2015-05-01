@@ -41,12 +41,14 @@ import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFlag;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertyInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
@@ -82,6 +84,8 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	private List<Operation> iShowHideOperations = new ArrayList<Operation>();
 	private List<Operation> iDepartmentOperations = new ArrayList<Operation>();
 	private List<Operation> iOtherOperations = new ArrayList<Operation>();
+	private List<FeatureTypeInterface> iFeatureTypes = null;
+	private int iFirstFeatureTypeColumn = -1;
 	
 	public RoomsTable(RoomsPageMode mode) {
 		setStyleName("unitime-Rooms");
@@ -276,6 +280,51 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		
 		resetVisibility();
 		setSortBy(RoomCookie.getInstance().getRoomsSortBy());
+	}
+	
+	public void setFeatureTypes(List<FeatureTypeInterface> featureTypes) {
+		iFeatureTypes = featureTypes;
+		iFirstFeatureTypeColumn = getCellCount(0);
+		SmartTableRow<RoomDetailInterface> smartRow = getSmartRow(0);
+		for (int i = 0; i < iFeatureTypes.size(); i++) {
+			FeatureTypeInterface type = iFeatureTypes.get(i);
+			final UniTimeTableHeader header = new UniTimeTableHeader(type.getAbbreviation());
+			final int column = i + iFirstFeatureTypeColumn;
+			
+			SmartTableCell cell = new SmartTableCell(smartRow, header);
+			getFlexCellFormatter().setStyleName(0, column, "unitime-ClickableTableHeader");
+			header.setColumn(column);
+			setWidget(0, column, cell);
+			Roles.getColumnheaderRole().set(getCellFormatter().getElement(0, column));
+			
+			final int flag = (1 << (RoomFlag.values().length + i));
+			final int ftIdx = i;
+			Operation op = new AriaOperation() {
+				@Override
+				public void execute() {
+					boolean visible = isColumnVisible(column);
+					setColumnVisible(column, !visible);
+					RoomCookie.getInstance().set(iMode, ftIdx, !visible);
+				}
+				@Override
+				public boolean isApplicable() {
+					return ((iFlags & flag) != 0);
+				}
+				@Override
+				public boolean hasSeparator() { 
+					return false;
+				}
+				@Override
+				public String getName() { return isColumnVisible(header.getColumn()) ? MESSAGES.opHide(header.getHTML().replace("<br>", " ")) : MESSAGES.opShow(header.getHTML().replace("<br>", " ")); }
+				@Override
+				public String getAriaLabel() { return isColumnVisible(header.getColumn()) ? ARIA.opHide(header.getHTML().replace("<br>", " ")) : ARIA.opShow(header.getHTML().replace("<br>", " ")); }
+			};
+			iShowHideOperations.add(op);
+			getHeader(MESSAGES.colName()).addOperation(op);
+			getHeader(MESSAGES.colFeatures()).addOperation(op);
+			header.addOperation(op);
+			setColumnVisible(column, false);
+		}
 	}
 	
 	public List<Operation> getSortOperations() {
@@ -552,7 +601,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				widgets.add(availability);
 			}
 		} else if (room.isCanSeeAvailability()) {
-			final Image availability = new Image("pattern?loc=" + room.getUniqueId() + "&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
+			final Image availability = new Image(GWT.getHostPageBaseURL() + "pattern?loc=" + room.getUniqueId() + "&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
 			availability.addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
@@ -609,7 +658,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		} else {
 			for (final ExamTypeInterface t: room.getExamTypes()) {
 				if (t.getReference().equals(iDepartment)) {
-					final Image pattern = new Image("pattern?loc=" + room.getUniqueId() + "&xt=" + t.getId() + "&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
+					final Image pattern = new Image(GWT.getHostPageBaseURL() + "pattern?loc=" + room.getUniqueId() + "&xt=" + t.getId() + "&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
 					show(RoomFlag.SHOW_PERIOD_PREFERENCES);
 					pattern.addMouseOverHandler(new MouseOverHandler() {
 						@Override
@@ -668,7 +717,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			eventAvail = availability;
 			show(RoomFlag.SHOW_EVENT_AVAILABILITY);
 		} else if (room.isCanSeeEventAvailability()) {
-			final Image availability = new Image("pattern?loc=" + room.getUniqueId() + "&e=1&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
+			final Image availability = new Image(GWT.getHostPageBaseURL() + "pattern?loc=" + room.getUniqueId() + "&e=1&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
 			availability.addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
@@ -692,8 +741,21 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		widgets.add(new BreakTimeCell(room.getBreakTime(), room.getDefaultBreakTime()));
 		if (room.getBreakTime() != null) show(RoomFlag.SHOW_BREAK_TIME);
 		
-		widgets.add(new GroupsCell(room.getGroups()));
-		widgets.add(new FeaturesCell(room.getFeatures()));
+		List<GroupInterface> groups = room.getGroups();
+		widgets.add(new GroupsCell(groups));
+		if (!groups.isEmpty()) show(RoomFlag.SHOW_GROUPS);
+		
+		List<FeatureInterface> features = room.getFeatures(null);
+		widgets.add(new FeaturesCell(features));
+		if (!features.isEmpty()) show(RoomFlag.SHOW_FEATURES);
+		
+		if (iFeatureTypes != null)
+			for (int i = 0; i < iFeatureTypes.size(); i++) {
+				FeatureTypeInterface type = iFeatureTypes.get(i);
+				List<FeatureInterface> featuresOfType = room.getFeatures(type);
+				widgets.add(new FeaturesCell(featuresOfType));
+				if (!featuresOfType.isEmpty()) show(i);
+			}
 		
 		int row = addRow(room, widgets);
 		getRowFormatter().setStyleName(row, "row");
@@ -752,6 +814,9 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		for (RoomFlag flag: RoomFlag.values()) {
 			setColumnVisible(getColumn(flag), cookie.get(iMode, flag) && flag.isShowWhenEmpty());
 		}
+		if (iFeatureTypes != null)
+			for (int i = 0; i < iFeatureTypes.size(); i++)
+				setColumnVisible(iFirstFeatureTypeColumn + i, false);
 	}
 	
 	protected void show(RoomFlag f) {
@@ -759,6 +824,13 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		if (RoomCookie.getInstance().get(iMode, f) && !isColumnVisible(col)) setColumnVisible(col, true);
 		if (!f.isShowWhenEmpty())
 			iFlags = f.set(iFlags);
+	}
+	
+	protected void show(int ftIdx) {
+		int flag = (1 << (RoomFlag.values().length + ftIdx));
+		if (RoomCookie.getInstance().get(iMode, ftIdx) && !isColumnVisible(iFirstFeatureTypeColumn + ftIdx)) setColumnVisible(iFirstFeatureTypeColumn + ftIdx, true);
+		if ((iFlags & flag) == 0)
+			iFlags += flag;
 	}
 	
 	@Override
@@ -842,8 +914,6 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 					if (feature.getDepartment().getColor() != null)
 						p.getElement().getStyle().setColor(feature.getDepartment().getColor());
 				}
-				if (feature.getType() != null)
-					p.setText(feature.getLabel() + " (" + feature.getType().getAbbreviation() + ")");
 				iFeatures.put(feature, p);
 				add(p);
 			}

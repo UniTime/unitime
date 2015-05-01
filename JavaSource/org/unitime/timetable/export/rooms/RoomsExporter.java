@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.CommonValues;
@@ -41,18 +42,21 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
-import org.unitime.timetable.gwt.shared.RoomInterface.RoomFlag;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
+import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.context.UniTimeUserContext;
-import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.rooms.RoomDetailsBackend;
+import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.Formats.Format;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 /**
@@ -103,12 +107,9 @@ public abstract class RoomsExporter implements Exporter {
     	if (u != null && u.getExternalUserId() != null)
     		request.setOption("user", u.getExternalUserId());
     	
-    	int deptMode = 0;
+    	ExportContext ec = new ExportContext();
     	if (helper.getParameter("dm") != null)
-    		deptMode = Integer.parseInt(helper.getParameter("dm"));
-    	
-    	if (!helper.isRequestEncoded())
-    		context.checkPermission(Right.Rooms);
+    		ec.setDepartmentMode(Integer.parseInt(helper.getParameter("dm")));
     	
     	FilterRpcResponse response = new FilterRpcResponse();
     	new RoomDetailsBackend().enumarate(request, response, context); 
@@ -133,97 +134,135 @@ public abstract class RoomsExporter implements Exporter {
     			Collections.sort(rooms, cmp);
     	}
     	
-    	int roomCookieFlags = (helper.getParameter("flags") == null ? RoomsPageMode.COURSES.getFlags() : Integer.parseInt(helper.getParameter("flags")));
+    	ec.setRoomCookieFlags(helper.getParameter("flags") == null ? RoomsPageMode.COURSES.getFlags() : Integer.parseInt(helper.getParameter("flags")));
     	
-    	boolean vertical = true;
     	if (helper.getParameter("horizontal") != null)
-    		vertical = "0".equals(helper.getParameter("horizontal"));
+    		ec.setVertical("0".equals(helper.getParameter("horizontal")));
     	else if (context.getUser() != null)
-    		vertical = CommonValues.VerticalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation));
+    		ec.setVertical(CommonValues.VerticalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
     	
-    	String mode = helper.getParameter("mode");
-    	if (mode == null && context.getUser() != null)
-    		mode = RequiredTimeTable.getTimeGridSize(context.getUser());
+    	ec.setMode(helper.getParameter("mode"));
+    	if (ec.getMode() == null && context.getUser() != null)
+    		ec.setMode(RequiredTimeTable.getTimeGridSize(context.getUser()));
     	
-    	boolean gridAsText = (context.getUser() == null ? false : CommonValues.TextGrid.eq(UserProperty.GridOrientation.get(context.getUser())));
+    	ec.setGridAsText(context.getUser() == null ? false : CommonValues.TextGrid.eq(UserProperty.GridOrientation.get(context.getUser())));
     	
-    	print(helper, rooms, request.getOption("department"), roomCookieFlags, deptMode, gridAsText, vertical, mode);
+    	for (RoomFeatureType type: new TreeSet<RoomFeatureType>(RoomFeatureTypeDAO.getInstance().findAll()))
+    		ec.addRoomFeatureType(new FeatureTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.isShowInEventManagement()));
+    	
+    	ec.setDepartment(request.getOption("department"));
+    	
+    	print(helper, rooms, ec);
 	}
 	
-	protected abstract void print(ExportHelper helper, List<RoomDetailInterface> rooms, String department, int roomCookieFlags, int deptMode, boolean gridAsText, boolean vertical, String mode) throws IOException;
+	protected abstract void print(ExportHelper helper, List<RoomDetailInterface> rooms, ExportContext context) throws IOException;
 	
 	protected boolean checkRights(ExportHelper helper) {
 		return !helper.isRequestEncoded();
 	}
 	
-	protected void hideColumns(Printer out, List<RoomDetailInterface> rooms, int roomCookieFlags) {
-		for (RoomFlag flag: RoomFlag.values()) {
-			if (!flag.in(roomCookieFlags)) hideColumn(out, rooms, flag);
+	protected static class ExportContext {
+		private String iDepartment = null;
+		private List<FeatureTypeInterface> iFeatureTypes = new ArrayList<FeatureTypeInterface>();
+		private int iDepartmentMode = 0;
+		private int iRoomCookieFlags = 0;
+		private boolean iGridAsText = false;
+		private boolean iVertical = true;
+		private String iMode = null;
+		private String iSeparator = "\n";
+		private Format<Number> iAreaFormat = Formats.getNumberFormat(CONSTANTS.roomAreaFormat());
+		private Format<Number> iCoordinateFormat = Formats.getNumberFormat(CONSTANTS.roomCoordinateFormat());
+		
+		public void setDepartment(String department) { iDepartment = department; }
+		public String getDepartment() { return iDepartment; }
+		
+		public int getDepartmentMode() { return iDepartmentMode; }
+		public void setDepartmentMode(int deptMode) { iDepartmentMode = deptMode; }
+		
+		public void addRoomFeatureType(FeatureTypeInterface type) { iFeatureTypes.add(type); }
+		public List<FeatureTypeInterface> getRoomFeatureTypes() { return iFeatureTypes; }
+		
+		public void setRoomCookieFlags(int flags) { iRoomCookieFlags = flags; }
+		public int getRoomCookieFlags() { return iRoomCookieFlags; }
+		
+		public void setGridAsText(boolean gridAsText) { iGridAsText = gridAsText; }
+		public boolean isGridAsText() { return iGridAsText; }
+		
+		public void setVertical(boolean vertical) { iVertical = vertical; }
+		public boolean isVertical() { return iVertical; }
+		
+		public void setMode(String mode) { iMode = mode; }
+		public String getMode() { return iMode; }
+		
+		public void setSeparator(String separator) { iSeparator = separator; }
+		public String getSeparator() { return iSeparator; }
+		
+		public Format<Number> getAreaFormat() { return iAreaFormat; }
+		public Format<Number> getCoordinateFormat() { return iCoordinateFormat; }
+		
+		protected String dept2string(DepartmentInterface d) {
+			if (d == null) return "";
+			switch (getDepartmentMode()) {
+			case 0: return d.getDeptCode();
+			case 1: return d.getExtAbbreviationWhenExist();
+			case 2: return d.getExtLabelWhenExist();
+			case 3: return d.getExtAbbreviationWhenExist() + " - " + d.getExtLabelWhenExist();
+			case 4: return d.getDeptCode() + " - " + d.getExtLabelWhenExist();
+			default: return d.getDeptCode();
+			}
 		}
-	}
-	
-	protected void hideColumn(Printer out, List<RoomDetailInterface> rooms, RoomFlag flag) {}
-	
-	protected String dept2string(DepartmentInterface d, int deptMode) {
-		if (d == null) return "";
-		switch (deptMode) {
-		case 0: return d.getDeptCode();
-		case 1: return d.getExtAbbreviationWhenExist();
-		case 2: return d.getExtLabelWhenExist();
-		case 3: return d.getExtAbbreviationWhenExist() + " - " + d.getExtLabelWhenExist();
-		case 4: return d.getDeptCode() + " - " + d.getExtLabelWhenExist();
-		default: return d.getDeptCode();
+		
+		protected String dept2string(Collection<DepartmentInterface> departments) {
+			if (departments == null || departments.isEmpty()) return "";
+			String ret = "";
+			for (DepartmentInterface d: departments) {
+				ret += (ret.isEmpty() ? "" : getSeparator()) + dept2string(d);
+			}
+			return ret;
 		}
-	}
-	
-	protected String dept2string(Collection<DepartmentInterface> departments, int deptMode, String separator) {
-		if (departments == null || departments.isEmpty()) return "";
-		String ret = "";
-		for (DepartmentInterface d: departments) {
-			ret += (ret.isEmpty() ? "" : separator) + dept2string(d, deptMode);
+		
+		protected String pref2string(Collection<DepartmentInterface> departments) {
+			if (departments == null || departments.isEmpty()) return "";
+			String ret = "";
+			for (DepartmentInterface d: departments) {
+				if (d.getPreference() == null) continue;
+				ret += (ret.isEmpty() ? "" : getSeparator()) + d.getPreference().getName() + " " + dept2string(d);
+			}
+			return ret;
 		}
-		return ret;
-	}
-	
-	protected String pref2string(Collection<DepartmentInterface> departments, int deptMode, String separator) {
-		if (departments == null || departments.isEmpty()) return "";
-		String ret = "";
-		for (DepartmentInterface d: departments) {
-			if (d.getPreference() == null) continue;
-			ret += (ret.isEmpty() ? "" : separator) + d.getPreference().getName() + " " + dept2string(d, deptMode);
+		
+		protected String examTypes2string(Collection<ExamTypeInterface> types) {
+			if (types == null || types.isEmpty()) return "";
+			String ret = "";
+			for (ExamTypeInterface t: types) {
+				ret += (ret.isEmpty() ? "" : getSeparator()) + t.getLabel();
+			}
+			return ret;
 		}
-		return ret;
-	}
-	
-	protected String examTypes2string(Collection<ExamTypeInterface> types, String separator) {
-		if (types == null || types.isEmpty()) return "";
-		String ret = "";
-		for (ExamTypeInterface t: types) {
-			ret += (ret.isEmpty() ? "" : separator) + t.getLabel();
+		
+		protected String features2string(Collection<FeatureInterface> features, FeatureTypeInterface type) {
+			if (features == null || features.isEmpty()) return "";
+			String ret = "";
+			for (FeatureInterface f: features) {
+				if (type == null && f.getType() == null)
+					ret += (ret.isEmpty() ? "" : getSeparator()) + f.getLabel();
+				if (type != null && type.equals(f.getType())) {
+					if (f.getDepartment() != null)
+						ret += (ret.isEmpty() ? "" : getSeparator()) + f.getLabel() + " (" + dept2string(f.getDepartment()) + ")";
+					else
+						ret += (ret.isEmpty() ? "" : getSeparator()) + f.getLabel();
+				}
+			}
+			return ret;
 		}
-		return ret;
-	}
-	
-	protected String features2string(Collection<FeatureInterface> features, int deptMode, String separator) {
-		if (features == null || features.isEmpty()) return "";
-		String ret = "";
-		for (FeatureInterface f: features) {
-			if (f.getType() != null)
-				ret += (ret.isEmpty() ? "" : separator) + f.getLabel() + " (" + f.getType().getAbbreviation() + ")";
-			else if (f.getDepartment() != null)
-				ret += (ret.isEmpty() ? "" : separator) + f.getLabel() + " (" + dept2string(f.getDepartment(), deptMode) + ")";
-			else
-				ret += (ret.isEmpty() ? "" : separator) + f.getLabel();
+		
+		protected String groups2string(Collection<GroupInterface> groups) {
+			if (groups == null || groups.isEmpty()) return "";
+			String ret = "";
+			for (GroupInterface g: groups) {
+				ret += (ret.isEmpty() ? "" : getSeparator()) + g.getLabel() + (g.getDepartment() == null ? "" : " (" + dept2string(g.getDepartment()) + ")");
+			}
+			return ret;
 		}
-		return ret;
-	}
-	
-	protected String groups2string(Collection<GroupInterface> groups, int deptMode, String separator) {
-		if (groups == null || groups.isEmpty()) return "";
-		String ret = "";
-		for (GroupInterface g: groups) {
-			ret += (ret.isEmpty() ? "" : separator) + g.getLabel() + (g.getDepartment() == null ? "" : " (" + dept2string(g.getDepartment(), deptMode) + ")");
-		}
-		return ret;
 	}
 }

@@ -849,6 +849,14 @@ public class RoomInterface implements IsSerializable {
 		public List<FeatureInterface> getFeatures() { return iFeatures; }
 		public void addFeature(FeatureInterface feature) { iFeatures.add(feature); }
 		public boolean hasFeatures() { return iFeatures != null && !iFeatures.isEmpty(); }
+		public List<FeatureInterface> getFeatures(FeatureTypeInterface type) {
+			List<FeatureInterface> ret = new ArrayList<FeatureInterface>();
+			for (FeatureInterface f: iFeatures) {
+				if ((type == null && f.getType() == null) || (type != null && type.equals(f.getType())))
+					ret.add(f);
+			}
+			return ret;
+		}
 		
 		public List<DepartmentInterface> getDepartments() { return iDepartments; }
 		public void addDepartment(DepartmentInterface department) { iDepartments.add(department); }
@@ -1213,6 +1221,10 @@ public class RoomInterface implements IsSerializable {
 		private boolean iCanEditDepartments = false;
 		private boolean iCanEditRoomExams = false;
 		private boolean iCanAddRoom = false;
+		private List<RoomTypeInterface> iRoomTypes = new ArrayList<RoomTypeInterface>();
+		private List<FeatureTypeInterface> iFeatureTypes = new ArrayList<FeatureTypeInterface>();
+		private List<DepartmentInterface> iDepartments = new ArrayList<DepartmentInterface>();
+		private List<ExamTypeInterface> iExamTypes = new ArrayList<ExamTypeInterface>();
 		
 		public RoomPropertiesInterface() {}
 		
@@ -1233,6 +1245,18 @@ public class RoomInterface implements IsSerializable {
 
 		public boolean isCanAddRoom() { return iCanAddRoom; }
 		public void setCanAddRoom(boolean canAddRoom) { iCanAddRoom = canAddRoom; }
+		
+		public void addRoomType(RoomTypeInterface roomType) { iRoomTypes.add(roomType); }
+		public List<RoomTypeInterface> getRoomTypes() { return iRoomTypes; }
+		
+		public void addFeatureType(FeatureTypeInterface featureType) { iFeatureTypes.add(featureType); }
+		public List<FeatureTypeInterface> getFeatureTypes() { return iFeatureTypes; }
+		
+		public void addDepartment(DepartmentInterface department) { iDepartments.add(department); }
+		public List<DepartmentInterface> getDepartments() { return iDepartments; }
+		
+		public void addExamType(ExamTypeInterface examType) { iExamTypes.add(examType); }
+		public List<ExamTypeInterface> getExamTypes() { return iExamTypes; }
 	}
 	
 	public static enum RoomFlag implements IsSerializable {
@@ -1254,8 +1278,8 @@ public class RoomInterface implements IsSerializable {
 		SHOW_EVENT_AVAILABILITY(false),
 		SHOW_EVENT_MESSAGE(false),
 		SHOW_BREAK_TIME(false),
-		SHOW_GROUPS,
-		SHOW_FEATURES,
+		SHOW_GROUPS(false),
+		SHOW_FEATURES(false),
 		;
 		
 		private boolean iShowWhenEmpty = true;

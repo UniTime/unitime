@@ -33,7 +33,6 @@ import org.unitime.timetable.export.Exporter.Printer;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 
-import com.google.gwt.dom.client.Style.FontStyle;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;

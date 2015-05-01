@@ -20,6 +20,7 @@
 package org.unitime.timetable.export.rooms;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -37,98 +38,149 @@ public class RoomsExportCSV extends RoomsExporter {
 
 	@Override
 	public String reference() { return "rooms.csv"; }
-
+	
 	@Override
-	protected void print(ExportHelper helper, List<RoomDetailInterface> rooms, String department, int roomCookieFlags, int deptMode, boolean gridAsText, boolean vertical, String mode) throws IOException {
+	protected void print(ExportHelper helper, List<RoomDetailInterface> rooms, ExportContext context) throws IOException {
 		if (checkRights(helper))
 			helper.getSessionContext().hasPermission(Right.RoomsExportCsv);
 		
+		List<Integer> columns = new ArrayList<Integer>();
+		for (int i = 0; i < getNbrColumns(context); i ++)
+			if (isColumnVisible(i, context)) columns.add(i);
+		
 		Printer printer = new CSVPrinter(helper.getWriter(), false);
 		helper.setup(printer.getContentType(), reference(), false);
-		hideColumns(printer, rooms, roomCookieFlags);
-		print(printer, rooms, deptMode);
-	}
-	
-	@Override
-	protected void hideColumn(Printer out, List<RoomDetailInterface> rooms, RoomFlag flag) {
-		switch (flag) {
-		case SHOW_TYPE: out.hideColumn(1); break;
-		case SHOW_CAPACITY: out.hideColumn(2); break;
-		case SHOW_EXAM_CAPACITY: out.hideColumn(3); break;
-		case SHOW_AREA: out.hideColumn(4); break;
-		case SHOW_COORDINATES: out.hideColumn(5); out.hideColumn(6); break;
-		case SHOW_IGNORE_DISTANCES: out.hideColumn(7); break;
-		case SHOW_IGNORE_ROOM_CHECK: out.hideColumn(8); break;
-		case SHOW_PREFERENCE: out.hideColumn(9); break;
-		case SHOW_AVAILABILITY: out.hideColumn(10); break;
-		case SHOW_DEPARTMENTS: out.hideColumn(11); break;
-		case SHOW_CONTROLLING_DEPARTMENT: out.hideColumn(12); break;
-		case SHOW_EXAM_TYPES: out.hideColumn(13); break;
-		case SHOW_PERIOD_PREFERENCES: out.hideColumn(14); break;
-		case SHOW_EVENT_DEPARTMENT: out.hideColumn(15); break;
-		case SHOW_EVENT_STATUS: out.hideColumn(16); break;
-		case SHOW_EVENT_AVAILABILITY: out.hideColumn(17); break;
-		case SHOW_EVENT_MESSAGE: out.hideColumn(18); break;
-		case SHOW_BREAK_TIME: out.hideColumn(19); break;
-		case SHOW_GROUPS: out.hideColumn(20); break;
-		case SHOW_FEATURES: out.hideColumn(21); break;
-		}
-	}
-	
-	protected void print(Printer out, List<RoomDetailInterface> rooms, int deptMode) throws IOException {
-		out.printHeader(
-				/*  0 */ MESSAGES.colName().replace("<br>", "\n"),
-				/*  1 */ MESSAGES.colType().replace("<br>", "\n"),
-				/*  2 */ MESSAGES.colCapacity().replace("<br>", "\n"),
-				/*  3 */ MESSAGES.colExaminationCapacity().replace("<br>", "\n"),
-				/*  4 */ MESSAGES.colArea().replace("<br>", "\n").replace("&sup2;", "2"),
-				/*  5 */ MESSAGES.colCoordinateX().replace("<br>", "\n"),
-				/*  6 */ MESSAGES.colCoordinateY().replace("<br>", "\n"),
-				/*  7 */ MESSAGES.colDistances().replace("<br>", "\n"),
-				/*  8 */ MESSAGES.colRoomCheck().replace("<br>", "\n"),
-				/*  9 */ MESSAGES.colPreference().replace("<br>", "\n"),
-				/* 10 */ MESSAGES.colAvailability().replace("<br>", "\n"),
-				/* 11 */ MESSAGES.colDepartments().replace("<br>", "\n"),
-				/* 12 */ MESSAGES.colControl().replace("<br>", "\n"),
-				/* 13 */ MESSAGES.colExamTypes().replace("<br>", "\n"),
-				/* 14 */ MESSAGES.colPeriodPreferences().replace("<br>", "\n"),
-				/* 15 */ MESSAGES.colEventDepartment().replace("<br>", "\n"),
-				/* 16 */ MESSAGES.colEventStatus().replace("<br>", "\n"),
-				/* 17 */ MESSAGES.colEventAvailability().replace("<br>", "\n"),
-				/* 18 */ MESSAGES.colEventMessage().replace("<br>", "\n"),
-				/* 19 */ MESSAGES.colBreakTime().replace("<br>", "\n"),
-				/* 20 */ MESSAGES.colGroups().replace("<br>", "\n"),
-				/* 21 */ MESSAGES.colFeatures().replace("<br>", "\n")
-				);
 		
+		String[] header = new String[columns.size()];
+		for (int i = 0; i < columns.size(); i++)
+			header[i] = getColumnName(columns.get(i), context);
+		printer.printHeader(header);
+		printer.flush();
 		
 		for (RoomDetailInterface room: rooms) {
-			out.printLine(
-					room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel(),
-					room.getRoomType().getLabel(),
-					room.getCapacity() == null ? "0" : room.getCapacity().toString(),
-					room.getExamCapacity() == null ? "" : room.getExamCapacity().toString(),
-					room.getArea() == null ? "" : room.getArea().toString(),
-					room.getX() == null ? "" : room.getX().toString(),
-					room.getY() == null ? "" : room.getY().toString(),
-					room.isIgnoreRoomCheck() ? MESSAGES.exportFalse() : MESSAGES.exportTrue(),
-					room.isIgnoreTooFar() ? MESSAGES.exportFalse() : MESSAGES.exportTrue(),
-					pref2string(room.getDepartments(), deptMode, "\n"),
-					room.getAvailability(),
-					dept2string(room.getDepartments(), deptMode, "\n"),
-					dept2string(room.getControlDepartment(), deptMode),
-					examTypes2string(room.getExamTypes(), "\n"),
-					room.getPeriodPreference(),
-					dept2string(room.getEventDepartment(), deptMode),
-					room.getEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getEventStatus()] : room.getDefaultEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()] : "",
-					room.getEventAvailability(),
-					room.getEventNote() != null ? room.getEventNote() : room.getDefaultEventNote(),
-					room.getBreakTime() != null ? room.getBreakTime().toString() : room.getDefaultBreakTime() != null ? room.getDefaultBreakTime().toString() : "",
-					groups2string(room.getGroups(), deptMode, "\n"),
-					features2string(room.getFeatures(), deptMode, "\n")
-					);
-			out.flush();
+			String[] row = new String[columns.size()];
+			for (int i = 0; i < columns.size(); i++)
+				row[i] = getCell(room, columns.get(i), context);
+			printer.printLine(row);
+			printer.flush();
 		}
-		out.close();
+		printer.close();
+	}
+	
+	protected int getNbrColumns(ExportContext context) {
+		return 22 + context.getRoomFeatureTypes().size();
+	}
+	
+	protected String getColumnName(int column, ExportContext context) {
+		switch (column) {
+		case  0: return MESSAGES.colName().replace("<br>", "\n");
+		case  1: return MESSAGES.colType().replace("<br>", "\n");
+		case  2: return MESSAGES.colCapacity().replace("<br>", "\n");
+		case  3: return MESSAGES.colExaminationCapacity().replace("<br>", "\n");
+		case  4: return MESSAGES.colArea().replace("<br>", "\n").replace("&sup2;", "2");
+		case  5: return MESSAGES.colCoordinateX().replace("<br>", "\n");
+		case  6: return MESSAGES.colCoordinateY().replace("<br>", "\n");
+		case  7: return MESSAGES.colDistances().replace("<br>", "\n");
+		case  8: return MESSAGES.colRoomCheck().replace("<br>", "\n");
+		case  9: return MESSAGES.colPreference().replace("<br>", "\n");
+		case 10: return MESSAGES.colAvailability().replace("<br>", "\n");
+		case 11: return MESSAGES.colDepartments().replace("<br>", "\n");
+		case 12: return MESSAGES.colControl().replace("<br>", "\n");
+		case 13: return MESSAGES.colExamTypes().replace("<br>", "\n");
+		case 14: return MESSAGES.colPeriodPreferences().replace("<br>", "\n");
+		case 15: return MESSAGES.colEventDepartment().replace("<br>", "\n");
+		case 16: return MESSAGES.colEventStatus().replace("<br>", "\n");
+		case 17: return MESSAGES.colEventAvailability().replace("<br>", "\n");
+		case 18: return MESSAGES.colEventMessage().replace("<br>", "\n");
+		case 19: return MESSAGES.colBreakTime().replace("<br>", "\n");
+		case 20: return MESSAGES.colGroups().replace("<br>", "\n");
+		case 21: return MESSAGES.colFeatures().replace("<br>", "\n");
+		default: return context.getRoomFeatureTypes().get(column - 22).getAbbreviation();
+		}
+	}
+	
+	protected boolean isColumnVisible(int column, ExportContext context) {
+		int flags = context.getRoomCookieFlags();
+		switch(column) {
+		case 1: return RoomFlag.SHOW_TYPE.in(flags);
+		case 2: return RoomFlag.SHOW_CAPACITY.in(flags);
+		case 3: return RoomFlag.SHOW_EXAM_CAPACITY.in(flags);
+		case 4: return RoomFlag.SHOW_AREA.in(flags);
+		case 5: return RoomFlag.SHOW_COORDINATES.in(flags);
+		case 6: return RoomFlag.SHOW_COORDINATES.in(flags);
+		case 7: return RoomFlag.SHOW_IGNORE_DISTANCES.in(flags);
+		case 8: return RoomFlag.SHOW_IGNORE_ROOM_CHECK.in(flags);
+		case 9: return RoomFlag.SHOW_PREFERENCE.in(flags);
+		case 10: return RoomFlag.SHOW_AVAILABILITY.in(flags);
+		case 11: return RoomFlag.SHOW_DEPARTMENTS.in(flags);
+		case 12: return RoomFlag.SHOW_CONTROLLING_DEPARTMENT.in(flags);
+		case 13: return RoomFlag.SHOW_EXAM_TYPES.in(flags);
+		case 14: return RoomFlag.SHOW_PERIOD_PREFERENCES.in(flags);
+		case 15: return RoomFlag.SHOW_EVENT_DEPARTMENT.in(flags);
+		case 16: return RoomFlag.SHOW_EVENT_STATUS.in(flags);
+		case 17: return RoomFlag.SHOW_EVENT_AVAILABILITY.in(flags);
+		case 18: return RoomFlag.SHOW_EVENT_MESSAGE.in(flags);
+		case 19: return RoomFlag.SHOW_BREAK_TIME.in(flags);
+		case 20: return RoomFlag.SHOW_GROUPS.in(flags);
+		case 21: return RoomFlag.SHOW_FEATURES.in(flags);
+		default:
+			if (column > 21) {
+				int flag = (1 << (column - 22 + RoomFlag.values().length));
+				return (flags & flag) == 0;
+			} else {
+				return true;
+			}
+		}
+	}
+	
+	protected String getCell(RoomDetailInterface room, int column, ExportContext context) {
+		switch (column) {
+		case  0:
+			return room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel();
+		case 1:
+			return room.getRoomType().getLabel();
+		case 2:
+			return room.getCapacity() == null ? "0" : room.getCapacity().toString();
+		case 3:
+			return room.getExamCapacity() == null ? "" : room.getExamCapacity().toString();
+		case 4:
+			return room.getArea() == null ? "" : room.getArea().toString();
+		case 5:
+			return room.getX() == null ? "" : room.getX().toString();
+		case 6:
+			return room.getY() == null ? "" : room.getY().toString();
+		case 7:
+			return room.isIgnoreRoomCheck() ? MESSAGES.exportFalse() : MESSAGES.exportTrue();
+		case 8:
+			return room.isIgnoreTooFar() ? MESSAGES.exportFalse() : MESSAGES.exportTrue();
+		case 9:
+			return context.pref2string(room.getDepartments());
+		case 10:
+			return room.getAvailability();
+		case 11:
+			return context.dept2string(room.getDepartments());
+		case 12:
+			return context.dept2string(room.getControlDepartment());
+		case 13:
+			return context.examTypes2string(room.getExamTypes());
+		case 14:
+			return room.getPeriodPreference();
+		case 15:
+			return context.dept2string(room.getEventDepartment());
+		case 16:
+			return room.getEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getEventStatus()] : room.getDefaultEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()] : "";
+		case 17:
+			return room.getEventAvailability();
+		case 18:
+			return room.getEventNote() != null ? room.getEventNote() : room.getDefaultEventNote();
+		case 19:
+			return room.getBreakTime() != null ? room.getBreakTime().toString() : room.getDefaultBreakTime() != null ? room.getDefaultBreakTime().toString() : "";
+		case 20:
+			return context.groups2string(room.getGroups());
+		case 21:
+			return context.features2string(room.getFeatures(), null);
+		default:
+			return context.features2string(room.getFeatures(), context.getRoomFeatureTypes().get(column - 22));
+		}
 	}
 }

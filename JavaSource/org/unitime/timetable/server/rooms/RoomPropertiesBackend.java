@@ -19,10 +19,21 @@
 */
 package org.unitime.timetable.server.rooms;
 
+import java.util.TreeSet;
+
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesRequest;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.RoomFeatureType;
+import org.unitime.timetable.model.RoomType;
+import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -34,6 +45,8 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 
 	@Override
 	public RoomPropertiesInterface execute(RoomPropertiesRequest request, SessionContext context) {
+		context.checkPermission(Right.Rooms);
+		
 		RoomPropertiesInterface response = new RoomPropertiesInterface();
 		
 		response.setAcademicSessionId(context.getUser() == null ? null : context.getUser().getCurrentAcademicSessionId());
@@ -43,6 +56,29 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setCanExportPdf(context.hasPermission(Right.RoomsExportPdf));
 		response.setCanEditRoomExams(context.hasPermission(Right.EditRoomDepartmentsExams));
 		response.setCanAddRoom(context.hasPermission(Right.AddRoom) || context.hasPermission(Right.AddNonUnivLocation));
+		
+		
+		for (RoomType type: RoomType.findAll())
+			response.addRoomType(new RoomTypeInterface(type.getUniqueId(), type.getLabel(), type.isRoom()));
+		
+		for (RoomFeatureType type: new TreeSet<RoomFeatureType>(RoomFeatureTypeDAO.getInstance().findAll()))
+			response.addFeatureType(new FeatureTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.isShowInEventManagement()));
+		
+		for (ExamType type: ExamType.findAll())
+			response.addExamType(new ExamTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.getType() == ExamType.sExamTypeFinal));
+		
+		for (Department d: Department.getUserDepartments(context.getUser())) {
+			DepartmentInterface department = new DepartmentInterface();
+			department.setId(d.getUniqueId());
+			department.setDeptCode(d.getDeptCode());
+			department.setAbbreviation(d.getAbbreviation());
+			department.setLabel(d.getName());
+			department.setExternal(d.isExternalManager());
+			department.setExtAbbreviation(d.getExternalMgrAbbv());
+			department.setExtLabel(d.getExternalMgrLabel());
+			department.setTitle(d.getLabel());
+			response.addDepartment(department);
+		}
 		
 		return response;
 	}

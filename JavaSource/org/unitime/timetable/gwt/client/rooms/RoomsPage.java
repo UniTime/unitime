@@ -263,19 +263,24 @@ public class RoomsPage extends Composite {
 			}
 		});
 		
-		if (History.getToken() != null)
-			iFilter.setValue(History.getToken(), true);
-		else
-			iFilter.setValue(RoomCookie.getInstance().getHash(iMode), true);
-		
+		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
 		RPC.execute(new RoomPropertiesRequest(), new AsyncCallback<RoomPropertiesInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				iFilter.setErrorHint(MESSAGES.failedToInitialize(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToInitialize(caught.getMessage()), caught);
 			}
 
 			@Override
 			public void onSuccess(RoomPropertiesInterface result) {
+				LoadingWidget.getInstance().hide();
 				iProperties = result;
+				if (History.getToken() != null)
+					iFilter.setValue(History.getToken(), true);
+				else
+					iFilter.setValue(RoomCookie.getInstance().getHash(iMode), true);
+				iRoomsTable.setFeatureTypes(iProperties.getFeatureTypes());
 			}
 		});
 		
@@ -342,6 +347,12 @@ public class RoomsPage extends Composite {
 		for (RoomFlag f: RoomFlag.values())
 			if (!f.isShowWhenEmpty() && !f.in(iRoomsTable.getFlags()))
 				flags = f.clear(flags);
+		if (iProperties != null) 
+			for (int i = 0; i < iProperties.getFeatureTypes().size(); i++) {
+				int flag = (1 << (RoomFlag.values().length + i));
+				if ((flags & flag) == 0 && (iRoomsTable.getFlags() & flag) == 0)
+					flags += flag;
+			}
 		String query = "output=" + format + "&flags=" + flags + "&sort=" + cookie.getRoomsSortBy() +
 				"&horizontal=" + (cookie.areRoomsHorizontal() ? "1" : "0") + (cookie.hasMode() ? "&mode=" + cookie.getMode() : "") +
 				"&dm=" + cookie.getDeptMode();
