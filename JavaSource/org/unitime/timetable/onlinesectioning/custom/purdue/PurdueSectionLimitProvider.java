@@ -116,20 +116,20 @@ public class PurdueSectionLimitProvider implements SectionLimitProvider, Section
 			in.close();
 			
 			Matcher match = iContentRE.matcher(content);
-			if (!match.find()) throw new SectioningException(MSG.exceptionCustomSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detial page</a>"));
+			if (!match.find()) throw new SectioningException(MSG.exceptionCustomSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detail page</a>"));
 			String table = match.group(1);
 
 			match = iTableRE.matcher(table);
-			if (!match.find()) throw new SectioningException(MSG.exceptionCustomSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detial page</a>"));
+			if (!match.find()) throw new SectioningException(MSG.exceptionCustomSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detail page</a>"));
 			int capacity = Integer.parseInt(match.group(1));
-			if (!match.find()) throw new SectioningException(MSG.exceptionCustomSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detial page</a>"));
+			if (!match.find()) throw new SectioningException(MSG.exceptionCustomSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detail page</a>"));
 			int actual = Integer.parseInt(match.group(1));
-			if (!match.find()) throw new SectioningException(MSG.exceptionCustomSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detial page</a>"));
+			if (!match.find()) throw new SectioningException(MSG.exceptionCustomSectionLimitsFailed("unable to parse <a href='"+secionUrl+"'>class detail page</a>"));
 //			int remaning = Integer.parseInt(match.group(1));
 			
 			return new int[] {actual, capacity};
 		} catch (IOException e) {
-			throw new SectioningException(MSG.exceptionCustomSectionLimitsFailed("unable to read <a href='"+secionUrl+"'>class detial page</a>"));
+			throw new SectioningException(MSG.exceptionCustomSectionLimitsFailed("unable to read <a href='"+secionUrl+"'>class detail page</a>"));
 		}
 	}
 	
