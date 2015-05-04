@@ -145,7 +145,7 @@ public class DefaultCourseDetailsProvider implements CourseDetailsProvider, Cour
 			Pattern pattern = Pattern.compile(ApplicationProperty.CustomizationDefaultCourseDetailsContent.value());
 			Matcher match = pattern.matcher(content);
 			if (!match.find()) 
-				return "<div class='unitime-ErrorMessage'>" + MSG.exceptionCustomCourseDetailsFailed("unable to parse <a href='"+url+"'>course detial page</a>") + "</div>";
+				return "<div class='unitime-ErrorMessage'>" + MSG.exceptionCustomCourseDetailsFailed("unable to parse <a href='"+url+"'>course detail page</a>") + "</div>";
 			String table = match.group(1);
 			
 			String modif = ApplicationProperty.CustomizationDefaultCourseDetailsModifiers.value();
