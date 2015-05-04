@@ -104,7 +104,7 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider, Cours
 			
 			Pattern pattern = Pattern.compile(sContentRE, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
 			Matcher match = pattern.matcher(content);
-			if (!match.find()) throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed("unable to parse <a href='"+courseUrl+"'>course detial page</a>"));
+			if (!match.find()) throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed("unable to parse <a href='"+courseUrl+"'>course detail page</a>"));
 			String table = match.group(1);
 			
 			for (int i=0; i<sRemoveRE.length; i++)
