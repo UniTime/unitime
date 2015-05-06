@@ -106,7 +106,6 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao._RootDAO;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
 
 /**
@@ -264,7 +263,7 @@ public class SessionRestore implements SessionRestoreInterface {
 						value = value.toString().substring(0, len);
 					}
 				} else if (type instanceof BinaryType) {
-					value = ByteString.copyFromUtf8(element.getValue(0)).toByteArray();
+					value = element.getValueBytes(0).toByteArray();
 				} else if (type instanceof CustomType && type.getReturnedClass().equals(Document.class)) {
 					value = new SAXReader().read(new StringReader(element.getValue(0)));
 				} else if (type instanceof EntityType) {

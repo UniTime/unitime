@@ -30,6 +30,20 @@
 	<category>
 		<title>Bug Fixes</title>
 		<item>
+			<name>Data Exchange: Session Restore</name>
+			<description>
+				<line>Avoid conversion of a binary object to utf-8 and back.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.5.218</version>
+	<release-date>Sun, 19 April 2015</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
 			<name>Online Student Scheduling Server</name>
 			<description>
 				<line>Get course by name or by name and title: fix the case when there is a dash in the subject area abbreviation or a course number.</line>
