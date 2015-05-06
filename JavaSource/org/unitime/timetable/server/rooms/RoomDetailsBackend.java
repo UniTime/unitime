@@ -23,9 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.events.RoomFilterBackend;
@@ -42,12 +44,14 @@ import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.LocationPicture;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
@@ -245,6 +249,17 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     	} else {
     		response.setDefaultEventStatus(RoomTypeOption.Status.NoEventManagement.ordinal());
     	}
+    	
+		String minimap = ApplicationProperty.RoomHintMinimapUrl.value();
+    	if (minimap != null && location.getCoordinateX() != null && location.getCoordinateY() != null)
+    		response.setMiniMapUrl(minimap
+    				.replace("%x", location.getCoordinateX().toString())
+    				.replace("%y", location.getCoordinateY().toString())
+    				.replace("%n", location.getLabel())
+    				.replace("%i", location.getExternalUniqueId() == null ? "" : location.getExternalUniqueId()));
+    	
+    	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getPictures()))
+    		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType()));
     	
     	return response;
 	}

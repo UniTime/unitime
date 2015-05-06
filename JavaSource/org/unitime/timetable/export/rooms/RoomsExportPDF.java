@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.export.rooms;
 
+import java.awt.Color;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -37,16 +39,22 @@ import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFlag;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.RoomPicture;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.RoomPictureDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.webutil.RequiredTimeTable;
+
+import com.lowagie.text.Image;
+import com.lowagie.text.Rectangle;
 
 /**
  * @author Tomas Muller
@@ -86,7 +94,7 @@ public class RoomsExportPDF extends RoomsExporter {
 	}
 	
 	protected int getNbrColumns(ExportContext context) {
-		return 21 + context.getRoomFeatureTypes().size();
+		return 23 + context.getRoomFeatureTypes().size();
 	}
 	
 	protected String getColumnName(int column, ExportContext context) {
@@ -100,19 +108,21 @@ public class RoomsExportPDF extends RoomsExporter {
 		case  6: return MESSAGES.colDistances().replace("<br>", "\n");
 		case  7: return MESSAGES.colRoomCheck().replace("<br>", "\n");
 		case  8: return MESSAGES.colPreference().replace("<br>", "\n");
-		case  9: return MESSAGES.colAvailability().replace("<br>", "\n");
-		case 10: return MESSAGES.colDepartments().replace("<br>", "\n");
-		case 11: return MESSAGES.colControl().replace("<br>", "\n");
-		case 12: return MESSAGES.colExamTypes().replace("<br>", "\n");
-		case 13: return MESSAGES.colPeriodPreferences().replace("<br>", "\n");
-		case 14: return MESSAGES.colEventDepartment().replace("<br>", "\n");
-		case 15: return MESSAGES.colEventStatus().replace("<br>", "\n");
-		case 16: return MESSAGES.colEventAvailability().replace("<br>", "\n");
-		case 17: return MESSAGES.colEventMessage().replace("<br>", "\n");
-		case 18: return MESSAGES.colBreakTime().replace("<br>", "\n");
-		case 19: return MESSAGES.colGroups().replace("<br>", "\n");
-		case 20: return MESSAGES.colFeatures().replace("<br>", "\n");
-		default: return context.getRoomFeatureTypes().get(column - 21).getAbbreviation();
+		case  9: return MESSAGES.colMap().replace("<br>", "\n");
+		case 10: return MESSAGES.colPictures().replace("<br>", "\n");
+		case 11: return MESSAGES.colAvailability().replace("<br>", "\n");
+		case 12: return MESSAGES.colDepartments().replace("<br>", "\n");
+		case 13: return MESSAGES.colControl().replace("<br>", "\n");
+		case 14: return MESSAGES.colExamTypes().replace("<br>", "\n");
+		case 15: return MESSAGES.colPeriodPreferences().replace("<br>", "\n");
+		case 16: return MESSAGES.colEventDepartment().replace("<br>", "\n");
+		case 17: return MESSAGES.colEventStatus().replace("<br>", "\n");
+		case 18: return MESSAGES.colEventAvailability().replace("<br>", "\n");
+		case 19: return MESSAGES.colEventMessage().replace("<br>", "\n");
+		case 20: return MESSAGES.colBreakTime().replace("<br>", "\n");
+		case 21: return MESSAGES.colGroups().replace("<br>", "\n");
+		case 22: return MESSAGES.colFeatures().replace("<br>", "\n");
+		default: return context.getRoomFeatureTypes().get(column - 23).getAbbreviation();
 		}
 	}
 	
@@ -127,21 +137,23 @@ public class RoomsExportPDF extends RoomsExporter {
 		case 6: return RoomFlag.SHOW_IGNORE_DISTANCES.in(flags);
 		case 7: return RoomFlag.SHOW_IGNORE_ROOM_CHECK.in(flags);
 		case 8: return RoomFlag.SHOW_PREFERENCE.in(flags);
-		case 9: return RoomFlag.SHOW_AVAILABILITY.in(flags);
-		case 10: return RoomFlag.SHOW_DEPARTMENTS.in(flags);
-		case 11: return RoomFlag.SHOW_CONTROLLING_DEPARTMENT.in(flags);
-		case 12: return RoomFlag.SHOW_EXAM_TYPES.in(flags);
-		case 13: return RoomFlag.SHOW_PERIOD_PREFERENCES.in(flags);
-		case 14: return RoomFlag.SHOW_EVENT_DEPARTMENT.in(flags);
-		case 15: return RoomFlag.SHOW_EVENT_STATUS.in(flags);
-		case 16: return RoomFlag.SHOW_EVENT_AVAILABILITY.in(flags);
-		case 17: return RoomFlag.SHOW_EVENT_MESSAGE.in(flags);
-		case 18: return RoomFlag.SHOW_BREAK_TIME.in(flags);
-		case 19: return RoomFlag.SHOW_GROUPS.in(flags);
-		case 20: return RoomFlag.SHOW_FEATURES.in(flags);
+		case 9: return RoomFlag.SHOW_MAP.in(flags);
+		case 10: return RoomFlag.SHOW_PICTURE.in(flags);
+		case 11: return RoomFlag.SHOW_AVAILABILITY.in(flags);
+		case 12: return RoomFlag.SHOW_DEPARTMENTS.in(flags);
+		case 13: return RoomFlag.SHOW_CONTROLLING_DEPARTMENT.in(flags);
+		case 14: return RoomFlag.SHOW_EXAM_TYPES.in(flags);
+		case 15: return RoomFlag.SHOW_PERIOD_PREFERENCES.in(flags);
+		case 16: return RoomFlag.SHOW_EVENT_DEPARTMENT.in(flags);
+		case 17: return RoomFlag.SHOW_EVENT_STATUS.in(flags);
+		case 18: return RoomFlag.SHOW_EVENT_AVAILABILITY.in(flags);
+		case 19: return RoomFlag.SHOW_EVENT_MESSAGE.in(flags);
+		case 20: return RoomFlag.SHOW_BREAK_TIME.in(flags);
+		case 21: return RoomFlag.SHOW_GROUPS.in(flags);
+		case 22: return RoomFlag.SHOW_FEATURES.in(flags);
 		default:
-			if (column > 20) {
-				int flag = (1 << (column - 21 + RoomFlag.values().length));
+			if (column > 22) {
+				int flag = (1 << (column - 23 + RoomFlag.values().length));
 				return (flags & flag) == 0;
 			} else {
 				return true;
@@ -189,9 +201,47 @@ public class RoomsExportPDF extends RoomsExporter {
 			return a;
 			
 		case 9:
+			if (room.hasMiniMapUrl()) {
+				try {
+					Image image = Image.getInstance(new URL(room.getMiniMapUrl()));
+					image.scaleToFit(150f, 100f);
+					image.setBorder(Rectangle.BOX);
+					image.setBorderWidth(1f);
+					image.setBorderColor(new Color(Integer.parseInt("9CB0CE", 16)));
+					return new A(image);
+				} catch (Exception e) {
+					return new A();
+				}
+			} else {
+				return new A();
+			}
+		
+		case 10:
+			if (room.hasPictures()) {
+				a = new A();
+				for (RoomPictureInterface picture: room.getPictures()) {
+					RoomPicture rp = RoomPictureDAO.getInstance().get(picture.getUniqueId());
+					if (rp != null) {
+						try {
+							Image image = Image.getInstance(rp.getDataFile());
+							image.scaleToFit(150f, 100f);
+							image.setBorder(Rectangle.BOX);
+							image.setBorderWidth(1f);
+							image.setBorderColor(new Color(Integer.parseInt("9CB0CE", 16)));
+							a.add(new A(image));
+						} catch (Exception e) {
+						}
+					}
+				}
+				return a;
+			} else{
+				return new A();
+			}
+			
+		case 11:
 			return availability(room, false, context);
 			
-		case 10:
+		case 12:
 			if (!room.hasDepartments()) return new A();
 			a = new A();
 			for (DepartmentInterface d: room.getDepartments()) {
@@ -201,10 +251,10 @@ public class RoomsExportPDF extends RoomsExporter {
 			}
 			return a;
 		
-		case 11:
+		case 13:
 			new A(context.dept2string(room.getControlDepartment())).color(room.getControlDepartment() == null ? null : room.getControlDepartment().getColor());
 			
-		case 12:
+		case 14:
 			if (!room.hasExamTypes()) return new A();
 			a = new A();
 			for (ExamTypeInterface t: room.getExamTypes()) {
@@ -212,25 +262,25 @@ public class RoomsExportPDF extends RoomsExporter {
 			}
 			return a;
 			
-		case 13:
+		case 15:
 			return periodPreferences(room, context);
 			
-		case 14:
+		case 16:
 			return new A(context.dept2string(room.getEventDepartment())).color(room.getEventDepartment() == null ? null : room.getEventDepartment().getColor());
 			
-		case 15:
+		case 17:
 			return room.getEventStatus() != null ? new A(CONSTANTS.eventStatusAbbv()[room.getEventStatus()]) : room.getDefaultEventStatus() != null ? new A(CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()]).italic() : new A();
 			
-		case 16:
+		case 18:
 			return availability(room, true, context);
 			
-		case 17:
+		case 19:
 			return room.getEventNote() != null ? new A(room.getEventNote()) : new A(room.getDefaultEventNote()).italic();
 			
-		case 18:
+		case 20:
 			return room.getBreakTime() != null ? new A(room.getBreakTime().toString()) : room.getDefaultBreakTime() != null ? new A(room.getDefaultBreakTime().toString()).italic() : new A();
 		
-		case 19:
+		case 21:
 			if (!room.hasGroups()) return new A();
 			a = new A();
 			for (GroupInterface g: room.getGroups()) {
@@ -238,11 +288,11 @@ public class RoomsExportPDF extends RoomsExporter {
 			}
 			return a;
 			
-		case 20:
+		case 22:
 			return features(room.getFeatures(), null, context);
-		
+			
 		default:
-			return features(room.getFeatures(), context.getRoomFeatureTypes().get(column - 21), context);
+			return features(room.getFeatures(), context.getRoomFeatureTypes().get(column - 23), context);
 		}
 	}
 	

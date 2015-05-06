@@ -680,6 +680,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Features")
 	String colFeatures();
 	
+	@DefaultMessage("Map")
+	String colMap();
+	
+	@DefaultMessage("Pictures")
+	String colPictures();
+	
 	@DefaultMessage("Last Change")
 	String colLastChange();
 
@@ -3247,4 +3253,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Yes")
 	String exportTrue();
+	
+	@DefaultMessage("Location of {0}.")
+	String titleRoomMap(String roomLabel);
 }

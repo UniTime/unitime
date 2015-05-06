@@ -45,6 +45,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFlag;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertyInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
@@ -120,6 +121,12 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		UniTimeTableHeader hPreference = new UniTimeTableHeader(MESSAGES.colPreference());
 		header.add(hPreference);
 		
+		UniTimeTableHeader hMap = new UniTimeTableHeader(MESSAGES.colMap());
+		header.add(hMap);
+		
+		UniTimeTableHeader hPictures = new UniTimeTableHeader(MESSAGES.colPictures());
+		header.add(hPictures);
+
 		UniTimeTableHeader hAvailability = new UniTimeTableHeader(MESSAGES.colAvailability());
 		header.add(hAvailability);
 		
@@ -155,7 +162,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		
 		UniTimeTableHeader hFeatures = new UniTimeTableHeader(MESSAGES.colFeatures());
 		header.add(hFeatures);
-
+		
 		addRow(null, header);
 				
 		addHideOperation(hType, RoomFlag.SHOW_TYPE);
@@ -166,6 +173,8 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		addHideOperation(hDistances, RoomFlag.SHOW_IGNORE_DISTANCES);
 		addHideOperation(hRoomCheck, RoomFlag.SHOW_IGNORE_ROOM_CHECK);
 		addHideOperation(hPreference, RoomFlag.SHOW_PREFERENCE);
+		addHideOperation(hMap, RoomFlag.SHOW_MAP);
+		addHideOperation(hPictures, RoomFlag.SHOW_PICTURE);
 		addHideOperation(hAvailability, RoomFlag.SHOW_AVAILABILITY);
 		addHideOperation(hDepartments, RoomFlag.SHOW_DEPARTMENTS);
 		addHideOperation(hControl, RoomFlag.SHOW_CONTROLLING_DEPARTMENT);
@@ -575,6 +584,12 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		widgets.add(new PreferenceCell(room.getDepartments()));
 		if (room.hasPreference(iDepartment)) show(RoomFlag.SHOW_PREFERENCE);
 		
+		widgets.add(new MapCell(room));
+		if (room.hasMiniMapUrl()) show(RoomFlag.SHOW_MAP);
+		
+		widgets.add(new PicturesCell(room));
+		if (room.hasPictures()) show(RoomFlag.SHOW_PICTURE);
+		
 		if (room.getAvailability() != null) {
 			final HTML availability = new HTML(room.getAvailability());
 			availability.addMouseOverHandler(new MouseOverHandler() {
@@ -748,7 +763,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		List<FeatureInterface> features = room.getFeatures(null);
 		widgets.add(new FeaturesCell(features));
 		if (!features.isEmpty()) show(RoomFlag.SHOW_FEATURES);
-		
+
 		if (iFeatureTypes != null)
 			for (int i = 0; i < iFeatureTypes.size(); i++) {
 				FeatureTypeInterface type = iFeatureTypes.get(i);
@@ -804,6 +819,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			return getHeader(MESSAGES.colRoomCheck()).getColumn();
 		case SHOW_PERIOD_PREFERENCES:
 			return getHeader(MESSAGES.colPeriodPreferences()).getColumn();
+		case SHOW_MAP:
+			return getHeader(MESSAGES.colMap()).getColumn();
+		case SHOW_PICTURE:
+			return getHeader(MESSAGES.colPictures()).getColumn();
 		default:
 			return 0;
 		}
@@ -1110,6 +1129,36 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 					setTitle(property.getTitle());
 				if (property.getColor() != null)
 					getElement().getStyle().setColor(property.getColor());
+			}
+		}
+	}
+	
+	public static class PictureCell extends Image {
+		public PictureCell(RoomPictureInterface picture) {
+			super();
+			setStyleName("picture");
+			setUrl(GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
+			setAltText(picture.getName());
+		}
+	}
+	
+	public static class PicturesCell extends P {
+		public PicturesCell(RoomDetailInterface room) {
+			super("pictures");
+			if (room.hasPictures()) {
+				for (RoomPictureInterface picture: room.getPictures())
+					add(new PictureCell(picture));
+			}
+		}
+	}
+	
+	public static class MapCell extends Image {
+		public MapCell(RoomDetailInterface room) {
+			super();
+			if (room.hasMiniMapUrl()) {
+				setStyleName("map");
+				setUrl(room.getMiniMapUrl());
+				setTitle(MESSAGES.titleRoomMap(room.getLabel()));
 			}
 		}
 	}

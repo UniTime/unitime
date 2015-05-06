@@ -181,9 +181,8 @@ public class PDFPrinter implements Printer {
 			
 			if (f.hasImage()) {
 				try {
-					Image img = Image.getInstance(f.getImage(), Color.WHITE);
-					cell.addElement(new Chunk(img, 0f, 0f));
-					iMaxWidth[idx] = Math.max(iMaxWidth[idx], img.getWidth());
+					cell.addElement(new Chunk(f.getImage(), 0f, 0f));
+					iMaxWidth[idx] = Math.max(iMaxWidth[idx], f.getImage().getScaledWidth());
 				} catch (Exception e) {}
 			}
 
@@ -208,10 +207,8 @@ public class PDFPrinter implements Printer {
 				for (A g: f.getChunks()) {
 					if (g.hasImage()) {
 						try {
-							Image img = Image.getInstance(g.getImage(), Color.WHITE);
-							cell.addElement(new Chunk(img, 0f, 0f));
-							cell.addElement(img);
-							iMaxWidth[idx] = Math.max(iMaxWidth[idx], img.getWidth());
+							cell.addElement(new Chunk(g.getImage(), 0f, 0f));
+							iMaxWidth[idx] = Math.max(iMaxWidth[idx], g.getImage().getScaledWidth());
 						} catch (Exception e) {}
 					}
 					if (g.hasText()) {
@@ -267,7 +264,7 @@ public class PDFPrinter implements Printer {
 		private String iText = null;
 		private int iFlag = 0;
 		private String iColor = null;
-		private java.awt.Image iImage = null;
+		private Image iImage = null;
 		
 		public A() {}
 		
@@ -284,6 +281,12 @@ public class PDFPrinter implements Printer {
 		}
 		
 		public A(java.awt.Image image) {
+			try {
+				iImage = Image.getInstance(image, Color.WHITE);
+			} catch (Exception e) {}
+		}
+		
+		public A(Image image) {
 			iImage = image;
 		}
 		
@@ -305,7 +308,7 @@ public class PDFPrinter implements Printer {
 		public boolean hasText() { return iText != null && !iText.isEmpty(); }
 		
 		public boolean hasImage() { return iImage != null; }
-		public java.awt.Image getImage() { return iImage; }
+		public Image getImage() { return iImage; }
 		
 		public A add(A chunk) {
 			if (iChunks == null) iChunks = new ArrayList<A>();

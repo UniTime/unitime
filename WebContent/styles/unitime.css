@@ -3677,3 +3677,15 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-Rooms .departments .control {
 	text-decoration: underline;	
 }
+
+.unitime-Rooms .map {
+	border: 1px solid #9CB0CE;
+	max-width: 150px;
+	max-height: 100px;
+}
+
+.unitime-Rooms .picture {
+	border: 1px solid #9CB0CE;
+	max-width: 150px;
+	max-height: 100px;
+}

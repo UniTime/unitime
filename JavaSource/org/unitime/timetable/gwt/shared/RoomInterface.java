@@ -801,6 +801,8 @@ public class RoomInterface implements IsSerializable {
 				iCanChangeRoomProperties = false, iCanChangeEventProperties = false, iCanChangePicture = false, iCanChangePreferences = false,
 				iCanChangeGroups = false, iCanChangeFeatures = false, iCanChangeEventAvailability = false; 
 		private boolean iCanDelete = false;
+		private String iMiniMapUrl = null;
+		private List<RoomPictureInterface> iPictures = null;
 		
 		public RoomDetailInterface() {}
 		
@@ -983,6 +985,18 @@ public class RoomInterface implements IsSerializable {
 
 		public boolean isCanDelete() { return iCanDelete; }
 		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
+		
+		public String getMiniMapUrl() { return iMiniMapUrl; }
+		public void setMiniMapUrl(String miniMapUrl) { iMiniMapUrl = miniMapUrl; }
+		public boolean hasMiniMapUrl() { return iMiniMapUrl != null && !iMiniMapUrl.isEmpty(); }
+		
+		public boolean hasPictures() { return iPictures != null && !iPictures.isEmpty(); }
+		public void addPicture(RoomPictureInterface picture) {
+			if (iPictures == null)
+				iPictures = new ArrayList<RoomPictureInterface>();
+			iPictures.add(picture);
+		}
+		public List<RoomPictureInterface> getPictures() { return iPictures; }
 	}
 	
 	public static class RoomDetailsRequest implements GwtRpcRequest<GwtRpcResponseList<RoomDetailInterface>> {
@@ -1280,6 +1294,8 @@ public class RoomInterface implements IsSerializable {
 		SHOW_BREAK_TIME(false),
 		SHOW_GROUPS(false),
 		SHOW_FEATURES(false),
+		SHOW_MAP(false),
+		SHOW_PICTURE(false),
 		;
 		
 		private boolean iShowWhenEmpty = true;
