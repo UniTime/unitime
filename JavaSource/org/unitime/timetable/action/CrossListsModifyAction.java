@@ -159,7 +159,7 @@ public class CrossListsModifyAction extends Action {
                 CourseOffering co = cdao.get(addedOffering);
                 
                 // Check reservations limit
-                frm.addToCourseOfferings(co, sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) || sessionContext.getUser().getCurrentAuthority().hasQualifier(co.getDepartment()));
+                frm.addToCourseOfferings(co, sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) || sessionContext.getUser().getCurrentAuthority().hasQualifier(co.getDepartment()), true);
                 frm.setAddCourseOfferingId(null);
             }
             else {
@@ -294,6 +294,8 @@ public class CrossListsModifyAction extends Action {
 	                // Create new instructional offering 
 	                InstructionalOffering io1 = new InstructionalOffering();
 	                CourseOffering co1 = cdao.get(new Long(origCrs.trim()));
+	                
+	                sessionContext.checkPermission(co1, Right.CourseOfferingDeleteFromCrossList);
 	                
 	                // Copy attributes of old instr offering - make not offered
 	                io1.setDemand(io.getDemand());
@@ -606,7 +608,7 @@ public class CrossListsModifyAction extends Action {
 
         for(Iterator i = offerings.iterator(); i.hasNext(); ) {
             CourseOffering co1 = ((CourseOffering) i.next());
-            frm.addToCourseOfferings(co1, sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) || sessionContext.getUser().getCurrentAuthority().hasQualifier(co1.getDepartment()));
+            frm.addToCourseOfferings(co1, sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) || sessionContext.getUser().getCurrentAuthority().hasQualifier(co1.getDepartment()), sessionContext.hasPermission(co1, Right.CourseOfferingDeleteFromCrossList));
             frm.addToOriginalCourseOfferings(co1);
         }
     }

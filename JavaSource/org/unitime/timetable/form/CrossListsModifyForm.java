@@ -68,6 +68,7 @@ public class CrossListsModifyForm extends ActionForm {
     private List requested;
     private List projected;
     private List lastTerm;
+    private List canDelete;
     
 	private Integer ioLimit;
 	private Boolean unlimited;
@@ -135,6 +136,7 @@ public class CrossListsModifyForm extends ActionForm {
         requested = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
         projected = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
         lastTerm = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
+        canDelete = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
         originalOfferings = "";
         ioLimit = null;
         unlimited = null;
@@ -244,6 +246,19 @@ public class CrossListsModifyForm extends ActionForm {
     public void setLastTerm(List lastTerm) {
         this.lastTerm = lastTerm;
     }
+    
+    public List getCanDelete() {
+        return canDelete;
+    }
+    public Boolean getCanDelete(int key) {
+        return (Boolean)canDelete.get(key);
+    }
+    public void setCanDelete(int key, Boolean value) {
+        this.canDelete.set(key, value);
+    }
+    public void setCanDelete(List canDelete) {
+        this.canDelete = canDelete;
+    }
 
    public Long getCtrlCrsOfferingId() {
         return ctrlCrsOfferingId;
@@ -334,7 +349,7 @@ public class CrossListsModifyForm extends ActionForm {
      * @param resv
      * @param isOwner
      */
-    public void addToCourseOfferings(CourseOffering co, Boolean isOwner) {
+    public void addToCourseOfferings(CourseOffering co, Boolean isOwner, Boolean canDelete) {
         this.courseOfferingIds.add(co.getUniqueId().toString());
         this.courseOfferingNames.add((co.getCourseNameWithTitle()));
         this.ownedCourse.add(isOwner);
@@ -343,6 +358,7 @@ public class CrossListsModifyForm extends ActionForm {
         this.requested.add("");
         this.projected.add(co.getProjectedDemand() == null ? "" : co.getProjectedDemand().toString());
         this.lastTerm.add(co.getDemand() == null ? "" : co.getDemand().toString());
+        this.canDelete.add(canDelete);
     }
     
     /**
@@ -363,6 +379,7 @@ public class CrossListsModifyForm extends ActionForm {
                 this.requested.remove(ct);
                 this.projected.remove(ct);
                 this.lastTerm.remove(ct);
+                this.canDelete.remove(ct);
                 break;
             }
             ++ct;

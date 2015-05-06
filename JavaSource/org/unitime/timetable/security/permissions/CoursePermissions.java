@@ -462,6 +462,30 @@ public class CoursePermissions {
 		
 	}
 	
+	@PermissionForRight(Right.CourseOfferingDeleteFromCrossList)
+	public static class CourseOfferingDeleteFromCrossList implements Permission<CourseOffering> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+
+		@Override
+		public boolean check(UserContext user, CourseOffering source) {
+			if (!user.getCurrentAuthority().hasRight(Right.ClassDeleteNoEnrollmentCheck)) {
+				// There is a committed solution -> course with enrollment cannot be edited
+				if (source.getDepartment() != null && source.getDepartment().getSolverGroup() != null && source.getDepartment().getSolverGroup().getCommittedSolution() != null) {
+					if (source.getEnrollment() > 0) return false;
+				}
+			}
+			
+			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit)) return true;
+			
+			return false;
+		}
+
+		@Override
+		public Class<CourseOffering> type() { return CourseOffering.class; }
+		
+	}
+	
 	@PermissionForRight(Right.MultipleClassSetupDepartment)
 	public static class MultipleClassSetupDepartment extends InstrOfferingConfigEditDepartment {}
 	
@@ -493,6 +517,13 @@ public class CoursePermissions {
 
 		@Override
 		public boolean check(UserContext user, InstructionalOffering source) {
+			if (!user.getCurrentAuthority().hasRight(Right.ClassDeleteNoEnrollmentCheck)) {
+				// There is a committed solution -> course with enrollment cannot be edited
+				if (source.getDepartment() != null && source.getDepartment().getSolverGroup() != null && source.getDepartment().getSolverGroup().getCommittedSolution() != null) {
+					if (source.getEnrollment() > 0) return false;
+				}
+			}
+
 			if (permissionOfferingLockNeeded.check(user, source)) return false;
 			
 			if (source.isNotOffered()) return false;

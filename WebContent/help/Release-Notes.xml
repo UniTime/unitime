@@ -81,6 +81,11 @@
 					<line>Class Cancel: ability to cancel a class (there must be a committed solution)</line>
 					<line>The Class Delete and Class Cancel permissions are by default given to all roles that have Multiple Class Setup Class and / or Class Edit permissions.</line>
 				</line>
+				<line>Added a new permission (named Class Delete No Enrollment Check) that overrides the enrollment check from the Class Delete permission.
+					<line>No role is given this permission by default.</line>
+				</line>
+				<line>Make Not-Offered: It is allowed to make an offering not-offered only when there are no students enrolled, there is no committed solution, or the user has the Class Delete No Enrollment Check permission.</line>
+				<line>Cross Lists: it is allowed to remove a cross-listed course from an offering only when  there are no students enrolled, there is no committed solution, or the user has the Class Delete No Enrollment Check permission.</line>
 			</description>
 		</item>
 		<item>

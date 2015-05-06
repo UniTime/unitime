@@ -204,7 +204,7 @@
 						<TD align="right" class="WebTableHeader"><!-- I> Requested </I --></TD>
 						<TD align="right" class="WebTableHeader"> <loc:message name="columnCrossListsProjected"/></TD>
 						<TD align="right" class="WebTableHeader"> <loc:message name="columnCrossListsLastTerm"/></TD>
-						<TD>&nbsp;</TD>
+						<TD class="WebTableHeader">&nbsp;</TD>
 					</TR>
 
 					<logic:iterate name="crossListsModifyForm" property="courseOfferingIds" id="co" indexId="ctr">
@@ -213,6 +213,7 @@
 							<html:hidden property='<%= "courseOfferingIds[" + ctr + "]" %>'/>
 							<html:hidden property='<%= "courseOfferingNames[" + ctr + "]" %>'/>
 							<html:hidden property='<%= "ownedCourse[" + ctr + "]" %>'/>
+							<html:hidden property='<%= "canDelete[" + ctr + "]" %>'/>
 							<bean:write name="crossListsModifyForm" property='<%= "courseOfferingNames[" + ctr + "]" %>'/> &nbsp;
 						</TD>
 						<TD align="center" class="BottomBorderGray">
@@ -272,9 +273,11 @@
 						<TD align="center" nowrap class="BottomBorderGray">
 							&nbsp;
 							<logic:notEqual name="crossListsModifyForm" property="readOnlyCrsOfferingId" value="<%= co.toString() %>" >
-								<IMG border="0" src="images/action_delete.png" title="<%=MSG.titleRemoveCourseFromCrossList() %>"
-									onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
-									onClick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedCourseOfferingId'].value='<%= co.toString() %>';document.forms[0].submit();">
+								<logic:equal name="crossListsModifyForm" property='<%= "canDelete[" + ctr + "]" %>' value="true" >
+									<IMG border="0" src="images/action_delete.png" title="<%=MSG.titleRemoveCourseFromCrossList() %>"
+										onMouseOver="this.style.cursor='hand';this.style.cursor='pointer';"
+										onClick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedCourseOfferingId'].value='<%= co.toString() %>';document.forms[0].submit();">
+								</logic:equal>
 							</logic:notEqual>
 							 &nbsp;
 						</TD>
@@ -289,7 +292,7 @@
 						<TD align="right" class='rowTotal'>&nbsp;<!-- I> Requested </I --></TD>
 						<TD class='rowTotal' align='right'><%= projTotal>=0 ? projTotal : "" %>&nbsp; </TD>
 						<TD class='rowTotal' align='right'><%= lastTermTotal>=0 ? lastTermTotal : "" %>&nbsp; </TD>
-						<TD>&nbsp;</TD>
+						<TD class='rowTotal'>&nbsp;</TD>
 					</TR>
 					<% } %>
 

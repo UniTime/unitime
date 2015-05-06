@@ -112,6 +112,7 @@ public enum Right {
 	OfferingDelete(InstructionalOffering.class),
 	
 	InstructionalOfferingCrossLists(InstructionalOffering.class),
+	CourseOfferingDeleteFromCrossList(CourseOffering.class),
 
 	InstrOfferingConfigAdd(InstructionalOffering.class),
 	InstrOfferingConfigEdit(InstrOfferingConfig.class),
