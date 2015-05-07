@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.Session;
@@ -88,7 +89,7 @@ public abstract class RoomsExporter implements Exporter {
     				request.addOption(command.substring(2), value);
     		}
     	}
-    	request.setOption("flag", "gridAsText");
+    	request.setOption("flag", "plain");
     	
     	UserContext u = helper.getSessionContext().getUser();
     	String user = helper.getParameter("user");
@@ -125,27 +126,28 @@ public abstract class RoomsExporter implements Exporter {
     		try {
     			int sort = Integer.parseInt(helper.getParameter("sort"));
     			if (sort > 0) {
-    				cmp = new RoomsComparator(RoomsComparator.Column.values()[sort - 1], true);
+    				cmp = new RoomsComparator(RoomsColumn.values()[sort - 1], true);
     			} else if (sort < 0) {
-    				cmp = new RoomsComparator(RoomsComparator.Column.values()[-1 - sort], false);
+    				cmp = new RoomsComparator(RoomsColumn.values()[-1 - sort], false);
     			}
     		} catch (Exception e) {}
     		if (cmp != null)
     			Collections.sort(rooms, cmp);
     	}
     	
-    	ec.setRoomCookieFlags(helper.getParameter("flags") == null ? RoomsPageMode.COURSES.getFlags() : Integer.parseInt(helper.getParameter("flags")));
+    	ec.setRoomCookieFlags(helper.getParameter("flags") == null ? RoomsPageMode.COURSES.getColumns() : Integer.parseInt(helper.getParameter("flags")));
     	
-    	if (helper.getParameter("horizontal") != null)
-    		ec.setVertical("0".equals(helper.getParameter("horizontal")));
-    	else if (context.getUser() != null)
+    	if (helper.getParameter("orientation") != null) {
+    		ec.setVertical("vertical".equals(helper.getParameter("orientation")));
+    		ec.setGridAsText("text".equals(helper.getParameter("orientation")));
+    	} else if (context.getUser() != null) {
     		ec.setVertical(CommonValues.VerticalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
+    		ec.setGridAsText(context.getUser() == null ? false : CommonValues.TextGrid.eq(UserProperty.GridOrientation.get(context.getUser())));
+    	}
     	
     	ec.setMode(helper.getParameter("mode"));
     	if (ec.getMode() == null && context.getUser() != null)
     		ec.setMode(RequiredTimeTable.getTimeGridSize(context.getUser()));
-    	
-    	ec.setGridAsText(context.getUser() == null ? false : CommonValues.TextGrid.eq(UserProperty.GridOrientation.get(context.getUser())));
     	
     	for (RoomFeatureType type: new TreeSet<RoomFeatureType>(RoomFeatureTypeDAO.getInstance().findAll()))
     		ec.addRoomFeatureType(new FeatureTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.isShowInEventManagement()));

@@ -22,15 +22,13 @@ package org.unitime.timetable.gwt.client.rooms;
 import java.util.Comparator;
 
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 
 /**
  * @author Tomas Muller
  */
 public class RoomsComparator implements Comparator<RoomDetailInterface> {
-	public static enum Column {
-		NAME, TYPE, CAPACITY, EXAM_CAPACITY, DISTANCE, ROOM_CHECK, CONTROL, EVENT_DEPT, EVENT_STATUS, EVENT_MESSAGE, BREAK_TIME,
-	}
-	private Column iColumn;
+	private RoomsColumn iColumn;
 	private boolean iAsc;
 	
 	public int compareById(RoomDetailInterface r1, RoomDetailInterface r2) {
@@ -90,10 +88,10 @@ public class RoomsComparator implements Comparator<RoomDetailInterface> {
 		case TYPE: return compareByType(r1, r2);
 		case CAPACITY: return compareByCapacity(r1, r2);
 		case EXAM_CAPACITY: return compareByExamCapacity(r1, r2);
-		case DISTANCE: return compareByDistance(r1, r2);
+		case DISTANCE_CHECK: return compareByDistance(r1, r2);
 		case ROOM_CHECK: return compareByRoomCheck(r1, r2);
-		case CONTROL: return compareByControl(r1, r2);
-		case EVENT_DEPT: return compareByEventDepartment(r1, r2);
+		case CONTROL_DEPT: return compareByControl(r1, r2);
+		case EVENT_DEPARTMENT: return compareByEventDepartment(r1, r2);
 		case EVENT_STATUS: return compareByEventStatus(r1, r2);
 		case EVENT_MESSAGE: return compareByEventMessage(r1, r2);
 		case BREAK_TIME: return compareByBreakTime(r1, r2);
@@ -101,7 +99,7 @@ public class RoomsComparator implements Comparator<RoomDetailInterface> {
 		}
 	}
 	
-	public RoomsComparator(Column column, boolean asc) {
+	public RoomsComparator(RoomsColumn column, boolean asc) {
 		iColumn = column;
 		iAsc = asc;
 	}
@@ -130,4 +128,22 @@ public class RoomsComparator implements Comparator<RoomDetailInterface> {
 		return (b1 == null ? b2 == null ? 0 : -1 : b2 == null ? -1 : (b1.booleanValue() == b2.booleanValue()) ? 0 : (b1.booleanValue() ? 1 : -1));
 	}
 
+	public static boolean isApplicable(RoomsColumn column) {
+		switch (column) {
+		case NAME:
+		case TYPE:
+		case CAPACITY:
+		case EXAM_CAPACITY:
+		case DISTANCE_CHECK:
+		case ROOM_CHECK:
+		case CONTROL_DEPT:
+		case EVENT_DEPARTMENT:
+		case EVENT_STATUS:
+		case EVENT_MESSAGE:
+		case BREAK_TIME:
+			return true;
+		default:
+			return false;
+		}
+	}
 }

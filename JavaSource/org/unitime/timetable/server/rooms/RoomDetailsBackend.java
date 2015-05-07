@@ -28,8 +28,6 @@ import java.util.TreeSet;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.defaults.CommonValues;
-import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.events.RoomFilterBackend;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -107,17 +105,19 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		String department = request.getOption("department");
     	boolean filterDepartments = !context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
     	List<ExamType> types = ExamType.findAllApplicable(context.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
-    	boolean gridAsText = CommonValues.TextGrid.eq(UserProperty.GridOrientation.get(context.getUser()));
     	boolean html = true;
-    	if (request.hasOptions("flag") && request.getOptions("flag").contains("gridAsText")) {
-    		gridAsText = true;
+    	if (request.hasOptions("flag") && request.getOptions("flag").contains("plain")) {
     		html = false;
     	}
+    	
+    	boolean courses = context.hasPermission(Right.InstructionalOfferings) || context.hasPermission(Right.Classes);
+    	boolean exams = context.hasPermission(Right.Examinations);
+    	boolean events = context.hasPermission(Right.Events);
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null)) {
 			Double dist = distances.get(location.getUniqueId());
-			Entity e = load(location, department, gridAsText, html, context, filterDepartments, types);
+			Entity e = load(location, department, html, context, filterDepartments, types, courses, exams, events);
 			e.setProperty("permId", location.getPermanentId().toString());
 			if (dist != null)
 				e.setProperty("distance", String.valueOf(dist == null ? 0l : Math.round(dist)));
@@ -144,7 +144,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		return department;
 	}
 	
-	protected RoomDetailInterface load(Location location, String department, boolean gridAsText, boolean html, SessionContext context, boolean filterDepartments, List<ExamType> types) {
+	protected RoomDetailInterface load(Location location, String department, boolean html, SessionContext context, boolean filterDepartments, List<ExamType> types, boolean courses, boolean exams, boolean events) {
 		RoomDetailInterface response = new RoomDetailInterface(location.getUniqueId(), location.getDisplayName(), location.getLabel());
 		
 		response.setCanShowDetail(context.hasPermission(location, Right.RoomDetail));
@@ -175,14 +175,13 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		response.setArea(location.getArea());;
     	response.setCapacity(location.getCapacity());
     	response.setExamCapacity(location.getExamCapacity());
-    	response.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
-    	response.setIgnoreTooFar(location.isIgnoreTooFar());
     	
     	for (RoomFeature f: location.getFeatures()) {
     		FeatureInterface feature = new FeatureInterface(f.getUniqueId(), f.getAbbv(), f.getLabel());
     		if (f.getFeatureType() != null)
     			feature.setType(new FeatureTypeInterface(f.getFeatureType().getUniqueId(), f.getFeatureType().getReference(), f.getFeatureType().getLabel(), f.getFeatureType().isShowInEventManagement()));
     		if (f instanceof DepartmentRoomFeature) {
+    			if (!courses) continue;
     			Department d = ((DepartmentRoomFeature)f).getDepartment();
     			if (filterDepartments && !context.getUser().getCurrentAuthority().hasQualifier(d)) continue; 
     			feature.setDepartment(wrap(d, location, null));
@@ -195,59 +194,67 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     	for (RoomGroup g: location.getRoomGroups()) {
     		GroupInterface group = new GroupInterface(g.getUniqueId(), g.getAbbv(), g.getName());
     		if (g.getDepartment() != null) {
+    			if (!courses) continue;
     			if (filterDepartments && !context.getUser().getCurrentAuthority().hasQualifier(g.getDepartment())) continue;
     			group.setDepartment(wrap(g.getDepartment(), location, null));
     			group.setTitle((g.getDescription() == null || g.getDescription().isEmpty() ? g.getName() : g.getDescription()) + " (" + g.getDepartment().getName() + ")");
     		}
     		response.addGroup(group);
     	}
-    	for (RoomDept rd: location.getRoomDepts()) {
-    		DepartmentInterface d = wrap(rd.getDepartment(), location, location.getRoomPreferenceLevel(rd.getDepartment()));
-    		response.addDepartment(d);
-    		if (rd.isControl())
-    			response.setControlDepartment(d);
+    	
+    	if (courses) {
+        	response.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
+        	response.setIgnoreTooFar(location.isIgnoreTooFar());
+
+        	for (RoomDept rd: location.getRoomDepts()) {
+        		DepartmentInterface d = wrap(rd.getDepartment(), location, location.getRoomPreferenceLevel(rd.getDepartment()));
+        		response.addDepartment(d);
+        		if (rd.isControl())
+        			response.setControlDepartment(d);
+        	}
+        	if (response.isCanSeeAvailability()) {
+        		if (html)
+        			response.setAvailability(location.getRoomSharingTable().getModel().toString().replaceAll(", ","<br>"));
+        		else
+        			response.setAvailability(location.getRoomSharingTable().getModel().toString().replaceAll(", ","\n"));
+            	response.setRoomSharingNote(location.getShareNote());
+        	}
     	}
-    	if (gridAsText && response.isCanSeeAvailability()) {
-    		if (html)
-    			response.setAvailability(location.getRoomSharingTable().getModel().toString().replaceAll(", ","<br>"));
-    		else
-    			response.setAvailability(location.getRoomSharingTable().getModel().toString().replaceAll(", ","\n"));
-    	}
-    	if (gridAsText && response.isCanSeeEventAvailability()) {
-    		if (html)
-    			response.setEventAvailability(location.getEventAvailabilityTable().getModel().toString().replaceAll(", ", "<br>"));
-    		else
-    			response.setEventAvailability(location.getEventAvailabilityTable().getModel().toString().replaceAll(", ", "\n"));
+    	if (events) {
+    		if (response.isCanSeeEventAvailability()) {
+    			if (html)
+    				response.setEventAvailability(location.getEventAvailabilityTable().getModel().toString().replaceAll(", ", "<br>"));
+    			else
+    				response.setEventAvailability(location.getEventAvailabilityTable().getModel().toString().replaceAll(", ", "\n"));
+    		}
+    		
+        	if (location.getEventDepartment() != null)
+        		response.setEventDepartment(wrap(location.getEventDepartment(), location, null));
+        	
+        	response.setEventNote(location.getEventMessage());
+        	response.setBreakTime(location.getBreakTime());
+        	if (location.getEventDepartment() != null) {
+            	response.setEventStatus(location.getEventStatus());
+            	RoomTypeOption rto = location.getRoomType().getOption(location.getEventDepartment());
+            	response.setDefaultEventStatus(rto.getStatus());
+            	response.setDefaultBreakTime(rto.getBreakTime());
+            	response.setDefaultEventNote(rto.getMessage());
+        	} else {
+        		response.setDefaultEventStatus(RoomTypeOption.Status.NoEventManagement.ordinal());
+        	}
     	}
     	
-    	for (ExamType xt: location.getExamTypes()) {
-    		if (types != null && !types.contains(xt)) continue;
-    		if (xt.getReference().equals(department) && response.isCanSeePeriodPreferences()) {
-    			if (xt.getType() == ExamType.sExamTypeMidterm || gridAsText) {
-    				if (html)
+    	if (exams) {
+        	for (ExamType xt: location.getExamTypes()) {
+        		if (types != null && !types.contains(xt)) continue;
+        		if (xt.getReference().equals(department) && response.isCanSeePeriodPreferences()) {
+        			if (html)
     					response.setPeriodPreference(location.getExamPreferencesAbbreviationHtml(xt));
     				else
     					response.setPeriodPreference(location.getExamPreferencesAbbreviation(xt));
-    			}
-    		}
-    		response.addExamRype(new ExamTypeInterface(xt.getUniqueId(), xt.getReference(), xt.getLabel(), xt.getType() == ExamType.sExamTypeFinal));
-    	}
-    	
-    	if (location.getEventDepartment() != null)
-    		response.setEventDepartment(wrap(location.getEventDepartment(), location, null));
-    	
-    	response.setRoomSharingNote(location.getShareNote());
-
-    	response.setEventNote(location.getEventMessage());
-    	response.setBreakTime(location.getBreakTime());
-    	if (location.getEventDepartment() != null) {
-        	response.setEventStatus(location.getEventStatus());
-        	RoomTypeOption rto = location.getRoomType().getOption(location.getEventDepartment());
-        	response.setDefaultEventStatus(rto.getStatus());
-        	response.setDefaultBreakTime(rto.getBreakTime());
-        	response.setDefaultEventNote(rto.getMessage());
-    	} else {
-    		response.setDefaultEventStatus(RoomTypeOption.Status.NoEventManagement.ordinal());
+        		}
+        		response.addExamRype(new ExamTypeInterface(xt.getUniqueId(), xt.getReference(), xt.getLabel(), xt.getType() == ExamType.sExamTypeFinal));
+        	}
     	}
     	
 		String minimap = ApplicationProperty.RoomHintMinimapUrl.value();

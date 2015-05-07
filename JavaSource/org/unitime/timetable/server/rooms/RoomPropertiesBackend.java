@@ -21,8 +21,14 @@ package org.unitime.timetable.server.rooms;
 
 import java.util.TreeSet;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
@@ -42,6 +48,7 @@ import org.unitime.timetable.security.rights.Right;
  */
 @GwtRpcImplements(RoomPropertiesRequest.class)
 public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertiesRequest, RoomPropertiesInterface> {
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
 	@Override
 	public RoomPropertiesInterface execute(RoomPropertiesRequest request, SessionContext context) {
@@ -57,6 +64,9 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setCanEditRoomExams(context.hasPermission(Right.EditRoomDepartmentsExams));
 		response.setCanAddRoom(context.hasPermission(Right.AddRoom) || context.hasPermission(Right.AddNonUnivLocation));
 		
+		response.setCanSeeCourses(context.hasPermission(Right.InstructionalOfferings) || context.hasPermission(Right.Classes));
+		response.setCanSeeExams(context.hasPermission(Right.Examinations));
+		response.setCanSeeEvents(context.hasPermission(Right.Events));
 		
 		for (RoomType type: RoomType.findAll())
 			response.addRoomType(new RoomTypeInterface(type.getUniqueId(), type.getLabel(), type.isRoom()));
@@ -78,6 +88,15 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 			department.setExtLabel(d.getExternalMgrLabel());
 			department.setTitle(d.getLabel());
 			response.addDepartment(department);
+		}
+		
+		response.setHorizontal(context.getUser() == null ? false : CommonValues.HorizontalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
+		response.setGridAsText(context.getUser() == null ? false : CommonValues.TextGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
+		
+		for (int i = 0; true; i++) {
+			String mode = ApplicationProperty.RoomSharingMode.value(String.valueOf(1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
+			if (mode == null || mode.isEmpty()) break;
+			response.addMode(new RoomInterface.RoomSharingDisplayMode(mode));
 		}
 		
 		return response;

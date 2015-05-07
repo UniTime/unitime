@@ -38,8 +38,8 @@ import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
-import org.unitime.timetable.gwt.shared.RoomInterface.RoomFlag;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
@@ -103,7 +103,7 @@ public class RoomsExportPDF extends RoomsExporter {
 		case  1: return MESSAGES.colType().replace("<br>", "\n");
 		case  2: return MESSAGES.colCapacity().replace("<br>", "\n");
 		case  3: return MESSAGES.colExaminationCapacity().replace("<br>", "\n");
-		case  4: return MESSAGES.colArea().replace("<br>", "\n").replace("&sup2;", "2");
+		case  4: return MESSAGES.colArea(CONSTANTS.roomAreaUnitsShortPlainText()).replace("<br>", "\n");
 		case  5: return MESSAGES.colCoordinates().replace("<br>", "\n");
 		case  6: return MESSAGES.colDistances().replace("<br>", "\n");
 		case  7: return MESSAGES.colRoomCheck().replace("<br>", "\n");
@@ -129,31 +129,31 @@ public class RoomsExportPDF extends RoomsExporter {
 	protected boolean isColumnVisible(int column, ExportContext context) {
 		int flags = context.getRoomCookieFlags();
 		switch(column) {
-		case 1: return RoomFlag.SHOW_TYPE.in(flags);
-		case 2: return RoomFlag.SHOW_CAPACITY.in(flags);
-		case 3: return RoomFlag.SHOW_EXAM_CAPACITY.in(flags);
-		case 4: return RoomFlag.SHOW_AREA.in(flags);
-		case 5: return RoomFlag.SHOW_COORDINATES.in(flags);
-		case 6: return RoomFlag.SHOW_IGNORE_DISTANCES.in(flags);
-		case 7: return RoomFlag.SHOW_IGNORE_ROOM_CHECK.in(flags);
-		case 8: return RoomFlag.SHOW_PREFERENCE.in(flags);
-		case 9: return RoomFlag.SHOW_MAP.in(flags);
-		case 10: return RoomFlag.SHOW_PICTURE.in(flags);
-		case 11: return RoomFlag.SHOW_AVAILABILITY.in(flags);
-		case 12: return RoomFlag.SHOW_DEPARTMENTS.in(flags);
-		case 13: return RoomFlag.SHOW_CONTROLLING_DEPARTMENT.in(flags);
-		case 14: return RoomFlag.SHOW_EXAM_TYPES.in(flags);
-		case 15: return RoomFlag.SHOW_PERIOD_PREFERENCES.in(flags);
-		case 16: return RoomFlag.SHOW_EVENT_DEPARTMENT.in(flags);
-		case 17: return RoomFlag.SHOW_EVENT_STATUS.in(flags);
-		case 18: return RoomFlag.SHOW_EVENT_AVAILABILITY.in(flags);
-		case 19: return RoomFlag.SHOW_EVENT_MESSAGE.in(flags);
-		case 20: return RoomFlag.SHOW_BREAK_TIME.in(flags);
-		case 21: return RoomFlag.SHOW_GROUPS.in(flags);
-		case 22: return RoomFlag.SHOW_FEATURES.in(flags);
+		case 1: return RoomsColumn.TYPE.in(flags);
+		case 2: return RoomsColumn.CAPACITY.in(flags);
+		case 3: return RoomsColumn.EXAM_CAPACITY.in(flags);
+		case 4: return RoomsColumn.AREA.in(flags);
+		case 5: return RoomsColumn.COORDINATES.in(flags);
+		case 6: return RoomsColumn.DISTANCE_CHECK.in(flags);
+		case 7: return RoomsColumn.ROOM_CHECK.in(flags);
+		case 8: return RoomsColumn.PREFERENCE.in(flags);
+		case 9: return RoomsColumn.MAP.in(flags);
+		case 10: return RoomsColumn.PICTURES.in(flags);
+		case 11: return RoomsColumn.AVAILABILITY.in(flags);
+		case 12: return RoomsColumn.DEPARTMENTS.in(flags);
+		case 13: return RoomsColumn.CONTROL_DEPT.in(flags);
+		case 14: return RoomsColumn.EXAM_TYPES.in(flags);
+		case 15: return RoomsColumn.PERIOD_PREF.in(flags);
+		case 16: return RoomsColumn.EVENT_DEPARTMENT.in(flags);
+		case 17: return RoomsColumn.EVENT_STATUS.in(flags);
+		case 18: return RoomsColumn.EVENT_AVAILABILITY.in(flags);
+		case 19: return RoomsColumn.EVENT_MESSAGE.in(flags);
+		case 20: return RoomsColumn.BREAK_TIME.in(flags);
+		case 21: return RoomsColumn.GROUPS.in(flags);
+		case 22: return RoomsColumn.FEATURES.in(flags);
 		default:
 			if (column > 22) {
-				int flag = (1 << (column - 23 + RoomFlag.values().length));
+				int flag = (1 << (column - 23 + RoomsColumn.values().length));
 				return (flags & flag) == 0;
 			} else {
 				return true;
@@ -296,31 +296,6 @@ public class RoomsExportPDF extends RoomsExporter {
 		}
 	}
 	
-	protected void hideColumn(Printer out, List<RoomDetailInterface> rooms, RoomFlag flag) {
-		switch (flag) {
-		case SHOW_TYPE: out.hideColumn(1); break;
-		case SHOW_CAPACITY: out.hideColumn(2); break;
-		case SHOW_EXAM_CAPACITY: out.hideColumn(3); break;
-		case SHOW_AREA: out.hideColumn(4); break;
-		case SHOW_COORDINATES: out.hideColumn(5); break;
-		case SHOW_IGNORE_DISTANCES: out.hideColumn(6); break;
-		case SHOW_IGNORE_ROOM_CHECK: out.hideColumn(7); break;
-		case SHOW_PREFERENCE: out.hideColumn(8); break;
-		case SHOW_AVAILABILITY: out.hideColumn(9); break;
-		case SHOW_DEPARTMENTS: out.hideColumn(10); break;
-		case SHOW_CONTROLLING_DEPARTMENT: out.hideColumn(11); break;
-		case SHOW_EXAM_TYPES: out.hideColumn(12); break;
-		case SHOW_PERIOD_PREFERENCES: out.hideColumn(13); break;
-		case SHOW_EVENT_DEPARTMENT: out.hideColumn(14); break;
-		case SHOW_EVENT_STATUS: out.hideColumn(15); break;
-		case SHOW_EVENT_AVAILABILITY: out.hideColumn(16); break;
-		case SHOW_EVENT_MESSAGE: out.hideColumn(17); break;
-		case SHOW_BREAK_TIME: out.hideColumn(18); break;
-		case SHOW_GROUPS: out.hideColumn(19); break;
-		case SHOW_FEATURES: out.hideColumn(20); break;
-		}
-	}
-
 	protected A availability(RoomDetailInterface room, boolean events, ExportContext context) {
 		A ret = null;
 		if (context.isGridAsText()) {
@@ -349,7 +324,7 @@ public class RoomsExportPDF extends RoomsExporter {
 					if (context.isGridAsText())
 						return px.toA();
 					else
-						return new A(new RequiredTimeTable(px).createBufferedImage(context.isVertical(), false));
+						return new A(new RequiredTimeTable(px).createBufferedImage(true, false));
 				}
 			}
 		return new A();

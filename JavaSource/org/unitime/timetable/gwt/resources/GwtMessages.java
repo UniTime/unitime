@@ -368,6 +368,21 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Department")
 	String opDepartmentFormat();
 	
+	@DefaultMessage("Availability")
+	String opOrientation();
+	
+	@DefaultMessage("Show as Text")
+	String opOrientationAsText();
+	
+	@DefaultMessage("Vertical")
+	String opOrientationVertical();
+	
+	@DefaultMessage("Show as Table")
+	String opOrientationAsGrid();
+
+	@DefaultMessage("Horizontal")
+	String opOrientationHorizontal();
+		
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
 
@@ -623,8 +638,8 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Room")
 	String colRoom();
 	
-	@DefaultMessage("Area [ft&sup2;]")
-	String colArea();
+	@DefaultMessage("Area [{0}]")
+	String colArea(String units);
 	
 	@DefaultMessage("Coordinates")
 	String colCoordinates();
@@ -3239,7 +3254,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<i>{0} -- not approved</i>")
 	String gridEventHeaderNotApproved(String header);
 	
-	@DefaultMessage("{0,number,#,##0.##} ft&sup2;")
+	@DefaultMessage("{0,number,#,##0.##}")
 	String roomArea(Double area);
 	
 	@DefaultMessage("{0,number,#0.0###}, {1,number,#0.0###}")

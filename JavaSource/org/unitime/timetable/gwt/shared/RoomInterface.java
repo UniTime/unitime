@@ -571,7 +571,7 @@ public class RoomInterface implements IsSerializable {
 		
 		@Override
 		public boolean equals(Object object) {
-			if (object == null || !(object instanceof RoomTypeInterface)) return true;
+			if (object == null || !(object instanceof RoomTypeInterface)) return false;
 			return getId().equals(((RoomTypeInterface)object).getId());
 		}
 	}
@@ -605,7 +605,7 @@ public class RoomInterface implements IsSerializable {
 		
 		@Override
 		public boolean equals(Object object) {
-			if (object == null || !(object instanceof FeatureTypeInterface)) return true;
+			if (object == null || !(object instanceof FeatureTypeInterface)) return false;
 			return getId().equals(((FeatureTypeInterface)object).getId());
 		}
 	}
@@ -647,7 +647,7 @@ public class RoomInterface implements IsSerializable {
 		
 		@Override
 		public boolean equals(Object object) {
-			if (object == null || !(object instanceof RoomPropertyInterface)) return true;
+			if (object == null || !(object instanceof RoomPropertyInterface)) return false;
 			return getId().equals(((RoomPropertyInterface)object).getId());
 		}
 	}
@@ -673,7 +673,7 @@ public class RoomInterface implements IsSerializable {
 		
 		@Override
 		public boolean equals(Object object) {
-			if (object == null || !(object instanceof BuildingInterface)) return true;
+			if (object == null || !(object instanceof BuildingInterface)) return false;
 			return getId().equals(((BuildingInterface)object).getId());
 		}
 	}
@@ -707,7 +707,7 @@ public class RoomInterface implements IsSerializable {
 		
 		@Override
 		public boolean equals(Object object) {
-			if (object == null || !(object instanceof ExamTypeInterface)) return true;
+			if (object == null || !(object instanceof ExamTypeInterface)) return false;
 			return getId().equals(((ExamTypeInterface)object).getId());
 		}
 	}
@@ -799,7 +799,7 @@ public class RoomInterface implements IsSerializable {
 		private boolean iCanShowDetail = false, iCanSeeAvailability = false, iCanSeePeriodPreferences = false, iCanSeeEventAvailability = false;
 		private boolean iCanChange = false, iCanChangeAvailability = false, iCanChangeControll = false, iCanChangeExternalId = false, iCanChangeType = false, iCanChangeCapacity = false, iCanChangeExamStatus = false,
 				iCanChangeRoomProperties = false, iCanChangeEventProperties = false, iCanChangePicture = false, iCanChangePreferences = false,
-				iCanChangeGroups = false, iCanChangeFeatures = false, iCanChangeEventAvailability = false; 
+				iCanChangeGroups = false, iCanChangeFeatures = false, iCanChangeEventAvailability = false;
 		private boolean iCanDelete = false;
 		private String iMiniMapUrl = null;
 		private List<RoomPictureInterface> iPictures = null;
@@ -1239,6 +1239,9 @@ public class RoomInterface implements IsSerializable {
 		private List<FeatureTypeInterface> iFeatureTypes = new ArrayList<FeatureTypeInterface>();
 		private List<DepartmentInterface> iDepartments = new ArrayList<DepartmentInterface>();
 		private List<ExamTypeInterface> iExamTypes = new ArrayList<ExamTypeInterface>();
+		private boolean iCanSeeCourses = false, iCanSeeExams = false, iCanSeeEvents = false;
+		private boolean iGridAsText = false, iHorizontal = false;
+		private List<RoomSharingDisplayMode> iModes;
 		
 		public RoomPropertiesInterface() {}
 		
@@ -1271,39 +1274,60 @@ public class RoomInterface implements IsSerializable {
 		
 		public void addExamType(ExamTypeInterface examType) { iExamTypes.add(examType); }
 		public List<ExamTypeInterface> getExamTypes() { return iExamTypes; }
+		
+		public boolean isCanSeeCourses() { return iCanSeeCourses; }
+		public void setCanSeeCourses(boolean canSeeCourses) { iCanSeeCourses = canSeeCourses; }
+
+		public boolean isCanSeeExams() { return iCanSeeExams; }
+		public void setCanSeeExams(boolean canSeeExams) { iCanSeeExams = canSeeExams; }
+
+		public boolean isCanSeeEvents() { return iCanSeeEvents; }
+		public void setCanSeeEvents(boolean canSeeEvents) { iCanSeeEvents = canSeeEvents; }
+		
+		public boolean isGridAsText() { return iGridAsText; }
+		public void setGridAsText(boolean gridAsText) { iGridAsText = gridAsText; }
+		
+		public boolean isHorizontal() { return iHorizontal; }
+		public void setHorizontal(boolean horizontal) { iHorizontal = horizontal; }
+		
+		public void addMode(RoomSharingDisplayMode mode) {
+			if (iModes == null) iModes = new ArrayList<RoomSharingDisplayMode>();
+			iModes.add(mode);
+		}
+		
+		public List<RoomSharingDisplayMode> getModes() {
+			return iModes;
+		}
+
+		public boolean hasModes() { return iModes != null && !iModes.isEmpty(); }
 	}
 	
-	public static enum RoomFlag implements IsSerializable {
-		SHOW_TYPE,
-		SHOW_CAPACITY,
-		SHOW_EXAM_CAPACITY(false),
-		SHOW_AREA(false),
-		SHOW_COORDINATES(false),
-		SHOW_IGNORE_DISTANCES,
-		SHOW_IGNORE_ROOM_CHECK,
-		SHOW_PREFERENCE(false),
-		SHOW_AVAILABILITY,
-		SHOW_DEPARTMENTS,
-		SHOW_CONTROLLING_DEPARTMENT,
-		SHOW_EXAM_TYPES(false),
-		SHOW_PERIOD_PREFERENCES(false),
-		SHOW_EVENT_DEPARTMENT(false),
-		SHOW_EVENT_STATUS(false),
-		SHOW_EVENT_AVAILABILITY(false),
-		SHOW_EVENT_MESSAGE(false),
-		SHOW_BREAK_TIME(false),
-		SHOW_GROUPS(false),
-		SHOW_FEATURES(false),
-		SHOW_MAP(false),
-		SHOW_PICTURE(false),
+	public static enum RoomsColumn {
+		NAME,
+		TYPE,
+		CAPACITY,
+		EXAM_CAPACITY,
+		AREA,
+		COORDINATES,
+		DISTANCE_CHECK,
+		ROOM_CHECK,
+		MAP,
+		PICTURES,
+		PREFERENCE,
+		AVAILABILITY,
+		DEPARTMENTS,
+		CONTROL_DEPT,
+		EXAM_TYPES,
+		PERIOD_PREF,
+		EVENT_DEPARTMENT,
+		EVENT_STATUS,
+		EVENT_AVAILABILITY,
+		EVENT_MESSAGE,
+		BREAK_TIME,
+		GROUPS,
+		FEATURES,
 		;
-		
-		private boolean iShowWhenEmpty = true;
-		RoomFlag(boolean showWhenEmpty) { iShowWhenEmpty = showWhenEmpty;}
-		RoomFlag() {}
-		
-		public boolean isShowWhenEmpty() { return iShowWhenEmpty; }
-		
+
 		public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {
 			return (flags & flag()) != 0;
@@ -1317,22 +1341,21 @@ public class RoomInterface implements IsSerializable {
 	}
 	
 	public static enum RoomsPageMode implements IsSerializable {
-		COURSES("department:Managed", RoomFlag.SHOW_TYPE, RoomFlag.SHOW_CAPACITY, RoomFlag.SHOW_AREA, RoomFlag.SHOW_AVAILABILITY, RoomFlag.SHOW_DEPARTMENTS, RoomFlag.SHOW_FEATURES, RoomFlag.SHOW_GROUPS),
-		EXAMS("department:Managed", RoomFlag.SHOW_TYPE, RoomFlag.SHOW_CAPACITY, RoomFlag.SHOW_EXAM_CAPACITY, RoomFlag.SHOW_AREA,
-				RoomFlag.SHOW_EXAM_TYPES, RoomFlag.SHOW_EXAM_CAPACITY, RoomFlag.SHOW_PERIOD_PREFERENCES, RoomFlag.SHOW_FEATURES, RoomFlag.SHOW_GROUPS),
-		EVENTS("flag:Events department:Managed", RoomFlag.SHOW_TYPE, RoomFlag.SHOW_CAPACITY, RoomFlag.SHOW_AREA, RoomFlag.SHOW_EVENT_AVAILABILITY, RoomFlag.SHOW_EVENT_DEPARTMENT, RoomFlag.SHOW_EVENT_STATUS,
-				RoomFlag.SHOW_EVENT_MESSAGE, RoomFlag.SHOW_FEATURES, RoomFlag.SHOW_GROUPS),
+		COURSES("department:Managed", RoomsColumn.NAME, RoomsColumn.TYPE, RoomsColumn.CAPACITY, RoomsColumn.AREA, RoomsColumn.AVAILABILITY, RoomsColumn.DEPARTMENTS, RoomsColumn.FEATURES, RoomsColumn.GROUPS),
+		EXAMS("department:Managed", RoomsColumn.NAME, RoomsColumn.TYPE, RoomsColumn.CAPACITY, RoomsColumn.EXAM_CAPACITY, RoomsColumn.AREA, RoomsColumn.EXAM_TYPES, RoomsColumn.PERIOD_PREF, RoomsColumn.FEATURES, RoomsColumn.GROUPS),
+		EVENTS("flag:Events department:Managed", RoomsColumn.NAME, RoomsColumn.TYPE, RoomsColumn.CAPACITY, RoomsColumn.AREA, RoomsColumn.EVENT_DEPARTMENT, RoomsColumn.EVENT_AVAILABILITY,
+				RoomsColumn.EVENT_STATUS, RoomsColumn.EVENT_MESSAGE, RoomsColumn.BREAK_TIME, RoomsColumn.FEATURES, RoomsColumn.GROUPS), 
 		;
 		private String iQuery;
-		private int iFlags;
-		RoomsPageMode(String query, RoomFlag... flags) {
+		private int iColumns;
+		RoomsPageMode(String query, RoomsColumn... column) {
 			iQuery = query;
-			iFlags = 0;
-			for (RoomFlag f: flags) iFlags += f.flag();
+			iColumns = 0;
+			for (RoomsColumn f: column) iColumns += f.flag();
 		}
 		
 		public String getQuery() { return iQuery; }
-		public int getFlags() { return iFlags; }
+		public int getColumns() { return iColumns; }
 	}
 	
 	public static class RoomFilterRpcRequest extends org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest {

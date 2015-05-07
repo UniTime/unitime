@@ -45,9 +45,10 @@ import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
-import org.unitime.timetable.gwt.shared.RoomInterface.RoomFlag;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesRequest;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingDisplayMode;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
 import com.google.gwt.aria.client.Roles;
@@ -230,6 +231,86 @@ public class RoomsPage extends Composite {
 					first = false;
 				}
 				
+				MenuBar orientation = null;
+				if (!RoomCookie.getInstance().isGridAsText() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.PERIOD_PREF) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
+					if (orientation == null) orientation = new MenuBar(true);
+					MenuItem item = new MenuItem(MESSAGES.opOrientationAsText(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							RoomCookie.getInstance().setOrientation(true, RoomCookie.getInstance().areRoomsHorizontal());
+							iRoomsTable.refreshTable();
+						}
+					});
+					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationAsText());
+					orientation.addItem(item);
+				}
+				if (RoomCookie.getInstance().isGridAsText() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.PERIOD_PREF) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
+					if (orientation == null) orientation = new MenuBar(true);
+					MenuItem item = new MenuItem(MESSAGES.opOrientationAsGrid(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							RoomCookie.getInstance().setOrientation(false, RoomCookie.getInstance().areRoomsHorizontal());
+							iRoomsTable.refreshTable();
+						}
+					});
+					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationAsGrid());
+					orientation.addItem(item);
+				}
+				if (!RoomCookie.getInstance().isGridAsText() && RoomCookie.getInstance().areRoomsHorizontal() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
+					if (orientation == null) orientation = new MenuBar(true);
+					MenuItem item = new MenuItem(MESSAGES.opOrientationVertical(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							RoomCookie.getInstance().setOrientation(false, false);
+							iRoomsTable.refreshTable();
+						}
+					});
+					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationVertical());
+					orientation.addItem(item);
+				}
+				if (!RoomCookie.getInstance().isGridAsText() && !RoomCookie.getInstance().areRoomsHorizontal() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
+					if (orientation == null) orientation = new MenuBar(true);
+					MenuItem item = new MenuItem(MESSAGES.opOrientationHorizontal(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							RoomCookie.getInstance().setOrientation(false, true);
+							iRoomsTable.refreshTable();
+						}
+					});
+					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationHorizontal());
+					orientation.addItem(item);
+				}
+				if (iProperties != null && iProperties.hasModes() && !RoomCookie.getInstance().isGridAsText()) {
+					boolean firstMode = true;
+					for (final RoomSharingDisplayMode mode: iProperties.getModes()) {
+						if (!mode.toHex().equals(RoomCookie.getInstance().getMode())) {
+							if (orientation == null) orientation = new MenuBar(true);
+							else if (firstMode) orientation.addSeparator();
+							firstMode = false;
+							MenuItem item = new MenuItem(mode.getName(), true, new Command() {
+								@Override
+								public void execute() {
+									popup.hide();
+									RoomCookie.getInstance().setMode(RoomCookie.getInstance().areRoomsHorizontal(), mode.toHex());
+									iRoomsTable.refreshTable();
+								}
+							});
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), mode.getName());
+							orientation.addItem(item);
+						}
+					}
+				}
+				if (orientation != null) {
+					MenuItem columns = new MenuItem(MESSAGES.opOrientation(), orientation);
+					columns.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(columns);
+					first = false;
+				};
+				
 				for (final Operation op: iRoomsTable.getOtherOperations()) {
 					MenuItem item = new MenuItem(op.getName(), true, new Command() {
 						@Override
@@ -280,7 +361,9 @@ public class RoomsPage extends Composite {
 					iFilter.setValue(History.getToken(), true);
 				else
 					iFilter.setValue(RoomCookie.getInstance().getHash(iMode), true);
-				iRoomsTable.setFeatureTypes(iProperties.getFeatureTypes());
+				if (!RoomCookie.getInstance().hasOrientation())
+					RoomCookie.getInstance().setOrientation(iProperties.isGridAsText(), iProperties.isHorizontal());
+				iRoomsTable.setProperties(iProperties);
 			}
 		});
 		
@@ -344,17 +427,17 @@ public class RoomsPage extends Composite {
 	protected String query(String format) {
 		RoomCookie cookie = RoomCookie.getInstance();
 		int flags = cookie.getFlags(iMode);
-		for (RoomFlag f: RoomFlag.values())
-			if (!f.isShowWhenEmpty() && !f.in(iRoomsTable.getFlags()))
+		for (RoomsColumn f: RoomsColumn.values())
+			if (iRoomsTable.hasShowHideOperation(f) && !f.in(iRoomsTable.getFlags()))
 				flags = f.clear(flags);
 		if (iProperties != null) 
 			for (int i = 0; i < iProperties.getFeatureTypes().size(); i++) {
-				int flag = (1 << (RoomFlag.values().length + i));
+				int flag = (1 << (RoomsColumn.values().length + i));
 				if ((flags & flag) == 0 && (iRoomsTable.getFlags() & flag) == 0)
 					flags += flag;
 			}
 		String query = "output=" + format + "&flags=" + flags + "&sort=" + cookie.getRoomsSortBy() +
-				"&horizontal=" + (cookie.areRoomsHorizontal() ? "1" : "0") + (cookie.hasMode() ? "&mode=" + cookie.getMode() : "") +
+				"&orientation=" + (cookie.isGridAsText() ? "text" : cookie.areRoomsHorizontal() ? "horizontal" : "vertical") + (cookie.hasMode() ? "&mode=" + cookie.getMode() : "") +
 				"&dm=" + cookie.getDeptMode();
 		if (iProperties.getAcademicSessionId() != null)
 			query += "&sid=" + iProperties.getAcademicSessionId();

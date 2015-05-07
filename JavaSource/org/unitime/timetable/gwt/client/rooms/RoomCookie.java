@@ -22,7 +22,7 @@ package org.unitime.timetable.gwt.client.rooms;
 import java.util.Date;
 
 import org.unitime.timetable.gwt.resources.GwtConstants;
-import org.unitime.timetable.gwt.shared.RoomInterface.RoomFlag;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
 import com.google.gwt.core.client.GWT;
@@ -39,14 +39,15 @@ public class RoomCookie {
 	private String[] iHash = null;
 	private int iSortRoomsBy = 0;
 	private int iDeptMode = 1;
-	private boolean iRoomsHorizontal = true;
+	private Boolean iGridAsText = null;
+	private Boolean iHorizontal = null;
 	private String iMode = "";
 	
 	private RoomCookie() {
 		iFlags = new int[RoomsPageMode.values().length];
 		iHash = new String[RoomsPageMode.values().length];
 		for (int i = 0; i < iFlags.length; i++) {
-			iFlags[i] = RoomsPageMode.values()[i].getFlags();
+			iFlags[i] = RoomsPageMode.values()[i].getColumns();
 			iHash[i] = RoomsPageMode.values()[i].getQuery();
 		}
 		try {
@@ -55,8 +56,7 @@ public class RoomCookie {
 				String[] params = cookie.split("\\|");
 				int idx = 0;
 				iSortRoomsBy = Integer.valueOf(params[idx++]);
-				iRoomsHorizontal = !"F".equals(params[idx++]);
-				iMode = params[idx++];
+				setOrientation(params[idx++]);
 				iDeptMode = Integer.valueOf(params[idx++]);
 				for (int i = 0; i < iFlags.length; i++) {
 					iFlags[i] = Integer.parseInt(params[idx++]);
@@ -68,12 +68,45 @@ public class RoomCookie {
 	}
 	
 	private void save() {
-		String cookie = iSortRoomsBy + "|" + (iRoomsHorizontal ? "T" : "F") + "|" + iMode + "|" + iDeptMode;
+		String cookie = iSortRoomsBy + "|" + getOrientation() + "|" + iDeptMode;
 		for (int i = 0; i < iFlags.length; i++) {
 			cookie += "|" + iFlags[i] + "|" + (iHash[i] == null ? "" : iHash[i]);
 		}
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Room", cookie, expires);
+	}
+	
+	private void setOrientation(String parameter) {
+		if (parameter == null || parameter.isEmpty()) {
+			iGridAsText = null;
+			iHorizontal = null;
+			iMode = "";
+		} else {
+			switch (parameter.charAt(0)) {
+			case 'a': iHorizontal = null; iGridAsText = true; break;
+			case 'h': iHorizontal = true; iGridAsText = true; break;
+			case 'v': iHorizontal = false; iGridAsText = true; break;
+			case 'A': iHorizontal = null; iGridAsText = false; break;
+			case 'H': iHorizontal = true; iGridAsText = false; break;
+			case 'V': iHorizontal = false; iGridAsText = false; break;
+			case 'b': iHorizontal = true; iGridAsText = null; break;
+			case 'B': iHorizontal = false; iGridAsText = null; break;
+			default: iHorizontal = null; iGridAsText = null;
+			}
+			iMode = parameter.substring(1);
+		}
+	}
+	
+	private String getOrientation() {
+		char orientation = 'X';
+		if (iGridAsText == null) {
+			orientation = (iHorizontal == null ? 'X' : iHorizontal.booleanValue() ? 'b' : 'B');
+		} else if (iGridAsText.booleanValue()) {
+			orientation = (iHorizontal == null ? 'a' : iHorizontal.booleanValue() ? 'h' : 'v');
+		} else {
+			orientation = (iHorizontal == null ? 'A' : iHorizontal.booleanValue() ? 'H' : 'V');
+		}
+		return orientation + (iMode == null ? "" : iMode);
 	}
 	
 	public static RoomCookie getInstance() { 
@@ -82,17 +115,17 @@ public class RoomCookie {
 		return sInstance;
 	}
 	
-	public boolean get(RoomsPageMode mode, RoomFlag f) { return f.in(iFlags[mode.ordinal()]); }
-	public void set(RoomsPageMode mode, RoomFlag f, boolean value) {
+	public boolean get(RoomsPageMode mode, RoomsColumn f) { return f.in(iFlags[mode.ordinal()]); }
+	public void set(RoomsPageMode mode, RoomsColumn f, boolean value) {
 		iFlags[mode.ordinal()] = (value ? f.set(iFlags[mode.ordinal()]) : f.clear(iFlags[mode.ordinal()]));
 		save();
 	}
 	public boolean get(RoomsPageMode mode, int ftIndex) {
-		int flag = (1 << (RoomFlag.values().length + ftIndex));
+		int flag = (1 << (RoomsColumn.values().length + ftIndex));
 		return (iFlags[mode.ordinal()] & flag) == 0;
 	}
 	public void set(RoomsPageMode mode, int ftIndex, boolean value) {
-		int flag = (1 << (RoomFlag.values().length + ftIndex));
+		int flag = (1 << (RoomsColumn.values().length + ftIndex));
 		boolean in = ((iFlags[mode.ordinal()] & flag) != 0);
 		if (!value && !in)
 			iFlags[mode.ordinal()] += flag;
@@ -125,11 +158,20 @@ public class RoomCookie {
 	}
 	
 	public boolean areRoomsHorizontal() {
-		return iRoomsHorizontal;
+		return iHorizontal == null ? false : iHorizontal.booleanValue();
 	}
 	
-	public void setRoomsHorizontal(boolean roomsHorizontal) {
-		iRoomsHorizontal = roomsHorizontal;
+	public boolean isGridAsText() {
+		return iGridAsText == null ? false : iGridAsText.booleanValue();
+	}
+	
+	public boolean hasOrientation() {
+		return iHorizontal != null && iGridAsText != null;
+	}
+	
+	public void setOrientation(boolean gridAsText, boolean horizontal) {
+		iGridAsText = gridAsText;
+		iHorizontal = horizontal;
 		save();
 	}
 	
@@ -138,12 +180,12 @@ public class RoomCookie {
 	}
 	
 	public boolean hasMode() {
-		return !iMode.isEmpty();
+		return iMode != null && !iMode.isEmpty();
 	}
 	
 	public void setMode(boolean horizontal, String mode) {
-		iRoomsHorizontal = horizontal;
-		iMode = (mode == null ? "" : mode);
+		iMode = mode;
+		iHorizontal = horizontal;
 		save();
 	}
 	

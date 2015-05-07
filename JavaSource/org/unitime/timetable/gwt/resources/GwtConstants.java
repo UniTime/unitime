@@ -239,4 +239,13 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue("#0.0###")
 	String roomCoordinateFormat();
+	
+	@DefaultStringValue("square feet")
+	String roomAreaUnitsLong();
+
+	@DefaultStringValue("ft&sup2;")
+	String roomAreaUnitsShort();
+	
+	@DefaultStringValue("ft2;")
+	String roomAreaUnitsShortPlainText();
 }

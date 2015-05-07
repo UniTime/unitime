@@ -44,9 +44,10 @@ import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
-import org.unitime.timetable.gwt.shared.RoomInterface.RoomFlag;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertyInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
 import com.google.gwt.aria.client.Roles;
@@ -77,7 +78,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private int iFlags = 0;
-	private RoomsComparator.Column iSortBy = null;
+	private RoomsColumn iSortBy = null;
 	private boolean iAsc = true;
 	private RoomsPageMode iMode = null;
 	private String iDepartment = null;
@@ -85,7 +86,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	private List<Operation> iShowHideOperations = new ArrayList<Operation>();
 	private List<Operation> iDepartmentOperations = new ArrayList<Operation>();
 	private List<Operation> iOtherOperations = new ArrayList<Operation>();
-	private List<FeatureTypeInterface> iFeatureTypes = null;
+	private RoomPropertiesInterface iProperties = null;
 	private int iFirstFeatureTypeColumn = -1;
 	
 	public RoomsTable(RoomsPageMode mode) {
@@ -93,113 +94,56 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		iMode = mode;
 
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
-		
-		UniTimeTableHeader hName = new UniTimeTableHeader(MESSAGES.colName());
-		header.add(hName);
-		
-		UniTimeTableHeader hType = new UniTimeTableHeader(MESSAGES.colType());
-		header.add(hType);
-		
-		UniTimeTableHeader hCapacity = new UniTimeTableHeader(MESSAGES.colCapacity(), HasHorizontalAlignment.ALIGN_RIGHT);
-		header.add(hCapacity);
-		
-		UniTimeTableHeader hExamCapacity = new UniTimeTableHeader(MESSAGES.colExaminationCapacity(), HasHorizontalAlignment.ALIGN_RIGHT);
-		header.add(hExamCapacity);
-		
-		UniTimeTableHeader hArea = new UniTimeTableHeader(MESSAGES.colArea(), HasHorizontalAlignment.ALIGN_RIGHT);
-		header.add(hArea);
-		
-		UniTimeTableHeader hCoordinates = new UniTimeTableHeader(MESSAGES.colCoordinates());
-		header.add(hCoordinates);
-		
-		UniTimeTableHeader hDistances = new UniTimeTableHeader(MESSAGES.colDistances());
-		header.add(hDistances);
-		
-		UniTimeTableHeader hRoomCheck = new UniTimeTableHeader(MESSAGES.colRoomCheck());
-		header.add(hRoomCheck);
-		
-		UniTimeTableHeader hPreference = new UniTimeTableHeader(MESSAGES.colPreference());
-		header.add(hPreference);
-		
-		UniTimeTableHeader hMap = new UniTimeTableHeader(MESSAGES.colMap());
-		header.add(hMap);
-		
-		UniTimeTableHeader hPictures = new UniTimeTableHeader(MESSAGES.colPictures());
-		header.add(hPictures);
-
-		UniTimeTableHeader hAvailability = new UniTimeTableHeader(MESSAGES.colAvailability());
-		header.add(hAvailability);
-		
-		UniTimeTableHeader hDepartments = new UniTimeTableHeader(MESSAGES.colDepartments());
-		header.add(hDepartments);
-		
-		UniTimeTableHeader hControl = new UniTimeTableHeader(MESSAGES.colControl());
-		header.add(hControl);
-		
-		UniTimeTableHeader hExamTypes = new UniTimeTableHeader(MESSAGES.colExamTypes());
-		header.add(hExamTypes);
-		
-		UniTimeTableHeader hPeriodPrefs = new UniTimeTableHeader(MESSAGES.colPeriodPreferences());
-		header.add(hPeriodPrefs);
-		
-		UniTimeTableHeader hEventDepartment = new UniTimeTableHeader(MESSAGES.colEventDepartment());
-		header.add(hEventDepartment);
-		
-		UniTimeTableHeader hEventStatus = new UniTimeTableHeader(MESSAGES.colEventStatus());
-		header.add(hEventStatus);
-		
-		UniTimeTableHeader hEventAvailability = new UniTimeTableHeader(MESSAGES.colEventAvailability());
-		header.add(hEventAvailability);
-		
-		UniTimeTableHeader hEventMessage = new UniTimeTableHeader(MESSAGES.colEventMessage());
-		header.add(hEventMessage);
-		
-		UniTimeTableHeader hBreakTime = new UniTimeTableHeader(MESSAGES.colBreakTime());
-		header.add(hBreakTime);
-		
-		UniTimeTableHeader hGroups = new UniTimeTableHeader(MESSAGES.colGroups());
-		header.add(hGroups);
-		
-		UniTimeTableHeader hFeatures = new UniTimeTableHeader(MESSAGES.colFeatures());
-		header.add(hFeatures);
+		for (RoomsColumn column: RoomsColumn.values()) {
+			UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(column), getColumnAlignment(column));
+			header.add(h);
+		}
 		
 		addRow(null, header);
-				
-		addHideOperation(hType, RoomFlag.SHOW_TYPE);
-		addHideOperation(hCapacity, RoomFlag.SHOW_CAPACITY);
-		addHideOperation(hExamCapacity, RoomFlag.SHOW_EXAM_CAPACITY);
-		addHideOperation(hArea, RoomFlag.SHOW_AREA);
-		addHideOperation(hCoordinates, RoomFlag.SHOW_COORDINATES);
-		addHideOperation(hDistances, RoomFlag.SHOW_IGNORE_DISTANCES);
-		addHideOperation(hRoomCheck, RoomFlag.SHOW_IGNORE_ROOM_CHECK);
-		addHideOperation(hPreference, RoomFlag.SHOW_PREFERENCE);
-		addHideOperation(hMap, RoomFlag.SHOW_MAP);
-		addHideOperation(hPictures, RoomFlag.SHOW_PICTURE);
-		addHideOperation(hAvailability, RoomFlag.SHOW_AVAILABILITY);
-		addHideOperation(hDepartments, RoomFlag.SHOW_DEPARTMENTS);
-		addHideOperation(hControl, RoomFlag.SHOW_CONTROLLING_DEPARTMENT);
-		addHideOperation(hExamTypes, RoomFlag.SHOW_EXAM_TYPES);
-		addHideOperation(hPeriodPrefs, RoomFlag.SHOW_PERIOD_PREFERENCES);
-		addHideOperation(hEventDepartment, RoomFlag.SHOW_EVENT_DEPARTMENT);
-		addHideOperation(hEventStatus, RoomFlag.SHOW_EVENT_STATUS);
-		addHideOperation(hEventAvailability, RoomFlag.SHOW_EVENT_AVAILABILITY);
-		addHideOperation(hEventMessage, RoomFlag.SHOW_EVENT_MESSAGE);
-		addHideOperation(hBreakTime, RoomFlag.SHOW_BREAK_TIME);
-		addHideOperation(hGroups, RoomFlag.SHOW_GROUPS);
-		addHideOperation(hFeatures, RoomFlag.SHOW_FEATURES);
+		
+		for (final RoomsColumn column: RoomsColumn.values()) {
+			UniTimeTableHeader h = header.get(column.ordinal());
+			if (hasShowHideOperation(column)) {
+				Operation op = new AriaOperation() {
+					@Override
+					public void execute() {
+						boolean visible = isColumnVisible(column.ordinal());
+						setColumnVisible(column.ordinal(), !visible);
+						RoomCookie.getInstance().set(iMode, column, !visible);
+					}
+					@Override
+					public boolean isApplicable() {
+						return column.in(iFlags);
+					}
+					@Override
+					public boolean hasSeparator() { 
+						return false;
+					}
+					@Override
+					public String getName() { return isColumnVisible(column.ordinal()) ? MESSAGES.opHide(getColumnName(column).replace("<br>", " ")) : MESSAGES.opShow(getColumnName(column).replace("<br>", " ")); }
+					@Override
+					public String getAriaLabel() { return isColumnVisible(column.ordinal()) ? ARIA.opHide(getColumnName(column).replace("<br>", " ")) : ARIA.opShow(getColumnName(column).replace("<br>", " ")); }
+				};
+				iShowHideOperations.add(op);
+				if (column.ordinal() > 0) header.get(0).addOperation(op);
+				RoomsColumn g = getShowHideGroup(column);
+				if (g == null) {
+					h.addOperation(op);
+				} else {
+					for (RoomsColumn c: RoomsColumn.values()) {
+						if (g.equals(getShowHideGroup(c)))
+							header.get(c.ordinal()).addOperation(op);
+					}
+				}
+			}
+		}
 		
 		for (final DeptMode d: DeptMode.values()) {
 			Operation op = new Operation() {
 				@Override
 				public void execute() {
 					RoomCookie.getInstance().setDeptMode(d.ordinal());
-					for (int r = 1; r < getRowCount(); r++) {
-						for (int c = 0; c < getCellCount(r); c++) {
-							Widget w = getWidget(r, c);
-							if (w instanceof HasRefresh)
-								((HasRefresh)w).refresh();
-						}
-					}
+					refreshTable();
 				}
 				@Override
 				public boolean isApplicable() { 
@@ -218,22 +162,40 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				}
 			};
 			iDepartmentOperations.add(op);
-			hDepartments.addOperation(op);
-			hControl.addOperation(op);
-			hEventDepartment.addOperation(op);
+			for (RoomsColumn c: RoomsColumn.values()) {
+				if (hasDepartmentOperation(c))
+					header.get(c.ordinal()).addOperation(op);
+			}
 		}
 		
-		addSortByOperation(hName, RoomsComparator.Column.NAME);
-		addSortByOperation(hType, RoomsComparator.Column.TYPE);
-		addSortByOperation(hCapacity, RoomsComparator.Column.CAPACITY);
-		addSortByOperation(hExamCapacity, RoomsComparator.Column.EXAM_CAPACITY);
-		addSortByOperation(hDistances, RoomsComparator.Column.DISTANCE);
-		addSortByOperation(hRoomCheck, RoomsComparator.Column.ROOM_CHECK);
-		addSortByOperation(hControl, RoomsComparator.Column.CONTROL);
-		addSortByOperation(hEventDepartment, RoomsComparator.Column.EVENT_DEPT);
-		addSortByOperation(hEventStatus, RoomsComparator.Column.EVENT_STATUS);
-		addSortByOperation(hEventMessage, RoomsComparator.Column.EVENT_MESSAGE);
-		addSortByOperation(hBreakTime, RoomsComparator.Column.BREAK_TIME);
+		for (final RoomsColumn column: RoomsColumn.values()) {
+			if (RoomsComparator.isApplicable(column)) {
+				final UniTimeTableHeader h = header.get(column.ordinal());
+				Operation op = new SortOperation() {
+					@Override
+					public void execute() {
+						if (column == iSortBy) {
+							iAsc = !iAsc;
+						} else {
+							iSortBy = column;
+							iAsc = true;
+						}
+						RoomCookie.getInstance().setSortRoomsBy(getSortBy());
+						sort();
+					}
+					@Override
+					public boolean isApplicable() { return getRowCount() > 1 && h.isVisible(); }
+					@Override
+					public boolean hasSeparator() { return true; }
+					@Override
+					public String getName() { return MESSAGES.opSortBy(getColumnName()); }
+					@Override
+					public String getColumnName() { return h.getHTML().replace("<br>", " "); }
+				};
+				iSortOperations.add(op);
+				h.addOperation(op);
+			}
+		}
 		
 		addOperation(new Operation() {
 
@@ -289,14 +251,125 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		
 		resetVisibility();
 		setSortBy(RoomCookie.getInstance().getRoomsSortBy());
+		
+		setVisible(false);
 	}
 	
-	public void setFeatureTypes(List<FeatureTypeInterface> featureTypes) {
-		iFeatureTypes = featureTypes;
+	public String getColumnName(RoomsColumn column) {
+		switch (column) {
+		case NAME: return MESSAGES.colName();
+		case TYPE: return MESSAGES.colType();
+		case CAPACITY: return MESSAGES.colCapacity();
+		case EXAM_CAPACITY: return MESSAGES.colExaminationCapacity();
+		case AREA: return MESSAGES.colArea(CONSTANTS.roomAreaUnitsShort());
+		case COORDINATES: return MESSAGES.colCoordinates();
+		case DISTANCE_CHECK: return MESSAGES.colDistances();
+		case ROOM_CHECK: return MESSAGES.colRoomCheck();
+		case MAP: return MESSAGES.colMap();
+		case PICTURES: return MESSAGES.colPictures();
+		case PREFERENCE: return MESSAGES.colPreference();
+		case AVAILABILITY: return MESSAGES.colAvailability();
+		case DEPARTMENTS: return MESSAGES.colDepartments();
+		case CONTROL_DEPT: return MESSAGES.colControl();
+		case EXAM_TYPES: return MESSAGES.colExamTypes();
+		case PERIOD_PREF: return MESSAGES.colPeriodPreferences();
+		case EVENT_DEPARTMENT: return MESSAGES.colEventDepartment();
+		case EVENT_STATUS: return MESSAGES.colEventStatus();
+		case EVENT_AVAILABILITY: return MESSAGES.colEventAvailability();
+		case EVENT_MESSAGE: return MESSAGES.colEventMessage();
+		case BREAK_TIME: return MESSAGES.colBreakTime();
+		case FEATURES: return MESSAGES.colFeatures();
+		case GROUPS: return MESSAGES.colGroups();
+		default: return column.name();
+		}
+	}
+	
+	public void refreshTable() {
+		for (int r = 1; r < getRowCount(); r++) {
+			for (int c = 0; c < getCellCount(r); c++) {
+				Widget w = getWidget(r, c);
+				if (w instanceof HasRefresh)
+					((HasRefresh)w).refresh();
+			}
+		}
+	}
+	
+	protected HorizontalAlignmentConstant getColumnAlignment(RoomsColumn column) {
+		switch (column) {
+		case CAPACITY:
+		case EXAM_CAPACITY:
+		case AREA:
+			return HasHorizontalAlignment.ALIGN_RIGHT;
+		default:
+			return HasHorizontalAlignment.ALIGN_LEFT;
+		}
+	}
+	
+	protected boolean hasShowHideOperation(RoomsColumn column) {
+		switch (column) {
+		case NAME:
+			return false;
+		default:
+			return true;
+		}
+	}
+	
+	protected boolean hasDepartmentOperation(RoomsColumn column) {
+		switch (column) {
+		case DEPARTMENTS:
+		case CONTROL_DEPT:
+		case EVENT_DEPARTMENT:
+			return true;
+		default:
+			return false;
+		}
+	}
+	
+	protected RoomsColumn getShowHideGroup(RoomsColumn column) {
+		switch (column) {
+		case CAPACITY:
+		case EXAM_CAPACITY:
+		case AREA:
+		case COORDINATES:
+		case DISTANCE_CHECK:
+		case ROOM_CHECK:
+			return RoomsColumn.CAPACITY;
+		case PREFERENCE:
+		case AVAILABILITY:
+		case DEPARTMENTS:
+		case CONTROL_DEPT:
+			return RoomsColumn.PREFERENCE;
+		case EVENT_DEPARTMENT:
+		case EVENT_AVAILABILITY:
+		case EVENT_STATUS:
+		case EVENT_MESSAGE:
+		case BREAK_TIME:
+			return RoomsColumn.EVENT_DEPARTMENT;
+		case EXAM_TYPES:
+		case PERIOD_PREF:
+			return RoomsColumn.EXAM_TYPES;
+		default:
+			return null;
+		}
+	}
+	
+	protected boolean hasFeatureTypes() {
+		return iProperties != null && iProperties.getFeatureTypes() != null && !iProperties.getFeatureTypes().isEmpty();
+	}
+	
+	protected int countFeatureTypes() {
+		return iProperties == null ? 0 : iProperties.getFeatureTypes().size();
+	}
+	
+	protected FeatureTypeInterface getFeatureType(int index) {
+		return iProperties.getFeatureTypes().get(index);
+	}
+	
+	protected void setupFeatureTypes() {
 		iFirstFeatureTypeColumn = getCellCount(0);
 		SmartTableRow<RoomDetailInterface> smartRow = getSmartRow(0);
-		for (int i = 0; i < iFeatureTypes.size(); i++) {
-			FeatureTypeInterface type = iFeatureTypes.get(i);
+		for (int i = 0; i < countFeatureTypes(); i++) {
+			FeatureTypeInterface type = getFeatureType(i);
 			final UniTimeTableHeader header = new UniTimeTableHeader(type.getAbbreviation());
 			final int column = i + iFirstFeatureTypeColumn;
 			
@@ -306,7 +379,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			setWidget(0, column, cell);
 			Roles.getColumnheaderRole().set(getCellFormatter().getElement(0, column));
 			
-			final int flag = (1 << (RoomFlag.values().length + i));
+			final int flag = (1 << (RoomsColumn.values().length + i));
 			final int ftIdx = i;
 			Operation op = new AriaOperation() {
 				@Override
@@ -328,12 +401,17 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				@Override
 				public String getAriaLabel() { return isColumnVisible(header.getColumn()) ? ARIA.opHide(header.getHTML().replace("<br>", " ")) : ARIA.opShow(header.getHTML().replace("<br>", " ")); }
 			};
-			iShowHideOperations.add(op);
-			getHeader(MESSAGES.colName()).addOperation(op);
+			getHeader(MESSAGES.colName()).getOperations().add(iShowHideOperations.size(), op);
 			getHeader(MESSAGES.colFeatures()).addOperation(op);
+			iShowHideOperations.add(op);
 			header.addOperation(op);
 			setColumnVisible(column, false);
 		}
+	}
+	
+	public void setProperties(RoomPropertiesInterface properties) {
+		iProperties = properties;
+		setupFeatureTypes();
 	}
 	
 	public List<Operation> getSortOperations() {
@@ -375,10 +453,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			iSortBy = null;
 			iAsc = true;
 		} else if (sortBy > 0) {
-			iSortBy = RoomsComparator.Column.values()[sortBy - 1];
+			iSortBy = RoomsColumn.values()[sortBy - 1];
 			iAsc = true;
 		} else {
-			iSortBy = RoomsComparator.Column.values()[-1 - sortBy];
+			iSortBy = RoomsColumn.values()[-1 - sortBy];
 			iAsc = false;
 		}
 		sort();
@@ -389,384 +467,181 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		getHeader(MESSAGES.colName()).addOperation(op);
 	}
 	
-	protected void addSortByOperation(final UniTimeTableHeader header, final RoomsComparator.Column sortBy) {
-		Operation op = new SortOperation() {
-			@Override
-			public void execute() {
-				if (header.getOrder() != null)
-					iAsc = !header.getOrder();
-				else
-					iAsc = true;
-				iSortBy = sortBy;
-				RoomCookie.getInstance().setSortRoomsBy(getSortBy());
-				sort();
-			}
-			@Override
-			public boolean isApplicable() { return getRowCount() > 1 && header.isVisible(); }
-			@Override
-			public boolean hasSeparator() { return true; }
-			@Override
-			public String getName() { return MESSAGES.opSortBy(getColumnName()); }
-			@Override
-			public String getColumnName() { return header.getHTML().replace("<br>", " "); }
-		};
-		iSortOperations.add(op);
-		header.addOperation(op);
-	}
-	
 	public void sort() {
 		if (iSortBy == null) return;
-		UniTimeTableHeader header = null;
-		switch (iSortBy) {
-		case NAME:
-			header = getHeader(MESSAGES.colName()); 
-			break;
-		case TYPE:
-			header = getHeader(MESSAGES.colType()); 
-			break;
-		case CAPACITY:
-			header = getHeader(MESSAGES.colCapacity()); 
-			break;
-		case EXAM_CAPACITY:
-			header = getHeader(MESSAGES.colExaminationCapacity()); 
-			break;
-		case DISTANCE:
-			header = getHeader(MESSAGES.colDistances()); 
-			break;
-		case ROOM_CHECK:
-			header = getHeader(MESSAGES.colRoomCheck()); 
-			break;
-		case CONTROL:
-			header = getHeader(MESSAGES.colControl()); 
-			break;
-		case EVENT_DEPT:
-			header = getHeader(MESSAGES.colEventDepartment()); 
-			break;
-		case EVENT_STATUS:
-			header = getHeader(MESSAGES.colEventStatus()); 
-			break;
-		case EVENT_MESSAGE:
-			header = getHeader(MESSAGES.colEventMessage()); 
-			break;
-		case BREAK_TIME:
-			header = getHeader(MESSAGES.colBreakTime()); 
-			break;
-		}
+		UniTimeTableHeader header = getHeader(iSortBy.ordinal());
 		sort(header, new RoomsComparator(iSortBy, true), iAsc);
 	}
+
+	public void setDepartment(String department) { iDepartment = department; }
 	
-	protected Operation addHideOperation(final UniTimeTableHeader header, final RoomFlag flag, final Check separator) {
-		Operation op = new AriaOperation() {
-			@Override
-			public void execute() {
-				boolean visible = isColumnVisible(header.getColumn());
-				setColumnVisible(header.getColumn(), !visible);
-				RoomCookie.getInstance().set(iMode, flag, !visible);
+	protected Widget getCell(final RoomDetailInterface room, final RoomsColumn column) {
+		if (iProperties == null || !iProperties.isCanSeeCourses()) {
+			switch (column) {
+			case DISTANCE_CHECK:
+			case ROOM_CHECK:
+			case PREFERENCE:
+			case AVAILABILITY:
+			case DEPARTMENTS:
+			case CONTROL_DEPT:
+				return null;
 			}
-			@Override
-			public boolean isApplicable() {
-				if (!flag.isShowWhenEmpty())
-					return flag.in(iFlags);
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() { 
-				return separator != null && separator.isChecked();
-			}
-			@Override
-			public String getName() { return isColumnVisible(header.getColumn()) ? MESSAGES.opHide(header.getHTML().replace("<br>", " ")) : MESSAGES.opShow(header.getHTML().replace("<br>", " ")); }
-			@Override
-			public String getAriaLabel() { return isColumnVisible(header.getColumn()) ? ARIA.opHide(header.getHTML().replace("<br>", " ")) : ARIA.opShow(header.getHTML().replace("<br>", " ")); }
-		};
-		iShowHideOperations.add(op);
-		getHeader(MESSAGES.colName()).addOperation(op);
-		switch (flag) {
-		case SHOW_EVENT_AVAILABILITY:
-		case SHOW_EVENT_DEPARTMENT:
-		case SHOW_EVENT_MESSAGE:
-		case SHOW_EVENT_STATUS:
-		case SHOW_BREAK_TIME:
-			getHeader(MESSAGES.colEventAvailability()).addOperation(op);
-			getHeader(MESSAGES.colEventDepartment()).addOperation(op);
-			getHeader(MESSAGES.colEventMessage()).addOperation(op);
-			getHeader(MESSAGES.colEventStatus()).addOperation(op);
-			getHeader(MESSAGES.colBreakTime()).addOperation(op);
-			break;
-		case SHOW_CAPACITY:
-		case SHOW_EXAM_CAPACITY:
-		case SHOW_AREA:
-		case SHOW_COORDINATES:
-			getHeader(MESSAGES.colExaminationCapacity()).addOperation(op);
-			getHeader(MESSAGES.colCapacity()).addOperation(op);
-			getHeader(MESSAGES.colArea()).addOperation(op);
-			getHeader(MESSAGES.colCoordinates()).addOperation(op);
-			break;
-		case SHOW_DEPARTMENTS:
-		case SHOW_CONTROLLING_DEPARTMENT:
-		case SHOW_AVAILABILITY:
-			getHeader(MESSAGES.colDepartments()).addOperation(op);
-			getHeader(MESSAGES.colControl()).addOperation(op);
-			getHeader(MESSAGES.colAvailability()).addOperation(op);
-			break;
-		case SHOW_IGNORE_DISTANCES:
-		case SHOW_IGNORE_ROOM_CHECK:
-			getHeader(MESSAGES.colRoomCheck()).addOperation(op);
-			getHeader(MESSAGES.colDistances()).addOperation(op);
-			break;
-		case SHOW_PERIOD_PREFERENCES:
-		case SHOW_EXAM_TYPES:
-			getHeader(MESSAGES.colExaminationCapacity()).addOperation(op);
-			getHeader(MESSAGES.colExamTypes()).addOperation(op);
-			getHeader(MESSAGES.colPeriodPreferences()).addOperation(op);
-			break;
-		default:
-			header.addOperation(op);
 		}
-		return op;
-	}
-	
-	protected Operation addHideOperation(final UniTimeTableHeader header, final RoomFlag flag) {
-		return addHideOperation(header, flag, null);
-	}
-	
-	protected Integer getRow(Long roomId) {
-		for (int row = 1; row < getRowCount(); row++) {
-			RoomDetailInterface room = getData(row);
-			if (room != null && roomId.equals(room.getUniqueId())) return row;
+		if (iProperties == null || !iProperties.isCanSeeExams()) {
+			switch (column) {
+			case EXAM_TYPES:
+			case PERIOD_PREF:
+				return null;
+			}
+		}
+		if (iProperties == null || !iProperties.isCanSeeEvents()) {
+			switch (column) {
+			case EVENT_DEPARTMENT:
+			case EVENT_MESSAGE:
+			case EVENT_AVAILABILITY:
+			case EVENT_STATUS:
+			case BREAK_TIME:
+				return null;
+			}
+		}
+		switch (column) {
+		case NAME:
+			return new RoomNameCell(room);
+		
+		case TYPE:
+			return new Label(room.getRoomType().getLabel());
+			
+		case CAPACITY:
+			if (room.getCapacity() == null) return null;
+			return new IntegerCell(room.getCapacity());
+		
+		case EXAM_CAPACITY:
+			if (room.getExamCapacity() == null) return null;
+			return new IntegerCell(room.getExamCapacity());
+		
+		case AREA:
+			if (room.getArea() == null) return null;
+			return new RoomAreaCell(room.getArea());
+		
+		case COORDINATES:
+			if (!room.hasCoordinates()) return null;
+			return new Label(MESSAGES.coordinates(room.getX(), room.getY()));
+			
+		case DISTANCE_CHECK:
+			return new Image(!room.isIgnoreTooFar() ? RESOURCES.on() : RESOURCES.off());
+		
+		case ROOM_CHECK:
+			return new Image(!room.isIgnoreRoomCheck() ? RESOURCES.on() : RESOURCES.off());
+		
+		case PREFERENCE:
+			boolean hasPreferences = false;
+			for (DepartmentInterface department: room.getDepartments())
+				if (department.getPreference() != null) {
+					hasPreferences = true; break;
+				}
+			if (hasPreferences)
+				return new PreferenceCell(room.getDepartments());
+			else
+				return null;
+		
+		case MAP:
+			if (!room.hasMiniMapUrl()) return null;
+			return new MapCell(room);
+		
+		case PICTURES:
+			if (!room.hasPictures()) return null;
+			return new PicturesCell(room);
+		
+		case AVAILABILITY:
+			if (room.getAvailability() == null) return null;
+			return new AvailabilityCell(room, false);
+			
+		case DEPARTMENTS:
+			return new DepartmentCell(room.getDepartments(), room.getControlDepartment());
+		
+		case CONTROL_DEPT:
+			return new DepartmentCell(room.getControlDepartment());
+		
+		case EXAM_TYPES:
+			return new ExamTypesCell(room.getUniqueId(), room.getExamTypes());
+		
+		case PERIOD_PREF:
+			if (room.getPeriodPreference() == null) return null;
+			if (iDepartment != null && room.hasExamTypes())
+				for (ExamTypeInterface type: room.getExamTypes())
+					if (iDepartment.equals(type.getReference()))
+						return new PeriodPreferenceCell(room, type);
+			return null;
+		
+		case EVENT_DEPARTMENT:
+			if (room.getEventDepartment() == null) return null;
+			final DepartmentCell edc = new DepartmentCell(room.getEventDepartment());
+			if (room.isCanSeeEventAvailability()) {
+				edc.addMouseOverHandler(new MouseOverHandler() {
+					@Override
+					public void onMouseOver(MouseOverEvent event) {
+						RoomSharingHint.showHint(edc.getElement(), room.getUniqueId(), true);
+					}
+				});
+				edc.addMouseOutHandler(new MouseOutHandler() {
+					@Override
+					public void onMouseOut(MouseOutEvent event) {
+						RoomSharingHint.hideHint();
+					}
+				});
+			}
+			return edc;
+		
+		case EVENT_STATUS:
+			if (room.getEventStatus() != null || room.getDefaultEventStatus() != null)
+				return new StatusCell(room.getEventStatus(), room.getDefaultEventStatus());
+			else
+				return null;
+		
+		case EVENT_AVAILABILITY:
+			if (room.getEventAvailability() == null) return null;
+			return new AvailabilityCell(room, true);
+		
+		case EVENT_MESSAGE:
+			if (room.hasEventNote() || room.hasDefaultEventNote())
+				return new NoteCell(room.getEventNote(), room.getDefaultEventNote());
+			else
+				return null;
+			
+		case BREAK_TIME:
+			if (room.getBreakTime() != null || room.getDefaultBreakTime() != null)
+				return new BreakTimeCell(room.getBreakTime(), room.getDefaultBreakTime());
+			else
+				return null;
+		
+		case GROUPS:
+			if (room.getGroups().isEmpty()) return null;
+			return new GroupsCell(room.getGroups());
+
+		case FEATURES:
+			List<FeatureInterface> features = room.getFeatures(null);
+			if (features.isEmpty()) return null;
+			return new FeaturesCell(features);
 		}
 		return null;
 	}
 	
-	public void setDepartment(String department) { iDepartment = department; }
-	
 	public int addRoom(final RoomDetailInterface room) {
-		RoomCookie cookie = RoomCookie.getInstance();
-		
 		List<Widget> widgets = new ArrayList<Widget>();
-		final Label roomLabel = new Label(room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel());
-		roomLabel.addMouseOverHandler(new MouseOverHandler() {
-			@Override
-			public void onMouseOver(MouseOverEvent event) {
-				RoomHint.showHint(roomLabel.getElement(), room.getUniqueId(), room.getPrefix(), room.getProperty("distance", null), true);
+		
+		for (RoomsColumn column: RoomsColumn.values()) {
+			Widget cell = getCell(room, column);
+			if (cell == null) {
+				cell = new P();
+			} else if (hasShowHideOperation(column)) {
+				show(column);
 			}
-		});
-		roomLabel.addMouseOutHandler(new MouseOutHandler() {
-			@Override
-			public void onMouseOut(MouseOutEvent event) {
-				RoomHint.hideHint();
-			}
-		});
-		if (iDepartment != null) {
-			for (DepartmentInterface d: room.getDepartments()) {
-				if (iDepartment.equals(d.getDeptCode()) && d.getPreference() != null) {
-					roomLabel.getElement().getStyle().setColor(d.getPreference().getColor());
-					room.setPrefix(d.getPreference().getName());
-				}
-			}
+			widgets.add(cell);
 		}
-		widgets.add(roomLabel);
-		
-		widgets.add(new Label(room.getRoomType().getLabel()));
-		
-		widgets.add(new IntegerCell(room.getCapacity()));
-		widgets.add(new IntegerCell(room.getExamCapacity()));
-		if (room.getExamCapacity() != null) show(RoomFlag.SHOW_EXAM_CAPACITY);
-		
-		widgets.add(new RoomAreaCell(room.getArea()));
-		if (room.getArea() != null) show(RoomFlag.SHOW_AREA);
-		
-		widgets.add(new Label(room.hasCoordinates() ? MESSAGES.coordinates(room.getX(), room.getY()) : ""));
-		if (room.hasCoordinates()) show(RoomFlag.SHOW_COORDINATES);
-		
-		widgets.add(new Image(!room.isIgnoreTooFar() ? RESOURCES.on() : RESOURCES.off()));
-		widgets.add(new Image(!room.isIgnoreRoomCheck() ? RESOURCES.on() : RESOURCES.off()));
-		
-		widgets.add(new PreferenceCell(room.getDepartments()));
-		if (room.hasPreference(iDepartment)) show(RoomFlag.SHOW_PREFERENCE);
-		
-		widgets.add(new MapCell(room));
-		if (room.hasMiniMapUrl()) show(RoomFlag.SHOW_MAP);
-		
-		widgets.add(new PicturesCell(room));
-		if (room.hasPictures()) show(RoomFlag.SHOW_PICTURE);
-		
-		if (room.getAvailability() != null) {
-			final HTML availability = new HTML(room.getAvailability());
-			availability.addMouseOverHandler(new MouseOverHandler() {
-				@Override
-				public void onMouseOver(MouseOverEvent event) {
-					RoomSharingHint.showHint(availability.getElement(), room.getUniqueId(), false);
-				}
-			});
-			availability.addMouseOutHandler(new MouseOutHandler() {
-				@Override
-				public void onMouseOut(MouseOutEvent event) {
-					RoomSharingHint.hideHint();
-				}
-			});
-			if (room.getRoomSharingNote() != null && !room.getRoomSharingNote().isEmpty()) {
-				P p = new P();
-				p.add(availability);
-				P note = new P("note");
-				note.setHTML(room.getRoomSharingNote());
-				note.setTitle(room.getRoomSharingNote());
-				p.add(note);
-				widgets.add(p);
-			} else {
-				widgets.add(availability);
-			}
-		} else if (room.isCanSeeAvailability()) {
-			final Image availability = new Image(GWT.getHostPageBaseURL() + "pattern?loc=" + room.getUniqueId() + "&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
-			availability.addMouseOverHandler(new MouseOverHandler() {
-				@Override
-				public void onMouseOver(MouseOverEvent event) {
-					RoomSharingHint.showHint(availability.getElement(), room.getUniqueId(), false);
-				}
-			});
-			availability.addMouseOutHandler(new MouseOutHandler() {
-				@Override
-				public void onMouseOut(MouseOutEvent event) {
-					RoomSharingHint.hideHint();
-				}
-			});
-			if (room.getRoomSharingNote() != null && !room.getRoomSharingNote().isEmpty()) {
-				P p = new P();
-				p.add(availability);
-				P note = new P("note");
-				note.setHTML(room.getRoomSharingNote());
-				note.setTitle(room.getRoomSharingNote());
-				p.add(note);
-				widgets.add(p);
-			} else {
-				widgets.add(availability);
-			}
-		}
-		
-		widgets.add(new DepartmentCell(room.getDepartments(), room.getControlDepartment()));
-		widgets.add(new DepartmentCell(room.getControlDepartment()));
-		
-		widgets.add(new ExamTypesCell(room.getUniqueId(), room.getExamTypes()));
-		if (!room.getExamTypes().isEmpty()) show(RoomFlag.SHOW_EXAM_TYPES);
-		
-		Widget periodPrefs = null;
-		if (room.getPeriodPreference() != null) {
-			final HTML availability = new HTML(room.getPeriodPreference());
-			for (final ExamTypeInterface t: room.getExamTypes()) {
-				if (t.getReference().equals(iDepartment)) {
-					availability.addMouseOverHandler(new MouseOverHandler() {
-						@Override
-						public void onMouseOver(MouseOverEvent event) {
-							PeriodPreferencesHint.showHint(availability.getElement(), room.getUniqueId(), t.getId());
-						}
-					});
-					availability.addMouseOutHandler(new MouseOutHandler() {
-						@Override
-						public void onMouseOut(MouseOutEvent event) {
-							PeriodPreferencesHint.hideHint();
-						}
-					});
-					break;
-				}
-			}
-			periodPrefs = availability;
-			show(RoomFlag.SHOW_PERIOD_PREFERENCES);
-		} else {
-			for (final ExamTypeInterface t: room.getExamTypes()) {
-				if (t.getReference().equals(iDepartment)) {
-					final Image pattern = new Image(GWT.getHostPageBaseURL() + "pattern?loc=" + room.getUniqueId() + "&xt=" + t.getId() + "&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
-					show(RoomFlag.SHOW_PERIOD_PREFERENCES);
-					pattern.addMouseOverHandler(new MouseOverHandler() {
-						@Override
-						public void onMouseOver(MouseOverEvent event) {
-							PeriodPreferencesHint.showHint(pattern.getElement(), room.getUniqueId(), t.getId());
-						}
-					});
-					pattern.addMouseOutHandler(new MouseOutHandler() {
-						@Override
-						public void onMouseOut(MouseOutEvent event) {
-							PeriodPreferencesHint.hideHint();
-						}
-					});
-					periodPrefs = pattern; break;
-				}
-			}
-		}
-		widgets.add(periodPrefs == null ? new Label("") : periodPrefs);
-		
-		final DepartmentCell edc = new DepartmentCell(room.getEventDepartment());
-		if (room.getEventDepartment() != null && room.isCanSeeEventAvailability()) {
-			edc.addMouseOverHandler(new MouseOverHandler() {
-				@Override
-				public void onMouseOver(MouseOverEvent event) {
-					RoomSharingHint.showHint(edc.getElement(), room.getUniqueId(), true);
-				}
-			});
-			edc.addMouseOutHandler(new MouseOutHandler() {
-				@Override
-				public void onMouseOut(MouseOutEvent event) {
-					RoomSharingHint.hideHint();
-				}
-			});
-			show(RoomFlag.SHOW_EVENT_DEPARTMENT);
-		}
-		widgets.add(edc);
-		
-		widgets.add(new StatusCell(room.getEventStatus(), room.getDefaultEventStatus()));
-		if (room.getEventStatus() != null || room.getDefaultEventStatus() != null) show(RoomFlag.SHOW_EVENT_STATUS);
-		
-		Widget eventAvail = null;
-		if (room.getEventAvailability() != null) {
-			final HTML availability = new HTML(room.getEventAvailability());
-			availability.addMouseOverHandler(new MouseOverHandler() {
-				@Override
-				public void onMouseOver(MouseOverEvent event) {
-					RoomSharingHint.showHint(availability.getElement(), room.getUniqueId(), true);
-				}
-			});
-			availability.addMouseOutHandler(new MouseOutHandler() {
-				@Override
-				public void onMouseOut(MouseOutEvent event) {
-					RoomSharingHint.hideHint();
-				}
-			});
-			eventAvail = availability;
-			show(RoomFlag.SHOW_EVENT_AVAILABILITY);
-		} else if (room.isCanSeeEventAvailability()) {
-			final Image availability = new Image(GWT.getHostPageBaseURL() + "pattern?loc=" + room.getUniqueId() + "&e=1&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
-			availability.addMouseOverHandler(new MouseOverHandler() {
-				@Override
-				public void onMouseOver(MouseOverEvent event) {
-					RoomSharingHint.showHint(availability.getElement(), room.getUniqueId(), true);
-				}
-			});
-			availability.addMouseOutHandler(new MouseOutHandler() {
-				@Override
-				public void onMouseOut(MouseOutEvent event) {
-					RoomSharingHint.hideHint();
-				}
-			});
-			eventAvail = availability;
-			show(RoomFlag.SHOW_EVENT_AVAILABILITY);
-		}
-		widgets.add(eventAvail == null ? new Label("") : eventAvail);
-		
-		widgets.add(new NoteCell(room.getEventNote(), room.getDefaultEventNote()));
-		if (room.hasEventNote() || room.hasDefaultEventNote()) show(RoomFlag.SHOW_EVENT_MESSAGE);
-		
-		widgets.add(new BreakTimeCell(room.getBreakTime(), room.getDefaultBreakTime()));
-		if (room.getBreakTime() != null) show(RoomFlag.SHOW_BREAK_TIME);
-		
-		List<GroupInterface> groups = room.getGroups();
-		widgets.add(new GroupsCell(groups));
-		if (!groups.isEmpty()) show(RoomFlag.SHOW_GROUPS);
-		
-		List<FeatureInterface> features = room.getFeatures(null);
-		widgets.add(new FeaturesCell(features));
-		if (!features.isEmpty()) show(RoomFlag.SHOW_FEATURES);
 
-		if (iFeatureTypes != null)
-			for (int i = 0; i < iFeatureTypes.size(); i++) {
-				FeatureTypeInterface type = iFeatureTypes.get(i);
+		if (hasFeatureTypes())
+			for (int i = 0; i < countFeatureTypes(); i++) {
+				FeatureTypeInterface type = getFeatureType(i);
 				List<FeatureInterface> featuresOfType = room.getFeatures(type);
 				widgets.add(new FeaturesCell(featuresOfType));
 				if (!featuresOfType.isEmpty()) show(i);
@@ -776,77 +651,28 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		getRowFormatter().setStyleName(row, "row");
 		for (int col = 0; col < getCellCount(row); col++)
 			getCellFormatter().setStyleName(row, col, "cell");
+		
+		if (!isVisible()) setVisible(true);
+		
 		return row;
 	}
 	
-	protected int getColumn(RoomFlag flag) {
-		switch (flag) {
-		case SHOW_AREA:
-			return getHeader(MESSAGES.colArea()).getColumn();
-		case SHOW_AVAILABILITY:
-			return getHeader(MESSAGES.colAvailability()).getColumn();
-		case SHOW_BREAK_TIME:
-			return getHeader(MESSAGES.colBreakTime()).getColumn();
-		case SHOW_CAPACITY:
-			return getHeader(MESSAGES.colCapacity()).getColumn();
-		case SHOW_CONTROLLING_DEPARTMENT:
-			return getHeader(MESSAGES.colControl()).getColumn();
-		case SHOW_COORDINATES:
-			return getHeader(MESSAGES.colCoordinates()).getColumn();
-		case SHOW_PREFERENCE:
-			return getHeader(MESSAGES.colPreference()).getColumn();
-		case SHOW_DEPARTMENTS:
-			return getHeader(MESSAGES.colDepartments()).getColumn();
-		case SHOW_EVENT_AVAILABILITY:
-			return getHeader(MESSAGES.colEventAvailability()).getColumn();
-		case SHOW_EVENT_DEPARTMENT:
-			return getHeader(MESSAGES.colEventDepartment()).getColumn();
-		case SHOW_EVENT_MESSAGE:
-			return getHeader(MESSAGES.colEventMessage()).getColumn();
-		case SHOW_EVENT_STATUS:
-			return getHeader(MESSAGES.colEventStatus()).getColumn();
-		case SHOW_EXAM_CAPACITY:
-			return getHeader(MESSAGES.colExaminationCapacity()).getColumn();
-		case SHOW_EXAM_TYPES:
-			return getHeader(MESSAGES.colExamTypes()).getColumn();
-		case SHOW_FEATURES:
-			return getHeader(MESSAGES.colFeatures()).getColumn();
-		case SHOW_GROUPS:
-			return getHeader(MESSAGES.colGroups()).getColumn();
-		case SHOW_IGNORE_DISTANCES:
-			return getHeader(MESSAGES.colDistances()).getColumn();
-		case SHOW_IGNORE_ROOM_CHECK:
-			return getHeader(MESSAGES.colRoomCheck()).getColumn();
-		case SHOW_PERIOD_PREFERENCES:
-			return getHeader(MESSAGES.colPeriodPreferences()).getColumn();
-		case SHOW_MAP:
-			return getHeader(MESSAGES.colMap()).getColumn();
-		case SHOW_PICTURE:
-			return getHeader(MESSAGES.colPictures()).getColumn();
-		default:
-			return 0;
-		}
-	}
-	
 	protected void resetVisibility() {
-		RoomCookie cookie = RoomCookie.getInstance();
-		for (RoomFlag flag: RoomFlag.values()) {
-			setColumnVisible(getColumn(flag), cookie.get(iMode, flag) && flag.isShowWhenEmpty());
+		for (RoomsColumn column: RoomsColumn.values()) {
+			setColumnVisible(column.ordinal(), !hasShowHideOperation(column));
 		}
-		if (iFeatureTypes != null)
-			for (int i = 0; i < iFeatureTypes.size(); i++)
+		if (hasFeatureTypes())
+			for (int i = 0; i < countFeatureTypes(); i++)
 				setColumnVisible(iFirstFeatureTypeColumn + i, false);
 	}
 	
-	protected void show(RoomFlag f) {
-		int col = getColumn(f);
-		if (RoomCookie.getInstance().get(iMode, f) && !isColumnVisible(col)) setColumnVisible(col, true);
-		if (!f.isShowWhenEmpty())
-			iFlags = f.set(iFlags);
+	protected void show(RoomsColumn column) {
+		if (RoomCookie.getInstance().get(iMode, column) && !isColumnVisible(column.ordinal())) setColumnVisible(column.ordinal(), true);
+		iFlags = column.set(iFlags);
 	}
 	
 	protected void show(int ftIdx) {
-		int flag = (1 << (RoomFlag.values().length + ftIdx));
+		int flag = (1 << (RoomsColumn.values().length + ftIdx));
 		if (RoomCookie.getInstance().get(iMode, ftIdx) && !isColumnVisible(iFirstFeatureTypeColumn + ftIdx)) setColumnVisible(iFirstFeatureTypeColumn + ftIdx, true);
 		if ((iFlags & flag) == 0)
 			iFlags += flag;
@@ -857,26 +683,13 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		super.clearTable(headerRows);
 		resetVisibility();
 		iFlags = 0;
+		setVisible(false);
 	}
 	
 	public int getFlags() { return iFlags; }
 	
-	public static class WaitingCell extends Image implements UniTimeTable.HasColSpan, UniTimeTable.HasCellAlignment {
-		private int iColSpan;
-		public WaitingCell(int colspan) {
-			super(RESOURCES.loading_small());
-			iColSpan = colspan;
-		}
-
-		@Override
-		public int getColSpan() {
-			return iColSpan;
-		}
-
-		@Override
-		public HorizontalAlignmentConstant getCellAlignment() {
-			return HasHorizontalAlignment.ALIGN_CENTER;
-		}
+	public boolean isVisible(RoomsColumn column) {
+		return isColumnVisible(column.ordinal());
 	}
 	
 	public static class IntegerCell extends Label implements UniTimeTable.HasCellAlignment, UniTimeTable.HasColSpan, TakesValue<Integer> {
@@ -904,6 +717,32 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		@Override
 		public int getColSpan() {
 			return 1;
+		}
+	}
+	
+	class RoomNameCell extends Label {
+		RoomNameCell(final RoomDetailInterface room) {
+			super(room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel());
+			addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					RoomHint.showHint(RoomNameCell.this.getElement(), room.getUniqueId(), room.getPrefix(), room.getProperty("distance", null), true);
+				}
+			});
+			addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					RoomHint.hideHint();
+				}
+			});
+			if (iDepartment != null && iProperties != null && iProperties.isCanSeeCourses()) {
+				for (DepartmentInterface d: room.getDepartments()) {
+					if (iDepartment.equals(d.getDeptCode()) && d.getPreference() != null) {
+						getElement().getStyle().setColor(d.getPreference().getColor());
+						room.setPrefix(d.getPreference().getName());
+					}
+				}
+			}
 		}
 	}
 	
@@ -943,7 +782,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			for (Map.Entry<FeatureInterface, P> e: iFeatures.entrySet()) {
 				P p = e.getValue();
 				FeatureInterface feature = e.getKey();
-				if (feature.getType() == null && feature.getDepartment() != null)
+				if (feature.getDepartment() != null)
 					p.setText(feature.getLabel() + " (" + RoomsTable.toString(feature.getDepartment()) + ")");
 			}
 		}
@@ -1159,6 +998,102 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				setStyleName("map");
 				setUrl(room.getMiniMapUrl());
 				setTitle(MESSAGES.titleRoomMap(room.getLabel()));
+			}
+		}
+	}
+	
+	public static class AvailabilityCell extends P implements HasRefresh {
+		private boolean iEvents;
+		private RoomDetailInterface iRoom;
+		
+		public AvailabilityCell(RoomDetailInterface room, boolean events) {
+			super("availability");
+			iRoom = room;
+			iEvents = events;
+			addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					RoomSharingHint.showHint(getElement(), iRoom.getUniqueId(), iEvents);
+				}
+			});
+			addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					RoomSharingHint.hideHint();
+				}
+			});
+			refresh();
+		}
+		
+		@Override
+		public void refresh() {
+			clear(); setHTML("");
+			RoomCookie cookie = RoomCookie.getInstance();
+			if (iEvents) {
+				if (cookie.isGridAsText()) {
+					if (iRoom.getEventAvailability() != null) {
+						P p = new P("text");
+						p.setHTML(iRoom.getEventAvailability());
+						add(p);
+					}
+				} else {
+					Image availability = new Image(GWT.getHostPageBaseURL() + "pattern?loc=" + iRoom.getUniqueId() + "&e=1&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
+					availability.setStyleName("grid");
+					add(availability);
+				}
+			} else {
+				if (cookie.isGridAsText()) {
+					if (iRoom.getAvailability() != null && !iRoom.getAvailability().isEmpty()) {
+						P p = new P("text");
+						p.setHTML(iRoom.getAvailability());
+						add(p);
+					}
+				} else {
+					Image availability = new Image(GWT.getHostPageBaseURL() + "pattern?loc=" + iRoom.getUniqueId() + "&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
+					availability.setStyleName("grid");
+					add(availability);
+				}
+				if (iRoom.getRoomSharingNote() != null && !iRoom.getRoomSharingNote().isEmpty()) {
+					P p = new P("note");
+					p.setHTML(iRoom.getRoomSharingNote());
+					p.setTitle(iRoom.getRoomSharingNote());
+					add(p);
+				}
+			}
+		}
+	}
+	
+	public static class PeriodPreferenceCell extends P implements HasRefresh {
+		private RoomDetailInterface iRoom;
+		private ExamTypeInterface iType;
+		
+		public PeriodPreferenceCell(RoomDetailInterface room, ExamTypeInterface type) {
+			super("periodpref");
+			iRoom = room; iType = type;
+			addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					PeriodPreferencesHint.showHint(getElement(), iRoom.getUniqueId(), iType.getId());
+				}
+			});
+			addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					RoomSharingHint.hideHint();
+				}
+			});
+			refresh();
+		}
+		
+		@Override
+		public void refresh() {
+			clear(); setHTML("");
+			RoomCookie cookie = RoomCookie.getInstance();
+			if (cookie.isGridAsText() || !iType.isFinal()) {
+				if (iRoom.getPeriodPreference() != null)
+					setHTML(iRoom.getPeriodPreference());
+			} else {
+				add(new Image(GWT.getHostPageBaseURL() + "pattern?loc=" + iRoom.getUniqueId() + "&xt=" + iType.getId() + "&v=1" + (cookie.hasMode() ? "&s=" + cookie.getMode() : "")));
 			}
 		}
 	}
