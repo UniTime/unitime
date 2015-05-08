@@ -292,7 +292,7 @@ public class UserAuthentication implements UserAuthenticationProvider {
 			iPanel.setHint(MESSAGES.userHintLookup());
 			iPanel.setAriaLabel(ARIA.userAuthenticatedLookup(getUser()));
 		} else {
-			iPanel.setHint(iGuest ? MESSAGES.userHintLogin() : MESSAGES.userHintLogout());
+			iPanel.setHint(iGuest || getUser() == null ? MESSAGES.userHintLogin() : MESSAGES.userHintLogout());
 			iPanel.setAriaLabel(iGuest || getUser() == null ? ARIA.userGuest() : ARIA.userAuthenticated(getUser()));
 		}
 	}

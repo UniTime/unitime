@@ -36,6 +36,12 @@
 				<line>Avoid conversion of a binary object to utf-8 and back.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistant: Authentication</name>
+			<description>
+				<line>When authentication is required but the user login dialog is not allowed: fixed the case when the Login page was not loaded at times.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
