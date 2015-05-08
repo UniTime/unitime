@@ -782,6 +782,7 @@ public class RoomInterface implements IsSerializable {
 	public static class RoomDetailInterface extends FilterRpcResponse.Entity {
 		private static final long serialVersionUID = 1L;
 		
+		private String iExternalId;
 		private BuildingInterface iBuilding;
 		private RoomTypeInterface iRoomType;
 		private Integer iCapacity, iExamCapacity;
@@ -801,8 +802,9 @@ public class RoomInterface implements IsSerializable {
 				iCanChangeRoomProperties = false, iCanChangeEventProperties = false, iCanChangePicture = false, iCanChangePreferences = false,
 				iCanChangeGroups = false, iCanChangeFeatures = false, iCanChangeEventAvailability = false;
 		private boolean iCanDelete = false;
-		private String iMiniMapUrl = null;
+		private String iMiniMapUrl = null, iMapUrl = null;
 		private List<RoomPictureInterface> iPictures = null;
+		private String iLastChange = null;
 		
 		public RoomDetailInterface() {}
 		
@@ -822,6 +824,10 @@ public class RoomInterface implements IsSerializable {
 				setCapacity(Integer.valueOf(capacity));
 		}
 		
+		public String getExternalId() { return iExternalId; }
+		public boolean hasExternalId() { return iExternalId != null && !iExternalId.isEmpty(); }
+		public void setExternalId(String externalId) { iExternalId = externalId; }
+		
 		public String getLabel() { return getName(); }
 		
 		public String getDisplayName() { return getAbbreviation(); }
@@ -839,6 +845,20 @@ public class RoomInterface implements IsSerializable {
 		public List<GroupInterface> getGroups() { return iGroups; }
 		public void addGroup(GroupInterface group) { iGroups.add(group); }
 		public boolean hasGroups() { return iGroups != null && !iGroups.isEmpty(); }
+		public List<GroupInterface> getGlobalGroups() {
+			List<GroupInterface> groups = new ArrayList<GroupInterface>();
+			if (iGroups != null)
+				for (GroupInterface group: iGroups)
+					if (group.getDepartment() == null) groups.add(group);
+			return groups;
+		}
+		public List<GroupInterface> getDepartmentalGroups(Long departmentId) {
+			List<GroupInterface> groups = new ArrayList<GroupInterface>();
+			if (iGroups != null)
+				for (GroupInterface group: iGroups)
+					if (group.getDepartment() != null && (departmentId == null || departmentId.equals(group.getDepartment().getId()))) groups.add(group);
+			return groups;
+		}
 		
 		public boolean hasControlDepartment() { return iControlDepartment != null; }
 		public DepartmentInterface getControlDepartment() { return iControlDepartment; }
@@ -881,6 +901,12 @@ public class RoomInterface implements IsSerializable {
 			for (DepartmentInterface d: getDepartments()) {
 				if (!d.getDeptCode().equals(deptCode) && d.getPreference() != null) return true;
 			}
+			return false;
+		}
+		
+		public boolean hasPreference() {
+			for (DepartmentInterface d: getDepartments())
+				if (d.getPreference() != null) return true;
 			return false;
 		}
 		
@@ -990,6 +1016,10 @@ public class RoomInterface implements IsSerializable {
 		public void setMiniMapUrl(String miniMapUrl) { iMiniMapUrl = miniMapUrl; }
 		public boolean hasMiniMapUrl() { return iMiniMapUrl != null && !iMiniMapUrl.isEmpty(); }
 		
+		public String getMapUrl() { return iMapUrl; }
+		public void setMapUrl(String MapUrl) { iMapUrl = MapUrl; }
+		public boolean hasMapUrl() { return iMapUrl != null && !iMapUrl.isEmpty(); }
+		
 		public boolean hasPictures() { return iPictures != null && !iPictures.isEmpty(); }
 		public void addPicture(RoomPictureInterface picture) {
 			if (iPictures == null)
@@ -997,6 +1027,10 @@ public class RoomInterface implements IsSerializable {
 			iPictures.add(picture);
 		}
 		public List<RoomPictureInterface> getPictures() { return iPictures; }
+		
+		public String getLastChange() { return iLastChange; }
+		public boolean hasLastChange() { return iLastChange != null && !iLastChange.isEmpty(); }
+		public void setLastChange(String lastChange) { iLastChange = lastChange; }
 	}
 	
 	public static class RoomDetailsRequest implements GwtRpcRequest<GwtRpcResponseList<RoomDetailInterface>> {
@@ -1242,6 +1276,7 @@ public class RoomInterface implements IsSerializable {
 		private boolean iCanSeeCourses = false, iCanSeeExams = false, iCanSeeEvents = false;
 		private boolean iGridAsText = false, iHorizontal = false;
 		private List<RoomSharingDisplayMode> iModes;
+		private String iEllipsoid = null;
 		
 		public RoomPropertiesInterface() {}
 		
@@ -1300,10 +1335,15 @@ public class RoomInterface implements IsSerializable {
 		}
 
 		public boolean hasModes() { return iModes != null && !iModes.isEmpty(); }
+		
+		public String getEllipsoid() { return iEllipsoid; }
+		public boolean hasEllipsoid() { return iEllipsoid != null & !iEllipsoid.isEmpty(); }
+		public void setEllipsoid(String ellipsoid) { iEllipsoid = ellipsoid; }
 	}
 	
 	public static enum RoomsColumn {
 		NAME,
+		EXTERNAL_ID,
 		TYPE,
 		CAPACITY,
 		EXAM_CAPACITY,

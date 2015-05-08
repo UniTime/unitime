@@ -682,7 +682,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		}
 		
 		Set<String> ids = (options == null ? null : options.get("id"));
-		if (ids != null && !groups.isEmpty()) {
+		if (ids != null && !ids.isEmpty()) {
 			String list = "";
 			int id = 0;
 			for (String s: ids) {
@@ -690,7 +690,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				query.addParameter("id", "Xi" + id, s);
 				id++;
 			}
-			query.addWhere("id", "l.uniqueId in (" + ids + ")");
+			query.addWhere("id", "l.uniqueId in (" + list + ")");
 		}
 		
 		return query;

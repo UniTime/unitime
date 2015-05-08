@@ -21,6 +21,7 @@ package org.unitime.timetable.server.rooms;
 
 import java.util.TreeSet;
 
+import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
@@ -98,6 +99,9 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 			if (mode == null || mode.isEmpty()) break;
 			response.addMode(new RoomInterface.RoomSharingDisplayMode(mode));
 		}
+		
+		DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperty.DistanceEllipsoid.value());
+		response.setEllipsoid(ellipsoid.getEclipsoindName());
 		
 		return response;
 	}

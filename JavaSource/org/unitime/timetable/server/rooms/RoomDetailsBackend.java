@@ -28,6 +28,8 @@ import java.util.TreeSet;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.events.RoomFilterBackend;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -44,6 +46,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -169,6 +172,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		}
 		response.setCanDelete(context.hasPermission(location, Right.RoomDelete));
 		
+		response.setExternalId(location.getExternalUniqueId());
 		response.setRoomType(new RoomTypeInterface(location.getRoomType().getUniqueId(), location.getRoomType().getLabel(), location.getRoomType().isRoom()));
 		response.setX(location.getCoordinateX());
 		response.setY(location.getCoordinateY());
@@ -264,9 +268,22 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     				.replace("%y", location.getCoordinateY().toString())
     				.replace("%n", location.getLabel())
     				.replace("%i", location.getExternalUniqueId() == null ? "" : location.getExternalUniqueId()));
+    	String map = ApplicationProperty.RoomMapStatic.value();
+    	if (map != null && location.getCoordinateX() != null && location.getCoordinateY() != null)
+    		response.setMapUrl(map
+    				.replace("%x", location.getCoordinateX().toString())
+    				.replace("%y", location.getCoordinateY().toString())
+    				.replace("%n", location.getLabel())
+    				.replace("%i", location.getExternalUniqueId() == null ? "" : location.getExternalUniqueId()));
     	
     	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getPictures()))
     		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType()));
+    	
+    	if (context.hasPermission(Right.HasRole) && CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.DisplayLastChanges))) {
+    		ChangeLog lch = ChangeLog.findLastChange(location.getClass().getName(), location.getUniqueId(), null);
+            if (lch != null)
+            	response.setLastChange(lch.getShortLabel());
+    	}
     	
     	return response;
 	}
