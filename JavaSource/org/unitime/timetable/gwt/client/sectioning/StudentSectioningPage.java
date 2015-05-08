@@ -32,7 +32,6 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.URL;
@@ -78,17 +77,9 @@ public class StudentSectioningPage extends Composite {
 						if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired() || CONSTANTS.tryAuthenticationWhenGuest()) {
 							if (CONSTANTS.allowUserLogin())
 								userAuthentication.authenticate();
-							else if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired()) {
+							else if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired())
 								ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
-								Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
-									@Override
-									public boolean execute() {
-										if (userAuthentication.getUser() == null)
-											ToolBox.open(GWT.getHostPageBaseURL() + "login.do?target=" + URL.encodeQueryString(Window.Location.getHref()));
-										return true;
-									}
-								}, 1000);
-							} else
+							else
 								userAuthentication.authenticated(result);
 						} else {
 							userAuthentication.authenticated(result);
