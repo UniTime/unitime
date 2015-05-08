@@ -263,7 +263,14 @@ public class RoomNoteChanges extends Composite {
 	}
 	
 	public void insert(final RootPanel panel) {
-		iLocationId = Long.valueOf(panel.getElement().getInnerText());
+		load(Long.valueOf(panel.getElement().getInnerText()));
+		panel.getElement().setInnerText(null);
+		panel.add(this);
+		panel.setVisible(true);
+	}
+	
+	public void load(Long locationId) {
+		iLocationId = locationId;
 		if (LastChangesCookie.getInstance().getShowLastChanges()) {
 			refresh();
 		} else {
@@ -271,9 +278,6 @@ public class RoomNoteChanges extends Composite {
 			iHeader.clearMessage();
 			iHeader.setCollapsible(false);
 		}
-		panel.getElement().setInnerText(null);
-		panel.add(this);
-		panel.setVisible(true);
 	}
 	
 	public static class LastChangesCookie {

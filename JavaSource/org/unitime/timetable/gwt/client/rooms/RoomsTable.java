@@ -259,6 +259,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		switch (column) {
 		case NAME: return MESSAGES.colName();
 		case TYPE: return MESSAGES.colType();
+		case EXTERNAL_ID: return MESSAGES.colExternalId();
 		case CAPACITY: return MESSAGES.colCapacity();
 		case EXAM_CAPACITY: return MESSAGES.colExaminationCapacity();
 		case AREA: return MESSAGES.colArea(CONSTANTS.roomAreaUnitsShort());
@@ -327,6 +328,9 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	
 	protected RoomsColumn getShowHideGroup(RoomsColumn column) {
 		switch (column) {
+		case EXTERNAL_ID:
+		case TYPE:
+			return RoomsColumn.EXTERNAL_ID;
 		case CAPACITY:
 		case EXAM_CAPACITY:
 		case AREA:
@@ -489,6 +493,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		}
 		if (iProperties == null || !iProperties.isCanSeeExams()) {
 			switch (column) {
+			case EXAM_CAPACITY:
 			case EXAM_TYPES:
 			case PERIOD_PREF:
 				return null;
@@ -507,6 +512,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		switch (column) {
 		case NAME:
 			return new RoomNameCell(room);
+			
+		case EXTERNAL_ID:
+			if (!room.hasExternalId()) return null;
+			return new Label(room.getExternalId());
 		
 		case TYPE:
 			return new Label(room.getRoomType().getLabel());
@@ -1120,5 +1129,31 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	
 	public static interface HasRefresh {
 		public void refresh();
+	}
+	
+	public RoomDetailInterface getRoom(Long roomId) {
+		if (roomId == null) return null;
+		for (int i = 1; i < getRowCount(); i++) {
+			if (roomId.equals(getData(i).getUniqueId())) return getData(i);
+		}
+		return null;
+	}
+	
+	public RoomDetailInterface getPrevious(Long roomId) {
+		if (roomId == null) return null;
+		for (int i = 2; i < getRowCount(); i++) {
+			if (roomId.equals(getData(i).getUniqueId()))
+				return getData(i - 1);
+		}
+		return null;
+	}
+	
+	public RoomDetailInterface getNext(Long roomId) {
+		if (roomId == null) return null;
+		for (int i = 1; i < getRowCount() - 1; i++) {
+			if (roomId.equals(getData(i).getUniqueId()))
+				return getData(i + 1);
+		}
+		return null;
 	}
 }

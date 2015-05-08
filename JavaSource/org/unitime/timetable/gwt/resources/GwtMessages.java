@@ -707,6 +707,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
 	
+	@DefaultMessage("External Id")
+	String colExternalId();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -1069,6 +1072,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>R</u>efresh")
 	String buttonRefresh();
+	
+	@DefaultMessage("<u>E</u>dit Room")
+	String buttonEditRoom();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -1258,6 +1264,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Loading rooms...")
 	String waitLoadingRooms();
+	
+	@DefaultMessage("Loading room details...")
+	String waitLoadingRoomDetails();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -1435,6 +1444,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to load rooms: {0}")
 	String failedToLoadRooms(String reason);
+	
+	@DefaultMessage("Failed to load room details: {0}")
+	String failedToLoadRoomDetails(String reason);
 	
 	@DefaultMessage("Uncaught exception: {0}")
 	String failedUncaughtException(String reason);
@@ -2083,6 +2095,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Rooms")
 	String pageRooms();
+	
+	@DefaultMessage("Room Detail")
+	String pageRoomDetail();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -2545,6 +2560,54 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Parameters:")
 	String propParameters();
+	
+	@DefaultMessage("External Id:")
+	String propExternalId();
+	
+	@DefaultMessage("Capacity:")
+	String propCapacity();
+	
+	@DefaultMessage("Examination Seating Capacity:")
+	String propExamCapacity();
+	
+	@DefaultMessage("Controlling Department:")
+	String propControllingDepartment();
+	
+	@DefaultMessage("Coordinates:")
+	String propCoordinates();
+	
+	@DefaultMessage("Distance Check:")
+	String propDistanceCheck();
+	
+	@DefaultMessage("Room Check:")
+	String propRoomCheck();
+	
+	@DefaultMessage("Event Department:")
+	String propEventDepartment();
+	
+	@DefaultMessage("Event Status:")
+	String propEventStatus();
+	
+	@DefaultMessage("Event Message:")
+	String propEventNote();
+	
+	@DefaultMessage("Break Time:")
+	String propBreakTime();
+	
+	@DefaultMessage("Groups:")
+	String propGlobalGroups();
+	
+	@DefaultMessage("Department Groups:")
+	String propDepartmenalGroups();
+	
+	@DefaultMessage("Features:")
+	String propFeatures();
+	
+	@DefaultMessage("Preference:")
+	String propPreference();
+	
+	@DefaultMessage("{0} Preferences:")
+	String propExaminationPreferences(String problem);
 
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -2845,6 +2908,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Course Projections")
 	String headerCourseProjections();
+	
+	@DefaultMessage("Room Sharing")
+	String headerRoomSharing();
+	
+	@DefaultMessage("Examination Period Preferences")
+	String headerExaminationPeriodPreferences();
+	
+	@DefaultMessage("Event Availability")
+	String headerEventAvailability();
+	
+	@DefaultMessage("Room Pictures")
+	String headerRoomPictures();
 	
 	@DefaultMessage("The selected offering has no curricula.")
 	String offeringHasNoCurricula();
@@ -3259,6 +3334,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0,number,#0.0###}, {1,number,#0.0###}")
 	String coordinates(Double x, Double y);
+	
+	@DefaultMessage("{0,number,#0.0###}, {1,number,#0.0###}&nbsp;&nbsp;&nbsp;<i>{2}</i>")
+	String coordinatesWithEllipsoid(Double x, Double y, String ellipsoid);
 	
 	@DefaultMessage("{0} Examination Rooms")
 	String examinationRooms(String examTypeName);

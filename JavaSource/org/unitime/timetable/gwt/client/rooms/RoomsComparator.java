@@ -39,6 +39,10 @@ public class RoomsComparator implements Comparator<RoomDetailInterface> {
 		return compare(r1.getLabel(), r2.getLabel());
 	}
 	
+	public int compareByExternalId(RoomDetailInterface r1, RoomDetailInterface r2) {
+		return compare(r1.getExternalId(), r2.getExternalId());
+	}
+	
 	public int compareByType(RoomDetailInterface r1, RoomDetailInterface r2) {
 		return compare(r1.getRoomType().getLabel(), r2.getRoomType().getLabel());
 	}
@@ -85,6 +89,7 @@ public class RoomsComparator implements Comparator<RoomDetailInterface> {
 	protected int compareByColumn(RoomDetailInterface r1, RoomDetailInterface r2) {
 		switch (iColumn) {
 		case NAME: return compareByName(r1, r2);
+		case EXTERNAL_ID: return compareByExternalId(r1, r2);
 		case TYPE: return compareByType(r1, r2);
 		case CAPACITY: return compareByCapacity(r1, r2);
 		case EXAM_CAPACITY: return compareByExamCapacity(r1, r2);
@@ -131,6 +136,7 @@ public class RoomsComparator implements Comparator<RoomDetailInterface> {
 	public static boolean isApplicable(RoomsColumn column) {
 		switch (column) {
 		case NAME:
+		case EXTERNAL_ID:
 		case TYPE:
 		case CAPACITY:
 		case EXAM_CAPACITY:

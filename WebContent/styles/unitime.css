@@ -3689,3 +3689,10 @@ unitime-RoomSharingWidget .legend .blank {
 	max-width: 150px;
 	max-height: 100px;
 }
+
+.unitime-RoomDetail .picture {
+	border: 1px solid #9CB0CE;
+	max-width: 300px;
+	max-height: 200px;
+	margin: 2px;
+}
