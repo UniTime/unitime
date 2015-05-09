@@ -984,7 +984,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	public Long getEventId() { return iEvent == null ? null : iEvent.getId(); }
 	
 	public EventInterface.EventType getEventType() {
-		return (iEventType.isReadOnly() ? iEvent.getType() : EventType.valueOf(iEventType.getWidget().getValue(iEventType.getWidget().getSelectedIndex())));
+		return (iEventType.isReadOnly() ? iEvent.getType() : iEventType.getWidget().getSelectedIndex() < 0 ? null : EventType.valueOf(iEventType.getWidget().getValue(iEventType.getWidget().getSelectedIndex())));
 	}
 	
 	public boolean hasMainContactChanged() {
@@ -1200,6 +1200,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				event.setType(EventType.Special);
 			if (event.getType() == EventType.Course && !properties.isCanAddCourseEvent())
 				event.setType(EventType.Special);
+			if (event.getType() == EventType.Special && !properties.isCanAddSpecialEvent() && properties.isCanAddCourseEvent())
+				event.setType(EventType.Course);
 			// Remove all meetings and related objects
 			if (event.hasMeetings()) event.getMeetings().clear();
 			if (event.hasRelatedObjects()) event.getRelatedObjects().clear();
@@ -1273,10 +1275,12 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iSponsors.setSelectedIndex(0);
 		}
 		
+		boolean canAddSpecialEvent = (getProperties() == null ? false : getProperties().isCanAddSpecialEvent());
 		boolean canAddCourseEvent = (getProperties() == null ? false : getProperties().isCanAddCourseEvent());
 		boolean canAddUnavailableEvent = (getProperties() == null ? false : getProperties().isCanAddUnavailableEvent());
-		while (iEventType.getWidget().getItemCount() > 1)
-			iEventType.getWidget().removeItem(1);
+		iEventType.getWidget().clear();
+		if (canAddSpecialEvent)
+			iEventType.getWidget().addItem(EventInterface.EventType.Special.getName(CONSTANTS), EventInterface.EventType.Special.name());
 		if (canAddCourseEvent)
 			iEventType.getWidget().addItem(EventInterface.EventType.Course.getName(CONSTANTS), EventInterface.EventType.Course.name());
 		if (canAddUnavailableEvent)

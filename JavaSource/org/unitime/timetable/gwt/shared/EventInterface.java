@@ -1801,14 +1801,18 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean isCanLookupAdditionalContacts() { return iCanLookupAdditionalContacts; }
 		public void setCanLookupAdditionalContacts(boolean canLookupContacts) { iCanLookupAdditionalContacts = canLookupContacts; }
 
-		public boolean isCanAddEvent() { return iCanAddEvent; }
-		public void setCanAddEvent(boolean canAddEvent) { iCanAddEvent = canAddEvent; }
+		public boolean isCanAddSpecialEvent() { return iCanAddEvent; }
+		public void setCanAddSpecialEvent(boolean canAddEvent) { iCanAddEvent = canAddEvent; }
 
 		public boolean isCanAddCourseEvent() { return iCanAddCourseEvent; }
 		public void setCanAddCourseEvent(boolean canAddEvent) { iCanAddCourseEvent = canAddEvent; }
 		
 		public boolean isCanAddUnavailableEvent() { return iCanAddUnavailableEvent; }
 		public void setCanAddUnavailableEvent(boolean canAddEvent) { iCanAddUnavailableEvent = canAddEvent; }
+		
+		public boolean isCanAddEvent() {
+			return isCanAddSpecialEvent() || isCanAddCourseEvent() || isCanAddUnavailableEvent();
+		}
 		
 		public boolean isCanSetExpirationDate() { return iCanSetExpirationDate; }
 		public void setCanSetExpirationDate(boolean canSetExpirationDate) { iCanSetExpirationDate = canSetExpirationDate; }

@@ -89,6 +89,10 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			for (Session session: sessions)
 				if (context.hasPermissionAnyAuthority(session, Right.EventAddSpecial, new SimpleQualifier("Session", session.getUniqueId())))
 					preferred.add(session);
+				else if (context.hasPermissionAnyAuthority(session, Right.EventAddCourseRelated, new SimpleQualifier("Session", session.getUniqueId())))
+					preferred.add(session);
+				else if (context.hasPermissionAnyAuthority(session, Right.EventAddUnavailable, new SimpleQualifier("Session", session.getUniqueId())))
+					preferred.add(session);
 			if (!preferred.isEmpty()) {
 				Session defaultSession = UniTimeUserContext.defaultSession(preferred, null);
 				if (defaultSession != null) selected = defaultSession;
@@ -112,6 +116,10 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			if (context.hasPermissionAnyAuthority(session, Right.Events, new SimpleQualifier("Session", session.getUniqueId())))
 				acadSession.set(AcademicSession.Flag.HasEvents);
 			if (context.hasPermissionAnyAuthority(session, Right.EventAddSpecial, new SimpleQualifier("Session", session.getUniqueId())))
+				acadSession.set(AcademicSession.Flag.CanAddEvents);
+			else if (context.hasPermissionAnyAuthority(session, Right.EventAddCourseRelated, new SimpleQualifier("Session", session.getUniqueId())))
+				acadSession.set(AcademicSession.Flag.CanAddEvents);
+			else if (context.hasPermissionAnyAuthority(session, Right.EventAddUnavailable, new SimpleQualifier("Session", session.getUniqueId())))
 				acadSession.set(AcademicSession.Flag.CanAddEvents);
 			Session prev = null, next = null;
 			for (Session s: sessions) {

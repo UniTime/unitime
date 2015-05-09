@@ -504,7 +504,11 @@
 		<item name="Events" page="events" type="gwt"/>
 		<item name="Add Event" page="events#event=add" type="gwt">
 			<condition>
-				<hasPermission name="EventAddSpecial" authority="any"/>
+				<or>
+					<hasPermission name="EventAddSpecial" authority="any"/>
+					<hasPermission name="EventAddCourseRelated" authority="any"/>
+					<hasPermission name="EventAddUnavailable" authority="any"/>
+				</or>
 			</condition>
 		</item>
 		<item name="Room Availability" page="availability" type="gwt"/>
