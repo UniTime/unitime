@@ -79,8 +79,8 @@ public class DatePatternEditForm extends ActionForm {
 		if (getTypeInt()<0)
 			errors.add("type", new ActionMessage("errors.required", ""));
 		
-		if (getTypeInt()!=DatePattern.sTypeExtended && !iDepartmentIds.isEmpty())
-			errors.add("type", new ActionMessage("errors.generic", "Only extended pattern can contain relations with departments."));
+		if (getTypeInt()!=DatePattern.sTypeExtended && !iDepartmentIds.isEmpty() && getTypeInt()!=DatePattern.sTypePatternSet)
+			errors.add("type", new ActionMessage("errors.generic", "Only extended pattern and alternative pattern set can contain relations with departments."));
 		
 		if (getNumberOfWeeks() != null && !getNumberOfWeeks().isEmpty()) {
 			DecimalFormat df = new DecimalFormat("0.##", new DecimalFormatSymbols(Localization.getJavaLocale()));

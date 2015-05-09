@@ -460,6 +460,14 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     			"select distinct p from DatePattern as p where p.session.uniqueId=:sessionId" + (!includeExtended ? " and p.type!="+sTypeExtended : ""))
     			.setLong("sessionId",sessionId)
     			.setCacheable(true).list();
+    	
+    	if (!includeExtended) {
+    		for (Iterator<DatePattern> i = list.iterator(); i.hasNext(); ) {
+    			DatePattern p = i.next();
+    			if (p.getType() == sTypePatternSet && !p.getDepartments().isEmpty() && (department == null || !p.getDepartments().contains(department)))
+    				i.remove();
+    		}
+    	}
 
     	if (!includeExtended && department != null)
     		for (DatePattern dp: department.getDatePatterns()) {
