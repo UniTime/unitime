@@ -106,6 +106,7 @@ import org.unitime.timetable.onlinesectioning.basic.ListClasses;
 import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.DefaultCourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
@@ -2040,6 +2041,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	@Override
 	public void destroy() throws Exception {
 		CustomStudentEnrollmentHolder.release();
+		CustomCourseRequestsHolder.release();
 	}
 
 	@Override

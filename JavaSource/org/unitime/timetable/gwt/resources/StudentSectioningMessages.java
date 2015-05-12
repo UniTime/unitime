@@ -818,6 +818,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Failed to create enrollment provider: {0}")
 	String exceptionStudentEnrollmentProvider(String message);
 	
+	@DefaultMessage("Failed to create course request provider: {0}")
+	String exceptionCourseRequestProvider(String message);
+	
 	@DefaultMessage("Eligibility check failed: {0}")
 	String exceptionFailedEligibilityCheck(String message);
 	

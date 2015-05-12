@@ -28,6 +28,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
+import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -57,9 +58,15 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			action.setStudent(OnlineSectioningLog.Entity.newBuilder().setUniqueId(iStudentId));
 			XStudent student = server.getStudent(iStudentId);
 			if (student == null) return null;
-			CourseRequestInterface request = new CourseRequestInterface();
 			action.getStudentBuilder().setExternalId(student.getExternalId());
 			action.getStudentBuilder().setName(student.getName());
+
+			if (student.getRequests().isEmpty() && CustomCourseRequestsHolder.hasProvider()) {
+				CourseRequestInterface request = CustomCourseRequestsHolder.getProvider().getCourseRequests(server, helper, student);
+				if (request != null) return request;
+			}
+			
+			CourseRequestInterface request = new CourseRequestInterface();
 			request.setStudentId(iStudentId);
 			request.setSaved(true);
 			request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
