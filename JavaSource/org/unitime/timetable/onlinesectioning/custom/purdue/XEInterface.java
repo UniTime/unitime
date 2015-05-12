@@ -205,6 +205,55 @@ public class XEInterface {
 		}
 	}
 	
+	public static class DegreePlan {
+		public static final Type TYPE_LIST = new TypeToken<ArrayList<DegreePlan>>() {}.getType();
+		public String id;
+		public String description;
+		public Student student;
+		public CodeDescription degree;
+		public CodeDescription school;
+		
+		public List<Year> years;
+		
+	}
+	
+	public static class Student {
+		public String id;
+		public String name;
+	}
+	
+	public static class CodeDescription {
+		public String code;
+		public String description;
+	}
+	
+	public static class Year extends CodeDescription {
+		public List<Term> terms;
+	}
+	
+	public static class Term {
+		public String id;
+		public CodeDescription term;
+		public Group group;
+		
+	}
+	
+	public static class Group {
+		public CodeDescription groupType;
+		public List<Course> plannedClasses;
+		public List<Group> groups;
+		public String summaryDescription;
+		boolean isGroupSelection;
+	}
+	
+	public static class Course {
+		String id;
+		String title;
+		String courseNumber;
+		String courseDiscipline;
+		boolean isGroupSelection;
+	}
+	
 	public static class ErrorResponse {
 		public List<Error> errors;
 		
