@@ -260,7 +260,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			Location room = (Location)o[0];
 			Assignment a = (Assignment)o[1];
 			Assignment b = (Assignment)o[2];
-			if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
+			if (!room.isIgnoreRoomCheck() && a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
 				messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName(CONSTANTS.useAmPm())+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName(CONSTANTS.useAmPm())+" (room "+room.getLabel()+")");
 				isOK=false;
 			}
