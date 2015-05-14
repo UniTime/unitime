@@ -41,6 +41,14 @@
 				<line>When authentication is required but the user login dialog is not allowed: fixed the case when the Login page was not loaded at times.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Ignore Room Check</name>
+			<description>
+				<line>Improved handing of locations that have the ignore room check toggle set:
+					<line>No overlaps are checked in such locations during commit.</line>
+					<line>No committed placements (of other problems) nor other approved events are loaded as unavailabilities for such locations (ignore room check location is always available).</line>
+			</name>
+		</item>
 	</category>
 </release>
 
