@@ -1452,7 +1452,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private void loadRoomAvailabilities(org.hibernate.Session hibSession, String roomids) {
 		Query q = hibSession.createQuery("select distinct r.uniqueId, a from Location r inner join r.assignments as a "+
-				"where r.uniqueId in ("+roomids+") and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+")");
+				"where r.uniqueId in ("+roomids+") and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+") and r.ignoreRoomCheck = false");
 		q.setLong("sessionId",iSessionId.longValue());
 		for (Iterator i=q.iterate();i.hasNext();) {
 			Object[] x = (Object[])i.next();
@@ -3358,6 +3358,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         for (Enumeration e=iRooms.elements();e.hasMoreElements();) {
             RoomConstraint room = (RoomConstraint)e.nextElement();
             iProgress.incProgress();
+            if (!room.getConstraint()) continue;
             Collection<TimeBlock> times = getRoomAvailability(availability, room, startEnd[0], startEnd[1]);
             if (times==null) continue;
             for (TimeBlock time : times) {
