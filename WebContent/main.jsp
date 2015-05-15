@@ -110,7 +110,7 @@
 			</span>
     		<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
 			<span class="cell middle"><tt:copy/></span>
-			<span class="cell right"><tt:registration/></span>
+			<span class="cell right"><tt:registration update="true"/></span>
 		</span>
 	</span>
 	<tt:hasProperty name="tmtbl.page.disclaimer">
@@ -189,7 +189,7 @@
 				</span>
     			<%-- WARNING: Changing or removing the copyright notice will violate the license terms. If you need a different licensing, please contact us at support@unitime.org --%>
 				<span class="cell middle"><tt:copy/></span>
-				<span class="cell right"><tt:registration/></span>
+				<span class="cell right"><tt:registration update="true"/></span>
 			</span>
 		</span>
 		<tt:hasProperty name="tmtbl.page.disclaimer">

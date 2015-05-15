@@ -47,7 +47,14 @@
 				<line>Improved handing of locations that have the ignore room check toggle set:
 					<line>No overlaps are checked in such locations during commit.</line>
 					<line>No committed placements (of other problems) nor other approved events are loaded as unavailabilities for such locations (ignore room check location is always available).</line>
-			</name>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>UniTime Registration</name>
+			<description>
+				<line>Main page: fixed the ability to register the UniTime instance.</line>
+			</description>
 		</item>
 	</category>
 </release>
