@@ -43,6 +43,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
+import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.PlaceHolder;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
@@ -128,35 +129,52 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider {
 		return builder.build();
 	}
 	
+	protected boolean hasSelection(XEInterface.Group group) {
+		if ("CH".equals(group.groupType.code)) {
+			// choice group -- there is at least one course or group selected
+			for (XEInterface.Course course: group.plannedClasses)
+				if (course.isGroupSelection) return true;
+			for (XEInterface.Group g: group.groups)
+				if (hasSelection(g)) return true;
+			return false;
+		} else {
+			return group.isGroupSelection;
+		}
+	}
+	
 	protected void fillInRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, CourseRequestInterface request, XEInterface.Group group) {
 		if ("CH".equals(group.groupType.code)) {
-			// choice group -- pick one
-			CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-			OnlineSectioningLog.Request.Builder b = OnlineSectioningLog.Request.newBuilder().setPriority(request.getCourses().size()).setAlternative(false);
-			// try selected course(s) first
+			// choice group -- pick (at least) one
+			
+			// try selected courses and groups first
+			boolean hasSelection = false;
 			for (XEInterface.Course course: group.plannedClasses) {
 				if (course.isGroupSelection) {
 					XCourseId cid = getCourse(server, course);
 					if (cid == null) continue;
-					if (!r.hasRequestedCourse()) {
-						r.setRequestedCourse(cid.getCourseName());
-					} else if (!r.hasFirstAlternative()) {
-						r.setFirstAlternative(cid.getCourseName());
-					} else if (!r.hasSecondAlternative()) {
-						r.setSecondAlternative(cid.getCourseName());
-						break;
-					}
-					b.addCourse(toEntity(course, cid));
+					
+					helper.getAction().addRequestBuilder()
+						.setPriority(request.getCourses().size())
+						.setAlternative(false)
+						.addCourse(toEntity(course, cid));
+					
+					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+					r.setRequestedCourse(cid.getCourseName());
+					request.getCourses().add(r);
+					hasSelection = true;
 				}
 			}
-			// no selection -> check if there is a selected group
-			if (!r.hasRequestedCourse())
-				for (XEInterface.Group g: group.groups) {
-					if (g.isGroupSelection) fillInRequests(server, helper, request, g);
-					return;
+			for (XEInterface.Group g: group.groups) {
+				if (hasSelection(g)) {
+					fillInRequests(server, helper, request, g);
+					hasSelection = true;
 				}
-			// no selection -> use the first three courses as alternatives
-			if (!r.hasRequestedCourse()) {
+			}
+			
+			if (!hasSelection) {
+				// no selection -> use the first three courses as alternatives
+				CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+				OnlineSectioningLog.Request.Builder b = OnlineSectioningLog.Request.newBuilder().setPriority(request.getCourses().size()).setAlternative(false);
 				for (XEInterface.Course course: group.plannedClasses) {
 					XCourseId cid = getCourse(server, course);
 					if (cid == null) continue;
@@ -170,21 +188,26 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider {
 					}
 					b.addCourse(toEntity(course, cid));
 				}
-			}
-			if (r.hasRequestedCourse()) {
-				helper.getAction().addRequest(b);
-				request.getCourses().add(r);
+				
+				if (r.hasRequestedCourse()) {
+					helper.getAction().addRequest(b);
+					request.getCourses().add(r);
+				}
 			}
 		} else {
 			// union group -- take all courses (and sub-groups)
 			for (XEInterface.Course course: group.plannedClasses) {
 				XCourseId cid = getCourse(server, course);
-				if (cid != null) {
-					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-					r.setRequestedCourse(cid.getCourseName());
-					request.getCourses().add(r);
-					helper.getAction().addRequestBuilder().setPriority(request.getCourses().size()).setAlternative(false).addCourse(toEntity(course, cid));
-				}
+				if (cid == null) continue;
+				
+				helper.getAction().addRequestBuilder()
+					.setPriority(request.getCourses().size())
+					.setAlternative(false)
+					.addCourse(toEntity(course, cid));
+				
+				CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+				r.setRequestedCourse(cid.getCourseName());
+				request.getCourses().add(r);
 			}
 			for (XEInterface.Group g: group.groups)
 				fillInRequests(server, helper, request, g);
@@ -254,6 +277,15 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider {
 			request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
 			request.setStudentId(student.getStudentId());
 			fillInRequests(server, helper, request, plan.years.get(0).terms.get(0).group);
+			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.includePlaceHolders", "true")))
+				for (PlaceHolder ph: plan.years.get(0).terms.get(0).group.plannedPlaceholders) {
+					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+					r.setRequestedCourse(ph.placeholderValue.trim());
+					request.getCourses().add(r);
+				}
+			
+			if (helper.isDebugEnabled())
+				helper.debug("Course Requests: " + request);
 			
 			return request;
 		} catch (SectioningException e) {

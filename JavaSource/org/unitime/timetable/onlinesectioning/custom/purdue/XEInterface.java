@@ -242,16 +242,23 @@ public class XEInterface {
 		public CodeDescription groupType;
 		public List<Course> plannedClasses;
 		public List<Group> groups;
+		public List<PlaceHolder> plannedPlaceholders;
 		public String summaryDescription;
-		boolean isGroupSelection;
+		public boolean isGroupSelection;
 	}
 	
 	public static class Course {
-		String id;
-		String title;
-		String courseNumber;
-		String courseDiscipline;
-		boolean isGroupSelection;
+		public String id;
+		public String title;
+		public String courseNumber;
+		public String courseDiscipline;
+		public boolean isGroupSelection;
+	}
+	
+	public static class PlaceHolder {
+		public String id;
+		public CodeDescription placeholderType;
+		public String placeholderValue;
 	}
 	
 	public static class ErrorResponse {
