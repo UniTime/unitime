@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * UniTime 3.5 (University Timetabling Application)
+ * Copyright (C) 2015, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<script name="Distribution Types: Create Work Day Constraints" permission="Script Edit" engine="ECMAScript" created="Tue May 19 13:40:42 EDT 2015">
+  <description><![CDATA[This script creates the N Hour Work Day distribution types.]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+
+for (var i = 6; i <= 12; i++) {
+  var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'WORKDAY(' + i + ')').uniqueResult();
+  if (type == null) {
+    type = new org.unitime.timetable.model.DistributionType();
+    type.setReference('WORKDAY(' + i + ')');
+    log.info('Creating ' + i + ' Hour Work Day constraint...');
+  } else {
+    log.warn('Constraint ' + i + ' Hour Work Day already exists.');
+  }
+  type.setLabel(i + ' Hour Work Day');
+  type.setSequencingRequired(false);
+  type.setRequirementId(++reqId);
+  type.setAllowedPref('210R');
+  type.setDescr('Classes are to be placed in a way that there is no more than ' + i + ' hours between the start of the first class and the end of the last class on any day.');
+  type.setAbbreviation(i + 'h Work-Day');
+  type.setInstructorPref(true);
+  type.setExamPref(false);
+  hibSession.saveOrUpdate(type);
+}
+
+log.info('All done.');]]></body>
+</script>

@@ -28,6 +28,26 @@
 	<version>3.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Other Improvements</title>
+		<item>
+			<name>Course Timetabling: N Hour Work Day</name>
+			<description>
+				<line>Added constraint N Hour Work Day (where N can be 6, 7, 8, ..., 12)</line>
+				<line>The constraint limits the time between the start of the first class and the end of the last class on any day.</line>
+				<line>Distribution type reference is WORKDAY(N), where N is between 6 and 12.</line>
+				<line>The constraint needs to be registered. This can be done by a script:
+					<line>Download the script from http://goo.gl/dCgiV6 and import it on the Administration &gt; Academic Sessions &gt; Data Exchange page.</line>
+					<line>Run the script Distribution Types: Create Work Day Constraints on the Administration &gt; Utilities &gt; Scripts page.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.5.223</version>
+	<release-date>Sat, 16 May 2015</release-date>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Data Exchange: Session Restore</name>
