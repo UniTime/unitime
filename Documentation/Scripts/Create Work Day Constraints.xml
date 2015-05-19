@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<script name="Distribution Types: Create Work Day Constraints" permission="Script Edit" engine="ECMAScript" created="Tue May 19 13:40:42 EDT 2015">
+  <description><![CDATA[This script creates the N Hour Work Day distribution types.]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+
+for (var i = 6; i <= 12; i++) {
+  var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'WORKDAY(' + i + ')').uniqueResult();
+  if (type == null) {
+    type = new org.unitime.timetable.model.DistributionType();
+    type.setReference('WORKDAY(' + i + ')');
+    log.info('Creating ' + i + ' Hour Work Day constraint...');
+  } else {
+    log.warn('Constraint ' + i + ' Hour Work Day already exists.');
+  }
+  type.setLabel(i + ' Hour Work Day');
+  type.setSequencingRequired(false);
+  type.setRequirementId(++reqId);
+  type.setAllowedPref('210R');
+  type.setDescr('Classes are to be placed in a way that there is no more than ' + i + ' hours between the start of the first class and the end of the last class on any day.');
+  type.setAbbreviation(i + 'h Work-Day');
+  type.setInstructorPref(true);
+  type.setExamPref(false);
+  hibSession.saveOrUpdate(type);
+}
+
+log.info('All done.');]]></body>
+</script>
