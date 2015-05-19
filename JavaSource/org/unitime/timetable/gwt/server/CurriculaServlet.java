@@ -1631,7 +1631,8 @@ public class CurriculaServlet implements CurriculaService {
 						curricula: for (CurriculumInterface curriculum: curricula) {
 							for (CurriculumInterface result: results) {
 								if (ToolBox.equals(curriculum.getId(), result.getId()) && ToolBox.equals(curriculum.getAcademicArea().getId(), result.getAcademicArea().getId())) {
-									for (CurriculumClassificationInterface cc: curriculum.getClassifications()) result.addClassification(cc);
+									if (curriculum.hasClassifications())
+										for (CurriculumClassificationInterface cc: curriculum.getClassifications()) result.addClassification(cc);
 									result.addCourse(curriculum.getCourses().first());
 									continue curricula;
 								}
