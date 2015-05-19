@@ -170,8 +170,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     			"from TimePattern where session.uniqueId = :sessionId")
     			.setLong("sessionId", sessionId).setCacheable(true).list()) {
     		if (!includeHidden && !pattern.isVisible()) continue;
-    		if (!includeExtended && pattern.getType() == sTypeExtended) continue;
-    		if (!includeExtended) {
+    		if (!includeExtended && pattern.getType() == sTypeExtended) {
     			if (department != null) {
     				if (!department.getTimePatterns().contains(pattern)) continue;
     			} else {

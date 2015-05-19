@@ -200,7 +200,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        		ss.getMinutesPerWk(),
 	        		ss.effectiveDatePattern(),
 	        		ss.getInstrOfferingConfig().getDurationModel(),
-	        		true,
+	        		false,
 	        		ss.getManagingDept()));
 			initPrefs(frm, ss, null, false);
 	        timePatterns = ss.getTimePatterns();

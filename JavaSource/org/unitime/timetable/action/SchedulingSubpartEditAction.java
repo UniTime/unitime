@@ -248,7 +248,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         		ss.getMinutesPerWk(),
         		 (frm.getDatePattern() < 0 ? ss.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern())),
         		ss.getInstrOfferingConfig().getDurationModel(),
-        		true,
+        		false,
         		ss.getManagingDept()));
         if(op.equals("init")) {
         	initPrefs(frm, ss, null, true);
