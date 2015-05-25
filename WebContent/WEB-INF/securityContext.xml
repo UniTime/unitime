@@ -42,6 +42,7 @@
 		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
 		<anonymous enabled="false"/>
 		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>
+		<http-basic/>
 	</http>
 	
 	<!-- CAS Authentication (replace the above http element with the one bellow)

@@ -46,6 +46,7 @@
 		<custom-filter ref="casFilter" position="CAS_FILTER"/>
     	<custom-filter ref="casRequestSingleLogoutFilter" before="LOGOUT_FILTER"/>
     	<custom-filter ref="casSingleLogoutFilter" before="CAS_FILTER"/>
+    	<http-basic/>
 	</http>
 	
 	<global-method-security pre-post-annotations="enabled">
