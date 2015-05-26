@@ -45,7 +45,7 @@ public class EventsExportEventsToJSON extends EventsExporter {
 
 	@Override
 	public String reference() {
-		return "events.ics";
+		return "events.json";
 	}
 	
 	@Override
