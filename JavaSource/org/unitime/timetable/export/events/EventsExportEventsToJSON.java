@@ -20,16 +20,20 @@
 package org.unitime.timetable.export.events;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.shared.EventInterface;
 
+import com.google.gson.FieldNamingStrategy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -57,7 +61,19 @@ public class EventsExportEventsToJSON extends EventsExporter {
 			public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
 				return new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(src));
 			}
-		}).setPrettyPrinting().create();
+		})
+		.setFieldNamingStrategy(new FieldNamingStrategy() {
+			Pattern iPattern = Pattern.compile("i([A-Z])(.*)");
+			@Override
+			public String translateName(Field f) {
+				Matcher matcher = iPattern.matcher(f.getName());
+				if (matcher.matches())
+					return matcher.group(1).toLowerCase() + matcher.group(2);
+				else
+					return f.getName();
+			}
+		})
+		.setPrettyPrinting().create();
     	
     	helper.getWriter().write(gson.toJson(events));
 	}
