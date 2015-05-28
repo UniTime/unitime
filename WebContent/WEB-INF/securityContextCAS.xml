@@ -38,7 +38,7 @@
 		<form-login login-page="/login.do"
 			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
 			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
-		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/main.jsp?op=cas-logout"/>
+		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="${unitime.cas.logout:/main.jsp?op=cas-logout}"/>
 		<expression-handler ref="webExpressionHandler"/>
 		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
 		<anonymous enabled="false"/>
