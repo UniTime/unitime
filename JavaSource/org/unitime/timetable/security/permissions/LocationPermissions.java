@@ -62,6 +62,9 @@ public class LocationPermissions {
 	
 	@PermissionForRight(Right.RoomsExportCsv)
 	public static class RoomsExportCsv extends Rooms {}
+	
+	@PermissionForRight(Right.RoomsExportJson)
+	public static class RoomsExportJson extends Rooms {}
 
 	@PermissionForRight(Right.RoomDetail)
 	public static class RoomDetail implements Permission<Location> {

@@ -172,6 +172,7 @@ public enum Right {
 	Rooms(Department.class),
 	RoomsExportPdf(Department.class),
 	RoomsExportCsv(Department.class),
+	RoomsExportJson(Department.class),
 	RoomDetail(Location.class),
 	RoomEdit(Room.class),
 	RoomEditChangeControll(Location.class),
