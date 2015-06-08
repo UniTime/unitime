@@ -210,6 +210,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
+			org.unitime.timetable.onlinesectioning.match.CourseMatcher parent = matcher.getParentCourseMatcher();
 			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
 					"select c from CourseOffering c where " +
 					"c.subjectArea.session.uniqueId = :sessionId and (" +
@@ -221,7 +222,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					"c.subjectArea.subjectAreaAbbreviation, c.courseNbr")
 					.setString("q", query.toLowerCase())
 					.setLong("sessionId", sessionId)
-					.setCacheable(true).setMaxResults(limit == null || limit < 0 ? Integer.MAX_VALUE : limit).list()) {
+					.setCacheable(true).setMaxResults(limit == null || limit <= 0 || parent != null ? Integer.MAX_VALUE : limit).list()) {
+				if (parent != null && !parent.match(new XCourseId(c))) continue;
 				CourseAssignment course = new CourseAssignment();
 				course.setCourseId(c.getUniqueId());
 				course.setSubject(c.getSubjectAreaAbbv());
@@ -249,6 +251,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				course.setEnrollment(c.getEnrollment());
 				course.setLastLike(c.getDemand());
 				results.add(course);
+				if (parent != null && limit != null && limit > 0 && results.size() >= limit) break;
 			}
 			if (results.isEmpty()) {
 				throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
