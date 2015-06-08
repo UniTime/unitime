@@ -117,7 +117,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         }
         iNameByCourse.put(-1l, clazz.getSectionNumberString(helper.getHibSession()));
         if (assignment != null) {
-        	iTime = new XTime(assignment, helper.getExactTimeConversion());
+        	iTime = new XTime(assignment, helper.getExactTimeConversion(), helper.getDatePatternFormat());
         	for (Location room: assignment.getRooms())
         		iRooms.add(new XRoom(room));
         }

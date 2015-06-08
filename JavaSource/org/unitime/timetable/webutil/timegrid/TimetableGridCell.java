@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.unitime.commons.NaturalOrderComparator;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -188,7 +189,10 @@ public class TimetableGridCell implements Serializable, Comparable {
     
     public static String formatDatePattern(DatePattern dp, int dayCode) {
     	if (dp == null || dp.isDefault()) return null;
-    	// if (dp.getType() != DatePattern.sTypeExtended) return dp.getName();
+    	String format = ApplicationProperty.DatePatternFormatUseDates.value();
+    	if ("never".equals(format)) return dp.getName();
+    	if ("external".equals(format) && dp.getType() != DatePattern.sTypeExtended) return dp.getName();
+    	if ("alternate".equals(format) && dp.getType() == DatePattern.sTypeAlternate) return dp.getName();
     	BitSet weekCode = dp.getPatternBitSet();
     	if (weekCode.isEmpty()) return dp.getName();
     	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);

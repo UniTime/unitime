@@ -35,6 +35,7 @@ import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
@@ -64,7 +65,7 @@ public class XTime implements Serializable, Externalizable {
 		readExternal(input);
 	}
 	
-	public XTime(Assignment assignment, XExactTimeConversion conversion) {
+	public XTime(Assignment assignment, XExactTimeConversion conversion, String datePatternFormat) {
 		iDays = assignment.getDays();
 		iSlot = assignment.getStartSlot();
 		if (assignment.getTimePattern().getType() == TimePattern.sTypeExactTime) {
@@ -77,7 +78,7 @@ public class XTime implements Serializable, Externalizable {
 			iBreakTime = assignment.getTimePattern().getBreakTime();
 		}
 		iDatePatternId = assignment.getDatePattern().getUniqueId();
-		iDatePatternName = datePatternName(assignment);
+		iDatePatternName = datePatternName(assignment, datePatternFormat);
 		iWeeks = assignment.getDatePattern().getPatternBitSet();
 	}
 	
@@ -171,7 +172,10 @@ public class XTime implements Serializable, Externalizable {
 		return (getDatePatternName() == null ? "" : getDatePatternName() + " ") + toDaysString() + " " + toStartString() + " - " + toStopString();
 	}
 	
-    public static String datePatternName(Assignment assignment) {
+    public static String datePatternName(Assignment assignment, String format) {
+    	if ("never".equals(format)) return assignment.getDatePattern().getName();
+    	if ("external".equals(format) && assignment.getDatePattern().getType() != DatePattern.sTypeExtended) return assignment.getDatePattern().getName();
+    	if ("alternate".equals(format) && assignment.getDatePattern().getType() == DatePattern.sTypeAlternate) return assignment.getDatePattern().getName();
     	BitSet weekCode = assignment.getDatePattern().getPatternBitSet();
     	if (weekCode.isEmpty()) return assignment.getDatePattern().getName();
     	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);

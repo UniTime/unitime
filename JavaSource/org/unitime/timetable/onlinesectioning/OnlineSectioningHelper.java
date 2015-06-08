@@ -360,6 +360,10 @@ public class OnlineSectioningHelper {
     	return NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
     }
     
+    public String getDatePatternFormat() {
+    	return ApplicationProperty.DatePatternFormatUseDates.value();
+    }
+    
     public String getApproverName(String externalId, Long sessionId) {
     	if (externalId == null) return null;
     	TimetableManager mgr = (TimetableManager)getHibSession().createQuery( "from TimetableManager where externalUniqueId = :externalId")

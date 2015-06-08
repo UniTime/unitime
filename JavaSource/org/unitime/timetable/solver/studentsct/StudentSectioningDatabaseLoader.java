@@ -152,6 +152,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     
     private StudentCourseDemands iStudentCourseDemands = null;
     private boolean iUseAmPm = true;
+    private String iDatePatternFormat = null;
     
     public StudentSectioningDatabaseLoader(StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -170,6 +171,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iCheckForNoBatchStatus = model.getProperties().getPropertyBoolean("Load.CheckForNoBatchStatus", iCheckForNoBatchStatus);
         iCheckEnabledForScheduling = model.getProperties().getPropertyBoolean("Load.CheckEnabledForScheduling", iCheckEnabledForScheduling);
         iLoadRequestGroups = model.getProperties().getPropertyBoolean("Load.RequestGroups", iLoadRequestGroups);
+        iDatePatternFormat = ApplicationProperty.DatePatternFormatUseDates.value();
         
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -411,7 +413,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     if (p != null && p.getTimeLocation() != null) {
                     	p.getTimeLocation().setDatePattern(
                     			p.getTimeLocation().getDatePatternId(),
-                    			datePatternName(p.getTimeLocation()),
+                    			datePatternName(a.getDatePattern(), p.getTimeLocation()),
                     			p.getTimeLocation().getWeekCode());
                     }
                     int minLimit = c.getExpectedCapacity();
@@ -1163,7 +1165,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		return ret;
 	}
 	
-    private String datePatternName(TimeLocation time) {
+    private String datePatternName(DatePattern dp, TimeLocation time) {
+    	if ("never".equals(iDatePatternFormat)) return dp.getName();
+    	if ("external".equals(iDatePatternFormat) && dp.getType() != DatePattern.sTypeExtended) return dp.getName();
+    	if ("alternate".equals(iDatePatternFormat) && dp.getType() == DatePattern.sTypeAlternate) return dp.getName();
     	if (time.getWeekCode().isEmpty()) return time.getDatePatternName();
     	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
     	cal.setTime(iDatePatternFirstDate);

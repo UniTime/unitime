@@ -1354,6 +1354,15 @@ public enum ApplicationProperty {
 	@DefaultValue("3")
 	@Description("Date Pattern Start/End Month: add a given number of months to the first / last month of a session")
 	DatePatternNrExessMonth("unitime.pattern.nrExcessMoths"),
+	
+	@DefaultValue("alternate")
+	@Description("Date Pattern Display Format: display the start and end date of a class instead of the date pattern name when:\n" +
+			" never ... always use date pattern name,\n" +
+			" external ... when the date pattern is of external type,\n" +
+			" alternate ... when the date pattern is NOT of alternative weeks type,\n" +
+			" always ... always use first date - last date format instead of the date pattern name"
+			)
+	DatePatternFormatUseDates("unitime.pattern.format.useDates"),
 
 	@Type(Integer.class)
 	@DefaultValue("1000")
