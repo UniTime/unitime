@@ -45,6 +45,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.DistributionPrefsForm;
 import org.unitime.timetable.model.ChangeLog;
@@ -368,7 +369,8 @@ public class DistributionPrefsAction extends Action {
             Vector subjectAreaList, 
             ActionMessages errors ) {
         
-        int ct = frm.getSubjectArea().size();        
+        int ct = frm.getSubjectArea().size();
+        boolean suffix = ApplicationProperty.DistributionsShowClassSufix.isTrue();
         for(int index=0; index<ct; index++) {
             
 	        String subjectAreaId = frm.getSubjectArea(index);
@@ -507,8 +509,12 @@ public class DistributionPrefsAction extends Action {
 	                            classNumList = new Vector();
 			        		    for(int i=0; i<result.size(); i++) {
 			        		    	Class_ clazz = (Class_)result.get(i);
-			        		        ComboBoxLookup cbl = new ComboBoxLookup(
-			        		        		clazz.getSectionNumberString(), clazz.getUniqueId().toString());
+			        		        ComboBoxLookup cbl = new ComboBoxLookup(clazz.getSectionNumberString(), clazz.getUniqueId().toString());
+			        		    	if (suffix) {
+			        		    		String extId = clazz.getClassSuffix(clazz.getSchedulingSubpart().getControllingCourseOffering());
+			        		    		if (extId != null && !extId.isEmpty() && !extId.equalsIgnoreCase(clazz.getSectionNumberString()))
+			        		    			cbl = new ComboBoxLookup(clazz.getSectionNumberString() + " - " + extId, clazz.getUniqueId().toString());
+			        		    	}
 			        		        classNumList.addElement(cbl);
 			        		    }
 			        		}

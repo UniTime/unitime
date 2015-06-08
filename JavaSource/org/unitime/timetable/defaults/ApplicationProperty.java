@@ -1904,7 +1904,13 @@ public enum ApplicationProperty {
 	
 	@Type(String.class)
 	@Description("Online Student Scheduling: confirmation email CC addresses (comma separated)")
-	OnlineSchedulingEmailCarbonCopy("unitime.enrollment.email.cc")
+	OnlineSchedulingEmailCarbonCopy("unitime.enrollment.email.cc"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Distribution Preferences: show class suffix (external id) next to the class section number")
+	@Since(4.1)
+	DistributionsShowClassSufix("unitime.distributions.showClassSuffixes"),
 	;
 
 	String iKey;

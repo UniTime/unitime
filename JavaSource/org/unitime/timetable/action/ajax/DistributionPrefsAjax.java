@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
@@ -94,7 +95,7 @@ public class DistributionPrefsAjax extends Action {
         } else if ("courseNbr".equals(request.getParameter("type"))) {
             coumputeSubparts(request.getParameter("id"),out);
         } else if ("itype".equals(request.getParameter("type"))) {
-            coumputeClasses(request.getParameter("id"),out);
+            coumputeClasses(request.getParameter("id"), out);
         } else if ("grouping".equals(request.getParameter("type"))) {
             coumputeGroupingDesc(request.getParameter("id"),out);
         } else if ("distType".equals(request.getParameter("type"))) {
@@ -182,9 +183,15 @@ public class DistributionPrefsAjax extends Action {
             setLong("schedulingSubpartId", Long.parseLong(schedulingSubpartId)).
             list());
         print(out, "-1", "All");
+        boolean suffix = ApplicationProperty.DistributionsShowClassSufix.isTrue();
         for (Iterator i=classes.iterator();i.hasNext();) {
             Class_ c = (Class_)i.next();
-            print(out, c.getUniqueId().toString(), c.getSectionNumberString()); 
+            if (suffix) {
+            	String extId = c.getClassSuffix(c.getSchedulingSubpart().getControllingCourseOffering());
+            	print(out, c.getUniqueId().toString(), c.getSectionNumberString() + (extId == null || extId.isEmpty() || extId.equalsIgnoreCase(c.getSectionNumberString()) ? "" : " - " + extId));
+            } else {
+            	print(out, c.getUniqueId().toString(), c.getSectionNumberString());
+            }
         }
     }
    

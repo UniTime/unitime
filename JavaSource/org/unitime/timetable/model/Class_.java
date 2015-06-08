@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.FlushMode;
@@ -683,6 +682,20 @@ public class Class_ extends BaseClass_ {
         */
     	return getCourseName()+" "+getItypeDesc().trim()+" "+getSectionNumberString();
 //    	return(getClassLabel(getSchedulingSubpart().getControllingCourseOffering()));
+    }
+    
+    public String getClassLabel(CourseOffering course, boolean includeSuffix) {
+    	if (includeSuffix) {
+    		String extId = getClassSuffix(course);
+    		return course.getCourseName() + " " + getItypeDesc().trim() + " " + getSectionNumberString() + 
+    				(extId == null || extId.isEmpty() || extId.equalsIgnoreCase(getSectionNumberString()) ? "" : " - " + extId);
+    	} else {
+    		return course.getCourseName() + " " + getItypeDesc().trim() + " " + getSectionNumberString();
+    	}
+    }
+    
+    public String getClassLabel(boolean includeSuffix) {
+    	return getClassLabel(getSchedulingSubpart().getControllingCourseOffering(), includeSuffix);
     }
 
     public String getClassLabel(org.hibernate.Session hibSession) {

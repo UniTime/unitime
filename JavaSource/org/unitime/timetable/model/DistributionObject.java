@@ -41,20 +41,24 @@ public class DistributionObject extends BaseDistributionObject implements Compar
 
 /*[CONSTRUCTOR MARKER END]*/
 		
-	public String preferenceText(){
+	public String preferenceText(boolean includeSuffix){
 		PreferenceGroup prefGroup = this.getPrefGroup();
 		if (prefGroup instanceof SchedulingSubpart){
 			SchedulingSubpart ss = (SchedulingSubpart)prefGroup;
 			return ss.getSchedulingSubpartLabel();
 		} else if (prefGroup instanceof Class_) {
 			Class_ c = (Class_)prefGroup;
-			return c.getClassLabel();
+			return c.getClassLabel(includeSuffix);
 		} else if (prefGroup instanceof Exam) {
 		    Exam x = (Exam)prefGroup;
 		    return x.getLabel();
 		} else {
 			return " unknown "+prefGroup.getClass().getName();
 		}
+	}
+	
+	public String preferenceText() {
+		return preferenceText(false);
 	}
 	
 	/** Ordering based on sequence numbers or preference groups */

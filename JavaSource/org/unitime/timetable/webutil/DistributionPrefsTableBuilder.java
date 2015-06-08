@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -228,6 +229,8 @@ public class DistributionPrefsTableBuilder {
     			new boolean[] { true, true, true, true } );
         
         int nrPrefs = 0;
+        
+        boolean suffix = ApplicationProperty.DistributionsShowClassSufix.isTrue();
 
         for (Iterator i1=distPrefs.iterator();i1.hasNext();) {
         	DistributionPref dp = (DistributionPref)i1.next();
@@ -248,7 +251,7 @@ public class DistributionPrefsTableBuilder {
         	
         	for (Iterator i2=dp.getOrderedSetOfDistributionObjects().iterator();i2.hasNext();) {
         		DistributionObject dO = (DistributionObject)i2.next();
-        		objStr += dO.preferenceText();
+        		objStr += dO.preferenceText(suffix);
         		if (i2.hasNext()) objStr += "<BR>";
         	}
 
@@ -264,7 +267,7 @@ public class DistributionPrefsTableBuilder {
         			ClassInstructor clazz = (ClassInstructor)i2.next();
         			if (!clazz.isLead().booleanValue()) continue;
         			if (objStr.length()>0) objStr += "<BR>";
-            		objStr += clazz.getClassInstructing().toString();
+            		objStr += clazz.getClassInstructing().getClassLabel(suffix);
         			Department dept = clazz.getClassInstructing().getManagingDept();
             		if (dept.isInheritInstructorPreferences()) owners.add(dept);
         		}
@@ -330,6 +333,7 @@ public class DistributionPrefsTableBuilder {
     			new boolean[] { true, true, true, true, true} );
         
         int nrPrefs = 0;
+        boolean suffix = ApplicationProperty.DistributionsShowClassSufix.isTrue();
 
         for (Iterator i1=distPrefs.iterator();i1.hasNext();) {
         	DistributionPref dp = (DistributionPref)i1.next();
@@ -350,7 +354,7 @@ public class DistributionPrefsTableBuilder {
         	
         	for (Iterator i2=dp.getOrderedSetOfDistributionObjects().iterator();i2.hasNext();) {
         		DistributionObject dO = (DistributionObject)i2.next();
-        		objStr += dO.preferenceText();
+        		objStr += dO.preferenceText(suffix);
         		if (i2.hasNext()) objStr += "\n";
         	}
 
@@ -367,7 +371,7 @@ public class DistributionPrefsTableBuilder {
         			ClassInstructor clazz = (ClassInstructor)i2.next();
         			if (!clazz.isLead().booleanValue()) continue;
         			if (objStr.length()>0) objStr += "\n";
-            		objStr += clazz.getClassInstructing().toString();
+            		objStr += clazz.getClassInstructing().getClassLabel(suffix);
         		}
         		groupingText = "Instructor "+instructor.getName(instructorFormat);
         		groupingCmp = instructor.getName(instructorFormat);

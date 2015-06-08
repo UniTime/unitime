@@ -202,12 +202,21 @@
 					<html:option value="-">-</html:option>
 					<html:options collection="<%=DistributionPrefsForm.ITYPE_ATTR_LIST+ctr%>" property="value" labelProperty="label" filter="false"/>
 				</html:select>
-
-				<html:select style="width:80px;" property='<%= "classNumber[" + ctr + "]" %>' styleId='<%="classNumber"+ctr%>'>
-					<html:option value="-">-</html:option>
-					<html:option value="-1">All</html:option>
-					<html:options collection="<%=DistributionPrefsForm.CLASS_NUM_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
-				</html:select>
+				
+				<tt:propertyEquals name="unitime.distributions.showClassSuffixes" value="true">
+					<html:select style="width:150px;" property='<%= "classNumber[" + ctr + "]" %>' styleId='<%="classNumber"+ctr%>'>
+						<html:option value="-">-</html:option>
+						<html:option value="-1">All</html:option>
+						<html:options collection="<%=DistributionPrefsForm.CLASS_NUM_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
+					</html:select>
+				</tt:propertyEquals>
+				<tt:propertyNotEquals name="unitime.distributions.showClassSuffixes" value="true">
+					<html:select style="width:80px;" property='<%= "classNumber[" + ctr + "]" %>' styleId='<%="classNumber"+ctr%>'>
+						<html:option value="-">-</html:option>
+						<html:option value="-1">All</html:option>
+						<html:options collection="<%=DistributionPrefsForm.CLASS_NUM_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
+					</html:select>
+				</tt:propertyNotEquals>
 				
 				<!-- Arrows -->
 				<logic:greaterThan name="ctr" value="0">
