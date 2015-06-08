@@ -277,6 +277,16 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("LDAP Authentication: convert user external id to upper case")
 	AuthorizationLdapUpCase("unitime.authentication.ldap.group-convert-to-uppercase"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("LDAP Authentication: translate the id-attribute using the provided external user id translation class (see tmtbl.externalUid.translation property)")
+	AuthenticationLdapIdTranslate("unitime.authentication.ldap.id-translate"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("LDAP Authentication: trim leading zeros from the user external id")
+	AuthenticationLdapIdTrimLeadingZeros("unitime.authentication.ldap.id-trim"),
 
 	/**
 	 * Translation between LDAP uid and UniTime's external user id.

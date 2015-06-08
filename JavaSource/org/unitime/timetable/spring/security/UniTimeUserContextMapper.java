@@ -27,6 +27,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 import org.springframework.stereotype.Service;
+import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.interfaces.ExternalUidTranslation;
+import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.security.context.UniTimeUserContext;
 
 /**
@@ -34,15 +38,32 @@ import org.unitime.timetable.security.context.UniTimeUserContext;
  */
 @Service("unitimeUserContextMapper")
 public class UniTimeUserContextMapper implements UserDetailsContextMapper {
+	private ExternalUidTranslation iTranslation = null;
+	
+	public UniTimeUserContextMapper() {
+		if (ApplicationProperty.ExternalUserIdTranslation.value() != null) {
+            try {
+            	iTranslation = (ExternalUidTranslation) Class.forName(ApplicationProperty.ExternalUserIdTranslation.value()).getConstructor().newInstance();
+            } catch (Exception e) {
+            	Debug.error("Unable to instantiate external uid translation class, "+e.getMessage());
+            }
+        }
+	}
 	
 	@Override
     public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<? extends GrantedAuthority> authorities) {
-		if (authorities.isEmpty()) {
-			return new UniTimeUserContext(username, username, ctx.getStringAttribute("cn"), null);
-		} else {
-			String id = authorities.iterator().next().getAuthority();
-			return new UniTimeUserContext(id, username, ctx.getStringAttribute("cn"), null);
-		}
+		String userId = username;
+		
+		if (!authorities.isEmpty())
+			userId = authorities.iterator().next().getAuthority();
+		
+		if (iTranslation != null && ApplicationProperty.AuthenticationLdapIdTranslate.isTrue())
+			userId = iTranslation.translate(userId, Source.LDAP, Source.User);
+		
+		if (ApplicationProperty.AuthenticationLdapIdTrimLeadingZeros.isTrue())
+			while (userId.startsWith("0")) userId = userId.substring(1);
+		
+		return new UniTimeUserContext(userId, username, ctx.getStringAttribute("cn"), null);
     }
 
     @Override
