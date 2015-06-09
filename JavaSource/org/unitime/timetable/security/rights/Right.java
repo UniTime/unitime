@@ -566,6 +566,7 @@ public enum Right {
     ApiRetrieveEvents(Session.class),
     ApiRetrieveRooms(Session.class),
     ApiJsonConnector,
+    ApiDataExchangeConnector,
 
 	/** Obsolete */
     

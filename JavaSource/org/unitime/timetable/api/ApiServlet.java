@@ -57,10 +57,6 @@ public class ApiServlet extends HttpServlet {
 		return (ApiConnector) applicationContext.getBean(getReference(request));
 	}
 	
-	protected ApiHelper getHelper(HttpServletRequest request, HttpServletResponse response) {
-		return new JsonApiHelper(request, response, getSessionContext());
-	}
-	
 	protected void checkError(HttpServletRequest request, HttpServletResponse response, Throwable t) throws IOException {
 		if (t instanceof NoSuchBeanDefinitionException) {
 			sLog.info("Service " + getReference(request) + " not known.");
@@ -85,7 +81,7 @@ public class ApiServlet extends HttpServlet {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
-			getConnector(request).doGet(getHelper(request, response));
+			getConnector(request).doGet(request, response);
 		} catch (Throwable t) {
 			checkError(request, response, t);
 		}
@@ -94,7 +90,7 @@ public class ApiServlet extends HttpServlet {
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
-			getConnector(request).doPost(getHelper(request, response));
+			getConnector(request).doPost(request, response);
 		} catch (Throwable t) {
 			checkError(request, response, t);
 		}
@@ -103,7 +99,7 @@ public class ApiServlet extends HttpServlet {
 	@Override
 	public void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
-			getConnector(request).doPut(getHelper(request, response));
+			getConnector(request).doPut(request, response);
 		} catch (Throwable t) {
 			checkError(request, response, t);
 		}
@@ -112,7 +108,7 @@ public class ApiServlet extends HttpServlet {
 	@Override
 	public void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
-			getConnector(request).doDelete(getHelper(request, response));
+			getConnector(request).doDelete(request, response);
 		} catch (Throwable t) {
 			checkError(request, response, t);
 		}
