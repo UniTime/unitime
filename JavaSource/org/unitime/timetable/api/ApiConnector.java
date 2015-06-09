@@ -21,12 +21,17 @@ package org.unitime.timetable.api;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.timetable.security.SessionContext;
 
 /**
  * @author Tomas Muller
  */
 public abstract class ApiConnector {
+	@Autowired protected SessionContext sessionContext;
 	
 	public void doGet(ApiHelper helper) throws IOException {
 		helper.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
@@ -42,5 +47,25 @@ public abstract class ApiConnector {
 	
 	public void doDelete(ApiHelper helper) throws IOException {
 		helper.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
+	}
+	
+	protected ApiHelper createHelper(HttpServletRequest request, HttpServletResponse response) {
+		return new JsonApiHelper(request, response, sessionContext);
+	}
+	
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		doGet(createHelper(request, response));
+	}
+	
+	public void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		doPut(createHelper(request, response));
+	}
+	
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		doPost(createHelper(request, response));
+	}
+	
+	public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		doDelete(createHelper(request, response));
 	}
 }
