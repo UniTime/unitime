@@ -561,6 +561,11 @@ public enum Right {
     
     Scripts,
     ScriptEdit,
+    
+    /** API */
+    ApiRetrieveEvents(Session.class),
+    ApiRetrieveRooms(Session.class),
+    ApiJsonConnector,
 
 	/** Obsolete */
     
