@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
@@ -36,6 +35,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.rooms.RoomDetailsBackend;
 
 /**
@@ -45,7 +45,6 @@ import org.unitime.timetable.server.rooms.RoomDetailsBackend;
 public class RoomsConnector extends ApiConnector {
 	
 	@Override
-	@PreAuthorize("checkPermission(#helper.academicSessionId, 'Session', 'ApiRetrieveRooms')")
 	public void doGet(ApiHelper helper) throws IOException {
 		Long sessionId = helper.getAcademicSessionId();
 		if (sessionId == null)
@@ -55,6 +54,8 @@ public class RoomsConnector extends ApiConnector {
 		if (session == null)
 			throw new IllegalArgumentException("Given academic session no longer exists.");
 
+		helper.getSessionContext().checkPermission(session, Right.ApiRetrieveRooms);
+		
 		RoomFilterRpcRequest request = new RoomFilterRpcRequest();
 		request.setCommand(FilterRpcRequest.Command.ENUMERATE);
     	request.setSessionId(sessionId);

@@ -1930,6 +1930,12 @@ public enum ApplicationProperty {
 	@Description("Distribution Preferences: show class suffix (external id) next to the class section number")
 	@Since(4.1)
 	DistributionsShowClassSufix("unitime.distributions.showClassSuffixes"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("API: allow API tokens to be used for user authentication")
+	@Since(4.1)
+	ApiCanUseAPIToken("unitime.api.canUseToken"),
 	;
 
 	String iKey;

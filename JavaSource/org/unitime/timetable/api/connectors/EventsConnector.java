@@ -24,7 +24,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
@@ -38,6 +37,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -46,7 +46,6 @@ import org.unitime.timetable.model.dao.SessionDAO;
 public class EventsConnector extends ApiConnector {
 
 	@Override
-	@PreAuthorize("checkPermission(#helper.academicSessionId, 'Session', 'ApiRetrieveEvents')")
 	public void doGet(ApiHelper helper) throws IOException {
 		Long sessionId = helper.getAcademicSessionId();
 		if (sessionId == null)
@@ -55,6 +54,8 @@ public class EventsConnector extends ApiConnector {
 		Session session = SessionDAO.getInstance().get(sessionId);
 		if (session == null)
 			throw new IllegalArgumentException("Given academic session no longer exists.");
+		
+		helper.getSessionContext().checkPermission(session, Right.ApiRetrieveEvents);
 
 		EventLookupRpcRequest request = new EventLookupRpcRequest();
     	request.setSessionId(sessionId);
