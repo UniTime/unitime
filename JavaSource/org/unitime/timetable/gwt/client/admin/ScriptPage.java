@@ -402,12 +402,28 @@ public class ScriptPage extends Composite {
 					} else if ("file".equalsIgnoreCase(param.getType())) {
 						UniTimeFileUpload upload = new UniTimeFileUpload(); upload.reset();
 						widget = upload;
+					} else if ("textarea".equalsIgnoreCase(param.getType())) {
+						TextArea textarea = new TextArea();
+						textarea.setStyleName("unitime-TextArea");
+						textarea.setVisibleLines(5);
+						textarea.setCharacterWidth(80);
+						if (param.getDefaultValue() != null)textarea.setText(param.getDefaultValue());
+						textarea.addValueChangeHandler(new ValueChangeHandler<String>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<String> event) {
+								if (event.getValue() == null)
+									iParams.remove(param.getName());
+								else
+									iParams.put(param.getName(), event.getValue());
+							}
+						});
+						widget = textarea;
 					} else {
 						TextBox text = new TextBox();
 						text.setStyleName("unitime-TextBox");
 						text.setWidth("400px");
 						if (param.getDefaultValue() != null)
-						text.setText(param.getDefaultValue());
+							text.setText(param.getDefaultValue());
 						text.addValueChangeHandler(new ValueChangeHandler<String>() {
 							@Override
 							public void onValueChange(ValueChangeEvent<String> event) {
