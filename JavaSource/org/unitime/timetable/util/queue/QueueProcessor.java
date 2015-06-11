@@ -42,6 +42,7 @@ public class QueueProcessor extends Thread {
 	private Queue<QueueItem> iQueue = new LinkedList<QueueItem>();
 	private List<QueueItem> iFinished = new ArrayList<QueueItem>();
 	private QueueItem iItem = null;
+	private RunningItem iRunningItem = null;
 	
 	private static QueueProcessor sInstance = null;
 
@@ -87,8 +88,13 @@ public class QueueProcessor extends Thread {
 			
 			// Execute the item
 			sLog.info("Executing " + iItem.name());
-			
-			iItem.executeItem();
+			iRunningItem = new RunningItem(iItem);
+			iRunningItem.start();
+			try {
+				iRunningItem.join();
+			} catch (InterruptedException e) {
+				sLog.info("Task " + iItem.name() + " was interrupted.");
+			}
 			
 			sLog.info("Task " + iItem.name() + (iItem.error() == null ? " is done." : " failed (" + iItem.error().getMessage() + ")."));
 
@@ -161,6 +167,9 @@ public class QueueProcessor extends Thread {
 				if (id.equals(item.getId())) i.remove();
 			}
 		}
+		if (iItem != null && id.equals(iItem.getId())) {
+			iRunningItem.cancel();
+		}
 	}
 
 	public static void stopProcessor() {
@@ -172,6 +181,32 @@ public class QueueProcessor extends Thread {
 			sInstance.join();
 		} catch (InterruptedException e) {
 		} catch (NullPointerException e) {
+		}
+	}
+	
+	static class RunningItem extends Thread {
+		boolean iInterrupted = false;
+		QueueItem iRunningItem = null;
+		
+		private RunningItem(QueueItem item) {
+			super("QueueRunner(" + item.name() + ")");
+			iRunningItem = item;
+			setDaemon(true);
+		}
+		
+		@Override
+		public void run() {
+			iRunningItem.executeItem();
+		}
+		
+		@SuppressWarnings("deprecation")
+		public void cancel() {
+			if (iInterrupted) {
+				stop();
+			} else {
+				interrupt();
+				iInterrupted = true;
+			}
 		}
 	}
 

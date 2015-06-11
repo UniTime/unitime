@@ -88,6 +88,8 @@ public abstract class QueueItem implements Log {
 		Localization.setLocale(getLocale());
 		try {
 			execute();
+		} catch (ThreadDeath e) {
+			fatal("Execution stopped.", e);
 		} catch (Exception e) {
 			fatal("Execution failed.", e);
 		} finally {
@@ -97,7 +99,12 @@ public abstract class QueueItem implements Log {
 		}
 		iFinished = new Date();
 		iStatus = "All done.";
-		if (iException != null) iStatus = "Failed (" + iException.getMessage() + ")";
+		if (iException != null) {
+			if (iException instanceof ThreadDeath)
+				iStatus = "Killed";
+			else
+				iStatus = "Failed (" + iException.getMessage() + ")";
+		}
 	}
 	
 	public boolean hasOutput() { return iOutput != null && iOutput.exists() && iOutput.canRead(); }

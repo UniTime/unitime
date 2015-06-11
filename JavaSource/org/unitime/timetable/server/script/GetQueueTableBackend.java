@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.ScriptInterface.GetQueueTableRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.queue.QueueItem;
 import org.unitime.timetable.util.queue.QueueProcessor;
 
@@ -72,7 +73,7 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 		if (item.finished() != null && item.hasOutput())
 			q.setOutput(item.output().getName());
 		q.setLog(item.log());
-		q.setCanDelete(context.getUser().getExternalUserId().equals(item.getOwnerId()) && (item.started() == null || item.finished() != null));
+		q.setCanDelete((context.hasPermissionAnyAuthority(item.getSessionId(), "Session", Right.Chameleon) || context.getUser().getExternalUserId().equals(item.getOwnerId())));
 		
 		if (item instanceof ScriptExecution)
 			q.setExecutionRequest(((ScriptExecution)item).getRequest());
