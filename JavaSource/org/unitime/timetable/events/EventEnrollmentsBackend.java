@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.CourseRequest;
@@ -57,6 +58,7 @@ import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.dao.ClassEventDAO;
+import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
@@ -88,7 +90,19 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 		} else if (request.hasEventId()) {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			Event event = EventDAO.getInstance().get(request.getEventId());
-			if (event == null) throw new GwtRpcException(MESSAGES.errorBadEventId());
+			if (event == null) {
+				if (request.getEventId() < 0) {
+					Class_ clazz = Class_DAO.getInstance().get(-request.getEventId());
+					if (clazz != null) {
+						context.checkPermission(clazz, Right.ClassDetail);
+						Collection<StudentClassEnrollment> enrollments = clazz.getStudentEnrollments();
+				    	if (enrollments == null || enrollments.isEmpty()) return null;
+				    	return convert(enrollments, null, context.hasPermission(Right.EnrollmentsShowExternalId));
+					}
+					
+				}
+				throw new GwtRpcException(MESSAGES.errorBadEventId());
+			}
 			
 			context.checkPermission(event, Right.EventDetail);
 
