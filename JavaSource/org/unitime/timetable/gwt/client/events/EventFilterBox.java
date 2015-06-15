@@ -73,6 +73,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
@@ -144,6 +145,13 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		FilterBox.StaticSimpleFilter mode = new FilterBox.StaticSimpleFilter("mode");
 		mode.setMultipleSelection(false);
 		addFilter(mode);
+		
+		addFilter(new FilterBox.StaticSimpleFilter("role") {
+			@Override
+			public void getPopupWidget(final FilterBox box, final AsyncCallback<Widget> callback) {
+				callback.onSuccess(null);
+			}
+		});
 		
 		Label reqLab = new Label(MESSAGES.propRequestedBy());
 
