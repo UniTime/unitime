@@ -108,6 +108,7 @@ public class RolesConnector extends ApiConnector {
 				iStatus = new StatusInfo(session);
 			}
 			iRoles = roles;
+			iSelected = selected;
 		}
 	}
 	
