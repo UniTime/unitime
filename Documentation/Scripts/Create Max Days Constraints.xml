@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<script name="Distribution Types: Create Max Days Constraints" permission="Distribution Types" engine="ECMAScript" created="Mon Jun 15 08:55:07 CEST 2015">
+  <description><![CDATA[This script creates the At Most <i>N</i> Days a Week distribution types.]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+
+for (var i = 2; i <= 6; i++) {
+  var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', '_MaxDays:' + i + '_').uniqueResult();
+  if (type == null) {
+    type = new org.unitime.timetable.model.DistributionType();
+    type.setReference('_MaxDays:' + i + '_');
+    log.info('Creating Max ' + i + ' Days constraint...');
+  } else {
+    log.warn('Constraint Max ' + i + ' Days already exists.');
+  }
+  type.setLabel('At Most ' + i + ' Days a Week');
+  type.setSequencingRequired(false);
+  type.setRequirementId(++reqId);
+  type.setAllowedPref('210R');
+  type.setDescr('Classes must / should be placed in no more than ' + i + ' week days.');
+  type.setAbbreviation('Max ' + i + ' Days');
+  type.setInstructorPref(true);
+  type.setExamPref(false);
+  hibSession.saveOrUpdate(type);
+}
+
+log.info('All done.');]]></body>
+</script>
