@@ -214,7 +214,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
 					"select c from CourseOffering c where " +
 					"c.subjectArea.session.uniqueId = :sessionId and (" +
-					"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' " +
+					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like :q || '%') " +
 					(query.length()>2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ") " +
 					(matcher.isAllCourseTypes() ? "" : matcher.isNoCourseType() ? types.isEmpty() ? " and c.courseType is null " : " and (c.courseType is null or c.courseType.reference in (" + types + ")) " : " and c.courseType.reference in (" + types + ") ") +
 					"order by case " +
@@ -334,7 +334,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
 					"select c from CourseOffering c where " +
 					"c.subjectArea.session.uniqueId = :sessionId and " +
-					"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course")
+					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) = :course)")
 					.setString("course", course.toLowerCase())
 					.setLong("sessionId", sessionId)
 					.setCacheable(true).setMaxResults(1).list()) {
@@ -563,7 +563,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
 					"select cr.courseOffering from CourseRequest cr where " +
 					"cr.courseDemand.student.uniqueId = :studentId and " +
-					"lower(cr.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || cr.courseOffering.courseNbr) = :course")
+					"(lower(cr.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || cr.courseOffering.courseNbr) = :course or " +
+					"lower(cr.courseOffering.subjectArea.subjectAreaAbbreviation || ' ' || cr.courseOffering.courseNbr || ' - ' || cr.courseOffering.title) = :course)")
 					.setString("course", courseName.toLowerCase())
 					.setLong("studentId", studentId)
 					.setCacheable(true).setMaxResults(1).list()) {
@@ -573,7 +574,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and " +
-				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course")
+				"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) = :course)")
 				.setString("course", courseName.toLowerCase())
 				.setLong("sessionId", sessionId)
 				.setCacheable(true).setMaxResults(1).list()) {

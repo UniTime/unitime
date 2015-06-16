@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.server.SectioningServlet;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.ClassWaitList;
@@ -145,16 +146,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 	}
 	
 	public static CourseOffering getCourse(org.hibernate.Session hibSession, Long sessionId, String courseName) {
-		for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
-				"select c from CourseOffering c where " +
-				"c.subjectArea.session.uniqueId = :sessionId and " +
-				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course")
-				.setString("course", courseName.toLowerCase())
-				.setLong("sessionId", sessionId)
-				.setCacheable(true).setMaxResults(1).list()) {
-			return co;
-		}
-		return null;
+		return SectioningServlet.lookupCourse(hibSession, sessionId, null, courseName, null);
 	}
 	
 	private static CourseOffering getCourse(org.hibernate.Session hibSession, long courseId) {

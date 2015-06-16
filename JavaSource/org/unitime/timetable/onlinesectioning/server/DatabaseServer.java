@@ -25,9 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
+import org.unitime.timetable.gwt.server.SectioningServlet;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
@@ -69,7 +69,7 @@ public class DatabaseServer extends AbstractLockingServer {
 		for (CourseOffering c: (List<CourseOffering>)getCurrentHelper().getHibSession().createQuery(
 				"select c from CourseOffering c where " +
 				"c.subjectArea.session.uniqueId = :sessionId and c.instructionalOffering.notOffered = false and (" +
-				"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' " +
+				"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like :q || '%') " +
 				(query.length() > 2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ") " +
 				"order by case " +
 				"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first
@@ -134,11 +134,7 @@ public class DatabaseServer extends AbstractLockingServer {
 
 	@Override
 	public XCourseId getCourse(String course) {
-		CourseOffering c = (CourseOffering)getCurrentHelper().getHibSession().createQuery(
-				"from CourseOffering where subjectAreaAbbv || ' ' || courseNbr = :name and subjectArea.session.uniqueId = :sessionId and instructionalOffering.notOffered = false")
-				.setLong("sessionId", getAcademicSession().getUniqueId())
-				.setString("name", course)
-				.setCacheable(true).setMaxResults(1).uniqueResult();
+		CourseOffering c = SectioningServlet.lookupCourse(getCurrentHelper().getHibSession(), getAcademicSession().getUniqueId(), null, course, null);
 		return c == null ? null : new XCourseId(c);
 	}
 
