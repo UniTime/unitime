@@ -153,8 +153,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	
 	@Override
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, XStudent student) throws SectioningException {
-		// Cannot enroll -> no additional check is needed
-		if (!check.hasFlag(EligibilityFlag.CAN_ENROLL)) return;
+		// Cannot enroll -> no additional check is needed (unless it is the case when UniTime does not know about the student)
+		if (!check.hasFlag(EligibilityFlag.CAN_ENROLL) && student.getStudentId() != null) return;
 
 		ClientResource resource = null;
 		try {
