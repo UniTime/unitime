@@ -534,6 +534,10 @@ public class SessionRestore implements SessionRestoreInterface {
 					}
 				}
 			}
+			if (getObject() instanceof Class_) {
+				Class_ clazz = (Class_)getObject();
+				if (clazz.getCancelled() == null) clazz.setCancelled(false);
+			}
 		}
 		
 		public void fixRelations() {
