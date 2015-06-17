@@ -105,10 +105,12 @@ public class InstructorScheduleConnector extends ApiConnector{
 			iInstructors.add(new InstructorInfo(instructor));
 			if (!statusCheck || instructor.getDepartment().getSession().canNoRoleReportClass()) {
 				for (ClassInstructor ci: instructor.getClasses())
-					iClasses.add(new ClassAssignmentInfo(ci));
+					if (!ci.getClassInstructing().isCancelled())
+						iClasses.add(new ClassAssignmentInfo(ci));
 				for (InstructionalOffering io: instructor.getOfferings())
 					for (CourseOffering co: io.getCourseOfferings())
-						iCourses.add(new CourseInfo(co, null));
+						if (!co.getInstructionalOffering().isNotOffered())
+							iCourses.add(new CourseInfo(co, null));
 			}
 			for (Exam exam: instructor.getExams()) {
 				if (!statusCheck || exam.canView())
