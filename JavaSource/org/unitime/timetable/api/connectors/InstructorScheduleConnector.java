@@ -75,15 +75,14 @@ public class InstructorScheduleConnector extends ApiConnector{
 		if (ApplicationProperty.ApiTrimLeadingZerosFromUserExternalIds.isTrue())
 			while (externalId.startsWith("0")) externalId = externalId.substring(1);
 
+		boolean checkStatus = !helper.getSessionContext().hasPermission(Right.HasRole);
 		InstructorScheduleInfo response = null;
 		for (DepartmentalInstructor di: (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
 				"from DepartmentalInstructor d where d.externalUniqueId = :externalId and department.session.uniqueId = :sessionId")
 				.setString("externalId", externalId)
 				.setLong("sessionId", sessionId).setCacheable(true).list()) {
-			if (response == null)
-				response = new InstructorScheduleInfo(di);
-			else
-				response.add(di);
+			if (response == null) response = new InstructorScheduleInfo(di);
+			response.add(di, checkStatus);
 		}
 
 		helper.setResponse(response);
@@ -100,18 +99,21 @@ public class InstructorScheduleConnector extends ApiConnector{
 		InstructorScheduleInfo(DepartmentalInstructor instructor) {
 			iExternalId = instructor.getExternalUniqueId();
 			iSession = new SessionInfo(instructor.getDepartment().getSession());
-			add(instructor);
 		}
 		
-		void add(DepartmentalInstructor instructor) {
+		void add(DepartmentalInstructor instructor, boolean statusCheck) {
 			iInstructors.add(new InstructorInfo(instructor));
-			for (ClassInstructor ci: instructor.getClasses())
-				iClasses.add(new ClassAssignmentInfo(ci));
-			for (InstructionalOffering io: instructor.getOfferings())
-				for (CourseOffering co: io.getCourseOfferings())
-					iCourses.add(new CourseInfo(co, null));
-			for (Exam exam: instructor.getExams())
-				iExams.add(new ExamInfo(exam));
+			if (!statusCheck || instructor.getDepartment().getSession().canNoRoleReportClass()) {
+				for (ClassInstructor ci: instructor.getClasses())
+					iClasses.add(new ClassAssignmentInfo(ci));
+				for (InstructionalOffering io: instructor.getOfferings())
+					for (CourseOffering co: io.getCourseOfferings())
+						iCourses.add(new CourseInfo(co, null));
+			}
+			for (Exam exam: instructor.getExams()) {
+				if (!statusCheck || exam.canView())
+					iExams.add(new ExamInfo(exam));
+			}
 		}
 	}
 	
