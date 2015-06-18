@@ -29,6 +29,17 @@
 	<version>4.0.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Course Timetabling: Student Sectioning</name>
+			<description>
+				<line>Include committed student conflicts in the check whether a student swap was improving.</line>
+				<line>Undo the swap if it was not improving (this fixes the problem that could cause student sectioning to hang).</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other Improvements</title>
 		<item>
 			<name>Course Timetabling: N Hour Work Day</name>
