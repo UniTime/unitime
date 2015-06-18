@@ -377,13 +377,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			List<EnrollmentFailure> fails = new ArrayList<EnrollmentFailure>();
 			Set<String> failed = new HashSet<String>();
 			Set<String> checked = new HashSet<String>();
+			Set<Long> lockedCoursesWithChanges = new HashSet<Long>();
 			for (EnrollmentRequest request: enrollments) {
 				XCourse course = request.getCourse();
 				if (lockedCourses.contains(course.getCourseId()) && !request.getSections().isEmpty()) {
 					// offering is locked, make no changes
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
-						if (registered.remove(id) || added.contains(id)) {
+						if (registered.contains(id)) {
 							// no change to this section: keep the enrollment
 							if (added.add(id)) req.add(id);
 							List<XSection> sections = id2section.get(id);
@@ -404,20 +405,19 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							}
 							sections.add(section);
 							id2course.put(id, course);
+							lockedCoursesWithChanges.add(course.getCourseId());
 						}
 					}
 				} else {
 					// offering is not locked: propose the changes
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
-						if (!registered.remove(id)) changed = true;
-						if (added.add(id)) {
-							if (!section.isEnabledForScheduling() || noadd.contains(id)) {
-								fails.add(new EnrollmentFailure(course, section, "Section not available for student scheduling.", false));
-								checked.add(id); failed.add(id);
-							} else {
-								req.add(id);
-							}
+						if (!registered.contains(id) && (!section.isEnabledForScheduling() || noadd.contains(id))) {
+							fails.add(new EnrollmentFailure(course, section, "Section not available for student scheduling.", false));
+							checked.add(id); failed.add(id);
+						} else {
+							if (!registered.contains(id)) changed = true;
+							if (added.add(id)) req.add(id);
 						}
 						List<XSection> sections = id2section.get(id);
 						if (sections == null) {
@@ -431,6 +431,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			// drop old sections
 			for (String id: registered) {
+				if (added.contains(id)) continue;
 				boolean drop = true;
 				for (XRequest r: student.getRequests())
 					if (r instanceof XCourseRequest) {
@@ -452,6 +453,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 												fails.add(new EnrollmentFailure(offering.getCourse(c), x, "Section not available for student scheduling.", true));
 												checked.add(id); failed.add(id);
 												drop = false;
+											} else if (lockedCoursesWithChanges.contains(c.getCourseId())) {
+												fails.add(new EnrollmentFailure(offering.getCourse(c), x, MESSAGES.courseLocked(c.getCourseName()), true));
+												checked.add(id); failed.add(id);
+												drop = false;
 											}
 										}
 						}
@@ -459,6 +464,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				if (drop) {
 					changed = true;
 					req.drop(id);
+				} else {
+					if (added.add(id)) req.add(id);
 				}
 			}
 			
