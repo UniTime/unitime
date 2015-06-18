@@ -151,8 +151,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	
 	@Override
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, XStudent student) throws SectioningException {
-		// Cannot enroll -> no additional check is needed
-		if (!check.hasFlag(EligibilityFlag.CAN_ENROLL)) return;
+		// Cannot enroll -> no additional check is needed (unless it is the case when UniTime does not know about the student)
+		if (!check.hasFlag(EligibilityFlag.CAN_ENROLL) && student.getStudentId() != null) return;
 
 		ClientResource resource = null;
 		try {
@@ -221,6 +221,13 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 				check.setMessage(reason == null ? "Failed to check student registration eligility." : reason);
 				check.setFlag(EligibilityFlag.CAN_ENROLL, false);
+			} else if (student.getStudentId() == null) {
+				check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later.");
+				check.setFlag(EligibilityFlag.CAN_ENROLL, false);
+				if (isCanRequestUpdates()) {
+					List<XStudent> students = new ArrayList<XStudent>(1); students.add(student);
+					requestUpdate(server, helper, students);
+				}
 			} else {
 				// Check enrollments
 				OnlineSectioningLog.Enrollment.Builder stored = OnlineSectioningLog.Enrollment.newBuilder();
