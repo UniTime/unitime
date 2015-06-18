@@ -54,6 +54,18 @@ public class JsonApiHelper extends AbstractApiHelper {
 			
 	protected Gson createGson() {
 		return new GsonBuilder()
+		.registerTypeAdapter(java.sql.Timestamp.class, new JsonSerializer<java.sql.Timestamp>() {
+			@Override
+			public JsonElement serialize(java.sql.Timestamp src, Type typeOfSrc, JsonSerializationContext context) {
+				return new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(src));
+			}
+		})
+		.registerTypeAdapter(java.sql.Date.class, new JsonSerializer<java.sql.Date>() {
+			@Override
+			public JsonElement serialize(java.sql.Date src, Type typeOfSrc, JsonSerializationContext context) {
+				return new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src));
+			}
+		})
 		.registerTypeAdapter(Date.class, new JsonSerializer<Date>() {
 			@Override
 			public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {

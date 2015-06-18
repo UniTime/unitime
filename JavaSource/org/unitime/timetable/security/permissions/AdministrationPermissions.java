@@ -486,4 +486,10 @@ public class AdministrationPermissions {
 	
 	@PermissionForRight(Right.ApiRetrieveEvents)
 	public static class ApiRetrieveEvents extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.ApiRetrieveEnrollments)
+	public static class ApiRetrieveEnrollments extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.ApiRetrieveInstructorSchedule)
+	public static class ApiRetrieveInstructorSchedule extends SimpleSessionPermission {}
 }
