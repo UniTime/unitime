@@ -54,6 +54,25 @@
 				<line>Added ability to type in role (or roles) on the Personal Timetable page (but the roles do not show up in the Event Filter).</line>
 			</description>
 		</item>
+		<item>
+			<name>UniTime RESTful API</name>
+			<description>
+				<line>First take on creating a RESTful API in UniTime.</line>
+				<line>Following conntectors have been created so far:
+					<line>/api/events: ability to retrieve events (using the EventInterface class converted to JSON, example: GET UniTime/api/events?type=PERSON&amp;ext=1001&amp;term=Fal2010)</line>
+					<line>/api/json: JSON interface for GWT calls (that implement the GwtRpcRequest interface)</line>
+					<line>/api/exchange: to export/import UniTime's data exchange XML files
+						<line>export example: GET UniTime/api/exchange?term=Fal2010&amp;type=students</line>
+						<line>import example: POST UniTime/api/exchange (with the XML as payload)</line>
+					</line>
+					<line>/api/roles?id=&lt;externalId&gt; returns a list of academic sessions (and roles) for a person</line>
+					<line>/api/enrollments?eventId=&lt;id&gt; returns student enrollments for an event, a class (when classId parameter is used instead),
+						 an exam (examId), a course offering (courseId), an instructional offering (offeringId), or instructional offering configuration (configId)</line>
+					<line>/api/instructor-schedule?id=&lt;externalId&gt;&amp;term=&lt;term&gt; returns classes, courses, and examinations assigned to an instructor.</line>
+				</line>
+				<line>Each connector has the appropriate permission (see Api... permissions), with the ability to either use HTTP-simple authentication or an API token.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

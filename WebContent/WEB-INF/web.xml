@@ -120,6 +120,11 @@
     	<servlet-class>org.unitime.timetable.server.rooms.RoomPictureServlet</servlet-class>
     </servlet>
     
+    <servlet>
+    	<servlet-name>apiServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.api.ApiServlet</servlet-class>
+    </servlet>
+    
     <servlet-mapping>
         <servlet-name>gwt-dispatcher</servlet-name>
         <url-pattern>*.gwt</url-pattern>
@@ -153,6 +158,11 @@
     <servlet-mapping>
       <servlet-name>exportServlet</servlet-name>
       <url-pattern>/export</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+      <servlet-name>apiServlet</servlet-name>
+      <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
 
 	<!-- Servlet Mappings -->

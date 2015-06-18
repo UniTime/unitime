@@ -1854,6 +1854,17 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Conflict-statistics: save to file")
 	ConflictStatisticsSaveToFile("unitime.cbs.saveToFile"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("API: allow API tokens to be used for user authentication")
+	@Since(4.1)
+	ApiCanUseAPIToken("unitime.api.canUseToken"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("API: trim leading zeros from extednal user id")
+	ApiTrimLeadingZerosFromUserExternalIds("unitime.api.user.id-trim"),
 	;
 
 	String iKey;

@@ -39,6 +39,7 @@ public class UserEditForm extends ActionForm {
     private String iExternalId = null;
     private String iName = null;
     private String iPassword = null;
+    private String iToken = null;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -68,7 +69,7 @@ public class UserEditForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = "List"; iExternalId = null; iName = null; iPassword = null;
+		iOp = "List"; iExternalId = null; iName = null; iPassword = null; iToken = null;
 	}
 	
 	public String getOp() { return iOp; }
@@ -79,6 +80,8 @@ public class UserEditForm extends ActionForm {
     public void setName(String name) { iName = name; }
     public String getPassword() { return iPassword; }
     public void setPassword(String password) { iPassword = password; }
+    public String getToken() { return iToken; }
+    public void setToken(String token) { iToken = token; }
     
     public void load(User user) {
         if (user==null) {

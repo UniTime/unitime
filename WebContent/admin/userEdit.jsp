@@ -58,7 +58,7 @@
 			<TD>External ID:</TD>
 			<TD>
 				<logic:equal name="userEditForm" property="op" value="Save">
-					<html:text property="externalId" size="15" maxlength="15"/>
+					<html:text property="externalId" size="40" maxlength="40"/>
 				</logic:equal>
 				<logic:notEqual name="userEditForm" property="op" value="Save">
 					<bean:write name="userEditForm" property="externalId"/>
@@ -71,7 +71,7 @@
 		<TR>
 			<TD>User Name:</TD>
 			<TD>
-				<html:text property="name" size="25" maxlength="25"/>
+				<html:text property="name" size="15" maxlength="15"/>
 				&nbsp;<html:errors property="name"/>
 			</TD>
 		</TR>
@@ -83,6 +83,16 @@
 				&nbsp;<html:errors property="password"/>
 			</TD>
 		</TR>
+		
+		<logic:notEmpty name="userEditForm" property="token">
+			<TR>
+				<TD>API Token:</TD>
+				<TD>
+					<bean:write name="userEditForm" property="token"/>
+					<html:hidden property="token"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 		
 		<TR>
 			<TD colspan="2">

@@ -481,4 +481,15 @@ public class AdministrationPermissions {
 		public Class<Session> type() { return Session.class;}
 	}
 	
+	@PermissionForRight(Right.ApiRetrieveRooms)
+	public static class ApiRetrieveRooms extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.ApiRetrieveEvents)
+	public static class ApiRetrieveEvents extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.ApiRetrieveEnrollments)
+	public static class ApiRetrieveEnrollments extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.ApiRetrieveInstructorSchedule)
+	public static class ApiRetrieveInstructorSchedule extends SimpleSessionPermission {}
 }

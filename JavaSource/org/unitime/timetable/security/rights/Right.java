@@ -549,6 +549,15 @@ public enum Right {
     
     Scripts,
     ScriptEdit,
+    
+    /** API */
+    ApiRetrieveEvents(Session.class),
+    ApiRetrieveRooms(Session.class),
+    ApiRetrieveRoles,
+    ApiRetrieveEnrollments(Session.class),
+    ApiRetrieveInstructorSchedule(Session.class),
+    ApiJsonConnector,
+    ApiDataExchangeConnector,
 
 	/** Obsolete */
     
