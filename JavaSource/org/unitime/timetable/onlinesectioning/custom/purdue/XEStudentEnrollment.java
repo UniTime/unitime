@@ -386,6 +386,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			List<EnrollmentFailure> fails = new ArrayList<EnrollmentFailure>();
 			Set<String> failed = new HashSet<String>();
 			Set<String> checked = new HashSet<String>();
+			Set<Long> lockedCoursesWithChanges = new HashSet<Long>();
 			for (EnrollmentRequest request: enrollments) {
 				XCourse course = request.getCourse();
 				if (lockedCourses.contains(course.getCourseId()) && !request.getSections().isEmpty()) {
@@ -413,6 +414,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							}
 							sections.add(section);
 							id2course.put(id, course);
+							lockedCoursesWithChanges.add(course.getCourseId());
 						}
 					}
 				} else {
@@ -458,6 +460,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 											id2course.put(id, offering.getCourse(c.getCourseId()));
 											if (!x.isEnabledForScheduling() || nodrop.contains(id)) {
 												fails.add(new EnrollmentFailure(offering.getCourse(c), x, "Section not available for student scheduling.", true));
+												checked.add(id); failed.add(id);
+												drop = false;
+											} else if (lockedCoursesWithChanges.contains(c.getCourseId())) {
+												fails.add(new EnrollmentFailure(offering.getCourse(c), x, MESSAGES.courseLocked(c.getCourseName()), true));
 												checked.add(id); failed.add(id);
 												drop = false;
 											}
