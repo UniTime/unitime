@@ -495,63 +495,86 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					boolean canViewMidtermExams = overrideStatus || session.getStatusType().canNoRoleReportExamMidterm();
 					boolean canViewClasses = overrideStatus || session.getStatusType().canNoRoleReportClass();
 					boolean allSessions = request.getEventFilter().hasOption("flag") && request.getEventFilter().getOptions("flag").contains("All Sessions");
+					Set<String> roles = request.getEventFilter().getOptions("role");
+					boolean student = (roles == null || roles.contains("student") || roles.contains("Student"));
+					boolean instructor = (roles == null || roles.contains("instructor") || roles.contains("Instructor"));
+					boolean contact = (roles == null || roles.contains("contact") || roles.contains("Contact"));
+					boolean coordinator = (roles != null && (roles.contains("coordinator") || roles.contains("Coordinator")));
 					curriculumCourses = new HashSet<Long>();
 					if (allSessions) {
-						curriculumCourses.addAll(hibSession.createQuery("select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student.externalUniqueId = :externalId")
+						if (student)
+							curriculumCourses.addAll(hibSession.createQuery("select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student.externalUniqueId = :externalId")
 								.setString("externalId", request.getResourceExternalId()).list());
-						curriculumCourses
+						if (instructor)
+							curriculumCourses
 								.addAll(hibSession.createQuery("select o.course.uniqueId from Exam x inner join x.owners o inner join x.instructors i where i.externalUniqueId = :externalId")
 										.setString("externalId", request.getResourceExternalId()).list());
 					} else {
-						curriculumCourses
+						if (student)
+							curriculumCourses
 								.addAll(hibSession.createQuery("select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
 										.setLong("sessionId", request.getSessionId()).setString("externalId", request.getResourceExternalId()).list());
-						curriculumCourses
+						if (instructor)
+							curriculumCourses
 								.addAll(hibSession.createQuery("select o.course.uniqueId from Exam x inner join x.owners o inner join x.instructors i where x.session.uniqueId = :sessionId and i.externalUniqueId = :externalId")
 										.setLong("sessionId", request.getSessionId())
 										.setString("externalId", request.getResourceExternalId()).list());
 					}
 					meetings = new ArrayList<Meeting>();
 
-					if (allSessions && !overrideStatus) {
+					if (allSessions) {
 						if (overrideStatus) {
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.studentEnrollments enrl")
 										.where("enrl.student.externalUniqueId = :externalId").where("enrl.student.session.uniqueId = s.uniqueId")
 										.set("externalId", request.getResourceExternalId())
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-							if (limit <= 0 || meetings.size() < limit)
+							if (instructor && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.classInstructors ci")
 										.where("ci.instructor.externalUniqueId = :externalId").where("ci.instructor.department.session.uniqueId = s.uniqueId")
 										.set("externalId", request.getResourceExternalId()).limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").where("cc.department.session.uniqueId = s.uniqueId")
+										.set("externalId", request.getResourceExternalId()).limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 						} else {
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.studentEnrollments enrl")
 										.where("enrl.student.externalUniqueId = :externalId").where("enrl.student.session.uniqueId = s.uniqueId")
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportClasses.toInt())
 										.set("externalId", request.getResourceExternalId()).limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-							if (limit <= 0 || meetings.size() < limit)
+							if (instructor && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.classInstructors ci")
 										.where("ci.instructor.externalUniqueId = :externalId").where("ci.instructor.department.session.uniqueId = s.uniqueId")
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportClasses.toInt())
 										.set("externalId", request.getResourceExternalId()).limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").where("cc.department.session.uniqueId = s.uniqueId")
+										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportClasses.toInt())
+										.set("externalId", request.getResourceExternalId()).limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 						}
 					} else if (canViewClasses) {
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.studentEnrollments enrl")
 									.where("enrl.student.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
 									.where("enrl.student.session = s")
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (instructor && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.classInstructors ci")
 									.where("ci.instructor.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
 									.where("ci.instructor.department.session = s")
+									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("ClassEvent").from("inner join e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators cc")
+									.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+									.where("cc.department.session = s")
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 					}
 
 					if (allSessions) {
 						if (overrideStatus) {
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("ExamEvent")
@@ -562,7 +585,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.set("type", ExamOwner.sOwnerTypeCourse)
 										.where("enrl.student.session.uniqueId = s.uniqueId")
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("ExamEvent")
@@ -573,7 +596,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.set("type", ExamOwner.sOwnerTypeOffering)
 										.where("enrl.student.session.uniqueId = s.uniqueId")
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("ExamEvent")
@@ -584,7 +607,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.set("type", ExamOwner.sOwnerTypeClass)
 										.where("enrl.student.session.uniqueId = s.uniqueId")
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("ExamEvent")
@@ -596,7 +619,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.where("enrl.student.session.uniqueId = s.uniqueId")
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 
-							if (limit <= 0 || meetings.size() < limit)
+							if (instructor && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("ExamEvent")
@@ -605,8 +628,49 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.set("externalId", request.getResourceExternalId())
 										.where("i.department.session.uniqueId = s.uniqueId")
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("ExamEvent")
+										.from("inner join e.exam.owners o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = co.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeCourse)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("ExamEvent")
+										.from("inner join e.exam.owners o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeOffering)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("ExamEvent")
+										.from("inner join e.exam.owners o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = c.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeClass)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("ExamEvent")
+										.from("inner join e.exam.owners o, InstrOfferingConfig cfg inner join cfg.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeConfig)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());							
 						} else {
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("FinalExamEvent")
@@ -618,7 +682,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.where("enrl.student.session.uniqueId = s.uniqueId")
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsFinal.toInt())
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("MidtermExamEvent")
@@ -631,7 +695,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsMidterm.toInt())
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("FinalExamEvent")
@@ -643,7 +707,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.where("enrl.student.session.uniqueId = s.uniqueId")
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsFinal.toInt())
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("MidtermExamEvent")
@@ -656,7 +720,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsMidterm.toInt())
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("FinalExamEvent")
@@ -668,7 +732,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.where("enrl.student.session.uniqueId = s.uniqueId")
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsFinal.toInt())
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("MidtermExamEvent")
@@ -681,7 +745,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsMidterm.toInt())
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 							
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("FinalExamEvent")
@@ -693,7 +757,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.where("enrl.student.session.uniqueId = s.uniqueId")
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsFinal.toInt())
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-							if (limit <= 0 || meetings.size() < limit)
+							if (student && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("MidtermExamEvent")
@@ -706,7 +770,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsMidterm.toInt())
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 
-							if (limit <= 0 || meetings.size() < limit)
+							if (instructor && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("FinalExamEvent")
@@ -716,7 +780,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.where("i.department.session.uniqueId = s.uniqueId")
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsFinal.toInt())
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-							if (limit <= 0 || meetings.size() < limit)
+							if (instructor && (limit <= 0 || meetings.size() < limit))
 								meetings.addAll(query
 										.select("distinct m")
 										.type("MidtermExamEvent")
@@ -726,24 +790,113 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										.where("i.department.session.uniqueId = s.uniqueId")
 										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsMidterm.toInt())
 										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("FinalExamEvent")
+										.from("inner join e.exam.owners o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = co.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeCourse)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsFinal.toInt())
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("MidtermExamEvent")
+										.from("inner join e.exam.owners o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = co.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeCourse)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsMidterm.toInt())
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("FinalExamEvent")
+										.from("inner join e.exam.owners o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeOffering)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsFinal.toInt())
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("MidtermExamEvent")
+										.from("inner join e.exam.owners o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeOffering)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsMidterm.toInt())
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("FinalExamEvent")
+										.from("inner join e.exam.owners o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = c.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeClass)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsFinal.toInt())
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("MidtermExamEvent")
+										.from("inner join e.exam.owners o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = c.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeClass)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsMidterm.toInt())
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("FinalExamEvent")
+										.from("inner join e.exam.owners o, InstrOfferingConfig cfg inner join cfg.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeConfig)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsFinal.toInt())
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+							if (coordinator && (limit <= 0 || meetings.size() < limit))
+								meetings.addAll(query
+										.select("distinct m")
+										.type("MidtermExamEvent")
+										.from("inner join e.exam.owners o, InstrOfferingConfig cfg inner join cfg.instructionalOffering.coordinators cc")
+										.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+										.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
+										.set("type", ExamOwner.sOwnerTypeConfig)
+										.where("cc.department.session.uniqueId = s.uniqueId")
+										.where("bit_and(s.statusType.status, :flag) > 0").set("flag", Status.ReportExamsMidterm.toInt())
+										.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 						}
 					} else if (canViewFinalExams || canViewMidtermExams) {
 						String table = (canViewFinalExams ? canViewMidtermExams ? "ExamEvent" : "FinalExamEvent" : "MidtermExamEvent");
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type(table)
 									.from("inner join e.exam.owners o, StudentClassEnrollment enrl inner join enrl.courseOffering co")
 									.where("enrl.student.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
 									.where("o.ownerType = :type and o.ownerId = co.uniqueId").set("type", ExamOwner.sOwnerTypeCourse)
 									.where("e.exam.session = s")
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type(table)
 									.from("inner join e.exam.owners o, StudentClassEnrollment enrl inner join enrl.courseOffering co")
 									.where("enrl.student.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
 									.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId").set("type", ExamOwner.sOwnerTypeOffering)
 									.where("e.exam.session = s")
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query
 									.select("distinct m")
 									.type(table)
@@ -752,7 +905,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									.where("o.ownerType = :type and o.ownerId = c.uniqueId").set("type", ExamOwner.sOwnerTypeClass)
 									.where("e.exam.session = s")
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query
 									.select("distinct m")
 									.type(table)
@@ -762,89 +915,169 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									.where("e.exam.session = s")
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 
-						if (limit <= 0 || meetings.size() < limit)
+						if (instructor && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type(table).from("inner join e.exam.instructors i")
 									.where("i.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
 									.where("e.exam.session = s")
 									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+						
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("ExamEvent")
+									.from("inner join e.exam.owners o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+									.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+									.where("o.ownerType = :type and o.ownerId = co.uniqueId").set("type", ExamOwner.sOwnerTypeCourse)
+									.where("cc.department.session = s")
+									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("ExamEvent")
+									.from("inner join e.exam.owners o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+									.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+									.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId").set("type", ExamOwner.sOwnerTypeOffering)
+									.where("cc.department.session = s")
+									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query
+									.select("distinct m").type("ExamEvent")
+									.from("inner join e.exam.owners o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators cc")
+									.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+									.where("o.ownerType = :type and o.ownerId = c.uniqueId").set("type", ExamOwner.sOwnerTypeClass)
+									.where("cc.department.session = s")
+									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query
+									.select("distinct m").type("ExamEvent")
+									.from("inner join e.exam.owners o, InstrOfferingConfig cfg inner join cfg.instructionalOffering.coordinators cc")
+									.where("cc.externalUniqueId = :externalId").set("externalId", request.getResourceExternalId())
+									.where("o.ownerType = :type and o.ownerId = cfg.uniqueId").set("type", ExamOwner.sOwnerTypeConfig)
+									.where("cc.department.session = s")
+									.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
 					}
 					
 					if (allSessions) {
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.courseOffering co")
 								.where("enrl.student.externalUniqueId = :externalId")
 								.set("externalId", request.getResourceExternalId())
 								.where("o.ownerType = :type and o.ownerId = co.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeCourse)
+								.where("enrl.student.session.uniqueId = s.uniqueId")
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.courseOffering co")
 								.where("enrl.student.externalUniqueId = :externalId")
 								.set("externalId", request.getResourceExternalId())
 								.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeOffering)
+								.where("enrl.student.session.uniqueId = s.uniqueId")
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.clazz c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co")
 								.where("enrl.student.externalUniqueId = :externalId")
 								.set("externalId", request.getResourceExternalId())
 								.where("o.ownerType = :type and o.ownerId = c.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeClass)
+								.where("enrl.student.session.uniqueId = s.uniqueId")
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.clazz c inner join c.schedulingSubpart.instrOfferingConfig cfg")
 								.where("enrl.student.externalUniqueId = :externalId")
 								.set("externalId", request.getResourceExternalId())
 								.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeConfig)
+								.where("enrl.student.session.uniqueId = s.uniqueId")
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
 						
-						if (limit <= 0 || meetings.size() < limit)
+						if (instructor && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, ClassInstructor ci inner join ci.classInstructing c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co")
 								.where("ci.instructor.externalUniqueId = :externalId")
 								.set("externalId", request.getResourceExternalId())
 								.where("o.ownerType = :type and o.ownerId = co.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeCourse)
+								.where("ci.instructor.department.session.uniqueId = s.uniqueId")
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (instructor && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, ClassInstructor ci inner join ci.classInstructing c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co")
 								.where("ci.instructor.externalUniqueId = :externalId")
 								.set("externalId", request.getResourceExternalId())
 								.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeOffering)
+								.where("ci.instructor.department.session.uniqueId = s.uniqueId")
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (instructor && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, ClassInstructor ci inner join ci.classInstructing c inner join c.schedulingSubpart.instrOfferingConfig cfg")
 								.where("ci.instructor.externalUniqueId = :externalId")
 								.set("externalId", request.getResourceExternalId())
 								.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeConfig)
+								.where("ci.instructor.department.session.uniqueId = s.uniqueId")
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (instructor && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, ClassInstructor ci inner join ci.classInstructing c")
 								.where("ci.instructor.externalUniqueId = :externalId")
 								.set("externalId", request.getResourceExternalId())
 								.where("o.ownerType = :type and o.ownerId = c.uniqueId")
 								.set("type", ExamOwner.sOwnerTypeClass)
+								.where("ci.instructor.department.session.uniqueId = s.uniqueId")
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
-								.query(hibSession).list());						
+								.query(hibSession).list());
+						
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("CourseEvent")
+								.from("inner join e.relatedCourses o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+								.where("cc.externalUniqueId = :externalId")
+								.set("externalId", request.getResourceExternalId())
+								.where("o.ownerType = :type and o.ownerId = co.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeCourse)
+								.where("cc.department.session.uniqueId = s.uniqueId")
+								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
+								.query(hibSession).list());
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("CourseEvent")
+								.from("inner join e.relatedCourses o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+								.where("cc.externalUniqueId = :externalId")
+								.set("externalId", request.getResourceExternalId())
+								.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeOffering)
+								.where("cc.department.session.uniqueId = s.uniqueId")
+								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
+								.query(hibSession).list());
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("CourseEvent")
+								.from("inner join e.relatedCourses o, InstrOfferingConfig cfg inner join cfg.instructionalOffering.coordinators cc")
+								.where("cc.externalUniqueId = :externalId")
+								.set("externalId", request.getResourceExternalId())
+								.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeConfig)
+								.where("cc.department.session.uniqueId = s.uniqueId")
+								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
+								.query(hibSession).list());
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("CourseEvent")
+								.from("inner join e.relatedCourses o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators cc")
+								.where("cc.externalUniqueId = :externalId")
+								.set("externalId", request.getResourceExternalId())
+								.where("o.ownerType = :type and o.ownerId = c.uniqueId")
+								.set("type", ExamOwner.sOwnerTypeClass)
+								.where("cc.department.session.uniqueId = s.uniqueId")
+								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
+								.query(hibSession).list());
 					} else {
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.courseOffering co")
 								.where("enrl.student.externalUniqueId = :externalId")
@@ -854,7 +1087,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.set("type", ExamOwner.sOwnerTypeCourse)
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.courseOffering co")
 								.where("enrl.student.externalUniqueId = :externalId")
@@ -864,7 +1097,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.set("type", ExamOwner.sOwnerTypeOffering)
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.clazz c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co")
 								.where("enrl.student.externalUniqueId = :externalId")
@@ -874,7 +1107,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.set("type", ExamOwner.sOwnerTypeClass)
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (student && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.clazz c inner join c.schedulingSubpart.instrOfferingConfig cfg")
 								.where("enrl.student.externalUniqueId = :externalId")
@@ -885,7 +1118,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
 						
-						if (limit <= 0 || meetings.size() < limit)
+						if (instructor && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, ClassInstructor ci inner join ci.classInstructing c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co")
 								.where("ci.instructor.externalUniqueId = :externalId")
@@ -895,7 +1128,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.set("type", ExamOwner.sOwnerTypeCourse)
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (instructor && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, ClassInstructor ci inner join ci.classInstructing c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co")
 								.where("ci.instructor.externalUniqueId = :externalId")
@@ -905,7 +1138,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.set("type", ExamOwner.sOwnerTypeOffering)
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (instructor && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, ClassInstructor ci inner join ci.classInstructing c inner join c.schedulingSubpart.instrOfferingConfig cfg")
 								.where("ci.instructor.externalUniqueId = :externalId")
@@ -915,7 +1148,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.set("type", ExamOwner.sOwnerTypeConfig)
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
-						if (limit <= 0 || meetings.size() < limit)
+						if (instructor && (limit <= 0 || meetings.size() < limit))
 							meetings.addAll(query.select("distinct m").type("CourseEvent")
 								.from("inner join e.relatedCourses o, ClassInstructor ci inner join ci.classInstructing c")
 								.where("ci.instructor.externalUniqueId = :externalId")
@@ -923,13 +1156,52 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.where("o.ownerType = :type and o.ownerId = c.uniqueId")
 								.where("ci.instructor.department.session = s")
 								.set("type", ExamOwner.sOwnerTypeClass)
+								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
+								.query(hibSession).list());
+						
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("CourseEvent")
+								.from("inner join e.relatedCourses o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+								.where("cc.externalUniqueId = :externalId")
+								.set("externalId", request.getResourceExternalId())
+								.where("o.ownerType = :type and o.ownerId = co.uniqueId")
+								.where("cc.department.session = s")
+								.set("type", ExamOwner.sOwnerTypeCourse)
+								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
+								.query(hibSession).list());
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("CourseEvent")
+								.from("inner join e.relatedCourses o, CourseOffering co inner join co.instructionalOffering.coordinators cc")
+								.where("cc.externalUniqueId = :externalId")
+								.set("externalId", request.getResourceExternalId())
+								.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId")
+								.where("cc.department.session = s")
+								.set("type", ExamOwner.sOwnerTypeOffering)
+								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
+								.query(hibSession).list());
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("CourseEvent")
+								.from("inner join e.relatedCourses o, Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators cc")
+								.where("cc.externalUniqueId = :externalId")
+								.set("externalId", request.getResourceExternalId())
+								.where("o.ownerType = :type and o.ownerId = c.uniqueId")
+								.where("cc.department.session = s")
+								.set("type", ExamOwner.sOwnerTypeClass)
+								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
+								.query(hibSession).list());
+						if (coordinator && (limit <= 0 || meetings.size() < limit))
+							meetings.addAll(query.select("distinct m").type("CourseEvent")
+								.from("inner join e.relatedCourses o, InstrOfferingConfig cfg inner join cfg.instructionalOffering.coordinators cc")
+								.where("cc.externalUniqueId = :externalId")
+								.set("externalId", request.getResourceExternalId())
+								.where("o.ownerType = :type and o.ownerId = cfg.uniqueId")
+								.where("cc.department.session = s")
+								.set("type", ExamOwner.sOwnerTypeConfig)
 								.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 								.query(hibSession).list());
 					}
 
-
-
-					if (limit <= 0 || meetings.size() < limit)
+					if (contact && (limit <= 0 || meetings.size() < limit))
 						meetings.addAll(query.select("distinct m")
                     		.where("e.class in (CourseEvent, SpecialEvent, UnavailableEvent)")
                     		.where("e.mainContact.externalUniqueId = :externalId")
@@ -937,7 +1209,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
                     		.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
                     		.query(hibSession).list());
                     
-					if (limit <= 0 || meetings.size() < limit)
+					if (contact && (limit <= 0 || meetings.size() < limit))
 						meetings.addAll(query.select("distinct m")
                     		.from("inner join m.event.additionalContacts c")
                     		.where("c.externalUniqueId = :externalId")
@@ -945,7 +1217,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
                     		.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
                     		.query(hibSession).list());
 
-					if (limit <= 0 || meetings.size() < limit)
+					if (contact && (limit <= 0 || meetings.size() < limit))
 						meetings.addAll(query.select("distinct m")
                     		.from("EventContact c")
                     		.where("c.externalUniqueId = :externalId")
@@ -1864,16 +2136,29 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								.setCacheable(true).list();
 						break;
 					case PERSON:
-						arrageHourClasses = hibSession.createQuery(
-								"select c from StudentClassEnrollment e inner join e.clazz c where c.committedAssignment is null and e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
-								.setString("externalId", request.getResourceExternalId()).setLong("sessionId", request.getSessionId())
-								.setCacheable(true).list();
+						Set<String> roles = request.getEventFilter().getOptions("role");
+						boolean student = (roles == null || roles.contains("student") || roles.contains("Student"));
+						boolean instructor = (roles == null || roles.contains("instructor") || roles.contains("Instructor"));
+						boolean coordinator = (roles != null && (roles.contains("coordinator") || roles.contains("Coordinator")));
+						arrageHourClasses = new ArrayList<Class_>();
 						
-						arrageHourClasses.addAll(
-								hibSession.createQuery("select c from ClassInstructor ci inner join ci.classInstructing c where c.committedAssignment is null and ci.instructor.department.session.uniqueId = :sessionId and  ci.instructor.externalUniqueId = :externalId")
+						if (student)
+							arrageHourClasses.addAll(hibSession.createQuery(
+									"select c from StudentClassEnrollment e inner join e.clazz c where c.committedAssignment is null and e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
+								.setString("externalId", request.getResourceExternalId()).setLong("sessionId", request.getSessionId())
+								.setCacheable(true).list());
+						
+						if (instructor)
+							arrageHourClasses.addAll(
+									hibSession.createQuery("select c from ClassInstructor ci inner join ci.classInstructing c where c.committedAssignment is null and ci.instructor.department.session.uniqueId = :sessionId and  ci.instructor.externalUniqueId = :externalId")
 								.setString("externalId", request.getResourceExternalId()).setLong("sessionId", request.getSessionId())
 								.setCacheable(true).list());
 
+						if (coordinator)
+							arrageHourClasses.addAll(
+								hibSession.createQuery("select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators cc where c.committedAssignment is null and cc.department.session.uniqueId = :sessionId and  cc.externalUniqueId = :externalId")
+								.setString("externalId", request.getResourceExternalId()).setLong("sessionId", request.getSessionId())
+								.setCacheable(true).list());
 					}
 					
 					if (arrageHourClasses != null) {

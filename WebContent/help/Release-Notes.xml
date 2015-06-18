@@ -35,7 +35,6 @@
 			<description>
 				<line>Include committed student conflicts in the check whether a student swap was improving.</line>
 				<line>Undo the swap if it was not improving (this fixes the problem that could cause student sectioning to hang).</line>
-				</line>
 			</description>
 		</item>
 	</category>
@@ -51,6 +50,19 @@
 					<line>Download the script from http://goo.gl/9nyu0U and import it on the Administration &gt; Academic Sessions &gt; Data Exchange page.</line>
 					<line>Run the script Distribution Types: Create Work Day Constraints on the Administration &gt; Utilities &gt; Scripts page.</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Events Lookup Backend: Personal Schedule</name>
+			<description>
+				<line>Added ability to filter events by role (student, instructor, coordinator, contact):
+					<line>contact: only list events that has the user as main or additional contact,</line>
+					<line>student: only list class, course related and examination events attended by the person (as a student),</line>
+					<line>instructor: only list classes, course related and examination events with the person assigned as instructor,</line>
+					<line>coordinator: only list classes, course related and examination events with the person assigned as course coordinator.</line>
+				</line>
+				<line>Multiple roles can be provided (default is student, instructor, and contact).</line>
+				<line>Added ability to type in role (or roles) on the Personal Timetable page (but the roles do not show up in the Event Filter).</line>
 			</description>
 		</item>
 	</category>
