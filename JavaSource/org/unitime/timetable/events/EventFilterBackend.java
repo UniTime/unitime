@@ -177,6 +177,11 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			Entity sponsor = new Entity(id, name, name); sponsor.setCount(count);
 			response.add("sponsor", sponsor);
 		}
+		
+		response.add("role", new Entity(1l, "Student", "Student"));
+		response.add("role", new Entity(2l, "Instructor", "Instructor"));
+		response.add("role", new Entity(3l, "Coordinator", "Coordinator"));
+		response.add("role", new Entity(4l, "Contact", "Contact"));
 	}
 	
 	public static EventQuery getQuery(FilterRpcRequest request, EventContext context) {
