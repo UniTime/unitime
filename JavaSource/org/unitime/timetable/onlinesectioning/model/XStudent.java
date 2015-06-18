@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.studentsct.model.AcademicAreaCode;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -75,6 +74,10 @@ public class XStudent extends XStudentId implements Externalizable {
     public XStudent(ObjectInput in) throws IOException, ClassNotFoundException {
     	super();
     	readExternal(in);
+    }
+    
+    public XStudent(Long studentId, String externalId, String name) {
+    	super(studentId, externalId, name);
     }
 
     public XStudent(Student student, OnlineSectioningHelper helper, BitSet freeTimePattern) {

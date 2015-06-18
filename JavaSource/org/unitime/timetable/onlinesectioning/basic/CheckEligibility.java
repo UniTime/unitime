@@ -37,6 +37,7 @@ import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHold
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster;
 import org.unitime.timetable.onlinesectioning.server.CheckMaster.Master;
+import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 
 /**
  * @author Tomas Muller
@@ -96,8 +97,13 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 			Student student = (iStudentId == null ? null : StudentDAO.getInstance().get(iStudentId, helper.getHibSession()));
 			if (student == null) {
 				if (!iCheck.hasFlag(EligibilityFlag.IS_ADMIN) && !iCheck.hasFlag(EligibilityFlag.IS_ADVISOR) && !iCheck.hasFlag(EligibilityFlag.IS_GUEST)
-						&& server.getAcademicSession().isSectioningEnabled())
+						&& server.getAcademicSession().isSectioningEnabled()) {
 					iCheck.setMessage(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
+					if (CustomStudentEnrollmentHolder.hasProvider() && CustomStudentEnrollmentHolder.getProvider().isCanRequestUpdates()) {
+						// UniTime does not know about the student, but there is an enrollment provider capable of requesting updates -> use check eligibility to request an update
+						CustomStudentEnrollmentHolder.getProvider().checkEligibility(server, helper, iCheck, new XStudent(null, helper.getUser().getExternalId(), helper.getUser().getName()));
+					}
+				}
 				logCheck(action, iCheck);
 				action.setResult(OnlineSectioningLog.Action.ResultType.NULL);
 				return iCheck;
@@ -137,6 +143,11 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				iCheck.setMessage(MSG.exceptionEnrollmentDisabled());
 				
 			XStudent xstudent = server.getStudent(iStudentId);
+			if (xstudent == null && student != null) {
+				// Server does not know about the student, but he/she is in the database --> try to reload it
+				server.createAction(ReloadStudent.class).forStudents(iStudentId).execute(server, helper);
+				xstudent = server.getStudent(iStudentId);
+			}
 			if (xstudent == null) {
 				if (!iCheck.hasMessage())
 					iCheck.setMessage(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
