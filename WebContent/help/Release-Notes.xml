@@ -65,6 +65,15 @@
 				<line>Added ability to type in role (or roles) on the Personal Timetable page (but the roles do not show up in the Event Filter).</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Filter: Do not count conflicting events</name>
+			<description>
+				<line>Added ability to avoid counting conflicting events in the Event Filter.
+					<line>To be enabled by setting the application property unitime.events.eventFilter.skipConflictCounts to true (defaults is false).</line>
+					<line>This makes the component load faster, especially on MySQL.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
