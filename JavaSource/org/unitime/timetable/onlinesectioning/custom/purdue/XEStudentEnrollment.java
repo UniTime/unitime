@@ -392,7 +392,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					// offering is locked, make no changes
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
-						if (registered.remove(id) || added.contains(id)) {
+						if (registered.contains(id)) {
 							// no change to this section: keep the enrollment
 							if (added.add(id)) req.add(id);
 							List<XSection> sections = id2section.get(id);
@@ -419,14 +419,12 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					// offering is not locked: propose the changes
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
-						if (!registered.remove(id)) changed = true;
-						if (added.add(id)) {
-							if (!section.isEnabledForScheduling() || noadd.contains(id)) {
-								fails.add(new EnrollmentFailure(course, section, "Section not available for student scheduling.", false));
-								checked.add(id); failed.add(id);
-							} else {
-								req.add(id);
-							}
+						if (!registered.contains(id) && (!section.isEnabledForScheduling() || noadd.contains(id))) {
+							fails.add(new EnrollmentFailure(course, section, "Section not available for student scheduling.", false));
+							checked.add(id); failed.add(id);
+						} else {
+							if (!registered.contains(id)) changed = true;
+							if (added.add(id)) req.add(id);
 						}
 						List<XSection> sections = id2section.get(id);
 						if (sections == null) {
@@ -440,6 +438,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			// drop old sections
 			for (String id: registered) {
+				if (added.contains(id)) continue;
 				boolean drop = true;
 				for (XRequest r: student.getRequests())
 					if (r instanceof XCourseRequest) {
@@ -468,6 +467,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				if (drop) {
 					changed = true;
 					req.drop(id);
+				} else {
+					if (added.add(id)) req.add(id);
 				}
 			}
 			
