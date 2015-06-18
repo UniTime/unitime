@@ -33,6 +33,7 @@ import java.util.StringTokenizer;
 
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -134,10 +135,13 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				Entity notApproved = new Entity(3l, "Unapproved", "Not Approved Events"); notApproved.setCount(notApprovedCnt);
 				response.add("mode", notApproved);
 
-				int conflictingCnt = ((Number)query.select("count(distinct e)").from("Meeting mx").joinWithLocation()
-						.where("mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId and m.approvalStatus <= 1 and mx.approvalStatus <= 1 and l.ignoreRoomCheck = false")
-						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-				Entity conflicting = new Entity(5l, "Conflicting", "Conflicting Events"); conflicting.setCount(conflictingCnt);
+				Entity conflicting = new Entity(5l, "Conflicting", "Conflicting Events");
+				if (ApplicationProperty.EventFilterSkipConflictCounts.isFalse()) {
+					int conflictingCnt = ((Number)query.select("count(distinct e)").from("Meeting mx").joinWithLocation()
+							.where("mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId and m.approvalStatus <= 1 and mx.approvalStatus <= 1 and l.ignoreRoomCheck = false")
+							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+					conflicting.setCount(conflictingCnt);
+				}
 				response.add("mode", conflicting);
 				
 				if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
