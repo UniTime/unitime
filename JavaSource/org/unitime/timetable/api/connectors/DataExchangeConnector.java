@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.api.ApiConnector;
@@ -37,6 +36,7 @@ import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.dataexchange.DataExchangeHelper.LogWriter;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -50,8 +50,9 @@ public class DataExchangeConnector extends ApiConnector {
 	}
 
 	@Override
-	@PreAuthorize("checkPermission('ApiDataExchangeConnector')")
 	public void doGet(ApiHelper helper) throws IOException {
+		helper.getSessionContext().checkPermission(Right.ApiDataExchangeConnector);
+		
 		Long sessionId = helper.getAcademicSessionId();
 		if (sessionId == null)
 			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
@@ -77,8 +78,9 @@ public class DataExchangeConnector extends ApiConnector {
 	}
 	
 	@Override
-	@PreAuthorize("checkPermission('ApiDataExchangeConnector')")
 	public void doPost(ApiHelper helper) throws IOException {
+		helper.getSessionContext().checkPermission(Right.ApiDataExchangeConnector);
+		
 		Document document = helper.getRequest(Document.class);
 		Document output = DocumentHelper.createDocument();
 		final Element messages = output.addElement("html");

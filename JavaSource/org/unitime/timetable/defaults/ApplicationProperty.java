@@ -1854,6 +1854,12 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Conflict-statistics: save to file")
 	ConflictStatisticsSaveToFile("unitime.cbs.saveToFile"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("API: allow API tokens to be used for user authentication")
+	@Since(4.1)
+	ApiCanUseAPIToken("unitime.api.canUseToken"),
 	;
 
 	String iKey;

@@ -36,6 +36,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.api.ApiToken;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.UserEditForm;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.UserDAO;
@@ -50,6 +52,8 @@ import org.unitime.timetable.security.rights.Right;
 public class UserEditAction extends Action {
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired ApiToken apiToken;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
@@ -120,6 +124,8 @@ public class UserEditAction extends Action {
                     saveErrors(request, errors);
                 } else {
                 	myForm.load(u);
+                	if (ApplicationProperty.ApiCanUseAPIToken.isTrue())
+                		myForm.setToken(apiToken.getToken(u.getExternalUniqueId(), u.getPassword()));
                 }
             }
         }
@@ -160,30 +166,55 @@ public class UserEditAction extends Action {
     private void getUserList(HttpServletRequest request) throws Exception {
 		WebTable.setOrder(sessionContext,"users.ord",request.getParameter("ord"),1);
 		// Create web table instance 
-        WebTable webTable = new WebTable( 4,
-			    null, "userEdit.do?ord=%%",
-			    new String[] {"External ID", "User Name", "Manager"},
-			    new String[] {"left", "left", "left"},
-			    null );
+        WebTable webTable = null;
+        boolean showTokents = ApplicationProperty.ApiCanUseAPIToken.isTrue();
+        if (showTokents) {
+        	webTable = new WebTable( 4,
+    			    null, "userEdit.do?ord=%%",
+    			    new String[] {"External ID", "User Name", "Manager", "API Secret"},
+    			    new String[] {"left", "left", "left", "left"},
+    			    null );	
+        } else {
+        	webTable = new WebTable( 3,
+    			    null, "userEdit.do?ord=%%",
+    			    new String[] {"External ID", "User Name", "Manager"},
+    			    new String[] {"left", "left", "left"},
+    			    null );
+        }
         
         List users = new UserDAO().findAll();
 		if(users.isEmpty()) {
-		    webTable.addLine(null, new String[] {"No users defined."}, null, null );			    
+		    webTable.addLine(null, new String[] {"No users defined."}, null);			    
 		}
 		
         for (Iterator i=users.iterator();i.hasNext();) {
             org.unitime.timetable.model.User user = (org.unitime.timetable.model.User)i.next();
         	String onClick = "onClick=\"document.location='userEdit.do?op=Edit&id=" + user.getExternalUniqueId() + "';\"";
             TimetableManager mgr = TimetableManager.findByExternalId(user.getExternalUniqueId());
-            webTable.addLine(onClick, new String[] {
-                    user.getExternalUniqueId(),
-                    user.getUsername(),
-                    (mgr==null?"":mgr.getName())
-        		},new Comparable[] {
-        			user.getExternalUniqueId(),
-                    user.getUsername(),
-                    (mgr==null?"":mgr.getName())
-        		});
+            if (showTokents) {
+            	String token = apiToken.getToken(user.getExternalUniqueId(), user.getPassword());
+            	webTable.addLine(onClick, new String[] {
+                        user.getExternalUniqueId(),
+                        user.getUsername(),
+                        (mgr==null?"":mgr.getName()),
+                        (token == null ? "" : token)
+            		},new Comparable[] {
+            			user.getExternalUniqueId(),
+                        user.getUsername(),
+                        (mgr==null?"":mgr.getName()),
+                        null
+            		});
+            } else {
+            	webTable.addLine(onClick, new String[] {
+                        user.getExternalUniqueId(),
+                        user.getUsername(),
+                        (mgr==null?"":mgr.getName())
+            		},new Comparable[] {
+            			user.getExternalUniqueId(),
+                        user.getUsername(),
+                        (mgr==null?"":mgr.getName())
+            		});
+            }
         }
         
 	    request.setAttribute("Users.table", webTable.printTable(WebTable.getOrder(sessionContext,"users.ord")));

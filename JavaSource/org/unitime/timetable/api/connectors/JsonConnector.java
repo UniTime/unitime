@@ -5,13 +5,13 @@ import java.io.IOException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -39,8 +39,9 @@ public class JsonConnector extends ApiConnector {
 		}
 	}
 
-	@PreAuthorize("checkPermission('ApiJsonConnector')")
 	public void doPost(ApiHelper helper) throws IOException {
+		helper.getSessionContext().checkPermission(Right.ApiJsonConnector);
+		
 		String type = helper.getParameter("type");
 		if (type == null)
 			throw new IllegalArgumentException("TYPE parameter not provided.");
