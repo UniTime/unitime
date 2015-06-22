@@ -46,28 +46,36 @@ public class RolesConnector extends ApiConnector {
 	
 	@Override
 	public void doGet(ApiHelper helper) throws IOException {
-		String externalId = helper.getParameter("id");
-		if (externalId == null || externalId.isEmpty())
-			throw new IllegalArgumentException("Parameter ID not provided");
-		if (ApplicationProperty.ApiTrimLeadingZerosFromUserExternalIds.isTrue())
-			while (externalId.startsWith("0")) externalId = externalId.substring(1);
-		
 		helper.getSessionContext().checkPermission(Right.ApiRetrieveRoles);
-		
-		List<SessionInfo> response = new ArrayList<SessionInfo>();
-		UniTimeUserContext context = new UniTimeUserContext(externalId, null, null, null);
+
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
-		for (Session session: (List<Session>)hibSession.createQuery("from Session order by academicInitiative, sessionBeginDateTime").list()) {
-			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
-			List<String> roles = new ArrayList<String>();
-			for (UserAuthority authority: context.getAuthorities(null, session)) {
-				if (Roles.ROLE_NONE.equals(authority.getRole())) continue;
-				if (Roles.ROLE_ANONYMOUS.equals(authority.getRole())) continue;
-				roles.add(authority.getRole());
+		List<Session> sessions = hibSession.createQuery("from Session order by academicInitiative, sessionBeginDateTime").list();
+		List<SessionInfo> response = new ArrayList<SessionInfo>();
+
+		String externalId = helper.getParameter("id");
+		if (externalId == null || externalId.isEmpty()) {
+			for (Session session: sessions) {
+				if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
+				response.add(new SessionInfo(format, session, null, null));
 			}
-			if (roles.isEmpty()) continue;
-			response.add(new SessionInfo(format, session, roles, session.getUniqueId().equals(context.getCurrentAcademicSessionId())));
+		} else {
+			if (ApplicationProperty.ApiTrimLeadingZerosFromUserExternalIds.isTrue())
+				while (externalId.startsWith("0")) externalId = externalId.substring(1);
+			
+			UniTimeUserContext context = new UniTimeUserContext(externalId, null, null, null);
+			
+			for (Session session: sessions) {
+				if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
+				List<String> roles = new ArrayList<String>();
+				for (UserAuthority authority: context.getAuthorities(null, session)) {
+					if (Roles.ROLE_NONE.equals(authority.getRole())) continue;
+					if (Roles.ROLE_ANONYMOUS.equals(authority.getRole())) continue;
+					roles.add(authority.getRole());
+				}
+				if (roles.isEmpty()) continue;
+				response.add(new SessionInfo(format, session, roles, session.getUniqueId().equals(context.getCurrentAcademicSessionId())));
+			}
 		}
 		
 		helper.setResponse(response);
@@ -76,7 +84,7 @@ public class RolesConnector extends ApiConnector {
 	class SessionInfo {
 		Long iSessionId;
 		String iReference;
-		boolean iSelected;
+		Boolean iSelected;
 		String iYear;
 		String iTerm;
 		String iCampus;
@@ -91,7 +99,7 @@ public class RolesConnector extends ApiConnector {
 		StatusInfo iStatus;
 		List<String> iRoles;
 		
-		SessionInfo(DateFormat format, Session session, List<String> roles, boolean selected) {
+		SessionInfo(DateFormat format, Session session, List<String> roles, Boolean selected) {
 			iSessionId = session.getUniqueId();
 			iReference = session.getReference();
 			iYear = session.getAcademicYear();
