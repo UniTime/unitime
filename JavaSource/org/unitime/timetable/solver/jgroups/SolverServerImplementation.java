@@ -70,8 +70,8 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 public class SolverServerImplementation extends AbstractSolverServer implements MessageListener, MembershipListener, Receiver {
 	private static Log sLog = LogFactory.getLog(SolverServerImplementation.class);
 	private static SolverServerImplementation sInstance = null;
-	public static final RequestOptions sFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
-	public static final RequestOptions sAllResponses = new RequestOptions(ResponseMode.GET_ALL, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
+	public static final RequestOptions sFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, ApplicationProperty.SolverClusterTimeout.intValue()).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
+	public static final RequestOptions sAllResponses = new RequestOptions(ResponseMode.GET_ALL, ApplicationProperty.SolverClusterTimeout.intValue()).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	
 	private JChannel iChannel;
 	private RpcDispatcher iDispatcher;
@@ -394,8 +394,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 
 		public boolean isActive() throws Exception {
 			try {
-				Boolean active = iDispatcher.callRemoteMethod(iAddress, "isActive", new Object[] {}, new Class[] {},
-						new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB));
+				Boolean active = iDispatcher.callRemoteMethod(iAddress, "isActive", new Object[] {}, new Class[] {}, sFirstResponse);
 				return active;
 			} catch (SuspectedException e) {
 				return false;
@@ -407,8 +406,7 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
     		try {
     			return getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(this, args);
     		} catch (NoSuchMethodException e) {}
-    		return iDispatcher.callRemoteMethod(iAddress, method.getName(), args, method.getParameterTypes(),
-    				new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB));
+    		return iDispatcher.callRemoteMethod(iAddress, method.getName(), args, method.getParameterTypes(), sFirstResponse);
 		}
 
 	}

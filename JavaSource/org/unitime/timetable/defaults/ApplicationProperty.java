@@ -1300,6 +1300,11 @@ public enum ApplicationProperty {
 	@Description("Clustering: initial hosts for the solver cluster (cluster discovery)")
 	@Since(3.5)
 	SolverClusterInitialHosts("unitime.solver.initial_hosts"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("900000")
+	@Description("Clustering: solver request timeout in milliseconds (0 means wait until all responses have been received)")
+	SolverClusterTimeout("unitime.solver.timeout"),
 
 	@Type(Integer.class)
 	@DefaultValue("100")
