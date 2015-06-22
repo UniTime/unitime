@@ -522,9 +522,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			
 			setLastSessionId(request.getAcademicSessionId());
 			setLastRequest(request);
-			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId());
 			if (server == null) {
+				org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 				ArrayList<String> notFound = new ArrayList<String>();
 				CourseMatcher matcher = getCourseMatcher(request.getAcademicSessionId());
 				Long studentId = getStudentId(request.getAcademicSessionId());
@@ -921,7 +921,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			return ret;
 		}
 		
-		org.hibernate.Session hibSession = StudentDAO.getInstance().getSession();
 		try {
 			OnlineSectioningServer server = getServerInstance(sessionId);
 			if (server == null) throw new SectioningException(MSG.exceptionBadSession());
@@ -933,34 +932,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					ret.setCanEnroll(false);
 			}
 			if (!ret.getCourseAssignments().isEmpty()) return ret;
-			/*
-			Student student = StudentDAO.getInstance().get(studentId, hibSession);
-			if (student == null) throw new SectioningException(SectioningExceptionType.BAD_STUDENT_ID);
-			Lock lock = server.readLock();
-			try {
-				if (!student.getClassEnrollments().isEmpty()) {
-					ArrayList<ClassAssignmentInterface.ClassAssignment> ret = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
-					for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
-						StudentClassEnrollment enrl = i.next();
-						XCourse course = server.getCourseInfo(enrl.getCourseOffering().getUniqueId());
-						Section section = server.getSection(enrl.getClazz().getUniqueId());
-						if (course == null || section == null) continue;
-						ClassAssignmentInterface.ClassAssignment ca = new ClassAssignmentInterface.ClassAssignment();
-						ca.setCourseId(course.getUniqueId());
-						ca.setClassId(section.getId());
-						ca.setPinned(true);
-						ca.setSubject(course.getSubjectArea());
-						ca.setCourseNbr(course.getCourseNbr());
-						ca.setSubpart(section.getSubpart().getName());
-						ca.setSection(section.getName(course.getUniqueId()));
-						ret.add(ca);
-					}
-					if (!ret.isEmpty()) return ret;
-				}
-			} finally {
-				lock.release();
-			}
-			*/
 			throw new SectioningException(MSG.exceptionNoSchedule());
 		} catch (PageAccessException e) {
 			throw e;
@@ -968,8 +939,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			throw e;
 		} catch (Exception e) {
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
-		} finally {
-			hibSession.close();
 		}
 	}
 
@@ -1018,7 +987,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (sessionId != null) request.setStudentId(getStudentId(sessionId));
 		}
 		
-		Long sessionId = canEnroll(online, request.getStudentId());
+		Long sessionId = canEnroll(online, request.getAcademicSessionId(), request.getStudentId());
 		if (!request.getAcademicSessionId().equals(sessionId))
 			throw new SectioningException(MSG.exceptionBadSession());
 		
@@ -1757,6 +1726,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 	@Override
 	public Long canEnroll(boolean online, Long studentId) throws SectioningException, PageAccessException {
+		return canEnroll(online, null, studentId);
+	}
+	
+	protected Long canEnroll(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException {
 		try {
 			if (!online) {
 				OnlineSectioningServer server = getStudentSolver();
@@ -1770,7 +1743,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return server.getAcademicSession().getUniqueId();
 			}
 			
-			EligibilityCheck check = checkEligibility(online, null, studentId, null, ApplicationProperty.OnlineSchedulingCustomEligibilityRecheck.isTrue());
+			EligibilityCheck check = checkEligibility(online, sessionId, studentId, null, ApplicationProperty.OnlineSchedulingCustomEligibilityRecheck.isTrue());
 			if (check == null || !check.hasFlag(EligibilityFlag.CAN_ENROLL))
 				throw new SectioningException(check.getMessage());
 			
