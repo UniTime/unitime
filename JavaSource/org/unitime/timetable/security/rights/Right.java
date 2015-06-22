@@ -568,6 +568,7 @@ public enum Right {
     ApiRetrieveRoles,
     ApiRetrieveEnrollments(Session.class),
     ApiRetrieveInstructorSchedule(Session.class),
+    ApiRetrieveClassInfo(Session.class),
     ApiJsonConnector,
     ApiDataExchangeConnector,
 
