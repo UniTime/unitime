@@ -299,6 +299,7 @@ public class InstructorScheduleConnector extends ApiConnector{
 	protected class ExamInfo {
 		Long iExamId;
 		String iName;
+		String iType;
 		Integer iSize;
 		List<ExamOwnerInfo> iOwners = new ArrayList<ExamOwnerInfo>();
 		PeriodInfo iPeriod;
@@ -307,6 +308,7 @@ public class InstructorScheduleConnector extends ApiConnector{
 		ExamInfo(Exam exam) {
 			iExamId = exam.getUniqueId();
 			iName = exam.getName();
+			iType = exam.getExamType().getReference();
 			for (ExamOwner owner: exam.getOwners())
 				iOwners.add(new ExamOwnerInfo(owner));
 			iSize = exam.getSize();
