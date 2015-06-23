@@ -79,6 +79,7 @@ public class ClassInfoConnector extends ApiConnector {
 	
 	class InstructorInfo {
 		Long iInstructorId;
+		String iExternalId;
 		String iFirstName;
 		String iMiddleName;
 		String iLastName;
@@ -90,6 +91,7 @@ public class ClassInfoConnector extends ApiConnector {
 		
 		InstructorInfo(DepartmentalInstructor instructor) {
 			iInstructorId = instructor.getUniqueId();
+			iExternalId = instructor.getExternalUniqueId();
 			iFirstName = instructor.getFirstName();
 			iMiddleName = instructor.getMiddleName();
 			iLastName = instructor.getLastName();
@@ -204,16 +206,19 @@ public class ClassInfoConnector extends ApiConnector {
 			}
             if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
             if (limit >= 0) iLimit = limit;
-            iInstructors = new ArrayList<InstructorAssignmentInfo>();
-			for (ClassInstructor ci: clazz.getClassInstructors()) {
+            for (ClassInstructor ci: clazz.getClassInstructors()) {
+            	if (iInstructors == null)
+            		iInstructors = new ArrayList<InstructorAssignmentInfo>();
 				iInstructors.add(new InstructorAssignmentInfo(ci));
 			}
-			iCoordinators = new ArrayList<InstructorInfo>();
 			for (DepartmentalInstructor di: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
+				if (iCoordinators == null)
+					iCoordinators = new ArrayList<InstructorInfo>();
 				iCoordinators.add(new InstructorInfo(di));
 			}
-			iExams = new ArrayList<ExamInfo>();
 			for (Exam exam: (List<Exam>)Exam.findAllRelated("Class_", clazz.getUniqueId())) {
+				if (iExams == null)
+					iExams = new ArrayList<ExamInfo>();		
 				iExams.add(new ExamInfo(exam));
 			}
 		}
@@ -265,6 +270,7 @@ public class ClassInfoConnector extends ApiConnector {
 		List<ExamOwnerInfo> iOwners = new ArrayList<ExamOwnerInfo>();
 		PeriodInfo iPeriod;
 		List<RoomInfo> iRoom;
+		List<InstructorInfo> iInstructors;
 		
 		ExamInfo(Exam exam) {
 			iExamId = exam.getUniqueId();
@@ -278,6 +284,11 @@ public class ClassInfoConnector extends ApiConnector {
 				if (iRoom == null)
 					iRoom = new ArrayList<RoomInfo>();
 				iRoom.add(new RoomInfo(room));
+			}
+			for (DepartmentalInstructor di: exam.getInstructors()) {
+				if (iInstructors == null)
+					iInstructors = new ArrayList<InstructorInfo>();
+				iInstructors.add(new InstructorInfo(di));
 			}
 		}
 	}

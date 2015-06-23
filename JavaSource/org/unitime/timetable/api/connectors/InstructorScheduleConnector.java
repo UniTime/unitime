@@ -131,6 +131,7 @@ public class InstructorScheduleConnector extends ApiConnector{
 	
 	class InstructorInfo {
 		Long iInstructorId;
+		String iExternalId;
 		String iFirstName;
 		String iMiddleName;
 		String iLastName;
@@ -142,6 +143,7 @@ public class InstructorScheduleConnector extends ApiConnector{
 		
 		InstructorInfo(DepartmentalInstructor instructor) {
 			iInstructorId = instructor.getUniqueId();
+			iExternalId = instructor.getExternalUniqueId();
 			iFirstName = instructor.getFirstName();
 			iMiddleName = instructor.getMiddleName();
 			iLastName = instructor.getLastName();
