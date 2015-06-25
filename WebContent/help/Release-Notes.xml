@@ -40,6 +40,14 @@
 				<line>Avoid inclusing classes that were rejected to be added by the custom student enrollment interface in the consecutive enrollment request.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Student Sectioning</name>
+			<description>
+				<line>Include committed student conflicts in the check whether a student swap was improving.</line>
+				<line>Undo the swap if it was not improving (this fixes the problem that could cause student sectioning to hang).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
