@@ -42,9 +42,11 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -74,9 +76,11 @@ import org.unitime.timetable.util.Formats;
 public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInterface>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
+	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	
 	private Long iStudentId;
 	private List<EnrollmentFailure> iMessages;
+	private boolean iIncludeRequest = false;
 	
 	public GetAssignment forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -85,6 +89,11 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	
 	public GetAssignment withMessages(List<EnrollmentFailure> messages) {
 		iMessages = messages;
+		return this;
+	}
+	
+	public GetAssignment withRequest(boolean includeRequest) {
+		iIncludeRequest = includeRequest;
 		return this;
 	}
 
@@ -343,6 +352,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							a.setBackToBackDistance(dist);
 							a.setBackToBackRooms(from);
 							a.setSaved(false);
+							a.setDummy(true);
 							a.setError(f.getMessage());
 							a.setExpected(overExp.getExpected(section.getLimit(), expectations.getExpectedSpace(section.getSectionId())));
 						}
@@ -385,6 +395,68 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							ret.addMessage(message);
 					}
 				}
+			}
+			
+			if (iIncludeRequest) {
+				CourseRequestInterface request = new CourseRequestInterface();
+				request.setStudentId(iStudentId);
+				request.setSaved(true);
+				request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
+				CourseRequestInterface.Request lastRequest = null;
+				int lastRequestPriority = -1;
+				for (XRequest cd: student.getRequests()) {
+					CourseRequestInterface.Request r = null;
+					if (cd instanceof XFreeTimeRequest) {
+						XFreeTimeRequest ftr = (XFreeTimeRequest)cd;
+						CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
+						ft.setStart(ftr.getTime().getSlot());
+						ft.setLength(ftr.getTime().getLength());
+						for (DayCode day : DayCode.toDayCodes(ftr.getTime().getDays()))
+							ft.addDay(day.getIndex());
+						if (lastRequest != null && lastRequestPriority == cd.getPriority()) {
+							r = lastRequest;
+							lastRequest.addRequestedFreeTime(ft);
+							lastRequest.setRequestedCourse(lastRequest.getRequestedCourse() + ", " + ft.toString());
+						} else {
+							r = new CourseRequestInterface.Request();
+							r.addRequestedFreeTime(ft);
+							r.setRequestedCourse(ft.toString());
+							if (cd.isAlternative())
+								request.getAlternatives().add(r);
+							else
+								request.getCourses().add(r);
+						}
+					} else if (cd instanceof XCourseRequest) {
+						r = new CourseRequestInterface.Request();
+						int order = 0;
+						for (XCourseId courseId: ((XCourseRequest)cd).getCourseIds()) {
+							XCourse c = server.getCourse(courseId.getCourseId());
+							if (c == null) continue;
+							switch (order) {
+								case 0: 
+									r.setRequestedCourse(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+									break;
+								case 1:
+									r.setFirstAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+									break;
+								case 2:
+									r.setSecondAlternative(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() ? "" : " - " + c.getTitle()));
+								}
+							order++;
+							}
+						r.setWaitList(((XCourseRequest)cd).isWaitlist());
+						if (r.hasRequestedCourse()) {
+							if (cd.isAlternative())
+								request.getAlternatives().add(r);
+							else
+								request.getCourses().add(r);
+						}
+						lastRequest = r;
+						lastRequestPriority = cd.getPriority();
+					}
+					action.addRequest(OnlineSectioningHelper.toProto(cd));
+				}
+				ret.setRequest(request);
 			}
 			
 			return ret;

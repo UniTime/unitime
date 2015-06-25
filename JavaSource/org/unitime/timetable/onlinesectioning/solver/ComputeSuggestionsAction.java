@@ -255,6 +255,8 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		}
 		
 		long t2 = System.currentTimeMillis();
+		
+		if (selectedRequest == null) return new ArrayList<ClassAssignmentInterface>();
         
 		SuggestionsBranchAndBound suggestionBaB = null;
 		
