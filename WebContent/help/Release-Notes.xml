@@ -28,6 +28,20 @@
 	<version>3.5.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Online Student Scheduling: Custom Student Enrollment Interface</name>
+			<description>
+				<line>Fixed an issue with the disabled for student scheduling check (do not drop a student if he/she is already in the section).</line>
+				<line>Keep sections that cannot be dropped in the add (courseReferenceNumbers) list.</line>
+				<line>When a course is locked and there is a change, also mark dropped sections as failed.</line>
+				<line>When UniTime does not know about the student, but there is an enrollment provider capable of requesting updates, then use the custom eligibility check to request an update.</line>
+				<line>During enrollment, ensure that there is a request for any course that the student failed to drop because of the custom student enrollment interface rejected the drop.</line>
+				<line>Avoid inclusing classes that were rejected to be added by the custom student enrollment interface in the consecutive enrollment request.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other Improvements</title>
 		<item>
 			<name>Course Timetabling: N Hour Work Day</name>

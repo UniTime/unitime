@@ -72,6 +72,12 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	public double getValue() { return iValue; }
 	public void setValue(double value) { iValue = value; }
 	
+	private CourseRequestInterface iRequest = null;
+	
+	public boolean hasRequest() { return iRequest != null; }
+	public void setRequest(CourseRequestInterface request) { iRequest = request; }
+	public CourseRequestInterface getRequest() { return iRequest; }
+	
 	public static class CourseAssignment implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private Long iCourseId = null;
@@ -211,7 +217,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private boolean iPin = false;
 		private int iBackToBackDistance = 0;
 		private String iBackToBackRooms = null;
-		private boolean iSaved = false;
+		private boolean iSaved = false, iDummy = false;
 		private Integer iExpected = null;
 		private String iOverlapNote = null;
 		private String iNote = null;
@@ -436,6 +442,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 
 		public boolean isSaved() { return iSaved; }
 		public void setSaved(boolean saved) { iSaved = saved; }
+		
+		public boolean isDummy() { return iDummy; }
+		public void setDummy(boolean dummy) { iDummy = dummy; }
 		
 		public void setError(String error) { iError = error; }
 		public boolean hasError() { return iError != null && !iError.isEmpty(); }

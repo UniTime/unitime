@@ -110,7 +110,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 	public Long getStudentId() { return iStudentId; }
 	public CourseRequestInterface getRequest() { return iRequest; }
 	public List<ClassAssignmentInterface.ClassAssignment> getAssignment() { return iAssignment; }
-
+	
 	@Override
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		if (!server.getAcademicSession().isSectioningEnabled())
@@ -118,8 +118,9 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		Set<Long> offeringIds = new HashSet<Long>();
 		Set<Long> lockedCourses = new HashSet<Long>();
 		List<EnrollmentFailure> failures = null;
+		boolean includeRequestInTheReturnMessage = false;
 		for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
-			if (ca != null && !ca.isFreeTime()) {
+			if (ca != null && !ca.isFreeTime() && !ca.isDummy()) {
 				XCourse course = server.getCourse(ca.getCourseId());
 				if (course == null)
 					throw new SectioningException(MSG.exceptionEnrollNotAvailable(MSG.clazz(ca.getSubject(), ca.getCourseNbr(), ca.getSubpart(), ca.getSection())));
@@ -127,9 +128,9 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					lockedCourses.add(course.getCourseId());
 					for (CourseRequestInterface.Request r: getRequest().getCourses())
 						if (!r.isWaitList() && !r.hasRequestedFreeTime()) {
-							if ((r.hasRequestedCourse() && r.getRequestedCourse().equalsIgnoreCase(MSG.course(course.getSubjectArea(), course.getCourseNumber()))) ||
-								(r.hasFirstAlternative() && r.getFirstAlternative().equalsIgnoreCase(MSG.course(course.getSubjectArea(), course.getCourseNumber()))) ||
-								(r.hasSecondAlternative() && r.getSecondAlternative().equalsIgnoreCase(MSG.course(course.getSubjectArea(), course.getCourseNumber()))))
+							if ((r.hasRequestedCourse() && course.matchCourseName(r.getRequestedCourse())) ||
+								(r.hasFirstAlternative() && course.matchCourseName(r.getFirstAlternative())) ||
+								(r.hasSecondAlternative() && course.matchCourseName(r.getSecondAlternative())))
 								r.setWaitList(true);
 						}
 				} else {
@@ -165,7 +166,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					if (assignment != null) {
 						OnlineSectioningLog.Section s = OnlineSectioningHelper.toProto(assignment); 
 						requested.addSection(s);
-						if (!assignment.isFreeTime()) {
+						if (!assignment.isFreeTime() && !assignment.isDummy()) {
 							OnlineSectioningLog.CourseRequestOption.Builder option = options.get(assignment.getCourseId());
 							if (option == null) {
 								option = OnlineSectioningLog.CourseRequestOption.newBuilder().setType(OnlineSectioningLog.CourseRequestOption.OptionType.ORIGINAL_ENROLLMENT);
@@ -205,7 +206,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					failures = CustomStudentEnrollmentHolder.getProvider().enroll(server, helper, oldStudent, enrlCheck, lockedCourses);
 					for (Iterator<ClassAssignmentInterface.ClassAssignment> i = getAssignment().iterator(); i.hasNext(); ) {
 						ClassAssignmentInterface.ClassAssignment ca = i.next();
-						if (ca == null || ca.isFreeTime() || ca.getClassId() == null) continue;
+						if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy()) continue;
 						for (EnrollmentFailure f: failures) {
 							if (!f.isEnrolled() && f.getSection().getSectionId().equals(ca.getClassId())) {
 								i.remove();
@@ -221,40 +222,6 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						ca.setClassId(f.getSection().getSectionId());
 						ca.setCourseId(f.getCourse().getCourseId());
 						getAssignment().add(ca);
-						// ensure that there is a request for the course
-						boolean hasRequest = false;
-						CourseRequestInterface.Request fe = null; // first empty
-						for (CourseRequestInterface.Request r: getRequest().getCourses()) {
-							if (r.hasRequestedCourse() && f.getCourse().matchCourseName(r.getRequestedCourse().toLowerCase())) {
-								hasRequest = true; break;
-							}
-							if (r.hasFirstAlternative() && f.getCourse().matchCourseName(r.getFirstAlternative().toLowerCase())) {
-								hasRequest = true; break;
-							}
-							if (r.hasSecondAlternative() && f.getCourse().matchCourseName(r.getSecondAlternative().toLowerCase())) {
-								hasRequest = true; break;
-							}
-							if (fe == null && !r.hasRequestedFreeTime() && !r.hasRequestedCourse() && !r.hasFirstAlternative() && !r.hasSecondAlternative()) fe = r;
-						}
-						if (!hasRequest)
-							for (CourseRequestInterface.Request r: getRequest().getAlternatives()) {
-								if (r.hasRequestedCourse() && f.getCourse().matchCourseName(r.getRequestedCourse().toLowerCase())) {
-									hasRequest = true; break;
-								}
-								if (r.hasFirstAlternative() && f.getCourse().matchCourseName(r.getFirstAlternative().toLowerCase())) {
-									hasRequest = true; break;
-								}
-								if (r.hasSecondAlternative() && f.getCourse().matchCourseName(r.getSecondAlternative().toLowerCase())) {
-									hasRequest = true; break;
-								}
-							}
-						if (!hasRequest) {
-							if (fe == null) {
-								fe = new CourseRequestInterface.Request();
-								getRequest().getCourses().add(fe);
-							}								
-							fe.setRequestedCourse(f.getCourse().getCourseName());
-						}
 					}
 				}
 				
@@ -562,7 +529,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				Map<Long, Class_> classes = new HashMap<Long, Class_>();
 				String classIds = null;
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
-					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || oldEnrollments.containsKey(new IdPair(ca.getCourseId(), ca.getClassId()))) continue;
+					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || oldEnrollments.containsKey(new IdPair(ca.getCourseId(), ca.getClassId()))) continue;
 					if (classIds == null)
 						classIds = ca.getClassId().toString();
 					else
@@ -576,11 +543,73 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							"where c.uniqueId in (" + classIds + ")").list()) {
 						classes.put(clazz.getUniqueId(), clazz);
 					}
+				Map<Long, Long> courseDemandId2courseId = new HashMap<Long, Long>();
 				
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
-					if (ca == null || ca.isFreeTime() || ca.getClassId() == null) continue;
+					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy()) continue;
 					CourseRequest cr = course2request.get(ca.getCourseId());
-					if (cr == null) continue;
+					if (cr == null) {
+						CourseDemand cd = null;
+						adepts: for (Iterator<CourseDemand> i = remaining.iterator(); i.hasNext(); ) {
+							CourseDemand adept = i.next();
+							if (adept.getFreeTime() != null) continue;
+							for (CourseRequest r: adept.getCourseRequests())
+								if (r.getCourseOffering().getUniqueId().equals(ca.getCourseId())) {
+									cd = adept; i.remove();  break adepts;
+								}
+						}
+						if (cd == null) {
+							cd = new CourseDemand();
+							cd.setTimestamp(ts);
+							cd.setChangedBy(helper.getUser() == null ? null : helper.getUser().getExternalId());
+							cd.setCourseRequests(new HashSet<CourseRequest>());
+							cd.setStudent(student);
+							student.getCourseDemands().add(cd);
+						}						
+						cd.setAlternative(false);
+						cd.setPriority(priority++);
+						cd.setWaitlist(false);
+						cr = new CourseRequest();
+						cd.getCourseRequests().add(cr);
+						cr.setCourseDemand(cd);
+						cr.setCourseRequestOptions(new HashSet<CourseRequestOption>());
+						OnlineSectioningLog.CourseRequestOption.Builder option = options.get(ca.getCourseId());
+						if (option != null) {
+							CourseRequestOption o = new CourseRequestOption();
+							o.setCourseRequest(cr);
+							o.setOption(option.build());
+							cr.getCourseRequestOptions().add(o);
+						}
+						cr.setAllowOverlap(false);
+						cr.setCredit(0);
+						cr.setOrder(0);
+						cr.setCourseOffering(CourseOfferingDAO.getInstance().get(ca.getCourseId(), helper.getHibSession()));
+						course2request.put(ca.getCourseId(), cr);
+						helper.getHibSession().saveOrUpdate(cd);
+						courseDemandId2courseId.put(cd.getUniqueId(), ca.getCourseId());
+						includeRequestInTheReturnMessage = true;
+					} else {
+						Long courseId = courseDemandId2courseId.get(cr.getCourseDemand().getUniqueId());
+						if (courseId == null)
+							courseDemandId2courseId.put(cr.getCourseDemand().getUniqueId(), ca.getCourseId());
+						else if (!courseId.equals(ca.getCourseId())) {
+							cr.getCourseDemand().getCourseRequests().remove(cr);
+							CourseDemand cd = new CourseDemand();
+							cd.setTimestamp(ts);
+							cd.setChangedBy(helper.getUser() == null ? null : helper.getUser().getExternalId());
+							cd.setCourseRequests(new HashSet<CourseRequest>());
+							cd.setStudent(student);
+							student.getCourseDemands().add(cd);
+							cd.setAlternative(false);
+							cd.setPriority(priority++);
+							cd.setWaitlist(false);
+							cr.setCourseDemand(cd);
+							cd.getCourseRequests().add(cr);
+							helper.getHibSession().saveOrUpdate(cd);
+							courseDemandId2courseId.put(cd.getUniqueId(), ca.getCourseId());
+							includeRequestInTheReturnMessage = true;
+						}
+					}
 					
 					StudentClassEnrollment enrl = oldEnrollments.remove(new IdPair(ca.getCourseId(), ca.getClassId()));
 					if (enrl != null) {
@@ -769,7 +798,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			lock.release();
 		}
 		
-		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures), helper.getUser());
+		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withRequest(includeRequestInTheReturnMessage), helper.getUser());
 	}
 	
 	public static int getLimit(Enrollment enrollment, Map<Long, XSection> sections) {

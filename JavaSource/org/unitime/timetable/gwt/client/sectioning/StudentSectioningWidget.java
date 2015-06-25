@@ -496,6 +496,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						LoadingWidget.getInstance().hide();
 						iSavedAssignment = result;
 						fillIn(result);
+						if (result.hasRequest())
+							iCourseRequests.setRequest(result.getRequest());
 						if (!result.hasMessages())
 							setMessage(MESSAGES.enrollOK());
 						updateHistory();
@@ -657,6 +659,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						WebTable.IconsCell icons = new WebTable.IconsCell();
 						if (clazz.isSaved())
 							icons.add(RESOURCES.saved(), MESSAGES.saved(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
+						else if (clazz.isDummy())
+							icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 						else if (!clazz.isFreeTime() && result.isCanEnroll())
 							icons.add(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 						if (clazz.hasError()) {
@@ -674,7 +678,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						totalCredit += clazz.guessCreditCount();
 						if (clazz.isAssigned()) {
 							row = new WebTable.Row(
-								new WebTable.CheckboxCell(clazz.isPinned(), course.isFreeTime() ? ARIA.freeTimePin(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours())) : ARIA.classPin(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection())), MESSAGES.hintLocked(), MESSAGES.hintUnlocked()),
+								clazz.isDummy() ? new WebTable.Cell(null) : new WebTable.CheckboxCell(clazz.isPinned(), course.isFreeTime() ? ARIA.freeTimePin(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours())) : ARIA.classPin(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection())), MESSAGES.hintLocked(), MESSAGES.hintUnlocked()),
 								new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : "").aria(firstClazz ? "" : course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
 								new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : "").aria(firstClazz ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
 								new WebTable.Cell(clazz.getSubpart()),
@@ -692,7 +696,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								icons);
 						} else {
 							row = new WebTable.Row(
-									new WebTable.CheckboxCell(clazz.isPinned() , course.isFreeTime() ? ARIA.freeTimePin(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours())) : ARIA.classPin(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection())), MESSAGES.hintLocked(), MESSAGES.hintUnlocked()),
+									clazz.isDummy() ? new WebTable.Cell(null) : new WebTable.CheckboxCell(clazz.isPinned() , course.isFreeTime() ? ARIA.freeTimePin(clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours())) : ARIA.classPin(MESSAGES.clazz(course.getSubject(), course.getCourseNbr(), clazz.getSubpart(), clazz.getSection())), MESSAGES.hintLocked(), MESSAGES.hintUnlocked()),
 									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : ""),
 									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : ""),
 									new WebTable.Cell(clazz.getSubpart()),
@@ -715,21 +719,22 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						final ArrayList<TimeGrid.Meeting> meetings = (clazz.isFreeTime() ? null : iAssignmentGrid.addClass(clazz, rows.size()));
 						// row.setId(course.isFreeTime() ? "Free " + clazz.getDaysString() + " " +clazz.getStartString() + " - " + clazz.getEndString() : course.getCourseId() + ":" + clazz.getClassId());
 						final int index = rows.size();
-						((CheckBox)row.getCell(0).getWidget()).addClickHandler(new ClickHandler() {
-							public void onClick(ClickEvent event) {
-								Boolean checked = Boolean.valueOf(finalRow.getCell(0).getValue());
-								if (meetings == null) {
-									iLastResult.get(index).setPinned(checked);
-								} else {
-									for (Meeting m: meetings) {
-										m.setPinned(checked);
-										iLastResult.get(m.getIndex()).setPinned(checked);
+						if (!clazz.isDummy())
+							((CheckBox)row.getCell(0).getWidget()).addClickHandler(new ClickHandler() {
+								public void onClick(ClickEvent event) {
+									Boolean checked = Boolean.valueOf(finalRow.getCell(0).getValue());
+									if (meetings == null) {
+										iLastResult.get(index).setPinned(checked);
+									} else {
+										for (Meeting m: meetings) {
+											m.setPinned(checked);
+											iLastResult.get(m.getIndex()).setPinned(checked);
+										}
 									}
 								}
-							}
-						});
+							});
 						rows.add(row);
-						iLastResult.add(clazz);
+						iLastResult.add(clazz.isDummy() ? null : clazz);
 						for (WebTable.Cell cell: row.getCells())
 							cell.setStyleName(style);
 						firstClazz = false;
@@ -849,7 +854,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								row.setAriaLabel(ARIA.courseUnassginment(MESSAGES.course(course.getSubject(), course.getCourseNbr()), unassignedMessage));
 						}
 						row.setId(course.isFreeTime() ? CONSTANTS.freePrefix() + clazz.getDaysString(CONSTANTS.shortDays()) + " " +clazz.getStartString(CONSTANTS.useAmPm()) + " - " + clazz.getEndString(CONSTANTS.useAmPm()) : course.getCourseId() + ":" + clazz.getClassId());
-						iLastResult.add(clazz);
+						iLastResult.add(clazz.isDummy() ? null : clazz);
 						break;
 					}
 					if (row == null) {
