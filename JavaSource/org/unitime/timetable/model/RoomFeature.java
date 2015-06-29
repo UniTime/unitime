@@ -79,6 +79,12 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 				"from DepartmentRoomFeature rf where rf.department.uniqueId = :deptId order by label"
 				).setLong("deptId", dept.getUniqueId()).setCacheable(true).list();
 	}
+	
+	public static List<DepartmentRoomFeature> getAllDepartmentRoomFeaturesInSession(Long sessionId) throws HibernateException {
+		return (List<DepartmentRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
+				"from DepartmentRoomFeature rf where rf.department.session.uniqueId = :sessionId order by label"
+				).setLong("sessionId", sessionId).setCacheable(true).list();
+	}
 
 
 	/**

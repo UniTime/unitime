@@ -3696,3 +3696,79 @@ unitime-RoomSharingWidget .legend .blank {
 	max-height: 200px;
 	margin: 2px;
 }
+
+.unitime-RoomEdit .map {
+	width: 600px;
+	height: 400px;
+	border: 1px solid #9CB0CE;
+}
+
+.unitime-RoomEdit .coordinates .number {
+	float: left;
+}
+
+.unitime-RoomEdit .coordinates .comma {
+	float: left;
+	margin: 3px 7px 0px 2px;
+}
+
+.unitime-RoomEdit .coordinates .format {
+	float: left;
+	margin: 3px 0px 0px 5px;
+}
+
+.unitime-RoomEdit .area .number {
+	float: left;
+}
+
+.unitime-RoomEdit .area .format {
+	float: left;
+	margin: 3px 0px 0px 5px;
+}
+
+.unitime-RoomEdit .breaktime .number {
+	float: left;
+}
+
+.unitime-RoomEdit .breaktime .note {
+	float: left;
+	margin: 3px 0px 0px 5px;
+	font-style: italic;
+}
+
+.unitime-RoomEdit .groups {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-RoomEdit .groups .group {
+	display: inline-block;
+	width: 24%;
+	white-space: nowrap;
+    overflow:hidden !important;
+    text-overflow: ellipsis;
+}
+
+.unitime-RoomEdit .features {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-RoomEdit .features .feature {
+	display: inline-block;
+	width: 24%;
+	white-space: nowrap;
+    overflow:hidden !important;
+    text-overflow: ellipsis;
+}
+
+.unitime-RoomEdit .exams .exam {
+	display: inline-block;
+	width: 33%;
+	white-space: nowrap;
+    overflow:hidden !important;
+    text-overflow: ellipsis;
+}
+
+.unitime-RoomSharingWidget .preference {
+	vertical-align: middle;
+	margin-left: 5px;
+}

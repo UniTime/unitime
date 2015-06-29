@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
+import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
@@ -46,6 +47,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
+import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
@@ -54,6 +56,7 @@ import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.LocationPicture;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
@@ -137,6 +140,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		department.setAbbreviation(d.getAbbreviation());
 		department.setLabel(d.getName());
 		department.setExternal(d.isExternalManager());
+		department.setEvent(d.isAllowEvents());
 		department.setExtAbbreviation(d.getExternalMgrAbbv());
 		department.setExtLabel(d.getExternalMgrLabel());
 		department.setTitle(d.getLabel());
@@ -171,6 +175,15 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 			response.setCanChangeType(context.hasPermission(location, Right.RoomEditChangeType));
 		}
 		response.setCanDelete(context.hasPermission(location, Right.RoomDelete));
+		
+		if (location instanceof Room) {
+			Room room = (Room)location;
+			Building b = room.getBuilding(); 
+			BuildingInterface building = new BuildingInterface(b.getUniqueId(), b.getAbbreviation(), b.getName());
+			building.setX(b.getCoordinateX()); building.setY(b.getCoordinateY());
+			response.setBuilding(building);
+			response.setName(room.getRoomNumber());
+		}
 		
 		response.setExternalId(location.getExternalUniqueId());
 		response.setRoomType(new RoomTypeInterface(location.getRoomType().getUniqueId(), location.getRoomType().getLabel(), location.getRoomType().isRoom()));

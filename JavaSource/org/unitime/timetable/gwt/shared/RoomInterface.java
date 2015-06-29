@@ -98,10 +98,14 @@ public class RoomInterface implements IsSerializable {
 		private String iColor;
 		private Long iId;
 		private boolean iEditable;
+		private Long iPreferenceId = null;
 		
 		public RoomSharingOption() {}
+		public RoomSharingOption(Long id, String color, String code, String name, boolean editable, Long preferenceId) {
+			iId = id; iColor = color; iCode = code; iName = name; iEditable = editable; iPreferenceId = preferenceId;
+		}
 		public RoomSharingOption(Long id, String color, String code, String name, boolean editable) {
-			iId = id; iColor = color; iCode = code; iName = name; iEditable = editable;
+			this(id, color, code, name, editable, null);
 		}
 		
 		public String getColor() { return iColor; }
@@ -118,6 +122,10 @@ public class RoomInterface implements IsSerializable {
 		
 		public void setEditable(boolean editable) { iEditable = editable; }
 		public boolean isEditable() { return iEditable; }
+		
+		public boolean hasPreference() { return iPreferenceId != null;}
+		public void setPreference(Long preferenceId) { iPreferenceId = preferenceId; }
+		public Long getPreference() { return iPreferenceId; }
 
 		@Override
 		public boolean equals(Object o) {
@@ -145,6 +153,8 @@ public class RoomInterface implements IsSerializable {
 		private boolean iDefaultEditable = true;
 		private String iNote = null;
 		private boolean iNoteEditable = false;
+		private List<PreferenceInterface> iPreferences = null;
+		private Long iDefaultPreference = null;
 		
 		public RoomSharingModel() {}
 		
@@ -282,6 +292,29 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean isNoteEditable() { return iNoteEditable; }
 		public void setNoteEditable(boolean noteEditable) { iNoteEditable = noteEditable; }
+		
+		public void setDefaultPreference(PreferenceInterface preference) {
+			iDefaultPreference = (preference == null ? null : preference.getId());
+		}
+
+		public PreferenceInterface getDefaultPreference() {
+			return getPreference(iDefaultPreference);
+		}
+		
+		public PreferenceInterface getPreference(Long id) {
+			if (id == null) id = iDefaultPreference;
+			if (iPreferences == null || id == null) return null;
+			for (PreferenceInterface preference: iPreferences)
+				if (preference.getId().equals(id)) return preference;
+			return (!id.equals(iDefaultPreference) ? getPreference(iDefaultPreference) : null);
+		}
+		
+		public void addPreference(PreferenceInterface preference) {
+			if (iPreferences == null) iPreferences = new ArrayList<PreferenceInterface>();
+			iPreferences.add(preference);
+		}
+		
+		public List<PreferenceInterface> getPreferences() { return iPreferences; }
 	}
 	
 	public static class RoomSharingRequest implements GwtRpcRequest<RoomSharingModel> {
@@ -293,6 +326,7 @@ public class RoomInterface implements IsSerializable {
 		private Long iLocationId;
 		private RoomSharingModel iModel;
 		private boolean iEventAvailability = false;
+		private boolean iIncludeRoomPreferences = false;
 		
 		public RoomSharingRequest() {}
 		
@@ -310,21 +344,34 @@ public class RoomInterface implements IsSerializable {
 		public boolean isEventAvailability() { return iEventAvailability; }
 		public void setEventAvailability(boolean availability) { iEventAvailability = availability; }
 		
-		public static RoomSharingRequest load(Long locationId, boolean eventAvailability) {
+		public boolean isIncludeRoomPreferences() { return iIncludeRoomPreferences; }
+		public void setIncludeRoomPreferences(boolean includeRoomPreferences) { iIncludeRoomPreferences = includeRoomPreferences; }
+		
+		public static RoomSharingRequest load(Long locationId, boolean eventAvailability, boolean includeRoomPreferences) {
 			RoomSharingRequest request = new RoomSharingRequest();
 			request.setOperation(Operation.LOAD);
 			request.setLocationId(locationId);
 			request.setEventAvailability(eventAvailability);
+			request.setIncludeRoomPreferences(includeRoomPreferences);
 			return request;
 		}
 		
-		public static RoomSharingRequest save(Long locationId, RoomSharingModel model, boolean eventAvailability) {
+		public static RoomSharingRequest load(Long locationId, boolean eventAvailability) {
+			return load(locationId, eventAvailability, false);
+		}
+		
+		public static RoomSharingRequest save(Long locationId, RoomSharingModel model, boolean eventAvailability, boolean includeRoomPreferences) {
 			RoomSharingRequest request = new RoomSharingRequest();
 			request.setOperation(Operation.SAVE);
 			request.setLocationId(locationId);
 			request.setModel(model);
 			request.setEventAvailability(eventAvailability);
+			request.setIncludeRoomPreferences(includeRoomPreferences);
 			return request;
+		}
+		
+		public static RoomSharingRequest save(Long locationId, RoomSharingModel model, boolean eventAvailability) {
+			return save(locationId, model, eventAvailability, false);
 		}
 	}
 	
@@ -554,7 +601,7 @@ public class RoomInterface implements IsSerializable {
 		public RoomTypeInterface() {}
 		
 		public RoomTypeInterface(Long id, String label, boolean room) {
-			iId = id; iLabel = label;
+			iId = id; iLabel = label; iRoom = room;
 		}
 		
 		public Long getId() { return iId; }
@@ -654,19 +701,31 @@ public class RoomInterface implements IsSerializable {
 	
 	public static class BuildingInterface implements GwtRpcResponse {
 		private Long iId;
-		private String iLabel;
+		private String iAbbreviation;
+		private String iName;
+		private Double iX, iY;
 		
 		public BuildingInterface() {}
 		
-		public BuildingInterface(Long id, String label) {
-			iId = id; iLabel = label;
+		public BuildingInterface(Long id, String abbreviation, String name) {
+			iId = id; iAbbreviation = abbreviation; iName = name;
 		}
 		
 		public Long getId() { return iId; }
 		public void setId(Long id) { iId = id; }
 		
-		public String getLabel() { return iLabel; }
-		public void setLabel(String label) { iLabel = label; }
+		public String getAbbreviation() { return iAbbreviation; }
+		public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
+		
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+		
+		public boolean hasCoordinates() { return iX != null && iY != null; }
+		public Double getX() { return iX; }
+		public void setX(Double x) { iX = x; }
+		
+		public Double getY() { return iY; }
+		public void setY(Double y) { iY = y; }
 		
 		@Override
 		public int hashCode() { return getId().hashCode(); }
@@ -714,7 +773,7 @@ public class RoomInterface implements IsSerializable {
 	
 	public static class DepartmentInterface extends RoomPropertyInterface {
 		private String iCode;
-		private boolean iExternal = false;
+		private boolean iExternal = false, iEvent = false;
 		private String iExternalAbbv, iExternalLabel;
 		private PreferenceInterface iPreference;
 		
@@ -730,6 +789,9 @@ public class RoomInterface implements IsSerializable {
 		public boolean isExternal() { return iExternal; }
 		public void setExternal(boolean external) { iExternal = external; }
 		
+		public boolean isEvent() { return iEvent; }
+		public void setEvent(boolean event) { iEvent = event; }
+
 		public String getExtAbbreviation() { return iExternalAbbv; }
 		public void setExtAbbreviation(String abbv) { iExternalAbbv = abbv; }
 		public String getExtAbbreviationWhenExist() { return getExtAbbreviation() == null || getExtAbbreviation().isEmpty() ? getAbbreviationOrCode() : getExtAbbreviation(); }
@@ -786,7 +848,7 @@ public class RoomInterface implements IsSerializable {
 		private BuildingInterface iBuilding;
 		private RoomTypeInterface iRoomType;
 		private Integer iCapacity, iExamCapacity;
-		private Double iX, iY, iArea; 
+		private Double iX, iY, iArea;
 		private DepartmentInterface iControlDepartment, iEventDepartment;
 		private List<DepartmentInterface> iDepartments = new ArrayList<DepartmentInterface>();
 		private List<GroupInterface> iGroups = new ArrayList<GroupInterface>();
@@ -828,7 +890,12 @@ public class RoomInterface implements IsSerializable {
 		public boolean hasExternalId() { return iExternalId != null && !iExternalId.isEmpty(); }
 		public void setExternalId(String externalId) { iExternalId = externalId; }
 		
-		public String getLabel() { return getName(); }
+		public String getLabel() {
+			if (iBuilding != null)
+				return iBuilding.getAbbreviation() + " " + getName();
+			else
+				return getName();
+		}
 		
 		public String getDisplayName() { return getAbbreviation(); }
 		public boolean hasDisplayName() { return getAbbreviation() != null && !getAbbreviation().isEmpty(); }
@@ -1265,16 +1332,21 @@ public class RoomInterface implements IsSerializable {
 	
 	public static class RoomPropertiesInterface implements GwtRpcResponse {
 		private Long iSessionId = null;
+		private String iSessionName = null;
 		private boolean iCanExportPdf = false, iCanExportCsv = false;
 		private boolean iCanEditDepartments = false;
 		private boolean iCanEditRoomExams = false;
 		private boolean iCanAddRoom = false;
 		private List<RoomTypeInterface> iRoomTypes = new ArrayList<RoomTypeInterface>();
+		private List<BuildingInterface> iBuildings = new ArrayList<BuildingInterface>();
 		private List<FeatureTypeInterface> iFeatureTypes = new ArrayList<FeatureTypeInterface>();
 		private List<DepartmentInterface> iDepartments = new ArrayList<DepartmentInterface>();
 		private List<ExamTypeInterface> iExamTypes = new ArrayList<ExamTypeInterface>();
+		private List<GroupInterface> iGroups = new ArrayList<GroupInterface>();
+		private List<FeatureInterface> iFeatures = new ArrayList<FeatureInterface>();
+		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
 		private boolean iCanSeeCourses = false, iCanSeeExams = false, iCanSeeEvents = false;
-		private boolean iGridAsText = false, iHorizontal = false;
+		private boolean iGridAsText = false, iHorizontal = false, iGoogleMap = false;
 		private List<RoomSharingDisplayMode> iModes;
 		private String iEllipsoid = null;
 		
@@ -1282,6 +1354,9 @@ public class RoomInterface implements IsSerializable {
 		
 		public Long getAcademicSessionId() { return iSessionId; }
 		public void setAcademicSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public String getAcademicSessionName() { return iSessionName; }
+		public void setAcademicSessionName(String name) { iSessionName = name; }
 
 		public boolean isCanEditDepartments() { return iCanEditDepartments; }
 		public void setCanEditDepartments(boolean canEditDepartments) { iCanEditDepartments = canEditDepartments; }
@@ -1300,12 +1375,38 @@ public class RoomInterface implements IsSerializable {
 		
 		public void addRoomType(RoomTypeInterface roomType) { iRoomTypes.add(roomType); }
 		public List<RoomTypeInterface> getRoomTypes() { return iRoomTypes; }
+		public RoomTypeInterface getRoomType(Long id) {
+			for (RoomTypeInterface type: iRoomTypes)
+				if (id.equals(type.getId())) return type;
+			return null;
+		}
+
+		public void addBuilding(BuildingInterface building) { iBuildings.add(building); }
+		public List<BuildingInterface> getBuildings() { return iBuildings; }
+		public BuildingInterface getBuilding(Long id) {
+			for (BuildingInterface building: iBuildings)
+				if (id.equals(building.getId()))
+					return building;
+			return null;
+		}
 		
 		public void addFeatureType(FeatureTypeInterface featureType) { iFeatureTypes.add(featureType); }
 		public List<FeatureTypeInterface> getFeatureTypes() { return iFeatureTypes; }
+		public FeatureTypeInterface getFeatureType(Long id) {
+			for (FeatureTypeInterface type: iFeatureTypes)
+				if (id.equals(type.getId()))
+					return type;
+			return null;
+		}
 		
 		public void addDepartment(DepartmentInterface department) { iDepartments.add(department); }
 		public List<DepartmentInterface> getDepartments() { return iDepartments; }
+		public DepartmentInterface getDepartment(Long id) {
+			for (DepartmentInterface department: iDepartments)
+				if (id.equals(department.getId()))
+					return department;
+			return null;
+		}
 		
 		public void addExamType(ExamTypeInterface examType) { iExamTypes.add(examType); }
 		public List<ExamTypeInterface> getExamTypes() { return iExamTypes; }
@@ -1325,6 +1426,15 @@ public class RoomInterface implements IsSerializable {
 		public boolean isHorizontal() { return iHorizontal; }
 		public void setHorizontal(boolean horizontal) { iHorizontal = horizontal; }
 		
+		public void addGroup(GroupInterface group) { iGroups.add(group); }
+		public List<GroupInterface> getGroups() { return iGroups; }
+		
+		public void addFeature(FeatureInterface feature) { iFeatures.add(feature); }
+		public List<FeatureInterface> getFeatures() { return iFeatures; }
+		
+		public void addPreference(PreferenceInterface preference) { iPreferences.add(preference); }
+		public List<PreferenceInterface> getPreferences() { return iPreferences; }
+		
 		public void addMode(RoomSharingDisplayMode mode) {
 			if (iModes == null) iModes = new ArrayList<RoomSharingDisplayMode>();
 			iModes.add(mode);
@@ -1333,12 +1443,15 @@ public class RoomInterface implements IsSerializable {
 		public List<RoomSharingDisplayMode> getModes() {
 			return iModes;
 		}
-
+		
 		public boolean hasModes() { return iModes != null && !iModes.isEmpty(); }
 		
 		public String getEllipsoid() { return iEllipsoid; }
 		public boolean hasEllipsoid() { return iEllipsoid != null & !iEllipsoid.isEmpty(); }
 		public void setEllipsoid(String ellipsoid) { iEllipsoid = ellipsoid; }
+		
+		public void setGoogleMap(boolean map) { iGoogleMap = map; }
+		public boolean isGoogleMap() { return iGoogleMap; }
 	}
 	
 	public static enum RoomsColumn {

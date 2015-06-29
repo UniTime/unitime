@@ -955,6 +955,21 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Applies To:")
 	String propAppliesTo();
+	
+	@DefaultMessage("Room Type:")
+	String propRoomType();
+	
+	@DefaultMessage("Building:")
+	String propBuilding();
+	
+	@DefaultMessage("Name:")
+	String propRoomName();
+	
+	@DefaultMessage("Room Number:")
+	String propRoomNumber();
+	
+	@DefaultMessage("Display Name:")
+	String propDisplayName();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -1075,6 +1090,16 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>E</u>dit Room")
 	String buttonEditRoom();
+	
+	@DefaultMessage("<u>C</u>reate Room")
+	String buttonCreateRoom();
+
+	@DefaultMessage("<u>U</u>pdate Room")
+	String buttonUpdateRoom();
+
+	@DefaultMessage("<u>D</u>elete Room")
+	String buttonDeleteRoom();
+
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -2098,6 +2123,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Room Detail")
 	String pageRoomDetail();
+	
+	@DefaultMessage("Add Room")
+	String pageAddRoom();
+	
+	@DefaultMessage("Edit Room")
+	String pageEditRoom();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -2405,6 +2436,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("All academic sessions")
 	String itemAllSessions();
 	
+	@DefaultMessage("No controlling department")
+	String itemNoControlDepartment();
+	
+	@DefaultMessage("No event department")
+	String itemNoEventDepartment();
+	
+	@DefaultMessage("Default")
+	String itemDefault();
+	
 	@DefaultMessage("{0} seats")
 	String hintRoomCapacity(String size);
 	
@@ -2567,6 +2607,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Capacity:")
 	String propCapacity();
 	
+	@DefaultMessage("Examination Rooms:")
+	String propExamRooms();
+
 	@DefaultMessage("Examination Seating Capacity:")
 	String propExamCapacity();
 	
@@ -2608,6 +2651,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} Preferences:")
 	String propExaminationPreferences(String problem);
+	
+	@DefaultMessage("Room Sharing Note:")
+	String propRoomSharingNote();
 
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -2920,6 +2966,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Room Pictures")
 	String headerRoomPictures();
+	
+	@DefaultMessage("Room Features")
+	String headerRoomFeatures();
+	
+	@DefaultMessage("Room Groups")
+	String headerRoomGroups();
 	
 	@DefaultMessage("The selected offering has no curricula.")
 	String offeringHasNoCurricula();
@@ -3349,4 +3401,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Location of {0}.")
 	String titleRoomMap(String roomLabel);
+	
+	@DefaultMessage("Default break time is used when left empty.")
+	String useDefaultBreakTimeWhenEmpty();
 }
