@@ -64,9 +64,13 @@ public class PeriodPreferencesBackend implements GwtRpcImplementation<PeriodPref
 	}
 	
 	public PeriodPreferenceModel loadPeriodPreferences(PeriodPreferenceRequest request, SessionContext context) {
-		PeriodPreferenceModel model = new PeriodPreferenceModel();
 		Location location = (request.getLocationId() == null ? null : LocationDAO.getInstance().get(request.getLocationId()));
 		ExamType type = ExamTypeDAO.getInstance().get(request.getExamTypeId());
+		return loadPeriodPreferences(location, type, context);
+	}
+	
+	public PeriodPreferenceModel loadPeriodPreferences(Location location, ExamType type, SessionContext context) {
+		PeriodPreferenceModel model = new PeriodPreferenceModel();
 		Session session = (location == null ? SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()) : location.getSession());
 		if (location != null) {
 			model.setLocationId(location.getUniqueId());

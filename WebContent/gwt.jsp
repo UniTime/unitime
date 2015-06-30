@@ -38,7 +38,6 @@
     </tt:hasProperty>
     <link rel="shortcut icon" href="images/timetabling.ico">
     <title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
-    <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
   </head>
   <body class="unitime-Body">
   	<tt:form-factor value="unknown"><span id='UniTimeGWT:DetectFormFactor' style="display: none;"></span></tt:form-factor>

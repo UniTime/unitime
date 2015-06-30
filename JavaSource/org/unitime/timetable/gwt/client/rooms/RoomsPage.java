@@ -442,9 +442,31 @@ public class RoomsPage extends Composite {
 			}
 			@Override
 			protected void edit() {
-				hide();
-				iRoomEdit.setRoom(getRoom());
-				iRoomEdit.show();
+				final Long roomId = (getRoom() == null ? null : getRoom().getUniqueId());
+				if (roomId != null) {
+					FilterRpcRequest rooms = iFilter.createRpcRequest();
+					rooms.setCommand(FilterRpcRequest.Command.ENUMERATE);
+					rooms.addOption("id", getRoom().getUniqueId().toString());
+					rooms.setSessionId(iProperties.getAcademicSessionId());
+					LoadingWidget.execute(rooms, new AsyncCallback<FilterRpcResponse>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							UniTimeNotifications.error(MESSAGES.failedToLoadRoomDetails(caught.getMessage()), caught);
+						}
+						
+						@Override
+						public void onSuccess(FilterRpcResponse result) {
+							if (result == null || result.getResults() == null || result.getResults().isEmpty()) {
+								UniTimeNotifications.error(MESSAGES.errorRoomDoesNotExist(roomId.toString()));
+							} else {
+								iRoomEdit.setRoom((RoomDetailInterface)result.getResults().get(0));
+								iRoomEdit.show();
+							}
+						}
+					}, MESSAGES.waitLoadingRoomDetails());
+				} else {
+					hide();
+				}
 			}
 			@Override
 			protected RoomDetailInterface getPrevious(Long roomId) {
@@ -500,9 +522,14 @@ public class RoomsPage extends Composite {
 			}
 			@Override
 			protected void onHide() {
-				iRootPanel.setWidget(iRoomsPanel);
-				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRooms());
-				if (iRoomsTable.isVisible()) search();
+				if (getRoom().getUniqueId() == null) {
+					iRootPanel.setWidget(iRoomsPanel);
+					UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRooms());
+					if (iRoomsTable.isVisible()) search();
+				} else {
+					iRoomDetail.setRoom(getRoom());
+					iRoomDetail.show();
+				}
 				changeUrl();
 			}
 		};

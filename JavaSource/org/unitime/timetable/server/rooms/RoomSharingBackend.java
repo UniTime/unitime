@@ -82,7 +82,10 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 			 context.checkPermission(request.getLocationId(), "Location", Right.RoomDetailAvailability);
 			 location = LocationDAO.getInstance().get(request.getLocationId());
 		}
-		
+		return loadRoomSharing(location, request.isIncludeRoomPreferences(), context);
+	}
+	
+	public RoomSharingModel loadRoomSharing(Location location, boolean includeRoomPreferences, SessionContext context) {
 		RoomSharingModel model = new RoomSharingModel();
 		if (location != null) {
 			model.setId(location.getUniqueId());
@@ -111,14 +114,14 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 
 		model.setNoteEditable(editable);
 		
-		if (request.isIncludeRoomPreferences()) {
+		if (includeRoomPreferences) {
 			boolean prefEditable = (location == null ? context.getUser().getCurrentAuthority().hasRight(Right.RoomEditPreference) : context.hasPermission(location, Right.RoomEditPreference));
 			for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false))
 				model.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), prefEditable));
 		}
 
 		if (location == null) {
-			Long neutralId = (request.isIncludeRoomPreferences() ? PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId() : null);
+			Long neutralId = (includeRoomPreferences ? PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId() : null);
 			for (Department d: Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId()))
 				model.addOther(new RoomSharingOption(d.getUniqueId(), "#" + d.getRoomSharingColor(null),
 						d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable, neutralId));
@@ -132,12 +135,12 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		for (Department d: current)
 			model.addOption(new RoomSharingOption(d.getUniqueId(), "#" + d.getRoomSharingColor(current),
 					d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable,
-					request.isIncludeRoomPreferences() ? location.getRoomPreferenceLevel(d).getUniqueId() : null));
+					includeRoomPreferences ? location.getRoomPreferenceLevel(d).getUniqueId() : null));
 		
 		for (Department d: Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId()))
 			model.addOther(new RoomSharingOption(d.getUniqueId(), "#" + d.getRoomSharingColor(current),
 					d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable,
-					request.isIncludeRoomPreferences() ? location.getRoomPreferenceLevel(d).getUniqueId() : null));
+					includeRoomPreferences ? location.getRoomPreferenceLevel(d).getUniqueId() : null));
 		
 		Map<Character, Long> char2dept = new HashMap<Character, Long>(); char pref = '0';
 		if (location.getManagerIds() != null) {
@@ -271,6 +274,10 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 			location = LocationDAO.getInstance().get(request.getLocationId());
 		}
 		
+		return loadEventAvailability(location, context);
+	}
+	
+	public RoomSharingModel loadEventAvailability(Location location, SessionContext context) {
 		RoomSharingModel model = new RoomSharingModel();
 		if (location != null) {
 			model.setId(location.getUniqueId());

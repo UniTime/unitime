@@ -867,6 +867,8 @@ public class RoomInterface implements IsSerializable {
 		private String iMiniMapUrl = null, iMapUrl = null;
 		private List<RoomPictureInterface> iPictures = null;
 		private String iLastChange = null;
+		private RoomSharingModel iRoomSharingModel = null, iEventAvailabilityModel = null;
+		private Map<Long, PeriodPreferenceModel> iPeriodPreferenceModels = null;
 		
 		public RoomDetailInterface() {}
 		
@@ -926,6 +928,12 @@ public class RoomInterface implements IsSerializable {
 					if (group.getDepartment() != null && (departmentId == null || departmentId.equals(group.getDepartment().getId()))) groups.add(group);
 			return groups;
 		}
+		public boolean hasGroup(Long groupId) {
+			if (iGroups == null) return false;
+			for (GroupInterface group: iGroups)
+				if (groupId.equals(group.getId())) return true;
+			return false;
+		}
 		
 		public boolean hasControlDepartment() { return iControlDepartment != null; }
 		public DepartmentInterface getControlDepartment() { return iControlDepartment; }
@@ -945,6 +953,12 @@ public class RoomInterface implements IsSerializable {
 					ret.add(f);
 			}
 			return ret;
+		}
+		public boolean hasFeature(Long featureId) {
+			if (iFeatures == null) return false;
+			for (FeatureInterface feature: iFeatures)
+				if (featureId.equals(feature.getId())) return true;
+			return false;
 		}
 		
 		public List<DepartmentInterface> getDepartments() { return iDepartments; }
@@ -1098,6 +1112,27 @@ public class RoomInterface implements IsSerializable {
 		public String getLastChange() { return iLastChange; }
 		public boolean hasLastChange() { return iLastChange != null && !iLastChange.isEmpty(); }
 		public void setLastChange(String lastChange) { iLastChange = lastChange; }
+		
+		public boolean hasRoomSharingModel() { return iRoomSharingModel != null; }
+		public void setRoomSharingModel(RoomSharingModel model) { iRoomSharingModel = model; }
+		public RoomSharingModel getRoomSharingModel() { return iRoomSharingModel; }
+		
+		public boolean hasEventAvailabilityModel() { return iEventAvailabilityModel != null; }
+		public void setEventAvailabilityModel(RoomSharingModel model) { iEventAvailabilityModel = model; }
+		public RoomSharingModel getEventAvailabilityModel() { return iEventAvailabilityModel; }
+		
+		public boolean hasPeriodPreferenceModel(Long examTypeId) {
+			return iPeriodPreferenceModels != null && iPeriodPreferenceModels.containsKey(examTypeId);
+		}
+		public PeriodPreferenceModel getPeriodPreferenceModel(Long examTypeId) {
+			return (iPeriodPreferenceModels == null ? null : iPeriodPreferenceModels.get(examTypeId));
+		}
+		public void setPeriodPreferenceModel(PeriodPreferenceModel model) {
+			if (model == null || model.getExamType() == null) return;
+			if (iPeriodPreferenceModels == null) iPeriodPreferenceModels = new HashMap<Long, PeriodPreferenceModel>();
+			iPeriodPreferenceModels.put(model.getExamType().getId(), model);
+		}
+
 	}
 	
 	public static class RoomDetailsRequest implements GwtRpcRequest<GwtRpcResponseList<RoomDetailInterface>> {

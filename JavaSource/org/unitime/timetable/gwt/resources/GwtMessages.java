@@ -1100,6 +1100,8 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>D</u>elete Room")
 	String buttonDeleteRoom();
 
+	@DefaultMessage("Geocode")
+	String buttonGeocode();
 
 	@DefaultMessage("Filter")
 	String sectFilter();

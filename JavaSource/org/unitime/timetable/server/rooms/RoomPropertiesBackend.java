@@ -153,7 +153,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
 			response.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), true));
 		}
-		
+
 		DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperty.DistanceEllipsoid.value());
 		response.setEllipsoid(ellipsoid.getEclipsoindName());
 		

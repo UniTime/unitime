@@ -3703,6 +3703,19 @@ unitime-RoomSharingWidget .legend .blank {
 	border: 1px solid #9CB0CE;
 }
 
+.unitime-RoomEdit .map .control {
+	padding: 2px;
+	margin-bottom: 15px;
+	background: 1px solid blue;
+	white-space: nowrap;
+}
+
+.unitime-RoomEdit .map .control .searchBox {
+	width: 400px;
+	height: 22px;
+	margin-right: 4px;
+}
+
 .unitime-RoomEdit .coordinates .number {
 	float: left;
 }

@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.rooms;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
@@ -47,17 +48,23 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingModel;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
 
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.ScriptInjector;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
@@ -112,8 +119,8 @@ public class RoomEdit extends Composite {
 	private Map<Long, Integer> iPeriodPreferencesRow = new HashMap<Long, Integer>();
 	private UniTimeHeaderPanel iEventAvailabilityHeader;
 	private RoomSharingWidget iEventAvailability;
-	private TextArea iRoomSharingNote;
-	private int iRoomSharingNoteRow;
+	// private TextArea iRoomSharingNote;
+	// private int iRoomSharingNoteRow;
 	
 	public RoomEdit(RoomPropertiesInterface properties) {
 		iProperties = properties;
@@ -144,7 +151,7 @@ public class RoomEdit extends Composite {
 		iForm.addStyleName("unitime-RoomEdit");
 		iForm.addHeaderRow(iHeader);
 		
-		iType = new ListBox();
+		iType = new ListBox(); iType.setStyleName("unitime-TextBox");
 		int firstRow = iForm.addRow(MESSAGES.propRoomType(), iType, 1);
 		iType.addItem(MESSAGES.itemSelect(), "-1");
 		for (RoomTypeInterface type: iProperties.getRoomTypes())
@@ -157,7 +164,7 @@ public class RoomEdit extends Composite {
 			}
 		});
 		
-		iBuilding = new ListBox();
+		iBuilding = new ListBox(); iBuilding.setStyleName("unitime-TextBox");
 		iBuildingRow = iForm.addRow(MESSAGES.propBuilding(), iBuilding, 1);
 		iBuilding.addItem(MESSAGES.itemSelect(), "-1");
 		for (BuildingInterface building: iProperties.getBuildings())
@@ -202,7 +209,7 @@ public class RoomEdit extends Composite {
 		iCapacity.setWidth("80px");
 		iForm.addRow(MESSAGES.propCapacity(), iCapacity, 1);
 		
-		iControllingDepartment = new ListBox();
+		iControllingDepartment = new ListBox(); iControllingDepartment.setStyleName("unitime-TextBox");
 		iControllingDepartment.addItem(MESSAGES.itemNoControlDepartment(), "-1");
 		iForm.addRow(MESSAGES.propControllingDepartment(), iControllingDepartment, 1);
 		for (DepartmentInterface department: iProperties.getDepartments())
@@ -279,14 +286,14 @@ public class RoomEdit extends Composite {
 			iForm.addRow(MESSAGES.propExamCapacity(), iExamCapacity, 1);
 		}
 		
-		iEventDepartment = new ListBox();
+		iEventDepartment = new ListBox(); iEventDepartment.setStyleName("unitime-TextBox");
 		iEventDepartment.addItem(MESSAGES.itemNoEventDepartment(), "-1");
 		iForm.addRow(MESSAGES.propEventDepartment(), iEventDepartment, 1);
 		for (DepartmentInterface department: iProperties.getDepartments())
 			if (department.isEvent())
 				iEventDepartment.addItem(department.getDeptCode() + " - " + department.getLabel(), department.getId().toString());
 		
-		iEventStatus = new ListBox();
+		iEventStatus = new ListBox(); iEventStatus.setStyleName("unitime-TextBox");
 		iEventStatus.addItem(MESSAGES.itemDefault(), "-1");
 		iForm.addRow(MESSAGES.propEventStatus(), iEventStatus, 1);
 		for (int i = 0; i < CONSTANTS.eventStatusName().length; i++)
@@ -309,12 +316,45 @@ public class RoomEdit extends Composite {
 		iForm.addRow(MESSAGES.propBreakTime(), b, 1);
 		
 		if (iProperties.isGoogleMap()) {
-			// ScriptInjector.fromUrl("https://maps.google.com/maps/api/js?sensor=false").inject();
 			iGoogleMap = new AbsolutePanel();
-			iGoogleMap.getElement().setId("map_canvas");
 			iGoogleMap.setStyleName("map");
 			iForm.setWidget(firstRow, 2, iGoogleMap);
-			iForm.getFlexCellFormatter().setRowSpan(firstRow, 2, iForm.getRowCount() - firstRow);
+			iForm.getFlexCellFormatter().setRowSpan(firstRow, 2, iForm.getRowCount() - firstRow - 1);
+			
+			AbsolutePanel control = new AbsolutePanel(); control.setStyleName("control");
+			final TextBox searchBox = new TextBox();
+			searchBox.setStyleName("unitime-TextBox"); searchBox.addStyleName("searchBox");
+			searchBox.getElement().setId("mapSearchBox");
+			searchBox.setTabIndex(-1);
+			control.add(searchBox);
+			Button button = new Button(MESSAGES.buttonGeocode(), new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					geocodeAddress();
+				}
+			});
+			button.setTabIndex(-1);
+			searchBox.addKeyPressHandler(new KeyPressHandler() {
+				@Override
+				public void onKeyPress(KeyPressEvent event) {
+					switch (event.getNativeEvent().getKeyCode()) {
+					case KeyCodes.KEY_ENTER:
+	            		event.preventDefault();
+	            		geocodeAddress();
+	            		return;
+					}
+				}
+			});
+			button.addStyleName("geocode");
+			ToolBox.setWhiteSpace(button.getElement().getStyle(), "nowrap");
+			Character accessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonGeocode());
+			if (accessKey != null)
+				button.setAccessKey(accessKey);
+			control.add(button);
+			
+			iGoogleMap.add(control);
+
+			addGoogleMap(iGoogleMap.getElement(), control.getElement());
 		}
 		
 		iForm.addHeaderRow(MESSAGES.headerRoomGroups());
@@ -375,8 +415,9 @@ public class RoomEdit extends Composite {
 		
 		iRoomSharingHeader = new UniTimeHeaderPanel(MESSAGES.headerRoomSharing());
 		iForm.addHeaderRow(iRoomSharingHeader);
-		iRoomSharing = new RoomSharingWidget(true, false);
+		iRoomSharing = new RoomSharingWidget(true, true);
 		iForm.addRow(iRoomSharing);
+		/*
 		iRoomSharingNote = new TextArea();
 		iRoomSharingNote.setStyleName("unitime-TextArea");
 		iRoomSharingNote.setVisibleLines(10);
@@ -389,6 +430,7 @@ public class RoomEdit extends Composite {
 			}
 		});
 		iRoomSharingNoteRow = iForm.addRow(MESSAGES.propRoomSharingNote(), iRoomSharingNote);
+		*/
 
 		iPeriodPreferencesHeader = new UniTimeHeaderPanel(MESSAGES.headerExaminationPeriodPreferences());
 		iPeriodPreferencesHeaderRow = iForm.addHeaderRow(iPeriodPreferencesHeader);
@@ -415,57 +457,148 @@ public class RoomEdit extends Composite {
 		iRoom = room;
 		if (iRoom == null) {
 			iRoom = new RoomDetailInterface();
+			iHeader.setEnabled("create", true);
+			iHeader.setEnabled("update", false);
+			iHeader.setEnabled("delete", false);
+		} else {
+			iHeader.setEnabled("create", false);
+			iHeader.setEnabled("update", true);
+			iHeader.setEnabled("delete", iRoom.isCanDelete());
 		}
-		iRoomSharingHeader.showLoading();
-		RPC.execute(RoomInterface.RoomSharingRequest.load(iRoom.getUniqueId(), false, true), new AsyncCallback<RoomSharingModel>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				iRoomSharingHeader.setErrorMessage(MESSAGES.failedToLoadRoomAvailability(caught.getMessage()));
-			}
-			@Override
-			public void onSuccess(RoomSharingModel result) {
-				iRoomSharingHeader.clearMessage();
-				iRoomSharing.setModel(result);
-				iRoomSharing.setVisible(true);
-				iRoomSharingNote.setValue(result.hasNote() ? result.getNote() : "");
-				iForm.getRowFormatter().setVisible(iRoomSharingNoteRow, result.isNoteEditable());
-			}
-		});
-		for (ExamTypeInterface type: iProperties.getExamTypes()) {
-			iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(type.getId()), false);
+		if (iRoom.getRoomType() == null) {
+			iType.setSelectedIndex(0);
+		} else {
+			iType.setSelectedIndex(1 + iProperties.getRoomTypes().indexOf(iRoom.getRoomType()));
+		}
+		typeChanged();
+		if (iRoom.getBuilding() == null) {
+			iBuilding.setSelectedIndex(0);
+		} else {
+			iBuilding.setSelectedIndex(1 + iProperties.getBuildings().indexOf(iRoom.getBuilding()));
+		}
+		iName.getWidget().setText(iRoom.getName() == null ? "" : iRoom.getName());
+		iDisplayName.setText(iRoom.getDisplayName() == null ? "" : iRoom.getDisplayName());
+		iExternalId.setText(iRoom.getExternalId() == null ? "" : iRoom.getExternalId());
+		iCapacity.setValue(iRoom.getCapacity());
+		if (iRoom.getControlDepartment() == null) {
+			iControllingDepartment.setSelectedIndex(0);
+		} else {
+			iControllingDepartment.setSelectedIndex(1 + iProperties.getDepartments().indexOf(iRoom.getControlDepartment()));
+		}
+		iX.setValue(iRoom.getX());
+		iY.setValue(iRoom.getY());
+		iArea.setValue(iRoom.getArea());
+		iDistanceCheck.setValue(!iRoom.isIgnoreTooFar());
+		iRoomCheck.setValue(!iRoom.isIgnoreRoomCheck());
+		
+		for (Map.Entry<Long, CheckBox> e: iExaminationRooms.entrySet()) {
+			e.getValue().setValue(false);
+			iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(e.getKey()), false);
 		}
 		iForm.getRowFormatter().setVisible(iPeriodPreferencesHeaderRow, false);
-		iPeriodPreferencesHeader.showLoading();
+		if (iRoom.hasExamTypes()) {
+			for (ExamTypeInterface type: iRoom.getExamTypes()) {
+				iExaminationRooms.get(type.getId()).setValue(true);
+				iForm.getRowFormatter().setVisible(iPeriodPreferencesHeaderRow, true);
+			}
+		}
+		
+		iPeriodPreferencesHeader.clearMessage();
 		for (final ExamTypeInterface type: iProperties.getExamTypes()) {
 			final PeriodPreferencesWidget pref = iPeriodPreferences.get(type.getId());
-			RPC.execute(RoomInterface.PeriodPreferenceRequest.load(iRoom.getUniqueId(), type.getId()), new AsyncCallback<PeriodPreferenceModel>() {
+			if (iRoom.hasPeriodPreferenceModel(type.getId())) {
+				pref.setModel(iRoom.getPeriodPreferenceModel(type.getId()));
+				iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(type.getId()), iExaminationRooms.get(type.getId()).getValue());
+			} else {
+				iPeriodPreferencesHeader.showLoading();
+				iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(type.getId()), false);
+				RPC.execute(RoomInterface.PeriodPreferenceRequest.load(iRoom.getUniqueId(), type.getId()), new AsyncCallback<PeriodPreferenceModel>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						iPeriodPreferencesHeader.setErrorMessage(MESSAGES.failedToLoadPeriodPreferences(caught.getMessage()));
+					}
+
+					@Override
+					public void onSuccess(PeriodPreferenceModel result) {
+						iPeriodPreferencesHeader.clearMessage();
+						pref.setModel(result);
+						iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(type.getId()), iExaminationRooms.get(type.getId()).getValue());
+					}
+				});
+			}
+		}
+		
+		iExamCapacity.setValue(iRoom.getExamCapacity());
+		
+		if (iRoom.getEventDepartment() == null) {
+			iEventDepartment.setSelectedIndex(0);
+		} else {
+			iEventDepartment.setSelectedIndex(0);
+			for (int i = 1; i < iEventDepartment.getItemCount(); i++) {
+				if (iEventDepartment.getValue(i).equals(iRoom.getEventDepartment().getId().toString())) {
+					iEventDepartment.setSelectedIndex(i); break;
+				}
+			}
+		}
+		
+		iEventStatus.setSelectedIndex(iRoom.getEventStatus() == null ? 0 : iRoom.getEventStatus());
+		iNote.setText(iRoom.getEventNote() == null ? "" : iRoom.getEventNote());
+		iBreakTime.setValue(iRoom.getBreakTime());
+		
+		for (Map.Entry<Long, CheckBox> e: iGroups.entrySet())
+			e.getValue().setValue(iRoom.hasGroup(e.getKey()));
+		
+		for (Map.Entry<Long, CheckBox> e: iFeatures.entrySet())
+			e.getValue().setValue(iRoom.hasFeature(e.getKey()));
+		
+		if (iRoom.hasRoomSharingModel()) {
+			iRoomSharingHeader.clearMessage();
+			iRoomSharing.setModel(iRoom.getRoomSharingModel());
+			iRoomSharing.setVisible(true);
+		} else {
+			iRoomSharingHeader.showLoading();
+			iRoomSharing.setVisible(false);
+			RPC.execute(RoomInterface.RoomSharingRequest.load(iRoom.getUniqueId(), false, true), new AsyncCallback<RoomSharingModel>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					iPeriodPreferencesHeader.setErrorMessage(MESSAGES.failedToLoadPeriodPreferences(caught.getMessage()));
+					iRoomSharingHeader.setErrorMessage(MESSAGES.failedToLoadRoomAvailability(caught.getMessage()));
 				}
-
 				@Override
-				public void onSuccess(PeriodPreferenceModel result) {
-					iPeriodPreferencesHeader.clearMessage();
-					pref.setModel(result);
-					iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(type.getId()), iExaminationRooms.get(type.getId()).getValue());
+				public void onSuccess(RoomSharingModel result) {
+					iRoomSharingHeader.clearMessage();
+					iRoomSharing.setModel(result);
+					iRoomSharing.setVisible(true);
+					/*
+					iRoomSharingNote.setValue(result.hasNote() ? result.getNote() : "");
+					iForm.getRowFormatter().setVisible(iRoomSharingNoteRow, result.isNoteEditable());
+					*/
 				}
 			});
 		}
-		iEventAvailabilityHeader.showLoading();
-		RPC.execute(RoomInterface.RoomSharingRequest.load(iRoom.getUniqueId(), true), new AsyncCallback<RoomSharingModel>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				iEventAvailabilityHeader.setErrorMessage(MESSAGES.failedToLoadRoomAvailability(caught.getMessage()));
-			}
-			@Override
-			public void onSuccess(RoomSharingModel result) {
-				iEventAvailabilityHeader.clearMessage();
-				iEventAvailability.setModel(result);
-				iEventAvailability.setVisible(true);
-			}
-		});
+		
+		if (iRoom.hasEventAvailabilityModel()) {
+			iEventAvailabilityHeader.clearMessage();
+			iEventAvailability.setModel(iRoom.getEventAvailabilityModel());
+			iEventAvailability.setVisible(true);
+		} else {
+			iEventAvailabilityHeader.showLoading();
+			iEventAvailability.setVisible(false);
+			RPC.execute(RoomInterface.RoomSharingRequest.load(iRoom.getUniqueId(), true), new AsyncCallback<RoomSharingModel>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					iEventAvailabilityHeader.setErrorMessage(MESSAGES.failedToLoadRoomAvailability(caught.getMessage()));
+				}
+				@Override
+				public void onSuccess(RoomSharingModel result) {
+					iEventAvailabilityHeader.clearMessage();
+					iEventAvailability.setModel(result);
+					iEventAvailability.setVisible(true);
+				}
+			});
+		}
 	}
+	
+	public RoomDetailInterface getRoom() { return iRoom; }
 	
 	protected void buildingChanged() {
 		BuildingInterface building = iProperties.getBuilding(Long.valueOf(iBuilding.getValue(iBuilding.getSelectedIndex())));
@@ -493,11 +626,17 @@ public class RoomEdit extends Composite {
 		Window.scrollTo(0, 0);
 		if (iGoogleMap != null && !iGoogleMapInitialized) {
 			iGoogleMapInitialized = true;
-			try {
-				addGoogleMap(iGoogleMap.getElement());
-			} catch (Exception e) {
-				UniTimeNotifications.error(e.getMessage(), e);
-			}
+			ScriptInjector.fromUrl("https://maps.google.com/maps/api/js?sensor=false&callback=setupGoogleMap").setWindow(ScriptInjector.TOP_WINDOW).setCallback(
+					new Callback<Void, Exception>() {
+						@Override
+						public void onSuccess(Void result) {
+						}
+						@Override
+						public void onFailure(Exception e) {
+							UniTimeNotifications.error(e.getMessage(), e);
+							iGoogleMap = null;
+						}
+					}).inject();
 		}
 	}
 	
@@ -513,113 +652,58 @@ public class RoomEdit extends Composite {
 	protected void onShow() {
 	}
 	
-	protected native void addGoogleMap(Element canvas) /*-{
-		$wnd.createGoogleSeachControl = function createGoogleSeachControl(map) {
-			var controlDiv = $doc.createElement('DIV');
-		    controlDiv.index = 1;
-			controlDiv.style.marginBottom = '15px';
-			var controlUI = $doc.createElement('DIV');
-			controlUI.style.backgroundColor = 'transparent';
-			controlUI.style.cursor = 'pointer';
-			controlUI.style.textAlign = 'center';
-			controlUI.title = "Seach";
-			controlDiv.appendChild(controlUI);
-			var controltxtbox = $doc.createElement('input');
-			controltxtbox.setAttribute("id", "txt_googleseach");
-			controltxtbox.setAttribute("type", "text");
-			controltxtbox.setAttribute("value", "");
-			controltxtbox.style.height = '22px';
-			controltxtbox.style.width = '450px';
-			controltxtbox.style.marginRight = '2px';
-			controlUI.appendChild(controltxtbox);
-			var controlbtn = $doc.createElement('input');
-			controlbtn.setAttribute("id", "btn_googleseach");
-			controlbtn.setAttribute("type", "button");
-			controlbtn.setAttribute("value", "Geocode");
-			controlUI.appendChild(controlbtn);
-			$wnd.google.maps.event.addDomListener(controlbtn, 'click', function() {
-				geoceodeAddress(controltxtbox.value);
-			});
-			controltxtbox.onkeypress = function(e) {
-				var key = e.keyCode || e.which;
-				if (key == 13) {
-					geoceodeAddress(controltxtbox.value);
-					return false;
-				}
-				return true;
-			};
-			map.controls[$wnd.google.maps.ControlPosition.BOTTOM_LEFT].push(controlDiv);
-			return controltxtbox;
-		}
-		
-		var latlng = new $wnd.google.maps.LatLng(50, -58);
-		var myOptions = {
-			zoom: 2,
-			center: latlng,
-			mapTypeId: $wnd.google.maps.MapTypeId.ROADMAP
-		};
-		
-		var geocoder = new $wnd.google.maps.Geocoder();
-		var map = new $wnd.google.maps.Map(canvas, myOptions);
-		$wnd.marker = new $wnd.google.maps.Marker({
-			position: latlng,
-			map: map,
-			draggable: true,
-			visible: false
-		});
-		
-		var searchBox = $wnd.createGoogleSeachControl(map);
-		
-		$wnd.geoceodeAddress = function geoceodeAddress(address) {
-			var address = $doc.getElementById("txt_googleseach").value;
-			geocoder.geocode({ 'address': address }, function(results, status) {
-				if (status == $wnd.google.maps.GeocoderStatus.OK) {
-					if (results[0]) {
-						$wnd.marker.setPosition(results[0].geometry.location);
-						$wnd.marker.setTitle(results[0].formatted_address);
-						$wnd.marker.setVisible(true);
-						if (map.getZoom() <= 10) map.setZoom(16);
-						map.panTo(results[0].geometry.location);
-					} else {
-						$wnd.marker.setVisible(false);
-					}
-				} else {
-					$wnd.marker.setVisible(false);
-				}
-			});
-		}
-		
+	protected native void addGoogleMap(Element canvas, Element control) /*-{
 		$wnd.geoceodeMarker = function geoceodeMarker() {
-			geocoder.geocode({'location': $wnd.marker.getPosition()}, function(results, status) {
+			var searchBox = $doc.getElementById('mapSearchBox'); 
+			$wnd.geocoder.geocode({'location': $wnd.marker.getPosition()}, function(results, status) {
 				if (status == $wnd.google.maps.GeocoderStatus.OK) {
 					if (results[0]) {
 						$wnd.marker.setTitle(results[0].formatted_address);
-						if (searchBox != null)
-							searchBox.value = results[0].formatted_address;
+						searchBox.value = results[0].formatted_address;
 					} else {
 						$wnd.marker.setTitle(null);
-						if (searchBox != null) searchBox.value = "";
+						searchBox.value = "";
 					}
 				} else {
 					$wnd.marker.setTitle(null);
-					if (searchBox != null) searchBox.value = "";
+					searchBox.value = "";
 				}
 			});
 		}
 		
-		var t = null;
+		$wnd.setupGoogleMap = function setupGoogleMap() {
+			var latlng = new $wnd.google.maps.LatLng(50, -58);
+			var myOptions = {
+				zoom: 2,
+				center: latlng,
+				mapTypeId: $wnd.google.maps.MapTypeId.ROADMAP
+			};
 		
-		$wnd.google.maps.event.addListener($wnd.marker, 'position_changed', function() {
-			$doc.getElementById("coordX").value = '' + $wnd.marker.getPosition().lat().toFixed(6);
-			$doc.getElementById("coordY").value = '' + $wnd.marker.getPosition().lng().toFixed(6);
-			if (t != null) clearTimeout(t);
-			t = setTimeout($wnd.geoceodeMarker, 500);
-		});
+			$wnd.geocoder = new $wnd.google.maps.Geocoder();
+			$wnd.map = new $wnd.google.maps.Map(canvas, myOptions);
+			$wnd.marker = new $wnd.google.maps.Marker({
+				position: latlng,
+				map: $wnd.map,
+				draggable: true,
+				visible: false
+			});
 		
-		$wnd.google.maps.event.addListener(map, 'rightclick', function(event) {
-			$wnd.marker.setPosition(event.latLng);
-			$wnd.marker.setVisible(true);
-		});
+			$wnd.map.controls[$wnd.google.maps.ControlPosition.BOTTOM_LEFT].push(control);		
+		
+			var t = null;
+			
+			$wnd.google.maps.event.addListener($wnd.marker, 'position_changed', function() {
+				$doc.getElementById("coordX").value = '' + $wnd.marker.getPosition().lat().toFixed(6);
+				$doc.getElementById("coordY").value = '' + $wnd.marker.getPosition().lng().toFixed(6);
+				if (t != null) clearTimeout(t);
+				t = setTimeout($wnd.geoceodeMarker, 500);
+			});
+		
+			$wnd.google.maps.event.addListener($wnd.map, 'rightclick', function(event) {
+				$wnd.marker.setPosition(event.latLng);
+				$wnd.marker.setVisible(true);
+			});
+		};
 	}-*/;
 	
 	protected native void setMarker() /*-{
@@ -634,5 +718,24 @@ public class RoomEdit extends Composite {
 		} else {
 			$wnd.marker.setVisible(false);
 		}
+	}-*/;
+	
+	protected native void geocodeAddress() /*-{
+		var address = $doc.getElementById("mapSearchBox").value;
+		$wnd.geocoder.geocode({ 'address': address }, function(results, status) {
+			if (status == $wnd.google.	maps.GeocoderStatus.OK) {
+				if (results[0]) {
+					$wnd.marker.setPosition(results[0].geometry.location);
+					$wnd.marker.setTitle(results[0].formatted_address);
+					$wnd.marker.setVisible(true);
+					if ($wnd.map.getZoom() <= 10) $wnd.map.setZoom(16);
+					$wnd.map.panTo(results[0].geometry.location);
+				} else {
+					$wnd.marker.setVisible(false);
+				}
+			} else {
+				$wnd.marker.setVisible(false);
+			}
+		});
 	}-*/;
 }
