@@ -198,7 +198,7 @@ public class RoomDetail extends Composite {
 		List<GroupInterface> departmentalGroups = iRoom.getDepartmentalGroups(null);
 		if (!departmentalGroups.isEmpty())
 			iForm.addRow(MESSAGES.propDepartmenalGroups(), new GroupsCell(departmentalGroups), 1);
-		List<FeatureInterface> features = iRoom.getFeatures(null);
+		List<FeatureInterface> features = iRoom.getFeatures((Long)null);
 		if (!features.isEmpty())
 			iForm.addRow(MESSAGES.propFeatures(), new FeaturesCell(features), 1);
 		if (iProperties != null) {
@@ -319,13 +319,17 @@ public class RoomDetail extends Composite {
 	
 	static class GroupsCell extends P {
 		GroupsCell(List<? extends GroupInterface> groups) {
+			this(groups, true);
+		}
+		
+		GroupsCell(List<? extends GroupInterface> groups, boolean department) {
 			super();
 			setStyleName("groups");
 			for (GroupInterface group: groups) {
 				P p = new P("group");
 				p.setText(group.getLabel());
 				if (group.getTitle() != null) p.setTitle(group.getTitle());
-				if (group.getDepartment() != null)
+				if (group.getDepartment() != null && department)
 					p.setText(group.getLabel() + " (" + RoomDetail.toString(group.getDepartment()) + ")");
 				add(p);
 			}

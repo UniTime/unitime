@@ -74,7 +74,8 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setCanExportCsv(context.hasPermission(Right.RoomsExportCsv));
 		response.setCanExportPdf(context.hasPermission(Right.RoomsExportPdf));
 		response.setCanEditRoomExams(context.hasPermission(Right.EditRoomDepartmentsExams));
-		response.setCanAddRoom(context.hasPermission(Right.AddRoom) || context.hasPermission(Right.AddNonUnivLocation));
+		response.setCanAddRoom(context.hasPermission(Right.AddRoom));
+		response.setCanAddNonUniversity(context.hasPermission(Right.AddNonUnivLocation));
 		
 		response.setCanSeeCourses(context.hasPermission(Right.InstructionalOfferings) || context.hasPermission(Right.Classes));
 		response.setCanSeeExams(context.hasPermission(Right.Examinations));

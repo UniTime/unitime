@@ -27,6 +27,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHTML;
+import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -37,7 +39,8 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class UniTimeWidget<T extends Widget> extends Composite implements HasAriaLabel {
 	private T iWidget;
-	private HTML iReadOnly = null, iPrint = null;
+	private Widget iReadOnly = null;
+	private HTML iPrint = null;
 	private HTML iHint;
 	private VerticalPanel iPanel;
 	private Element iAriaLabel = null;
@@ -88,9 +91,25 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 			iReadOnly.setVisible(!getWidget().isVisible());
 			iReadOnly.addStyleName("unitime-NoPrint");
 			iPanel.insert(iReadOnly, 1);
-		} else {
-			iReadOnly.setHTML(html);
+		} else if (iReadOnly instanceof HasHTML) {
+			((HasHTML)iReadOnly).setHTML(html);
+		} else if (iReadOnly instanceof HasText) {
+			((HasText)iReadOnly).setText(html);
 		}
+	}
+	
+	public Widget getReadOnlyWidget() {
+		return iReadOnly;
+	}
+	
+	public void setReadOnlyWidget(Widget readOnly) {
+		if (iReadOnly != null)
+			iPanel.remove(iReadOnly);
+		iReadOnly = readOnly;
+		iReadOnly.setVisible(!getWidget().isVisible());
+		iReadOnly.addStyleName("unitime-LabelInsteadEdit");
+		iReadOnly.addStyleName("unitime-NoPrint");
+		iPanel.insert(iReadOnly, 1);
 	}
 
 	public void setPrintText(String html) {

@@ -80,6 +80,10 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 		return iEditable && iModel != null;
 	}
 	
+	public void setEditable(boolean editable) {
+		iEditable = editable;
+	}
+	
 	public boolean isEditable(PreferenceInterface preference) {
 		return isEditable() && preference.isEditable();
 	}

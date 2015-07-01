@@ -171,7 +171,11 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		response.setCanSeeAvailability(context.hasPermission(location, Right.RoomDetailAvailability));
 		response.setCanSeeEventAvailability(context.hasPermission(location, Right.RoomDetailEventAvailability));
 		response.setCanSeePeriodPreferences(context.hasPermission(location, Right.RoomDetailPeriodPreferences));
-		response.setCanChange(context.hasPermission(location, Right.RoomEdit));
+		if (location instanceof Room) {
+			response.setCanChange(context.hasPermission(location, Right.RoomEdit));
+		} else {
+			response.setCanChange(context.hasPermission(location, Right.NonUniversityLocationEdit));
+		}
 		if (editPermissions) {
 			if (response.isCanChange()) {
 				response.setCanChangeAvailability(context.hasPermission(location, Right.RoomEditAvailability));
@@ -188,7 +192,11 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 				response.setCanChangeRoomProperties(context.hasPermission(location, Right.RoomEditChangeRoomProperties));
 				response.setCanChangeType(context.hasPermission(location, Right.RoomEditChangeType));
 			}
-			response.setCanDelete(context.hasPermission(location, Right.RoomDelete));
+			if (location instanceof Room) {
+				response.setCanDelete(context.hasPermission(location, Right.RoomDelete));
+			} else {
+				response.setCanDelete(context.hasPermission(location, Right.NonUniversityLocationDelete));
+			}
 		}
 		
 		if (location instanceof Room) {

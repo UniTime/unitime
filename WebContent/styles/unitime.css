@@ -3785,3 +3785,7 @@ unitime-RoomSharingWidget .legend .blank {
 	vertical-align: middle;
 	margin-left: 5px;
 }
+
+.unitime-RoomEdit .default {
+	font-style: italic;	
+}

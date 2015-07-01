@@ -628,7 +628,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			return new GroupsCell(room.getGroups());
 
 		case FEATURES:
-			List<FeatureInterface> features = room.getFeatures(null);
+			List<FeatureInterface> features = room.getFeatures((Long)null);
 			if (features.isEmpty()) return null;
 			return new FeaturesCell(features);
 		}

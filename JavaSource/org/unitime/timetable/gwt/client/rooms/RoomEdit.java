@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.rooms;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -67,6 +68,7 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
@@ -87,28 +89,39 @@ public class RoomEdit extends Composite {
 	private RoomPropertiesInterface iProperties = null;
 	private RoomDetailInterface iRoom = null;
 	
-	private ListBox iType;
-	private ListBox iBuilding;
+	private UniTimeWidget<ListBox> iType;
+	private UniTimeWidget<ListBox> iBuilding;
 	private int iBuildingRow;
 	private Label iNameLabel;
 	private UniTimeWidget<TextBox> iName;
-	private TextBox iDisplayName, iExternalId;
-	private NumberBox iCapacity, iExamCapacity;
-	private ListBox iControllingDepartment;
+	private UniTimeWidget<TextBox> iDisplayName, iExternalId;
+	private UniTimeWidget<NumberBox> iCapacity, iExamCapacity;
+	private UniTimeWidget<ListBox> iControllingDepartment;
 	private NumberBox iX, iY;
+	private UniTimeWidget<P> iCoordinates;
 	private P iCoordinatesFormat;
+	private UniTimeWidget<P> iAreaPanel;
 	private NumberBox iArea;
 	private P iAreaFormat;
-	private CheckBox iDistanceCheck, iRoomCheck;
+	private UniTimeWidget<CheckBox> iDistanceCheck, iRoomCheck;
 	private AbsolutePanel iGoogleMap;
+	private AbsolutePanel iGoogleMapControl;
 	private boolean iGoogleMapInitialized = false;
-	private ListBox iEventDepartment;
-	private ListBox iEventStatus;
+	private UniTimeWidget<ListBox> iEventDepartment;
+	private UniTimeWidget<ListBox> iEventStatus;
+	private UniTimeWidget<P> iBreakTimePanel;
 	private NumberBox iBreakTime;
-	private TextArea iNote;
+	private UniTimeWidget<TextArea> iNote;
+	private UniTimeWidget<P> iExaminationRoomsPanel;
 	private Map<Long, CheckBox> iExaminationRooms = new HashMap<Long, CheckBox>();
 	private Map<Long, CheckBox> iGroups = new HashMap<Long, CheckBox>();
 	private Map<Long, CheckBox> iFeatures = new HashMap<Long, CheckBox>();
+	private int iGlobalGroupsRow;
+	private UniTimeWidget<P> iGlobalGroupsPanel;
+	private Map<Long, UniTimeWidget<P>> iGroupPanel = new HashMap<Long, UniTimeWidget<P>>();
+	private int iFeaturesWithNoTypeRow;
+	private UniTimeWidget<P> iFeaturesWithNoTypePanel;
+	private Map<Long, UniTimeWidget<P>> iFeaturePanel = new HashMap<Long, UniTimeWidget<P>>();
 	private Map<Long, Integer> iGroupRow = new HashMap<Long, Integer>();
 	private Map<Long, Integer> iFeatureRow = new HashMap<Long, Integer>();
 	private UniTimeHeaderPanel iRoomSharingHeader;
@@ -151,26 +164,26 @@ public class RoomEdit extends Composite {
 		iForm.addStyleName("unitime-RoomEdit");
 		iForm.addHeaderRow(iHeader);
 		
-		iType = new ListBox(); iType.setStyleName("unitime-TextBox");
+		iType = new UniTimeWidget<ListBox>(new ListBox()); iType.getWidget().setStyleName("unitime-TextBox");
 		int firstRow = iForm.addRow(MESSAGES.propRoomType(), iType, 1);
-		iType.addItem(MESSAGES.itemSelect(), "-1");
+		iType.getWidget().addItem(MESSAGES.itemSelect(), "-1");
 		for (RoomTypeInterface type: iProperties.getRoomTypes())
-			iType.addItem(type.getLabel(), type.getId().toString());
-		iType.setSelectedIndex(0);
-		iType.addChangeHandler(new ChangeHandler() {
+			iType.getWidget().addItem(type.getLabel(), type.getId().toString());
+		iType.getWidget().setSelectedIndex(0);
+		iType.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
 				typeChanged();
 			}
 		});
 		
-		iBuilding = new ListBox(); iBuilding.setStyleName("unitime-TextBox");
+		iBuilding = new UniTimeWidget<ListBox>(new ListBox()); iBuilding.getWidget().setStyleName("unitime-TextBox");
 		iBuildingRow = iForm.addRow(MESSAGES.propBuilding(), iBuilding, 1);
-		iBuilding.addItem(MESSAGES.itemSelect(), "-1");
+		iBuilding.getWidget().addItem(MESSAGES.itemSelect(), "-1");
 		for (BuildingInterface building: iProperties.getBuildings())
-			iBuilding.addItem(building.getAbbreviation() + " - " + building.getName(), building.getId().toString());
-		iBuilding.setSelectedIndex(0);
-		iBuilding.addChangeHandler(new ChangeHandler() {
+			iBuilding.getWidget().addItem(building.getAbbreviation() + " - " + building.getName(), building.getId().toString());
+		iBuilding.getWidget().setSelectedIndex(0);
+		iBuilding.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
 				buildingChanged();
@@ -192,41 +205,55 @@ public class RoomEdit extends Composite {
 		iNameLabel = new Label(MESSAGES.propRoomName());
 		iForm.addRow(iNameLabel, iName, 1);
 		
-		iDisplayName = new TextBox();
-		iDisplayName.setStyleName("unitime-TextBox");
-		iDisplayName.setMaxLength(100);
-		iDisplayName.setWidth("480px");
+		iDisplayName = new UniTimeWidget<TextBox>(new TextBox());
+		iDisplayName.getWidget().setStyleName("unitime-TextBox");
+		iDisplayName.getWidget().setMaxLength(100);
+		iDisplayName.getWidget().setWidth("480px");
 		iForm.addRow(MESSAGES.propDisplayName(), iDisplayName, 1);
 		
-		iExternalId = new TextBox();
-		iExternalId.setStyleName("unitime-TextBox");
-		iExternalId.setMaxLength(40);
-		iExternalId.setWidth("300px");
+		iExternalId = new UniTimeWidget<TextBox>(new TextBox());
+		iExternalId.getWidget().setStyleName("unitime-TextBox");
+		iExternalId.getWidget().setMaxLength(40);
+		iExternalId.getWidget().setWidth("300px");
 		iForm.addRow(MESSAGES.propExternalId(), iExternalId, 1);
 		
-		iCapacity = new NumberBox(); iCapacity.setDecimal(false); iCapacity.setNegative(false);
-		iCapacity.setMaxLength(6);
-		iCapacity.setWidth("80px");
+		iCapacity = new UniTimeWidget<NumberBox>(new NumberBox());
+		iCapacity.getWidget().setDecimal(false);
+		iCapacity.getWidget().setNegative(false);
+		iCapacity.getWidget().setMaxLength(6);
+		iCapacity.getWidget().setWidth("80px");
 		iForm.addRow(MESSAGES.propCapacity(), iCapacity, 1);
 		
-		iControllingDepartment = new ListBox(); iControllingDepartment.setStyleName("unitime-TextBox");
-		iControllingDepartment.addItem(MESSAGES.itemNoControlDepartment(), "-1");
+		iControllingDepartment = new UniTimeWidget<ListBox>(new ListBox());
+		iControllingDepartment.getWidget().setStyleName("unitime-TextBox");
+		iControllingDepartment.getWidget().addItem(MESSAGES.itemNoControlDepartment(), "-1");
 		iForm.addRow(MESSAGES.propControllingDepartment(), iControllingDepartment, 1);
 		for (DepartmentInterface department: iProperties.getDepartments())
-			iControllingDepartment.addItem(department.getExtAbbreviationOrCode() + " - " + department.getExtLabelWhenExist(), department.getId().toString());
+			iControllingDepartment.getWidget().addItem(department.getExtAbbreviationOrCode() + " - " + department.getExtLabelWhenExist(), department.getId().toString());
 		
-		iX = new NumberBox(); iX.setMaxLength(12); iX.setWidth("80px"); iX.setDecimal(true); iX.setNegative(true); iX.addStyleName("number");
-		iY = new NumberBox(); iY.setMaxLength(12); iY.setWidth("80px"); iY.setDecimal(true); iY.setNegative(true); iY.addStyleName("number");
-		iX.getElement().setId("coordX"); iY.getElement().setId("coordY");
-		P p = new P("coordinates");
-		p.add(iX);
+		iX =new NumberBox();
+		iX.setMaxLength(12);
+		iX.setWidth("80px");
+		iX.setDecimal(true);
+		iX.setNegative(true);
+		iX.addStyleName("number");
+		iY = new NumberBox();
+		iY.setMaxLength(12);
+		iY.setWidth("80px");
+		iY.setDecimal(true);
+		iY.setNegative(true);
+		iY.addStyleName("number");
+		iX.getElement().setId("coordX");
+		iY.getElement().setId("coordY");
+		iCoordinates = new UniTimeWidget<P>(new P("coordinates"));
+		iCoordinates.getWidget().add(iX);
 		P comma = new P("comma"); comma.setText(", ");
-		p.add(comma);
-		p.add(iY);
+		iCoordinates.getWidget().add(comma);
+		iCoordinates.getWidget().add(iY);
 		iCoordinatesFormat = new P("format");
 		iCoordinatesFormat.setText(iProperties.getEllipsoid());
-		p.add(iCoordinatesFormat);
-		iForm.addRow(MESSAGES.propCoordinates(), p, 1);
+		iCoordinates.getWidget().add(iCoordinatesFormat);
+		iForm.addRow(MESSAGES.propCoordinates(), iCoordinates, 1);
 		if (iProperties.isGoogleMap()) {
 			iX.addValueChangeHandler(new ValueChangeHandler<String>() {
 				@Override
@@ -242,29 +269,32 @@ public class RoomEdit extends Composite {
 			});
 		}
 		
-		iArea = new NumberBox(); iArea.setDecimal(true); iArea.setNegative(false); iArea.addStyleName("number");
+		iArea = new NumberBox();
+		iArea.setDecimal(true);
+		iArea.setNegative(false);
+		iArea.addStyleName("number");
 		iArea.setWidth("80px");
 		iArea.setMaxLength(12);
-		P q = new P("area");
-		q.add(iArea);
+		iAreaPanel = new UniTimeWidget<P>(new P("area"));
+		iAreaPanel.getWidget().add(iArea);
 		iAreaFormat = new P("format");
 		iAreaFormat.setText(CONSTANTS.roomAreaUnitsLong());
-		q.add(iAreaFormat);
-		iForm.addRow(MESSAGES.propRoomArea(), q, 1);
+		iAreaPanel.getWidget().add(iAreaFormat);
+		iForm.addRow(MESSAGES.propRoomArea(), iAreaPanel, 1);
 		
-		iDistanceCheck = new CheckBox();
+		iDistanceCheck = new UniTimeWidget<CheckBox>(new CheckBox());
 		iForm.addRow(MESSAGES.propDistanceCheck(), iDistanceCheck, 1);
 		
-		iRoomCheck = new CheckBox();
+		iRoomCheck = new UniTimeWidget<CheckBox>(new CheckBox());
 		iForm.addRow(MESSAGES.propRoomCheck(), iRoomCheck, 1);
 		
 		if (!iProperties.getExamTypes().isEmpty()) {
-			P exams = new P("exams");
+			iExaminationRoomsPanel = new UniTimeWidget<P>(new P("exams")); iExaminationRoomsPanel.setWidth("100%");
 			for (final ExamTypeInterface type: iProperties.getExamTypes()) {
 				final CheckBox ch = new CheckBox(type.getLabel());
 				ch.addStyleName("exam");
 				iExaminationRooms.put(type.getId(), ch);
-				exams.add(ch);
+				iExaminationRoomsPanel.getWidget().add(ch);
 				ch.setValue(false);
 				ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 					@Override
@@ -278,42 +308,49 @@ public class RoomEdit extends Composite {
 					}
 				});
 			}
-			iForm.addRow(MESSAGES.propExamRooms(), exams, 1);
+			iForm.addRow(MESSAGES.propExamRooms(), iExaminationRoomsPanel, 1);
 			
-			iExamCapacity = new NumberBox(); iExamCapacity.setDecimal(false); iExamCapacity.setNegative(false);
-			iExamCapacity.setMaxLength(6);
-			iExamCapacity.setWidth("80px");
+			iExamCapacity = new UniTimeWidget<NumberBox>(new NumberBox());
+			iExamCapacity.getWidget().setDecimal(false);
+			iExamCapacity.getWidget().setNegative(false);
+			iExamCapacity.getWidget().setMaxLength(6);
+			iExamCapacity.getWidget().setWidth("80px");
 			iForm.addRow(MESSAGES.propExamCapacity(), iExamCapacity, 1);
 		}
 		
-		iEventDepartment = new ListBox(); iEventDepartment.setStyleName("unitime-TextBox");
-		iEventDepartment.addItem(MESSAGES.itemNoEventDepartment(), "-1");
+		iEventDepartment = new UniTimeWidget<ListBox>(new ListBox());
+		iEventDepartment.getWidget().setStyleName("unitime-TextBox");
+		iEventDepartment.getWidget().addItem(MESSAGES.itemNoEventDepartment(), "-1");
 		iForm.addRow(MESSAGES.propEventDepartment(), iEventDepartment, 1);
 		for (DepartmentInterface department: iProperties.getDepartments())
 			if (department.isEvent())
-				iEventDepartment.addItem(department.getDeptCode() + " - " + department.getLabel(), department.getId().toString());
+				iEventDepartment.getWidget().addItem(department.getDeptCode() + " - " + department.getLabel(), department.getId().toString());
 		
-		iEventStatus = new ListBox(); iEventStatus.setStyleName("unitime-TextBox");
-		iEventStatus.addItem(MESSAGES.itemDefault(), "-1");
+		iEventStatus = new UniTimeWidget<ListBox>(new ListBox());
+		iEventStatus.getWidget().setStyleName("unitime-TextBox");
+		iEventStatus.getWidget().addItem(MESSAGES.itemDefault(), "-1");
 		iForm.addRow(MESSAGES.propEventStatus(), iEventStatus, 1);
 		for (int i = 0; i < CONSTANTS.eventStatusName().length; i++)
-			iEventStatus.addItem(CONSTANTS.eventStatusName()[i], String.valueOf(i));
+			iEventStatus.getWidget().addItem(CONSTANTS.eventStatusName()[i], String.valueOf(i));
 		
-		iNote = new TextArea();
-		iNote.setStyleName("unitime-TextArea");
-		iNote.setVisibleLines(5);
-		iNote.setCharacterWidth(70);
+		iNote = new UniTimeWidget<TextArea>(new TextArea());
+		iNote.getWidget().setStyleName("unitime-TextArea");
+		iNote.getWidget().setVisibleLines(5);
+		iNote.getWidget().setCharacterWidth(70);
 		iForm.addRow(MESSAGES.propEventNote(), iNote);
 
-		iBreakTime = new NumberBox(); iBreakTime.setDecimal(false); iBreakTime.setNegative(false); iBreakTime.addStyleName("number");
+		iBreakTime = new NumberBox();
+		iBreakTime.setDecimal(false);
+		iBreakTime.setNegative(false);
+		iBreakTime.addStyleName("number");
 		iBreakTime.setWidth("80px");
 		iBreakTime.setMaxLength(12); 
-		P b = new P("breaktime");
-		b.add(iBreakTime);
+		iBreakTimePanel = new UniTimeWidget<P>(new P("breaktime"));
+		iBreakTimePanel.getWidget().add(iBreakTime);
 		P f = new P("note");
 		f.setText(MESSAGES.useDefaultBreakTimeWhenEmpty());
-		b.add(f);
-		iForm.addRow(MESSAGES.propBreakTime(), b, 1);
+		iBreakTimePanel.getWidget().add(f);
+		iForm.addRow(MESSAGES.propBreakTime(), iBreakTimePanel, 1);
 		
 		if (iProperties.isGoogleMap()) {
 			iGoogleMap = new AbsolutePanel();
@@ -321,12 +358,12 @@ public class RoomEdit extends Composite {
 			iForm.setWidget(firstRow, 2, iGoogleMap);
 			iForm.getFlexCellFormatter().setRowSpan(firstRow, 2, iForm.getRowCount() - firstRow - 1);
 			
-			AbsolutePanel control = new AbsolutePanel(); control.setStyleName("control");
+			iGoogleMapControl = new AbsolutePanel(); iGoogleMapControl.setStyleName("control");
 			final TextBox searchBox = new TextBox();
 			searchBox.setStyleName("unitime-TextBox"); searchBox.addStyleName("searchBox");
 			searchBox.getElement().setId("mapSearchBox");
 			searchBox.setTabIndex(-1);
-			control.add(searchBox);
+			iGoogleMapControl.add(searchBox);
 			Button button = new Button(MESSAGES.buttonGeocode(), new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -350,36 +387,39 @@ public class RoomEdit extends Composite {
 			Character accessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonGeocode());
 			if (accessKey != null)
 				button.setAccessKey(accessKey);
-			control.add(button);
+			iGoogleMapControl.add(button);
 			
-			iGoogleMap.add(control);
+			iGoogleMap.add(iGoogleMapControl);
 
-			addGoogleMap(iGoogleMap.getElement(), control.getElement());
+			addGoogleMap(iGoogleMap.getElement(), iGoogleMapControl.getElement());
 		}
 		
 		iForm.addHeaderRow(MESSAGES.headerRoomGroups());
 		if (!iProperties.getGroups().isEmpty()) {
 			P groups = new P("groups");
-			Map<Long, P> departmental = new HashMap<Long, P>();
 			for (GroupInterface group: iProperties.getGroups()) {
 				CheckBox ch = new CheckBox(group.getLabel());
 				ch.addStyleName("group");
 				iGroups.put(group.getId(), ch);
 				if (group.getDepartment() != null) {
-					P d = departmental.get(group.getDepartment().getId());
+					UniTimeWidget<P> d = iGroupPanel.get(group.getDepartment().getId());
 					if (d == null) {
-						d = new P("groups");
-						departmental.put(group.getDepartment().getId(), d);
+						d = new UniTimeWidget<P>(new P("groups"));
+						d.setWidth("100%");
+						iGroupPanel.put(group.getDepartment().getId(), d);
 					}
-					d.add(ch);
+					d.getWidget().add(ch);
 				} else {
 					groups.add(ch);
 				}
 			}
-			if (groups.getWidgetCount() > 0)
-				iForm.addRow(MESSAGES.propGlobalGroups(), groups);
+			if (groups.getWidgetCount() > 0) {
+				iGlobalGroupsPanel = new UniTimeWidget<P>(groups);
+				iGlobalGroupsPanel.setWidth("100%");
+				iGlobalGroupsRow = iForm.addRow(MESSAGES.propGlobalGroups(), iGlobalGroupsPanel);
+			}
 			for (DepartmentInterface dept: iProperties.getDepartments()) {
-				P d = departmental.get(dept.getId());
+				UniTimeWidget<P> d = iGroupPanel.get(dept.getId());
 				if (d != null)
 					iGroupRow.put(dept.getId(), iForm.addRow(dept.getExtLabelWhenExist() + ":", d));
 			}
@@ -388,28 +428,31 @@ public class RoomEdit extends Composite {
 		iForm.addHeaderRow(MESSAGES.headerRoomFeatures());
 		if (!iProperties.getFeatures().isEmpty()) {
 			P features = new P("features");
-			Map<Long, P> types = new HashMap<Long, P>();
 			for (FeatureInterface feature: iProperties.getFeatures()) {
 				CheckBox ch = new CheckBox(feature.getTitle());
 				ch.addStyleName("feature");
 				iFeatures.put(feature.getId(), ch);
 				if (feature.getType() != null) {
-					P d = types.get(feature.getType().getId());
+					UniTimeWidget<P> d = iFeaturePanel.get(feature.getType().getId());
 					if (d == null) {
-						d = new P("features");
-						types.put(feature.getType().getId(), d);
+						d = new UniTimeWidget<P>(new P("features"));
+						d.setWidth("100%");
+						iFeaturePanel.put(feature.getType().getId(), d);
 					}
-					d.add(ch);
+					d.getWidget().add(ch);
 				} else {
 					features.add(ch);
 				}
 			}
-			if (features.getWidgetCount() > 0)
-				iForm.addRow(MESSAGES.propFeatures(), features);
+			if (features.getWidgetCount() > 0) {
+				iFeaturesWithNoTypePanel = new UniTimeWidget<P>(features);
+				iFeaturesWithNoTypePanel.setWidth("100%");
+				iFeaturesWithNoTypeRow = iForm.addRow(MESSAGES.propFeatures(), iFeaturesWithNoTypePanel);
+			}
 			for (FeatureTypeInterface type: iProperties.getFeatureTypes()) {
-				P d = types.get(type.getId());
+				UniTimeWidget<P> d = iFeaturePanel.get(type.getId());
 				if (d != null)
-					iForm.addRow(type.getLabel() + ":", d);
+					iFeatureRow.put(type.getId(), iForm.addRow(type.getLabel() + ":", d));
 			}
 		}
 		
@@ -465,31 +508,124 @@ public class RoomEdit extends Composite {
 			iHeader.setEnabled("update", true);
 			iHeader.setEnabled("delete", iRoom.isCanDelete());
 		}
+		
 		if (iRoom.getRoomType() == null) {
-			iType.setSelectedIndex(0);
+			iType.getWidget().clear();
+			iType.getWidget().addItem(MESSAGES.itemSelect(), "-1");
+			for (RoomTypeInterface type: iProperties.getRoomTypes()) {
+				if (type.isRoom() && iProperties.isCanAddRoom())
+					iType.getWidget().addItem(type.getLabel(), type.getId().toString());
+				else if (!type.isRoom() && iProperties.isCanAddNonUniversity())
+					iType.getWidget().addItem(type.getLabel(), type.getId().toString());
+			}
+			iType.getWidget().setSelectedIndex(0);
 		} else {
-			iType.setSelectedIndex(1 + iProperties.getRoomTypes().indexOf(iRoom.getRoomType()));
+			iType.getWidget().clear();
+			for (RoomTypeInterface type: iProperties.getRoomTypes()) {
+				if (type.isRoom() && iRoom.getBuilding() != null)
+					iType.getWidget().addItem(type.getLabel(), type.getId().toString());
+				else if (!type.isRoom() && iRoom.getBuilding() == null)
+					iType.getWidget().addItem(type.getLabel(), type.getId().toString());
+			}
+			for (int i = 0; i < iType.getWidget().getItemCount(); i++) {
+				if (iType.getWidget().getValue(i).equals(iRoom.getRoomType().getId().toString())) {
+					iType.getWidget().setSelectedIndex(i); break;
+				}
+			}
 		}
 		typeChanged();
-		if (iRoom.getBuilding() == null) {
-			iBuilding.setSelectedIndex(0);
+		if (iRoom.getRoomType() == null || iRoom.isCanChangeType()) {
+			iType.setReadOnly(false);
 		} else {
-			iBuilding.setSelectedIndex(1 + iProperties.getBuildings().indexOf(iRoom.getBuilding()));
+			iType.setReadOnly(true);
+			iType.setText(iRoom.getRoomType().getLabel());
 		}
-		iName.getWidget().setText(iRoom.getName() == null ? "" : iRoom.getName());
-		iDisplayName.setText(iRoom.getDisplayName() == null ? "" : iRoom.getDisplayName());
-		iExternalId.setText(iRoom.getExternalId() == null ? "" : iRoom.getExternalId());
-		iCapacity.setValue(iRoom.getCapacity());
-		if (iRoom.getControlDepartment() == null) {
-			iControllingDepartment.setSelectedIndex(0);
+
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeRoomProperties()) {
+			if (iRoom.getBuilding() == null) {
+				iBuilding.getWidget().setSelectedIndex(0);
+			} else {
+				iBuilding.getWidget().setSelectedIndex(1 + iProperties.getBuildings().indexOf(iRoom.getBuilding()));
+			}
+			iBuilding.setReadOnly(false);
 		} else {
-			iControllingDepartment.setSelectedIndex(1 + iProperties.getDepartments().indexOf(iRoom.getControlDepartment()));
+			iBuilding.setText(iRoom.getBuilding() == null ? "" : iRoom.getBuilding().getAbbreviation() + " - " + iRoom.getBuilding().getName());
+			iBuilding.setReadOnly(true);
 		}
-		iX.setValue(iRoom.getX());
-		iY.setValue(iRoom.getY());
-		iArea.setValue(iRoom.getArea());
-		iDistanceCheck.setValue(!iRoom.isIgnoreTooFar());
-		iRoomCheck.setValue(!iRoom.isIgnoreRoomCheck());
+		
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeRoomProperties()) {
+			iName.getWidget().setText(iRoom.getName() == null ? "" : iRoom.getName());
+			iName.setReadOnly(false);
+		} else {
+			iName.setText(iRoom.getName() == null ? "" : iRoom.getName());
+			iName.setReadOnly(true);
+		}
+		
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeRoomProperties()) {
+			iDisplayName.getWidget().setText(iRoom.getDisplayName() == null ? "" : iRoom.getDisplayName());
+			iDisplayName.setReadOnly(false);
+		} else {
+			iDisplayName.setText(iRoom.getDisplayName() == null ? "" : iRoom.getDisplayName());
+			iDisplayName.setReadOnly(true);
+		}
+		
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeExternalId()) {
+			iExternalId.getWidget().setText(iRoom.getExternalId() == null ? "" : iRoom.getExternalId());
+			iExternalId.setReadOnly(false);
+		} else {
+			iExternalId.setText(iRoom.getExternalId() == null ? "" : iRoom.getExternalId());
+			iExternalId.setReadOnly(true);
+		}
+		
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeCapacity()) {
+			iCapacity.getWidget().setValue(iRoom.getCapacity());
+			iCapacity.setReadOnly(false);
+		} else {
+			iCapacity.setText(iRoom.getCapacity() == null ? "" : iRoom.getCapacity().toString());
+			iCapacity.setReadOnly(true);
+		}
+		
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeControll()) {
+			if (iRoom.getControlDepartment() == null) {
+				iControllingDepartment.getWidget().setSelectedIndex(0);
+			} else {
+				iControllingDepartment.getWidget().setSelectedIndex(1 + iProperties.getDepartments().indexOf(iRoom.getControlDepartment()));
+			}
+			iControllingDepartment.setReadOnly(false);
+		} else {
+			iControllingDepartment.setText(iRoom.getControlDepartment() == null ? "" : iRoom.getControlDepartment().getExtAbbreviationOrCode() + " - " + iRoom.getControlDepartment().getExtLabelWhenExist());
+			iControllingDepartment.setReadOnly(true);
+		}
+		
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeRoomProperties()) {
+			iX.setValue(iRoom.getX());
+			iY.setValue(iRoom.getY());
+			iCoordinates.setReadOnly(false);
+			iArea.setValue(iRoom.getArea());
+			iAreaPanel.setReadOnly(false);
+			iDistanceCheck.getWidget().setValue(!iRoom.isIgnoreTooFar());
+			iDistanceCheck.setReadOnly(false);
+			iRoomCheck.getWidget().setValue(!iRoom.isIgnoreRoomCheck());
+			iRoomCheck.setReadOnly(false);
+			if (iGoogleMapControl != null) iGoogleMapControl.setVisible(true);
+		} else {
+			iX.setValue(iRoom.getX());
+			iY.setValue(iRoom.getY());
+			if (!iRoom.hasCoordinates())
+				iCoordinates.setText("");
+			else if (iProperties.hasEllipsoid())
+				iCoordinates.setText(MESSAGES.coordinatesWithEllipsoid(iRoom.getX(), iRoom.getY(), iProperties.getEllipsoid()));
+			else
+				iCoordinates.setText(MESSAGES.coordinates(iRoom.getX(), iRoom.getY()));
+			iCoordinates.setReadOnly(true);
+			iAreaPanel.setText(iRoom.getArea() == null ? "" : MESSAGES.roomArea(iRoom.getArea()) + " " + CONSTANTS.roomAreaUnitsLong());
+			iAreaPanel.setReadOnly(true);
+			iDistanceCheck.setReadOnlyWidget(new Image(!iRoom.isIgnoreTooFar() ? RESOURCES.on() : RESOURCES.off()));
+			iDistanceCheck.setReadOnly(true);
+			iRoomCheck.setReadOnlyWidget(new Image(!iRoom.isIgnoreRoomCheck() ? RESOURCES.on() : RESOURCES.off()));
+			iRoomCheck.setReadOnly(true);
+			if (iGoogleMapControl != null) iGoogleMapControl.setVisible(false);
+		}
 		
 		for (Map.Entry<Long, CheckBox> e: iExaminationRooms.entrySet()) {
 			e.getValue().setValue(false);
@@ -502,11 +638,21 @@ public class RoomEdit extends Composite {
 				iForm.getRowFormatter().setVisible(iPeriodPreferencesHeaderRow, true);
 			}
 		}
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeExamStatus()) {
+			iExaminationRoomsPanel.setReadOnly(false);			
+		} else {
+			String types = "";
+			for (ExamTypeInterface type: iRoom.getExamTypes())
+				types += (types.isEmpty() ? "" : ", ") + type.getLabel();
+			iExaminationRoomsPanel.setText(types);
+			iExaminationRoomsPanel.setReadOnly(true);
+		}
 		
 		iPeriodPreferencesHeader.clearMessage();
 		for (final ExamTypeInterface type: iProperties.getExamTypes()) {
 			final PeriodPreferencesWidget pref = iPeriodPreferences.get(type.getId());
 			if (iRoom.hasPeriodPreferenceModel(type.getId())) {
+				pref.setEditable(iProperties.isCanEditRoomExams());
 				pref.setModel(iRoom.getPeriodPreferenceModel(type.getId()));
 				iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(type.getId()), iExaminationRooms.get(type.getId()).getValue());
 			} else {
@@ -521,6 +667,7 @@ public class RoomEdit extends Composite {
 					@Override
 					public void onSuccess(PeriodPreferenceModel result) {
 						iPeriodPreferencesHeader.clearMessage();
+						pref.setEditable(iProperties.isCanEditRoomExams());
 						pref.setModel(result);
 						iForm.getRowFormatter().setVisible(iPeriodPreferencesRow.get(type.getId()), iExaminationRooms.get(type.getId()).getValue());
 					}
@@ -528,31 +675,112 @@ public class RoomEdit extends Composite {
 			}
 		}
 		
-		iExamCapacity.setValue(iRoom.getExamCapacity());
-		
-		if (iRoom.getEventDepartment() == null) {
-			iEventDepartment.setSelectedIndex(0);
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeExamStatus()) {
+			iExamCapacity.getWidget().setValue(iRoom.getExamCapacity());
+			iExamCapacity.setReadOnly(false);
 		} else {
-			iEventDepartment.setSelectedIndex(0);
-			for (int i = 1; i < iEventDepartment.getItemCount(); i++) {
-				if (iEventDepartment.getValue(i).equals(iRoom.getEventDepartment().getId().toString())) {
-					iEventDepartment.setSelectedIndex(i); break;
+			iExamCapacity.setText(iRoom.getExamCapacity() == null ? "" : iRoom.getExamCapacity().toString());
+			iExamCapacity.setReadOnly(true);
+		}
+		
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeEventProperties()) {
+			if (iRoom.getEventDepartment() == null) {
+				iEventDepartment.getWidget().setSelectedIndex(0);
+			} else {
+				iEventDepartment.getWidget().setSelectedIndex(0);
+				for (int i = 1; i < iEventDepartment.getWidget().getItemCount(); i++) {
+					if (iEventDepartment.getWidget().getValue(i).equals(iRoom.getEventDepartment().getId().toString())) {
+						iEventDepartment.getWidget().setSelectedIndex(i); break;
+					}
 				}
+			}
+			iEventDepartment.setReadOnly(false);
+			iEventStatus.getWidget().setSelectedIndex(iRoom.getEventStatus() == null ? 0 : iRoom.getEventStatus());
+			iEventStatus.setReadOnly(false);
+			iNote.getWidget().setText(iRoom.getEventNote() == null ? "" : iRoom.getEventNote());
+			iNote.setReadOnly(false);
+			iBreakTime.setValue(iRoom.getBreakTime());
+			iBreakTimePanel.setReadOnly(false);
+		} else {
+			iEventDepartment.setText(iRoom.getEventDepartment() == null ? null : iRoom.getEventDepartment().getDeptCode() + " - " + iRoom.getEventDepartment().getLabel());
+			iEventDepartment.setReadOnly(true);
+			iEventStatus.setText(iRoom.getEventStatus() == null ? "" : CONSTANTS.eventStatusName()[iRoom.getEventStatus()]);
+			iEventStatus.setReadOnly(true);
+			iEventStatus.getReadOnlyWidget().removeStyleName("default");
+			if (iRoom.getEventStatus() == null && iRoom.getDefaultEventStatus() != null) {
+				iEventStatus.setText(CONSTANTS.eventStatusName()[iRoom.getDefaultEventStatus()]);
+				iEventStatus.getReadOnlyWidget().addStyleName("default");
+			}
+			iNote.setText(iRoom.getEventNote() == null ? "" : iRoom.getEventNote());
+			iNote.getReadOnlyWidget().removeStyleName("default");
+			if (iRoom.getEventNote() == null && iRoom.getDefaultEventNote() != null) {
+				iNote.setText(iRoom.getDefaultEventNote());
+				iNote.getReadOnlyWidget().addStyleName("default");
+			}
+			iNote.setReadOnly(true);
+			iBreakTimePanel.setText(iRoom.getBreakTime() == null ? "" : iRoom.getBreakTime().toString());
+			iBreakTimePanel.getReadOnlyWidget().removeStyleName("default");
+			if (iRoom.getBreakTime() == null && iRoom.getDefaultBreakTime() != null) {
+				iBreakTimePanel.setText(iRoom.getDefaultBreakTime().toString()); iBreakTimePanel.addStyleName("default");
+			}
+			iBreakTimePanel.setReadOnly(true);
+		}
+		
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeGroups()) {
+			for (Map.Entry<Long, CheckBox> e: iGroups.entrySet())
+				e.getValue().setValue(iRoom.hasGroup(e.getKey()));
+			if (iGlobalGroupsPanel != null) {
+				iGlobalGroupsPanel.setReadOnly(false);
+				iForm.getRowFormatter().setVisible(iGlobalGroupsRow, true);
+			}
+			for (UniTimeWidget<P> panel: iGroupPanel.values())
+				panel.setReadOnly(false);
+			for (Integer row: iGroupRow.values())
+				iForm.getRowFormatter().setVisible(row, true);
+		} else {
+			if (iGlobalGroupsPanel != null) {
+				List<GroupInterface> groups = iRoom.getGlobalGroups();
+				iGlobalGroupsPanel.setReadOnlyWidget(new RoomDetail.GroupsCell(groups));
+				iGlobalGroupsPanel.setReadOnly(true);
+				iForm.getRowFormatter().setVisible(iGlobalGroupsRow, !groups.isEmpty());
+			}
+			for (Map.Entry<Long, UniTimeWidget<P>> e: iGroupPanel.entrySet()) {
+				List<GroupInterface> groups = iRoom.getDepartmentalGroups(e.getKey());
+				e.getValue().setReadOnlyWidget(new RoomDetail.GroupsCell(groups, false));
+				e.getValue().setReadOnly(true);
+				iForm.getRowFormatter().setVisible(iGroupRow.get(e.getKey()), !groups.isEmpty());
 			}
 		}
 		
-		iEventStatus.setSelectedIndex(iRoom.getEventStatus() == null ? 0 : iRoom.getEventStatus());
-		iNote.setText(iRoom.getEventNote() == null ? "" : iRoom.getEventNote());
-		iBreakTime.setValue(iRoom.getBreakTime());
-		
-		for (Map.Entry<Long, CheckBox> e: iGroups.entrySet())
-			e.getValue().setValue(iRoom.hasGroup(e.getKey()));
-		
-		for (Map.Entry<Long, CheckBox> e: iFeatures.entrySet())
-			e.getValue().setValue(iRoom.hasFeature(e.getKey()));
+		if (iRoom.getUniqueId() == null || iRoom.isCanChangeFeatures()) {
+			for (Map.Entry<Long, CheckBox> e: iFeatures.entrySet())
+				e.getValue().setValue(iRoom.hasFeature(e.getKey()));
+			if (iFeaturesWithNoTypePanel != null) {
+				iFeaturesWithNoTypePanel.setReadOnly(false);
+				iForm.getRowFormatter().setVisible(iFeaturesWithNoTypeRow, true);
+			}
+			for (UniTimeWidget<P> panel: iFeaturePanel.values())
+				panel.setReadOnly(false);
+			for (Integer row: iFeatureRow.values())
+				iForm.getRowFormatter().setVisible(row, true);
+		} else {
+			if (iFeaturesWithNoTypePanel != null) {
+				List<FeatureInterface> features = iRoom.getFeatures((Long)null);
+				iFeaturesWithNoTypePanel.setReadOnlyWidget(new RoomDetail.FeaturesCell(features));
+				iFeaturesWithNoTypePanel.setReadOnly(true);
+				iForm.getRowFormatter().setVisible(iFeaturesWithNoTypeRow, !features.isEmpty());
+			}
+			for (Map.Entry<Long, UniTimeWidget<P>> e: iFeaturePanel.entrySet()) {
+				List<FeatureInterface> features = iRoom.getFeatures(e.getKey());
+				e.getValue().setReadOnlyWidget(new RoomDetail.FeaturesCell(features));
+				e.getValue().setReadOnly(true);
+				iForm.getRowFormatter().setVisible(iFeatureRow.get(e.getKey()), !features.isEmpty());
+			}
+		}
 		
 		if (iRoom.hasRoomSharingModel()) {
 			iRoomSharingHeader.clearMessage();
+			iRoomSharing.setEditable(iProperties.isCanEditDepartments());
 			iRoomSharing.setModel(iRoom.getRoomSharingModel());
 			iRoomSharing.setVisible(true);
 		} else {
@@ -566,6 +794,7 @@ public class RoomEdit extends Composite {
 				@Override
 				public void onSuccess(RoomSharingModel result) {
 					iRoomSharingHeader.clearMessage();
+					iRoomSharing.setEditable(iProperties.isCanEditDepartments());
 					iRoomSharing.setModel(result);
 					iRoomSharing.setVisible(true);
 					/*
@@ -578,6 +807,7 @@ public class RoomEdit extends Composite {
 		
 		if (iRoom.hasEventAvailabilityModel()) {
 			iEventAvailabilityHeader.clearMessage();
+			iEventAvailability.setEditable(iRoom.getUniqueId() == null || iRoom.isCanChangeEventAvailability());
 			iEventAvailability.setModel(iRoom.getEventAvailabilityModel());
 			iEventAvailability.setVisible(true);
 		} else {
@@ -591,6 +821,7 @@ public class RoomEdit extends Composite {
 				@Override
 				public void onSuccess(RoomSharingModel result) {
 					iEventAvailabilityHeader.clearMessage();
+					iEventAvailability.setEditable(iRoom.getUniqueId() == null || iRoom.isCanChangeEventAvailability());
 					iEventAvailability.setModel(result);
 					iEventAvailability.setVisible(true);
 				}
@@ -601,7 +832,7 @@ public class RoomEdit extends Composite {
 	public RoomDetailInterface getRoom() { return iRoom; }
 	
 	protected void buildingChanged() {
-		BuildingInterface building = iProperties.getBuilding(Long.valueOf(iBuilding.getValue(iBuilding.getSelectedIndex())));
+		BuildingInterface building = iProperties.getBuilding(Long.valueOf(iBuilding.getWidget().getValue(iBuilding.getWidget().getSelectedIndex())));
 		if (building != null) {
 			iX.setValue(building.getX());
 			iY.setValue(building.getY());
@@ -611,7 +842,7 @@ public class RoomEdit extends Composite {
 	}
 	
 	protected void typeChanged() {
-		RoomTypeInterface type = iProperties.getRoomType(Long.valueOf(iType.getValue(iType.getSelectedIndex())));
+		RoomTypeInterface type = iProperties.getRoomType(Long.valueOf(iType.getWidget().getValue(iType.getWidget().getSelectedIndex())));
 		iForm.getRowFormatter().setVisible(iBuildingRow, type != null && type.isRoom());
 		iNameLabel.setText(type != null && type.isRoom() ? MESSAGES.propRoomNumber() : MESSAGES.propRoomName());
 	}
@@ -635,9 +866,16 @@ public class RoomEdit extends Composite {
 						public void onFailure(Exception e) {
 							UniTimeNotifications.error(e.getMessage(), e);
 							iGoogleMap = null;
+							iGoogleMapControl = null;
 						}
 					}).inject();
+		} else if (iGoogleMap != null) {
+			setMarker();
 		}
+	}
+	
+	public boolean isGoogleMapEditable() {
+		return iGoogleMapControl != null && iGoogleMapControl.isVisible();
 	}
 	
 	public void hide() {
@@ -670,6 +908,7 @@ public class RoomEdit extends Composite {
 				}
 			});
 		}
+		$wnd.that = this
 		
 		$wnd.setupGoogleMap = function setupGoogleMap() {
 			var latlng = new $wnd.google.maps.LatLng(50, -58);
@@ -698,26 +937,33 @@ public class RoomEdit extends Composite {
 				if (t != null) clearTimeout(t);
 				t = setTimeout($wnd.geoceodeMarker, 500);
 			});
-		
+			
 			$wnd.google.maps.event.addListener($wnd.map, 'rightclick', function(event) {
-				$wnd.marker.setPosition(event.latLng);
-				$wnd.marker.setVisible(true);
+				if ($wnd.marker.getDraggable()) {
+					$wnd.marker.setPosition(event.latLng);
+					$wnd.marker.setVisible(true);
+				}
 			});
+			
+			$wnd.that.@org.unitime.timetable.gwt.client.rooms.RoomEdit::setMarker()();
 		};
 	}-*/;
 	
 	protected native void setMarker() /*-{
-		var x = $doc.getElementById("coordX").value;
-		var y = $doc.getElementById("coordY").value;
-		if (x && y) {
-			var pos = new $wnd.google.maps.LatLng(x, y);
-			$wnd.marker.setPosition(pos);
-			$wnd.marker.setVisible(true);
-			if ($wnd.marker.getMap().getZoom() <= 10) $wnd.marker.getMap().setZoom(16);
-			$wnd.marker.getMap().panTo(pos);
-		} else {
-			$wnd.marker.setVisible(false);
-		}
+		try {
+			var x = $doc.getElementById("coordX").value;
+			var y = $doc.getElementById("coordY").value;
+			if (x && y) {
+				var pos = new $wnd.google.maps.LatLng(x, y);
+				$wnd.marker.setPosition(pos);
+				$wnd.marker.setVisible(true);
+				if ($wnd.marker.getMap().getZoom() <= 10) $wnd.marker.getMap().setZoom(16);
+				$wnd.marker.getMap().panTo(pos);
+			} else {
+				$wnd.marker.setVisible(false);
+			}
+			$wnd.marker.setDraggable(this.@org.unitime.timetable.gwt.client.rooms.RoomEdit::isGoogleMapEditable()());
+		} catch (error) {}
 	}-*/;
 	
 	protected native void geocodeAddress() /*-{

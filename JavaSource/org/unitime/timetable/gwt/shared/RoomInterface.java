@@ -954,6 +954,14 @@ public class RoomInterface implements IsSerializable {
 			}
 			return ret;
 		}
+		public List<FeatureInterface> getFeatures(Long typeId) {
+			List<FeatureInterface> ret = new ArrayList<FeatureInterface>();
+			for (FeatureInterface f: iFeatures) {
+				if ((typeId == null && f.getType() == null) || (typeId != null && f.getType() != null && typeId.equals(f.getType().getId())))
+					ret.add(f);
+			}
+			return ret;
+		}
 		public boolean hasFeature(Long featureId) {
 			if (iFeatures == null) return false;
 			for (FeatureInterface feature: iFeatures)
@@ -1371,7 +1379,7 @@ public class RoomInterface implements IsSerializable {
 		private boolean iCanExportPdf = false, iCanExportCsv = false;
 		private boolean iCanEditDepartments = false;
 		private boolean iCanEditRoomExams = false;
-		private boolean iCanAddRoom = false;
+		private boolean iCanAddRoom = false, iCanAddNonUniversity = false;
 		private List<RoomTypeInterface> iRoomTypes = new ArrayList<RoomTypeInterface>();
 		private List<BuildingInterface> iBuildings = new ArrayList<BuildingInterface>();
 		private List<FeatureTypeInterface> iFeatureTypes = new ArrayList<FeatureTypeInterface>();
@@ -1407,6 +1415,9 @@ public class RoomInterface implements IsSerializable {
 
 		public boolean isCanAddRoom() { return iCanAddRoom; }
 		public void setCanAddRoom(boolean canAddRoom) { iCanAddRoom = canAddRoom; }
+		
+		public boolean isCanAddNonUniversity() { return iCanAddNonUniversity; }
+		public void setCanAddNonUniversity(boolean canAddNonUniv) { iCanAddNonUniversity = canAddNonUniv; }
 		
 		public void addRoomType(RoomTypeInterface roomType) { iRoomTypes.add(roomType); }
 		public List<RoomTypeInterface> getRoomTypes() { return iRoomTypes; }

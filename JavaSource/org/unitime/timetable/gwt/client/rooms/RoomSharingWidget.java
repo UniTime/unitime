@@ -152,6 +152,10 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		return iEditable && iModel != null && iModel.isEditable();
 	}
 	
+	public void setEditable(boolean editable) {
+		iEditable = editable;
+	}
+	
 	public boolean isEditable(RoomSharingOption option) {
 		return isEditable() && option.isEditable();
 	}

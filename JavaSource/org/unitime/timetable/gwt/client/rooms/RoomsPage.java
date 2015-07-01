@@ -533,7 +533,7 @@ public class RoomsPage extends Composite {
 				changeUrl();
 			}
 		};
-		iNew.setEnabled(iProperties.isCanAddRoom());;
+		iNew.setEnabled(iProperties.isCanAddRoom() || iProperties.isCanAddNonUniversity());
 		if (History.getToken() != null && !History.getToken().isEmpty()) {
 			try {
 				final Long roomId = Long.parseLong(History.getToken());
