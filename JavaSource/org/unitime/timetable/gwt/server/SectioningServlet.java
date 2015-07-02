@@ -700,6 +700,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		getSessionContext().removeAttribute("pin");
 		getSessionContext().removeAttribute("sessionId");
 		getSessionContext().removeAttribute("request");
+		getSessionContext().removeAttribute("eligibility");
 		if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)) 
 			return false;
 		SecurityContextHolder.getContext().setAuthentication(null);
@@ -1743,9 +1744,18 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				return server.getAcademicSession().getUniqueId();
 			}
 			
-			EligibilityCheck check = checkEligibility(online, sessionId, studentId, null, ApplicationProperty.OnlineSchedulingCustomEligibilityRecheck.isTrue());
-			if (check == null || !check.hasFlag(EligibilityFlag.CAN_ENROLL))
-				throw new SectioningException(check.getMessage() == null ? MSG.exceptionInsufficientPrivileges() : check.getMessage());
+			boolean recheckCustomEligibility = ApplicationProperty.OnlineSchedulingCustomEligibilityRecheck.isTrue();
+			if (!recheckCustomEligibility) {
+				EligibilityCheck last = (EligibilityCheck)getSessionContext().getAttribute("eligibility");
+				if (last != null && (last.hasFlag(EligibilityFlag.RECHECK_BEFORE_ENROLLMENT) || !last.hasFlag(EligibilityFlag.CAN_ENROLL)))
+					recheckCustomEligibility = true;
+			}
+			
+			EligibilityCheck check = checkEligibility(online, sessionId, studentId, null, recheckCustomEligibility);
+			if (check == null || !check.hasFlag(EligibilityFlag.CAN_ENROLL) || check.hasFlag(EligibilityFlag.RECHECK_BEFORE_ENROLLMENT))
+				throw new SectioningException(check.getMessage() == null ?
+						check.hasFlag(EligibilityFlag.PIN_REQUIRED) ? MSG.exceptionAuthenticationPinNotProvided() :
+						MSG.exceptionInsufficientPrivileges() : check.getMessage()).withEligibilityCheck(check);
 			
 			if (studentId.equals(getStudentId(check.getSessionId())))
 				return check.getSessionId();
@@ -1960,6 +1970,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public EligibilityCheck checkEligibility(boolean online, Long sessionId, Long studentId, String pin, boolean includeCustomCheck) throws SectioningException, PageAccessException {
 		try {
 			if (pin != null && !pin.isEmpty()) getSessionContext().setAttribute("pin", pin);
+			if (includeCustomCheck) getSessionContext().removeAttribute("eligibility");
 			
 			if (!online) {
 				OnlineSectioningServer server = getStudentSolver();
@@ -2008,7 +2019,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			check.setSessionId(sessionId);
 			check.setStudentId(studentId);
 			
-			return server.execute(server.createAction(CheckEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck), currentUser());
+			EligibilityCheck ret = server.execute(server.createAction(CheckEligibility.class).forStudent(studentId).withCheck(check).includeCustomCheck(includeCustomCheck), currentUser());
+			if (includeCustomCheck) getSessionContext().setAttribute("eligibility", ret);
+			
+			return ret;
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
 			return new EligibilityCheck(MSG.exceptionUnknown(e.getMessage()));
