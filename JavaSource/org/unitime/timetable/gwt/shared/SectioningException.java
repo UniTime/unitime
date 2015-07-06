@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.shared;
 
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -28,6 +29,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 public class SectioningException extends GwtRpcException implements IsSerializable {
 	private static final long serialVersionUID = 1L;
+	private EligibilityCheck iCheck = null;
 	
 	public SectioningException() {
 		super();
@@ -40,4 +42,8 @@ public class SectioningException extends GwtRpcException implements IsSerializab
 	public SectioningException(String message, Throwable cause) {
 		super(message, cause);
 	}
+	
+	public SectioningException withEligibilityCheck(EligibilityCheck check) { iCheck = check; return this; }
+	public boolean hasEligibilityCheck() { return iCheck != null; }
+	public EligibilityCheck getEligibilityCheck() { return iCheck; }
 }

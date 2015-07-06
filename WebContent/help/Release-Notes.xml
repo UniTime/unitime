@@ -104,6 +104,16 @@
 				<line>Each connector has the appropriate permission (see Api... permissions), with the ability to either use HTTP-simple authentication or an API token.</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling: Scheduling Assistant</name>
+			<description>
+				<line>If eligibility check fails, keep on displaying the eligibility check message. This makes it easier to see why the Submit Schedule button is not visible.</line>
+				<line>Added ability to execute the custom eligibility check when the Submit Schedule is pressed:
+					<line>when the custom eligibility chek returns RECHECK_BEFORE_ENROLLMENT flag, or</line>
+					<line>when unitime.enrollment.recheckCustomEligibility is set tu true (defaults to false).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 

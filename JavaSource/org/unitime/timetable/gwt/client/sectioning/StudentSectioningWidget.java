@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
@@ -506,6 +507,38 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						LoadingWidget.getInstance().hide();
 						setError(MESSAGES.enrollFailed(caught.getMessage()), caught);
 						updateHistory();
+						if (caught instanceof SectioningException) {
+							EligibilityCheck check = ((SectioningException)caught).getEligibilityCheck();
+							if (check != null) {
+								setElibibilityCheckDuringEnrollment(check);
+								if (check.hasFlag(EligibilityFlag.PIN_REQUIRED)) {
+									if (iPinDialog == null) iPinDialog = new PinDialog();
+									PinDialog.PinCallback callback = new PinDialog.PinCallback() {
+										@Override
+										public void onFailure(Throwable caught) {
+											setError(MESSAGES.exceptionFailedEligibilityCheck(caught.getMessage()), caught);
+										}
+										@Override
+										public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
+											setElibibilityCheckDuringEnrollment(result);
+											if (result.hasFlag(EligibilityFlag.CAN_ENROLL) && !result.hasFlag(EligibilityFlag.RECHECK_BEFORE_ENROLLMENT))
+												iEnroll.click();
+										}
+										@Override
+										public void onMessage(OnlineSectioningInterface.EligibilityCheck result) {
+											if (result.hasMessage()) {
+												setError(result.getMessage());
+											} else if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
+												setWarning(MESSAGES.exceptionAuthenticationPinRequired());
+											} else {
+												clearMessage(false);
+											}
+										}
+									};
+									iPinDialog.checkEligibility(iOnline, iSessionSelector.getAcademicSessionId(), null, callback);
+								}
+							}
+						}
 					}
 				});
 			}
@@ -1119,7 +1152,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iSectioningService.checkEligibility(iOnline, sessionId, studentId, null, new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
 			@Override
 			public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
-				clearMessage();
+				clearMessage(false);
 				iEligibilityCheck = result;
 				iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 				if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_USE_ASSISTANT)) {
@@ -1154,7 +1187,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								} else if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
 									setWarning(MESSAGES.exceptionAuthenticationPinRequired());
 								} else {
-									clearMessage();
+									clearMessage(false);
 								}
 							}
 						};
@@ -1433,18 +1466,43 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	public void clearMessage() {
-		iMessage.setHTML("");
-		iMessage.setStyleName("unitime-ScheduleBlankMessage");
-		iEnroll.removeStyleName("unitime-EnrollButton");
+		clearMessage(true);
+	}
+	
+	public void clearMessage(boolean showEligibility) {
+		if (iEligibilityCheck != null && iOnline && showEligibility) {
+			if (iEligibilityCheck.hasFlag(EligibilityFlag.PIN_REQUIRED))
+				setError(MESSAGES.exceptionAuthenticationPinNotProvided(), false);
+			else if (iEligibilityCheck.hasMessage() && !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL))
+				setError(iEligibilityCheck.getMessage(), false);
+			else if (iEligibilityCheck.hasMessage() && iEligibilityCheck.hasFlag(EligibilityFlag.RECHECK_BEFORE_ENROLLMENT))
+				setWarning(iEligibilityCheck.getMessage(), false);
+			else if (iEligibilityCheck.hasMessage())
+				setMessage(iEligibilityCheck.getMessage(), false);
+			else { 
+				iMessage.setHTML("");
+				iMessage.setStyleName("unitime-ScheduleBlankMessage");
+				iEnroll.removeStyleName("unitime-EnrollButton");
+			}
+		} else {
+			iMessage.setHTML("");
+			iMessage.setStyleName("unitime-ScheduleBlankMessage");
+			iEnroll.removeStyleName("unitime-EnrollButton");
+		}
 		if (isChanged())
 			updateScheduleChangedNoteIfNeeded();
 	}
 	
 	public void setError(String message) {
+		setError(message, true);
+	}
+	
+	public void setError(String message, boolean popup) {
 		iMessage.setHTML(message);
 		iMessage.setStyleName("unitime-ScheduleErrorMessage");
 		iMessage.setVisible(true);
-		UniTimeNotifications.error(message);
+		if (popup)
+			UniTimeNotifications.error(message);
 	}
 	
 	public void setError(String message, Throwable t) {
@@ -1471,13 +1529,30 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	public void setMessage(String message) {
+		setMessage(message, true);
+	}
+	
+	public void setMessage(String message, boolean popup) {
 		iMessage.setHTML(message);
 		iMessage.setStyleName("unitime-ScheduleMessage");
 		iMessage.setVisible(true);
-		UniTimeNotifications.info(message);
+		if (popup)
+			UniTimeNotifications.info(message);
 	}
 	
 	public String getMessage() {
 		return iMessage.getHTML();
+	}
+	
+	protected void setElibibilityCheckDuringEnrollment(EligibilityCheck check) {
+		iEligibilityCheck = check;
+		iCourseRequests.setCanWaitList(check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
+		if (check.hasFlag(EligibilityFlag.CAN_ENROLL)) {
+			iEnroll.setVisible(true);
+			iEnroll.setEnabled(true);
+		} else {
+			iEnroll.setEnabled(false);
+			iEnroll.setVisible(false);
+		}
 	}
 }

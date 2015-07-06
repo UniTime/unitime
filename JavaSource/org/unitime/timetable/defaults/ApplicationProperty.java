@@ -1875,6 +1875,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("API: trim leading zeros from extednal user id")
 	ApiTrimLeadingZerosFromUserExternalIds("unitime.api.user.id-trim"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: call custom eligibility check before enrollment")
+	OnlineSchedulingCustomEligibilityRecheck("unitime.enrollment.recheckCustomEligibility"),
 	;
 
 	String iKey;
