@@ -85,6 +85,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	private String iBannerApiUrl = ApplicationProperties.getProperty("banner.xe.site");
 	private String iBannerApiUser = ApplicationProperties.getProperty("banner.xe.user");
 	private String iBannerApiPassword = ApplicationProperties.getProperty("banner.xe.password");
+	private String iBannerApiRecheck = ApplicationProperties.getProperty("banner.xe.recheck");
 	
 	private Client iClient;
 	private ExternalTermProvider iExternalTermProvider;
@@ -206,21 +207,31 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				helper.debug("Current registration: " + gson.toJson(current));
 			if (current == null || current.isEmpty() || !current.get(0).validStudent) {
 				String reason = null;
+				boolean recheck = true;
 				if (current != null && current.size() > 0 && current.get(0).failureReasons != null) {
 					for (String m: current.get(0).failureReasons) {
-						if ("Your PIN is invalid.".equals(m)) {
+						if ("Your PIN is invalid.".equals(m))
 							check.setFlag(EligibilityFlag.PIN_REQUIRED, true);
-							check.setFlag(EligibilityFlag.CAN_ENROLL, false);
-							if (pin == null || pin.isEmpty()) return;
-						}
+						if (iBannerApiRecheck == null || !m.matches(iBannerApiRecheck)) recheck = false;
 						if (reason == null)
 							reason = m;
 						else
 							reason += "<br>" + m;
 					}
 				}
-				check.setMessage(reason == null ? "Failed to check student registration eligility." : reason);
-				check.setFlag(EligibilityFlag.CAN_ENROLL, false);
+				if (reason == null) {
+					reason = "Failed to check student registration eligility.";
+					if (iBannerApiRecheck == null || !reason.matches(iBannerApiRecheck)) recheck = false;
+				}
+				if (recheck) {
+					check.setFlag(EligibilityFlag.RECHECK_BEFORE_ENROLLMENT, true);
+				} else {
+					check.setFlag(EligibilityFlag.CAN_ENROLL, false);
+				}
+				if (check.hasFlag(EligibilityFlag.PIN_REQUIRED) && (pin == null || pin.isEmpty())) {
+					return;
+				}
+				check.setMessage(reason);
 			} else if (student.getStudentId() == null) {
 				check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later.");
 				check.setFlag(EligibilityFlag.CAN_ENROLL, false);
