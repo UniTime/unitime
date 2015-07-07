@@ -1392,6 +1392,9 @@ public class RoomInterface implements IsSerializable {
 		private boolean iGridAsText = false, iHorizontal = false, iGoogleMap = false;
 		private List<RoomSharingDisplayMode> iModes;
 		private String iEllipsoid = null;
+		private boolean iCanChangeAvailability = false, iCanChangeControll = false, iCanChangeExternalId = false, iCanChangeExamStatus = false,
+				iCanChangeEventProperties = false, iCanChangePicture = false, iCanChangePreferences = false,
+				iCanChangeGroups = false, iCanChangeFeatures = false, iCanChangeEventAvailability = false;
 		
 		public RoomPropertiesInterface() {}
 		
@@ -1498,6 +1501,36 @@ public class RoomInterface implements IsSerializable {
 		
 		public void setGoogleMap(boolean map) { iGoogleMap = map; }
 		public boolean isGoogleMap() { return iGoogleMap; }
+		
+		public boolean isCanChangeAvailability() { return iCanChangeAvailability; }
+		public void setCanChangeAvailability(boolean canChangeAvailability) { iCanChangeAvailability = canChangeAvailability; }
+
+		public boolean isCanChangeControll() { return iCanChangeControll; }
+		public void setCanChangeControll(boolean canChangeControll) { iCanChangeControll = canChangeControll; }
+
+		public boolean isCanChangeExternalId() { return iCanChangeExternalId; }
+		public void setCanChangeExternalId(boolean canChangeExternalId) { iCanChangeExternalId = canChangeExternalId; }
+
+		public boolean isCanChangeExamStatus() { return iCanChangeExamStatus; }
+		public void setCanChangeExamStatus(boolean canChangeExamStatus) { iCanChangeExamStatus = canChangeExamStatus; }
+
+		public boolean isCanChangeEventProperties() { return iCanChangeEventProperties; }
+		public void setCanChangeEventProperties(boolean canChangeEventProperties) { iCanChangeEventProperties = canChangeEventProperties; }
+
+		public boolean isCanChangePicture() { return iCanChangePicture; }
+		public void setCanChangePicture(boolean canChangePicture) { iCanChangePicture = canChangePicture; }
+
+		public boolean isCanChangePreferences() { return iCanChangePreferences; }
+		public void setCanChangePreferences(boolean canChangePreferences) { iCanChangePreferences = canChangePreferences; }
+
+		public boolean isCanChangeGroups() { return iCanChangeGroups; }
+		public void setCanChangeGroups(boolean canChangeGroups) { iCanChangeGroups = canChangeGroups; }
+
+		public boolean isCanChangeFeatures() { return iCanChangeFeatures; }
+		public void setCanChangeFeatures(boolean canChangeFeatures) { iCanChangeFeatures = canChangeFeatures; }
+
+		public boolean isCanChangeEventAvailability() { return iCanChangeEventAvailability; }
+		public void setCanChangeEventAvailability(boolean canChangeEventAvailability) { iCanChangeEventAvailability = canChangeEventAvailability; }
 	}
 	
 	public static enum RoomsColumn {

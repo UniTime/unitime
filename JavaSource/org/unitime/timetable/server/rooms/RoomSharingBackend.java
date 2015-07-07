@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -132,15 +133,36 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		for (RoomDept rd: location.getRoomDepts())
 			current.add(rd.getDepartment());
 		
-		for (Department d: current)
-			model.addOption(new RoomSharingOption(d.getUniqueId(), "#" + d.getRoomSharingColor(current),
-					d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable,
-					includeRoomPreferences ? location.getRoomPreferenceLevel(d).getUniqueId() : null));
+		Long neutralId = null;
+		Map<Long, Long> dept2pref = new HashMap<Long, Long>();
+		if (includeRoomPreferences) {
+			for (Object[] o: (List<Object[]>)LocationDAO.getInstance().getSession().createQuery(
+					"select d.uniqueId, p.prefLevel.uniqueId from Department d, RoomPref p where p.owner = d and p.room.uniqueId = :locationId"
+					).setLong("locationId", location.getUniqueId()).list()) {
+				dept2pref.put((Long)o[0], (Long)o[1]);
+			}
+			neutralId = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId();
+		}
 		
-		for (Department d: Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId()))
+		for (Department d: current) {
+			Long prefId = null;
+			if (includeRoomPreferences) {
+				prefId = dept2pref.get(d.getUniqueId());
+				if (prefId == null) prefId = neutralId;
+			}
+			model.addOption(new RoomSharingOption(d.getUniqueId(), "#" + d.getRoomSharingColor(current),
+					d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable, prefId));
+		}
+		
+		for (Department d: Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId())) {
+			Long prefId = null;
+			if (includeRoomPreferences) {
+				prefId = dept2pref.get(d.getUniqueId());
+				if (prefId == null) prefId = neutralId;
+			}
 			model.addOther(new RoomSharingOption(d.getUniqueId(), "#" + d.getRoomSharingColor(current),
-					d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable,
-					includeRoomPreferences ? location.getRoomPreferenceLevel(d).getUniqueId() : null));
+					d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable, prefId));
+		}
 		
 		Map<Character, Long> char2dept = new HashMap<Character, Long>(); char pref = '0';
 		if (location.getManagerIds() != null) {

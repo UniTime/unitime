@@ -59,15 +59,36 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 	@Override
 	public RoomPictureResponse execute(RoomPictureRequest request, SessionContext context) {
 		RoomPictureResponse response = new RoomPictureResponse();
+		Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES);
+
 		org.hibernate.Session hibSession = LocationDAO.getInstance().getSession();
+		if (request.getOperation() == RoomPictureRequest.Operation.UPLOAD && request.getLocationId() == null) {
+			final FileItem file = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
+			if (file != null) {
+				if (temp == null) {
+					temp = new HashMap<Long, LocationPicture>();
+					context.setAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES, temp);
+				}
+				LocationPicture picture = new RoomPicture();
+				picture.setDataFile(file.get());
+				String name = file.getName();
+				if (name.indexOf('.') >= 0)
+					name = name.substring(0, name.lastIndexOf('.'));
+				picture.setFileName(name);
+				picture.setContentType(file.getContentType());
+				picture.setTimeStamp(new Date());
+				temp.put(- picture.getTimeStamp().getTime(), picture);
+				response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType()));
+			}
+			return response;
+		}
+		
 		Location location = LocationDAO.getInstance().get(request.getLocationId(), hibSession);
 		if (location == null)
 			throw new GwtRpcException(MESSAGES.errorRoomDoesNotExist(request.getLocationId().toString()));
 		response.setName(location.getLabel());
 		
 		context.checkPermission(location, Right.RoomEditChangePicture);
-
-		Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES);
 
 		switch (request.getOperation()) {
 		case LOAD:

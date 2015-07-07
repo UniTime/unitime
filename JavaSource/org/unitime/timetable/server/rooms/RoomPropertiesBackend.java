@@ -81,6 +81,19 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setCanSeeExams(context.hasPermission(Right.Examinations));
 		response.setCanSeeEvents(context.hasPermission(Right.Events));
 		
+		if (context.getUser() != null) {
+			response.setCanChangeAvailability(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditAvailability));
+			response.setCanChangeControll(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditChangeControll));
+			response.setCanChangeEventAvailability(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditEventAvailability));
+			response.setCanChangeEventProperties(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditChangeEventProperties));
+			response.setCanChangeExamStatus(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditChangeExaminationStatus));
+			response.setCanChangeExternalId(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditChangeExternalId));
+			response.setCanChangeFeatures(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditFeatures) || context.getUser().getCurrentAuthority().hasRight(Right.RoomEditGlobalFeatures));
+			response.setCanChangeGroups(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditGroups) || context.getUser().getCurrentAuthority().hasRight(Right.RoomEditGlobalGroups));
+			response.setCanChangePicture(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditChangePicture));
+			response.setCanChangePreferences(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditPreference));
+		}
+		
 		for (RoomType type: RoomType.findAll())
 			response.addRoomType(new RoomTypeInterface(type.getUniqueId(), type.getLabel(), type.isRoom()));
 		
