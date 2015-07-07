@@ -178,20 +178,20 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		}
 		if (editPermissions) {
 			if (response.isCanChange()) {
-				response.setCanChangeAvailability(context.hasPermission(location, Right.RoomEditAvailability));
 				response.setCanChangeCapacity(context.hasPermission(location, Right.RoomEditChangeCapacity));
 				response.setCanChangeControll(context.hasPermission(location, Right.RoomEditChangeControll));
-				response.setCanChangeEventAvailability(context.hasPermission(location, Right.RoomEditEventAvailability));
 				response.setCanChangeEventProperties(context.hasPermission(location, Right.RoomEditChangeEventProperties));
 				response.setCanChangeExamStatus(context.hasPermission(location, Right.RoomEditChangeExaminationStatus));
 				response.setCanChangeExternalId(context.hasPermission(location, Right.RoomEditChangeExternalId));
-				response.setCanChangeFeatures(context.hasPermission(location, Right.RoomEditFeatures) || context.hasPermission(location, Right.RoomEditGlobalFeatures));
-				response.setCanChangeGroups(context.hasPermission(location, Right.RoomEditGroups) || context.hasPermission(location, Right.RoomEditGlobalGroups));
-				response.setCanChangePicture(context.hasPermission(location, Right.RoomEditChangePicture));
-				response.setCanChangePreferences(context.hasPermission(location, Right.RoomEditPreference));
 				response.setCanChangeRoomProperties(context.hasPermission(location, Right.RoomEditChangeRoomProperties));
 				response.setCanChangeType(context.hasPermission(location, Right.RoomEditChangeType));
 			}
+			response.setCanChangeFeatures(context.hasPermission(location, Right.RoomEditFeatures) || context.hasPermission(location, Right.RoomEditGlobalFeatures));
+			response.setCanChangeGroups(context.hasPermission(location, Right.RoomEditGroups) || context.hasPermission(location, Right.RoomEditGlobalGroups));
+			response.setCanChangeEventAvailability(context.hasPermission(location, Right.RoomEditEventAvailability));
+			response.setCanChangeAvailability(context.hasPermission(location, Right.RoomEditAvailability));
+			response.setCanChangePicture(context.hasPermission(location, Right.RoomEditChangePicture));
+			response.setCanChangePreferences(context.hasPermission(location, Right.RoomEditPreference));
 			if (location instanceof Room) {
 				response.setCanDelete(context.hasPermission(location, Right.RoomDelete));
 			} else {

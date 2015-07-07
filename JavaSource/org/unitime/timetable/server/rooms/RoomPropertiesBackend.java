@@ -106,8 +106,9 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		for (RoomFeatureType type: new TreeSet<RoomFeatureType>(RoomFeatureTypeDAO.getInstance().findAll()))
 			response.addFeatureType(new FeatureTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.isShowInEventManagement()));
 		
-		for (ExamType type: ExamType.findAllUsed(context.getUser().getCurrentAcademicSessionId()))
-			response.addExamType(new ExamTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.getType() == ExamType.sExamTypeFinal));
+		if (context.getUser() != null)
+			for (ExamType type: ExamType.findAllUsed(context.getUser().getCurrentAcademicSessionId()))
+				response.addExamType(new ExamTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.getType() == ExamType.sExamTypeFinal));
 		
 		for (Department d: Department.getUserDepartments(context.getUser())) {
 			DepartmentInterface department = new DepartmentInterface();
@@ -132,36 +133,44 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 			response.addMode(new RoomInterface.RoomSharingDisplayMode(mode));
 		}
 		
-		boolean filterDepartments = !context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+		boolean filterDepartments = context.getUser() != null && !context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+		boolean includeGlobalGroups = context.getUser() != null && context.getUser().getCurrentAuthority().hasRight(Right.RoomEditGlobalGroups);
+		boolean includeDeptGroups = context.getUser() != null && context.getUser().getCurrentAuthority().hasRight(Right.RoomEditGroups);
 
 		for (RoomGroup g: RoomGroup.getAllRoomGroupsForSession(context.getUser().getCurrentAcademicSessionId())) {
 			GroupInterface group = new GroupInterface(g.getUniqueId(), g.getAbbv(), g.getName());
 			if (g.getDepartment() != null) {
+				if (!includeDeptGroups) continue;
 				if (filterDepartments && !context.getUser().getCurrentAuthority().hasQualifier(g.getDepartment())) continue;
 				group.setDepartment(response.getDepartment(g.getDepartment().getUniqueId()));
 				group.setTitle((g.getDescription() == null || g.getDescription().isEmpty() ? g.getName() : g.getDescription()) + " (" + g.getDepartment().getName() + ")");
 			} else {
+				if (!includeGlobalGroups) continue;
 				group.setTitle((g.getDescription() == null || g.getDescription().isEmpty() ? g.getName() : g.getDescription()));
 			}
 			response.addGroup(group);
 		}
 		
-		for (GlobalRoomFeature f: RoomFeature.getAllGlobalRoomFeatures(context.getUser().getCurrentAcademicSessionId())) {
-			FeatureInterface feature = new FeatureInterface(f.getUniqueId(), f.getAbbv(), f.getLabel());
-			if (f.getFeatureType() != null)
-				feature.setType(response.getFeatureType(f.getFeatureType().getUniqueId()));
-			feature.setTitle(f.getLabel());
-			response.addFeature(feature);
+		if (context.getUser() != null && context.getUser().getCurrentAuthority().hasRight(Right.RoomEditGlobalFeatures)) {
+			for (GlobalRoomFeature f: RoomFeature.getAllGlobalRoomFeatures(context.getUser().getCurrentAcademicSessionId())) {
+				FeatureInterface feature = new FeatureInterface(f.getUniqueId(), f.getAbbv(), f.getLabel());
+				if (f.getFeatureType() != null)
+					feature.setType(response.getFeatureType(f.getFeatureType().getUniqueId()));
+				feature.setTitle(f.getLabel());
+				response.addFeature(feature);
+			}
 		}
 		
-		for (DepartmentRoomFeature f: RoomFeature.getAllDepartmentRoomFeaturesInSession(context.getUser().getCurrentAcademicSessionId())) {
-			if (filterDepartments && !context.getUser().getCurrentAuthority().hasQualifier(f.getDepartment())) continue;
-			FeatureInterface feature = new FeatureInterface(f.getUniqueId(), f.getAbbv(), f.getLabel());
-			if (f.getFeatureType() != null)
-    			feature.setType(new FeatureTypeInterface(f.getFeatureType().getUniqueId(), f.getFeatureType().getReference(), f.getFeatureType().getLabel(), f.getFeatureType().isShowInEventManagement()));
-			feature.setDepartment(response.getDepartment(f.getDepartment().getUniqueId()));
-			feature.setTitle(f.getLabel() + " (" + f.getDepartment().getName() + ")");
-			response.addFeature(feature);
+		if (context.getUser() != null && context.getUser().getCurrentAuthority().hasRight(Right.RoomEditFeatures)) {
+			for (DepartmentRoomFeature f: RoomFeature.getAllDepartmentRoomFeaturesInSession(context.getUser().getCurrentAcademicSessionId())) {
+				if (filterDepartments && !context.getUser().getCurrentAuthority().hasQualifier(f.getDepartment())) continue;
+				FeatureInterface feature = new FeatureInterface(f.getUniqueId(), f.getAbbv(), f.getLabel());
+				if (f.getFeatureType() != null)
+	    			feature.setType(new FeatureTypeInterface(f.getFeatureType().getUniqueId(), f.getFeatureType().getReference(), f.getFeatureType().getLabel(), f.getFeatureType().isShowInEventManagement()));
+				feature.setDepartment(response.getDepartment(f.getDepartment().getUniqueId()));
+				feature.setTitle(f.getLabel() + " (" + f.getDepartment().getName() + ")");
+				response.addFeature(feature);
+			}
 		}
 		
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {

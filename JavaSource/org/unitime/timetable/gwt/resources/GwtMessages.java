@@ -1687,6 +1687,24 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Room {0} does not exist.")
 	String errorRoomDoesNotExist(String name);
+	
+	@DefaultMessage("Room type must be selected.")
+	String errorRoomTypeMustBeSelected();
+	
+	@DefaultMessage("Building must be selected for room type {0}.")
+	String errorBuildingMustBeSelected(String roomType);
+	
+	@DefaultMessage("Room number must be provided.")
+	String errorRoomNumberIsEmpty();
+	
+	@DefaultMessage("Location name must be provided.")
+	String errorLocationNameIsEmpty();
+	
+	@DefaultMessage("Room capacity must be provided.")
+	String errorRoomCapacityIsEmpty();
+	
+	@DefaultMessage("Room examination capacity must be provided.")
+	String errorRoomExamCapacityIsEmpty();
 
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();

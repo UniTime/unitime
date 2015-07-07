@@ -42,6 +42,7 @@ import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -66,6 +67,7 @@ public class PeriodPreferencesBackend implements GwtRpcImplementation<PeriodPref
 	public PeriodPreferenceModel loadPeriodPreferences(PeriodPreferenceRequest request, SessionContext context) {
 		Location location = (request.getLocationId() == null ? null : LocationDAO.getInstance().get(request.getLocationId()));
 		ExamType type = ExamTypeDAO.getInstance().get(request.getExamTypeId());
+		context.checkPermission(location, Right.RoomDetailPeriodPreferences);
 		return loadPeriodPreferences(location, type, context);
 	}
 	

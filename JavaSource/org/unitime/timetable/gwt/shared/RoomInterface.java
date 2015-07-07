@@ -865,7 +865,7 @@ public class RoomInterface implements IsSerializable {
 				iCanChangeGroups = false, iCanChangeFeatures = false, iCanChangeEventAvailability = false;
 		private boolean iCanDelete = false;
 		private String iMiniMapUrl = null, iMapUrl = null;
-		private List<RoomPictureInterface> iPictures = null;
+		private List<RoomPictureInterface> iPictures = new ArrayList<RoomPictureInterface>();
 		private String iLastChange = null;
 		private RoomSharingModel iRoomSharingModel = null, iEventAvailabilityModel = null;
 		private Map<Long, PeriodPreferenceModel> iPeriodPreferenceModels = null;
@@ -901,6 +901,7 @@ public class RoomInterface implements IsSerializable {
 		
 		public String getDisplayName() { return getAbbreviation(); }
 		public boolean hasDisplayName() { return getAbbreviation() != null && !getAbbreviation().isEmpty(); }
+		public void setDisplayName(String name) { setAbbreviation(name); }
 		
 		public RoomTypeInterface getRoomType() { return iRoomType; }
 		public void setRoomType(RoomTypeInterface roomType) { iRoomType = roomType; }
@@ -913,6 +914,7 @@ public class RoomInterface implements IsSerializable {
 		
 		public List<GroupInterface> getGroups() { return iGroups; }
 		public void addGroup(GroupInterface group) { iGroups.add(group); }
+		public void removeGroup(GroupInterface group) { iGroups.remove(group); }
 		public boolean hasGroups() { return iGroups != null && !iGroups.isEmpty(); }
 		public List<GroupInterface> getGlobalGroups() {
 			List<GroupInterface> groups = new ArrayList<GroupInterface>();
@@ -945,6 +947,7 @@ public class RoomInterface implements IsSerializable {
 		
 		public List<FeatureInterface> getFeatures() { return iFeatures; }
 		public void addFeature(FeatureInterface feature) { iFeatures.add(feature); }
+		public void removeFeature(FeatureInterface feature) { iFeatures.remove(feature); }
 		public boolean hasFeatures() { return iFeatures != null && !iFeatures.isEmpty(); }
 		public List<FeatureInterface> getFeatures(FeatureTypeInterface type) {
 			List<FeatureInterface> ret = new ArrayList<FeatureInterface>();
@@ -1111,8 +1114,6 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean hasPictures() { return iPictures != null && !iPictures.isEmpty(); }
 		public void addPicture(RoomPictureInterface picture) {
-			if (iPictures == null)
-				iPictures = new ArrayList<RoomPictureInterface>();
 			iPictures.add(picture);
 		}
 		public List<RoomPictureInterface> getPictures() { return iPictures; }

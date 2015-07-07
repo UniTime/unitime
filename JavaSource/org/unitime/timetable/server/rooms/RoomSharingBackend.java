@@ -121,11 +121,16 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 				model.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), prefEditable));
 		}
 
+		boolean deptIndependent = context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
 		if (location == null) {
 			Long neutralId = (includeRoomPreferences ? PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId() : null);
-			for (Department d: Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId()))
+			for (Department d: Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId())) {
+				Long prefId = null;
+				if (includeRoomPreferences && (deptIndependent || context.getUser().getCurrentAuthority().hasQualifier(d)))
+					prefId = neutralId;
 				model.addOther(new RoomSharingOption(d.getUniqueId(), "#" + d.getRoomSharingColor(null),
-						d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable, neutralId));
+						d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable, prefId));
+			}
 			return model;
 		}
 
@@ -146,7 +151,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		
 		for (Department d: current) {
 			Long prefId = null;
-			if (includeRoomPreferences) {
+			if (includeRoomPreferences && (deptIndependent || context.getUser().getCurrentAuthority().hasQualifier(d))) {
 				prefId = dept2pref.get(d.getUniqueId());
 				if (prefId == null) prefId = neutralId;
 			}
@@ -156,7 +161,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		
 		for (Department d: Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId())) {
 			Long prefId = null;
-			if (includeRoomPreferences) {
+			if (includeRoomPreferences && (deptIndependent || context.getUser().getCurrentAuthority().hasQualifier(d))) {
 				prefId = dept2pref.get(d.getUniqueId());
 				if (prefId == null) prefId = neutralId;
 			}
