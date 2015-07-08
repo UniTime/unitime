@@ -245,9 +245,9 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     	if (courses) {
         	response.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
         	response.setIgnoreTooFar(location.isIgnoreTooFar());
-
+        	
         	for (RoomDept rd: location.getRoomDepts()) {
-        		DepartmentInterface d = wrap(rd.getDepartment(), location, location.getRoomPreferenceLevel(rd.getDepartment()));
+        		DepartmentInterface d = wrap(rd.getDepartment(), location, rd.getPreference());
         		response.addDepartment(d);
         		if (rd.isControl())
         			response.setControlDepartment(d);

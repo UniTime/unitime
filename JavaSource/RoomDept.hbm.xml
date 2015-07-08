@@ -40,6 +40,14 @@
             column="is_control"
             type="java.lang.Boolean"
             not-null="true"/>
+            
+        <many-to-one
+        	name="preference"
+        	class="PreferenceLevel"
+            lazy="proxy"
+            not-null="false"
+            formula="(select p.pref_level_id from %SCHEMA%.room_pref p where p.owner_id = department_id and p.room_id = room_id)"
+        	/>
 
         <many-to-one
             name="room"

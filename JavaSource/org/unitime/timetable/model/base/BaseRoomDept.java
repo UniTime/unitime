@@ -23,6 +23,7 @@ import java.io.Serializable;
 
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomDept;
 
 /**
@@ -35,6 +36,7 @@ public abstract class BaseRoomDept implements Serializable {
 	private Long iUniqueId;
 	private Boolean iControl;
 
+	private PreferenceLevel iPreference;
 	private Location iRoom;
 	private Department iDepartment;
 
@@ -58,6 +60,9 @@ public abstract class BaseRoomDept implements Serializable {
 	public Boolean isControl() { return iControl; }
 	public Boolean getControl() { return iControl; }
 	public void setControl(Boolean control) { iControl = control; }
+
+	public PreferenceLevel getPreference() { return iPreference; }
+	public void setPreference(PreferenceLevel preference) { iPreference = preference; }
 
 	public Location getRoom() { return iRoom; }
 	public void setRoom(Location room) { iRoom = room; }

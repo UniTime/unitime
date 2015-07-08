@@ -20,6 +20,8 @@
 package org.unitime.timetable.server.rooms;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 
 import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
@@ -134,26 +135,21 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 			return model;
 		}
 
-		Set<Department> current = new TreeSet<Department>();
-		for (RoomDept rd: location.getRoomDepts())
-			current.add(rd.getDepartment());
-		
-		Long neutralId = null;
-		Map<Long, Long> dept2pref = new HashMap<Long, Long>();
-		if (includeRoomPreferences) {
-			for (Object[] o: (List<Object[]>)LocationDAO.getInstance().getSession().createQuery(
-					"select d.uniqueId, p.prefLevel.uniqueId from Department d, RoomPref p where p.owner = d and p.room.uniqueId = :locationId"
-					).setLong("locationId", location.getUniqueId()).list()) {
-				dept2pref.put((Long)o[0], (Long)o[1]);
+		List<RoomDept> current = new ArrayList<RoomDept>(location.getRoomDepts());
+		Collections.sort(current, new Comparator<RoomDept>() {
+			@Override
+			public int compare(RoomDept rd1, RoomDept rd2) {
+				return rd1.getDepartment().compareTo(rd2.getDepartment());
 			}
-			neutralId = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId();
-		}
+		});
 		
-		for (Department d: current) {
+		Long neutralId = (includeRoomPreferences ? PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId() : null);
+		
+		for (RoomDept rd: current) {
+			Department d = rd.getDepartment();
 			Long prefId = null;
 			if (includeRoomPreferences && (deptIndependent || context.getUser().getCurrentAuthority().hasQualifier(d))) {
-				prefId = dept2pref.get(d.getUniqueId());
-				if (prefId == null) prefId = neutralId;
+				prefId = (rd.getPreference() == null ? neutralId : rd.getPreference().getUniqueId());
 			}
 			model.addOption(new RoomSharingOption(d.getUniqueId(), "#" + d.getRoomSharingColor(current),
 					d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable, prefId));
@@ -162,8 +158,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		for (Department d: Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId())) {
 			Long prefId = null;
 			if (includeRoomPreferences && (deptIndependent || context.getUser().getCurrentAuthority().hasQualifier(d))) {
-				prefId = dept2pref.get(d.getUniqueId());
-				if (prefId == null) prefId = neutralId;
+				prefId = neutralId;
 			}
 			model.addOther(new RoomSharingOption(d.getUniqueId(), "#" + d.getRoomSharingColor(current),
 					d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable, prefId));
@@ -191,7 +186,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
                     	Long deptId = (char2dept == null ? null : char2dept.get(pref));
                     	if (deptId == null) {
                     		try {
-                    			deptId = new ArrayList<Department>(current).get(pref - '0').getUniqueId();
+                    			deptId = current.get(pref - '0').getDepartment().getUniqueId();
                     		} catch (IndexOutOfBoundsException e) {}
                     	}
                     	model.setOption(d, t, deptId);
