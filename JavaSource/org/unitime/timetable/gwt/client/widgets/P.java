@@ -144,24 +144,6 @@ public class P extends AbsolutePanel implements HasAllMouseHandlers, HasHTML, Ha
 	}
 	
 	@Override
-	@Deprecated
-	public void setSize(String width, String height) {
-		super.setSize(width, height);
-	}
-	
-	@Override
-	@Deprecated
-	public void setWidth(String width) {
-		super.setWidth(width);
-	}
-
-	@Override
-	@Deprecated
-	public void setHeight(String width) {
-		super.setHeight(width);
-	}
-
-	@Override
 	public HandlerRegistration addClickHandler(ClickHandler handler) {
 		return addHandler(handler, ClickEvent.getType());
 	}

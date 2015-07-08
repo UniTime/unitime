@@ -3793,3 +3793,41 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-RoomEdit .default {
 	font-style: italic;	
 }
+
+.unitime-Widget {
+	display: inline-block;
+}
+
+.unitime-Widget .label {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	line-height: 15px;
+	vertical-align: baseline;
+	margin-top: 4px;
+}
+
+.unitime-Widget .hint {
+	font-size: xx-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	margin-top: -2px;
+	white-space: nowrap;
+}
+
+.unitime-Widget .error-hint {
+	font-size: xx-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	margin-top: -2px;
+	white-space: nowrap;
+	color: red;
+}
+
+.unitime-Widget .hidden-label {
+	position: absolute !important;
+	clip: rect(1px, 1px, 1px, 1px);
+}
