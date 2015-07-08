@@ -45,7 +45,7 @@ public class UniTimeWidget<T extends Widget> extends P implements HasAriaLabel {
 		super("unitime-Widget");
 		
 		iWidget = widget;
-		iWidget.addStyleName("content");
+		iWidget.addStyleName("widget");
 		add(iWidget);
 		
 		iHint = new P();

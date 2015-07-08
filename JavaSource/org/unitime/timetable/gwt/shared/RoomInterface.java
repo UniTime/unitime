@@ -315,6 +315,16 @@ public class RoomInterface implements IsSerializable {
 		}
 		
 		public List<PreferenceInterface> getPreferences() { return iPreferences; }
+		
+		public int countOptions(Long optionId) {
+			if (iModel == null || optionId == null) return 0;
+			int ret = 0;
+			for (Map<Integer, Long> slot2id: iModel.values())
+				for (Long id: slot2id.values())
+					if (optionId.equals(id)) ret ++;
+			return ret;
+		}
+
 	}
 	
 	public static class RoomSharingRequest implements GwtRpcRequest<RoomSharingModel> {
@@ -975,6 +985,12 @@ public class RoomInterface implements IsSerializable {
 		public List<DepartmentInterface> getDepartments() { return iDepartments; }
 		public void addDepartment(DepartmentInterface department) { iDepartments.add(department); }
 		public boolean hasDepartments() { return iDepartments != null && !iDepartments.isEmpty(); }
+		public DepartmentInterface getDepartment(Long deptId) {
+			if (iDepartments == null || deptId == null) return null;
+			for (DepartmentInterface d: iDepartments)
+				if (deptId.equals(d.getId())) return d;
+			return null;
+		}
 		
 		public BuildingInterface getBuilding() { return iBuilding; }
 		public void setBuilding(BuildingInterface building) { iBuilding = building; }

@@ -1494,7 +1494,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	vertical-align: baseline;
 	background: #FFFFFF;
 	border: 1px solid #9CB0CE;
-	padding: 2px;
 }
 
 .unitime-MenuHeaderLabel {
@@ -3820,11 +3819,10 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-Widget .error-hint {
 	font-size: xx-small;
 	font-style: italic;
-	color: #9CB0CE;
+	color: red;
 	text-align: right;
 	margin-top: -2px;
 	white-space: nowrap;
-	color: red;
 }
 
 .unitime-Widget .hidden-label {

@@ -20,7 +20,9 @@
 package org.unitime.timetable.gwt.client.rooms;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -88,6 +90,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 	private RoomSharingModel iModel;
 	protected boolean iEditable = true;
 	private TextArea iNote = null;
+	private Set<Long> iAddedOptions = new HashSet<Long>();
 	
 	public RoomSharingWidget(boolean editable) {
 		this(editable, true);
@@ -677,5 +680,31 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		setModel(value);
 		if (fireEvents)
 			ValueChangeEvent.fire(this, getValue());
+	}
+	
+	public boolean removeOption(Long id) {
+		if (!isEditable() || iModel == null) return false;
+		RoomSharingOption option = iModel.getOption(id);
+		if (option != null && option.getId() > 0 && option.isEditable() && iAddedOptions.remove(id) && iModel.countOptions(id) == 0) {
+			iModel.getOptions().remove(option);
+			iOption = iModel.getDefaultOption();
+			setMode(iMode, iHorizontal.getValue());
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean addOption(Long optionId) {
+		if (!isEditable() || iModel == null) return false;
+		for (RoomSharingOption option : iModel.getAdditionalOptions()) {
+			if (option.getId().equals(optionId) && option.isEditable()) {
+				iAddedOptions.add(optionId);
+				iModel.getOptions().add(option);
+				iOption = option;
+				setMode(iMode, iHorizontal.getValue());
+				return true;
+			}
+		}
+		return false;
 	}
 }
