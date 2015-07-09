@@ -27,6 +27,7 @@ import java.util.Map;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -56,6 +57,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingModel;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingOption;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomUpdateRpcRequest;
 
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
@@ -77,6 +79,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -143,6 +146,7 @@ public class RoomEdit extends Composite {
 	private UniTimeHeaderPanel iPicturesHeader;
 	private UniTimeFileUpload iFileUpload;
 	private UniTimeTable<RoomPictureInterface> iPictures;
+	private CheckBox iFutureHeader, iFutureFooter;
 	
 	public RoomEdit(RoomPropertiesInterface properties) {
 		iProperties = properties;
@@ -152,7 +156,29 @@ public class RoomEdit extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (!validate()) {
+					iHeader.setErrorMessage(MESSAGES.failedValidationCheckForm());
 					UniTimeNotifications.error(MESSAGES.failedValidationCheckForm());
+				} else {
+					LoadingWidget.getInstance().show(getRoom().getUniqueId() == null ? MESSAGES.waitSavingRoom() : MESSAGES.waitUpdatingRoom());
+					RPC.execute(RoomUpdateRpcRequest.createSaveOrUpdateRequest(getRoom(), iFutureHeader.getValue()), new AsyncCallback<RoomDetailInterface>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							if (getRoom().getUniqueId() == null) {
+								iHeader.setErrorMessage(MESSAGES.errorFailedToSaveRoom(caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.errorFailedToSaveRoom(caught.getMessage()));
+							} else {
+								iHeader.setErrorMessage(MESSAGES.errorFailedToUpdateRoom(caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.errorFailedToUpdateRoom(caught.getMessage()));
+							}
+						}
+
+						@Override
+						public void onSuccess(RoomDetailInterface result) {
+							LoadingWidget.getInstance().hide();
+							hide(result, true);
+						}
+					});
 				}
 			}
 		};
@@ -161,13 +187,30 @@ public class RoomEdit extends Composite {
 		iHeader.addButton("delete", MESSAGES.buttonDeleteRoom(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				
+				if (Window.confirm(MESSAGES.confirmDeleteRoom())) {
+					LoadingWidget.getInstance().show(MESSAGES.waitDeletingRoom());
+					RPC.execute(RoomUpdateRpcRequest.createDeleteRequest(getRoom().getUniqueId(), iFutureHeader.getValue()), new AsyncCallback<RoomDetailInterface>() {
+
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							iHeader.setErrorMessage(MESSAGES.errorFailedToDeleteRoom(caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.errorFailedToDeleteRoom(caught.getMessage()));
+						}
+
+						@Override
+						public void onSuccess(RoomDetailInterface result) {
+							LoadingWidget.getInstance().hide();
+							hide(null, false);
+						}
+					});
+				}
 			}
 		});
 		iHeader.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				hide();
+				hide(null, true);
 			}
 		});
 		
@@ -459,6 +502,12 @@ public class RoomEdit extends Composite {
 		
 		iPictures = new UniTimeTable<RoomPictureInterface>();
 		iPictures.setStyleName("unitime-RoomPictures");
+		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
+		header.add(new UniTimeTableHeader(MESSAGES.colPicture()));
+		header.add(new UniTimeTableHeader(MESSAGES.colName()));
+		header.add(new UniTimeTableHeader(MESSAGES.colType()));
+		header.add(new UniTimeTableHeader("&nbsp;"));
+		iPictures.addRow(null, header);
 		
 		iFileUpload = new UniTimeFileUpload();
 		iFileUpload.addSubmitCompleteHandler(new SubmitCompleteHandler() {
@@ -487,15 +536,31 @@ public class RoomEdit extends Composite {
 				});
 			}
 		});
-		
-		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
-		header.add(new UniTimeTableHeader(MESSAGES.colPicture()));
-		header.add(new UniTimeTableHeader(MESSAGES.colName()));
-		header.add(new UniTimeTableHeader(MESSAGES.colType()));
-		header.add(new UniTimeTableHeader("&nbsp;"));
-		iPictures.addRow(null, header);
-		
+				
 		iFooter = iHeader.clonePanel();
+		
+		iFutureHeader = new CheckBox(MESSAGES.checkApplyToFutureSessions(), true);
+		iFutureHeader.addStyleName("toggle");
+		iHeader.getPanel().insert(iFutureHeader, 4);
+		iHeader.getPanel().setCellVerticalAlignment(iFutureHeader, HasVerticalAlignment.ALIGN_MIDDLE);
+		
+		iFutureFooter = new CheckBox(MESSAGES.checkApplyToFutureSessions(), true);
+		iFutureFooter.addStyleName("toggle");
+		iFooter.getPanel().insert(iFutureFooter, 4);
+		iFooter.getPanel().setCellVerticalAlignment(iFutureFooter, HasVerticalAlignment.ALIGN_MIDDLE);
+		
+		iFutureHeader.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				iFutureFooter.setValue(event.getValue(), false);
+			}
+		});
+		iFutureFooter.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				iFutureHeader.setValue(event.getValue(), false);
+			}
+		});
 		
 		initWidget(iForm);
 	}
@@ -573,7 +638,13 @@ public class RoomEdit extends Composite {
 			iForm.addRow(iNameLabel, new Label(iRoom.getName()), 1);
 		}
 		
-		typeChanged();
+		if (iRoom.getRoomType() == null || iRoom.isCanChangeType()) {
+			typeChanged();
+		} else {
+			if (iBuildingRow >= 0)
+				iForm.getRowFormatter().setVisible(iBuildingRow, iRoom.getRoomType() != null && iRoom.getRoomType().isRoom());
+			iNameLabel.setText(iRoom.getRoomType() != null && iRoom.getRoomType().isRoom() ? MESSAGES.propRoomNumber() : MESSAGES.propRoomName());
+		}
 		
 		if (iRoom.getUniqueId() == null || iRoom.isCanChangeRoomProperties()) {
 			iDisplayName.setText(iRoom.getDisplayName() == null ? "" : iRoom.getDisplayName());
@@ -911,7 +982,7 @@ public class RoomEdit extends Composite {
 			if ((iRoom.getUniqueId() == null && iProperties.isCanChangePicture()) || iRoom.isCanChangePicture())
 				iForm.addRow(MESSAGES.propNewPicture(), iFileUpload);
 			iForm.addRow(iPictures);
-			iPictures.clearTable();
+			iPictures.clearTable(1);
 			if (iRoom.hasPictures()) {
 				for (final RoomPictureInterface picture: iRoom.getPictures())
 					iPictures.addRow(picture, line(picture));
@@ -1181,13 +1252,13 @@ public class RoomEdit extends Composite {
 		return iGoogleMapControl != null && iGoogleMapControl.isVisible();
 	}
 	
-	public void hide() {
+	public void hide(RoomDetailInterface room, boolean canShowDetail) {
 		setVisible(false);
-		onHide();
+		onHide(room, canShowDetail);
 		Window.scrollTo(iLastScrollLeft, iLastScrollTop);
 	}
 	
-	protected void onHide() {
+	protected void onHide(RoomDetailInterface detail, boolean canShowDetail) {
 	}
 	
 	protected void onShow() {

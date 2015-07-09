@@ -150,12 +150,12 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 	    return getStartSlot().compareTo(period.getStartSlot());
 	}
     
-    public static TreeSet findAll(Long sessionId, ExamType type) {
+    public static TreeSet<ExamPeriod> findAll(Long sessionId, ExamType type) {
     	return findAll(sessionId, type == null ? null : type.getUniqueId());
     }
     
-    public static TreeSet findAll(Long sessionId, Long examTypeId) {
-    	TreeSet ret = new TreeSet();
+    public static TreeSet<ExamPeriod> findAll(Long sessionId, Long examTypeId) {
+    	TreeSet<ExamPeriod> ret = new TreeSet<ExamPeriod>();
     	if (examTypeId==null)
     		ret.addAll(new ExamPeriodDAO().getSession().
                 createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId").

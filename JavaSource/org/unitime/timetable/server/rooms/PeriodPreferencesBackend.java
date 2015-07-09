@@ -99,7 +99,21 @@ public class PeriodPreferencesBackend implements GwtRpcImplementation<PeriodPref
 	}
 	
 	public PeriodPreferenceModel savePeriodPreferences(PeriodPreferenceRequest request, SessionContext context) {
-		return null;
+		Location location = (request.getLocationId() == null ? null : LocationDAO.getInstance().get(request.getLocationId()));
+		ExamType type = ExamTypeDAO.getInstance().get(request.getExamTypeId());
+		context.checkPermission(location, Right.RoomEditChangeExaminationStatus);
+		return savePeriodPreferences(location, type, request.getModel(), context);
+	}
+	
+	public PeriodPreferenceModel savePeriodPreferences(Location location, ExamType type, PeriodPreferenceModel model, SessionContext context) {
+		location.clearExamPreferences(type);
+		for (ExamPeriod period: ExamPeriod.findAll(location.getSession().getUniqueId(), type)) {
+			PreferenceInterface pref = model.getPreference(period.getDateOffset(), period.getStartSlot());
+			if (pref != null && !PreferenceLevel.sNeutral.equals(pref.getCode())) {
+				location.addExamPreference(period, PreferenceLevel.getPreferenceLevel(pref.getCode()));
+			}
+		}
+		return model;
 	}
 
 }

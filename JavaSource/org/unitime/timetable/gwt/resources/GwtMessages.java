@@ -1294,6 +1294,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Loading room details...")
 	String waitLoadingRoomDetails();
+	
+	@DefaultMessage("Saving room ...")
+	String waitSavingRoom();
+	
+	@DefaultMessage("Updating room ...")
+	String waitUpdatingRoom();
+	
+	@DefaultMessage("Deleting room ...")
+	String waitDeletingRoom();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -1714,6 +1723,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Controlling department must be included in the room sharing.")
 	String errorControllingDepartmentNotAmongRoomSharing();
+	
+	@DefaultMessage("Failed to delete the room: {0}")
+	String errorFailedToDeleteRoom(String message);
+	
+	@DefaultMessage("Failed to save the room: {0}")
+	String errorFailedToSaveRoom(String message);
+	
+	@DefaultMessage("Failed to update the room: {0}")
+	String errorFailedToUpdateRoom(String message);
 
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
@@ -1774,6 +1792,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Please confirm the change in the contact information for {0}.")
 	String checkMainContactChange(String name);
+	
+	@DefaultMessage("Change future sessions as well.")
+	String checkApplyToFutureSessions();
 	
 	@DefaultMessage("The contact information for {0} will be updated.")
 	String confirmMainContactChange(String name);
@@ -3076,6 +3097,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Do you really want to execute script {0}?")
 	String confirmScriptExecution(String name);
+	
+	@DefaultMessage("Do you realy want to delete this room?")
+	String confirmDeleteRoom();
 	
 	@DefaultMessage("&nbsp;(of&nbsp;{0})")
 	String curriculumProjectionRulesOfTotal(int total);

@@ -78,7 +78,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 				picture.setContentType(file.getContentType());
 				picture.setTimeStamp(new Date());
 				temp.put(- picture.getTimeStamp().getTime(), picture);
-				response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType()));
+				response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime()));
 			}
 			return response;
 		}
@@ -93,7 +93,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 		switch (request.getOperation()) {
 		case LOAD:
 			for (LocationPicture p: new TreeSet<LocationPicture>(location.getPictures()))
-				response.addPicture(new RoomPictureInterface(p.getUniqueId(), p.getFileName(), p.getContentType()));
+				response.addPicture(new RoomPictureInterface(p.getUniqueId(), p.getFileName(), p.getContentType(), p.getTimeStamp().getTime()));
 
 			boolean samePast = true, sameFuture = true;
 			for (Location other: (List<Location>)hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId")
@@ -201,7 +201,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 				picture.setContentType(file.getContentType());
 				picture.setTimeStamp(new Date());
 				temp.put(- picture.getTimeStamp().getTime(), picture);
-				response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType()));
+				response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime()));
 			}
 			break;
 		}

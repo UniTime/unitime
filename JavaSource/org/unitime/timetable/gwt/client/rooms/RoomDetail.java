@@ -143,7 +143,7 @@ public class RoomDetail extends Composite {
 
 		iHeader.clearMessage();
 		iHeader.setHeaderTitle(iRoom.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : iRoom.getLabel());
-		// iHeader.setEnabled("edit", iRoom.isCanChange());
+		iHeader.setEnabled("edit", iRoom.isCanChange());
 		iHeader.setEnabled("previous", getPrevious(iRoom.getUniqueId()) != null);
 		iHeader.setEnabled("next", getNext(iRoom.getUniqueId()) != null);
 		iForm.addHeaderRow(iHeader);
@@ -159,7 +159,7 @@ public class RoomDetail extends Composite {
 		if (iRoom.getCapacity() != null)
 			iForm.addRow(MESSAGES.propCapacity(), new Label(iRoom.getCapacity().toString()), 1);
 		if (exams && (iRoom.getExamCapacity() != null || iRoom.hasExamTypes()))
-			iForm.addRow(MESSAGES.propExamCapacity(), new Label(iRoom.getExamCapacity().toString()), 1);
+			iForm.addRow(MESSAGES.propExamCapacity(), new ExamSeatingCapacityLabel(iRoom), 1);
 		if (courses && iRoom.getControlDepartment() != null)
 			iForm.addRow(MESSAGES.propControllingDepartment(), new Label(RoomDetail.toString(iRoom.getControlDepartment())), 1);
 		if (iRoom.hasCoordinates())

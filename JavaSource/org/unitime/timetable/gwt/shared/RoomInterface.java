@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -506,10 +507,11 @@ public class RoomInterface implements IsSerializable {
 		private Long iUniqueId;
 		private String iName;
 		private String iType;
+		private Long iTimeStamp;
 		
 		public RoomPictureInterface() {}
 		
-		public RoomPictureInterface(Long uniqueId, String name, String type) {
+		public RoomPictureInterface(Long uniqueId, String name, String type, Long timeStamp) {
 			setUniqueId(uniqueId);
 			setName(name);
 			setType(type);
@@ -523,6 +525,9 @@ public class RoomInterface implements IsSerializable {
 		
 		public String getType() { return iType; }
 		public void setType(String type) { iType = type; }
+		
+		public Long getTimeStamp() { return iTimeStamp; }
+		public void setTimeStamp(Long timeStamp) { iTimeStamp = timeStamp; }
 	}
 	
 	public static class RoomPictureRequest implements GwtRpcRequest<RoomPictureResponse> {
@@ -851,7 +856,7 @@ public class RoomInterface implements IsSerializable {
 		public void setDepartment(DepartmentInterface department) { iDepartment = department; }
 	}
 	
-	public static class RoomDetailInterface extends FilterRpcResponse.Entity {
+	public static class RoomDetailInterface extends FilterRpcResponse.Entity implements GwtRpcResponse {
 		private static final long serialVersionUID = 1L;
 		
 		private String iExternalId;
@@ -1027,6 +1032,13 @@ public class RoomInterface implements IsSerializable {
 		public boolean hasExamTypes() { return iExamTypes != null && !iExamTypes.isEmpty(); }
 		public List<ExamTypeInterface> getExamTypes() { return iExamTypes; }
 		public void addExamRype(ExamTypeInterface type) { iExamTypes.add(type); }
+		public ExamTypeInterface getExamType(Long typeId) {
+			if (iExamTypes == null || typeId == null) return null;
+			for (ExamTypeInterface type: iExamTypes) {
+				if (typeId.equals(type.getId())) return type;
+			}
+			return null;
+		}
 		
 		public String getPeriodPreference() { return iPeriodPreference; }
 		public void setPeriodPreference(String pref) { iPeriodPreference = pref; }
@@ -1613,5 +1625,84 @@ public class RoomInterface implements IsSerializable {
 		public RoomFilterRpcRequest() {
 			super();
 		}
+	}
+	
+	public static class RoomUpdateRpcRequest implements GwtRpcRequest<RoomDetailInterface> {
+		private Operation iOperation;
+		private Long iLocationId;
+		private RoomDetailInterface iRoom;
+		private boolean iApplyToFutureTermsAsWell;
+		
+		public static enum Operation implements IsSerializable {
+			CREATE,
+			UPDATE,
+			DELETE
+		}
+		
+		public RoomUpdateRpcRequest() {}
+		
+		public boolean hasRoom() { return iRoom != null; }
+		public RoomDetailInterface getRoom() { return iRoom; }
+		public void setRoom(RoomDetailInterface room) { iRoom = room; }
+		
+		public Operation getOperation() { return iOperation; }
+		public void setOperation(Operation operation) { iOperation = operation; }
+		
+		public boolean hasLocationId() { return getLocationId() != null; }
+		public Long getLocationId() { return iLocationId != null ? iLocationId : iRoom != null ? iRoom.getUniqueId() : null; }
+		public void setLocationId(Long locationId) { iLocationId = locationId; }
+		
+		public boolean hasLabel() { return getLabel() != null && !getLabel().isEmpty(); }
+		public String getLabel() { return iRoom != null ? iRoom.getLabel() : null; }
+		
+		public boolean isApplyToFutureTermsAsWell() { return iApplyToFutureTermsAsWell; }
+		public void setApplyToFutureTermsAsWell(boolean apply) { iApplyToFutureTermsAsWell = apply; }
+		
+		@Override
+		public String toString() {
+			return getOperation().name() + " " + (hasLocationId() ? getLocationId() + (hasLabel() ? "/" + getLabel() : "") : hasLabel() ? getLabel() : "")
+					+ (isApplyToFutureTermsAsWell() ? " (f)" : "");
+		}
+		
+		public static RoomUpdateRpcRequest createDeleteRequest(Long locationId, boolean includeFutureTerms) {
+			RoomUpdateRpcRequest request = new RoomUpdateRpcRequest();
+			request.setOperation(Operation.DELETE);
+			request.setLocationId(locationId);
+			request.setApplyToFutureTermsAsWell(includeFutureTerms);
+			return request;
+		}
+		
+		public static RoomUpdateRpcRequest createSaveOrUpdateRequest(RoomDetailInterface room, boolean includeFutureTerms) {
+			RoomUpdateRpcRequest request = new RoomUpdateRpcRequest();
+			request.setOperation(room.getUniqueId() == null ? Operation.CREATE : Operation.UPDATE);
+			request.setRoom(room);
+			request.setApplyToFutureTermsAsWell(includeFutureTerms);
+			return request;
+		}
+	}
+	
+	public static class RoomException extends GwtRpcException {
+		private static final long serialVersionUID = 1L;
+		private RoomDetailInterface iRoom;
+
+		public RoomException() {
+			super();
+		}
+		
+		public RoomException(String message) {
+			super(message);
+		}
+		
+		public RoomException(String message, Throwable cause) {
+			super(message, cause);
+		}
+		
+		public RoomException withRoom(RoomDetailInterface room) {
+			iRoom = room;
+			return this;
+		}
+		
+		public boolean hasRoom() { return iRoom != null; }
+		public RoomDetailInterface getRoom() { return iRoom; }
 	}
 }
