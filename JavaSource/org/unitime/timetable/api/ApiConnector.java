@@ -75,7 +75,6 @@ public abstract class ApiConnector {
 		if ((!sessionContext.isAuthenticated() || sessionContext.getUser() instanceof AnonymousUserContext) && request.getParameter("token") != null && ApplicationProperty.ApiCanUseAPIToken.isTrue()) {
 			UserContext context = apiToken.getContext(request.getParameter("token"));
 			if (context != null) {
-				System.out.println("Pretending to be " + context.getName());
 				SecurityContextHolder.getContext().setAuthentication(new TokenAuthentication(context));
 			}
 		}
