@@ -26,7 +26,9 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.hibernate.CacheMode;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
 
 /**
@@ -37,11 +39,14 @@ public abstract class AbstractApiHelper implements ApiHelper {
 	protected HttpServletRequest iRequest;
 	protected HttpServletResponse iResponse;
 	protected Long iSessionId = null;
+	protected CacheMode iCacheMode = null;
+	protected org.hibernate.Session iHibSession = null;
 	
-	public AbstractApiHelper(HttpServletRequest request, HttpServletResponse response, SessionContext context) {
+	public AbstractApiHelper(HttpServletRequest request, HttpServletResponse response, SessionContext context, CacheMode cacheMode) {
 		iRequest = request;
 		iResponse = response;
 		iContext = context;
+		iCacheMode = cacheMode;
 	}
 			
 	@Override
@@ -106,4 +111,17 @@ public abstract class AbstractApiHelper implements ApiHelper {
 	public SessionContext getSessionContext() {
 		return iContext;
 	}
+	
+	@Override
+	public org.hibernate.Session getHibSession() {
+		if (iHibSession == null) {
+			iHibSession = new _RootDAO().getSession();
+			if (iCacheMode != null)
+				iHibSession.setCacheMode(iCacheMode);
+		}
+		return iHibSession;
+	}
+	
+	@Override
+	public void close() {}
 }
