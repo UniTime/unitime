@@ -33,6 +33,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.hibernate.CacheMode;
 import org.unitime.timetable.security.SessionContext;
 
 /**
@@ -40,8 +41,8 @@ import org.unitime.timetable.security.SessionContext;
  */
 public class XmlApiHelper extends AbstractApiHelper {
 	
-	public XmlApiHelper(HttpServletRequest request, HttpServletResponse response, SessionContext context) {
-		super(request, response, context);
+	public XmlApiHelper(HttpServletRequest request, HttpServletResponse response, SessionContext context, CacheMode cacheMode) {
+		super(request, response, context, cacheMode);
 	}
 
 	@Override

@@ -51,7 +51,7 @@ public class EventsConnector extends ApiConnector {
 		if (sessionId == null)
 			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
 		
-		Session session = SessionDAO.getInstance().get(sessionId);
+		Session session = SessionDAO.getInstance().get(sessionId, helper.getHibSession());
 		if (session == null)
 			throw new IllegalArgumentException("Given academic session no longer exists.");
 		
@@ -102,4 +102,8 @@ public class EventsConnector extends ApiConnector {
     	helper.setResponse(events);
 	}
 
+	@Override
+	protected String getName() {
+		return "events";
+	}
 }

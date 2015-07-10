@@ -1868,8 +1868,12 @@ public enum ApplicationProperty {
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("API: allow API tokens to be used for user authentication")
-	@Since(4.1)
 	ApiCanUseAPIToken("unitime.api.canUseToken"),
+	
+	@Type(Boolean.class)
+	@Description("API: hiberna cache mode for the % API connector")
+	@Parameter("connector name")
+	ApiCacheMode("unitime.api.%.cacheMode"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")

@@ -95,12 +95,16 @@
 						<line>export example: GET UniTime/api/exchange?term=Fal2010&amp;type=students</line>
 						<line>import example: POST UniTime/api/exchange (with the XML as payload)</line>
 					</line>
-					<line>/api/roles?id=&lt;externalId&gt; returns a list of academic sessions (and roles) for a person</line>
+					<line>/api/roles?id=&lt;externalId&gt; returns a list of academic sessions (and roles) for a person (returns a list of academic sessions when there is no id parameter)</line>
 					<line>/api/enrollments?eventId=&lt;id&gt; returns student enrollments for an event, a class (when classId parameter is used instead),
 						 an exam (examId), a course offering (courseId), an instructional offering (offeringId), or instructional offering configuration (configId)</line>
 					<line>/api/instructor-schedule?id=&lt;externalId&gt;&amp;term=&lt;term&gt; returns classes, courses, and examinations assigned to an instructor.</line>
+					<line>/api/class-info?classId=&lt;id&gt; returns information about a class (including assinged instructors and coordinators)</line>
 				</line>
 				<line>Each connector has the appropriate permission (see Api... permissions), with the ability to either use HTTP-simple authentication or an API token.</line>
+				<line>It is possible to change the hibernate cache mode for a particular API connector by setting the unitime.api.X.cacheMode application property (where X is the connector name).
+					<line>For example, setting unitime.api.enrollments.cacheMode=REFRESH will make the /api/enrollments connector to never read the hibernate cache, but it will keep it updated.</line>
+				</line>
 			</description>
 		</item>
 		<item>

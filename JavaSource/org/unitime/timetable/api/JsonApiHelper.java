@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.hibernate.CacheMode;
 import org.unitime.timetable.security.SessionContext;
 
 import com.google.gson.FieldNamingStrategy;
@@ -48,8 +49,8 @@ import com.google.gson.stream.JsonReader;
 public class JsonApiHelper extends AbstractApiHelper {
 	protected Gson iGson;
 	
-	public JsonApiHelper(HttpServletRequest request, HttpServletResponse response, SessionContext context) {
-		super(request, response, context);
+	public JsonApiHelper(HttpServletRequest request, HttpServletResponse response, SessionContext context, CacheMode cacheMode) {
+		super(request, response, context, cacheMode);
 	}
 			
 	protected Gson createGson() {

@@ -67,4 +67,9 @@ public class JsonConnector extends ApiConnector {
 		
 		execute(type, helper);
 	}
+	
+	@Override
+	protected String getName() {
+		return "json";
+	}
 }
