@@ -57,7 +57,7 @@ public class EnrollmentsConnector extends ApiConnector {
 	public void doGet(ApiHelper helper) throws IOException {
 		String eventId = helper.getParameter("eventId");
 		if (eventId != null) {
-			Event event = EventDAO.getInstance().get(Long.parseLong(eventId));
+			Event event = EventDAO.getInstance().get(Long.parseLong(eventId), helper.getHibSession());
 			if (event == null)
 				throw new IllegalArgumentException("Event with the given ID does not exist.");
 			
@@ -67,7 +67,7 @@ public class EnrollmentsConnector extends ApiConnector {
 		}
 		String classId = helper.getParameter("classId");
 		if (classId != null) {
-			Class_ clazz = Class_DAO.getInstance().get(Long.parseLong(classId));
+			Class_ clazz = Class_DAO.getInstance().get(Long.parseLong(classId), helper.getHibSession());
 			if (clazz == null)
 				throw new IllegalArgumentException("Class with the given ID does not exist.");
 			
@@ -77,7 +77,7 @@ public class EnrollmentsConnector extends ApiConnector {
 		}
 		String examId = helper.getParameter("examId");
 		if (examId != null) {
-			Exam exam = ExamDAO.getInstance().get(Long.parseLong(examId));
+			Exam exam = ExamDAO.getInstance().get(Long.parseLong(examId), helper.getHibSession());
 			if (exam == null)
 				throw new IllegalArgumentException("Examination with the given ID does not exist.");
 			
@@ -87,7 +87,7 @@ public class EnrollmentsConnector extends ApiConnector {
 		}
 		String courseId = helper.getParameter("courseId");
 		if (courseId != null) {
-			CourseOffering course = CourseOfferingDAO.getInstance().get(Long.parseLong(courseId));
+			CourseOffering course = CourseOfferingDAO.getInstance().get(Long.parseLong(courseId), helper.getHibSession());
 			if (course == null)
 				throw new IllegalArgumentException("Course with the given ID does not exist.");
 			
@@ -99,7 +99,7 @@ public class EnrollmentsConnector extends ApiConnector {
 		}
 		String offeringId = helper.getParameter("offeringId");
 		if (offeringId != null) {
-			InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(Long.parseLong(offeringId));
+			InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(Long.parseLong(offeringId), helper.getHibSession());
 			if (offering == null)
 				throw new IllegalArgumentException("Offering with the given ID does not exist.");
 			
@@ -111,7 +111,7 @@ public class EnrollmentsConnector extends ApiConnector {
 		}
 		String configurationId = helper.getParameter("configurationId");
 		if (configurationId != null) {
-			InstrOfferingConfig config = InstrOfferingConfigDAO.getInstance().get(Long.parseLong(configurationId));
+			InstrOfferingConfig config = InstrOfferingConfigDAO.getInstance().get(Long.parseLong(configurationId), helper.getHibSession());
 			if (config == null)
 				throw new IllegalArgumentException("Configuration with the given ID does not exist.");
 			
@@ -198,5 +198,10 @@ public class EnrollmentsConnector extends ApiConnector {
 			iClassExternalId = enrollment.getClazz().getExternalId(enrollment.getCourseOffering());
 		}
 		
+	}
+	
+	@Override
+	protected String getName() {
+		return "enrollments";
 	}
 }

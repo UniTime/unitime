@@ -46,4 +46,8 @@ public interface ApiHelper {
 	public String[] getParameterValues(String name);
 	
 	public Enumeration<String> getParameterNames();
+	
+	public org.hibernate.Session getHibSession();
+	
+	public void close();
 }
