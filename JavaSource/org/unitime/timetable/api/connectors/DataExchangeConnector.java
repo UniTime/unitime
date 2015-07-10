@@ -46,7 +46,7 @@ public class DataExchangeConnector extends ApiConnector {
 
 	@Override
 	protected ApiHelper createHelper(HttpServletRequest request, HttpServletResponse response) {
-		return new XmlApiHelper(request, response, sessionContext);
+		return new XmlApiHelper(request, response, sessionContext, getCacheMode());
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class DataExchangeConnector extends ApiConnector {
 		if (sessionId == null)
 			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
 		
-		Session session = SessionDAO.getInstance().get(sessionId);
+		Session session = SessionDAO.getInstance().get(sessionId, helper.getHibSession());
 		if (session == null)
 			throw new IllegalArgumentException("Given academic session no longer exists.");
 		
@@ -95,5 +95,10 @@ public class DataExchangeConnector extends ApiConnector {
 		} catch (Exception e) {
 			throw new IOException(e.getMessage(), e);
 		}
+	}
+
+	@Override
+	protected String getName() {
+		return "exchange";
 	}
 }

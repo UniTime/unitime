@@ -50,7 +50,6 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
@@ -77,7 +76,7 @@ public class InstructorScheduleConnector extends ApiConnector{
 
 		boolean checkStatus = !helper.getSessionContext().hasPermission(Right.HasRole);
 		InstructorScheduleInfo response = null;
-		for (DepartmentalInstructor di: (List<DepartmentalInstructor>)DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+		for (DepartmentalInstructor di: (List<DepartmentalInstructor>)helper.getHibSession().createQuery(
 				"from DepartmentalInstructor d where d.externalUniqueId = :externalId and department.session.uniqueId = :sessionId")
 				.setString("externalId", externalId)
 				.setLong("sessionId", sessionId).setCacheable(true).list()) {
@@ -481,4 +480,8 @@ public class InstructorScheduleConnector extends ApiConnector{
     	return null;
     }
 	
+	@Override
+	protected String getName() {
+		return "instructor-schedule";
+	}
 }

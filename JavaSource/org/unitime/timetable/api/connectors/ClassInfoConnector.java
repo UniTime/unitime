@@ -70,7 +70,7 @@ public class ClassInfoConnector extends ApiConnector {
 		if (classId == null)
 			throw new IllegalArgumentException("Parameter ID not provided");
 
-		Class_ clazz = Class_DAO.getInstance().get(Long.valueOf(classId));
+		Class_ clazz = Class_DAO.getInstance().get(Long.valueOf(classId), helper.getHibSession());
 		if (clazz == null)
 			throw new IllegalArgumentException("Class with the given ID does not exist.");
 		
@@ -454,4 +454,8 @@ public class ClassInfoConnector extends ApiConnector {
     	return null;
     }
 	
+	@Override
+	protected String getName() {
+		return "class-info";
+	}	
 }
