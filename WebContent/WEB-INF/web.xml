@@ -312,6 +312,16 @@
 	</filter-mapping>
 	
 	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
+		<url-pattern>/export</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
+		<filter-name>Query Log Filter</filter-name>
+		<url-pattern>/api/*</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
 		<filter-name>Google Chrome Frame No Cache Filter</filter-name>
 		<url-pattern>*.do</url-pattern>
 	</filter-mapping>
