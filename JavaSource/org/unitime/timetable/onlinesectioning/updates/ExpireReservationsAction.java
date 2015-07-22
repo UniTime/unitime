@@ -85,7 +85,7 @@ public class ExpireReservationsAction extends CheckOfferingAction {
 		// offering is locked -> assuming that the offering will get checked when it is unlocked
 		if (server.isOfferingLocked(offering.getOfferingId())) return;
 		
-		Lock lock = server.lockOffering(offering.getOfferingId(), null, true);
+		Lock lock = server.lockOffering(offering.getOfferingId(), null, name());
 		try {
 			// Expire reservations
 			// no longer needed

@@ -715,7 +715,10 @@ public class ReplicatedServer extends AbstractServer {
 	}
 
 	@Override
-	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings) {
+	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, String actionName) {
+		boolean lockStudents = getConfig().getPropertyBoolean(actionName + ".LockStudents", true);
+		boolean lockOfferings = getConfig().getPropertyBoolean(actionName + ".LockOfferings", true);
+		boolean excludeLockedOfferings = lockOfferings && getConfig().getPropertyBoolean(actionName + ".ExcludeLockedOfferings", true);
 		Lock lock = writeLock();
 		try {
 			if (!inTransaction()) {
@@ -726,23 +729,30 @@ public class ReplicatedServer extends AbstractServer {
 				iLog.warn("Failed to lock a student " + studentId + ": No eager locks in optimistic locking.");
 				return lock;
 			}
-			Set<Long> ids = new HashSet<Long>();
-			ids.add(-studentId);
-			if (offeringIds != null)
-				for (Long offeringId: offeringIds)
-					if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId))
-						ids.add(offeringId);
-			
-			XStudent student = getStudent(studentId);
-			
-			if (student != null)
-				for (XRequest r: student.getRequests()) {
-					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
-						Long offeringId = ((XCourseRequest)r).getEnrollment().getOfferingId();
-						if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId)) ids.add(offeringId);
-					}
-				}
 
+			Set<Long> ids = new HashSet<Long>();
+
+			if (lockStudents) {
+				ids.add(-studentId);
+			}
+			
+			if (lockOfferings) {
+				if (offeringIds != null)
+					for (Long offeringId: offeringIds)
+						if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId))
+							ids.add(offeringId);
+				
+				XStudent student = getStudent(studentId);
+				
+				if (student != null)
+					for (XRequest r: student.getRequests()) {
+						if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
+							Long offeringId = ((XCourseRequest)r).getEnrollment().getOfferingId();
+							if (!excludeLockedOfferings || !iOfferingLocks.containsKey(offeringId)) ids.add(offeringId);
+						}
+					}
+			}
+			
 			while (!iOfferingLocks.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).lock(ids)) {
 				iLog.info("Failed to lock a student " + studentId + ", retrying...");
 			}
@@ -755,7 +765,10 @@ public class ReplicatedServer extends AbstractServer {
 	}
 
 	@Override
-	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering) {
+	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, String actionName) {
+		boolean lockStudents = getConfig().getPropertyBoolean(actionName + ".LockStudents", true);
+		boolean lockOfferings = getConfig().getPropertyBoolean(actionName + ".LockOfferings", true);
+		boolean excludeLockedOffering = lockOfferings && getConfig().getPropertyBoolean(actionName + ".ExcludeLockedOfferings", true);
 		Lock lock = writeLock();
 		try {
 			if (!inTransaction()) {
@@ -767,17 +780,22 @@ public class ReplicatedServer extends AbstractServer {
 				return lock;
 			}
 			Set<Long> ids = new HashSet<Long>();
-			if (!excludeLockedOffering || !iOfferingLocks.containsKey(offeringId))
-				ids.add(offeringId);
 			
-			if (studentIds != null)
-				for (Long studentId: studentIds)
-					ids.add(-studentId);
+			if (lockOfferings) {
+				if (!excludeLockedOffering || !iOfferingLocks.containsKey(offeringId))
+					ids.add(offeringId);
+			}
 			
-			Collection<XCourseRequest> requests = getRequests(offeringId);
-			if (requests != null) {
-				for (XCourseRequest request: requests)
-					ids.add(-request.getStudentId());
+			if (lockStudents) {
+				if (studentIds != null)
+					for (Long studentId: studentIds)
+						ids.add(-studentId);
+			
+				Collection<XCourseRequest> requests = getRequests(offeringId);
+				if (requests != null) {
+					for (XCourseRequest request: requests)
+						ids.add(-request.getStudentId());
+				}
 			}
 			
 			while (!iOfferingLocks.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).lock(ids)) {
@@ -798,7 +816,10 @@ public class ReplicatedServer extends AbstractServer {
 	}
 
 	@Override
-	public Lock lockRequest(CourseRequestInterface request) {
+	public Lock lockRequest(CourseRequestInterface request, String actionName) {
+		boolean lockStudents = getConfig().getPropertyBoolean(actionName + ".LockStudents", true);
+		boolean lockOfferings = getConfig().getPropertyBoolean(actionName + ".LockOfferings", true);
+		boolean excludeLockedOffering = lockOfferings && getConfig().getPropertyBoolean(actionName + ".ExcludeLockedOfferings", true);
 		Lock lock = writeLock();
 		try {
 			if (!inTransaction()) {
@@ -810,35 +831,40 @@ public class ReplicatedServer extends AbstractServer {
 				return lock;
 			}
 			Set<Long> ids = new HashSet<Long>();
-			ids.add(-request.getStudentId());
 			
-			for (CourseRequestInterface.Request r: request.getCourses()) {
-				if (r.hasRequestedCourse()) {
-					Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasFirstAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasSecondAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
-					if (id != null) ids.add(id);
-				}
+			if (lockStudents) {
+				ids.add(-request.getStudentId());
 			}
-			for (CourseRequestInterface.Request r: request.getAlternatives()) {
-				if (r.hasRequestedCourse()) {
-					Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
-					if (id != null) ids.add(id);
+			
+			if (lockOfferings) {
+				for (CourseRequestInterface.Request r: request.getCourses()) {
+					if (r.hasRequestedCourse()) {
+						Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
+					if (r.hasFirstAlternative()) {
+						Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
+					if (r.hasSecondAlternative()) {
+						Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
 				}
-				if (r.hasFirstAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasSecondAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
-					if (id != null) ids.add(id);
-				}
+				for (CourseRequestInterface.Request r: request.getAlternatives()) {
+					if (r.hasRequestedCourse()) {
+						Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
+					if (r.hasFirstAlternative()) {
+						Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
+					if (r.hasSecondAlternative()) {
+						Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
+				}				
 			}
 			
 			while (!iOfferingLocks.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).lock(ids)) {

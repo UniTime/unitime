@@ -945,17 +945,17 @@ public class StudentSolver extends ParallelSolver<Request, Enrollment> implement
 	}
 
 	@Override
-	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings) {
+	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, String actionName) {
 		return new NoLock();
 	}
 
 	@Override
-	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering) {
+	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, String actionName) {
 		return new NoLock();
 	}
 
 	@Override
-	public Lock lockRequest(CourseRequestInterface request) {
+	public Lock lockRequest(CourseRequestInterface request, String actionName) {
 		return new NoLock();
 	}
 
