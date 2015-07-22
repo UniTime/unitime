@@ -38,7 +38,9 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -66,6 +68,7 @@ public class OnlineSectioningTest extends Composite {
 	private NumberFormat iAvgF = NumberFormat.getFormat("0.000");
 
 	private UniTimeWidget<UniTimeTextBox> iNbrThreads;
+	private UniTimeWidget<UniTimeTextBox> iPin;
 	private UniTimeWidget<TextArea> iCourses, iStudents;
 	private CheckBox iWaitList;
 	private UniTimeHeaderPanel iHeader;
@@ -73,7 +76,7 @@ public class OnlineSectioningTest extends Composite {
 	private Test[] iTest;
 	private Label iAverage;
 	
-	private long iTotal = 0, iTotalSectioning = 0, iTotalSuggestions = 0, iTotalEnrollment = 0;
+	private long iTotal = 0, iTotalEligibility = 0, iTotalLookup = 0, iTotalCheck = 0, iTotalSectioning = 0, iTotalSuggestions = 0, iTotalEnrollment = 0, iRunTime = 0, iStartTime = 0;
 	private int iCount = 0;
 	
 	private UniTimeWidget<ListBox> iSessions;
@@ -92,6 +95,9 @@ public class OnlineSectioningTest extends Composite {
 		iSessions = new UniTimeWidget<ListBox>(new ListBox());
 		form.addRow("Academic Session:", iSessions);
 		iSessions.setHint("An academic session with enabled student sectioning.");
+		
+		iPin = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox());
+		form.addRow("PIN:", iPin);
 		
 		LoadingWidget.getInstance().show("Loading...");
 		iSectioningService.getProperties(null, new AsyncCallback<SectioningProperties>() {
@@ -222,18 +228,25 @@ public class OnlineSectioningTest extends Composite {
 		if (iCount == 0)
 			iAverage.setText("");
 		else
-			iAverage.setText( iAvgF.format(0.001 * iTotal / iCount) + " s " +
-					"(" + iAvgF.format(0.001 * iTotalSectioning / iCount) + " s sectioning, " +
+			iAverage.setText( iAvgF.format(0.001 * iTotal / iCount) + " s (" +
+					iAvgF.format(0.001 * iTotalEligibility / iCount) + " s eligibility, " +
+					iAvgF.format(0.001 * iTotalLookup / iCount) + " s lookup, " +
+					iAvgF.format(0.001 * iTotalCheck / iCount) + " s check, " +
+					iAvgF.format(0.001 * iTotalSectioning / iCount) + " s sectioning, " +
 					iAvgF.format(0.001 * iTotalSuggestions / (2 * iCount)) + " s suggestions, " +
-					iAvgF.format(0.001 * iTotalEnrollment / iCount) + " s enrollment, average from " + iCount + " runs).");
+					iAvgF.format(0.001 * iTotalEnrollment / iCount) + " s enrollment, average from " + iCount + " runs, total runtime " + iAvgF.format(0.001 * iRunTime) + " s).");
 	}
 	
 	public void startTest() {
 		iTotal = 0;
+		iTotalEligibility = 0;
+		iTotalLookup = 0;
+		iTotalCheck = 0;
 		iTotalSectioning = 0;
 		iTotalSuggestions = 0;
 		iTotalEnrollment = 0;
 		iCount = 0;
+		iStartTime = new Date().getTime();
 		int nbrTests = Integer.parseInt(iNbrThreads.getWidget().getText());
 		iTest = new Test[nbrTests];
 		String[] students = iStudents.getWidget().getText().split("\\n");
@@ -276,45 +289,58 @@ public class OnlineSectioningTest extends Composite {
 		public void run() {
 			try {
 				final long T0 = new Date().getTime();
-				lookupCourses(new ArrayList<String>(), 3 + (int)(Random.nextDouble() * 5), new Callback<List<String>>() {
+				checkEligibility(new Callback<EligibilityCheck>() {
 					@Override
-					public void execute(final List<String> courses, Throwable failure) {
-						final CourseRequestInterface request = new CourseRequestInterface();
-						request.setAcademicSessionId(iSessionId);
-						request.setStudentId(iStudentId);
-						for (String course: courses) {
-							CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-							r.setRequestedCourse(course);
-							r.setWaitList(iWaitList.getValue());
-							request.getCourses().add(r);
-						}
-						checkCourses(request, new Callback<Collection<String>>() {
+					public void execute(final EligibilityCheck eligibility, Throwable failure) {
+						if (eligibility != null && eligibility.hasMessage())
+							info("eligibility: " +  eligibility.getMessage() + " (enroll: " + eligibility.hasFlag(EligibilityFlag.CAN_ENROLL));
+						final long T1 = new Date().getTime();
+						lookupCourses(new ArrayList<String>(), 3 + (int)(Random.nextDouble() * 5), new Callback<List<String>>() {
 							@Override
-							public void execute(Collection<String> success, Throwable failure) {
-								final long T1 = new Date().getTime();
-								section(request, new ArrayList<ClassAssignment>(), new Callback<ClassAssignmentInterface>() {
+							public void execute(final List<String> courses, Throwable failure) {
+								final CourseRequestInterface request = new CourseRequestInterface();
+								request.setAcademicSessionId(iSessionId);
+								request.setStudentId(iStudentId);
+								for (String course: courses) {
+									CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+									r.setRequestedCourse(course);
+									r.setWaitList(iWaitList.getValue());
+									request.getCourses().add(r);
+								}
+								final long T2 = new Date().getTime();
+								checkCourses(request, new Callback<Collection<String>>() {
 									@Override
-									public void execute(final ClassAssignmentInterface assignment, Throwable failure) {
-										final long T2 = new Date().getTime();
-										computeSuggestions(request, assignment, new Callback<List<ClassAssignmentInterface>>() {
+									public void execute(Collection<String> success, Throwable failure) {
+										final long T3 = new Date().getTime();
+										section(request, new ArrayList<ClassAssignment>(), new Callback<ClassAssignmentInterface>() {
 											@Override
-											public void execute(List<ClassAssignmentInterface> suggestions, Throwable failure) {
+											public void execute(final ClassAssignmentInterface assignment, Throwable failure) {
+												final long T4 = new Date().getTime();
 												computeSuggestions(request, assignment, new Callback<List<ClassAssignmentInterface>>() {
 													@Override
-													public void execute(List<ClassAssignmentInterface> success, Throwable failure) {
-														final long T3 = new Date().getTime();
-														enroll(request, assignment, new Callback<ClassAssignmentInterface>() {
+													public void execute(List<ClassAssignmentInterface> suggestions, Throwable failure) {
+														computeSuggestions(request, assignment, new Callback<List<ClassAssignmentInterface>>() {
 															@Override
-															public void execute(ClassAssignmentInterface success, Throwable failure) {
-																final long T4 = new Date().getTime();
-																info("Run completed in " + iAvgF.format(0.001 * (T4 - T0)) + " s " + courses + ".");
-																iTotal += (T4 - T0);
-																iTotalSectioning += (T2 - T1);
-																iTotalSuggestions += (T3 - T2);
-																iTotalEnrollment += (T4 - T3);
-																iCount ++;
-																updateAverage();
-																scheduleNext();
+															public void execute(List<ClassAssignmentInterface> success, Throwable failure) {
+																final long T5 = new Date().getTime();
+																enroll(request, assignment, eligibility, new Callback<ClassAssignmentInterface>() {
+																	@Override
+																	public void execute(ClassAssignmentInterface success, Throwable failure) {
+																		final long T6 = new Date().getTime();
+																		info("Run completed in " + iAvgF.format(0.001 * (T6 - T0)) + " s " + courses + " (lookup " + iAvgF.format(0.001 * (T2 - T1)) + " s).");
+																		iTotal += (T6 - T0);
+																		iTotalEligibility += (T1 - T0);
+																		iTotalLookup += (T2 - T1);
+																		iTotalCheck += (T3 - T2);
+																		iTotalSectioning += (T4 - T3);
+																		iTotalSuggestions += (T5 - T4);
+																		iTotalEnrollment += (T6 - T5);
+																		iCount ++;
+																		iRunTime = T6 - iStartTime;
+																		updateAverage();
+																		scheduleNext();
+																	}
+																});
 															}
 														});
 													}
@@ -332,8 +358,24 @@ public class OnlineSectioningTest extends Composite {
 			}
 		}
 		
-		public void enroll(final CourseRequestInterface request, final ClassAssignmentInterface assignment, final Callback<ClassAssignmentInterface> callback) {
-			if (request.getStudentId() == null) {
+		private void checkEligibility(final Callback<EligibilityCheck> callback) {
+			debug("checkEligibility()");	
+			iSectioningService.checkEligibility(true, iSessionId, iStudentId, iPin.getWidget().getText(),  new AsyncCallback<EligibilityCheck>() {
+				@Override
+				public void onSuccess(EligibilityCheck result) {
+					callback.execute(result, null);
+				}
+				@Override
+				public void onFailure(Throwable caught) {
+					warn("&nbsp;&nbsp;checkEligibility() failed: " + caught.getMessage());
+					callback.execute(null, caught);
+				}
+			});
+			
+		}
+		
+		public void enroll(final CourseRequestInterface request, final ClassAssignmentInterface assignment, EligibilityCheck eligibility, final Callback<ClassAssignmentInterface> callback) {
+			if (request.getStudentId() == null || (eligibility != null && !eligibility.hasFlag(EligibilityFlag.CAN_ENROLL))) {
 				callback.execute(null, null);
 				return;
 			}
