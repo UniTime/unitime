@@ -67,7 +67,7 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 	
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		Lock lock = server.lockOffering(getOfferingId(), getStudentIds(), false);
+		Lock lock = server.lockOffering(getOfferingId(), getStudentIds(), name());
 		try {
 			helper.getAction().addOther(OnlineSectioningLog.Entity.newBuilder()
 					.setUniqueId(getOfferingId())

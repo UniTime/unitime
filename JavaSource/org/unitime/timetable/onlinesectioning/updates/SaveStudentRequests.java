@@ -87,7 +87,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		Lock lock = server.lockStudent(getStudentId(), null, true);
+		Lock lock = server.lockStudent(getStudentId(), null, name());
 		try {
 			helper.beginTransaction();
 			try {

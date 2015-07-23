@@ -566,6 +566,14 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			setProperty("Reservation.CanAssignOverTheLimit", "true");
 			setProperty("General.SaveDefaultProperties", "false");
 			setProperty("General.StartUpDate", String.valueOf(new Date().getTime()));
+			setProperty("check-assignment.ExcludeLockedOfferings", "false");
+			setProperty("check-offering.ExcludeLockedOfferings", "false");
+			setProperty("approve-enrollments.ExcludeLockedOfferings", "false");
+			setProperty("reject-enrollments.ExcludeLockedOfferings", "false");
+			setProperty("status-change.LockOfferings", "false");
+			setProperty("student-email.LockOfferings", "false");
+			setProperty("eligibility.LockOfferings", "false");
+			
 			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 			try {
 				for (SolverParameterDef def: (List<SolverParameterDef>)hibSession.createQuery(

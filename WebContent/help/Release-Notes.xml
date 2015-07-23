@@ -118,6 +118,18 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling: Locking</name>
+			<description>
+				<line>Added ability to tune the locking using application properties.</line>
+				<line>For each action, it is possible to specify if the student as well as the related offerings should be locked.</line>
+				<line>By default, the following operations no longer lock offerings (they only lock the student): eligibility, status-change, student-email.</line>
+				<line>The locking can be changed by the following properties:
+					<line>unitime.sectioning.config.X.LockOfferings (include offerings in the lock for the action named X)</line>
+					<line>unitime.sectioning.config.X.LockStudents  (include student in the lock for the action named X)</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
