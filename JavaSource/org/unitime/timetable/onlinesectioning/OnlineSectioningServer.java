@@ -112,14 +112,15 @@ public interface OnlineSectioningServer {
 	
 	@CheckMaster(Master.REQUIRED)
 	public Lock lockAll();
-	@CheckMaster(Master.REQUIRED)
-	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings);
 	
 	@CheckMaster(Master.REQUIRED)
-	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering);
+	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, String actionName);
 	
 	@CheckMaster(Master.REQUIRED)
-	public Lock lockRequest(CourseRequestInterface request);
+	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, String actionName);
+	
+	@CheckMaster(Master.REQUIRED)
+	public Lock lockRequest(CourseRequestInterface request, String actionName);
 	
 	public boolean isOfferingLocked(Long offeringId);
 	

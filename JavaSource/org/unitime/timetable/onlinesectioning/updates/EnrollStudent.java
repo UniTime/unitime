@@ -148,7 +148,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			}
 		};
 		
-		Lock lock = server.lockStudent(getStudentId(), offeringIds, true);
+		Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
 		try {
 			helper.beginTransaction();
 			try {

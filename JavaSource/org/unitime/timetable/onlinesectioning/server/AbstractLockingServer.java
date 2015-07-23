@@ -107,25 +107,33 @@ public abstract class AbstractLockingServer extends AbstractServer {
 	}
 	
 	@Override
-	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings) {
+	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, String actionName) {
 		Set<Long> ids = new HashSet<Long>();
+		boolean lockStudents = getConfig().getPropertyBoolean(actionName + ".LockStudents", true);
+		boolean lockOfferings = getConfig().getPropertyBoolean(actionName + ".LockOfferings", true);
+		boolean excludeLockedOfferings = lockOfferings && getConfig().getPropertyBoolean(actionName + ".ExcludeLockedOfferings", true);
 		iLock.readLock().lock();
 		try {
-			ids.add(-studentId);
-			if (offeringIds != null)
-				for (Long offeringId: offeringIds)
+			if (lockStudents) {
+				ids.add(-studentId);
+			}
+			
+			if (lockOfferings) {
+				if (offeringIds != null)
+					for (Long offeringId: offeringIds)
 					if (!excludeLockedOfferings || !isOfferingLocked(offeringId))
 						ids.add(offeringId);
-			
-			XStudent student = getStudent(studentId);
-			
-			if (student != null)
-				for (XRequest r: student.getRequests()) {
-					if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
-						Long offeringId = ((XCourseRequest)r).getEnrollment().getOfferingId();
-						if (!excludeLockedOfferings || !isOfferingLocked(offeringId)) ids.add(offeringId);
+				
+				XStudent student = getStudent(studentId);
+				
+				if (student != null)
+					for (XRequest r: student.getRequests()) {
+						if (r instanceof XCourseRequest && ((XCourseRequest)r).getEnrollment() != null) {
+							Long offeringId = ((XCourseRequest)r).getEnrollment().getOfferingId();
+							if (!excludeLockedOfferings || !isOfferingLocked(offeringId)) ids.add(offeringId);
+						}
 					}
-				}
+			}
 		} finally {
 			iLock.readLock().unlock();
 		}
@@ -133,21 +141,28 @@ public abstract class AbstractLockingServer extends AbstractServer {
 	}
 	
 	@Override
-	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering) {
+	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, String actionName) {
 		Set<Long> ids = new HashSet<Long>();
+		boolean lockStudents = getConfig().getPropertyBoolean(actionName + ".LockStudents", true);
+		boolean lockOfferings = getConfig().getPropertyBoolean(actionName + ".LockOfferings", true);
+		boolean excludeLockedOffering = lockOfferings && getConfig().getPropertyBoolean(actionName + ".ExcludeLockedOfferings", true);
 		iLock.readLock().lock();
 		try {
-			if (!excludeLockedOffering || !isOfferingLocked(offeringId))
-				ids.add(offeringId);
+			if (lockOfferings) {
+				if (!excludeLockedOffering || !isOfferingLocked(offeringId))
+					ids.add(offeringId);
+			}
 			
-			if (studentIds != null)
-				for (Long studentId: studentIds)
-				ids.add(-studentId);
-			
-			Collection<XCourseRequest> requests = getRequests(offeringId);
-			if (requests != null) {
-				for (XCourseRequest request: requests)
-					ids.add(-request.getStudentId());
+			if (lockStudents) {
+				if (studentIds != null)
+					for (Long studentId: studentIds)
+					ids.add(-studentId);
+				
+				Collection<XCourseRequest> requests = getRequests(offeringId);
+				if (requests != null) {
+					for (XCourseRequest request: requests)
+						ids.add(-request.getStudentId());
+				}
 			}
 		} finally {
 			iLock.readLock().unlock();
@@ -161,38 +176,46 @@ public abstract class AbstractLockingServer extends AbstractServer {
 		return (c == null ? null : c.getOfferingId());
 	}
 	
-	public Lock lockRequest(CourseRequestInterface request) {
+	public Lock lockRequest(CourseRequestInterface request, String actionName) {
 		Set<Long> ids = new HashSet<Long>();
+		boolean lockStudents = getConfig().getPropertyBoolean(actionName + ".LockStudents", true);
+		boolean lockOfferings = getConfig().getPropertyBoolean(actionName + ".LockOfferings", true);
+		boolean excludeLockedOffering = lockOfferings && getConfig().getPropertyBoolean(actionName + ".ExcludeLockedOfferings", true);
 		iLock.readLock().lock();
 		try {
-			if (request.getStudentId() != null)
-				ids.add(-request.getStudentId());
-			for (CourseRequestInterface.Request r: request.getCourses()) {
-				if (r.hasRequestedCourse()) {
-					Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasFirstAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasSecondAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
-					if (id != null) ids.add(id);
-				}
+			if (lockStudents) {
+				if (request.getStudentId() != null)
+					ids.add(-request.getStudentId());
 			}
-			for (CourseRequestInterface.Request r: request.getAlternatives()) {
-				if (r.hasRequestedCourse()) {
-					Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
-					if (id != null) ids.add(id);
+			
+			if (lockOfferings) {
+				for (CourseRequestInterface.Request r: request.getCourses()) {
+					if (r.hasRequestedCourse()) {
+						Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
+					if (r.hasFirstAlternative()) {
+						Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
+					if (r.hasSecondAlternative()) {
+						Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
 				}
-				if (r.hasFirstAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
-					if (id != null) ids.add(id);
-				}
-				if (r.hasSecondAlternative()) {
-					Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
-					if (id != null) ids.add(id);
+				for (CourseRequestInterface.Request r: request.getAlternatives()) {
+					if (r.hasRequestedCourse()) {
+						Long id = getOfferingIdFromCourseName(r.getRequestedCourse());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
+					if (r.hasFirstAlternative()) {
+						Long id = getOfferingIdFromCourseName(r.getFirstAlternative());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
+					if (r.hasSecondAlternative()) {
+						Long id = getOfferingIdFromCourseName(r.getSecondAlternative());
+						if (id != null && (!excludeLockedOffering || !isOfferingLocked(id))) ids.add(id);
+					}
 				}
 			}
 		} finally {

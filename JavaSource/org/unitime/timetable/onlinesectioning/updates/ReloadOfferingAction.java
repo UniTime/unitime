@@ -121,7 +121,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					"co.instructionalOffering.uniqueId = :offeringId").setLong("offeringId", offeringId).list();
 			*/
 			
-			Lock lock = server.lockOffering(offeringId, studentIds, true);
+			Lock lock = server.lockOffering(offeringId, studentIds, name());
 			try {
 				helper.beginTransaction();
 				try {

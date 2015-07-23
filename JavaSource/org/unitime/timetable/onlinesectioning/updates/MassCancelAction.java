@@ -111,7 +111,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 		};
 		
 		for (Long studentId: getStudentIds()) {
-			Lock lock = server.lockStudent(studentId, null, true);
+			Lock lock = server.lockStudent(studentId, null, name());
 			try {
 				helper.beginTransaction();
 				try {

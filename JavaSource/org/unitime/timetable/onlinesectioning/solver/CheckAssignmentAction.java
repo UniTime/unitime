@@ -80,7 +80,7 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 					if (course != null) offeringIds.add(course.getOfferingId());
 				}
 			
-			Lock lock = server.lockStudent(getStudentId(), offeringIds, false);
+			Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
 			try {
 				return check(server, helper);
 			} finally {

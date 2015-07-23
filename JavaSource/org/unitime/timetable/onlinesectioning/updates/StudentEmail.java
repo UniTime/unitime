@@ -148,7 +148,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 	@Override
 	public Boolean execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
-		Lock lock = server.lockStudent(getStudentId(), null, true);
+		Lock lock = server.lockStudent(getStudentId(), null, name());
 		try {
 			OnlineSectioningLog.Action.Builder action = helper.getAction();
 			action.setStudent(

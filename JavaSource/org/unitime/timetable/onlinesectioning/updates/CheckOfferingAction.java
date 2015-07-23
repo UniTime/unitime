@@ -101,7 +101,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 				if (server.isOfferingLocked(offeringId)) continue;
 				
 				// lock and check the offering
-				Lock lock = server.lockOffering(offeringId, null, false);
+				Lock lock = server.lockOffering(offeringId, null, name());
 				try {
 					helper.beginTransaction();
 

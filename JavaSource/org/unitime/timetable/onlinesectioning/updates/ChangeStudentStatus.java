@@ -67,7 +67,7 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 		StudentSectioningStatus status = (hasStatus() ? (StudentSectioningStatus)helper.getHibSession().createQuery(
 				"from StudentSectioningStatus where reference = :ref").setString("ref", getStatus()).uniqueResult() : null);
 		for (Long studentId: getStudentIds()) {
-			Lock lock = server.lockStudent(studentId, null, true);
+			Lock lock = server.lockStudent(studentId, null, name());
 			try {
 				XStudent student = server.getStudent(studentId);
 				helper.beginTransaction();

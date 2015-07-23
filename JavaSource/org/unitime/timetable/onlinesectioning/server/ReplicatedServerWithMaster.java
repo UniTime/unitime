@@ -444,30 +444,30 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 	*/
 	
 	@Override
-	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, boolean excludeLockedOfferings) {
+	public Lock lockStudent(Long studentId, Collection<Long> offeringIds, String actionName) {
 		if (!isMaster()) {
 			iLog.warn("Failed to lock a student " + studentId + ": not executed on master.");
 			return new NoLock();
 		}
-		return new FlushLock(super.lockStudent(studentId, offeringIds, excludeLockedOfferings));
+		return new FlushLock(super.lockStudent(studentId, offeringIds, actionName));
 	}
 
 	@Override
-	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, boolean excludeLockedOffering) {
+	public Lock lockOffering(Long offeringId, Collection<Long> studentIds, String actionName) {
 		if (!isMaster()) {
 			iLog.warn("Failed to lock an offering " + offeringId + ": not executed on master.");
 			return new NoLock();
 		}
-		return new FlushLock(super.lockOffering(offeringId, studentIds, excludeLockedOffering));
+		return new FlushLock(super.lockOffering(offeringId, studentIds, actionName));
 	}
 	
 	@Override
-	public Lock lockRequest(CourseRequestInterface request) {
+	public Lock lockRequest(CourseRequestInterface request, String actionName) {
 		if (!isMaster()) {
 			iLog.warn("Failed to lock a request for student " + request.getStudentId() + ": not executed on master.");
 			return new NoLock();
 		}
-		return new FlushLock(super.lockRequest(request));
+		return new FlushLock(super.lockRequest(request, actionName));
 	}
 	
 	@Override
