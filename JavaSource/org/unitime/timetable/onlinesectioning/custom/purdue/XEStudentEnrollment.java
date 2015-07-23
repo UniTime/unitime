@@ -281,6 +281,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				for (String s: sectionExternalIds)
 					removed += (removed.isEmpty() ? "" : ", ") + s;
 				if (!added.isEmpty() || !removed.isEmpty()) {
+					if (updateStudentRegistration(server, helper, student, current.get(0).registrations)) return;
 					check.setMessage("UniTime enrollment data are not synchronized with Banner enrollment data, please try again later" +
 							" (" + (removed.isEmpty() ? "added " + added : added.isEmpty() ? "dropped " + removed : "added " + added + ", dropped " + removed) + ")");
 					check.setFlag(EligibilityFlag.CAN_ENROLL, false);
@@ -662,6 +663,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 
 	@Override
 	public boolean requestUpdate(OnlineSectioningServer server, OnlineSectioningHelper helper, Collection<XStudent> students) throws SectioningException {
+		return false;
+	}
+	
+	protected boolean updateStudentRegistration(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XEInterface.Registration> registration) throws SectioningException {
 		return false;
 	}
 
