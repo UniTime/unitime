@@ -315,9 +315,6 @@ public class SessionRestore implements SessionRestoreInterface {
 	}
 	
 	protected Object get(Class clazz, String id) {
-		if (clazz.equals(Location.class) && id.equals("39125089")) {
-			System.out.println("HERE");
-		}
 		if (clazz.equals(String.class) || clazz.equals(StringType.class)) return id;
 		if (clazz.equals(Character.class) || clazz.equals(CharacterType.class)) return (id == null || id.isEmpty() ? null : id.charAt(0));
 		if (clazz.equals(Byte.class) || clazz.equals(ByteType.class)) return Byte.valueOf(id);
