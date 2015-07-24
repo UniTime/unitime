@@ -48,6 +48,12 @@
 				<line>Avoid inclusing classes that were rejected to be added by the custom student enrollment interface in the consecutive enrollment request.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Configuration</name>
+			<description>
+				<line>Fixed an issue preventing a configuration with two or more levels of parent-child relations from being deleted (ObjectDeletedException).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
