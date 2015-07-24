@@ -1843,56 +1843,19 @@ public class InstructionalOfferingConfigEditAction extends Action {
             int recurseLevel,
             boolean canCancel) {
     	
-        Set childClasses = c.getChildClasses();
-        if (childClasses == null || childClasses.isEmpty()) {
-            if (recurseLevel==1) {
-        		Debug.debug("Deleting class (1) ... " +  c.getClassLabel() + " - " + c.getUniqueId());
-            	if (sessionContext.hasPermission(c, Right.ClassDelete)) {
-            		c.deleteAllDependentObjects(hibSession, false);
-            		hibSession.delete(c);
-            		return true;
-            	} else if (canCancel && sessionContext.hasPermission(c, Right.ClassCancel)) {
-            		c.setCancelled(true);
-            		c.cancelEvent(sessionContext.getUser(), hibSession, true);
-            		hibSession.saveOrUpdate(c);
-            		return false;
-            	} else {
-            		throw new AccessDeniedException("Class " + c.getClassLabel(hibSession) + " cannot be deleted or cancelled.");
-            	}
-            }
+    	Debug.debug("Deleting class (" + recurseLevel + ") ... " +  c.getClassLabel() + " - " + c.getUniqueId());
+
+    	for (Iterator<Class_> i = c.getChildClasses().iterator(); i.hasNext(); ) {
+        	Class_ cc = i.next();
+        	SchedulingSubpart ps = cc.getSchedulingSubpart();
+        	if (deleteChildClasses(cc, hibSession, recurseLevel + 1, canCancel)) {
+        		ps.getClasses().remove(cc);
+        		hibSession.saveOrUpdate(ps);
+        		i.remove();
+        	}
         }
-
-        for (Iterator cci=childClasses.iterator(); cci.hasNext(); ) {
-            Class_ cc = (Class_) cci.next();
-            SchedulingSubpart ps = cc.getSchedulingSubpart();
-            Set psClasses = ps.getClasses();
-            for (Iterator iPs = psClasses.iterator(); iPs.hasNext(); ) {
-                Class_ psCls = (Class_) iPs.next();
-                if (psCls.equals(cc)) {
-                    deleteChildClasses(psCls, hibSession, recurseLevel+1, canCancel);
-                    Debug.debug("Deleting class (2) ... " +  cc.getClassLabel() + " - " + cc.getUniqueId());
-                	if (sessionContext.hasPermission(cc, Right.ClassDelete)) {
-                		cc.deleteAllDependentObjects(hibSession, false);
-                		hibSession.delete(cc);
-                        iPs.remove();
-                	} else if (canCancel && sessionContext.hasPermission(cc, Right.ClassCancel)) {
-                		cc.setCancelled(true);
-                		cc.cancelEvent(sessionContext.getUser(), hibSession, true);
-                		hibSession.saveOrUpdate(cc);
-                	} else {
-                		throw new AccessDeniedException("Class " + c.getClassLabel(hibSession) + " cannot be deleted or cancelled.");
-                	}
-                    hibSession.saveOrUpdate(ps);
-                    hibSession.saveOrUpdate(c);
-                    break;
-                }
-            }
-
-            cci.remove();
-        }
-
-        Debug.debug("Deleting class (3) ... " +  c.getClassLabel() + " - " + c.getUniqueId());
-    	if (sessionContext.hasPermission(c, Right.ClassDelete)) {
+        
+        if (sessionContext.hasPermission(c, Right.ClassDelete)) {
     		c.deleteAllDependentObjects(hibSession, false);
     		hibSession.delete(c);
     		return true;
