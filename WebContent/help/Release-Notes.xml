@@ -47,6 +47,12 @@
 				<line>Undo the swap if it was not improving (this fixes the problem that could cause student sectioning to hang).</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Configuration</name>
+			<description>
+				<line>Fixed an issue preventing a configuration with two or more levels of parent-child relations from being deleted (ObjectDeletedException).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>

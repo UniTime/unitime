@@ -1821,42 +1821,20 @@ public class InstructionalOfferingConfigEditAction extends Action {
             Class_ c,
             org.hibernate.Session hibSession,
             int recurseLevel) {
-
-        Set childClasses = c.getChildClasses();
-        if (childClasses==null || childClasses.size()==0) {
-            if (recurseLevel==1) {
-                Debug.debug("Deleting class (1) ... " +  c.getClassLabel() + " - " + c.getUniqueId());
-                c.deleteAllDependentObjects(hibSession, false);
-                hibSession.delete(c);
-            }
-            return;
+    	
+    	Debug.debug("Deleting class (" + recurseLevel + ") ... " +  c.getClassLabel() + " - " + c.getUniqueId());
+    	
+    	for (Iterator<Class_> i = c.getChildClasses().iterator(); i.hasNext(); ) {
+        	Class_ cc = i.next();
+        	SchedulingSubpart ps = cc.getSchedulingSubpart();
+        	deleteChildClasses(cc, hibSession, recurseLevel + 1);
+        	ps.getClasses().remove(cc);
+        	hibSession.saveOrUpdate(ps);
+        	i.remove();
         }
-
-        for (Iterator cci=childClasses.iterator(); cci.hasNext(); ) {
-            Class_ cc = (Class_) cci.next();
-            SchedulingSubpart ps = cc.getSchedulingSubpart();
-            Set psClasses = ps.getClasses();
-            for (Iterator iPs = psClasses.iterator(); iPs.hasNext(); ) {
-                Class_ psCls = (Class_) iPs.next();
-                if (psCls.equals(cc)) {
-                    deleteChildClasses(psCls, hibSession, recurseLevel+1);
-                    Debug.debug("Deleting class (2) ... " +  cc.getClassLabel() + " - " + cc.getUniqueId());
-                    cc.deleteAllDependentObjects(hibSession, false);
-                    hibSession.delete(cc);
-                    iPs.remove();
-                    hibSession.saveOrUpdate(ps);
-                    hibSession.saveOrUpdate(c);
-                    break;
-                }
-            }
-
-            cci.remove();
-        }
-
-        Debug.debug("Deleting class (3) ... " +  c.getClassLabel() + " - " + c.getUniqueId());
-        c.deleteAllDependentObjects(hibSession, false);
+    	
+    	c.deleteAllDependentObjects(hibSession, false);
         hibSession.delete(c);
-        //hibSession.flush();
     }
 
     public void setParentClass(
