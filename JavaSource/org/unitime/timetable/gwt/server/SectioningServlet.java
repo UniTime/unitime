@@ -102,6 +102,7 @@ import org.unitime.timetable.onlinesectioning.basic.CheckEligibility;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.basic.ListClasses;
+import org.unitime.timetable.onlinesectioning.basic.ListCourseOfferings;
 import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
@@ -110,7 +111,6 @@ import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
 import org.unitime.timetable.onlinesectioning.match.AbstractCourseMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
-import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentAction;
@@ -235,40 +235,21 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 			return results;
 		} else {
-			ArrayList<ClassAssignmentInterface.CourseAssignment> ret = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
+			Collection<ClassAssignmentInterface.CourseAssignment> results = null;
 			try {
-				for (XCourseId id: server.findCourses(query, limit, matcher)) {
-					XCourse c = server.getCourse(id.getCourseId());
-					if (c == null) continue;
-					CourseAssignment course = new CourseAssignment();
-					course.setCourseId(c.getCourseId());
-					course.setSubject(c.getSubjectArea());
-					course.setCourseNbr(c.getCourseNumber());
-					course.setNote(c.getNote());
-					course.setCreditAbbv(c.getCreditAbbv());
-					course.setCreditText(c.getCreditText());
-					course.setTitle(c.getTitle());
-					course.setHasUniqueName(c.hasUniqueName());
-					course.setLimit(c.getLimit());
-					Collection<XCourseRequest> requests = server.getRequests(c.getOfferingId());
-					if (requests != null) {
-						int enrl = 0;
-						for (XCourseRequest r: requests)
-							if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(course.getCourseId()))
-								enrl ++;
-						course.setEnrollment(enrl);
-					}
-					ret.add(course);
-				}
+				results = server.execute(server.createAction(ListCourseOfferings.class).forQuery(query).withLimit(limit).withMatcher(matcher), currentUser());
+			} catch (PageAccessException e) {
+				throw e;
+			} catch (SectioningException e) {
+				throw e;
 			} catch (Exception e) {
-				if (e instanceof SectioningException) throw (SectioningException)e;
 				sLog.error(e.getMessage(), e);
 				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 			}
-			if (ret.isEmpty()) {
+			if (results == null || results.isEmpty()) {
 				throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
 			}
-			return ret;
+			return results;
 		}
 	}
 	
