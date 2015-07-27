@@ -198,8 +198,6 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		// Existing offering
 		XOffering oldOffering = server.getOffering(offeringId);
 		XEnrollments oldEnrollments = server.getEnrollments(offeringId); 
-		if (oldOffering != null)
-			server.remove(oldOffering);
 		
 		// New offering
 		XOffering newOffering = null;
@@ -235,6 +233,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			newOffering = ReloadAllData.loadOffering(io, distributions, server, helper);
 			if (newOffering != null)
 				server.update(newOffering);
+			else if (oldOffering != null)
+				server.remove(oldOffering);
 			
 			// Load sectioning info
         	List<Object[]> infos = helper.getHibSession().createQuery(
@@ -247,6 +247,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
         		expectations.setExpectedSpace(sectionId, expected);
         	}
         	server.update(expectations);
+		} else if (oldOffering != null) {
+			server.remove(oldOffering);
 		}
 		
 		List<XStudent[]> students = new ArrayList<XStudent[]>();
@@ -256,24 +258,25 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			for (XRequest old: oldEnrollments.getRequests()) {
 				if (!checked.add(old.getStudentId())) continue;
 				XStudent oldStudent = server.getStudent(old.getStudentId());
-				server.remove(oldStudent);
 				org.unitime.timetable.model.Student student = newStudents.get(oldStudent.getStudentId());
 				if (student == null)
 					student = StudentDAO.getInstance().get(oldStudent.getStudentId(), helper.getHibSession());
 				XStudent newStudent = (student == null ? null : ReloadAllData.loadStudent(student, null, server, helper));
 				if (newStudent != null)
 					server.update(newStudent, true);
+				else
+					server.remove(oldStudent);
 				students.add(new XStudent[] {oldStudent, newStudent});
 				newStudents.remove(oldStudent.getStudentId());
 			}	
 		}
 		for (org.unitime.timetable.model.Student student: newStudents.values()) {
 			XStudent oldStudent = server.getStudent(student.getUniqueId());
-			if (oldStudent != null)
-				server.remove(oldStudent);
 			XStudent newStudent = ReloadAllData.loadStudent(student, null, server, helper);
 			if (newStudent != null)
 				server.update(newStudent, true);
+			else if (oldStudent != null)
+				server.remove(oldStudent);
 			students.add(new XStudent[] {oldStudent, newStudent});
 		}
 		
