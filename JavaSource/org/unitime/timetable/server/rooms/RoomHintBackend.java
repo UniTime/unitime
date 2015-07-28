@@ -102,7 +102,7 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    	response.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
 	    	
 	    	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getPictures()))
-	    		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType()));
+	    		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime()));
 	    	
 	    	return response;
 		} else {

@@ -35,7 +35,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
-import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
+import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
+import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
@@ -54,6 +55,7 @@ import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.LocationPicture;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
@@ -116,11 +118,25 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     	boolean courses = context.hasPermission(Right.InstructionalOfferings) || context.hasPermission(Right.Classes);
     	boolean exams = context.hasPermission(Right.Examinations);
     	boolean events = context.hasPermission(Right.Events);
+    	boolean editPermissions = request.hasOption("id");
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null)) {
 			Double dist = distances.get(location.getUniqueId());
-			Entity e = load(location, department, html, context, filterDepartments, types, courses, exams, events);
+			RoomDetailInterface e = load(location, department, html, context, filterDepartments, types, courses, exams, events, editPermissions);
+			if (editPermissions) {
+				RoomSharingBackend rsb = new RoomSharingBackend();
+				if (e.isCanSeeEventAvailability())
+					e.setEventAvailabilityModel(rsb.loadEventAvailability(location, context));
+				if (e.isCanSeeAvailability())
+					e.setRoomSharingModel(rsb.loadRoomSharing(location, true, context));
+				if (e.isCanSeePeriodPreferences()) {
+					PeriodPreferencesBackend ppb = new PeriodPreferencesBackend();
+					for (ExamType type: types) {
+						e.setPeriodPreferenceModel(ppb.loadPeriodPreferences(location, type, context));
+					}
+				}
+			}
 			e.setProperty("permId", location.getPermanentId().toString());
 			if (dist != null)
 				e.setProperty("distance", String.valueOf(dist == null ? 0l : Math.round(dist)));
@@ -137,6 +153,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		department.setAbbreviation(d.getAbbreviation());
 		department.setLabel(d.getName());
 		department.setExternal(d.isExternalManager());
+		department.setEvent(d.isAllowEvents());
 		department.setExtAbbreviation(d.getExternalMgrAbbv());
 		department.setExtLabel(d.getExternalMgrLabel());
 		department.setTitle(d.getLabel());
@@ -147,30 +164,49 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		return department;
 	}
 	
-	protected RoomDetailInterface load(Location location, String department, boolean html, SessionContext context, boolean filterDepartments, List<ExamType> types, boolean courses, boolean exams, boolean events) {
+	protected RoomDetailInterface load(Location location, String department, boolean html, SessionContext context, boolean filterDepartments, List<ExamType> types, boolean courses, boolean exams, boolean events, boolean editPermissions) {
 		RoomDetailInterface response = new RoomDetailInterface(location.getUniqueId(), location.getDisplayName(), location.getLabel());
 		
 		response.setCanShowDetail(context.hasPermission(location, Right.RoomDetail));
 		response.setCanSeeAvailability(context.hasPermission(location, Right.RoomDetailAvailability));
 		response.setCanSeeEventAvailability(context.hasPermission(location, Right.RoomDetailEventAvailability));
 		response.setCanSeePeriodPreferences(context.hasPermission(location, Right.RoomDetailPeriodPreferences));
-		response.setCanChange(context.hasPermission(location, Right.RoomEdit));
-		if (response.isCanChange()) {
-			response.setCanChangeAvailability(context.hasPermission(location, Right.RoomEditAvailability));
-			response.setCanChangeCapacity(context.hasPermission(location, Right.RoomEditChangeCapacity));
-			response.setCanChangeControll(context.hasPermission(location, Right.RoomEditChangeControll));
-			response.setCanChangeEventAvailability(context.hasPermission(location, Right.RoomEditEventAvailability));
-			response.setCanChangeEventProperties(context.hasPermission(location, Right.RoomEditChangeEventProperties));
-			response.setCanChangeExamStatus(context.hasPermission(location, Right.RoomEditChangeExaminationStatus));
-			response.setCanChangeExternalId(context.hasPermission(location, Right.RoomEditChangeExternalId));
+		if (location instanceof Room) {
+			response.setCanChange(context.hasPermission(location, Right.RoomEdit));
+		} else {
+			response.setCanChange(context.hasPermission(location, Right.NonUniversityLocationEdit));
+		}
+		if (editPermissions) {
+			if (response.isCanChange()) {
+				response.setCanChangeCapacity(context.hasPermission(location, Right.RoomEditChangeCapacity));
+				response.setCanChangeControll(context.hasPermission(location, Right.RoomEditChangeControll));
+				response.setCanChangeEventProperties(context.hasPermission(location, Right.RoomEditChangeEventProperties));
+				response.setCanChangeExamStatus(context.hasPermission(location, Right.RoomEditChangeExaminationStatus));
+				response.setCanChangeExternalId(context.hasPermission(location, Right.RoomEditChangeExternalId));
+				response.setCanChangeRoomProperties(context.hasPermission(location, Right.RoomEditChangeRoomProperties));
+				response.setCanChangeType(context.hasPermission(location, Right.RoomEditChangeType));
+			}
 			response.setCanChangeFeatures(context.hasPermission(location, Right.RoomEditFeatures) || context.hasPermission(location, Right.RoomEditGlobalFeatures));
 			response.setCanChangeGroups(context.hasPermission(location, Right.RoomEditGroups) || context.hasPermission(location, Right.RoomEditGlobalGroups));
+			response.setCanChangeEventAvailability(context.hasPermission(location, Right.RoomEditEventAvailability));
+			response.setCanChangeAvailability(context.hasPermission(location, Right.RoomEditAvailability));
 			response.setCanChangePicture(context.hasPermission(location, Right.RoomEditChangePicture));
 			response.setCanChangePreferences(context.hasPermission(location, Right.RoomEditPreference));
-			response.setCanChangeRoomProperties(context.hasPermission(location, Right.RoomEditChangeRoomProperties));
-			response.setCanChangeType(context.hasPermission(location, Right.RoomEditChangeType));
+			if (location instanceof Room) {
+				response.setCanDelete(context.hasPermission(location, Right.RoomDelete));
+			} else {
+				response.setCanDelete(context.hasPermission(location, Right.NonUniversityLocationDelete));
+			}
 		}
-		response.setCanDelete(context.hasPermission(location, Right.RoomDelete));
+		
+		if (location instanceof Room) {
+			Room room = (Room)location;
+			Building b = room.getBuilding(); 
+			BuildingInterface building = new BuildingInterface(b.getUniqueId(), b.getAbbreviation(), b.getName());
+			building.setX(b.getCoordinateX()); building.setY(b.getCoordinateY());
+			response.setBuilding(building);
+			response.setName(room.getRoomNumber());
+		}
 		
 		response.setExternalId(location.getExternalUniqueId());
 		response.setRoomType(new RoomTypeInterface(location.getRoomType().getUniqueId(), location.getRoomType().getLabel(), location.getRoomType().isRoom()));
@@ -209,9 +245,9 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     	if (courses) {
         	response.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
         	response.setIgnoreTooFar(location.isIgnoreTooFar());
-
+        	
         	for (RoomDept rd: location.getRoomDepts()) {
-        		DepartmentInterface d = wrap(rd.getDepartment(), location, location.getRoomPreferenceLevel(rd.getDepartment()));
+        		DepartmentInterface d = wrap(rd.getDepartment(), location, rd.getPreference());
         		response.addDepartment(d);
         		if (rd.isControl())
         			response.setControlDepartment(d);
@@ -277,7 +313,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     				.replace("%i", location.getExternalUniqueId() == null ? "" : location.getExternalUniqueId()));
     	
     	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getPictures()))
-    		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType()));
+    		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime()));
     	
     	if (context.hasPermission(Right.HasRole) && CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.DisplayLastChanges))) {
     		ChangeLog lch = ChangeLog.findLastChange(location.getClass().getName(), location.getUniqueId(), null);

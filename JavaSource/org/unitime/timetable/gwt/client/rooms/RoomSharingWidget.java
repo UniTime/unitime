@@ -20,7 +20,9 @@
 package org.unitime.timetable.gwt.client.rooms;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -32,11 +34,15 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.RoomInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingDisplayMode;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingModel;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingOption;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.OptionElement;
+import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -84,8 +90,13 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 	private RoomSharingModel iModel;
 	protected boolean iEditable = true;
 	private TextArea iNote = null;
+	private Set<Long> iAddedOptions = new HashSet<Long>();
 	
 	public RoomSharingWidget(boolean editable) {
+		this(editable, true);
+	}
+	
+	public RoomSharingWidget(boolean editable, boolean includeNote) {
 		iEditable = editable;
 		VerticalPanel container = new VerticalPanel();
 		
@@ -121,7 +132,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		iPanel.setStyleName("unitime-RoomSharingWidget");
 		container.add(iPanel);
 		
-		if (iEditable) {
+		if (iEditable && includeNote) {
 			iNote = new TextArea();
 			iNote.setStyleName("unitime-TextArea");
 			iNote.setVisibleLines(10);
@@ -144,6 +155,10 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		return iEditable && iModel != null && iModel.isEditable();
 	}
 	
+	public void setEditable(boolean editable) {
+		iEditable = editable;
+	}
+	
 	public boolean isEditable(RoomSharingOption option) {
 		return isEditable() && option.isEditable();
 	}
@@ -159,7 +174,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 	public void setModel(RoomSharingModel model) {
 		iModel = model;
 		
-		if (iEditable && iModel.isNoteEditable())
+		if (iEditable && iModel.isNoteEditable() && iNote != null)
 			iNote.setValue(iModel.hasNote() ? iModel.getNote() : "");
 		
 		iModeSelection.clear();
@@ -251,6 +266,31 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				setTitle(CONSTANTS.longDays()[iDay] + " " + slot2short(iSlot) + " - " + slot2short(iSlot + iMode.getStep()) + ": " + option.getName());
 			}
 			ValueChangeEvent.fire(RoomSharingWidget.this, getValue());
+		}
+	}
+	
+	protected void addPreferenceIfNeeded(P line, final RoomSharingOption option) {
+		if (option.hasPreference() && iModel.getPreferences() != null) {
+			final ListBox pref = new ListBox();
+			pref.addStyleName("preference");
+			for (PreferenceInterface p: iModel.getPreferences()) {
+				pref.addItem(p.getName(), p.getId().toString());
+			}
+			SelectElement selectElement = SelectElement.as(pref.getElement());
+			NodeList<OptionElement> items = selectElement.getOptions();
+			for (int i = 0; i < items.getLength(); i++) {
+				PreferenceInterface p = iModel.getPreferences().get(i);
+				if (p.getColor() != null)
+					items.getItem(i).getStyle().setBackgroundColor(p.getColor());
+				if (items.getItem(i).getValue().equals(option.getPreference().toString())) pref.setSelectedIndex(i);
+			}
+			pref.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					option.setPreference(iModel.getPreferences().get(pref.getSelectedIndex()).getId());
+				}
+			});
+			line.add(pref);
 		}
 	}
 	
@@ -406,6 +446,8 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			final P title = new P("title", isEditable(option) ? "editable-title" : null); title.setHTML(option.getName());
 			line.add(title);
 			
+			addPreferenceIfNeeded(line, option);
+			
 			if (option.getId() >= 0 && isEditable(option)) {
 				Image remove = new Image(RESOURCES.delete());
 				remove.addStyleName("remove");
@@ -451,7 +493,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			box.add(line);
 		}
 		
-		if (iEditable && iModel.isNoteEditable()) {
+		if (iEditable && iModel.isNoteEditable() && iNote != null) {
 			P note = new P("note");
 			legend.add(note);
 			P label = new P("label"); label.setText(MESSAGES.propRoomAvailabilityNote());
@@ -490,7 +532,6 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 					
 					final P title = new P("title", "editable-title"); title.setHTML(option.getName());
 					line.add(title);
-					
 					
 					Image add = new Image(RESOURCES.add());
 					add.addStyleName("remove");
@@ -639,5 +680,31 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		setModel(value);
 		if (fireEvents)
 			ValueChangeEvent.fire(this, getValue());
+	}
+	
+	public boolean removeOption(Long id) {
+		if (!isEditable() || iModel == null) return false;
+		RoomSharingOption option = iModel.getOption(id);
+		if (option != null && option.getId() > 0 && option.isEditable() && iAddedOptions.remove(id) && iModel.countOptions(id) == 0) {
+			iModel.getOptions().remove(option);
+			iOption = iModel.getDefaultOption();
+			setMode(iMode, iHorizontal.getValue());
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean addOption(Long optionId) {
+		if (!isEditable() || iModel == null) return false;
+		for (RoomSharingOption option : iModel.getAdditionalOptions()) {
+			if (option.getId().equals(optionId) && option.isEditable()) {
+				iAddedOptions.add(optionId);
+				iModel.getOptions().add(option);
+				iOption = option;
+				setMode(iMode, iHorizontal.getValue());
+				return true;
+			}
+		}
+		return false;
 	}
 }

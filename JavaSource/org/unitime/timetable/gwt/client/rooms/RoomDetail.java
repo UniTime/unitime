@@ -143,7 +143,7 @@ public class RoomDetail extends Composite {
 
 		iHeader.clearMessage();
 		iHeader.setHeaderTitle(iRoom.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : iRoom.getLabel());
-		// iHeader.setEnabled("edit", iRoom.isCanChange());
+		iHeader.setEnabled("edit", iRoom.isCanChange());
 		iHeader.setEnabled("previous", getPrevious(iRoom.getUniqueId()) != null);
 		iHeader.setEnabled("next", getNext(iRoom.getUniqueId()) != null);
 		iForm.addHeaderRow(iHeader);
@@ -159,7 +159,7 @@ public class RoomDetail extends Composite {
 		if (iRoom.getCapacity() != null)
 			iForm.addRow(MESSAGES.propCapacity(), new Label(iRoom.getCapacity().toString()), 1);
 		if (exams && (iRoom.getExamCapacity() != null || iRoom.hasExamTypes()))
-			iForm.addRow(MESSAGES.propExamCapacity(), new Label(iRoom.getExamCapacity().toString()), 1);
+			iForm.addRow(MESSAGES.propExamCapacity(), new ExamSeatingCapacityLabel(iRoom), 1);
 		if (courses && iRoom.getControlDepartment() != null)
 			iForm.addRow(MESSAGES.propControllingDepartment(), new Label(RoomDetail.toString(iRoom.getControlDepartment())), 1);
 		if (iRoom.hasCoordinates())
@@ -198,7 +198,7 @@ public class RoomDetail extends Composite {
 		List<GroupInterface> departmentalGroups = iRoom.getDepartmentalGroups(null);
 		if (!departmentalGroups.isEmpty())
 			iForm.addRow(MESSAGES.propDepartmenalGroups(), new GroupsCell(departmentalGroups), 1);
-		List<FeatureInterface> features = iRoom.getFeatures(null);
+		List<FeatureInterface> features = iRoom.getFeatures((Long)null);
 		if (!features.isEmpty())
 			iForm.addRow(MESSAGES.propFeatures(), new FeaturesCell(features), 1);
 		if (iProperties != null) {
@@ -319,13 +319,17 @@ public class RoomDetail extends Composite {
 	
 	static class GroupsCell extends P {
 		GroupsCell(List<? extends GroupInterface> groups) {
+			this(groups, true);
+		}
+		
+		GroupsCell(List<? extends GroupInterface> groups, boolean department) {
 			super();
 			setStyleName("groups");
 			for (GroupInterface group: groups) {
 				P p = new P("group");
 				p.setText(group.getLabel());
 				if (group.getTitle() != null) p.setTitle(group.getTitle());
-				if (group.getDepartment() != null)
+				if (group.getDepartment() != null && department)
 					p.setText(group.getLabel() + " (" + RoomDetail.toString(group.getDepartment()) + ")");
 				add(p);
 			}

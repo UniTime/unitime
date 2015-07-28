@@ -37,9 +37,12 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -62,13 +65,21 @@ public class PeriodPreferencesBackend implements GwtRpcImplementation<PeriodPref
 	}
 	
 	public PeriodPreferenceModel loadPeriodPreferences(PeriodPreferenceRequest request, SessionContext context) {
-		PeriodPreferenceModel model = new PeriodPreferenceModel();
-		Location location = LocationDAO.getInstance().get(request.getLocationId());
+		Location location = (request.getLocationId() == null ? null : LocationDAO.getInstance().get(request.getLocationId()));
 		ExamType type = ExamTypeDAO.getInstance().get(request.getExamTypeId());
-		model.setLocationId(location.getUniqueId());
+		context.checkPermission(location, Right.RoomDetailPeriodPreferences);
+		return loadPeriodPreferences(location, type, context);
+	}
+	
+	public PeriodPreferenceModel loadPeriodPreferences(Location location, ExamType type, SessionContext context) {
+		PeriodPreferenceModel model = new PeriodPreferenceModel();
+		Session session = (location == null ? SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()) : location.getSession());
+		if (location != null) {
+			model.setLocationId(location.getUniqueId());
+		}
 		model.setExamType(new ExamTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.getType() == ExamType.sExamTypeFinal));
-		model.setFirstDate(location.getSession().getExamBeginDate());
-		for (ExamPeriod period: (Set<ExamPeriod>)ExamPeriod.findAll(location.getSession().getUniqueId(), type)) {
+		model.setFirstDate(session.getExamBeginDate());
+		for (ExamPeriod period: (Set<ExamPeriod>)ExamPeriod.findAll(session.getUniqueId(), type)) {
 			model.addPeriod(new PeriodInterface(period.getUniqueId(), period.getDateOffset(), period.getStartSlot(), period.getLength()));
 		}
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(model.getPeriods().size() < model.getDays().size() * model.getSlots().size())) {
@@ -78,16 +89,31 @@ public class PeriodPreferencesBackend implements GwtRpcImplementation<PeriodPref
 			model.addPreference(p);
 			
 		}
-		for (Iterator i=location.getExamPreferences().iterator();i.hasNext();) {
-            ExamLocationPref pref = (ExamLocationPref)i.next();
-            if (!type.equals(pref.getExamPeriod().getExamType())) continue;
-            model.setPreference(pref.getExamPeriod().getDateOffset(), pref.getExamPeriod().getStartSlot(), pref.getPrefLevel().getUniqueId());
-        }
+		if (location != null)
+			for (Iterator i=location.getExamPreferences().iterator();i.hasNext();) {
+	            ExamLocationPref pref = (ExamLocationPref)i.next();
+	            if (!type.equals(pref.getExamPeriod().getExamType())) continue;
+	            model.setPreference(pref.getExamPeriod().getDateOffset(), pref.getExamPeriod().getStartSlot(), pref.getPrefLevel().getUniqueId());
+	        }
 		return model;
 	}
 	
 	public PeriodPreferenceModel savePeriodPreferences(PeriodPreferenceRequest request, SessionContext context) {
-		return null;
+		Location location = (request.getLocationId() == null ? null : LocationDAO.getInstance().get(request.getLocationId()));
+		ExamType type = ExamTypeDAO.getInstance().get(request.getExamTypeId());
+		context.checkPermission(location, Right.RoomEditChangeExaminationStatus);
+		return savePeriodPreferences(location, type, request.getModel(), context);
+	}
+	
+	public PeriodPreferenceModel savePeriodPreferences(Location location, ExamType type, PeriodPreferenceModel model, SessionContext context) {
+		location.clearExamPreferences(type);
+		for (ExamPeriod period: ExamPeriod.findAll(location.getSession().getUniqueId(), type)) {
+			PreferenceInterface pref = model.getPreference(period.getDateOffset(), period.getStartSlot());
+			if (pref != null && !PreferenceLevel.sNeutral.equals(pref.getCode())) {
+				location.addExamPreference(period, PreferenceLevel.getPreferenceLevel(pref.getCode()));
+			}
+		}
+		return model;
 	}
 
 }

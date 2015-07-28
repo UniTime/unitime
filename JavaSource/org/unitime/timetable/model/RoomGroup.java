@@ -101,15 +101,14 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 				).setLong("deptId", dept.getUniqueId()).setCacheable(true).list();
 	}
 	
-	/**
-	 * @param session
-	 * @return Collection of RoomGroups for a session
-	 * @throws HibernateException
-	 */
-	public static List<RoomGroup> getAllRoomGroupsForSession(Session session) throws HibernateException {
+	public static List<RoomGroup> getAllRoomGroupsForSession(Long sessionId) {
 		return (List<RoomGroup>)RoomGroupDAO.getInstance().getSession().createQuery(
 				"from RoomGroup g where g.session.uniqueId = :sessionId order by name"
-				).setLong("sessionId", session.getUniqueId()).setCacheable(true).list();
+				).setLong("sessionId", sessionId).setCacheable(true).list();
+	}
+	
+	public static List<RoomGroup> getAllRoomGroupsForSession(Session session) {
+		return getAllRoomGroupsForSession(session.getUniqueId());
 	}
     
     public int compareTo(Object o) {

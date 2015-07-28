@@ -25,36 +25,36 @@ import com.google.gwt.aria.client.Id;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHTML;
+import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
  */
-public class UniTimeWidget<T extends Widget> extends Composite implements HasAriaLabel {
+public class UniTimeWidget<T extends Widget> extends P implements HasAriaLabel {
 	private T iWidget;
-	private HTML iReadOnly = null, iPrint = null;
-	private HTML iHint;
-	private VerticalPanel iPanel;
+	private Widget iReadOnly = null;
+	private P iPrint = null;
+	private P iHint;
 	private Element iAriaLabel = null;
 	
 	public UniTimeWidget(T widget, String hint) {
-		iPanel = new VerticalPanel();
+		super("unitime-Widget");
 		
 		iWidget = widget;
-		iPanel.add(iWidget);
+		iWidget.addStyleName("widget");
+		add(iWidget);
 		
-		iHint = new HTML(hint == null ? "" : hint, false);
-		iHint.setStyleName("unitime-NotClickableHint");
+		iHint = new P();
+		iHint.setStyleName("hint");
 		if (hint == null || hint.isEmpty())
 			iHint.setVisible(false);
-		iPanel.add(iHint);
-		
-		initWidget(iPanel);
+		else
+			iHint.setHTML(hint);
+		add(iHint);
 	}
 	
 	@Override
@@ -65,7 +65,7 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 			if (iAriaLabel == null) {
 				iAriaLabel = DOM.createLabel();
 				iAriaLabel.setId(DOM.createUniqueId());
-				iAriaLabel.setClassName("unitime-AriaHiddenLabel");
+				iAriaLabel.setClassName("hidden-label");
 				DOM.appendChild(getElement(), iAriaLabel);
 				Roles.getCheckboxRole().setAriaLabelledbyProperty(iWidget.getElement(), Id.of(iAriaLabel));
 			}
@@ -83,23 +83,43 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 	
 	public void setText(String html) {
 		if (iReadOnly == null) {
-			iReadOnly = new HTML(html, false);
-			iReadOnly.setStyleName("unitime-LabelInsteadEdit");
+			iReadOnly = new P("label");
 			iReadOnly.setVisible(!getWidget().isVisible());
-			iReadOnly.addStyleName("unitime-NoPrint");
-			iPanel.insert(iReadOnly, 1);
-		} else {
-			iReadOnly.setHTML(html);
+			if (iPrint != null)
+				iReadOnly.addStyleName("unitime-NoPrint");
+			insert(iReadOnly, 1);
 		}
+		if (iReadOnly instanceof HasHTML) {
+			((HasHTML)iReadOnly).setHTML(html);
+		} else if (iReadOnly instanceof HasText) {
+			((HasText)iReadOnly).setText(html);
+		}
+	}
+	
+	public Widget getReadOnlyWidget() {
+		return iReadOnly;
+	}
+	
+	public void setReadOnlyWidget(Widget readOnly) {
+		if (iReadOnly != null)
+			remove(iReadOnly);
+		iReadOnly = readOnly;
+		iReadOnly.setVisible(!getWidget().isVisible());
+		//iReadOnly.addStyleName("label");
+		if (iPrint != null)
+			iReadOnly.addStyleName("unitime-NoPrint");
+		insert(iReadOnly, 1);
 	}
 
 	public void setPrintText(String html) {
 		if (iPrint == null) {
-			iPrint = new HTML(html, true);
-			iPrint.setStyleName("unitime-LabelInsteadEdit");
+			iPrint = new P("label");
+			iPrint.setHTML(html);
 			iPrint.addStyleName("unitime-Print");
+			if (iReadOnly != null)
+				iReadOnly.addStyleName("unitime-NoPrint");
 			getWidget().addStyleName("unitime-NoPrint");
-			iPanel.insert(iPrint, 1);
+			insert(iPrint, 1);
 		} else {
 			iPrint.setHTML(html);
 		}
@@ -127,7 +147,7 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 		if (error == null || error.isEmpty()) {
 			clearHint();
 		} else {
-			iHint.setStyleName("unitime-ErrorHint");
+			iHint.setStyleName("error-hint");
 			iHint.setHTML(error);
 			iHint.setVisible(true);
 			setAriaLabel(error);
@@ -138,7 +158,7 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 		if (hint == null || hint.isEmpty()) {
 			clearHint();
 		} else {
-			iHint.setStyleName("unitime-NotClickableHint");
+			iHint.setStyleName("hint");
 			iHint.setHTML(hint);
 			iHint.setVisible(true);
 			setAriaLabel(hint);
@@ -178,5 +198,7 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 		}
 	}
 	
-	protected VerticalPanel getPanel() { return  iPanel; }
+	public P getPanel() {
+		return this;
+	}
 }

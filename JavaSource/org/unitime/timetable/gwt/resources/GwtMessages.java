@@ -955,6 +955,21 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Applies To:")
 	String propAppliesTo();
+	
+	@DefaultMessage("Room Type:")
+	String propRoomType();
+	
+	@DefaultMessage("Building:")
+	String propBuilding();
+	
+	@DefaultMessage("Name:")
+	String propRoomName();
+	
+	@DefaultMessage("Room Number:")
+	String propRoomNumber();
+	
+	@DefaultMessage("Display Name:")
+	String propDisplayName();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -1075,6 +1090,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>E</u>dit Room")
 	String buttonEditRoom();
+	
+	@DefaultMessage("<u>C</u>reate Room")
+	String buttonCreateRoom();
+
+	@DefaultMessage("<u>U</u>pdate Room")
+	String buttonUpdateRoom();
+
+	@DefaultMessage("<u>D</u>elete Room")
+	String buttonDeleteRoom();
+
+	@DefaultMessage("Geocode")
+	String buttonGeocode();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -1267,6 +1294,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Loading room details...")
 	String waitLoadingRoomDetails();
+	
+	@DefaultMessage("Saving room ...")
+	String waitSavingRoom();
+	
+	@DefaultMessage("Updating room ...")
+	String waitUpdatingRoom();
+	
+	@DefaultMessage("Deleting room ...")
+	String waitDeletingRoom();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -1660,6 +1696,42 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Room {0} does not exist.")
 	String errorRoomDoesNotExist(String name);
+	
+	@DefaultMessage("Room type must be selected.")
+	String errorRoomTypeMustBeSelected();
+	
+	@DefaultMessage("Building must be selected for room type {0}.")
+	String errorBuildingMustBeSelected(String roomType);
+	
+	@DefaultMessage("Room number is required.")
+	String errorRoomNumberIsEmpty();
+	
+	@DefaultMessage("Location name is required.")
+	String errorLocationNameIsEmpty();
+	
+	@DefaultMessage("Room capacity is required.")
+	String errorRoomCapacityIsEmpty();
+	
+	@DefaultMessage("Room examination capacity is required.")
+	String errorRoomExamCapacityIsEmpty();
+	
+	@DefaultMessage("Event note is too long.")
+	String errorEventNoteTooLong();
+	
+	@DefaultMessage("At least one department must be selected.")
+	String errorRoomHasNoDepartment();
+	
+	@DefaultMessage("Controlling department must be included in the room sharing.")
+	String errorControllingDepartmentNotAmongRoomSharing();
+	
+	@DefaultMessage("Failed to delete the room: {0}")
+	String errorFailedToDeleteRoom(String message);
+	
+	@DefaultMessage("Failed to save the room: {0}")
+	String errorFailedToSaveRoom(String message);
+	
+	@DefaultMessage("Failed to update the room: {0}")
+	String errorFailedToUpdateRoom(String message);
 
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
@@ -1720,6 +1792,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Please confirm the change in the contact information for {0}.")
 	String checkMainContactChange(String name);
+	
+	@DefaultMessage("Change future sessions as well.")
+	String checkApplyToFutureSessions();
 	
 	@DefaultMessage("The contact information for {0} will be updated.")
 	String confirmMainContactChange(String name);
@@ -2098,6 +2173,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Room Detail")
 	String pageRoomDetail();
+	
+	@DefaultMessage("Add Room")
+	String pageAddRoom();
+	
+	@DefaultMessage("Edit Room")
+	String pageEditRoom();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -2405,6 +2486,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("All academic sessions")
 	String itemAllSessions();
 	
+	@DefaultMessage("No controlling department")
+	String itemNoControlDepartment();
+	
+	@DefaultMessage("No event department")
+	String itemNoEventDepartment();
+	
+	@DefaultMessage("Default")
+	String itemDefault();
+	
 	@DefaultMessage("{0} seats")
 	String hintRoomCapacity(String size);
 	
@@ -2567,6 +2657,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Capacity:")
 	String propCapacity();
 	
+	@DefaultMessage("Examination Rooms:")
+	String propExamRooms();
+
 	@DefaultMessage("Examination Seating Capacity:")
 	String propExamCapacity();
 	
@@ -2608,6 +2701,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} Preferences:")
 	String propExaminationPreferences(String problem);
+	
+	@DefaultMessage("Room Sharing Note:")
+	String propRoomSharingNote();
 
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -2921,6 +3017,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Room Pictures")
 	String headerRoomPictures();
 	
+	@DefaultMessage("Room Features")
+	String headerRoomFeatures();
+	
+	@DefaultMessage("Room Groups")
+	String headerRoomGroups();
+	
 	@DefaultMessage("The selected offering has no curricula.")
 	String offeringHasNoCurricula();
 	
@@ -2995,6 +3097,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Do you really want to execute script {0}?")
 	String confirmScriptExecution(String name);
+	
+	@DefaultMessage("Do you realy want to delete this room?")
+	String confirmDeleteRoom();
 	
 	@DefaultMessage("&nbsp;(of&nbsp;{0})")
 	String curriculumProjectionRulesOfTotal(int total);
@@ -3349,4 +3454,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Location of {0}.")
 	String titleRoomMap(String roomLabel);
+	
+	@DefaultMessage("Default break time is used when left empty.")
+	String useDefaultBreakTimeWhenEmpty();
 }
