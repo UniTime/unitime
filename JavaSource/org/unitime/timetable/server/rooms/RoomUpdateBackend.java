@@ -115,7 +115,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 							.setLong("permanentId", location.getPermanentId()).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list();
 					for (Location loc: futureLocations) {
 						request.getRoom().setUniqueId(loc.getUniqueId());
-						update(request.getRoom(), new EventContext(context, context.getUser(), loc.getSession().getUniqueId()), false);
+						update(request.getRoom(), new EventContext(context, context.getUser(), loc.getSession().getUniqueId()), true);
 					}
 				}
 				break;
@@ -125,7 +125,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					List<Long> futureSessionIds = LocationDAO.getInstance().getSession().createQuery(
 							"select f.uniqueId from Session f, Session s where " +
 							"s.uniqueId = :sessionId and s.sessionBeginDateTime < f.sessionBeginDateTime and s.academicInitiative = f.academicInitiative " +
-							"order by f.session.sessionBeginDateTime")
+							"order by f.sessionBeginDateTime")
 							.setLong("sessionId",context.getUser().getCurrentAcademicSessionId()).list();
 					for (Long id: futureSessionIds) {
 						create(request.getRoom(), new EventContext(context, context.getUser(), id), id, location.getPermanentId());
@@ -444,7 +444,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				Set<RoomFeature> features = new HashSet<RoomFeature>(location.getFeatures());
 				for (FeatureInterface f: room.getFeatures()) {
 					RoomFeature feature = lookupFeature(hibSession, f, future, location.getSession().getUniqueId());
-					if (feature != null && !features.remove(feature.getUniqueId())) {
+					if (feature != null && !features.remove(feature)) {
 						if (feature instanceof GlobalRoomFeature && !editGlobalFeatures) continue;
 						if (feature instanceof DepartmentRoomFeature && !deptIndependent && !context.getUser().getCurrentAuthority().hasQualifier(((DepartmentRoomFeature)feature).getDepartment())) continue;
 						location.getFeatures().add(feature);
@@ -455,7 +455,12 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				for (RoomFeature feature: features) {
 					if (feature instanceof GlobalRoomFeature && !editGlobalFeatures) continue;
 					if (feature instanceof DepartmentRoomFeature && !deptIndependent && !context.getUser().getCurrentAuthority().hasQualifier(((DepartmentRoomFeature)feature).getDepartment())) continue;
-					if (future && lookupFeature(hibSession, new FeatureInterface(feature.getUniqueId(), feature.getAbbv(), feature.getLabel()), future, context.getUser().getCurrentAcademicSessionId()) == null) continue;
+					if (future) {
+						FeatureInterface f = new FeatureInterface(feature.getUniqueId(), feature.getAbbv(), feature.getLabel());
+						if (feature instanceof DepartmentRoomFeature)
+							f.setDepartment(new DepartmentInterface());
+						if (lookupFeature(hibSession, f, future, context.getUser().getCurrentAcademicSessionId()) == null) continue;
+					}
 					location.getFeatures().remove(feature);
 					feature.getRooms().remove(location);
 					hibSession.saveOrUpdate(feature);
@@ -479,7 +484,11 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				for (RoomGroup group: groups) {
 					if (group.isGlobal() && !editGlobalGroups) continue;
 					if (!group.isGlobal() && !deptIndependent && !context.getUser().getCurrentAuthority().hasQualifier(group.getDepartment())) continue;
-					if (future && lookupGroup(hibSession, new GroupInterface(group.getUniqueId(), group.getAbbv(), group.getName()), future, context.getUser().getCurrentAcademicSessionId()) == null) continue;
+					if (future) {
+						GroupInterface g = new GroupInterface(group.getUniqueId(), group.getAbbv(), group.getName());
+						if (!group.isGlobal()) g.setDepartment(new DepartmentInterface());
+						if (lookupGroup(hibSession, g, future, context.getUser().getCurrentAcademicSessionId()) == null) continue;
+					}
 					location.getRoomGroups().remove(group);
 					group.getRooms().remove(location);
 					hibSession.saveOrUpdate(group);
@@ -570,6 +579,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 									((NonUniversityLocation)location).getPictures().add((NonUniversityLocationPicture)picture);
 								}
 								hibSession.saveOrUpdate(picture);
+								p.setUniqueId(picture.getUniqueId());
 							}
 						}
 					}

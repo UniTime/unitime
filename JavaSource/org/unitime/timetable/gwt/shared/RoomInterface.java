@@ -515,6 +515,7 @@ public class RoomInterface implements IsSerializable {
 			setUniqueId(uniqueId);
 			setName(name);
 			setType(type);
+			setTimeStamp(timeStamp);
 		}
 		
 		public Long getUniqueId() { return iUniqueId; }
