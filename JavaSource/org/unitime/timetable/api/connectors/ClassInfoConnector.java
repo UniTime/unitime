@@ -268,6 +268,8 @@ public class ClassInfoConnector extends ApiConnector {
 		String iName;
 		String iType;
 		Integer iSize;
+		Integer iLength;
+		Integer iPrintOffset;
 		List<ExamOwnerInfo> iOwners = new ArrayList<ExamOwnerInfo>();
 		PeriodInfo iPeriod;
 		List<RoomInfo> iRoom;
@@ -280,6 +282,8 @@ public class ClassInfoConnector extends ApiConnector {
 			for (ExamOwner owner: exam.getOwners())
 				iOwners.add(new ExamOwnerInfo(owner));
 			iSize = exam.getSize();
+			iLength = exam.getLength();
+			iPrintOffset = exam.getPrintOffset();
 			if (exam.getAssignedPeriod() != null)
 				iPeriod = new PeriodInfo(exam.getAssignedPeriod());
 			for (Location room: exam.getAssignedRooms()) {
@@ -345,7 +349,7 @@ public class ClassInfoConnector extends ApiConnector {
 			int sh = start / 60;
 			int sm = start % 60;
 			iStartTime = sh + ":" + (sm < 10 ? "0" : "") + sm;
-			int end = start + period.getLength();
+			int end = start + (Constants.SLOT_LENGTH_MIN * period.getLength());
 			int eh = end / 60;
 			int em = end % 60;
 			iEndTime = eh + ":" + (em < 10 ? "0" : "") + em;
