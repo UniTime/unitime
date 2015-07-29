@@ -218,6 +218,8 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 				XStudent student = (id instanceof XStudent ? (XStudent)id : server.getStudent(id.getStudentId()));
 				if (student == null) return null;
 				Student clonnedStudent = new Student(student.getStudentId());
+				clonnedStudent.setExternalId(student.getExternalId());
+				clonnedStudent.setName(student.getName());
 				for (String g: student.getGroups()) {
 					List<GroupReservation> list = groups.get(g);
 					if (list != null)
