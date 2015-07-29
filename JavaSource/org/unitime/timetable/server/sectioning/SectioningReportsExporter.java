@@ -71,15 +71,21 @@ public class SectioningReportsExporter implements Exporter {
 		}
 		parameters.put("useAmPm", CONSTANTS.useAmPm() ? "true" : "false");
 		
+		Long sessionId = helper.getAcademicSessionId();
+		if (sessionId == null && helper.getSessionContext().isAuthenticated())
+			sessionId = helper.getSessionContext().getUser().getCurrentAcademicSessionId();
+		if (sessionId == null)
+			throw new GwtRpcException("No academic session provided.");
+		
 		CSVFile csv = null;
-		boolean online = parameters.getPropertyBoolean("online", false);
+		boolean online = parameters.getPropertyBoolean("online", true);
 		SessionContext context = helper.getSessionContext();
 		if (online) {
-			context.checkPermission(Right.SchedulingDashboard);
+			context.checkPermissionAnyAuthority(sessionId, "Session", Right.SchedulingDashboard);
 			
-			OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(context.getUser().getCurrentAcademicSessionId().toString());
+			OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString());
 			if (server == null)
-				throw new GwtRpcException("Online student scheduling is not enabled for " + context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() + ".");
+				throw new GwtRpcException("Online student scheduling is not enabled for session " + sessionId + ".");
 			
 			OnlineSectioningLog.Entity user = OnlineSectioningLog.Entity.newBuilder()
 					.setExternalId(context.getUser().getExternalUserId())
