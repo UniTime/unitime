@@ -89,7 +89,11 @@ public class SectioningReports extends Composite {
 		UNBALANCED_SECTIONS("Unbalanced Classes", "org.cpsolver.studentsct.report.UnbalancedSectionsTable"),
 		DISTANCE_CONFLICTS("Distance Conflicts", "org.cpsolver.studentsct.report.DistanceConflictTable"),
 		TIME_OVERLAPS("Time Overlaps", "org.cpsolver.studentsct.report.TimeOverlapConflictTable"),
-		REQUEST_GROUPS("Request Groups", "org.cpsolver.studentsct.report.RequestGroupTable")
+		REQUEST_GROUPS("Request Groups", "org.cpsolver.studentsct.report.RequestGroupTable"),
+		INDIVIDUAL_TIME_OVERLAPS("Individual Student Time Overlaps", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps"),
+		NOT_ALLOWED_TIME_OVERLAPS("Not Allowed Time Overlaps", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps", "includeAllowedOverlaps", "false"),
+		INDIVIDUAL_TIME_OVERLAPS_BT("Individual Student Time Overlaps (Exclude Break Times)", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps", "ignoreBreakTimeConflicts", "true"),
+		NOT_ALLOWED_TIME_OVERLAPS_BT("Not Allowed Time Overlaps (Exclude Break Times)", "org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps", "ignoreBreakTimeConflicts", "true", "includeAllowedOverlaps", "false"),
 		;
 		
 		String iName, iImplementation;

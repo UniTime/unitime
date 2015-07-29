@@ -139,6 +139,12 @@
 			<name>Online Student Scheduling Reports</name>
 			<description>
 				<line>CSV Export: Added ability to provide the academic session as parameter. This allows for the exporter to be called from outside of UniTime.</line>
+				<line>Individual Time Overlaps: Added a new report computing individual student time conflicts. There are four variants:
+					<line>Individual Student Time Overlaps lists all time conflicts, showing why a conflict is allowed,</line>
+					<line>Not Allowed Time Overlaps only lists time conflicts that are not allowed (and should not be present in the data),</line>
+					<line>Individual Student Time Overlaps (Exclude Break Times) lists all time conflicts, but break times are excluded from conflict checking,</line>
+					<line>Not Allowed Time Overlaps (Exclude Break Times) lists all time conflicts that are not allowed even when break times are excluded from conflict checking</line>
+				</line>
 			</description>
 		</item>
 	</category>
