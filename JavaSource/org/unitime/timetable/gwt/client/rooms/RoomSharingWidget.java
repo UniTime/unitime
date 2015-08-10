@@ -103,6 +103,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		HorizontalPanel hp = new HorizontalPanel();
 		
 		iModeSelection = new ListBox();
+		iModeSelection.setStyleName("unitime-TextBox");
 		hp.add(iModeSelection);
 		hp.setCellHorizontalAlignment(iModeSelection, HasHorizontalAlignment.ALIGN_LEFT);
 		
@@ -272,6 +273,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 	protected void addPreferenceIfNeeded(P line, final RoomSharingOption option) {
 		if (option.hasPreference() && iModel.getPreferences() != null) {
 			final ListBox pref = new ListBox();
+			pref.setStyleName("unitime-TextBox");
 			pref.addStyleName("preference");
 			for (PreferenceInterface p: iModel.getPreferences()) {
 				pref.addItem(p.getName(), p.getId().toString());

@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.FutureOperation;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
 import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
@@ -95,40 +96,46 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			switch (request.getOperation()) {
 			case DELETE:
 				Long permId = delete(request.getLocationId(), context, false);
-				if (permId != null && request.isApplyToFutureTermsAsWell()) {
+				if (permId != null && request.hasFutureFlags()) {
 					List<Location> futureLocations = LocationDAO.getInstance().getSession().createQuery(
 							"select l from Location l, Session s where " +
 							"l.permanentId = :permanentId and s.uniqueId = :sessionId and s.sessionBeginDateTime < l.session.sessionBeginDateTime " + 
 							"order by l.session.sessionBeginDateTime")
 							.setLong("permanentId", permId).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list();
 					for (Location loc: futureLocations)
-						delete(loc.getUniqueId(), new EventContext(context, context.getUser(), loc.getSession().getUniqueId()), true);
+						if (request.getFutureFlag(loc.getUniqueId()) != null)
+							delete(loc.getUniqueId(), new EventContext(context, context.getUser(), loc.getSession().getUniqueId()), true);
 				}
 				break;
 			case UPDATE:
-				location = update(request.getRoom(), context, false);
-				if (location != null && request.isApplyToFutureTermsAsWell()) {
+				location = update(request.getRoom(), context, false, FutureOperation.getFlagAllEnabled());
+				if (location != null && request.hasFutureFlags()) {
 					List<Location> futureLocations = LocationDAO.getInstance().getSession().createQuery(
 							"select l from Location l, Session s where " +
 							"l.permanentId = :permanentId and s.uniqueId = :sessionId and s.sessionBeginDateTime < l.session.sessionBeginDateTime " + 
 							"order by l.session.sessionBeginDateTime")
 							.setLong("permanentId", location.getPermanentId()).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list();
 					for (Location loc: futureLocations) {
-						request.getRoom().setUniqueId(loc.getUniqueId());
-						update(request.getRoom(), new EventContext(context, context.getUser(), loc.getSession().getUniqueId()), true);
+						Integer flags = request.getFutureFlag(loc.getUniqueId());
+						if (flags != null) {
+							request.getRoom().setUniqueId(loc.getUniqueId());
+							update(request.getRoom(), new EventContext(context, context.getUser(), loc.getSession().getUniqueId()), true, flags);
+						}
 					}
 				}
 				break;
 			case CREATE:
-				location = create(request.getRoom(), context, null, null);
-				if (location != null && request.isApplyToFutureTermsAsWell()) {
+				location = create(request.getRoom(), context, null, null, FutureOperation.getFlagAllEnabled());
+				if (location != null && request.hasFutureFlags()) {
 					List<Long> futureSessionIds = LocationDAO.getInstance().getSession().createQuery(
 							"select f.uniqueId from Session f, Session s where " +
 							"s.uniqueId = :sessionId and s.sessionBeginDateTime < f.sessionBeginDateTime and s.academicInitiative = f.academicInitiative " +
 							"order by f.sessionBeginDateTime")
 							.setLong("sessionId",context.getUser().getCurrentAcademicSessionId()).list();
 					for (Long id: futureSessionIds) {
-						create(request.getRoom(), new EventContext(context, context.getUser(), id), id, location.getPermanentId());
+						Integer flags = request.getFutureFlag(id);
+						if (flags != null)
+							create(request.getRoom(), new EventContext(context, context.getUser(), id), id, location.getPermanentId(), flags);
 					}
 				}
 				break;
@@ -180,9 +187,9 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			sessionLabel = location.getSession().getLabel();
 			if (future) {
 				if (location instanceof Room) {
-					if (!context.hasPermissionAnyAuthority((Room)location, Right.RoomDelete)) return null;
+					if (!context.hasPermission((Room)location, Right.RoomDelete)) return null;
 				} else {
-					if (!context.hasPermissionAnyAuthority((NonUniversityLocation)location, Right.NonUniversityLocationDelete)) return null;
+					if (!context.hasPermission((NonUniversityLocation)location, Right.NonUniversityLocationDelete)) return null;
 				}
 			} else {
 				if (location instanceof Room)
@@ -233,7 +240,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 		}
 	}
 	
-	protected Location update(RoomDetailInterface room, SessionContext context, boolean future) {
+	protected Location update(RoomDetailInterface room, SessionContext context, boolean future, int flags) {
 		Transaction tx = null;
 		String roomName = null, sessionLabel = null;
 		org.hibernate.Session hibSession = LocationDAO.getInstance().getSession();
@@ -243,9 +250,9 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			if (location == null) return null;
 			if (future) {
 				if (location instanceof Room) {
-					if (!context.hasPermissionAnyAuthority((Room)location, Right.RoomEdit)) return null;
+					if (!context.hasPermission((Room)location, Right.RoomEdit)) return null;
 				} else {
-					if (!context.hasPermissionAnyAuthority((NonUniversityLocation)location, Right.NonUniversityLocationEdit)) return null;
+					if (!context.hasPermission((NonUniversityLocation)location, Right.NonUniversityLocationEdit)) return null;
 				}
 			} else {
 				if (location instanceof Room)
@@ -254,12 +261,14 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					context.checkPermission((NonUniversityLocation)location, Right.NonUniversityLocationEdit);
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditChangeRoomProperties)) {
+			if (context.hasPermission(location, Right.RoomEditChangeRoomProperties) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
 				if (location instanceof Room) {
 					Building building = lookuBuilding(hibSession, room.getBuilding(), future, location.getSession().getUniqueId());
 					if (future && room.getBuilding() != null && building == null) return null;
-					if (building != null)
+					if (building != null) {
 						((Room)location).setBuilding(building);
+						((Room)location).setBuildingAbbv(building.getAbbreviation());
+					}
 					((Room)location).setRoomNumber(room.getName());
 				} else
 					((NonUniversityLocation)location).setName(room.getName());
@@ -271,22 +280,22 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				location.setDisplayName(room.getDisplayName());
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditChangeCapacity)) {
+			if (context.hasPermission(location, Right.RoomEditChangeCapacity) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
 				location.setCapacity(room.getCapacity());
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditChangeExternalId)) {
+			if (context.hasPermission(location, Right.RoomEditChangeExternalId) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
 				location.setExternalUniqueId(room.getExternalId());
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditChangeType)) {
+			if (context.hasPermission(location, Right.RoomEditChangeType) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
 				RoomType type = (room.getRoomType() == null ? null : RoomTypeDAO.getInstance().get(room.getRoomType().getId(), hibSession));
 				if (type != null && ((type.isRoom() && location instanceof Room) || !(type.isRoom() && location instanceof NonUniversityLocation)))
 					location.setRoomType(type);
 			}
 
             String oldNote = location.getNote();
-            if (context.hasPermission(location, Right.RoomEditChangeEventProperties)) {
+            if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && FutureOperation.EVENT_PROPERTIES.in(flags)) {
             	Department eventDepartment = lookuDepartment(hibSession, room.getEventDepartment(), future, location.getSession().getUniqueId());
             	if (!future || room.getEventDepartment() == null || eventDepartment != null) {
             		location.setEventDepartment(eventDepartment);
@@ -297,7 +306,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
             	location.setNote(room.getEventNote() == null ? "" : room.getEventNote().length() > 2048 ? room.getEventNote().substring(0, 2048) : room.getEventNote());
             }
 			
-			if (context.hasPermission(location, Right.RoomEditChangeExaminationStatus)) {
+			if (context.hasPermission(location, Right.RoomEditChangeExaminationStatus) && FutureOperation.EXAM_PROPERTIES.in(flags)) {
 				location.setExamCapacity(room.getExamCapacity());
 				boolean examTypesChanged = false;
 				List<ExamType> types = ExamType.findAll(hibSession);
@@ -320,7 +329,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 	            }
 			}
 			
-			if (context.hasPermission(Right.EditRoomDepartmentsExams)) {
+			if (context.hasPermission(Right.EditRoomDepartmentsExams) && FutureOperation.EXAM_PREFS.in(flags)) {
 				location.getExamPreferences().clear();
 				for (ExamType type: location.getExamTypes()) {
 					PeriodPreferenceModel model = room.getPeriodPreferenceModel(type.getUniqueId());
@@ -340,7 +349,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditAvailability) && room.hasRoomSharingModel()) {
+			if (context.hasPermission(location, Right.RoomEditAvailability) && room.hasRoomSharingModel() && FutureOperation.ROOM_SHARING.in(flags)) {
 				Map<Long, Character> dept2char = new HashMap<Long, Character>();
 				dept2char.put(-1l, org.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
 				dept2char.put(-2l, org.cpsolver.coursett.model.RoomSharingModel.sNotAvailablePrefChar);
@@ -397,7 +406,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditPreference) && room.hasRoomSharingModel()) {
+			if (context.hasPermission(location, Right.RoomEditPreference) && room.hasRoomSharingModel() && FutureOperation.ROOM_SHARING.in(flags)) {
 				Map<Long, PreferenceLevel> dept2pref = new HashMap<Long, PreferenceLevel>();
 				for (RoomSharingOption option: room.getRoomSharingModel().getOptions()) {
 					if (option.getId() >= 0 && option.isEditable() && option.hasPreference()) {
@@ -438,7 +447,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditFeatures)) {
+			if (context.hasPermission(location, Right.RoomEditFeatures) && FutureOperation.FEATURES.in(flags)) {
 				boolean editGlobalFeatures = context.hasPermission(location, Right.RoomEditGlobalFeatures);
 				boolean deptIndependent = context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
 				Set<RoomFeature> features = new HashSet<RoomFeature>(location.getFeatures());
@@ -467,7 +476,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditGroups)) {
+			if (context.hasPermission(location, Right.RoomEditGroups) && FutureOperation.GROUPS.in(flags)) {
 				boolean editGlobalGroups = context.hasPermission(location, Right.RoomEditGlobalGroups);
 				boolean deptIndependent = context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
 				Set<RoomGroup> groups = new HashSet<RoomGroup>(location.getRoomGroups());
@@ -495,14 +504,14 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditChangeControll)) {
+			if (context.hasPermission(location, Right.RoomEditChangeControll) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
 				Department d = lookuDepartment(hibSession, room.getControlDepartment(), future, location.getSession().getUniqueId());
 				if (!future || room.getControlDepartment() == null || d != null)
 					for (RoomDept rd: location.getRoomDepts())
 						rd.setControl(rd.getDepartment().equals(d));
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditEventAvailability) && room.hasEventAvailabilityModel()) {
+			if (context.hasPermission(location, Right.RoomEditEventAvailability) && room.hasEventAvailabilityModel() && FutureOperation.EVENT_AVAILABILITY.in(flags)) {
 				String availability = "";
 				for (int d = 0; d < 7; d++)
 					for (int s = 0; s < 288; s ++) {
@@ -516,7 +525,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			for (RoomDept rd: location.getRoomDepts())
 				hibSession.saveOrUpdate(rd);
 			
-        	if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && !ToolBox.equals(oldNote, location.getNote()))
+        	if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && !ToolBox.equals(oldNote, location.getNote()) && FutureOperation.EVENT_PROPERTIES.in(flags))
         		ChangeLog.addChange(hibSession, context, location, (location.getNote() == null || location.getNote().isEmpty() ? "-" : location.getNote()), ChangeLog.Source.ROOM_EDIT, ChangeLog.Operation.NOTE, null, location.getControllingDepartment());
 			
             ChangeLog.addChange(
@@ -528,7 +537,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
                     null, 
                     location.getControllingDepartment());
             
-			if (context.hasPermission(location, Right.RoomEditChangePicture)) {
+			if (context.hasPermission(location, Right.RoomEditChangePicture) && FutureOperation.PICTURES.in(flags)) {
 				Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES);
 				Map<Long, LocationPicture> pictures = new HashMap<Long, LocationPicture>();
 				if (future) {
@@ -604,7 +613,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 		}
 	}
 	
-	protected Location create(RoomDetailInterface room, SessionContext context, Long sessionId, Long permId) {
+	protected Location create(RoomDetailInterface room, SessionContext context, Long sessionId, Long permId, int flags) {
 		Transaction tx = null;
 		String roomName = room.getLabel(), sessionLabel = null;
 		boolean future = (sessionId != null);
@@ -616,9 +625,9 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			sessionLabel = session.getLabel();
 			if (future) {
 				if (room.getRoomType().isRoom()) {
-					if (!context.hasPermissionAnyAuthority(Right.AddRoom)) return null;
+					if (!context.hasPermission(Right.AddRoom)) return null;
 				} else {
-					if (!context.hasPermissionAnyAuthority(Right.AddNonUnivLocation)) return null;
+					if (!context.hasPermission(Right.AddNonUnivLocation)) return null;
 				}
 			} else {
 				if (room.getRoomType().isRoom())
@@ -633,6 +642,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				Building b = lookuBuilding(hibSession, room.getBuilding(), future, session.getUniqueId());
 				if (b == null) return null;
 				r.setBuilding(b);
+				r.setBuildingAbbv(b.getAbbreviation());
 				r.setRoomNumber(room.getName());
 				r.setPictures(new HashSet<RoomPicture>());
 				location = r;
@@ -662,7 +672,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			else
 				location.setPermanentId(permId);
 			
-			if (room.hasRoomSharingModel()) {
+			if (room.hasRoomSharingModel() && FutureOperation.ROOM_SHARING.in(flags)) {
 				Map<Long, Character> dept2char = new HashMap<Long, Character>();
 				dept2char.put(-1l, org.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
 				dept2char.put(-2l, org.cpsolver.coursett.model.RoomSharingModel.sNotAvailablePrefChar);
@@ -723,12 +733,12 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			
 			hibSession.save(location);
 			
-			if (context.hasPermission(location, Right.RoomEditChangeExternalId)) {
+			if (context.hasPermission(location, Right.RoomEditChangeExternalId) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
 				location.setExternalUniqueId(room.getExternalId());
 			}
 			
             String oldNote = location.getNote();
-            if (context.hasPermission(location, Right.RoomEditChangeEventProperties)) {
+            if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && FutureOperation.EVENT_PROPERTIES.in(flags)) {
             	Department eventDepartment = lookuDepartment(hibSession, room.getEventDepartment(), future, session.getUniqueId());
             	if (!future || room.getEventDepartment() == null || eventDepartment != null) {
             		location.setEventDepartment(eventDepartment);
@@ -739,7 +749,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
             	location.setNote(room.getEventNote() == null ? "" : room.getEventNote().length() > 2048 ? room.getEventNote().substring(0, 2048) : room.getEventNote());
             }
 			
-			if (context.hasPermission(location, Right.RoomEditChangeExaminationStatus)) {
+			if (context.hasPermission(location, Right.RoomEditChangeExaminationStatus) && FutureOperation.EXAM_PROPERTIES.in(flags)) {
 				location.setExamCapacity(room.getExamCapacity());
 				List<ExamType> types = ExamType.findAll(hibSession);
             	for (ExamType type: types) {
@@ -748,7 +758,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
             	}
 			}
 			
-			if (context.hasPermission(Right.EditRoomDepartmentsExams)) {
+			if (context.hasPermission(Right.EditRoomDepartmentsExams) && FutureOperation.EXAM_PREFS.in(flags)) {
 				location.getExamPreferences().clear();
 				for (ExamType type: location.getExamTypes()) {
 					PeriodPreferenceModel model = room.getPeriodPreferenceModel(type.getUniqueId());
@@ -768,7 +778,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditPreference) && room.hasRoomSharingModel()) {
+			if (context.hasPermission(location, Right.RoomEditPreference) && room.hasRoomSharingModel() && FutureOperation.ROOM_SHARING.in(flags)) {
 				Map<Long, PreferenceLevel> dept2pref = new HashMap<Long, PreferenceLevel>();
 				for (RoomSharingOption option: room.getRoomSharingModel().getOptions()) {
 					if (option.getId() >= 0 && option.isEditable() && option.hasPreference()) {
@@ -793,7 +803,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditFeatures)) {
+			if (context.hasPermission(location, Right.RoomEditFeatures) && FutureOperation.FEATURES.in(flags)) {
 				boolean editGlobalFeatures = context.hasPermission(location, Right.RoomEditGlobalFeatures);
 				boolean deptIndependent = context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
 				Set<RoomFeature> features = new HashSet<RoomFeature>(location.getFeatures());
@@ -817,7 +827,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditGroups)) {
+			if (context.hasPermission(location, Right.RoomEditGroups) && FutureOperation.GROUPS.in(flags)) {
 				boolean editGlobalGroups = context.hasPermission(location, Right.RoomEditGlobalGroups);
 				boolean deptIndependent = context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
 				Set<RoomGroup> groups = new HashSet<RoomGroup>(location.getRoomGroups());
@@ -841,7 +851,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditEventAvailability) && room.hasEventAvailabilityModel()) {
+			if (context.hasPermission(location, Right.RoomEditEventAvailability) && room.hasEventAvailabilityModel() && FutureOperation.EVENT_AVAILABILITY.in(flags)) {
 				String availability = "";
 				for (int d = 0; d < 7; d++)
 					for (int s = 0; s < 288; s ++) {
@@ -855,7 +865,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			for (RoomDept rd: location.getRoomDepts())
 				hibSession.saveOrUpdate(rd);
 			
-        	if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && !ToolBox.equals(oldNote, location.getNote()))
+        	if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && !ToolBox.equals(oldNote, location.getNote()) && FutureOperation.EVENT_PROPERTIES.in(flags))
         		ChangeLog.addChange(hibSession, context, location, (location.getNote() == null || location.getNote().isEmpty() ? "-" : location.getNote()), ChangeLog.Source.ROOM_EDIT, ChangeLog.Operation.NOTE, null, location.getControllingDepartment());
 			
             ChangeLog.addChange(
@@ -867,7 +877,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
                     null, 
                     location.getControllingDepartment());
             
-			if (context.hasPermission(location, Right.RoomEditChangePicture)) {
+			if (context.hasPermission(location, Right.RoomEditChangePicture) && FutureOperation.PICTURES.in(flags)) {
 				Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES);
 				Map<Long, LocationPicture> pictures = new HashMap<Long, LocationPicture>();
 				if (future) {
@@ -923,6 +933,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 									((NonUniversityLocation)location).getPictures().add(np);
 								}
 								hibSession.saveOrUpdate(picture);
+								p.setUniqueId(picture.getUniqueId());
 							}
 						}
 					}

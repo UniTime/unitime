@@ -106,10 +106,16 @@ public class RoomDetail extends Composite {
 	}
 	
 	public void show() {
+		show(null);
+	}
+	
+	public void show(String message) {
 		UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRoomDetail());
 		setVisible(true);
 		onShow();
 		Window.scrollTo(0, 0);
+		if (message != null)
+			iHeader.setErrorMessage(message);
 	}
 	
 	public void hide() {

@@ -35,11 +35,13 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
+import org.unitime.timetable.gwt.shared.RoomInterface.AcademicSessionInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.FutureRoomInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
@@ -61,6 +63,7 @@ import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomTypeOption;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -196,6 +199,26 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 				response.setCanDelete(context.hasPermission(location, Right.RoomDelete));
 			} else {
 				response.setCanDelete(context.hasPermission(location, Right.NonUniversityLocationDelete));
+			}
+			
+			List<Location> futureLocations = LocationDAO.getInstance().getSession().createQuery(
+					"select l from Location l, Session s where " +
+					"l.permanentId = :permanentId and s.uniqueId = :sessionId and s.sessionBeginDateTime < l.session.sessionBeginDateTime " + 
+					"order by l.session.sessionBeginDateTime")
+					.setLong("permanentId", location.getPermanentId()).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list();
+			for (Location loc: futureLocations) {
+				FutureRoomInterface f = new FutureRoomInterface(loc.getUniqueId(), loc.getLabel());
+				f.setSession(new AcademicSessionInterface(loc.getSession().getUniqueId(), loc.getSession().getLabel()));
+				EventContext cx = new EventContext(context, context.getUser(), loc.getSession().getUniqueId());
+				if (loc instanceof Room) {
+					f.setCanDelete(cx.hasPermission(loc, Right.RoomDelete));
+					f.setCanChange(cx.hasPermission(loc, Right.RoomEdit));
+				} else {
+					f.setCanDelete(cx.hasPermission(loc, Right.NonUniversityLocationDelete));
+					f.setCanChange(cx.hasPermission(loc, Right.NonUniversityLocationEdit));
+				}
+				if (f.isCanChange() || f.isCanDelete())
+					response.addFutureRoom(f);
 			}
 		}
 		

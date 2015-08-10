@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.server.rooms;
 
+import java.util.List;
 import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.DistanceMetric;
@@ -26,10 +27,12 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.RoomInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.AcademicSessionInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
@@ -50,7 +53,9 @@ import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -67,8 +72,8 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		
 		RoomPropertiesInterface response = new RoomPropertiesInterface();
 		
-		response.setAcademicSessionId(context.getUser() == null ? null : context.getUser().getCurrentAcademicSessionId());
-		response.setAcademicSessionName(context.getUser() == null ? null : context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel());
+		if (context.getUser() != null)
+			response.setAcademicSession(new AcademicSessionInterface(context.getUser().getCurrentAcademicSessionId(), context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel()));
 		
 		response.setCanEditDepartments(context.hasPermission(Right.EditRoomDepartments));
 		response.setCanExportCsv(context.hasPermission(Right.RoomsExportCsv));
@@ -181,6 +186,21 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setEllipsoid(ellipsoid.getEclipsoindName());
 		
 		response.setGoogleMap(ApplicationProperty.RoomUseGoogleMap.isTrue());
+		
+		if (response.getAcademicSession() != null) {
+			for (Session session: (List<Session>)SessionDAO.getInstance().getSession().createQuery(
+					"select f from Session f, Session s where " +
+					"s.uniqueId = :sessionId and s.sessionBeginDateTime < f.sessionBeginDateTime and s.academicInitiative = f.academicInitiative " +
+					"order by f.sessionBeginDateTime")
+					.setLong("sessionId", response.getAcademicSessionId()).list()) {
+				AcademicSessionInterface s = new AcademicSessionInterface(session.getUniqueId(), session.getLabel());
+				EventContext cx = new EventContext(context, context.getUser(), session.getUniqueId());
+				s.setCanAddRoom(cx.hasPermission(Right.AddRoom));
+				s.setCanAddNonUniversity(cx.hasPermission(Right.AddNonUnivLocation));
+				if (s.isCanAddRoom() || s.isCanAddNonUniversity())
+					response.addFutureSession(s);
+			}
+		}
 		
 		return response;
 	}

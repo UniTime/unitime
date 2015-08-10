@@ -202,6 +202,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			@Override
 			public void execute() {
 				final RoomsTable table = new RoomsTable(iMode);
+				table.setProperties(iProperties);
 				table.setDepartment(iDepartment);
 				for (int i = 1; i < getRowCount(); i++)
 					table.addRoom(getData(i));

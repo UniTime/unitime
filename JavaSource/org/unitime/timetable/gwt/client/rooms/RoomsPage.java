@@ -521,7 +521,7 @@ public class RoomsPage extends Composite {
 				changeUrl();
 			}
 			@Override
-			protected void onHide(RoomDetailInterface detail, boolean canShowDetail) {
+			protected void onHide(RoomDetailInterface detail, boolean canShowDetail, String message) {
 				if (!canShowDetail || (detail == null && getRoom().getUniqueId() == null)) {
 					iRootPanel.setWidget(iRoomsPanel);
 					UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRooms());
@@ -529,7 +529,7 @@ public class RoomsPage extends Composite {
 				} else {
 					if (detail != null)
 						iRoomDetail.setRoom(detail);
-					iRoomDetail.show();
+					iRoomDetail.show(message);
 				}
 				changeUrl();
 			}

@@ -710,6 +710,33 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("External Id")
 	String colExternalId();
 	
+	@DefaultMessage("Room<br>")
+	String colChangeRoomProperties();
+	
+	@DefaultMessage("Examination<br>Properties")
+	String colChangeExamProperties();
+	
+	@DefaultMessage("Event<br>")
+	String colChangeEventProperties();
+	
+	@DefaultMessage("Room<br>Groups")
+	String colChangeRoomGroups();
+	
+	@DefaultMessage("Room<br>Features")
+	String colChangeRoomFeatures();
+	
+	@DefaultMessage("Room<br>Sharing")
+	String colChangeRoomSharing();
+	
+	@DefaultMessage("Examination<br>Preferences")
+	String colChangeRoomPeriodPreferences();
+	
+	@DefaultMessage("Event<br>Availability")
+	String colChangeRoomEventAvailability();
+	
+	@DefaultMessage("Room<br>Pictures")
+	String colChangeRoomPictures();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -3022,6 +3049,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Room Groups")
 	String headerRoomGroups();
+	
+	@DefaultMessage("Update Future Academic Sessions")
+	String headerRoomApplyToFutureRooms();
 	
 	@DefaultMessage("The selected offering has no curricula.")
 	String offeringHasNoCurricula();

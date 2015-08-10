@@ -857,6 +857,76 @@ public class RoomInterface implements IsSerializable {
 		public void setDepartment(DepartmentInterface department) { iDepartment = department; }
 	}
 	
+	public static class AcademicSessionInterface implements GwtRpcResponse {
+		private Long iId;
+		private String iLabel;
+		private boolean iCanAddRoom = false, iCanAddNonUniversity = false;
+		
+		public AcademicSessionInterface() {}
+		
+		public AcademicSessionInterface(Long id, String label) {
+			iId = id; iLabel = label;
+		}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		
+		public String getLabel() { return iLabel; }
+		public void setLabel(String label) { iLabel = label; }
+		
+		@Override
+		public int hashCode() { return getId().hashCode(); }
+		
+		public boolean isCanAddRoom() { return iCanAddRoom; }
+		public void setCanAddRoom(boolean canAddRoom) { iCanAddRoom = canAddRoom; }
+		
+		public boolean isCanAddNonUniversity() { return iCanAddNonUniversity; }
+		public void setCanAddNonUniversity(boolean canAddNonUniv) { iCanAddNonUniversity = canAddNonUniv; }
+		
+		@Override
+		public boolean equals(Object object) {
+			if (object == null || !(object instanceof AcademicSessionInterface)) return false;
+			return getId().equals(((AcademicSessionInterface)object).getId());
+		}
+	}
+	
+	public static class FutureRoomInterface implements GwtRpcResponse {
+		private Long iId;
+		private String iLabel;
+		private AcademicSessionInterface iSession;
+		private boolean iCanChange = false, iCanDelete = false;
+		
+		public FutureRoomInterface() {}
+		
+		public FutureRoomInterface(Long id, String label) {
+			iId = id; iLabel = label;
+		}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		
+		public String getLabel() { return iLabel; }
+		public void setLabel(String label) { iLabel = label; }
+		
+		public AcademicSessionInterface getSession() { return iSession; }
+		public void setSession(AcademicSessionInterface session) { iSession = session; }
+		
+		public boolean isCanChange() { return iCanChange; }
+		public void setCanChange(boolean canChange) { iCanChange = canChange; }
+		
+		public boolean isCanDelete() { return iCanDelete; }
+		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
+		
+		@Override
+		public int hashCode() { return getId().hashCode(); }
+		
+		@Override
+		public boolean equals(Object object) {
+			if (object == null || !(object instanceof AcademicSessionInterface)) return false;
+			return getId().equals(((AcademicSessionInterface)object).getId());
+		}
+	}
+	
 	public static class RoomDetailInterface extends FilterRpcResponse.Entity implements GwtRpcResponse {
 		private static final long serialVersionUID = 1L;
 		
@@ -885,6 +955,7 @@ public class RoomInterface implements IsSerializable {
 		private String iLastChange = null;
 		private RoomSharingModel iRoomSharingModel = null, iEventAvailabilityModel = null;
 		private Map<Long, PeriodPreferenceModel> iPeriodPreferenceModels = null;
+		private List<FutureRoomInterface> iFutureRooms = null;
 		
 		public RoomDetailInterface() {}
 		
@@ -1171,6 +1242,12 @@ public class RoomInterface implements IsSerializable {
 			iPeriodPreferenceModels.put(model.getExamType().getId(), model);
 		}
 
+		public boolean hasFutureRooms() { return iFutureRooms != null && !iFutureRooms.isEmpty(); }
+		public List<FutureRoomInterface> getFutureRooms() { return iFutureRooms; }
+		public void addFutureRoom(FutureRoomInterface futureRoom) {
+			if (iFutureRooms == null) iFutureRooms = new ArrayList<FutureRoomInterface>();
+			iFutureRooms.add(futureRoom);
+		}
 	}
 	
 	public static class RoomDetailsRequest implements GwtRpcRequest<GwtRpcResponseList<RoomDetailInterface>> {
@@ -1404,12 +1481,10 @@ public class RoomInterface implements IsSerializable {
 	}
 	
 	public static class RoomPropertiesInterface implements GwtRpcResponse {
-		private Long iSessionId = null;
-		private String iSessionName = null;
+		private AcademicSessionInterface iSession = null;
 		private boolean iCanExportPdf = false, iCanExportCsv = false;
 		private boolean iCanEditDepartments = false;
 		private boolean iCanEditRoomExams = false;
-		private boolean iCanAddRoom = false, iCanAddNonUniversity = false;
 		private List<RoomTypeInterface> iRoomTypes = new ArrayList<RoomTypeInterface>();
 		private List<BuildingInterface> iBuildings = new ArrayList<BuildingInterface>();
 		private List<FeatureTypeInterface> iFeatureTypes = new ArrayList<FeatureTypeInterface>();
@@ -1425,14 +1500,14 @@ public class RoomInterface implements IsSerializable {
 		private boolean iCanChangeAvailability = false, iCanChangeControll = false, iCanChangeExternalId = false, iCanChangeExamStatus = false,
 				iCanChangeEventProperties = false, iCanChangePicture = false, iCanChangePreferences = false,
 				iCanChangeGroups = false, iCanChangeFeatures = false, iCanChangeEventAvailability = false;
+		private List<AcademicSessionInterface> iFutureSessions = null;
 		
 		public RoomPropertiesInterface() {}
 		
-		public Long getAcademicSessionId() { return iSessionId; }
-		public void setAcademicSessionId(Long sessionId) { iSessionId = sessionId; }
-		
-		public String getAcademicSessionName() { return iSessionName; }
-		public void setAcademicSessionName(String name) { iSessionName = name; }
+		public AcademicSessionInterface getAcademicSession() { return iSession; }
+		public void setAcademicSession(AcademicSessionInterface session) { iSession = session; }
+		public Long getAcademicSessionId() { return (iSession == null ? null : iSession.getId()); }
+		public String getAcademicSessionName() { return (iSession == null ? null : iSession.getLabel()); }
 
 		public boolean isCanEditDepartments() { return iCanEditDepartments; }
 		public void setCanEditDepartments(boolean canEditDepartments) { iCanEditDepartments = canEditDepartments; }
@@ -1446,11 +1521,20 @@ public class RoomInterface implements IsSerializable {
 		public boolean isCanEditRoomExams() { return iCanEditRoomExams; }
 		public void setCanEditRoomExams(boolean canEditRoomExams) { iCanEditRoomExams = canEditRoomExams; }
 
-		public boolean isCanAddRoom() { return iCanAddRoom; }
-		public void setCanAddRoom(boolean canAddRoom) { iCanAddRoom = canAddRoom; }
+		public boolean isCanAddRoom() {
+			return  (iSession == null ? false : iSession.isCanAddRoom());
+		}
+		public void setCanAddRoom(boolean canAddRoom) {
+			if (iSession != null) iSession.setCanAddRoom(canAddRoom);
+		}
 		
-		public boolean isCanAddNonUniversity() { return iCanAddNonUniversity; }
-		public void setCanAddNonUniversity(boolean canAddNonUniv) { iCanAddNonUniversity = canAddNonUniv; }
+		public boolean isCanAddNonUniversity() {
+			return  (iSession == null ? false : iSession.isCanAddNonUniversity());
+		}
+		public void setCanAddNonUniversity(boolean canAddNonUniv) { 
+			if (iSession != null)
+				iSession.setCanAddNonUniversity(canAddNonUniv);
+		}
 		
 		public void addRoomType(RoomTypeInterface roomType) { iRoomTypes.add(roomType); }
 		public List<RoomTypeInterface> getRoomTypes() { return iRoomTypes; }
@@ -1561,6 +1645,19 @@ public class RoomInterface implements IsSerializable {
 
 		public boolean isCanChangeEventAvailability() { return iCanChangeEventAvailability; }
 		public void setCanChangeEventAvailability(boolean canChangeEventAvailability) { iCanChangeEventAvailability = canChangeEventAvailability; }
+		
+		public boolean hasFutureSessions() { return iFutureSessions != null && !iFutureSessions.isEmpty(); }
+		public void addFutureSession(AcademicSessionInterface session) {
+			if (iFutureSessions == null) iFutureSessions = new ArrayList<AcademicSessionInterface>();
+			iFutureSessions.add(session);
+		}
+		public List<AcademicSessionInterface> getFutureSessions() { return iFutureSessions; }
+		public AcademicSessionInterface getFutureSession(Long id) {
+			for (AcademicSessionInterface session: iFutureSessions)
+				if (id.equals(session.getId()))
+					return session;
+			return null;
+		}
 	}
 	
 	public static enum RoomsColumn {
@@ -1632,7 +1729,7 @@ public class RoomInterface implements IsSerializable {
 		private Operation iOperation;
 		private Long iLocationId;
 		private RoomDetailInterface iRoom;
-		private boolean iApplyToFutureTermsAsWell;
+		private Map<Long, Integer> iFutureFlags;
 		
 		public static enum Operation implements IsSerializable {
 			CREATE,
@@ -1656,28 +1753,39 @@ public class RoomInterface implements IsSerializable {
 		public boolean hasLabel() { return getLabel() != null && !getLabel().isEmpty(); }
 		public String getLabel() { return iRoom != null ? iRoom.getLabel() : null; }
 		
-		public boolean isApplyToFutureTermsAsWell() { return iApplyToFutureTermsAsWell; }
-		public void setApplyToFutureTermsAsWell(boolean apply) { iApplyToFutureTermsAsWell = apply; }
+		public boolean hasFutureFlags() {
+			return iFutureFlags != null && !iFutureFlags.isEmpty();
+		}
+		public void clearFutureFlags() {
+			if (iFutureFlags != null) iFutureFlags.clear();
+		}
+		public void setFutureFlag(Long id, int flags) {
+			if (iFutureFlags == null) iFutureFlags = new HashMap<Long, Integer>();
+			iFutureFlags.put(id, flags);
+		}
+		public Integer getFutureFlag(Long id) {
+			return (iFutureFlags == null ? null : iFutureFlags.get(id));
+		}
+		public Map<Long, Integer> getFutureFlags() {
+			return iFutureFlags;
+		}
 		
 		@Override
 		public String toString() {
-			return getOperation().name() + " " + (hasLocationId() ? getLocationId() + (hasLabel() ? "/" + getLabel() : "") : hasLabel() ? getLabel() : "")
-					+ (isApplyToFutureTermsAsWell() ? " (f)" : "");
+			return getOperation().name() + " " + (hasLocationId() ? getLocationId() + (hasLabel() ? "/" + getLabel() : "") : hasLabel() ? getLabel() : "");
 		}
 		
-		public static RoomUpdateRpcRequest createDeleteRequest(Long locationId, boolean includeFutureTerms) {
+		public static RoomUpdateRpcRequest createDeleteRequest(Long locationId) {
 			RoomUpdateRpcRequest request = new RoomUpdateRpcRequest();
 			request.setOperation(Operation.DELETE);
 			request.setLocationId(locationId);
-			request.setApplyToFutureTermsAsWell(includeFutureTerms);
 			return request;
 		}
 		
-		public static RoomUpdateRpcRequest createSaveOrUpdateRequest(RoomDetailInterface room, boolean includeFutureTerms) {
+		public static RoomUpdateRpcRequest createSaveOrUpdateRequest(RoomDetailInterface room) {
 			RoomUpdateRpcRequest request = new RoomUpdateRpcRequest();
 			request.setOperation(room.getUniqueId() == null ? Operation.CREATE : Operation.UPDATE);
 			request.setRoom(room);
-			request.setApplyToFutureTermsAsWell(includeFutureTerms);
 			return request;
 		}
 	}
@@ -1705,5 +1813,47 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean hasRoom() { return iRoom != null; }
 		public RoomDetailInterface getRoom() { return iRoom; }
+	}
+	
+	public static enum FutureOperation implements IsSerializable {
+		ROOM_PROPERTIES,
+		EXAM_PROPERTIES,
+		EVENT_PROPERTIES,
+		GROUPS,
+		FEATURES,
+		ROOM_SHARING(false, true),
+		EXAM_PREFS(false, true),
+		EVENT_AVAILABILITY(false, true),
+		PICTURES,
+		;
+		private boolean iDefaultSelection, iDefaultSelectionNewRoom;
+		FutureOperation(boolean defaultSelection, boolean defaultSelectionNewRoom) {
+			iDefaultSelection = defaultSelection;
+			iDefaultSelectionNewRoom = defaultSelectionNewRoom;
+		}
+		FutureOperation(boolean defaultSelection) {
+			this(defaultSelection, defaultSelection);
+		}
+		FutureOperation() {
+			this(true, true);
+		}
+		public int flag() { return 1 << ordinal(); }
+		public boolean in(int flags) {
+			return (flags & flag()) != 0;
+		}
+		public int set(int flags) {
+			return (in(flags) ? flags : flags + flag());
+		}
+		public int clear(int flags) {
+			return (in(flags) ? flags - flag() : flags);
+		}
+		public boolean getDefaultSelection() { return iDefaultSelection; }
+		public boolean getDefaultSelectionNewRoom() { return iDefaultSelectionNewRoom; }
+		public static int getFlagAllEnabled() {
+			int ret = 0;
+			for (FutureOperation op: values())
+				ret = op.set(ret);
+			return ret;
+		}
 	}
 }
