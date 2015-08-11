@@ -399,6 +399,13 @@ public class RoomEdit extends Composite {
 		
 		iEventDepartment = new ListBox();
 		iEventDepartment.setStyleName("unitime-TextBox");
+		iEventDepartment.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iEventAvailabilityHeader.setVisible(iEventDepartment.getSelectedIndex() > 0);
+				iEventAvailability.setVisible(iEventDepartment.getSelectedIndex() > 0);
+			}
+		});
 		
 		iEventStatus = new ListBox();
 		iEventStatus.setStyleName("unitime-TextBox");
@@ -969,11 +976,12 @@ public class RoomEdit extends Composite {
 			(iProperties.isCanSeeEvents() && iRoom.isCanSeeEventAvailability())) {
 			iForm.addHeaderRow(iEventAvailabilityHeader);
 			iForm.addRow(iEventAvailability);
+			iEventAvailabilityHeader.setVisible(iEventDepartment.getSelectedIndex() > 0);
 			if (iRoom.hasEventAvailabilityModel()) {
 				iEventAvailabilityHeader.clearMessage();
 				iEventAvailability.setEditable((iRoom.getUniqueId() == null && iProperties.isCanChangeEventAvailability()) || iRoom.isCanChangeEventAvailability());
 				iEventAvailability.setModel(iRoom.getEventAvailabilityModel());
-				iEventAvailability.setVisible(true);
+				iEventAvailability.setVisible(iEventDepartment.getSelectedIndex() > 0);
 			} else {
 				iEventAvailabilityHeader.showLoading();
 				iEventAvailability.setVisible(false);
@@ -987,7 +995,7 @@ public class RoomEdit extends Composite {
 						iEventAvailabilityHeader.clearMessage();
 						iEventAvailability.setEditable((iRoom.getUniqueId() == null && iProperties.isCanChangeEventAvailability()) || iRoom.isCanChangeEventAvailability());
 						iEventAvailability.setModel(result);
-						iEventAvailability.setVisible(true);
+						iEventAvailability.setVisible(iEventDepartment.getSelectedIndex() > 0);
 					}
 				});
 			}

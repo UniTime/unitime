@@ -710,13 +710,13 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("External Id")
 	String colExternalId();
 	
-	@DefaultMessage("Room<br>")
+	@DefaultMessage("Room<br>Properties")
 	String colChangeRoomProperties();
 	
 	@DefaultMessage("Examination<br>Properties")
 	String colChangeExamProperties();
 	
-	@DefaultMessage("Event<br>")
+	@DefaultMessage("Event<br>Properties")
 	String colChangeEventProperties();
 	
 	@DefaultMessage("Room<br>Groups")
@@ -1544,6 +1544,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to initialize: {0}")
 	String failedToInitialize(String reason);
 	
+	@DefaultMessage("Failed to create {0} in {1}: {2}")
+	String failedCreateLocation(String name, String session, String reason);
+	
+	@DefaultMessage("Failed to update {0} in {1}: {2}")
+	String failedUpdateLocation(String name, String session, String reason);
+
+	@DefaultMessage("Failed to delete {0} in {1}: {2}")
+	String failedDeleteLocation(String name, String session, String reason);
+	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
 	
@@ -1759,6 +1768,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to update the room: {0}")
 	String errorFailedToUpdateRoom(String message);
+	
+	@DefaultMessage("Building {0} does not exist.")
+	String errorBuildingNotExist(String bldgAbbv);
+	
+	@DefaultMessage("Room {0} already exists.")
+	String errorRoomAlreadyExists(String roomName);
+	
+	@DefaultMessage("Location name {0} does not meet the required pattern {1}.")
+	String errorLocationNameDoesNotMeetRequiredPattern(String locationName, String regExp);
+	
+	@DefaultMessage("Location name {0} does not meet the required pattern {1}: {2}.")
+	String errorLocationNameDoesNotMeetRequiredPatternWithReason(String locationName, String regExp, String reason);
 
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();

@@ -292,8 +292,9 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 	public RoomSharingModel loadEventAvailability(RoomSharingRequest request, SessionContext context) {
 		Location location = null;
 		if (request.getLocationId() != null) {
-			context.checkPermission(request.getLocationId(), "Location", Right.RoomDetailEventAvailability);
 			location = LocationDAO.getInstance().get(request.getLocationId());
+			if (!context.hasPermission(location, Right.RoomEditEventAvailability))
+				context.checkPermission(location, Right.RoomDetailEventAvailability);
 		}
 		
 		return loadEventAvailability(location, context);

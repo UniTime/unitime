@@ -462,7 +462,7 @@ public class LocationPermissions {
 	}
 
 	@PermissionForRight(Right.RoomEditEventAvailability)
-	public static class RoomEditEventAvailability extends RoomDetailEventAvailability{}
+	public static class RoomEditEventAvailability extends RoomEditChangeEventProperties{}
 	
 	@PermissionForRight(Right.RoomEditPreference)
 	public static class RoomEditPreference extends RoomEditAvailability{}
