@@ -82,6 +82,13 @@
 					</condition>
 				</item>
 			</menu>
+			<item name="Rooms (NEW)" page="rooms" type="gwt">
+				<parameter name="mode">courses</parameter>
+				<condition>
+					<hasPermission name="Rooms"/>
+					<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
+				</condition>
+			</item>
 			<separator/>
 			<item name="Distribution Preferences" page="distributionPrefs.do">
 				<condition>
@@ -326,6 +333,13 @@
 					</condition>
 				</item>
 			</menu>
+			<item name="Rooms (NEW)" page="rooms" type="gwt">
+				<parameter name="mode">exams</parameter>
+				<condition>
+					<hasPermission name="Rooms"/>
+					<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
+				</condition>
+			</item>
 			<separator/>
 			<item name="Examinations" page="examList.do"/>
 			<item name="Distribution Preferences" page="examDistributionPrefs.do">
@@ -496,6 +510,13 @@
 				</condition>
 			</item>
 		</menu>
+		<item name="Rooms (NEW)" page="rooms" type="gwt">
+			<parameter name="mode">events</parameter>
+			<condition>
+				<hasPermission name="Rooms"/>
+				<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
+			</condition>
+		</item>
 		<separator>
 			<condition>
 				<hasPermission name="Rooms"/>
