@@ -209,6 +209,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 			for (Location loc: futureLocations) {
 				FutureRoomInterface f = new FutureRoomInterface(loc.getUniqueId(), loc.getLabel());
 				f.setSession(new AcademicSessionInterface(loc.getSession().getUniqueId(), loc.getSession().getLabel()));
+				f.setDisplayName(loc.getDisplayName());
 				EventContext cx = new EventContext(context, context.getUser(), loc.getSession().getUniqueId());
 				if (loc instanceof Room) {
 					f.setCanDelete(cx.hasPermission(loc, Right.RoomDelete));

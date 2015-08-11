@@ -25,14 +25,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
@@ -87,6 +92,7 @@ import org.unitime.timetable.util.LocationPermIdGenerator;
  */
 @GwtRpcImplements(RoomUpdateRpcRequest.class)
 public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequest, RoomDetailInterface> {
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 
 	@Override
 	public RoomDetailInterface execute(RoomUpdateRpcRequest request, SessionContext context) {
@@ -133,7 +139,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 							"order by f.sessionBeginDateTime")
 							.setLong("sessionId",context.getUser().getCurrentAcademicSessionId()).list();
 					for (Long id: futureSessionIds) {
-						Integer flags = request.getFutureFlag(id);
+						Integer flags = request.getFutureFlag(-id);
 						if (flags != null)
 							create(request.getRoom(), new EventContext(context, context.getUser(), id), id, location.getPermanentId(), flags);
 					}
@@ -231,7 +237,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			return permId;
 		} catch (Throwable t) {
 			if (future)
-				throw new RoomException("Failed to delete " + roomName + " from " + sessionLabel+ ":" + t.getMessage(), t);
+				throw new RoomException(MESSAGES.failedDeleteLocation(roomName, sessionLabel, t.getMessage()), t);
 			else
 				throw new GwtRpcException(t.getMessage(), t);
 		} finally {
@@ -248,6 +254,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			tx = hibSession.beginTransaction();
 			Location location = LocationDAO.getInstance().get(room.getUniqueId(), hibSession);
 			if (location == null) return null;
+			sessionLabel = location.getSession().getLabel();
 			if (future) {
 				if (location instanceof Room) {
 					if (!context.hasPermission((Room)location, Right.RoomEdit)) return null;
@@ -263,15 +270,38 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			
 			if (context.hasPermission(location, Right.RoomEditChangeRoomProperties) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
 				if (location instanceof Room) {
-					Building building = lookuBuilding(hibSession, room.getBuilding(), future, location.getSession().getUniqueId());
-					if (future && room.getBuilding() != null && building == null) return null;
+					Building building = lookupBuilding(hibSession, room.getBuilding(), future, location.getSession().getUniqueId());
+					if (future && room.getBuilding() != null && building == null)
+						throw new RoomException(MESSAGES.errorBuildingNotExist(room.getBuilding().getAbbreviation()));
+					Room other = Room.findByBldgIdRoomNbr(building != null ? building.getUniqueId() : ((Room) location).getBuilding().getUniqueId(), room.getName(), location.getSession().getUniqueId());
+					if (other != null && !location.getUniqueId().equals(other.getUniqueId()))
+						throw new RoomException(MESSAGES.errorRoomAlreadyExists(roomName));
 					if (building != null) {
 						((Room)location).setBuilding(building);
 						((Room)location).setBuildingAbbv(building.getAbbreviation());
 					}
 					((Room)location).setRoomNumber(room.getName());
-				} else
+				} else {
+					if (!room.getName().equals(location.getLabel())) {
+						String nonUniversityLocationRegex = ApplicationProperty.NonUniversityLocationPattern.value();
+				    	String nonUniversityLocationInfo = ApplicationProperty.NonUniversityLocationPatternInfo.value();
+				    	if (nonUniversityLocationRegex != null && nonUniversityLocationRegex.trim().length() > 0) {
+					    	try { 
+						    	Pattern pattern = Pattern.compile(nonUniversityLocationRegex);
+						    	Matcher matcher = pattern.matcher(room.getName());
+						    	if (!matcher.find()) {
+						    		throw new RoomException(nonUniversityLocationInfo == null || nonUniversityLocationInfo.isEmpty() ?
+						    				MESSAGES.errorLocationNameDoesNotMeetRequiredPattern(room.getName(), nonUniversityLocationRegex) : nonUniversityLocationInfo);
+						    	}
+					    	} catch (RoomException e) {
+					    		throw e;
+					    	} catch (Exception e) {
+					    		throw new RoomException(MESSAGES.errorLocationNameDoesNotMeetRequiredPatternWithReason(room.getName(), nonUniversityLocationRegex, e.getMessage()), e);
+					    	}
+				    	}
+					}
 					((NonUniversityLocation)location).setName(room.getName());
+				}
 				location.setIgnoreTooFar(room.isIgnoreTooFar());
 				location.setIgnoreRoomCheck(room.isIgnoreRoomCheck());
 				location.setCoordinateX(room.getX());
@@ -605,7 +635,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			return location;
 		} catch (Throwable t) {
 			if (future)
-				throw new RoomException("Failed to update " + roomName + " from " + sessionLabel+ ":" + t.getMessage(), t);
+				throw new RoomException(MESSAGES.failedUpdateLocation(roomName, sessionLabel, t.getMessage()), t);
 			else
 				throw new GwtRpcException(t.getMessage(), t);
 		} finally {
@@ -636,17 +666,39 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					context.checkPermission(Right.AddNonUnivLocation);
 			}
 			
+			if (room.getRoomType().isRoom()) {
+				
+			}
+			
 			Location location = null;
 			if (room.getRoomType().isRoom()) {
 				Room r = new Room();
-				Building b = lookuBuilding(hibSession, room.getBuilding(), future, session.getUniqueId());
-				if (b == null) return null;
+				Building b = lookupBuilding(hibSession, room.getBuilding(), future, session.getUniqueId());
+				if (b == null) throw new RoomException(MESSAGES.errorBuildingNotExist(room.getBuilding().getAbbreviation()));
+				Room other = Room.findByBldgIdRoomNbr(b.getUniqueId(), room.getName(), session.getUniqueId());
+				if (other != null) throw new RoomException(MESSAGES.errorRoomAlreadyExists(roomName));
 				r.setBuilding(b);
 				r.setBuildingAbbv(b.getAbbreviation());
 				r.setRoomNumber(room.getName());
 				r.setPictures(new HashSet<RoomPicture>());
 				location = r;
 			} else {
+				String nonUniversityLocationRegex = ApplicationProperty.NonUniversityLocationPattern.value();
+		    	String nonUniversityLocationInfo = ApplicationProperty.NonUniversityLocationPatternInfo.value();
+		    	if (nonUniversityLocationRegex != null && nonUniversityLocationRegex.trim().length() > 0) {
+			    	try { 
+				    	Pattern pattern = Pattern.compile(nonUniversityLocationRegex);
+				    	Matcher matcher = pattern.matcher(room.getName());
+				    	if (!matcher.find()) {
+				    		throw new RoomException(nonUniversityLocationInfo == null || nonUniversityLocationInfo.isEmpty() ?
+				    				MESSAGES.errorLocationNameDoesNotMeetRequiredPattern(room.getName(), nonUniversityLocationRegex) : nonUniversityLocationInfo);
+				    	}
+			    	} catch (RoomException e) {
+			    		throw e;
+			    	} catch (Exception e) {
+			    		throw new RoomException(MESSAGES.errorLocationNameDoesNotMeetRequiredPatternWithReason(room.getName(), nonUniversityLocationRegex, e.getMessage()), e);
+			    	}
+		    	}
 				NonUniversityLocation r = new NonUniversityLocation();
 				r.setPictures(new HashSet<NonUniversityLocationPicture>());
 				r.setName(room.getName());
@@ -950,7 +1002,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			return location;
 		} catch (Throwable t) {
 			if (future)
-				throw new RoomException("Failed to update " + roomName + " from " + sessionLabel+ ":" + t.getMessage(), t);
+				throw new RoomException(MESSAGES.failedCreateLocation(roomName, sessionLabel, t.getMessage()), t);
 			else
 				throw new GwtRpcException(t.getMessage(), t);
 		} finally {
@@ -962,7 +1014,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 		return p1.getName().equals(p2.getFileName()) && Math.abs(p1.getTimeStamp() - p2.getTimeStamp().getTime()) < 1000 && p1.getType().equals(p2.getContentType());
 	}
 	
-	protected Building lookuBuilding(org.hibernate.Session hibSession, BuildingInterface original, boolean future, Long sessionId) {
+	protected Building lookupBuilding(org.hibernate.Session hibSession, BuildingInterface original, boolean future, Long sessionId) {
 		if (original == null) return null;
 		if (future) {
 			return (Building)hibSession.createQuery(

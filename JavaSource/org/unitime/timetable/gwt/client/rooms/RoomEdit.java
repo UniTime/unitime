@@ -74,6 +74,10 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
@@ -169,18 +173,19 @@ public class RoomEdit extends Composite {
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
 							String message = null;
-							if (getRoom().getUniqueId() == null) {
+							RoomDetailInterface result = null;
+							if (caught instanceof RoomException) {
+								message = caught.getMessage();
+								result = ((RoomException)caught).getRoom();
+							} else if (getRoom().getUniqueId() == null) {
 								message = MESSAGES.errorFailedToSaveRoom(caught.getMessage());
 							} else {
 								message = MESSAGES.errorFailedToUpdateRoom(caught.getMessage());
 							}
 							iHeader.setErrorMessage(message);
 							UniTimeNotifications.error(message);
-							if (caught instanceof RoomException) {
-								RoomException e = (RoomException)caught;
-								if (e.hasRoom())
-									hide(e.getRoom(), true, message);
-							}
+							if (result != null)
+								hide(result, true, message);
 						}
 
 						@Override
@@ -204,13 +209,18 @@ public class RoomEdit extends Composite {
 						@Override
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
-							iHeader.setErrorMessage(MESSAGES.errorFailedToDeleteRoom(caught.getMessage()));
-							UniTimeNotifications.error(MESSAGES.errorFailedToDeleteRoom(caught.getMessage()));
+							String message = null;
+							RoomDetailInterface result = null;
 							if (caught instanceof RoomException) {
-								RoomException e = (RoomException)caught;
-								if (e.hasRoom())
-									hide(e.getRoom(), true, MESSAGES.errorFailedToDeleteRoom(caught.getMessage()));
+								message = caught.getMessage();
+								result = ((RoomException)caught).getRoom();
+							} else {
+								message = MESSAGES.errorFailedToDeleteRoom(caught.getMessage());
 							}
+							iHeader.setErrorMessage(message);
+							UniTimeNotifications.error(message);
+							if (result != null)
+								hide(result, true, message);
 						}
 
 						@Override
@@ -1001,13 +1011,19 @@ public class RoomEdit extends Composite {
 			long id = 0;
 			for (AcademicSessionInterface session: iProperties.getFutureSessions()) {
 				List<Widget> line = new ArrayList<Widget>();
-				line.add(new CheckBox());
+				CheckBox select = new CheckBox(); 
+				line.add(select);
 				line.add(new Label());
 				line.add(new Label(session.getLabel()));
+				Integer flags = RoomCookie.getInstance().getFutureFlags(session.getId());
+				select.setValue(flags != null);
 				for (FutureOperation op: FutureOperation.values()) {
 					CheckBox ch = new CheckBox();
-					ch.setValue(canFutureOperation(iRoom, op) && op.getDefaultSelectionNewRoom());
-					if (op == FutureOperation.ROOM_PROPERTIES) ch.setEnabled(false);
+					ch.setValue(canFutureOperation(iRoom, op) && ((flags == null && op.getDefaultSelectionNewRoom()) || (flags != null && op.in(flags))));
+					if (op == FutureOperation.ROOM_PROPERTIES) {
+						ch.setValue(true);
+						ch.setEnabled(false);
+					}
 					line.add(ch);
 				}
 				FutureRoomInterface fr = new FutureRoomInterface();
@@ -1025,12 +1041,15 @@ public class RoomEdit extends Composite {
 			iApplyTo.clearTable(1);
 			for (FutureRoomInterface fr: iRoom.getFutureRooms()) {
 				List<Widget> line = new ArrayList<Widget>();
-				line.add(new CheckBox());
-				line.add(new Label(fr.getLabel()));
+				CheckBox select = new CheckBox(); 
+				line.add(select);
+				line.add(new FutureRoomNameCell(fr));
 				line.add(new Label(fr.getSession().getLabel()));
+				Integer flags = RoomCookie.getInstance().getFutureFlags(fr.getSession().getId());
+				select.setValue(flags != null);
 				for (FutureOperation op: FutureOperation.values()) {
 					CheckBox ch = new CheckBox();
-					ch.setValue(canFutureOperation(iRoom, op) && op.getDefaultSelection());
+					ch.setValue(canFutureOperation(iRoom, op) && ((flags == null && op.getDefaultSelection()) || (flags != null && op.in(flags))));
 					line.add(ch);
 				}
 				iApplyTo.addRow(fr, line);
@@ -1473,7 +1492,10 @@ public class RoomEdit extends Composite {
 						if (x.getValue())
 							flags = op.set(flags);
 					}
-					request.setFutureFlag(iApplyTo.getData(1).getSession().getId(), flags);
+					request.setFutureFlag(-iApplyTo.getData(1).getSession().getId(), flags);
+					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(1).getSession().getId(), flags);
+				} else {
+					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(1).getSession().getId(), null);
 				}
 			}
 		} else if (iRoom.hasFutureRooms()) {
@@ -1487,9 +1509,30 @@ public class RoomEdit extends Composite {
 							flags = op.set(flags);
 					}
 					request.setFutureFlag(iApplyTo.getData(1).getId(), flags);
+					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(1).getSession().getId(), flags);
+				} else  {
+					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(1).getSession().getId(), null);
 				}
 			}
 		}
 		return request;
+	}
+	
+	class FutureRoomNameCell extends Label {
+		FutureRoomNameCell(final FutureRoomInterface room) {
+			super(room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel());
+			addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					RoomHint.showHint(FutureRoomNameCell.this.getElement(), room.getId(), null, null, true);
+				}
+			});
+			addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					RoomHint.hideHint();
+				}
+			});
+		}
 	}
 }

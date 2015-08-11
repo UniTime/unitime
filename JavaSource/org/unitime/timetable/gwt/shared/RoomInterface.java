@@ -893,6 +893,7 @@ public class RoomInterface implements IsSerializable {
 	public static class FutureRoomInterface implements GwtRpcResponse {
 		private Long iId;
 		private String iLabel;
+		private String iDisplayName;
 		private AcademicSessionInterface iSession;
 		private boolean iCanChange = false, iCanDelete = false;
 		
@@ -907,6 +908,10 @@ public class RoomInterface implements IsSerializable {
 		
 		public String getLabel() { return iLabel; }
 		public void setLabel(String label) { iLabel = label; }
+		
+		public String getDisplayName() { return iDisplayName; }
+		public void setDisplayName(String displayName) { iDisplayName = displayName; }
+		public boolean hasDisplayName() { return iDisplayName != null && !iDisplayName.isEmpty(); }
 		
 		public AcademicSessionInterface getSession() { return iSession; }
 		public void setSession(AcademicSessionInterface session) { iSession = session; }

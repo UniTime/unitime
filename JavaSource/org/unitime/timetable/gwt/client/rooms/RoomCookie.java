@@ -20,6 +20,8 @@
 package org.unitime.timetable.gwt.client.rooms;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
@@ -42,6 +44,7 @@ public class RoomCookie {
 	private Boolean iGridAsText = null;
 	private Boolean iHorizontal = null;
 	private String iMode = "";
+	private Map<Long, Integer> iFutures = new HashMap<Long, Integer>();
 	
 	private RoomCookie() {
 		iFlags = new int[RoomsPageMode.values().length];
@@ -62,6 +65,10 @@ public class RoomCookie {
 					iFlags[i] = Integer.parseInt(params[idx++]);
 					iHash[i] = params[idx++];
 				}
+				while (idx < params.length) {
+					String[] x = params[idx++].split(":");
+					iFutures.put(Long.valueOf(x[0]), new Integer(x[1]));
+				}
 			}
 		} catch (Exception e) {
 		}
@@ -71,6 +78,9 @@ public class RoomCookie {
 		String cookie = iSortRoomsBy + "|" + getOrientation() + "|" + iDeptMode;
 		for (int i = 0; i < iFlags.length; i++) {
 			cookie += "|" + iFlags[i] + "|" + (iHash[i] == null ? "" : iHash[i]);
+		}
+		for (Map.Entry<Long, Integer> e: iFutures.entrySet()) {
+			cookie += "|" + e.getKey() + ":" + e.getValue();
 		}
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Room", cookie, expires);
@@ -195,6 +205,18 @@ public class RoomCookie {
 	
 	public void setDeptMode(int deptMode) {
 		iDeptMode = deptMode;
+		save();
+	}
+	
+	public Integer getFutureFlags(Long sessionId) {
+		return iFutures.get(sessionId);
+	}
+	
+	public void setFutureFlags(Long sessionId, Integer flags) {
+		if (flags == null)
+			iFutures.remove(sessionId);
+		else
+			iFutures.put(sessionId, flags);
 		save();
 	}
 }
