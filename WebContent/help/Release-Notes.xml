@@ -54,6 +54,14 @@
 				<line>Fixed an issue preventing a configuration with two or more levels of parent-child relations from being deleted (ObjectDeletedException).</line>
 			</description>
 		</item>
+		<item>
+			<name>Permissions</name>
+			<description>
+				<line>Remember the roles and their order when the page is loaded, use this list for the updates.</line>
+				<line>This fixes the issue with the permissions getting shifted between roles as the order of the roles is changed between updates
+					(number of permissions of a role is used in the ordering).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
