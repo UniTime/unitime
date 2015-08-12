@@ -208,7 +208,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 					.setLong("permanentId", location.getPermanentId()).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list();
 			for (Location loc: futureLocations) {
 				FutureRoomInterface f = new FutureRoomInterface(loc.getUniqueId(), loc.getLabel());
-				f.setSession(new AcademicSessionInterface(loc.getSession().getUniqueId(), loc.getSession().getLabel()));
+				f.setSession(new AcademicSessionInterface(loc.getSession().getUniqueId(), loc.getSession().getAcademicTerm() + " " + loc.getSession().getAcademicYear()));
 				f.setDisplayName(loc.getDisplayName());
 				EventContext cx = new EventContext(context, context.getUser(), loc.getSession().getUniqueId());
 				if (loc instanceof Room) {

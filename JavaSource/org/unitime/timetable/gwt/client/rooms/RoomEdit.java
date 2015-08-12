@@ -167,8 +167,15 @@ public class RoomEdit extends Composite {
 					iHeader.setErrorMessage(MESSAGES.failedValidationCheckForm());
 					UniTimeNotifications.error(MESSAGES.failedValidationCheckForm());
 				} else {
+					RoomUpdateRpcRequest request = RoomUpdateRpcRequest.createSaveOrUpdateRequest(getRoom());
+					String future = generateAlsoUpdateMessage(false);
+					if (future != null && Window.confirm(getRoom().getUniqueId() == null ? MESSAGES.confirmCreateRoomInFutureSessions(future) : MESSAGES.confirmUpdateRoomInFutureSessions(future))) {
+						fillFutureFlags(request, false);
+					} else {
+						return;
+					}
 					LoadingWidget.getInstance().show(getRoom().getUniqueId() == null ? MESSAGES.waitSavingRoom() : MESSAGES.waitUpdatingRoom());
-					RPC.execute(fillFutureFlags(RoomUpdateRpcRequest.createSaveOrUpdateRequest(getRoom())), new AsyncCallback<RoomDetailInterface>() {
+					RPC.execute(request, new AsyncCallback<RoomDetailInterface>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
@@ -202,34 +209,39 @@ public class RoomEdit extends Composite {
 		iHeader.addButton("delete", MESSAGES.buttonDeleteRoom(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (Window.confirm(MESSAGES.confirmDeleteRoom())) {
-					LoadingWidget.getInstance().show(MESSAGES.waitDeletingRoom());
-					RPC.execute(fillFutureFlags(RoomUpdateRpcRequest.createDeleteRequest(getRoom().getUniqueId())), new AsyncCallback<RoomDetailInterface>() {
-
-						@Override
-						public void onFailure(Throwable caught) {
-							LoadingWidget.getInstance().hide();
-							String message = null;
-							RoomDetailInterface result = null;
-							if (caught instanceof RoomException) {
-								message = caught.getMessage();
-								result = ((RoomException)caught).getRoom();
-							} else {
-								message = MESSAGES.errorFailedToDeleteRoom(caught.getMessage());
-							}
-							iHeader.setErrorMessage(message);
-							UniTimeNotifications.error(message);
-							if (result != null)
-								hide(result, true, message);
-						}
-
-						@Override
-						public void onSuccess(RoomDetailInterface result) {
-							LoadingWidget.getInstance().hide();
-							hide(null, false, null);
-						}
-					});
+				RoomUpdateRpcRequest request = RoomUpdateRpcRequest.createDeleteRequest(getRoom().getUniqueId());
+				String future = generateAlsoUpdateMessage(true);
+				if (Window.confirm(future == null ? MESSAGES.confirmDeleteRoom() : MESSAGES.confirmDeleteRoomInFutureSessions(future))) {
+					if (future != null) fillFutureFlags(request, true);
+				} else {
+					return;
 				}
+				LoadingWidget.getInstance().show(MESSAGES.waitDeletingRoom());
+				RPC.execute(request, new AsyncCallback<RoomDetailInterface>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						String message = null;
+						RoomDetailInterface result = null;
+						if (caught instanceof RoomException) {
+							message = caught.getMessage();
+							result = ((RoomException)caught).getRoom();
+						} else {
+							message = MESSAGES.errorFailedToDeleteRoom(caught.getMessage());
+						}
+						iHeader.setErrorMessage(message);
+						UniTimeNotifications.error(message);
+						if (result != null)
+							hide(result, true, message);
+					}
+
+					@Override
+					public void onSuccess(RoomDetailInterface result) {
+						LoadingWidget.getInstance().hide();
+						hide(null, false, null);
+					}
+				});
 			}
 		});
 		iHeader.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler() {
@@ -570,6 +582,7 @@ public class RoomEdit extends Composite {
 		});
 		
 		iApplyToHeader = new UniTimeHeaderPanel(MESSAGES.headerRoomApplyToFutureRooms());
+		iApplyToHeader.setTitleStyleName("update-options");
 		iApplyTo = new UniTimeTable<FutureRoomInterface>();
 		iApplyTo.setStyleName("unitime-RoomApplyTo");
 		List<UniTimeTableHeader> ah = new ArrayList<UniTimeTableHeader>();
@@ -1013,8 +1026,11 @@ public class RoomEdit extends Composite {
 			}
 		}
 		
+		iForm.addBottomRow(iFooter);
+		
 		if (iRoom.getUniqueId() == null && iProperties.hasFutureSessions()) {
-			iForm.addHeaderRow(iApplyToHeader);
+			int row = iForm.addHeaderRow(iApplyToHeader);
+			iForm.getRowFormatter().addStyleName(row, "space-above");
 			iApplyTo.clearTable(1);
 			long id = 0;
 			for (AcademicSessionInterface session: iProperties.getFutureSessions()) {
@@ -1045,7 +1061,8 @@ public class RoomEdit extends Composite {
 			iApplyTo.setColumnVisible(1, false);
 			iForm.addRow(iApplyTo);
 		} else if (iRoom.hasFutureRooms()) {
-			iForm.addHeaderRow(iApplyToHeader);
+			int row = iForm.addHeaderRow(iApplyToHeader);
+			iForm.getRowFormatter().addStyleName(row, "space-above");
 			iApplyTo.clearTable(1);
 			for (FutureRoomInterface fr: iRoom.getFutureRooms()) {
 				List<Widget> line = new ArrayList<Widget>();
@@ -1068,8 +1085,6 @@ public class RoomEdit extends Composite {
 			iApplyTo.setColumnVisible(1, true);
 			iForm.addRow(iApplyTo);
 		}
-		
-		iForm.addBottomRow(iFooter);
 	}
 	
 	public RoomDetailInterface getRoom() { return iRoom; }
@@ -1319,9 +1334,10 @@ public class RoomEdit extends Composite {
 					if (opt.getId() > 0) { hasDepartment = true; break; }
 				}
 			}
-			if (!hasDepartment)
+			if (!hasDepartment) {
 				iRoomSharingHeader.setErrorMessage(MESSAGES.errorRoomHasNoDepartment());
-			else
+				result = false;
+			} else
 				iRoomSharingHeader.clearMessage();
 		}
 		
@@ -1488,7 +1504,7 @@ public class RoomEdit extends Composite {
 		}
 	}
 	
-	protected RoomUpdateRpcRequest fillFutureFlags(RoomUpdateRpcRequest request) {
+	protected void fillFutureFlags(RoomUpdateRpcRequest request, boolean includeWhenNoFlags) {
 		request.clearFutureFlags();
 		if (iRoom.getUniqueId() == null && iProperties.hasFutureSessions()) {
 			for (int i = 1; i < iApplyTo.getRowCount(); i++) {
@@ -1500,6 +1516,7 @@ public class RoomEdit extends Composite {
 						if (x.getValue())
 							flags = op.set(flags);
 					}
+					if (flags == 0 && !includeWhenNoFlags) continue;
 					request.setFutureFlag(-iApplyTo.getData(1).getSession().getId(), flags);
 					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(1).getSession().getId(), flags);
 				} else {
@@ -1516,6 +1533,7 @@ public class RoomEdit extends Composite {
 						if (x.getValue())
 							flags = op.set(flags);
 					}
+					if (flags == 0 && !includeWhenNoFlags) continue;
 					request.setFutureFlag(iApplyTo.getData(1).getId(), flags);
 					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(1).getSession().getId(), flags);
 				} else  {
@@ -1523,7 +1541,28 @@ public class RoomEdit extends Composite {
 				}
 			}
 		}
-		return request;
+	}
+	
+	protected String generateAlsoUpdateMessage(boolean includeWhenNoFlags) {
+		if ((iRoom.getUniqueId() == null && iProperties.hasFutureSessions()) || iRoom.hasFutureRooms()) {
+			List<String> ret = new ArrayList<String>();
+			for (int i = 1; i < iApplyTo.getRowCount(); i++) {
+				CheckBox ch = (CheckBox)iApplyTo.getWidget(i, 0);
+				if (ch.getValue()) {
+					int flags = 0;
+					for (FutureOperation op: FutureOperation.values()) {
+						CheckBox x = (CheckBox)iApplyTo.getWidget(i, 3 + op.ordinal());
+						if (x.getValue())
+							flags = op.set(flags);
+					}
+					if (flags == 0 && !includeWhenNoFlags) continue;
+					ret.add(iApplyTo.getData(1).getSession().getLabel());
+				}
+			}
+			if (!ret.isEmpty())
+				return ToolBox.toString(ret);
+		}
+		return null;
 	}
 	
 	class FutureRoomNameCell extends Label {

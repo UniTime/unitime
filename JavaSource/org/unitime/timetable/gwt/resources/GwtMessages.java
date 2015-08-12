@@ -3152,6 +3152,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Do you realy want to delete this room?")
 	String confirmDeleteRoom();
 	
+	@DefaultMessage("Do you really want to create the room in {0} as well?")
+	String confirmCreateRoomInFutureSessions(String futureSessions);
+	
+	@DefaultMessage("Do you really want to update the room in {0} as well?")
+	String confirmUpdateRoomInFutureSessions(String futureSessions);
+	
+	@DefaultMessage("Do you realy want to delete this room (including {0} as well)?")
+	String confirmDeleteRoomInFutureSessions(String futureSessions);
+	
 	@DefaultMessage("&nbsp;(of&nbsp;{0})")
 	String curriculumProjectionRulesOfTotal(int total);
 	
@@ -3508,4 +3517,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Default break time is used when left empty.")
 	String useDefaultBreakTimeWhenEmpty();
+	
+	@DefaultMessage("{0}, {1}")
+	String itemSeparatorMiddle(String list, String item);
+	
+	@DefaultMessage("{0}, and {1}")
+	String itemSeparatorLast(String list, String item);
+	
+	@DefaultMessage("{0} and {1}")
+	String itemSeparatorPair(String firstItem, String lastItem);
 }

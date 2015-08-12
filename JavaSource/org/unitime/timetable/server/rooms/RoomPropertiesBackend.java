@@ -193,7 +193,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 					"s.uniqueId = :sessionId and s.sessionBeginDateTime < f.sessionBeginDateTime and s.academicInitiative = f.academicInitiative " +
 					"order by f.sessionBeginDateTime")
 					.setLong("sessionId", response.getAcademicSessionId()).list()) {
-				AcademicSessionInterface s = new AcademicSessionInterface(session.getUniqueId(), session.getLabel());
+				AcademicSessionInterface s = new AcademicSessionInterface(session.getUniqueId(), session.getAcademicTerm() + " " + session.getAcademicYear());
 				EventContext cx = new EventContext(context, context.getUser(), session.getUniqueId());
 				s.setCanAddRoom(cx.hasPermission(Right.AddRoom));
 				s.setCanAddNonUniversity(cx.hasPermission(Right.AddNonUnivLocation));

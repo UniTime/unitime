@@ -20,12 +20,15 @@
 package org.unitime.timetable.gwt.client;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.core.client.GWT;
@@ -43,6 +46,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class ToolBox {
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	
 	public native static void disableTextSelectInternal(Element e)/*-{
 		e.ondrag = function () { return false; };
@@ -307,5 +311,25 @@ public class ToolBox {
 		public String getUser();
 		public String getSession();
 		public Element getBody();
+	}
+	
+	public static String toString(Collection<String> items) {
+		if (items == null || items.isEmpty()) return "";
+		if (items.size() == 1) return items.iterator().next();
+		if (items.size() == 2) {
+			Iterator<String> i = items.iterator();
+			return MESSAGES.itemSeparatorPair(i.next(), i.next());
+		} else {
+			Iterator<String> i = items.iterator();
+			String list = i.next();
+			while (i.hasNext()) {
+				String item = i.next();
+				if (i.hasNext())
+					list = MESSAGES.itemSeparatorMiddle(list, item);
+				else
+					list = MESSAGES.itemSeparatorLast(list, item);
+			}
+			return list;
+		}
 	}
 }

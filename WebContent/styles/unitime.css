@@ -3833,3 +3833,15 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-RoomApplyTo {
 	width: 100%;
 }
+
+.unitime-RoomEdit .update-options {
+	font-size: large;
+	font-weight: bold;
+	color: purple;
+	text-align: left;
+	font-style: italic;
+}
+
+.unitime-RoomEdit .space-above {
+	margin-top: 20px;
+}
