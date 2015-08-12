@@ -40,6 +40,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
+import org.unitime.timetable.model.dao.RolesDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -54,11 +55,30 @@ public class Permissions implements AdminTable {
 	public PageName name() {
 		return new PageName(MESSAGES.pagePermission(), MESSAGES.pagePermissions());
 	}
+	
+	protected List<Roles> getRoles(SessionContext context, Session hibSession, boolean read) {
+		if (read) {
+			List<Roles> roles = new ArrayList<Roles>(Roles.findAll(false));
+			List<Long> roleIds = new ArrayList<Long>();
+			for (Roles role: roles)
+				roleIds.add(role.getRoleId());
+			context.setAttribute("Permissions.roleIds", roleIds);
+			return roles;
+		} else {
+			List<Long> roleIds = (List<Long>)context.getAttribute("Permissions.roleIds");
+			if (roleIds == null)
+				return getRoles(context, hibSession, true);
+			List<Roles> roles = new ArrayList<Roles>(roleIds.size());
+			for (Long roleId: roleIds)
+				roles.add(RolesDAO.getInstance().get(roleId, hibSession));
+			return roles;
+		}
+	}
 
 	@Override
 	@PreAuthorize("checkPermission('Permissions')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
-		List<Roles> roles = new ArrayList<Roles>(Roles.findAll(false));
+		List<Roles> roles = getRoles(context, hibSession, true);
 		Field[] fields = new Field[2 + roles.size()];
 		fields[0] = new Field(MESSAGES.fieldName(), FieldType.text, 160, 200, Flag.READ_ONLY);
 		fields[1] = new Field(MESSAGES.fieldLevel(), FieldType.text, 160, 200, Flag.READ_ONLY);
@@ -82,17 +102,19 @@ public class Permissions implements AdminTable {
 	@Override
 	@PreAuthorize("checkPermission('PermissionEdit')")
 	public void save(SimpleEditInterface data, SessionContext context, Session hibSession) {
-		List<Roles> roles = new ArrayList<Roles>(Roles.findAll(false));
+		List<Roles> roles = getRoles(context, hibSession, false);
 		Set<Roles> changed = new HashSet<Roles>();
 		for (Record r: data.getRecords()) {
 			Right right = Right.values()[(int)r.getUniqueId().longValue()];
 			for (int i = 0; i < roles.size(); i++) {
+				Roles role = roles.get(i);
+				if (role == null) continue;
 				boolean newValue = "true".equals(r.getField(2 + i));
-				boolean oldValue = roles.get(i).getRights().contains(right.name());
+				boolean oldValue = role.getRights().contains(right.name());
 				if (newValue != oldValue) {
-					changed.add(roles.get(i));
-					if (newValue) roles.get(i).getRights().add(right.name());
-					else roles.get(i).getRights().remove(right.name());
+					changed.add(role);
+					if (newValue) role.getRights().add(right.name());
+					else role.getRights().remove(right.name());
 				}
 			}
 		}
@@ -118,16 +140,18 @@ public class Permissions implements AdminTable {
 	@Override
 	@PreAuthorize("checkPermission('PermissionEdit')")
 	public void update(Record record, SessionContext context, Session hibSession) {
-		List<Roles> roles = new ArrayList<Roles>(Roles.findAll(false));
+		List<Roles> roles = getRoles(context, hibSession, false);
 		Set<Roles> changed = new HashSet<Roles>();
 		Right right = Right.values()[(int)record.getUniqueId().longValue()];
 		for (int i = 0; i < roles.size(); i++) {
+			Roles role = roles.get(i);
+			if (role == null) continue;
 			boolean newValue = "true".equals(record.getField(2 + i));
-			boolean oldValue = roles.get(i).getRights().contains(right.name());
+			boolean oldValue = role.getRights().contains(right.name());
 			if (newValue != oldValue) {
-				changed.add(roles.get(i));
-				if (newValue) roles.get(i).getRights().add(right.name());
-				else roles.get(i).getRights().remove(right.name());
+				changed.add(role);
+				if (newValue) role.getRights().add(right.name());
+				else role.getRights().remove(right.name());
 			}
 		}
 		for (Roles role: changed) {
