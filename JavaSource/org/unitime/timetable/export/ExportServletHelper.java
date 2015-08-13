@@ -53,8 +53,11 @@ public class ExportServletHelper implements ExportHelper {
 		iResponse = response;
 		iContext = context;
 		String q = request.getParameter("q");
+		String x = request.getParameter("x");
 		if (q != null) {
-			iParams = new QParams(q);
+			iParams = new QParams(q, false);
+		} else if (x != null) {
+			iParams = new QParams(x, true);
 		} else {
 			iParams = new HttpParams(request);
 		}
@@ -160,8 +163,8 @@ public class ExportServletHelper implements ExportHelper {
 	public static class QParams implements Exporter.Params {
 		private Map<String, List<String>> iParams = new HashMap<String, List<String>>();
 		
-		QParams(String q) throws UnsupportedEncodingException {
-			for (String p: QueryEncoderBackend.decode(q).split("&")) {
+		QParams(String q, boolean hash) throws UnsupportedEncodingException {
+			for (String p: QueryEncoderBackend.decode(q, hash).split("&")) {
 				String name = p.substring(0, p.indexOf('='));
 				String value = URLDecoder.decode(p.substring(p.indexOf('=') + 1), "UTF-8");
 				List<String> values = iParams.get(name);

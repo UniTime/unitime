@@ -250,6 +250,11 @@ public enum ApplicationProperty {
 	@Description("Configuration: encoder secret, please change the value in the custom properties!")
 	@Secret
 	UrlEncoderSecret("unitime.encode.secret"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Configuration: hash calendar queries to make the iCalendar URL short")
+	UrlEncoderHashQueryWhenAsked("unitime.encode.hash"),
 
 	@Description("JAAS authentication modules (deprecated)")
 	@Deprecated
@@ -1549,6 +1554,11 @@ public enum ApplicationProperty {
 	@DefaultValue("14")
 	@Description("Online Scheduling Queue: automatically remove records after the given number of days")
 	LogCleanupOnlineSchedulingQueue("unitime.cleanup.sectioningQueue"),
+	
+	@Type(Integer.class)
+	@DefaultValue("92")
+	@Description("Configuration: automatically remove hashed calendar queries that have not been used for the given number of days")
+	LogCleanupHashedQueries("unitime.cleanup.hashedQueries"),
 
 	@DefaultValue("WARN")
 	@Values({"ERROR", "WARN", "INFO"})

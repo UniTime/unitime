@@ -1698,15 +1698,24 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	
 	public static class EncodeQueryRpcRequest implements GwtRpcRequest<EncodeQueryRpcResponse> {
 		private String iQuery;
+		private boolean iHash = false;
 		
 		public EncodeQueryRpcRequest() {}
 		public EncodeQueryRpcRequest(String query) { iQuery = query; }
+		public EncodeQueryRpcRequest(String query, boolean hash) { iQuery = query; iHash = hash; }
 
 		public String getQuery() { return iQuery; }
 		public void setQuery(String query) { iQuery = query; }
 		
+		public boolean isHash() { return iHash; }
+		public void setHash(boolean hash) { iHash = hash; }
+		
 		public static EncodeQueryRpcRequest encode(String query) {
 			return new EncodeQueryRpcRequest(query); 
+		}
+		
+		public static EncodeQueryRpcRequest encode(String query, boolean hash) {
+			return new EncodeQueryRpcRequest(query, hash);
 		}
 		
 		@Override
@@ -1715,12 +1724,18 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	
 	public static class EncodeQueryRpcResponse implements GwtRpcResponse {
 		private String iQuery;
+		private String iHash = null;
 		
 		public EncodeQueryRpcResponse() {}
 		public EncodeQueryRpcResponse(String query) { iQuery = query; }
+		public EncodeQueryRpcResponse(String query, String hash) { iQuery = query; iHash = hash; }
 
 		public String getQuery() { return iQuery; }
 		public void setQuery(String query) { iQuery = query; }
+		
+		public boolean hasHash() { return iHash != null && !iHash.isEmpty(); }
+		public String getHash() { return iHash; }
+		public void setHash(String hash) { iHash = hash; }
 	}
 	
 	public static class EventPropertiesRpcRequest extends EventRpcRequest<EventPropertiesRpcResponse> {

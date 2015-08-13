@@ -132,12 +132,33 @@ public class LogCleaner {
 		}
 	}
 	
+	public static void cleanupHashedQueries(int days) {
+		if (days < 0) return;
+		org.hibernate.Session hibSession = new _RootDAO().createNewSession();
+		Transaction tx = null;
+		try {
+			tx = hibSession.beginTransaction();
+			int rows = hibSession.createQuery(
+					"delete from HashedQuery where lastUsed < " + HibernateUtil.addDate("current_date()", ":days")
+					).setInteger("days", - days).executeUpdate();
+			if (rows > 0)
+				sLog.info("All records not used for more than " + days + " days deleted from the hashed queries (" + rows + " records).");
+			tx.commit();
+		} catch (Throwable t) {
+			sLog.warn("Failed to cleanup student sectioning queue: " + t.getMessage(), t);
+			if (tx != null) tx.rollback();
+		} finally {
+			hibSession.close();
+		}
+	}
+	
 	public static void cleanupLogs() {
 		cleanupChangeLog(ApplicationProperty.LogCleanupChangeLog.intValue());
 		cleanupQueryLog(ApplicationProperty.LogCleanupQueryLog.intValue());
 		cleanupOnlineSectioningLog(ApplicationProperty.LogCleanupOnlineSchedulingLog.intValue());
 		cleanupMessageLog(ApplicationProperty.LogCleanupMessageLog.intValue());
 		cleanupStudentSectioningQueue(ApplicationProperty.LogCleanupOnlineSchedulingQueue.intValue());
+		cleanupHashedQueries(ApplicationProperty.LogCleanupHashedQueries.intValue());
 	}
 
 }

@@ -10094,4 +10094,25 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'InstructionalOfferingCrossLists'
 		</sql>
 	</update>
+	<update version="148" date="13-Aug-2015" comment="Hashed Queries">
+		<mysql>
+			create table %SCHEMA%.hashed_queries (
+				query_hash varchar(48) primary key not null,
+				query_text varchar(2048) not null,
+				ts_create datetime not null,
+				nbr_use decimal(20,0) not null default 0,
+				ts_use datetime not null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.hashed_queries (
+				query_hash varchar2(48 char) constraint nn_hashed_queries_hash not null,
+				query_text varchar2(2048 char) constraint nn_hashed_queries_query not null,
+				ts_create timestamp constraint nn_hashed_queries_create not null,
+				nbr_use number(20) default 0,
+				ts_use timestamp constraint nn_hashed_queries_use not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.hashed_queries add constraint pk_hashed_queries primary key (query_hash)</plsql>
+	</update>
 </dbupdate>

@@ -169,5 +169,18 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Event Management</title>
+		<item>
+			<name>iCalendar Queries</name>
+			<description>
+				<line>Automatically hash calendar queries to make the iCalendar URLs much shorter.
+					<line>This is to overcome the 256 character limit on a subscribed calendar URL in Google Calendar.</line>
+				</line>
+				<line>Hashed queries are persisted in UniTime and they are automatically removed if not used for 92 days (can be changed by unitime.cleanup.hashedQueries property).</line>
+				<line>This feature can be disabled by setting the application property unitime.encode.hash to false.</line>
+			</description>
+		</item>
+	</category>
 </release>
 </release-history>

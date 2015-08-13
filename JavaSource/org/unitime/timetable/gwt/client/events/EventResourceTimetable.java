@@ -1494,7 +1494,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	}
 	
 	protected void copyToClipboard(String format, final boolean personal) {
-		RPC.execute(EncodeQueryRpcRequest.encode(query(format, false)), new AsyncCallback<EncodeQueryRpcResponse>() {
+		RPC.execute(EncodeQueryRpcRequest.encode(query(format, false), true), new AsyncCallback<EncodeQueryRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
 			}
@@ -1515,7 +1515,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				ta.setStyleName("unitime-TextArea");
 				ta.setVisibleLines(5);
 				ta.setCharacterWidth(80);
-				ta.setText(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+				ta.setText(GWT.getHostPageBaseURL() + (result.hasHash() ? "export?x=" + result.getHash() : "export?q=" + result.getQuery()));
 				UniTimeWidget<TextArea> w = new UniTimeWidget<TextArea>(ta);
 				w.setHint(MESSAGES.hintCtrlCToCopy());
 				form.addRow(w);

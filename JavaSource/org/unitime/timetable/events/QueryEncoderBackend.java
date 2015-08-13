@@ -20,9 +20,11 @@
 package org.unitime.timetable.events;
 
 import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Date;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -36,6 +38,8 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
+import org.unitime.timetable.model.HashedQuery;
+import org.unitime.timetable.model.dao.HashedQueryDAO;
 import org.unitime.timetable.security.SessionContext;
 
 /**
@@ -46,9 +50,14 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 	
 	@Override
 	public EncodeQueryRpcResponse execute(EncodeQueryRpcRequest request, SessionContext context) {
-		return new EncodeQueryRpcResponse(encode(request.getQuery() + 
+		String query = request.getQuery() + 
 				(context.getUser() == null ? "" : "&user=" + context.getUser().getExternalUserId() +
-				(context.getUser() == null || context.getUser().getCurrentAuthority() == null ? "" : "&role=" + context.getUser().getCurrentAuthority().getRole()))));
+				(context.getUser() == null || context.getUser().getCurrentAuthority() == null ? "" : "&role=" + context.getUser().getCurrentAuthority().getRole()));
+		if (request.isHash() && ApplicationProperty.UrlEncoderHashQueryWhenAsked.isTrue()) {
+			return new EncodeQueryRpcResponse(encode(query), hash(query));
+		} else {
+			return new EncodeQueryRpcResponse(encode(query));
+		}
 	}
 	
 	private static SecretKey secret() throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -69,12 +78,45 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 		}
 	}
 	
+	public static String hash(String text) {
+		try {
+			if (text.length() > 2048) return null;
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			Date ts = new Date();
+			String hash = new BigInteger(md5.digest(text.getBytes())).toString(36) + Long.toUnsignedString(ts.getTime(), 36);
+			HashedQuery hq = new HashedQuery();
+			hq.setQueryHash(hash);
+			hq.setQueryText(text);
+			hq.setCreated(ts);
+			hq.setNbrUsed(0l);
+			hq.setLastUsed(ts);
+			HashedQueryDAO.getInstance().save(hq);
+			return hash;
+		} catch (Exception e) {
+			throw new GwtRpcException("Hashing failed: " + e.getMessage(), e);
+		}
+	}
+	
 	public static String decode(String text) {
+		return decode(text, false);
+	}
+	
+	public static String decode(String text, boolean hash) {
 		try {
 			if (text == null || text.isEmpty()) return null;
-			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-			cipher.init(Cipher.DECRYPT_MODE, secret());
-			return new String(cipher.doFinal(new BigInteger(text, 36).toByteArray()));
+			if (hash) {
+				HashedQuery hq = HashedQueryDAO.getInstance().get(text);
+				if (hq == null)
+					throw new GwtRpcException("The query hash " + text + " no longer exists. Please create a new URL.");
+				hq.setNbrUsed(1 + hq.getNbrUsed());
+				hq.setLastUsed(new Date());
+				HashedQueryDAO.getInstance().update(hq);
+				return hq.getQueryText();
+			} else {
+				Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+				cipher.init(Cipher.DECRYPT_MODE, secret());
+				return new String(cipher.doFinal(new BigInteger(text, 36).toByteArray()));
+			}
 		} catch (Exception e) {
 			throw new GwtRpcException("Decoding failed: " + e.getMessage(), e);
 		}

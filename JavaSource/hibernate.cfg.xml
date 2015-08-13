@@ -212,5 +212,6 @@
 	<mapping resource="Script.hbm.xml"/>
 	<mapping resource="ClusterDiscovery.hbm.xml"/>
 	<mapping resource="ExamStatus.hbm.xml"/>
+	<mapping resource="HashedQuery.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>
