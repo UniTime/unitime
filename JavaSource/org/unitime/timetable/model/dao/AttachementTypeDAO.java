@@ -17,27 +17,12 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.model;
+package org.unitime.timetable.model.dao;
 
-import org.unitime.timetable.model.base.BaseRoomPicture;
+import org.unitime.timetable.model.base.BaseAttachementTypeDAO;
 
-/**
- * @author Tomas Muller
- */
-public class RoomPicture extends BaseRoomPicture {
-	private static final long serialVersionUID = 1L;
+public class AttachementTypeDAO extends BaseAttachementTypeDAO {
 
-	public RoomPicture() {
-		super();
-	}
-	
-	public RoomPicture clonePicture() {
-		RoomPicture picture = new RoomPicture();
-		picture.setContentType(getContentType());
-		picture.setFileName(getFileName());
-		picture.setDataFile(getDataFile());
-		picture.setTimeStamp(getTimeStamp());
-		picture.setType(getType());
-		return picture;
-	}
+	public AttachementTypeDAO() {}
+
 }

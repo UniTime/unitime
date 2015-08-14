@@ -777,6 +777,12 @@
 					<hasPermission name="StandardEventNotes"/>
 				</condition>
 			</item>
+			<item name="Attachement Types" page="admin" type="gwt">
+				<parameter name="type">attachementType</parameter>
+				<condition>
+					<hasPermission name="AttachementTypes"/>
+				</condition>
+			</item>
 			<separator/>
 			<item name="Consent Types" page="admin" type="gwt">
 				<parameter name="type">consent</parameter>

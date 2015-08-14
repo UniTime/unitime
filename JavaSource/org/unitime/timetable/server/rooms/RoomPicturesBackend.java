@@ -29,22 +29,26 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.fileupload.FileItem;
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.UploadServlet;
+import org.unitime.timetable.gwt.shared.RoomInterface.AttachementTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest.Apply;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureResponse;
+import org.unitime.timetable.model.AttachementType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.LocationPicture;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.NonUniversityLocationPicture;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPicture;
+import org.unitime.timetable.model.dao.AttachementTypeDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -55,6 +59,16 @@ import org.unitime.timetable.security.rights.Right;
 @GwtRpcImplements(RoomPictureRequest.class)
 public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequest, RoomPictureResponse> {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
+	public static AttachementTypeInterface getPictureType(AttachementType type) {
+		if (type == null) return null;
+		return new AttachementTypeInterface(
+				type.getUniqueId(), type.getAbbreviation(), type.getLabel(),
+				AttachementType.VisibilityFlag.IS_IMAGE.in(type.getVisibility()),
+				AttachementType.VisibilityFlag.SHOW_ROOM_TOOLTIP.in(type.getVisibility()),
+				AttachementType.VisibilityFlag.SHOW_ROOMS_TABLE.in(type.getVisibility())
+				);
+	}
 	
 	@Override
 	public RoomPictureResponse execute(RoomPictureRequest request, SessionContext context) {
@@ -78,7 +92,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 				picture.setContentType(file.getContentType());
 				picture.setTimeStamp(new Date());
 				temp.put(- picture.getTimeStamp().getTime(), picture);
-				response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime()));
+				response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), null));
 			}
 			return response;
 		}
@@ -93,7 +107,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 		switch (request.getOperation()) {
 		case LOAD:
 			for (LocationPicture p: new TreeSet<LocationPicture>(location.getPictures()))
-				response.addPicture(new RoomPictureInterface(p.getUniqueId(), p.getFileName(), p.getContentType(), p.getTimeStamp().getTime()));
+				response.addPicture(new RoomPictureInterface(p.getUniqueId(), p.getFileName(), p.getContentType(), p.getTimeStamp().getTime(), getPictureType(p.getType())));
 
 			boolean samePast = true, sameFuture = true;
 			for (Location other: (List<Location>)hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId")
@@ -114,6 +128,10 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 			else
 				response.setApply(Apply.THIS_SESSION_ONLY);
 			
+			for (AttachementType type: AttachementType.listTypes(AttachementType.VisibilityFlag.ROOM_PICTURE_TYPE)) {
+				response.addPictureType(RoomPicturesBackend.getPictureType(type));
+			}
+			
 			context.setAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES, null);
 			break;
 		case SAVE:
@@ -132,8 +150,14 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 							((NonUniversityLocationPicture)picture).setLocation((NonUniversityLocation)location);
 							((NonUniversityLocation)location).getPictures().add((NonUniversityLocationPicture)picture);
 						}
+						if (p.getPictureType() != null)
+							picture.setType(AttachementTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
 						hibSession.saveOrUpdate(picture);
 					}
+				} else if (picture != null) {
+					if (p.getPictureType() != null)
+						picture.setType(AttachementTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
+					hibSession.saveOrUpdate(picture);
 				}
 			}
 			for (LocationPicture picture: pictures.values()) {
@@ -201,7 +225,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 				picture.setContentType(file.getContentType());
 				picture.setTimeStamp(new Date());
 				temp.put(- picture.getTimeStamp().getTime(), picture);
-				response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime()));
+				response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), null));
 			}
 			break;
 		}
@@ -221,7 +245,6 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 	}
 	
 	private boolean samePicture(LocationPicture p1, LocationPicture p2) {
-		return p1.getFileName().equals(p2.getFileName()) && Math.abs(p1.getTimeStamp().getTime() - p2.getTimeStamp().getTime()) < 1000 && p1.getContentType().equals(p2.getContentType());
+		return p1.getFileName().equals(p2.getFileName()) && Math.abs(p1.getTimeStamp().getTime() - p2.getTimeStamp().getTime()) < 1000 && p1.getContentType().equals(p2.getContentType()) && ToolBox.equals(p1.getType(), p2.getType());
 	}
-
 }

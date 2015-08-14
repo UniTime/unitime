@@ -39,7 +39,20 @@ public abstract class LocationPicture extends BaseLocationPicture implements Com
 	}
 	
 	public int compareTo(LocationPicture other) {
+		if (isImage() != other.isImage()) return isImage() ? -1 : 1;
+		if (getType() == null) {
+			if (other.getType() != null) return -1;
+		} else {
+			if (other.getType() == null) return 1;
+			else {
+				int cmp = getType().compareTo(other.getType());
+				if (cmp != 0) return cmp;
+			}
+		}
 		return getTimeStamp().compareTo(other.getTimeStamp());
 	}
-
+	
+	public boolean isImage() {
+		return getType() == null || AttachementType.VisibilityFlag.IS_IMAGE.in(getType().getVisibility());
+	}
 }

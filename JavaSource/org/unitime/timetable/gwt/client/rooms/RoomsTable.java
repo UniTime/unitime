@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
+import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -59,6 +60,7 @@ import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -559,7 +561,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			return new MapCell(room);
 		
 		case PICTURES:
-			if (!room.hasPictures()) return null;
+			if (!room.hasTablePictures()) return null;
 			return new PicturesCell(room);
 		
 		case AVAILABILITY:
@@ -951,8 +953,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			super("exam-types");
 			for (final ExamTypeInterface examType: examTypes) {
 				final P p = new P(examType.isFinal() ? "final" : "midterm");
-				p.setText(examType.getReference());
-				p.setTitle(examType.getLabel());
+				p.setText(examType.getLabel());
 				p.addMouseOverHandler(new MouseOverHandler() {
 					@Override
 					public void onMouseOver(MouseOverEvent event) {
@@ -987,16 +988,36 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			super();
 			setStyleName("picture");
 			setUrl(GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
-			setAltText(picture.getName());
+			setTitle(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getLabel() + ")"));
+			setAltText(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getAbbreviation() + ")"));
 		}
+	}
+	
+	public static class LinkCell extends ImageLink {
+		LinkCell(RoomPictureInterface picture) {
+			super(new Image(RESOURCES.download()), GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
+			setStyleName("link");
+			setTitle(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getLabel() + ")"));
+			setText(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getAbbreviation() + ")"));
+	        setTarget("_blank");
+	        sinkEvents(Event.ONCLICK);
+	    } 
+
+		@Override
+	    public void onBrowserEvent(Event event) { 
+	        if(event.getTypeInt() == Event.ONCLICK) {
+	        	event.stopPropagation(); 
+	        } 
+	        super.onBrowserEvent(event); 
+	    } 
 	}
 	
 	public static class PicturesCell extends P {
 		public PicturesCell(RoomDetailInterface room) {
 			super("pictures");
-			if (room.hasPictures()) {
-				for (RoomPictureInterface picture: room.getPictures())
-					add(new PictureCell(picture));
+			if (room.hasTablePictures()) {
+				for (RoomPictureInterface picture: room.getTablePictures())
+					add(picture.getPictureType() == null || picture.getPictureType().isImage() ? new PictureCell(picture) : new LinkCell(picture));
 			}
 		}
 	}

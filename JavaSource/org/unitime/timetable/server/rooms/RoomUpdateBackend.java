@@ -73,6 +73,7 @@ import org.unitime.timetable.model.RoomPicture;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.AttachementTypeDAO;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -576,6 +577,10 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						for (Iterator<LocationPicture> i = otherPictures.iterator(); i.hasNext(); ) {
 							LocationPicture p2 = i.next();
 							if (samePicture(p1, p2)) {
+								if (!sameType(p1, p2)) {
+									p2.setType(p1.getPictureType() == null ? null : AttachementTypeDAO.getInstance().get(p1.getPictureType().getId(), hibSession));
+									hibSession.saveOrUpdate(p2);
+								}
 								i.remove();
 								continue p1;
 							}
@@ -617,9 +622,15 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 									((NonUniversityLocationPicture)picture).setLocation((NonUniversityLocation)location);
 									((NonUniversityLocation)location).getPictures().add((NonUniversityLocationPicture)picture);
 								}
+								if (p.getPictureType() != null)
+									picture.setType(AttachementTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
 								hibSession.saveOrUpdate(picture);
 								p.setUniqueId(picture.getUniqueId());
 							}
+						} else if (picture != null) {
+							if (p.getPictureType() != null)
+								picture.setType(AttachementTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
+							hibSession.saveOrUpdate(picture);
 						}
 					}
 					for (LocationPicture picture: pictures.values()) {
@@ -938,6 +949,10 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 						for (Iterator<LocationPicture> i = otherPictures.iterator(); i.hasNext(); ) {
 							LocationPicture p2 = i.next();
 							if (samePicture(p1, p2)) {
+								if (!sameType(p1, p2)) {
+									p2.setType(p1.getPictureType() == null ? null : AttachementTypeDAO.getInstance().get(p1.getPictureType().getId(), hibSession));
+									hibSession.saveOrUpdate(p2);
+								}
 								i.remove();
 								continue p1;
 							}
@@ -984,9 +999,15 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 									np.setLocation((NonUniversityLocation)location);
 									((NonUniversityLocation)location).getPictures().add(np);
 								}
+								if (p.getPictureType() != null)
+									picture.setType(AttachementTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
 								hibSession.saveOrUpdate(picture);
 								p.setUniqueId(picture.getUniqueId());
 							}
+						} else if (picture != null) {
+							if (p.getPictureType() != null)
+								picture.setType(AttachementTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
+							hibSession.saveOrUpdate(picture);
 						}
 					}
 					for (LocationPicture picture: pictures.values()) {
@@ -1012,6 +1033,13 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 
 	protected boolean samePicture(RoomPictureInterface p1, LocationPicture p2) {
 		return p1.getName().equals(p2.getFileName()) && Math.abs(p1.getTimeStamp() - p2.getTimeStamp().getTime()) < 1000 && p1.getType().equals(p2.getContentType());
+	}
+	
+	protected boolean sameType(RoomPictureInterface p1, LocationPicture p2) {
+		if (p1.getPictureType() == null)
+			return p2.getType() == null;
+		else
+			return p2.getType() != null && p1.getPictureType().getId().equals(p2.getType().getUniqueId());
 	}
 	
 	protected Building lookupBuilding(org.hibernate.Session hibSession, BuildingInterface original, boolean future, Long sessionId) {

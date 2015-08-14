@@ -21,38 +21,44 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-import org.unitime.timetable.model.LocationPicture;
-import org.unitime.timetable.model.NonUniversityLocation;
-import org.unitime.timetable.model.NonUniversityLocationPicture;
+import org.unitime.timetable.model.AttachementType;
+import org.unitime.timetable.model.RefTableEntry;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseNonUniversityLocationPicture extends LocationPicture implements Serializable {
+public abstract class BaseAttachementType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private NonUniversityLocation iLocation;
+	private String iAbbreviation;
+	private Integer iVisibility;
 
 
-	public BaseNonUniversityLocationPicture() {
+	public static String PROP_ABBREVIATION = "abbreviation";
+	public static String PROP_VISIBILITY = "visibility";
+
+	public BaseAttachementType() {
 		initialize();
 	}
 
-	public BaseNonUniversityLocationPicture(Long uniqueId) {
+	public BaseAttachementType(Long uniqueId) {
 		setUniqueId(uniqueId);
 		initialize();
 	}
 
 	protected void initialize() {}
 
-	public NonUniversityLocation getLocation() { return iLocation; }
-	public void setLocation(NonUniversityLocation location) { iLocation = location; }
+	public String getAbbreviation() { return iAbbreviation; }
+	public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
+
+	public Integer getVisibility() { return iVisibility; }
+	public void setVisibility(Integer visibility) { iVisibility = visibility; }
 
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof NonUniversityLocationPicture)) return false;
-		if (getUniqueId() == null || ((NonUniversityLocationPicture)o).getUniqueId() == null) return false;
-		return getUniqueId().equals(((NonUniversityLocationPicture)o).getUniqueId());
+		if (o == null || !(o instanceof AttachementType)) return false;
+		if (getUniqueId() == null || ((AttachementType)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((AttachementType)o).getUniqueId());
 	}
 
 	public int hashCode() {
@@ -61,18 +67,16 @@ public abstract class BaseNonUniversityLocationPicture extends LocationPicture i
 	}
 
 	public String toString() {
-		return "NonUniversityLocationPicture["+getUniqueId()+"]";
+		return "AttachementType["+getUniqueId()+" "+getLabel()+"]";
 	}
 
 	public String toDebugString() {
-		return "NonUniversityLocationPicture[" +
-			"\n	ContentType: " + getContentType() +
-			"\n	DataFile: " + getDataFile() +
-			"\n	FileName: " + getFileName() +
-			"\n	Location: " + getLocation() +
-			"\n	TimeStamp: " + getTimeStamp() +
-			"\n	Type: " + getType() +
+		return "AttachementType[" +
+			"\n	Abbreviation: " + getAbbreviation() +
+			"\n	Label: " + getLabel() +
+			"\n	Reference: " + getReference() +
 			"\n	UniqueId: " + getUniqueId() +
+			"\n	Visibility: " + getVisibility() +
 			"]";
 	}
 }

@@ -309,5 +309,20 @@
         		column="visible"
         		type="boolean"/>
         </union-subclass>
+        
+        <union-subclass name="AttachementType" table="attachment_type" abstract="false">
+        	<property
+        		name="abbreviation"
+        		column="abbreviation"
+        		type="string"
+        		not-null="true"
+        		length="20"/>
+
+        	<property
+                name="visibility"
+                column="visibility"
+                type="java.lang.Integer"
+                not-null="true"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>

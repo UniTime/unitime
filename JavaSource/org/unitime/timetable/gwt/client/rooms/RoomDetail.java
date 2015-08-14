@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.rooms.RoomsTable.DepartmentCell;
+import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -378,8 +379,9 @@ public class RoomDetail extends Composite {
 		PicturesCell(RoomDetailInterface room) {
 			super("pictures");
 			if (room.hasPictures()) {
-				for (RoomPictureInterface picture: room.getPictures())
-					add(new PictureCell(picture));
+				for (RoomPictureInterface picture: room.getPictures()) {
+					add(picture.getPictureType() == null || picture.getPictureType().isImage() ? new PictureCell(picture) : new LinkCell(picture));
+				}
 			}
 		}
 	}
@@ -389,7 +391,18 @@ public class RoomDetail extends Composite {
 			super();
 			setStyleName("picture");
 			setUrl(GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
-			setAltText(picture.getName());
+			setTitle(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getLabel() + ")"));
+			setAltText(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getAbbreviation() + ")"));
+			
+		}
+	}
+	
+	static class LinkCell extends ImageLink {
+		LinkCell(RoomPictureInterface picture) {
+			super(new Image(RESOURCES.download()), GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
+			setStyleName("link");
+			setTitle(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getLabel() + ")"));
+			setText(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getAbbreviation() + ")"));
 		}
 	}
 	

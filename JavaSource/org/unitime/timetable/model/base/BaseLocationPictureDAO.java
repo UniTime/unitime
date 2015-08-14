@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.model.base;
 
+import java.util.List;
+
 import org.unitime.timetable.model.LocationPicture;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.model.dao.LocationPictureDAO;
@@ -38,5 +40,10 @@ public abstract class BaseLocationPictureDAO extends _RootDAO<LocationPicture,Lo
 
 	public Class<LocationPicture> getReferenceClass() {
 		return LocationPicture.class;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<LocationPicture> findByType(org.hibernate.Session hibSession, Long typeId) {
+		return hibSession.createQuery("from LocationPicture x where x.type.uniqueId = :typeId").setLong("typeId", typeId).list();
 	}
 }

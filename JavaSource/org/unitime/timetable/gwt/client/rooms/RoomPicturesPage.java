@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
+import org.unitime.timetable.gwt.shared.RoomInterface.AttachementTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest.Apply;
@@ -64,6 +65,7 @@ public class RoomPicturesPage extends Composite {
 	private SimpleForm iForm;
 	private UniTimeTable<RoomPictureInterface> iTable;
 	private UniTimeHeaderPanel iHeader, iFooter;
+	private List<AttachementTypeInterface> iPictureTypes;
 	
 	private UniTimeFileUpload iFileUpload;
 	private ListBox iApply;
@@ -161,7 +163,8 @@ public class RoomPicturesPage extends Composite {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		header.add(new UniTimeTableHeader(MESSAGES.colPicture()));
 		header.add(new UniTimeTableHeader(MESSAGES.colName()));
-		header.add(new UniTimeTableHeader(MESSAGES.colType()));
+		header.add(new UniTimeTableHeader(MESSAGES.colContentType()));
+		header.add(new UniTimeTableHeader(MESSAGES.colPictureType()));
 		header.add(new UniTimeTableHeader("&nbsp;"));
 		iTable.addRow(null, header);
 		
@@ -186,6 +189,7 @@ public class RoomPicturesPage extends Composite {
 				@Override
 				public void onSuccess(RoomPictureResponse result) {
 					LoadingWidget.getInstance().hide();
+					iPictureTypes = result.getPictureTypes();
 					if (result.hasPictures())
 						for (final RoomPictureInterface picture: result.getPictures())
 							iTable.addRow(picture, line(picture));
@@ -211,6 +215,51 @@ public class RoomPicturesPage extends Composite {
 		line.add(new Label(picture.getName()));
 		line.add(new Label(picture.getType()));
 		
+		final ListBox type = new ListBox(); type.setStyleName("unitime-TextBox");
+		if (picture.getPictureType() == null) {
+			type.addItem(MESSAGES.itemSelect(), "-1");
+			if (iPictureTypes != null)
+				for (AttachementTypeInterface t: iPictureTypes) {
+					type.addItem(t.getLabel(), t.getId().toString());
+				}
+			type.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					Long id = Long.valueOf(type.getValue(type.getSelectedIndex()));
+					picture.setPictureType(getPictureType(id));
+					iHeader.setEnabled("update", false);
+				}
+			});
+		} else {
+			final AttachementTypeInterface last = picture.getPictureType();
+			if (iPictureTypes != null)
+				for (AttachementTypeInterface t: iPictureTypes) {
+					type.addItem(t.getLabel(), t.getId().toString());
+				}
+			boolean found = false;
+			for (int i = 0; i < type.getItemCount(); i++) {
+				if (type.getValue(i).equals(picture.getPictureType().getId().toString())) {
+					type.setSelectedIndex(i); found = true; break;
+				}
+			}
+			if (!found) {
+				type.addItem(picture.getPictureType().getLabel(), picture.getPictureType().getId().toString());
+				type.setSelectedIndex(type.getItemCount() - 1);
+			}
+			type.addChangeHandler(new ChangeHandler() {
+				@Override
+				public void onChange(ChangeEvent event) {
+					Long id = Long.valueOf(type.getValue(type.getSelectedIndex()));
+					if (last.getId().equals(id))
+						picture.setPictureType(last);
+					else
+						picture.setPictureType(getPictureType(id));
+					iHeader.setEnabled("update", false);
+				}
+			});
+		}
+		line.add(type);
+		
 		Image remove = new Image(RESOURCES.delete());
 		remove.setTitle(MESSAGES.titleDeleteRow());
 		remove.addStyleName("remove");
@@ -229,5 +278,12 @@ public class RoomPicturesPage extends Composite {
 		line.add(remove);
 		
 		return line;
+	}
+	
+	protected AttachementTypeInterface getPictureType(Long id) {
+		if (iPictureTypes == null) return null;
+		for (AttachementTypeInterface type: iPictureTypes)
+			if (type.getId().equals(id)) return type;
+		return null;
 	}
 }

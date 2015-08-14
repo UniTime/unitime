@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.AcademicSessionInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.AttachementTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
@@ -549,7 +550,8 @@ public class RoomEdit extends Composite {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		header.add(new UniTimeTableHeader(MESSAGES.colPicture()));
 		header.add(new UniTimeTableHeader(MESSAGES.colName()));
-		header.add(new UniTimeTableHeader(MESSAGES.colType()));
+		header.add(new UniTimeTableHeader(MESSAGES.colContentType()));
+		header.add(new UniTimeTableHeader(MESSAGES.colPictureType()));
 		header.add(new UniTimeTableHeader("&nbsp;"));
 		iPictures.addRow(null, header);
 		
@@ -1020,6 +1022,7 @@ public class RoomEdit extends Composite {
 				iForm.addRow(MESSAGES.propNewPicture(), iFileUpload);
 			iForm.addRow(iPictures);
 			iPictures.clearTable(1);
+			
 			if (iRoom.hasPictures()) {
 				for (final RoomPictureInterface picture: iRoom.getPictures())
 					iPictures.addRow(picture, line(picture));
@@ -1142,6 +1145,51 @@ public class RoomEdit extends Composite {
 		
 		line.add(new Label(picture.getName()));
 		line.add(new Label(picture.getType()));
+		
+		if ((iRoom.getUniqueId() == null && iProperties.isCanChangePicture()) || iRoom.isCanChangePicture()) {
+			final ListBox type = new ListBox(); type.setStyleName("unitime-TextBox");
+			if (picture.getPictureType() == null) {
+				type.addItem(MESSAGES.itemSelect(), "-1");
+				for (AttachementTypeInterface t: iProperties.getPictureTypes()) {
+					type.addItem(t.getLabel(), t.getId().toString());
+				}
+				type.addChangeHandler(new ChangeHandler() {
+					@Override
+					public void onChange(ChangeEvent event) {
+						Long id = Long.valueOf(type.getValue(type.getSelectedIndex()));
+						picture.setPictureType(iProperties.getPictureType(id));
+					}
+				});
+			} else {
+				final AttachementTypeInterface last = picture.getPictureType();
+				for (AttachementTypeInterface t: iProperties.getPictureTypes()) {
+					type.addItem(t.getLabel(), t.getId().toString());
+				}
+				boolean found = false;
+				for (int i = 0; i < type.getItemCount(); i++) {
+					if (type.getValue(i).equals(picture.getPictureType().getId().toString())) {
+						type.setSelectedIndex(i); found = true; break;
+					}
+				}
+				if (!found) {
+					type.addItem(picture.getPictureType().getLabel(), picture.getPictureType().getId().toString());
+					type.setSelectedIndex(type.getItemCount() - 1);
+				}
+				type.addChangeHandler(new ChangeHandler() {
+					@Override
+					public void onChange(ChangeEvent event) {
+						Long id = Long.valueOf(type.getValue(type.getSelectedIndex()));
+						if (last.getId().equals(id))
+							picture.setPictureType(last);
+						else
+							picture.setPictureType(iProperties.getPictureType(id));
+					}
+				});
+			}
+			line.add(type);
+		} else {
+			line.add(new Label(picture.getPictureType() == null ? "" : picture.getPictureType().getLabel()));
+		}
 		
 		if ((iRoom.getUniqueId() == null && iProperties.isCanChangePicture()) || iRoom.isCanChangePicture()) {
 			Image remove = new Image(RESOURCES.delete());

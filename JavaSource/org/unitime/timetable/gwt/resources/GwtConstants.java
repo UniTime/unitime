@@ -246,6 +246,6 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("ft&sup2;")
 	String roomAreaUnitsShort();
 	
-	@DefaultStringValue("ft2;")
+	@DefaultStringValue("ft2")
 	String roomAreaUnitsShortPlainText();
 }

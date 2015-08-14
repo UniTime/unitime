@@ -508,14 +508,16 @@ public class RoomInterface implements IsSerializable {
 		private String iName;
 		private String iType;
 		private Long iTimeStamp;
+		private AttachementTypeInterface iPictureType;
 		
 		public RoomPictureInterface() {}
 		
-		public RoomPictureInterface(Long uniqueId, String name, String type, Long timeStamp) {
+		public RoomPictureInterface(Long uniqueId, String name, String type, Long timeStamp, AttachementTypeInterface pictureType) {
 			setUniqueId(uniqueId);
 			setName(name);
 			setType(type);
 			setTimeStamp(timeStamp);
+			setPictureType(pictureType);
 		}
 		
 		public Long getUniqueId() { return iUniqueId; }
@@ -529,6 +531,9 @@ public class RoomInterface implements IsSerializable {
 		
 		public Long getTimeStamp() { return iTimeStamp; }
 		public void setTimeStamp(Long timeStamp) { iTimeStamp = timeStamp; }
+		
+		public AttachementTypeInterface getPictureType() { return iPictureType; }
+		public void setPictureType(AttachementTypeInterface type) { iPictureType = type; }
 	}
 	
 	public static class RoomPictureRequest implements GwtRpcRequest<RoomPictureResponse> {
@@ -591,6 +596,7 @@ public class RoomInterface implements IsSerializable {
 		private String iName;
 		private List<RoomPictureInterface> iPictures;
 		private RoomPictureRequest.Apply iApply;
+		private List<AttachementTypeInterface> iPictureTypes = null;
 		
 		public RoomPictureResponse() {}
 		
@@ -607,6 +613,19 @@ public class RoomInterface implements IsSerializable {
 		
 		public RoomPictureRequest.Apply getApply() { return iApply; }
 		public void setApply(RoomPictureRequest.Apply apply) { iApply = apply; }
+		
+		public void addPictureType(AttachementTypeInterface type) {
+			if (iPictureTypes == null) iPictureTypes = new ArrayList<AttachementTypeInterface>();
+			iPictureTypes.add(type);
+		}
+		public boolean hasPictureTypes() { return iPictureTypes != null && !iPictureTypes.isEmpty(); }
+		public List<AttachementTypeInterface> getPictureTypes() { return iPictureTypes; }
+		public AttachementTypeInterface getPictureType(Long id) {
+			if (iPictureTypes == null) return null;
+			for (AttachementTypeInterface type: iPictureTypes)
+				if (type.getId().equals(id)) return type;
+			return null;
+		}
 	}
 	
 	public static class RoomTypeInterface implements GwtRpcResponse {
@@ -1218,10 +1237,24 @@ public class RoomInterface implements IsSerializable {
 		public boolean hasMapUrl() { return iMapUrl != null && !iMapUrl.isEmpty(); }
 		
 		public boolean hasPictures() { return iPictures != null && !iPictures.isEmpty(); }
+		public boolean hasTablePictures() {
+			if (iPictures == null) return false;
+			for (RoomPictureInterface picture: getPictures())
+				if (picture.getPictureType() == null || picture.getPictureType().isTable()) return true;
+			return false;
+		}
 		public void addPicture(RoomPictureInterface picture) {
 			iPictures.add(picture);
 		}
 		public List<RoomPictureInterface> getPictures() { return iPictures; }
+		public List<RoomPictureInterface> getTablePictures() {
+			List<RoomPictureInterface> ret = new ArrayList<RoomPictureInterface>(); 
+			if (iPictures != null)
+				for (RoomPictureInterface picture: getPictures())
+					if (picture.getPictureType() == null || picture.getPictureType().isTable())
+						ret.add(picture);
+			return ret;
+		}
 		
 		public String getLastChange() { return iLastChange; }
 		public boolean hasLastChange() { return iLastChange != null && !iLastChange.isEmpty(); }
@@ -1498,6 +1531,7 @@ public class RoomInterface implements IsSerializable {
 		private List<GroupInterface> iGroups = new ArrayList<GroupInterface>();
 		private List<FeatureInterface> iFeatures = new ArrayList<FeatureInterface>();
 		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
+		private List<AttachementTypeInterface> iPictureTypes = new ArrayList<AttachementTypeInterface>();
 		private boolean iCanSeeCourses = false, iCanSeeExams = false, iCanSeeEvents = false;
 		private boolean iGridAsText = false, iHorizontal = false, iGoogleMap = false;
 		private List<RoomSharingDisplayMode> iModes;
@@ -1602,6 +1636,15 @@ public class RoomInterface implements IsSerializable {
 		
 		public void addPreference(PreferenceInterface preference) { iPreferences.add(preference); }
 		public List<PreferenceInterface> getPreferences() { return iPreferences; }
+		
+		public void addPictureType(AttachementTypeInterface type) { iPictureTypes.add(type); }
+		public boolean hasPictureTypes() { return !iPictureTypes.isEmpty(); }
+		public List<AttachementTypeInterface> getPictureTypes() { return iPictureTypes; }
+		public AttachementTypeInterface getPictureType(Long id) {
+			for (AttachementTypeInterface type: iPictureTypes)
+				if (type.getId().equals(id)) return type;
+			return null;
+		}
 		
 		public void addMode(RoomSharingDisplayMode mode) {
 			if (iModes == null) iModes = new ArrayList<RoomSharingDisplayMode>();
@@ -1859,6 +1902,46 @@ public class RoomInterface implements IsSerializable {
 			for (FutureOperation op: values())
 				ret = op.set(ret);
 			return ret;
+		}
+	}
+	
+	public static class AttachementTypeInterface implements IsSerializable {
+		private Long iId;
+		private String iAbbreviation;
+		private String iLabel;
+		private boolean iImage = false, iTooltip = false, iTable = false;
+		
+		public AttachementTypeInterface() {}
+		
+		public AttachementTypeInterface(Long id, String abbv, String label, boolean image, boolean tooltip, boolean table) {
+			iId = id; iAbbreviation = abbv; iLabel = label; iImage = image; iTooltip = tooltip; iTable = table;
+		}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		
+		public String getAbbreviation() { return iAbbreviation; }
+		public void setAbbreviation(String abbreviation) { iAbbreviation = abbreviation; }
+		
+		public String getLabel() { return iLabel; }
+		public void setLabel(String label) { iLabel = label; }
+		
+		public boolean isTooltip() { return iTooltip; }
+		public void setTooltip(boolean tooltip) { iTooltip = tooltip; }
+		
+		public boolean isTable() { return iTable; }
+		public void setTable(boolean table) { iTable = table; }
+		
+		public boolean isImage() { return iImage; }
+		public void setImage(boolean image) { iImage = image; }
+		
+		@Override
+		public int hashCode() { return getId().hashCode(); }
+		
+		@Override
+		public boolean equals(Object object) {
+			if (object == null || !(object instanceof AttachementTypeInterface)) return false;
+			return getId().equals(((AttachementTypeInterface)object).getId());
 		}
 	}
 }

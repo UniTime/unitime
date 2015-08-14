@@ -17,27 +17,26 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.model;
+package org.unitime.timetable.model.base;
 
-import org.unitime.timetable.model.base.BaseRoomPicture;
+import org.unitime.timetable.model.AttachementType;
+import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.model.dao.AttachementTypeDAO;
 
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public class RoomPicture extends BaseRoomPicture {
-	private static final long serialVersionUID = 1L;
+public abstract class BaseAttachementTypeDAO extends _RootDAO<AttachementType,Long> {
 
-	public RoomPicture() {
-		super();
+	private static AttachementTypeDAO sInstance;
+
+	public static AttachementTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new AttachementTypeDAO();
+		return sInstance;
 	}
-	
-	public RoomPicture clonePicture() {
-		RoomPicture picture = new RoomPicture();
-		picture.setContentType(getContentType());
-		picture.setFileName(getFileName());
-		picture.setDataFile(getDataFile());
-		picture.setTimeStamp(getTimeStamp());
-		picture.setType(getType());
-		return picture;
+
+	public Class<AttachementType> getReferenceClass() {
+		return AttachementType.class;
 	}
 }

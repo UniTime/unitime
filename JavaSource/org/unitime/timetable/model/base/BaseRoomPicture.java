@@ -71,6 +71,7 @@ public abstract class BaseRoomPicture extends LocationPicture implements Seriali
 			"\n	FileName: " + getFileName() +
 			"\n	Location: " + getLocation() +
 			"\n	TimeStamp: " + getTimeStamp() +
+			"\n	Type: " + getType() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

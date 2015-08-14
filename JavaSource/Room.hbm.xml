@@ -410,6 +410,12 @@
             column="time_stamp"
             type="java.util.Date"
             not-null="true"/>
+            
+		<many-to-one
+			name="type"
+			class="AttachementType"
+			column="type_id"
+			not-null="false"/>
 
         <union-subclass
             name="RoomPicture"

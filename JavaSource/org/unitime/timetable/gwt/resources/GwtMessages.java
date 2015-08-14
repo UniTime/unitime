@@ -461,6 +461,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Type")
 	String colType();
 	
+	@DefaultMessage("Content Type")
+	String colContentType();
+	
+	@DefaultMessage("Picture Type")
+	String colPictureType();
+	
 	@DefaultMessage("Title")
 	String colTitle();
 	
@@ -1780,7 +1786,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Location name {0} does not meet the required pattern {1}: {2}.")
 	String errorLocationNameDoesNotMeetRequiredPatternWithReason(String locationName, String regExp, String reason);
-
+	
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
 	
@@ -2227,6 +2233,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Edit Room")
 	String pageEditRoom();
+	
+	@DefaultMessage("Attachement Type")
+	String pageAttachementType();
+	
+	@DefaultMessage("Attachement Types")
+	String pageAttachementTypes();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -3526,4 +3538,16 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} and {1}")
 	String itemSeparatorPair(String firstItem, String lastItem);
+	
+	@DefaultMessage("Image")
+	String attachementFlagIsImage();
+	
+	@DefaultMessage("Room Picture Type")
+	String attachementTypeFlagRoomPicture();
+	
+	@DefaultMessage("Show in Rooms Table")
+	String attachementTypeFlagShowRoomsTable();
+	
+	@DefaultMessage("Show in Room Tooltip")
+	String attachementTypeFlagShowRoomTooltip();
 }

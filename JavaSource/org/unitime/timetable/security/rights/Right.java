@@ -514,6 +514,9 @@ public enum Right {
 	ExaminationStatuses,
 	ExaminationStatusEdit,
 	
+	AttachementTypes,
+	AttachementTypeEdit,
+	
 	/** Administration: Defaults */
 	
 	ApplicationConfig,

@@ -337,7 +337,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     				.replace("%i", location.getExternalUniqueId() == null ? "" : location.getExternalUniqueId()));
     	
     	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getPictures()))
-    		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime()));
+    		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), RoomPicturesBackend.getPictureType(picture.getType())));
     	
     	if (context.hasPermission(Right.HasRole) && CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.DisplayLastChanges))) {
     		ChangeLog lch = ChangeLog.findLastChange(location.getClass().getName(), location.getUniqueId(), null);
