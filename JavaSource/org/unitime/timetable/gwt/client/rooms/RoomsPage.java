@@ -139,11 +139,6 @@ public class RoomsPage extends Composite {
 		iRoomsPanel.add(iFilterPanel);
 		iRoomsPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 		
-		iRoomsTable = new RoomsTable(iMode);
-		iRoomsTable.getElement().getStyle().setMarginTop(10, Unit.PX);
-		
-		iRoomsPanel.add(iRoomsTable);
-		
 		iRoomsPanel.setWidth("100%");
 		
 		iRootPanel = new SimplePanel(iRoomsPanel);
@@ -162,6 +157,8 @@ public class RoomsPage extends Composite {
 		iMore.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				if (iRoomsTable == null) return;
+				
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
 				
@@ -346,7 +343,7 @@ public class RoomsPage extends Composite {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
 				try {
-					RoomDetailInterface room = iRoomsTable.getRoom(Long.parseLong(event.getValue()));
+					RoomDetailInterface room = (iRoomsTable == null ? null : iRoomsTable.getRoom(Long.parseLong(event.getValue())));
 					if (room != null) {
 						iRoomDetail.setRoom(room);
 						iRoomDetail.show();
@@ -355,7 +352,7 @@ public class RoomsPage extends Composite {
 					iFilter.setValue(event.getValue(), true);
 					if (iRoomDetail.equals(iRootPanel.getWidget()))
 						iRoomDetail.hide();
-					else if (iRoomsTable.isVisible()) 
+					else if (iRoomsTable != null && iRoomsTable.isVisible()) 
 						search();
 				}
 			}
@@ -376,54 +373,12 @@ public class RoomsPage extends Composite {
 				iProperties = result;
 				if (!RoomCookie.getInstance().hasOrientation())
 					RoomCookie.getInstance().setOrientation(iProperties.isGridAsText(), iProperties.isHorizontal());
-				iRoomsTable.setProperties(iProperties);
+				iRoomsTable = new RoomsTable(iMode, iProperties);
+				iRoomsTable.getElement().getStyle().setMarginTop(10, Unit.PX);
+				iRoomsPanel.add(iRoomsTable);
 				iRoomDetail.setProperties(iProperties);
 				iSession.fireChange();
 				initialize();
-			}
-		});
-		
-		iRoomsTable.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				export("rooms.pdf");
-			}
-			
-			@Override
-			public boolean isApplicable() {
-				return iRoomsTable.getRowCount() > 0 && (iProperties != null && iProperties.isCanExportPdf());
-			}
-			
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			
-			@Override
-			public String getName() {
-				return MESSAGES.opExportPDF();
-			}
-		});
-		
-		iRoomsTable.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				export("rooms.csv");
-			}
-			
-			@Override
-			public boolean isApplicable() {
-				return iRoomsTable.getRowCount() > 0 && (iProperties != null && iProperties.isCanExportCsv());
-			}
-			
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			
-			@Override
-			public String getName() {
-				return MESSAGES.opExportCSV();
 			}
 		});
 		
@@ -432,7 +387,7 @@ public class RoomsPage extends Composite {
 			protected void onHide() {
 				iRootPanel.setWidget(iRoomsPanel);
 				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRooms());
-				if (iRoomsTable.isVisible()) search();
+				if (iRoomsTable != null && iRoomsTable.isVisible()) search();
 				changeUrl();
 			}
 			@Override
@@ -470,11 +425,11 @@ public class RoomsPage extends Composite {
 			}
 			@Override
 			protected RoomDetailInterface getPrevious(Long roomId) {
-				return iRoomsTable.getPrevious(roomId);
+				return iRoomsTable == null ? null : iRoomsTable.getPrevious(roomId);
 			}
 			@Override
 			protected RoomDetailInterface getNext(Long roomId) {
-				return iRoomsTable.getNext(roomId);
+				return iRoomsTable == null ? null : iRoomsTable.getNext(roomId);
 			}
 			@Override
 			protected void previous(final RoomDetailInterface room) {
@@ -491,15 +446,6 @@ public class RoomsPage extends Composite {
 				super.hide();
 			}
 		};
-		
-		iRoomsTable.addMouseClickListener(new MouseClickListener<RoomDetailInterface>() {
-			@Override
-			public void onMouseClick(final TableEvent<RoomDetailInterface> event) {
-				if (event.getData() == null) return;
-				iRoomDetail.setRoom(event.getData());
-				iRoomDetail.show();
-			}
-		});
 		
 		iNew.addClickHandler(new ClickHandler() {
 			@Override
@@ -564,7 +510,61 @@ public class RoomsPage extends Composite {
 			}
 		} else {
 			iFilter.setValue(RoomCookie.getInstance().getHash(iMode), true);
-		}		
+		}
+		
+		iRoomsTable.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				export("rooms.pdf");
+			}
+			
+			@Override
+			public boolean isApplicable() {
+				return iRoomsTable.getRowCount() > 0 && (iProperties != null && iProperties.isCanExportPdf());
+			}
+			
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			
+			@Override
+			public String getName() {
+				return MESSAGES.opExportPDF();
+			}
+		});
+		
+		iRoomsTable.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				export("rooms.csv");
+			}
+			
+			@Override
+			public boolean isApplicable() {
+				return iRoomsTable.getRowCount() > 0 && (iProperties != null && iProperties.isCanExportCsv());
+			}
+			
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			
+			@Override
+			public String getName() {
+				return MESSAGES.opExportCSV();
+			}
+		});
+		
+		iRoomsTable.addMouseClickListener(new MouseClickListener<RoomDetailInterface>() {
+			@Override
+			public void onMouseClick(final TableEvent<RoomDetailInterface> event) {
+				if (event.getData() == null) return;
+				iRoomDetail.setRoom(event.getData());
+				iRoomDetail.show();
+			}
+		});
+		
 		iInitialized = true;
 	}
 	
@@ -582,16 +582,7 @@ public class RoomsPage extends Composite {
 	
 	protected String query(String format) {
 		RoomCookie cookie = RoomCookie.getInstance();
-		int flags = cookie.getFlags(iMode);
-		for (RoomsColumn f: RoomsColumn.values())
-			if (iRoomsTable.hasShowHideOperation(f) && !f.in(iRoomsTable.getFlags()))
-				flags = f.clear(flags);
-		if (iProperties != null) 
-			for (int i = 0; i < iProperties.getFeatureTypes().size(); i++) {
-				int flag = (1 << (RoomsColumn.values().length + i));
-				if ((flags & flag) == 0 && (iRoomsTable.getFlags() & flag) == 0)
-					flags += flag;
-			}
+		int flags = (iRoomsTable == null ? cookie.getFlags(iMode) : cookie.getFlags(iMode) & iRoomsTable.getFlags());
 		String query = "output=" + format + "&flags=" + flags + "&sort=" + cookie.getRoomsSortBy() +
 				"&orientation=" + (cookie.isGridAsText() ? "text" : cookie.areRoomsHorizontal() ? "horizontal" : "vertical") + (cookie.hasMode() ? "&mode=" + cookie.getMode() : "") +
 				"&dm=" + cookie.getDeptMode();
@@ -614,6 +605,7 @@ public class RoomsPage extends Composite {
 	}
 	
 	protected void search() {
+		if (iRoomsTable == null) return;
 		iMore.setEnabled(false);
 		iRoomsTable.clearTable(1);
 		LoadingWidget.execute(iFilter.getElementsRequest(), new AsyncCallback<FilterRpcResponse>() {

@@ -43,7 +43,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.AcademicSessionInterface;
-import org.unitime.timetable.gwt.shared.RoomInterface.AttachementTypeInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.AttachmentTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
@@ -170,10 +170,11 @@ public class RoomEdit extends Composite {
 				} else {
 					RoomUpdateRpcRequest request = RoomUpdateRpcRequest.createSaveOrUpdateRequest(getRoom());
 					String future = generateAlsoUpdateMessage(false);
-					if (future != null && Window.confirm(getRoom().getUniqueId() == null ? MESSAGES.confirmCreateRoomInFutureSessions(future) : MESSAGES.confirmUpdateRoomInFutureSessions(future))) {
-						fillFutureFlags(request, false);
-					} else {
-						return;
+					if (future != null) {
+						if (Window.confirm(getRoom().getUniqueId() == null ? MESSAGES.confirmCreateRoomInFutureSessions(future) : MESSAGES.confirmUpdateRoomInFutureSessions(future)))
+							fillFutureFlags(request, false);
+						else
+							return;
 					}
 					LoadingWidget.getInstance().show(getRoom().getUniqueId() == null ? MESSAGES.waitSavingRoom() : MESSAGES.waitUpdatingRoom());
 					RPC.execute(request, new AsyncCallback<RoomDetailInterface>() {
@@ -1150,7 +1151,7 @@ public class RoomEdit extends Composite {
 			final ListBox type = new ListBox(); type.setStyleName("unitime-TextBox");
 			if (picture.getPictureType() == null) {
 				type.addItem(MESSAGES.itemSelect(), "-1");
-				for (AttachementTypeInterface t: iProperties.getPictureTypes()) {
+				for (AttachmentTypeInterface t: iProperties.getPictureTypes()) {
 					type.addItem(t.getLabel(), t.getId().toString());
 				}
 				type.addChangeHandler(new ChangeHandler() {
@@ -1161,8 +1162,8 @@ public class RoomEdit extends Composite {
 					}
 				});
 			} else {
-				final AttachementTypeInterface last = picture.getPictureType();
-				for (AttachementTypeInterface t: iProperties.getPictureTypes()) {
+				final AttachmentTypeInterface last = picture.getPictureType();
+				for (AttachmentTypeInterface t: iProperties.getPictureTypes()) {
 					type.addItem(t.getLabel(), t.getId().toString());
 				}
 				boolean found = false;

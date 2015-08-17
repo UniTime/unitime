@@ -508,11 +508,11 @@ public class RoomInterface implements IsSerializable {
 		private String iName;
 		private String iType;
 		private Long iTimeStamp;
-		private AttachementTypeInterface iPictureType;
+		private AttachmentTypeInterface iPictureType;
 		
 		public RoomPictureInterface() {}
 		
-		public RoomPictureInterface(Long uniqueId, String name, String type, Long timeStamp, AttachementTypeInterface pictureType) {
+		public RoomPictureInterface(Long uniqueId, String name, String type, Long timeStamp, AttachmentTypeInterface pictureType) {
 			setUniqueId(uniqueId);
 			setName(name);
 			setType(type);
@@ -532,8 +532,8 @@ public class RoomInterface implements IsSerializable {
 		public Long getTimeStamp() { return iTimeStamp; }
 		public void setTimeStamp(Long timeStamp) { iTimeStamp = timeStamp; }
 		
-		public AttachementTypeInterface getPictureType() { return iPictureType; }
-		public void setPictureType(AttachementTypeInterface type) { iPictureType = type; }
+		public AttachmentTypeInterface getPictureType() { return iPictureType; }
+		public void setPictureType(AttachmentTypeInterface type) { iPictureType = type; }
 	}
 	
 	public static class RoomPictureRequest implements GwtRpcRequest<RoomPictureResponse> {
@@ -596,7 +596,7 @@ public class RoomInterface implements IsSerializable {
 		private String iName;
 		private List<RoomPictureInterface> iPictures;
 		private RoomPictureRequest.Apply iApply;
-		private List<AttachementTypeInterface> iPictureTypes = null;
+		private List<AttachmentTypeInterface> iPictureTypes = null;
 		
 		public RoomPictureResponse() {}
 		
@@ -614,15 +614,15 @@ public class RoomInterface implements IsSerializable {
 		public RoomPictureRequest.Apply getApply() { return iApply; }
 		public void setApply(RoomPictureRequest.Apply apply) { iApply = apply; }
 		
-		public void addPictureType(AttachementTypeInterface type) {
-			if (iPictureTypes == null) iPictureTypes = new ArrayList<AttachementTypeInterface>();
+		public void addPictureType(AttachmentTypeInterface type) {
+			if (iPictureTypes == null) iPictureTypes = new ArrayList<AttachmentTypeInterface>();
 			iPictureTypes.add(type);
 		}
 		public boolean hasPictureTypes() { return iPictureTypes != null && !iPictureTypes.isEmpty(); }
-		public List<AttachementTypeInterface> getPictureTypes() { return iPictureTypes; }
-		public AttachementTypeInterface getPictureType(Long id) {
+		public List<AttachmentTypeInterface> getPictureTypes() { return iPictureTypes; }
+		public AttachmentTypeInterface getPictureType(Long id) {
 			if (iPictureTypes == null) return null;
-			for (AttachementTypeInterface type: iPictureTypes)
+			for (AttachmentTypeInterface type: iPictureTypes)
 				if (type.getId().equals(id)) return type;
 			return null;
 		}
@@ -1243,6 +1243,13 @@ public class RoomInterface implements IsSerializable {
 				if (picture.getPictureType() == null || picture.getPictureType().isTable()) return true;
 			return false;
 		}
+		public boolean hasPictures(AttachmentTypeInterface type) {
+			if (iPictures == null) return false;
+			for (RoomPictureInterface picture: getPictures())
+				if ((type == null && picture.getPictureType() == null) ||
+					(type != null && type.equals(picture.getPictureType()))) return true;
+			return false;
+		}
 		public void addPicture(RoomPictureInterface picture) {
 			iPictures.add(picture);
 		}
@@ -1252,6 +1259,15 @@ public class RoomInterface implements IsSerializable {
 			if (iPictures != null)
 				for (RoomPictureInterface picture: getPictures())
 					if (picture.getPictureType() == null || picture.getPictureType().isTable())
+						ret.add(picture);
+			return ret;
+		}
+		public List<RoomPictureInterface> getPictures(AttachmentTypeInterface type) {
+			List<RoomPictureInterface> ret = new ArrayList<RoomPictureInterface>(); 
+			if (iPictures != null)
+				for (RoomPictureInterface picture: getPictures())
+					if ((type == null && picture.getPictureType() == null) ||
+						(type != null && type.equals(picture.getPictureType()))) 
 						ret.add(picture);
 			return ret;
 		}
@@ -1531,7 +1547,7 @@ public class RoomInterface implements IsSerializable {
 		private List<GroupInterface> iGroups = new ArrayList<GroupInterface>();
 		private List<FeatureInterface> iFeatures = new ArrayList<FeatureInterface>();
 		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
-		private List<AttachementTypeInterface> iPictureTypes = new ArrayList<AttachementTypeInterface>();
+		private List<AttachmentTypeInterface> iPictureTypes = new ArrayList<AttachmentTypeInterface>();
 		private boolean iCanSeeCourses = false, iCanSeeExams = false, iCanSeeEvents = false;
 		private boolean iGridAsText = false, iHorizontal = false, iGoogleMap = false;
 		private List<RoomSharingDisplayMode> iModes;
@@ -1637,13 +1653,20 @@ public class RoomInterface implements IsSerializable {
 		public void addPreference(PreferenceInterface preference) { iPreferences.add(preference); }
 		public List<PreferenceInterface> getPreferences() { return iPreferences; }
 		
-		public void addPictureType(AttachementTypeInterface type) { iPictureTypes.add(type); }
+		public void addPictureType(AttachmentTypeInterface type) { iPictureTypes.add(type); }
 		public boolean hasPictureTypes() { return !iPictureTypes.isEmpty(); }
-		public List<AttachementTypeInterface> getPictureTypes() { return iPictureTypes; }
-		public AttachementTypeInterface getPictureType(Long id) {
-			for (AttachementTypeInterface type: iPictureTypes)
+		public List<AttachmentTypeInterface> getPictureTypes() { return iPictureTypes; }
+		public AttachmentTypeInterface getPictureType(Long id) {
+			for (AttachmentTypeInterface type: iPictureTypes)
 				if (type.getId().equals(id)) return type;
 			return null;
+		}
+		public List<AttachmentTypeInterface> getTableTypes() {
+			if (iPictureTypes == null) return null;
+			List<AttachmentTypeInterface> ret = new ArrayList<AttachmentTypeInterface>();
+			for (AttachmentTypeInterface type: iPictureTypes)
+				if (type.isTable()) ret.add(type);
+			return ret;
 		}
 		
 		public void addMode(RoomSharingDisplayMode mode) {
@@ -1734,17 +1757,6 @@ public class RoomInterface implements IsSerializable {
 		GROUPS,
 		FEATURES,
 		;
-
-		public int flag() { return 1 << ordinal(); }
-		public boolean in(int flags) {
-			return (flags & flag()) != 0;
-		}
-		public int set(int flags) {
-			return (in(flags) ? flags : flags + flag());
-		}
-		public int clear(int flags) {
-			return (in(flags) ? flags - flag() : flags);
-		}
 	}
 	
 	public static enum RoomsPageMode implements IsSerializable {
@@ -1758,11 +1770,13 @@ public class RoomInterface implements IsSerializable {
 		RoomsPageMode(String query, RoomsColumn... column) {
 			iQuery = query;
 			iColumns = 0;
-			for (RoomsColumn f: column) iColumns += f.flag();
+			for (RoomsColumn f: column) iColumns += ( 1 << f.ordinal() );
 		}
 		
 		public String getQuery() { return iQuery; }
-		public int getColumns() { return iColumns; }
+		public boolean hasColumn(RoomsColumn column) {
+			return (iColumns & (1 << column.ordinal())) != 0;
+		}
 	}
 	
 	public static class RoomFilterRpcRequest extends org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest {
@@ -1905,15 +1919,15 @@ public class RoomInterface implements IsSerializable {
 		}
 	}
 	
-	public static class AttachementTypeInterface implements IsSerializable {
+	public static class AttachmentTypeInterface implements IsSerializable {
 		private Long iId;
 		private String iAbbreviation;
 		private String iLabel;
 		private boolean iImage = false, iTooltip = false, iTable = false;
 		
-		public AttachementTypeInterface() {}
+		public AttachmentTypeInterface() {}
 		
-		public AttachementTypeInterface(Long id, String abbv, String label, boolean image, boolean tooltip, boolean table) {
+		public AttachmentTypeInterface(Long id, String abbv, String label, boolean image, boolean tooltip, boolean table) {
 			iId = id; iAbbreviation = abbv; iLabel = label; iImage = image; iTooltip = tooltip; iTable = table;
 		}
 		
@@ -1940,8 +1954,8 @@ public class RoomInterface implements IsSerializable {
 		
 		@Override
 		public boolean equals(Object object) {
-			if (object == null || !(object instanceof AttachementTypeInterface)) return false;
-			return getId().equals(((AttachementTypeInterface)object).getId());
+			if (object == null || !(object instanceof AttachmentTypeInterface)) return false;
+			return getId().equals(((AttachmentTypeInterface)object).getId());
 		}
 	}
 }

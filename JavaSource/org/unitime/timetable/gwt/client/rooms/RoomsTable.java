@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
+import org.unitime.timetable.gwt.shared.RoomInterface.AttachmentTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
@@ -51,7 +52,6 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertyInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
-import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
@@ -89,52 +89,76 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	private List<Operation> iDepartmentOperations = new ArrayList<Operation>();
 	private List<Operation> iOtherOperations = new ArrayList<Operation>();
 	private RoomPropertiesInterface iProperties = null;
-	private int iFirstFeatureTypeColumn = -1;
 	
-	public RoomsTable(RoomsPageMode mode) {
+	public RoomsTable(RoomsPageMode mode, RoomPropertiesInterface properties) {
 		setStyleName("unitime-Rooms");
 		iMode = mode;
+		iProperties = properties;
 
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		for (RoomsColumn column: RoomsColumn.values()) {
-			UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(column), getColumnAlignment(column));
-			header.add(h);
+			int nrCells = getNbrCells(column);
+			for (int idx = 0; idx < nrCells; idx++) {
+				UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(column, idx), getColumnAlignment(column));
+				header.add(h);
+			}
 		}
 		
+		if (RoomCookie.getInstance().getFlags(iMode) == 0) {
+			int flags = 0;
+			for (RoomsColumn column: RoomsColumn.values()) {
+				if (iMode.hasColumn(column)) {
+					int nrCells = getNbrCells(column);
+					int cellIdx = getCellIndex(column);
+					for (int idx = 0; idx < nrCells; idx++) {
+						flags += (1 << (cellIdx + idx));
+					}
+				}
+			}
+			RoomCookie.getInstance().setFlags(iMode, flags);
+		}
+
 		addRow(null, header);
 		
 		for (final RoomsColumn column: RoomsColumn.values()) {
-			UniTimeTableHeader h = header.get(column.ordinal());
-			if (hasShowHideOperation(column)) {
-				Operation op = new AriaOperation() {
-					@Override
-					public void execute() {
-						boolean visible = isColumnVisible(column.ordinal());
-						setColumnVisible(column.ordinal(), !visible);
-						RoomCookie.getInstance().set(iMode, column, !visible);
-					}
-					@Override
-					public boolean isApplicable() {
-						return column.in(iFlags);
-					}
-					@Override
-					public boolean hasSeparator() { 
-						return false;
-					}
-					@Override
-					public String getName() { return isColumnVisible(column.ordinal()) ? MESSAGES.opHide(getColumnName(column).replace("<br>", " ")) : MESSAGES.opShow(getColumnName(column).replace("<br>", " ")); }
-					@Override
-					public String getAriaLabel() { return isColumnVisible(column.ordinal()) ? ARIA.opHide(getColumnName(column).replace("<br>", " ")) : ARIA.opShow(getColumnName(column).replace("<br>", " ")); }
-				};
-				iShowHideOperations.add(op);
-				if (column.ordinal() > 0) header.get(0).addOperation(op);
-				RoomsColumn g = getShowHideGroup(column);
-				if (g == null) {
-					h.addOperation(op);
-				} else {
-					for (RoomsColumn c: RoomsColumn.values()) {
-						if (g.equals(getShowHideGroup(c)))
-							header.get(c.ordinal()).addOperation(op);
+			int nrCells = getNbrCells(column);
+			int cellIdx = getCellIndex(column);
+			for (int idx = 0; idx < nrCells; idx++) {
+				final int colIdx = cellIdx + idx;
+				final String cName = getColumnName(column, idx).replace("<br>", " ");
+				UniTimeTableHeader h = header.get(colIdx);
+				if (hasShowHideOperation(column)) {
+					Operation op = new AriaOperation() {
+						@Override
+						public void execute() {
+							boolean visible = isColumnVisible(colIdx);
+							setColumnVisible(colIdx, !visible);
+							RoomCookie.getInstance().set(iMode, colIdx, !visible);
+						}
+						@Override
+						public boolean isApplicable() {
+							return (iFlags & (1 << colIdx)) != 0;
+						}
+						@Override
+						public boolean hasSeparator() { 
+							return false;
+						}
+						@Override
+						public String getName() { return isColumnVisible(colIdx) ? MESSAGES.opHide(cName) : MESSAGES.opShow(cName); }
+						@Override
+						public String getAriaLabel() { return isColumnVisible(colIdx) ? ARIA.opHide(cName) : ARIA.opShow(cName); }
+					};
+					iShowHideOperations.add(op);
+					if (colIdx > 0) header.get(0).addOperation(op);
+					RoomsColumn g = getShowHideGroup(column);
+					if (g == null) {
+						h.addOperation(op);
+					} else {
+						for (RoomsColumn c: RoomsColumn.values()) {
+							if (g.equals(getShowHideGroup(c)))
+								for (int i = 0; i < getNbrCells(c); i++)
+									header.get(getCellIndex(c) + i).addOperation(op);
+						}
 					}
 				}
 			}
@@ -166,13 +190,14 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			iDepartmentOperations.add(op);
 			for (RoomsColumn c: RoomsColumn.values()) {
 				if (hasDepartmentOperation(c))
-					header.get(c.ordinal()).addOperation(op);
+					for (int i = 0; i < getNbrCells(c); i++)
+						header.get(getCellIndex(c) + i).addOperation(op);
 			}
 		}
 		
 		for (final RoomsColumn column: RoomsColumn.values()) {
 			if (RoomsComparator.isApplicable(column)) {
-				final UniTimeTableHeader h = header.get(column.ordinal());
+				final UniTimeTableHeader h = header.get(getCellIndex(column));
 				Operation op = new SortOperation() {
 					@Override
 					public void execute() {
@@ -203,8 +228,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 
 			@Override
 			public void execute() {
-				final RoomsTable table = new RoomsTable(iMode);
-				table.setProperties(iProperties);
+				final RoomsTable table = new RoomsTable(iMode, iProperties);
 				table.setDepartment(iDepartment);
 				for (int i = 1; i < getRowCount(); i++)
 					table.addRoom(getData(i));
@@ -258,7 +282,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		setVisible(false);
 	}
 	
-	public String getColumnName(RoomsColumn column) {
+	public String getColumnName(RoomsColumn column, int idx) {
 		switch (column) {
 		case NAME: return MESSAGES.colName();
 		case TYPE: return MESSAGES.colType();
@@ -270,7 +294,9 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		case DISTANCE_CHECK: return MESSAGES.colDistances();
 		case ROOM_CHECK: return MESSAGES.colRoomCheck();
 		case MAP: return MESSAGES.colMap();
-		case PICTURES: return MESSAGES.colPictures();
+		case PICTURES:
+			if (idx == 0) return MESSAGES.colPictures();
+			else return iProperties.getTableTypes().get(idx - 1).getAbbreviation();
 		case PREFERENCE: return MESSAGES.colPreference();
 		case AVAILABILITY: return MESSAGES.colAvailability();
 		case DEPARTMENTS: return MESSAGES.colDepartments();
@@ -282,8 +308,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		case EVENT_AVAILABILITY: return MESSAGES.colEventAvailability();
 		case EVENT_MESSAGE: return MESSAGES.colEventMessage();
 		case BREAK_TIME: return MESSAGES.colBreakTime();
-		case FEATURES: return MESSAGES.colFeatures();
 		case GROUPS: return MESSAGES.colGroups();
+		case FEATURES:
+			if (idx == 0) return MESSAGES.colFeatures();
+			else return getFeatureType(idx - 1).getAbbreviation();
 		default: return column.name();
 		}
 	}
@@ -315,6 +343,15 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			return false;
 		default:
 			return true;
+		}
+	}
+	
+	protected int getFlagOffset(RoomsColumn column) {
+		switch (column) {
+		case PICTURES:
+			return countFeatureTypes();
+		default:
+			return 0;
 		}
 	}
 	
@@ -355,6 +392,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		case EXAM_TYPES:
 		case PERIOD_PREF:
 			return RoomsColumn.EXAM_TYPES;
+		case PICTURES:
+			return RoomsColumn.PICTURES;
+		case FEATURES:
+			return RoomsColumn.FEATURES;
 		default:
 			return null;
 		}
@@ -370,55 +411,6 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	
 	protected FeatureTypeInterface getFeatureType(int index) {
 		return iProperties.getFeatureTypes().get(index);
-	}
-	
-	protected void setupFeatureTypes() {
-		iFirstFeatureTypeColumn = getCellCount(0);
-		SmartTableRow<RoomDetailInterface> smartRow = getSmartRow(0);
-		for (int i = 0; i < countFeatureTypes(); i++) {
-			FeatureTypeInterface type = getFeatureType(i);
-			final UniTimeTableHeader header = new UniTimeTableHeader(type.getAbbreviation());
-			final int column = i + iFirstFeatureTypeColumn;
-			
-			SmartTableCell cell = new SmartTableCell(smartRow, header);
-			getFlexCellFormatter().setStyleName(0, column, "unitime-ClickableTableHeader");
-			header.setColumn(column);
-			setWidget(0, column, cell);
-			Roles.getColumnheaderRole().set(getCellFormatter().getElement(0, column));
-			
-			final int flag = (1 << (RoomsColumn.values().length + i));
-			final int ftIdx = i;
-			Operation op = new AriaOperation() {
-				@Override
-				public void execute() {
-					boolean visible = isColumnVisible(column);
-					setColumnVisible(column, !visible);
-					RoomCookie.getInstance().set(iMode, ftIdx, !visible);
-				}
-				@Override
-				public boolean isApplicable() {
-					return ((iFlags & flag) != 0);
-				}
-				@Override
-				public boolean hasSeparator() { 
-					return false;
-				}
-				@Override
-				public String getName() { return isColumnVisible(header.getColumn()) ? MESSAGES.opHide(header.getHTML().replace("<br>", " ")) : MESSAGES.opShow(header.getHTML().replace("<br>", " ")); }
-				@Override
-				public String getAriaLabel() { return isColumnVisible(header.getColumn()) ? ARIA.opHide(header.getHTML().replace("<br>", " ")) : ARIA.opShow(header.getHTML().replace("<br>", " ")); }
-			};
-			getHeader(MESSAGES.colName()).getOperations().add(iShowHideOperations.size(), op);
-			getHeader(MESSAGES.colFeatures()).addOperation(op);
-			iShowHideOperations.add(op);
-			header.addOperation(op);
-			setColumnVisible(column, false);
-		}
-	}
-	
-	public void setProperties(RoomPropertiesInterface properties) {
-		iProperties = properties;
-		setupFeatureTypes();
 	}
 	
 	public List<Operation> getSortOperations() {
@@ -476,13 +468,32 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	
 	public void sort() {
 		if (iSortBy == null) return;
-		UniTimeTableHeader header = getHeader(iSortBy.ordinal());
+		UniTimeTableHeader header = getHeader(getCellIndex(iSortBy));
 		sort(header, new RoomsComparator(iSortBy, true), iAsc);
 	}
 
 	public void setDepartment(String department) { iDepartment = department; }
 	
-	protected Widget getCell(final RoomDetailInterface room, final RoomsColumn column) {
+	protected int getNbrCells(RoomsColumn column) {
+		switch (column) {
+		case PICTURES:
+			List<AttachmentTypeInterface> types = iProperties.getTableTypes();
+			return 1 + (types == null ? 0 : types.size());
+		case FEATURES:
+			return 1 + iProperties.getFeatureTypes().size();
+		default:
+			return 1;
+		}
+	}
+	
+	protected int getCellIndex(RoomsColumn column) {
+		int ret = 0;
+		for (RoomsColumn c: RoomsColumn.values())
+			if (c.ordinal() < column.ordinal()) ret += getNbrCells(c);
+		return ret;
+	}
+	
+	protected Widget getCell(final RoomDetailInterface room, final RoomsColumn column, final int idx) {
 		if (iProperties == null || !iProperties.isCanSeeCourses()) {
 			switch (column) {
 			case DISTANCE_CHECK:
@@ -561,8 +572,12 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			return new MapCell(room);
 		
 		case PICTURES:
-			if (!room.hasTablePictures()) return null;
-			return new PicturesCell(room);
+			if (idx == 0) {
+				return (room.hasPictures(null) ? new PicturesCell(room, null) : null);
+			} else {
+				AttachmentTypeInterface type = iProperties.getTableTypes().get(idx - 1);
+				return (room.hasPictures(type) ? new PicturesCell(room, type) : null);
+			}
 		
 		case AVAILABILITY:
 			if (room.getAvailability() == null) return null;
@@ -631,9 +646,16 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			return new GroupsCell(room.getGroups());
 
 		case FEATURES:
-			List<FeatureInterface> features = room.getFeatures((Long)null);
-			if (features.isEmpty()) return null;
-			return new FeaturesCell(features);
+			if (idx == 0) {
+				List<FeatureInterface> features = room.getFeatures((Long)null);
+				if (features.isEmpty()) return null;
+				return new FeaturesCell(features);
+			} else {
+				FeatureTypeInterface type = getFeatureType(idx - 1);
+				List<FeatureInterface> featuresOfType = room.getFeatures(type);
+				if (featuresOfType.isEmpty()) return null;
+				return new FeaturesCell(featuresOfType);
+			}
 		}
 		return null;
 	}
@@ -642,22 +664,17 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		List<Widget> widgets = new ArrayList<Widget>();
 		
 		for (RoomsColumn column: RoomsColumn.values()) {
-			Widget cell = getCell(room, column);
-			if (cell == null) {
-				cell = new P();
-			} else if (hasShowHideOperation(column)) {
-				show(column);
+			int nbrCells = getNbrCells(column);
+			for (int idx = 0; idx < nbrCells; idx ++) {
+				Widget cell = getCell(room, column, idx);
+				if (cell == null) {
+					cell = new P();
+				} else if (hasShowHideOperation(column)) {
+					show(column, idx);
+				}
+				widgets.add(cell);
 			}
-			widgets.add(cell);
 		}
-
-		if (hasFeatureTypes())
-			for (int i = 0; i < countFeatureTypes(); i++) {
-				FeatureTypeInterface type = getFeatureType(i);
-				List<FeatureInterface> featuresOfType = room.getFeatures(type);
-				widgets.add(new FeaturesCell(featuresOfType));
-				if (!featuresOfType.isEmpty()) show(i);
-			}
 		
 		int row = addRow(room, widgets);
 		getRowFormatter().setStyleName(row, "row");
@@ -671,21 +688,19 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	
 	protected void resetVisibility() {
 		for (RoomsColumn column: RoomsColumn.values()) {
-			setColumnVisible(column.ordinal(), !hasShowHideOperation(column));
+			int nrCells = getNbrCells(column);
+			int cellIdx = getCellIndex(column);
+			for (int idx = 0; idx < nrCells; idx++) {
+				final int colIdx = cellIdx + idx;
+				setColumnVisible(colIdx, !hasShowHideOperation(column));
+			}
 		}
-		if (hasFeatureTypes())
-			for (int i = 0; i < countFeatureTypes(); i++)
-				setColumnVisible(iFirstFeatureTypeColumn + i, false);
 	}
 	
-	protected void show(RoomsColumn column) {
-		if (RoomCookie.getInstance().get(iMode, column) && !isColumnVisible(column.ordinal())) setColumnVisible(column.ordinal(), true);
-		iFlags = column.set(iFlags);
-	}
-	
-	protected void show(int ftIdx) {
-		int flag = (1 << (RoomsColumn.values().length + ftIdx));
-		if (RoomCookie.getInstance().get(iMode, ftIdx) && !isColumnVisible(iFirstFeatureTypeColumn + ftIdx)) setColumnVisible(iFirstFeatureTypeColumn + ftIdx, true);
+	protected void show(RoomsColumn column, int idx) {
+		int colIdx = getCellIndex(column) + idx;
+		if (RoomCookie.getInstance().get(iMode, colIdx) && !isColumnVisible(colIdx)) setColumnVisible(colIdx, true);
+		int flag = (1 << colIdx);
 		if ((iFlags & flag) == 0)
 			iFlags += flag;
 	}
@@ -1017,6 +1032,13 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			super("pictures");
 			if (room.hasTablePictures()) {
 				for (RoomPictureInterface picture: room.getTablePictures())
+					add(picture.getPictureType() == null || picture.getPictureType().isImage() ? new PictureCell(picture) : new LinkCell(picture));
+			}
+		}
+		public PicturesCell(RoomDetailInterface room, AttachmentTypeInterface type) {
+			super("pictures");
+			if (room.hasPictures(type)) {
+				for (RoomPictureInterface picture: room.getPictures(type))
 					add(picture.getPictureType() == null || picture.getPictureType().isImage() ? new PictureCell(picture) : new LinkCell(picture));
 			}
 		}

@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.resources.GwtConstants;
-import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
 import com.google.gwt.core.client.GWT;
@@ -50,7 +49,7 @@ public class RoomCookie {
 		iFlags = new int[RoomsPageMode.values().length];
 		iHash = new String[RoomsPageMode.values().length];
 		for (int i = 0; i < iFlags.length; i++) {
-			iFlags[i] = RoomsPageMode.values()[i].getColumns();
+			iFlags[i] = 0;
 			iHash[i] = RoomsPageMode.values()[i].getQuery();
 		}
 		try {
@@ -125,25 +124,24 @@ public class RoomCookie {
 		return sInstance;
 	}
 	
-	public boolean get(RoomsPageMode mode, RoomsColumn f) { return f.in(iFlags[mode.ordinal()]); }
-	public void set(RoomsPageMode mode, RoomsColumn f, boolean value) {
-		iFlags[mode.ordinal()] = (value ? f.set(iFlags[mode.ordinal()]) : f.clear(iFlags[mode.ordinal()]));
-		save();
+	public boolean get(RoomsPageMode mode, int colIndex) {
+		int flag = (1 << colIndex);
+		return (iFlags[mode.ordinal()] & flag) != 0;
 	}
-	public boolean get(RoomsPageMode mode, int ftIndex) {
-		int flag = (1 << (RoomsColumn.values().length + ftIndex));
-		return (iFlags[mode.ordinal()] & flag) == 0;
-	}
-	public void set(RoomsPageMode mode, int ftIndex, boolean value) {
-		int flag = (1 << (RoomsColumn.values().length + ftIndex));
+	public void set(RoomsPageMode mode, int colIndex, boolean value) {
+		int flag = (1 << colIndex);
 		boolean in = ((iFlags[mode.ordinal()] & flag) != 0);
-		if (!value && !in)
+		if (value && !in)
 			iFlags[mode.ordinal()] += flag;
-		if (value && in)
+		if (!value && in)
 			iFlags[mode.ordinal()] -= flag;
 		save();
 	}
 	public int getFlags(RoomsPageMode mode) { return iFlags[mode.ordinal()]; }
+	public void setFlags(RoomsPageMode mode, int flags) {
+		iFlags[mode.ordinal()] = flags;
+		save();
+	}
 	
 	public boolean hasHash(RoomsPageMode mode) {
 		return iHash[mode.ordinal()] != null && !iHash[mode.ordinal()].isEmpty();

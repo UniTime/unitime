@@ -44,147 +44,119 @@ public class RoomsExportCSV extends RoomsExporter {
 		if (checkRights(helper))
 			helper.getSessionContext().hasPermission(Right.RoomsExportCsv);
 		
-		List<Integer> columns = new ArrayList<Integer>();
-		for (int i = 0; i < getNbrColumns(context); i ++)
-			if (isColumnVisible(i, context)) columns.add(i);
-		
+		List<Object[]> columns = new ArrayList<Object[]>();
+		for (RoomsColumn column: RoomsColumn.values()) {
+			int nrCells = getNbrCells(column, context);
+			for (int idx = 0; idx < nrCells; idx++)
+				if (isColumnVisible(column, idx, context))
+					columns.add(new Object[] { column, idx });
+		}
+				
 		Printer printer = new CSVPrinter(helper.getWriter(), false);
 		helper.setup(printer.getContentType(), reference(), false);
 		
 		String[] header = new String[columns.size()];
 		for (int i = 0; i < columns.size(); i++)
-			header[i] = getColumnName(columns.get(i), context);
+			header[i] = getColumnName((RoomsColumn)columns.get(i)[0], (int)columns.get(i)[1], context).replace("<br>", "\n");
 		printer.printHeader(header);
 		printer.flush();
 		
 		for (RoomDetailInterface room: rooms) {
 			String[] row = new String[columns.size()];
 			for (int i = 0; i < columns.size(); i++)
-				row[i] = getCell(room, columns.get(i), context);
+				row[i] = getCell(room, (RoomsColumn)columns.get(i)[0], (int)columns.get(i)[1], context);
 			printer.printLine(row);
 			printer.flush();
 		}
 		printer.close();
 	}
 	
-	protected int getNbrColumns(ExportContext context) {
-		return 23 + context.getRoomFeatureTypes().size();
-	}
-	
-	protected String getColumnName(int column, ExportContext context) {
+	protected int getNbrCells(RoomsColumn column, ExportContext ec) {
 		switch (column) {
-		case  0: return MESSAGES.colName().replace("<br>", "\n");
-		case  1: return MESSAGES.colExternalId().replace("<br>", "\n");
-		case  2: return MESSAGES.colType().replace("<br>", "\n");
-		case  3: return MESSAGES.colCapacity().replace("<br>", "\n");
-		case  4: return MESSAGES.colExaminationCapacity().replace("<br>", "\n");
-		case  5: return MESSAGES.colArea(CONSTANTS.roomAreaUnitsShortPlainText()).replace("<br>", "\n");
-		case  6: return MESSAGES.colCoordinateX().replace("<br>", "\n");
-		case  7: return MESSAGES.colCoordinateY().replace("<br>", "\n");
-		case  8: return MESSAGES.colDistances().replace("<br>", "\n");
-		case  9: return MESSAGES.colRoomCheck().replace("<br>", "\n");
-		case 10: return MESSAGES.colPreference().replace("<br>", "\n");
-		case 11: return MESSAGES.colAvailability().replace("<br>", "\n");
-		case 12: return MESSAGES.colDepartments().replace("<br>", "\n");
-		case 13: return MESSAGES.colControl().replace("<br>", "\n");
-		case 14: return MESSAGES.colExamTypes().replace("<br>", "\n");
-		case 15: return MESSAGES.colPeriodPreferences().replace("<br>", "\n");
-		case 16: return MESSAGES.colEventDepartment().replace("<br>", "\n");
-		case 17: return MESSAGES.colEventStatus().replace("<br>", "\n");
-		case 18: return MESSAGES.colEventAvailability().replace("<br>", "\n");
-		case 19: return MESSAGES.colEventMessage().replace("<br>", "\n");
-		case 20: return MESSAGES.colBreakTime().replace("<br>", "\n");
-		case 21: return MESSAGES.colGroups().replace("<br>", "\n");
-		case 22: return MESSAGES.colFeatures().replace("<br>", "\n");
-		default: return context.getRoomFeatureTypes().get(column - 23).getAbbreviation();
+		case COORDINATES:
+			return 2;
+		case PICTURES:
+		case MAP:
+			return 0;
 		}
+		return super.getNbrCells(column, ec);
 	}
 	
-	protected boolean isColumnVisible(int column, ExportContext context) {
-		int flags = context.getRoomCookieFlags();
-		switch(column) {
-		case 1: return RoomsColumn.EXTERNAL_ID.in(flags);
-		case 2: return RoomsColumn.TYPE.in(flags);
-		case 3: return RoomsColumn.CAPACITY.in(flags);
-		case 4: return RoomsColumn.EXAM_CAPACITY.in(flags);
-		case 5: return RoomsColumn.AREA.in(flags);
-		case 6: return RoomsColumn.COORDINATES.in(flags);
-		case 7: return RoomsColumn.COORDINATES.in(flags);
-		case 8: return RoomsColumn.DISTANCE_CHECK.in(flags);
-		case 9: return RoomsColumn.ROOM_CHECK.in(flags);
-		case 10: return RoomsColumn.PREFERENCE.in(flags);
-		case 11: return RoomsColumn.AVAILABILITY.in(flags);
-		case 12: return RoomsColumn.DEPARTMENTS.in(flags);
-		case 13: return RoomsColumn.CONTROL_DEPT.in(flags);
-		case 14: return RoomsColumn.EXAM_TYPES.in(flags);
-		case 15: return RoomsColumn.PERIOD_PREF.in(flags);
-		case 16: return RoomsColumn.EVENT_DEPARTMENT.in(flags);
-		case 17: return RoomsColumn.EVENT_STATUS.in(flags);
-		case 18: return RoomsColumn.EVENT_AVAILABILITY.in(flags);
-		case 19: return RoomsColumn.EVENT_MESSAGE.in(flags);
-		case 20: return RoomsColumn.BREAK_TIME.in(flags);
-		case 21: return RoomsColumn.GROUPS.in(flags);
-		case 22: return RoomsColumn.FEATURES.in(flags);
-		default:
-			if (column > 22) {
-				int flag = (1 << (column - 23 + RoomsColumn.values().length));
-				return (flags & flag) == 0;
-			} else {
-				return true;
+	
+	protected int getNbrColumns(ExportContext context) {
+		int ret = 0;
+		for (RoomsColumn rc: RoomsColumn.values())
+			ret += getNbrCells(rc, context);
+		return ret;
+	}
+	
+	protected String getColumnName(RoomsColumn column, int index, ExportContext context) {
+		switch (column) {
+		case COORDINATES:
+			switch (index) {
+			case 0:
+				return MESSAGES.colCoordinateX();
+			case 1:
+				return MESSAGES.colCoordinateY();
 			}
 		}
+		return super.getColumnName(column, index, context).replace("<br>", "\n");
 	}
 	
-	protected String getCell(RoomDetailInterface room, int column, ExportContext context) {
+	protected String getCell(RoomDetailInterface room, RoomsColumn column, int index, ExportContext context) {
 		switch (column) {
-		case  0:
+		case NAME:
 			return room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel();
-		case 1:
+		case EXTERNAL_ID:
 			return room.hasExternalId() ? room.getExternalId() : "";
-		case 2:
+		case TYPE:
 			return room.getRoomType().getLabel();
-		case 3:
+		case CAPACITY:
 			return room.getCapacity() == null ? "0" : room.getCapacity().toString();
-		case 4:
+		case EXAM_CAPACITY:
 			return room.getExamCapacity() == null ? "" : room.getExamCapacity().toString();
-		case 5:
+		case AREA:
 			return room.getArea() == null ? "" : room.getArea().toString();
-		case 6:
-			return room.getX() == null ? "" : room.getX().toString();
-		case 7:
-			return room.getY() == null ? "" : room.getY().toString();
-		case 8:
+		case COORDINATES:
+			if (index == 0)
+				return room.getX() == null ? "" : room.getX().toString();
+			else
+				return room.getY() == null ? "" : room.getY().toString();
+		case ROOM_CHECK:
 			return room.isIgnoreRoomCheck() ? MESSAGES.exportFalse() : MESSAGES.exportTrue();
-		case 9:
+		case DISTANCE_CHECK:
 			return room.isIgnoreTooFar() ? MESSAGES.exportFalse() : MESSAGES.exportTrue();
-		case 10:
+		case PREFERENCE:
 			return context.pref2string(room.getDepartments());
-		case 11:
+		case AVAILABILITY:
 			return room.getAvailability();
-		case 12:
+		case DEPARTMENTS:
 			return context.dept2string(room.getDepartments());
-		case 13:
+		case CONTROL_DEPT:
 			return context.dept2string(room.getControlDepartment());
-		case 14:
+		case EXAM_TYPES:
 			return context.examTypes2string(room.getExamTypes());
-		case 15:
+		case PERIOD_PREF:
 			return room.getPeriodPreference();
-		case 16:
+		case EVENT_DEPARTMENT:
 			return context.dept2string(room.getEventDepartment());
-		case 17:
+		case EVENT_STATUS:
 			return room.getEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getEventStatus()] : room.getDefaultEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()] : "";
-		case 18:
+		case EVENT_AVAILABILITY:
 			return room.getEventAvailability();
-		case 19:
+		case EVENT_MESSAGE:
 			return room.getEventNote() != null ? room.getEventNote() : room.getDefaultEventNote();
-		case 20:
+		case BREAK_TIME:
 			return room.getBreakTime() != null ? room.getBreakTime().toString() : room.getDefaultBreakTime() != null ? room.getDefaultBreakTime().toString() : "";
-		case 21:
+		case GROUPS:
 			return context.groups2string(room.getGroups());
-		case 22:
-			return context.features2string(room.getFeatures(), null);
+		case FEATURES:
+			if (index == 0)
+				return context.features2string(room.getFeatures(), null);
+			else
+				return context.features2string(room.getFeatures(), context.getRoomFeatureTypes().get(index - 1));
 		default:
-			return context.features2string(room.getFeatures(), context.getRoomFeatureTypes().get(column - 23));
+			return null;
 		}
 	}
 }

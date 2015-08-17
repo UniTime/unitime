@@ -33,7 +33,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
-import org.unitime.timetable.gwt.shared.RoomInterface.AttachementTypeInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.AttachmentTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest.Apply;
@@ -65,7 +65,7 @@ public class RoomPicturesPage extends Composite {
 	private SimpleForm iForm;
 	private UniTimeTable<RoomPictureInterface> iTable;
 	private UniTimeHeaderPanel iHeader, iFooter;
-	private List<AttachementTypeInterface> iPictureTypes;
+	private List<AttachmentTypeInterface> iPictureTypes;
 	
 	private UniTimeFileUpload iFileUpload;
 	private ListBox iApply;
@@ -219,7 +219,7 @@ public class RoomPicturesPage extends Composite {
 		if (picture.getPictureType() == null) {
 			type.addItem(MESSAGES.itemSelect(), "-1");
 			if (iPictureTypes != null)
-				for (AttachementTypeInterface t: iPictureTypes) {
+				for (AttachmentTypeInterface t: iPictureTypes) {
 					type.addItem(t.getLabel(), t.getId().toString());
 				}
 			type.addChangeHandler(new ChangeHandler() {
@@ -231,9 +231,9 @@ public class RoomPicturesPage extends Composite {
 				}
 			});
 		} else {
-			final AttachementTypeInterface last = picture.getPictureType();
+			final AttachmentTypeInterface last = picture.getPictureType();
 			if (iPictureTypes != null)
-				for (AttachementTypeInterface t: iPictureTypes) {
+				for (AttachmentTypeInterface t: iPictureTypes) {
 					type.addItem(t.getLabel(), t.getId().toString());
 				}
 			boolean found = false;
@@ -280,9 +280,9 @@ public class RoomPicturesPage extends Composite {
 		return line;
 	}
 	
-	protected AttachementTypeInterface getPictureType(Long id) {
+	protected AttachmentTypeInterface getPictureType(Long id) {
 		if (iPictureTypes == null) return null;
-		for (AttachementTypeInterface type: iPictureTypes)
+		for (AttachmentTypeInterface type: iPictureTypes)
 			if (type.getId().equals(id)) return type;
 		return null;
 	}

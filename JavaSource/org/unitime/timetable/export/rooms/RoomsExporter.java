@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
+import org.unitime.timetable.gwt.shared.RoomInterface.AttachmentTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
@@ -47,7 +48,8 @@ import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
-import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
+import org.unitime.timetable.model.AttachementType;
+import org.unitime.timetable.model.AttachementType.VisibilityFlag;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
@@ -56,6 +58,7 @@ import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.server.rooms.RoomDetailsBackend;
+import org.unitime.timetable.server.rooms.RoomPicturesBackend;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -135,7 +138,7 @@ public abstract class RoomsExporter implements Exporter {
     			Collections.sort(rooms, cmp);
     	}
     	
-    	ec.setRoomCookieFlags(helper.getParameter("flags") == null ? RoomsPageMode.COURSES.getColumns() : Integer.parseInt(helper.getParameter("flags")));
+    	ec.setRoomCookieFlags(helper.getParameter("flags") == null ? 0xffff : Integer.parseInt(helper.getParameter("flags")));
     	
     	if (helper.getParameter("orientation") != null) {
     		ec.setVertical("vertical".equals(helper.getParameter("orientation")));
@@ -152,9 +155,80 @@ public abstract class RoomsExporter implements Exporter {
     	for (RoomFeatureType type: new TreeSet<RoomFeatureType>(RoomFeatureTypeDAO.getInstance().findAll()))
     		ec.addRoomFeatureType(new FeatureTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.isShowInEventManagement()));
     	
+    	for (AttachementType type: AttachementType.listTypes(AttachementType.VisibilityFlag.ROOM_PICTURE_TYPE, VisibilityFlag.SHOW_ROOMS_TABLE))
+    		ec.addPictureType(RoomPicturesBackend.getPictureType(type));
+    	
     	ec.setDepartment(request.getOption("department"));
     	
     	print(helper, rooms, ec);
+	}
+	
+	protected boolean hasShowHideOperation(RoomsColumn column) {
+		switch (column) {
+		case NAME:
+			return false;
+		default:
+			return true;
+		}
+	}
+	
+	protected int getWebTableNbrCells(RoomsColumn column, ExportContext context) {
+		switch (column) {
+		case PICTURES:
+			return 1 + context.getPictureTypes().size();
+		case FEATURES:
+			return 1 + context.getRoomFeatureTypes().size();
+		default:
+			return 1;
+		}
+	}
+	
+	protected int getNbrCells(RoomsColumn column, ExportContext context) {
+		return getWebTableNbrCells(column, context);
+	}
+	
+	protected boolean isColumnVisible(RoomsColumn column, int index, ExportContext context) {
+		if (!hasShowHideOperation(column)) return true;
+		int colIndex = 0;
+		for (RoomsColumn c: RoomsColumn.values()) {
+			if (c.ordinal() < column.ordinal()) colIndex += getWebTableNbrCells(c, context);
+		}
+		if (index < getWebTableNbrCells(column, context)) colIndex += index;
+		return (context.getRoomCookieFlags() & (1 << colIndex)) != 0;
+	}
+	
+	protected String getColumnName(RoomsColumn column, int idx, ExportContext ec) {
+		switch (column) {
+		case NAME: return MESSAGES.colName();
+		case TYPE: return MESSAGES.colType();
+		case EXTERNAL_ID: return MESSAGES.colExternalId();
+		case CAPACITY: return MESSAGES.colCapacity();
+		case EXAM_CAPACITY: return MESSAGES.colExaminationCapacity();
+		case AREA: return MESSAGES.colArea(CONSTANTS.roomAreaUnitsShort());
+		case COORDINATES: return MESSAGES.colCoordinates();
+		case DISTANCE_CHECK: return MESSAGES.colDistances();
+		case ROOM_CHECK: return MESSAGES.colRoomCheck();
+		case MAP: return MESSAGES.colMap();
+		case PICTURES:
+			if (idx == 0) return MESSAGES.colPictures();
+			else return ec.getPictureTypes().get(idx - 1).getAbbreviation();
+		case PREFERENCE: return MESSAGES.colPreference();
+		case AVAILABILITY: return MESSAGES.colAvailability();
+		case DEPARTMENTS: return MESSAGES.colDepartments();
+		case CONTROL_DEPT: return MESSAGES.colControl();
+		case EXAM_TYPES: return MESSAGES.colExamTypes();
+		case PERIOD_PREF: return MESSAGES.colPeriodPreferences();
+		case EVENT_DEPARTMENT: return MESSAGES.colEventDepartment();
+		case EVENT_STATUS: return MESSAGES.colEventStatus();
+		case EVENT_AVAILABILITY: return MESSAGES.colEventAvailability();
+		case EVENT_MESSAGE: return MESSAGES.colEventMessage();
+		case BREAK_TIME: return MESSAGES.colBreakTime();
+		case GROUPS: return MESSAGES.colGroups();
+		case FEATURES:
+			if (idx == 0) return MESSAGES.colFeatures();
+			else return ec.getRoomFeatureTypes().get(idx - 1).getAbbreviation();
+		default: return column.name();
+		}
 	}
 	
 	protected abstract void print(ExportHelper helper, List<RoomDetailInterface> rooms, ExportContext context) throws IOException;
@@ -166,6 +240,7 @@ public abstract class RoomsExporter implements Exporter {
 	protected static class ExportContext {
 		private String iDepartment = null;
 		private List<FeatureTypeInterface> iFeatureTypes = new ArrayList<FeatureTypeInterface>();
+		private List<AttachmentTypeInterface> iPictureTypes = new ArrayList<AttachmentTypeInterface>();
 		private int iDepartmentMode = 0;
 		private int iRoomCookieFlags = 0;
 		private boolean iGridAsText = false;
@@ -184,6 +259,9 @@ public abstract class RoomsExporter implements Exporter {
 		public void addRoomFeatureType(FeatureTypeInterface type) { iFeatureTypes.add(type); }
 		public List<FeatureTypeInterface> getRoomFeatureTypes() { return iFeatureTypes; }
 		
+		public void addPictureType(AttachmentTypeInterface type) { iPictureTypes.add(type); }
+		public List<AttachmentTypeInterface> getPictureTypes() { return iPictureTypes; }
+
 		public void setRoomCookieFlags(int flags) { iRoomCookieFlags = flags; }
 		public int getRoomCookieFlags() { return iRoomCookieFlags; }
 		

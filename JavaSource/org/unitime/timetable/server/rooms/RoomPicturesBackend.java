@@ -36,7 +36,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.UploadServlet;
-import org.unitime.timetable.gwt.shared.RoomInterface.AttachementTypeInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.AttachmentTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest.Apply;
@@ -60,9 +60,9 @@ import org.unitime.timetable.security.rights.Right;
 public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequest, RoomPictureResponse> {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
-	public static AttachementTypeInterface getPictureType(AttachementType type) {
+	public static AttachmentTypeInterface getPictureType(AttachementType type) {
 		if (type == null) return null;
-		return new AttachementTypeInterface(
+		return new AttachmentTypeInterface(
 				type.getUniqueId(), type.getAbbreviation(), type.getLabel(),
 				AttachementType.VisibilityFlag.IS_IMAGE.in(type.getVisibility()),
 				AttachementType.VisibilityFlag.SHOW_ROOM_TOOLTIP.in(type.getVisibility()),
