@@ -35,6 +35,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class PeriodPreferencesHint {
 	private static PeriodPreferencesWidget sSharing;
 	private static long sLastLocationId = -1;
+	private static boolean sShowHint = false;
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	public static PeriodPreferencesWidget content(RoomInterface.PeriodPreferenceModel model) {
@@ -51,6 +52,7 @@ public class PeriodPreferencesHint {
 	
 	public static void showHint(final Element relativeObject, final long locationId, final long examTypeId) {
 		sLastLocationId = locationId;
+		sShowHint = true;
 		RPC.execute(RoomInterface.PeriodPreferenceRequest.load(locationId, examTypeId), new AsyncCallback<RoomInterface.PeriodPreferenceModel>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -58,13 +60,14 @@ public class PeriodPreferencesHint {
 			
 			@Override
 			public void onSuccess(RoomInterface.PeriodPreferenceModel result) {
-				if (locationId == sLastLocationId && result != null)
+				if (locationId == sLastLocationId && sShowHint && result != null)
 					GwtHint.showHint(relativeObject, content(result));
 			}
 		});
 	}
 	
 	public static void hideHint() {
+		sShowHint = false;
 		GwtHint.hideHint();
 	}
 	

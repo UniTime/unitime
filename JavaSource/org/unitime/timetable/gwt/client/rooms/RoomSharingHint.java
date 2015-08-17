@@ -35,6 +35,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class RoomSharingHint {
 	private static RoomSharingWidget sSharing;
 	private static long sLastLocationId = -1;
+	private static boolean sShowHint = false;
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	public static RoomSharingWidget content(RoomInterface.RoomSharingModel model) {
@@ -56,6 +57,7 @@ public class RoomSharingHint {
 
 	public static void showHint(final Element relativeObject, final long locationId, boolean eventAvailability) {
 		sLastLocationId = locationId;
+		sShowHint = true;
 		RPC.execute(RoomInterface.RoomSharingRequest.load(locationId, eventAvailability), new AsyncCallback<RoomInterface.RoomSharingModel>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -63,13 +65,14 @@ public class RoomSharingHint {
 			
 			@Override
 			public void onSuccess(RoomInterface.RoomSharingModel result) {
-				if (locationId == sLastLocationId && result != null)
+				if (locationId == sLastLocationId && sShowHint && result != null)
 					GwtHint.showHint(relativeObject, content(result));
 			}
 		});
 	}
 	
 	public static void hideHint() {
+		sShowHint = false;
 		GwtHint.hideHint();
 	}
 	
