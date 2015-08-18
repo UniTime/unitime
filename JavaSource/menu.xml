@@ -65,6 +65,7 @@
 			<menu name="Rooms" page="roomSearch.do">
 				<condition>
 					<hasPermission name="Rooms"/>
+					<propertyEquals name="unitime.experimental.rooms" value="false" defaultValue="false"/>
 				</condition>
 				<item name="Room Features" page="roomFeatureSearch.do">
 					<condition>
@@ -82,13 +83,28 @@
 					</condition>
 				</item>
 			</menu>
-			<item name="Rooms (NEW)" page="rooms" type="gwt">
+			<menu name="Rooms" page="rooms" type="gwt">
 				<parameter name="mode">courses</parameter>
 				<condition>
 					<hasPermission name="Rooms"/>
 					<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
 				</condition>
-			</item>
+				<item name="Room Features" page="roomFeatureSearch.do">
+					<condition>
+						<hasPermission name="RoomFeatures"/>
+					</condition>
+				</item>
+				<item name="Room Groups" page="roomGroupSearch.do">
+					<condition>
+						<hasPermission name="RoomGroups"/>
+					</condition>
+				</item>
+				<item name="Travel Times" page="traveltimes" type="gwt">
+					<condition>
+						<hasPermission name="TravelTimesLoad"/>
+					</condition>
+				</item>
+			</menu>
 			<separator/>
 			<item name="Distribution Preferences" page="distributionPrefs.do">
 				<condition>
@@ -316,6 +332,7 @@
 			<menu name="Rooms" page="roomSearch.do?default=Exam">
 				<condition>
 					<hasPermission name="Rooms"/>
+					<propertyEquals name="unitime.experimental.rooms" value="false" defaultValue="false"/>
 				</condition>
 				<item name="Room Features" page="roomFeatureSearch.do?default=Exam">
 					<condition>
@@ -333,13 +350,28 @@
 					</condition>
 				</item>
 			</menu>
-			<item name="Rooms (NEW)" page="rooms" type="gwt">
+			<menu name="Rooms" page="rooms" type="gwt">
 				<parameter name="mode">exams</parameter>
 				<condition>
 					<hasPermission name="Rooms"/>
 					<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
 				</condition>
-			</item>
+				<item name="Room Features" page="roomFeatureSearch.do?default=Exam">
+					<condition>
+						<hasPermission name="RoomFeatures"/>
+					</condition>
+				</item>
+				<item name="Room Groups" page="roomGroupSearch.do?default=Exam">
+					<condition>
+						<hasPermission name="RoomGroups"/>
+					</condition>
+				</item>
+				<item name="Room Availability" page="roomAvailability.do">
+					<condition>
+						<hasPermission name="RoomAvailability"/>
+					</condition>
+				</item>
+			</menu>
 			<separator/>
 			<item name="Examinations" page="examList.do"/>
 			<item name="Distribution Preferences" page="examDistributionPrefs.do">
@@ -498,6 +530,7 @@
 		<menu name="Rooms" page="roomSearch.do">
 			<condition>
 				<hasPermission name="Rooms"/>
+				<propertyEquals name="unitime.experimental.rooms" value="false" defaultValue="false"/>
 			</condition>
 			<item name="Room Features" page="roomFeatureSearch.do">
 				<condition>
@@ -510,13 +543,23 @@
 				</condition>
 			</item>
 		</menu>
-		<item name="Rooms (NEW)" page="rooms" type="gwt">
+		<menu name="Rooms" page="rooms" type="gwt">
 			<parameter name="mode">events</parameter>
 			<condition>
 				<hasPermission name="Rooms"/>
 				<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
 			</condition>
-		</item>
+			<item name="Room Features" page="roomFeatureSearch.do">
+				<condition>
+					<hasPermission name="RoomFeatures"/>
+				</condition>
+			</item>
+			<item name="Room Groups" page="roomGroupSearch.do">
+				<condition>
+					<hasPermission name="RoomGroups"/>
+				</condition>
+			</item>
+		</menu>
 		<separator>
 			<condition>
 				<hasPermission name="Rooms"/>
