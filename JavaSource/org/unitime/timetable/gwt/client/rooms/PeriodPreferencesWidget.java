@@ -48,6 +48,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -65,11 +66,21 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 	private P iSelectedIcon = null, iSelectedTitle = null;
 	private PeriodPreferenceModel iModel;
 	protected boolean iEditable = true;
+	private CheckBox iHorizontal;
 	
 	public PeriodPreferencesWidget(boolean editable) {
 		iEditable = editable;
 
 		iPanel = new AbsolutePanel();
+		
+		iHorizontal = new CheckBox(MESSAGES.periodPreferenceHorizontal());
+		iHorizontal.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				RoomCookie.getInstance().setHorizontal(iHorizontal.getValue());
+				render();
+			}
+		});
 		
 		initWidget(iPanel);
 	}
@@ -96,8 +107,22 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 		return iModel;
 	}
 	
+	public boolean isHorizontal() {
+		return iHorizontal.getValue();
+	}
+	
+	public void setHorizontal(boolean horizontal) {
+		iHorizontal.setValue(horizontal);
+		RoomCookie.getInstance().setHorizontal(horizontal);
+		render();
+	}
+	
 	public void setModel(PeriodPreferenceModel model) {
 		iModel = model;
+		if (RoomCookie.getInstance().hasOrientation())
+			iHorizontal.setValue(RoomCookie.getInstance().areRoomsHorizontal());
+		else
+			iHorizontal.setValue(model.isDefaultHorizontal());
 		
 		iPreference = iModel.getDefaultPreference();
 		if (iPreference == null) iPreference = iModel.getPreferences().get(0);
@@ -327,6 +352,8 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 			DateTimeFormat f1 = DateTimeFormat.getFormat(CONSTANTS.examPeriodPreferenceDateFormat()[0]);
 			DateTimeFormat f2 = DateTimeFormat.getFormat(CONSTANTS.examPeriodPreferenceDateFormat()[1]);
 			DateTimeFormat fm = DateTimeFormat.getFormat("MMMM yyyy");
+			P horizonal = new P("horizontal"); horizonal.add(iHorizontal);
+			iPanel.add(horizonal);
 			
 			boolean splitByMonths = iModel.getDays().size() > 15;
 			P container = null;
@@ -370,49 +397,99 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 				corner.setHTML(MESSAGES.roomSharingCorner());
 				header.add(corner);
 				
-				final Map<Integer, List<Cell>> thisDay = new HashMap<Integer, List<Cell>>();
-				for (int day: days) {
-					P p = new P("cell", "time", isEditable() ? "clickable" : null);
-					Date date = getDate(iModel.getFirstDate(), day);
-					p.setHTML(f1.format(date) + "<br>" + f2.format(date));
-					final List<Cell> t = new ArrayList<Cell>();
-					thisDay.put(day, t);
-					header.add(p);
-					if (isEditable())
-						p.addMouseDownHandler(new MouseDownHandler() {
-							@Override
-							public void onMouseDown(MouseDownEvent event) {
-								for (Cell d: t)
-									d.setOption(iPreference);
-							}
-						});
-				}
-				
 				final List<Cell> thisPage = new ArrayList<Cell>();
-				for (int slot: iModel.getSlots()) {
-					P line = new P("row");
-					box.add(line);
-					P d = new P("cell", "day", isEditable() ? "clickable" : null);
-					d.setHTML(MESSAGES.roomSharingTimeHeader(slot2short(slot), slot2short(slot + iModel.getLength(slot))));
-					line.add(d);
-					final List<Cell> thisSlot = new ArrayList<Cell>();
-					for (int day: days) {
-						Date date = getDate(iModel.getFirstDate(), day);
-						Cell p = new Cell(day, slot, date, iModel.getPeriod(day, slot));
-						line.add(p);
-						thisSlot.add(p);
-						thisPage.add(p);
-						thisDay.get(day).add(p);
+				if (isHorizontal()) {
+					if (container != null)
+						container.addStyleName("orientation-horizontal");
+					
+					final Map<Integer, List<Cell>> thisSlot = new HashMap<Integer, List<Cell>>();
+					for (int slot: iModel.getSlots()) {
+						P p = new P("cell", "time", isEditable() ? "clickable" : null);
+						p.setHTML(MESSAGES.roomSharingTimeHeader(slot2short(slot), slot2short(slot + iModel.getLength(slot))));
+						final List<Cell> t = new ArrayList<Cell>();
+						thisSlot.put(slot, t);
+						header.add(p);
+						if (isEditable())
+							p.addMouseDownHandler(new MouseDownHandler() {
+								@Override
+								public void onMouseDown(MouseDownEvent event) {
+									for (Cell d: t)
+										d.setOption(iPreference);
+								}
+							});
 					}
-					if (isEditable())
-						d.addMouseDownHandler(new MouseDownHandler() {
-							@Override
-							public void onMouseDown(MouseDownEvent event) {
-								for (Cell d: thisSlot)
-									d.setOption(iPreference);
-							}
-						});
+					for (int day: days) {
+						P line = new P("row");
+						box.add(line);
+						P d = new P("cell", "day", isEditable() ? "clickable" : null);
+						Date date = getDate(iModel.getFirstDate(), day);
+						d.setHTML(f1.format(date) + "<br>" + f2.format(date));
+						line.add(d);
+						final List<Cell> thisDay = new ArrayList<Cell>();
+						for (int slot: iModel.getSlots()) {
+							Cell p = new Cell(day, slot, date, iModel.getPeriod(day, slot));
+							line.add(p);
+							thisSlot.get(slot).add(p);
+							thisPage.add(p);
+							thisDay.add(p);
+						}
+						if (isEditable())
+							d.addMouseDownHandler(new MouseDownHandler() {
+								@Override
+								public void onMouseDown(MouseDownEvent event) {
+									for (Cell d: thisDay)
+										d.setOption(iPreference);
+								}
+							});
+					}
+				} else {
+					if (container != null)
+						container.addStyleName("orientation-vertical");
+					
+					final Map<Integer, List<Cell>> thisDay = new HashMap<Integer, List<Cell>>();
+					for (int day: days) {
+						P p = new P("cell", "time", isEditable() ? "clickable" : null);
+						Date date = getDate(iModel.getFirstDate(), day);
+						p.setHTML(f1.format(date) + "<br>" + f2.format(date));
+						final List<Cell> t = new ArrayList<Cell>();
+						thisDay.put(day, t);
+						header.add(p);
+						if (isEditable())
+							p.addMouseDownHandler(new MouseDownHandler() {
+								@Override
+								public void onMouseDown(MouseDownEvent event) {
+									for (Cell d: t)
+										d.setOption(iPreference);
+								}
+							});
+					}
+					
+					for (int slot: iModel.getSlots()) {
+						P line = new P("row");
+						box.add(line);
+						P d = new P("cell", "day", isEditable() ? "clickable" : null);
+						d.setHTML(MESSAGES.roomSharingTimeHeader(slot2short(slot), slot2short(slot + iModel.getLength(slot))));
+						line.add(d);
+						final List<Cell> thisSlot = new ArrayList<Cell>();
+						for (int day: days) {
+							Date date = getDate(iModel.getFirstDate(), day);
+							Cell p = new Cell(day, slot, date, iModel.getPeriod(day, slot));
+							line.add(p);
+							thisSlot.add(p);
+							thisPage.add(p);
+							thisDay.get(day).add(p);
+						}
+						if (isEditable())
+							d.addMouseDownHandler(new MouseDownHandler() {
+								@Override
+								public void onMouseDown(MouseDownEvent event) {
+									for (Cell d: thisSlot)
+										d.setOption(iPreference);
+								}
+							});
+					}
 				}
+
 				
 				if (isEditable())
 					corner.addMouseDownHandler(new MouseDownHandler() {

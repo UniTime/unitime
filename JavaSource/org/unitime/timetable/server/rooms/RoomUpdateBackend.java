@@ -361,22 +361,18 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			}
 			
 			if (context.hasPermission(Right.EditRoomDepartmentsExams) && FutureOperation.EXAM_PREFS.in(flags)) {
-				location.getExamPreferences().clear();
 				for (ExamType type: location.getExamTypes()) {
 					PeriodPreferenceModel model = room.getPeriodPreferenceModel(type.getUniqueId());
-					if (model != null)
+					if (model != null) {
+						location.clearExamPreferences(type.getUniqueId());
 						for (ExamPeriod period: (List<ExamPeriod>)hibSession.createQuery(
 								"from ExamPeriod ep where ep.session.uniqueId=:sessionId and ep.examType.uniqueId=:typeId"
 								).setLong("sessionId", location.getSession().getUniqueId()).setLong("typeId", type.getUniqueId()).setCacheable(true).list()) {
 							PreferenceInterface pref = model.getPreference(period.getDateOffset(), period.getStartSlot());
-							if (pref != null && !PreferenceLevel.sNeutral.equals(pref.getCode())) {
-								ExamLocationPref ep = new ExamLocationPref();
-								ep.setExamPeriod(period);
-								ep.setPrefLevel(PreferenceLevel.getPreferenceLevel(pref.getCode()));
-						        ep.setLocation(location);
-						        location.getExamPreferences().add(ep);
-							}
+							if (pref != null && !PreferenceLevel.sNeutral.equals(pref.getCode()))
+								location.addExamPreference(period, PreferenceLevel.getPreferenceLevel(pref.getCode()));
 						}
+					}
 				}
 			}
 			
@@ -822,22 +818,18 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			}
 			
 			if (context.hasPermission(Right.EditRoomDepartmentsExams) && FutureOperation.EXAM_PREFS.in(flags)) {
-				location.getExamPreferences().clear();
 				for (ExamType type: location.getExamTypes()) {
 					PeriodPreferenceModel model = room.getPeriodPreferenceModel(type.getUniqueId());
-					if (model != null)
+					if (model != null) {
+						location.clearExamPreferences(type.getUniqueId());
 						for (ExamPeriod period: (List<ExamPeriod>)hibSession.createQuery(
 								"from ExamPeriod ep where ep.session.uniqueId=:sessionId and ep.examType.uniqueId=:typeId"
 								).setLong("sessionId", session.getUniqueId()).setLong("typeId", type.getUniqueId()).setCacheable(true).list()) {
 							PreferenceInterface pref = model.getPreference(period.getDateOffset(), period.getStartSlot());
-							if (pref != null && !PreferenceLevel.sNeutral.equals(pref.getCode())) {
-								ExamLocationPref ep = new ExamLocationPref();
-								ep.setExamPeriod(period);
-								ep.setPrefLevel(PreferenceLevel.getPreferenceLevel(pref.getCode()));
-						        ep.setLocation(location);
-						        location.getExamPreferences().add(ep);
-							}
+							if (pref != null && !PreferenceLevel.sNeutral.equals(pref.getCode()))
+								location.addExamPreference(period, PreferenceLevel.getPreferenceLevel(pref.getCode()));
 						}
+					}
 				}
 			}
 			

@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -77,6 +79,7 @@ public class PeriodPreferencesBackend implements GwtRpcImplementation<PeriodPref
 		if (location != null) {
 			model.setLocationId(location.getUniqueId());
 		}
+		model.setDefaultHorizontal(CommonValues.HorizontalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
 		model.setExamType(new ExamTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.getType() == ExamType.sExamTypeFinal));
 		model.setFirstDate(session.getExamBeginDate());
 		for (ExamPeriod period: (Set<ExamPeriod>)ExamPeriod.findAll(session.getUniqueId(), type)) {

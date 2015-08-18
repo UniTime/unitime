@@ -1146,7 +1146,8 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				if (iRoom.getPeriodPreference() != null)
 					setHTML(iRoom.getPeriodPreference());
 			} else {
-				add(new Image(GWT.getHostPageBaseURL() + "pattern?loc=" + iRoom.getUniqueId() + "&xt=" + iType.getId() + "&v=1" + (cookie.hasMode() ? "&s=" + cookie.getMode() : "")));
+				add(new Image(GWT.getHostPageBaseURL() + "pattern?loc=" + iRoom.getUniqueId() + "&xt=" + iType.getId() +
+						"&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : "")));
 			}
 		}
 	}

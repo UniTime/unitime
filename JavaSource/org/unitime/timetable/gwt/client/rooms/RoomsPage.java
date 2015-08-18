@@ -262,7 +262,7 @@ public class RoomsPage extends Composite {
 					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationAsGrid());
 					orientation.addItem(item);
 				}
-				if (!RoomCookie.getInstance().isGridAsText() && RoomCookie.getInstance().areRoomsHorizontal() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
+				if (!RoomCookie.getInstance().isGridAsText() && RoomCookie.getInstance().areRoomsHorizontal() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.PERIOD_PREF) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
 					if (orientation == null) orientation = new MenuBar(true);
 					MenuItem item = new MenuItem(MESSAGES.opOrientationVertical(), true, new Command() {
 						@Override
@@ -275,7 +275,7 @@ public class RoomsPage extends Composite {
 					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationVertical());
 					orientation.addItem(item);
 				}
-				if (!RoomCookie.getInstance().isGridAsText() && !RoomCookie.getInstance().areRoomsHorizontal() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
+				if (!RoomCookie.getInstance().isGridAsText() && !RoomCookie.getInstance().areRoomsHorizontal() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.PERIOD_PREF) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
 					if (orientation == null) orientation = new MenuBar(true);
 					MenuItem item = new MenuItem(MESSAGES.opOrientationHorizontal(), true, new Command() {
 						@Override

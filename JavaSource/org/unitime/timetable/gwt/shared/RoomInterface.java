@@ -1401,6 +1401,7 @@ public class RoomInterface implements IsSerializable {
 		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
 		private List<PeriodInterface> iPeriods = new ArrayList<PeriodInterface>();
 		private Map<Integer, Map<Integer, Long>> iModel;
+		private boolean iHorizontal = false;
 		
 		public PeriodPreferenceModel() {}
 		
@@ -1480,6 +1481,9 @@ public class RoomInterface implements IsSerializable {
 		public void setPreference(int day, int slot, PreferenceInterface preference) {
 			setPreference(day, slot, preference == null ? null : preference.getId());
 		}
+		
+		public boolean isDefaultHorizontal() { return iHorizontal; }
+		public void setDefaultHorizontal(boolean horizontal) { iHorizontal = horizontal; }
 	}
 	
 	public static class PeriodPreferenceRequest implements GwtRpcRequest<PeriodPreferenceModel> {

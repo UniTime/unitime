@@ -183,6 +183,11 @@ public class RoomCookie {
 		save();
 	}
 	
+	public void setHorizontal(boolean horizontal) {
+		iHorizontal = horizontal;
+		save();
+	}
+	
 	public String getMode() {
 		return iMode;
 	}

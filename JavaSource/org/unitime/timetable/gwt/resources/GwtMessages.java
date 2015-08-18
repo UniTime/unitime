@@ -2579,6 +2579,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Horizontal")
 	String roomSharingHorizontal();
 	
+	@DefaultMessage("Horizontal")
+	String periodPreferenceHorizontal();
+	
 	@DefaultMessage("Free For All")
 	String legendFreeForAll();
 	
