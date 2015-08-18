@@ -716,7 +716,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	public int getFlags() { return iFlags; }
 	
 	public boolean isVisible(RoomsColumn column) {
-		return isColumnVisible(column.ordinal());
+		return isColumnVisible(getCellIndex(column));
 	}
 	
 	public static class IntegerCell extends Label implements UniTimeTable.HasCellAlignment, UniTimeTable.HasColSpan, TakesValue<Integer> {
