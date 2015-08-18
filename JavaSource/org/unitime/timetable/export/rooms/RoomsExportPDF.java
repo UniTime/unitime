@@ -71,12 +71,14 @@ public class RoomsExportPDF extends RoomsExporter {
 		if (checkRights(helper))
 			helper.getSessionContext().hasPermission(Right.RoomsExportPdf);
 		
-		List<Object[]> columns = new ArrayList<Object[]>();
+		List<Column> columns = new ArrayList<Column>();
 		for (RoomsColumn column: RoomsColumn.values()) {
 			int nrCells = getNbrCells(column, context);
-			for (int idx = 0; idx < nrCells; idx++)
-				if (isColumnVisible(column, idx, context))
-					columns.add(new Object[] { column, idx });
+			for (int idx = 0; idx < nrCells; idx++) {
+				Column c = new Column(column, idx);
+				if (isColumnVisible(c, context))
+					columns.add(c);
+			}
 		}
 		
 		PDFPrinter printer = new PDFPrinter(helper.getOutputStream(), false);
@@ -84,14 +86,14 @@ public class RoomsExportPDF extends RoomsExporter {
 		
 		String[] header = new String[columns.size()];
 		for (int i = 0; i < columns.size(); i++)
-			header[i] = getColumnName((RoomsColumn)columns.get(i)[0], (int)columns.get(i)[1], context).replace("<br>", "\n");
+			header[i] = getColumnName(columns.get(i), context).replace("<br>", "\n");
 		printer.printHeader(header);
 		printer.flush();
 		
 		for (RoomDetailInterface room: rooms) {
 			A[] row = new A[columns.size()];
 			for (int i = 0; i < columns.size(); i++)
-				row[i] = getCell(room, (RoomsColumn)columns.get(i)[0], (int)columns.get(i)[1], context);
+				row[i] = getCell(room, columns.get(i), context);
 			printer.printLine(row);
 			printer.flush();
 		}
@@ -99,17 +101,17 @@ public class RoomsExportPDF extends RoomsExporter {
 	}
 	
 	@Override
-	protected boolean isColumnVisible(RoomsColumn column, int index, ExportContext context) {
-		switch (column) {
+	protected boolean isColumnVisible(Column column, ExportContext context) {
+		switch (column.getColumn()) {
 		case PICTURES:
-			if (index > 0 && !context.getPictureTypes().get(index - 1).isImage()) return false;
+			if (column.getIndex() > 0 && !context.getPictureTypes().get(column.getIndex() - 1).isImage()) return false;
 		}
-		return super.isColumnVisible(column, index, context);
+		return super.isColumnVisible(column, context);
 	}
 	
 
-	protected A getCell(RoomDetailInterface room, RoomsColumn column, int index, ExportContext context) {
-		switch (column) {
+	protected A getCell(RoomDetailInterface room, Column column, ExportContext context) {
+		switch (column.getColumn()) {
 		case  NAME:
 			A a = new A(room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel());
 			for (DepartmentInterface d: room.getDepartments())
@@ -167,7 +169,7 @@ public class RoomsExportPDF extends RoomsExporter {
 			}
 		
 		case PICTURES:
-			AttachmentTypeInterface type = (index == 0 ? null : context.getPictureTypes().get(index - 1));
+			AttachmentTypeInterface type = (column.getIndex() == 0 ? null : context.getPictureTypes().get(column.getIndex() - 1));
 			if (room.hasPictures(type)) {
 				a = new A();
 				for (RoomPictureInterface picture: room.getPictures(type)) {
@@ -240,10 +242,10 @@ public class RoomsExportPDF extends RoomsExporter {
 			return a;
 			
 		case FEATURES:
-			if (index == 0)
+			if (column.getIndex() == 0)
 				return features(room.getFeatures(), null, context);
 			else
-				return features(room.getFeatures(), context.getRoomFeatureTypes().get(index - 1), context);
+				return features(room.getFeatures(), context.getRoomFeatureTypes().get(column.getIndex() - 1), context);
 		
 		default:
 			return null;

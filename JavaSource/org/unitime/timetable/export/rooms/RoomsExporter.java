@@ -187,18 +187,18 @@ public abstract class RoomsExporter implements Exporter {
 		return getWebTableNbrCells(column, context);
 	}
 	
-	protected boolean isColumnVisible(RoomsColumn column, int index, ExportContext context) {
-		if (!hasShowHideOperation(column)) return true;
+	protected boolean isColumnVisible(Column column, ExportContext context) {
+		if (!hasShowHideOperation(column.getColumn())) return true;
 		int colIndex = 0;
 		for (RoomsColumn c: RoomsColumn.values()) {
-			if (c.ordinal() < column.ordinal()) colIndex += getWebTableNbrCells(c, context);
+			if (c.ordinal() < column.getColumn().ordinal()) colIndex += getWebTableNbrCells(c, context);
 		}
-		if (index < getWebTableNbrCells(column, context)) colIndex += index;
+		if (column.getIndex() < getWebTableNbrCells(column.getColumn(), context)) colIndex += column.getIndex();
 		return (context.getRoomCookieFlags() & (1 << colIndex)) != 0;
 	}
 	
-	protected String getColumnName(RoomsColumn column, int idx, ExportContext ec) {
-		switch (column) {
+	protected String getColumnName(Column column, ExportContext ec) {
+		switch (column.getColumn()) {
 		case NAME: return MESSAGES.colName();
 		case TYPE: return MESSAGES.colType();
 		case EXTERNAL_ID: return MESSAGES.colExternalId();
@@ -210,8 +210,8 @@ public abstract class RoomsExporter implements Exporter {
 		case ROOM_CHECK: return MESSAGES.colRoomCheck();
 		case MAP: return MESSAGES.colMap();
 		case PICTURES:
-			if (idx == 0) return MESSAGES.colPictures();
-			else return ec.getPictureTypes().get(idx - 1).getAbbreviation();
+			if (column.getIndex() == 0) return MESSAGES.colPictures();
+			else return ec.getPictureTypes().get(column.getIndex() - 1).getAbbreviation();
 		case PREFERENCE: return MESSAGES.colPreference();
 		case AVAILABILITY: return MESSAGES.colAvailability();
 		case DEPARTMENTS: return MESSAGES.colDepartments();
@@ -225,9 +225,9 @@ public abstract class RoomsExporter implements Exporter {
 		case BREAK_TIME: return MESSAGES.colBreakTime();
 		case GROUPS: return MESSAGES.colGroups();
 		case FEATURES:
-			if (idx == 0) return MESSAGES.colFeatures();
-			else return ec.getRoomFeatureTypes().get(idx - 1).getAbbreviation();
-		default: return column.name();
+			if (column.getIndex() == 0) return MESSAGES.colFeatures();
+			else return ec.getRoomFeatureTypes().get(column.getIndex() - 1).getAbbreviation();
+		default: return column.getColumn().name();
 		}
 	}
 	
@@ -344,5 +344,15 @@ public abstract class RoomsExporter implements Exporter {
 			}
 			return ret;
 		}
+	}
+	
+	protected static class Column {
+		private RoomsColumn iColumn;
+		private int iIndex;
+		
+		Column(RoomsColumn column, int index) { iColumn = column; iIndex = index; }
+		
+		public int getIndex() { return iIndex; }
+		public RoomsColumn getColumn() { return iColumn; }
 	}
 }

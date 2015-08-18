@@ -44,12 +44,13 @@ public class RoomsExportCSV extends RoomsExporter {
 		if (checkRights(helper))
 			helper.getSessionContext().hasPermission(Right.RoomsExportCsv);
 		
-		List<Object[]> columns = new ArrayList<Object[]>();
+		List<Column> columns = new ArrayList<Column>();
 		for (RoomsColumn column: RoomsColumn.values()) {
 			int nrCells = getNbrCells(column, context);
-			for (int idx = 0; idx < nrCells; idx++)
-				if (isColumnVisible(column, idx, context))
-					columns.add(new Object[] { column, idx });
+			for (int idx = 0; idx < nrCells; idx++) {
+				Column c = new Column(column, idx);
+				if (isColumnVisible(c, context)) columns.add(c);
+			}
 		}
 				
 		Printer printer = new CSVPrinter(helper.getWriter(), false);
@@ -57,20 +58,21 @@ public class RoomsExportCSV extends RoomsExporter {
 		
 		String[] header = new String[columns.size()];
 		for (int i = 0; i < columns.size(); i++)
-			header[i] = getColumnName((RoomsColumn)columns.get(i)[0], (int)columns.get(i)[1], context).replace("<br>", "\n");
+			header[i] = getColumnName(columns.get(i), context).replace("<br>", "\n");
 		printer.printHeader(header);
 		printer.flush();
 		
 		for (RoomDetailInterface room: rooms) {
 			String[] row = new String[columns.size()];
 			for (int i = 0; i < columns.size(); i++)
-				row[i] = getCell(room, (RoomsColumn)columns.get(i)[0], (int)columns.get(i)[1], context);
+				row[i] = getCell(room, columns.get(i), context);
 			printer.printLine(row);
 			printer.flush();
 		}
 		printer.close();
 	}
 	
+	@Override
 	protected int getNbrCells(RoomsColumn column, ExportContext ec) {
 		switch (column) {
 		case COORDINATES:
@@ -90,21 +92,20 @@ public class RoomsExportCSV extends RoomsExporter {
 		return ret;
 	}
 	
-	protected String getColumnName(RoomsColumn column, int index, ExportContext context) {
-		switch (column) {
+	@Override
+	protected String getColumnName(Column column, ExportContext context) {
+		switch (column.getColumn()) {
 		case COORDINATES:
-			switch (index) {
-			case 0:
+			if (column.getIndex() == 0)
 				return MESSAGES.colCoordinateX();
-			case 1:
+			else
 				return MESSAGES.colCoordinateY();
-			}
 		}
-		return super.getColumnName(column, index, context).replace("<br>", "\n");
+		return super.getColumnName(column, context).replace("<br>", "\n");
 	}
 	
-	protected String getCell(RoomDetailInterface room, RoomsColumn column, int index, ExportContext context) {
-		switch (column) {
+	protected String getCell(RoomDetailInterface room, Column column, ExportContext context) {
+		switch (column.getColumn()) {
 		case NAME:
 			return room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel();
 		case EXTERNAL_ID:
@@ -118,7 +119,7 @@ public class RoomsExportCSV extends RoomsExporter {
 		case AREA:
 			return room.getArea() == null ? "" : room.getArea().toString();
 		case COORDINATES:
-			if (index == 0)
+			if (column.getIndex() == 0)
 				return room.getX() == null ? "" : room.getX().toString();
 			else
 				return room.getY() == null ? "" : room.getY().toString();
@@ -151,10 +152,10 @@ public class RoomsExportCSV extends RoomsExporter {
 		case GROUPS:
 			return context.groups2string(room.getGroups());
 		case FEATURES:
-			if (index == 0)
+			if (column.getIndex() == 0)
 				return context.features2string(room.getFeatures(), null);
 			else
-				return context.features2string(room.getFeatures(), context.getRoomFeatureTypes().get(index - 1));
+				return context.features2string(room.getFeatures(), context.getRoomFeatureTypes().get(column.getIndex() - 1));
 		default:
 			return null;
 		}
