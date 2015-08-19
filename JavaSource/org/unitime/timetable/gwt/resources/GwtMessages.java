@@ -743,6 +743,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Room<br>Pictures")
 	String colChangeRoomPictures();
 	
+	@DefaultMessage("&otimes;")
+	String colSelection();
+	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -1135,6 +1138,12 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Geocode")
 	String buttonGeocode();
+	
+	@DefaultMessage("<u>A</u>dd New")
+	String buttonAddNewRoom();
+	
+	@DefaultMessage("<u>E</u>dit Room Sharing")
+	String buttonEditRoomSharing();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -1336,6 +1345,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Deleting room ...")
 	String waitDeletingRoom();
+	
+	@DefaultMessage("Updating room departments ...")
+	String waitUpdatingRoomDepartments();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -1774,6 +1786,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to update the room: {0}")
 	String errorFailedToUpdateRoom(String message);
+	
+	@DefaultMessage("Failed to update room departments: {0}")
+	String errorFailedToUpdateRoomDepartments(String message);
 	
 	@DefaultMessage("Building {0} does not exist.")
 	String errorBuildingNotExist(String bldgAbbv);
@@ -2239,6 +2254,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Attachement Types")
 	String pageAttachementTypes();
+	
+	@DefaultMessage("Edit Room Departments")
+	String pageEditRoomsDepartments();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

@@ -127,6 +127,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 			department.setExtAbbreviation(d.getExternalMgrAbbv());
 			department.setExtLabel(d.getExternalMgrLabel());
 			department.setTitle(d.getLabel());
+			department.setCanEditRoomSharing(context.hasPermission(d, Right.EditRoomDepartments));
 			response.addDepartment(department);
 		}
 		

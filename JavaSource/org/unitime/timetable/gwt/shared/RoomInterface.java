@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -811,6 +812,7 @@ public class RoomInterface implements IsSerializable {
 		private boolean iExternal = false, iEvent = false;
 		private String iExternalAbbv, iExternalLabel;
 		private PreferenceInterface iPreference;
+		private boolean iCanEditRoomSharing = false;
 		
 		public DepartmentInterface() {
 			super();
@@ -837,6 +839,9 @@ public class RoomInterface implements IsSerializable {
 	
 		public PreferenceInterface getPreference() { return iPreference; }
 		public void setPreference(PreferenceInterface preference) { iPreference = preference; }
+		
+		public boolean isCanEditRoomSharing() { return iCanEditRoomSharing; }
+		public void setCanEditRoomSharing(boolean canEditRoomSharing) { iCanEditRoomSharing = canEditRoomSharing; }
 	}
 	
 	public static class FeatureInterface extends RoomPropertyInterface {
@@ -1960,6 +1965,38 @@ public class RoomInterface implements IsSerializable {
 		public boolean equals(Object object) {
 			if (object == null || !(object instanceof AttachmentTypeInterface)) return false;
 			return getId().equals(((AttachmentTypeInterface)object).getId());
+		}
+	}
+	
+	public static class UpdateRoomDepartmentsRequest implements GwtRpcRequest<GwtRpcResponseNull> {
+		private DepartmentInterface iDepartment;
+		private ExamTypeInterface iExamType;
+		private List<Long> iAddLocations = new ArrayList<Long>();
+		private List<Long> iDropLocations = new ArrayList<Long>();
+		
+		public UpdateRoomDepartmentsRequest() {}
+		
+		public void setDepartment(DepartmentInterface department) { iDepartment = department; }
+		public DepartmentInterface getDepartment() { return iDepartment; }
+		public boolean hasDepartment() { return iDepartment != null; }
+		
+		public void setExamType(ExamTypeInterface type) { iExamType = type; }
+		public ExamTypeInterface getExamType() { return iExamType; }
+		public boolean hasExamType() { return iExamType != null; }
+		
+		public void addLocation(Long locationId) { iAddLocations.add(locationId); }
+		public List<Long> getAddLocations() { return iAddLocations; }
+		public boolean hasAddLocations() { return !iAddLocations.isEmpty(); }
+		
+		public void dropLocation(Long locationId) { iDropLocations.add(locationId); }
+		public List<Long> getDropLocations() { return iDropLocations; }
+		public boolean hasDropLocations() { return !iDropLocations.isEmpty(); }
+		
+		@Override
+		public String toString() {
+			return (hasDepartment() ? getDepartment().getDeptCode() : getExamType().getReference()) +
+					(hasAddLocations() ? " ADD" + getAddLocations() : "") +
+					(hasDropLocations() ? " DROP" + getDropLocations() : "");
 		}
 	}
 }

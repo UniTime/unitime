@@ -20,11 +20,13 @@
 package org.unitime.timetable.gwt.client.rooms;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -55,16 +57,21 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
@@ -89,19 +96,86 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	private List<Operation> iDepartmentOperations = new ArrayList<Operation>();
 	private List<Operation> iOtherOperations = new ArrayList<Operation>();
 	private RoomPropertiesInterface iProperties = null;
+	private boolean iSelectable;
 	
-	public RoomsTable(RoomsPageMode mode, RoomPropertiesInterface properties) {
+	public RoomsTable(RoomsPageMode mode, RoomPropertiesInterface properties, boolean selectable) {
 		setStyleName("unitime-Rooms");
 		iMode = mode;
 		iProperties = properties;
+		iSelectable = selectable;
 
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		for (RoomsColumn column: RoomsColumn.values()) {
 			int nrCells = getNbrCells(column);
 			for (int idx = 0; idx < nrCells; idx++) {
-				UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(column, idx), getColumnAlignment(column));
+				UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(column, idx), getColumnAlignment(column, idx));
 				header.add(h);
 			}
+		}
+		
+		if (iSelectable) {
+			header.get(0).addOperation(new Operation() {
+				@Override
+				public void execute() {
+					for (int row = 1; row < getRowCount(); row++) {
+						Widget w =  getWidget(row, 0);
+						if (w != null && w instanceof CheckBox) {
+							CheckBox ch = (CheckBox)w;
+							ch.setValue(true);
+						}
+					}
+				}
+				@Override
+				public boolean isApplicable() {
+					for (int row = 1; row < getRowCount(); row++) {
+						Widget w =  getWidget(row, 0);
+						if (w != null && w instanceof CheckBox) {
+							CheckBox ch = (CheckBox)w;
+							if (!ch.getValue()) return true;
+						}
+					}
+					return false;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.opSelectAll();
+				}
+			});
+			header.get(0).addOperation(new Operation() {
+				@Override
+				public void execute() {
+					for (int row = 1; row < getRowCount(); row++) {
+						Widget w =  getWidget(row, 0);
+						if (w != null && w instanceof CheckBox) {
+							CheckBox ch = (CheckBox)w;
+							ch.setValue(false);
+						}
+					}
+				}
+				@Override
+				public boolean isApplicable() {
+					for (int row = 1; row < getRowCount(); row++) {
+						Widget w =  getWidget(row, 0);
+						if (w != null && w instanceof CheckBox) {
+							CheckBox ch = (CheckBox)w;
+							if (ch.getValue()) return true;
+						}
+					}
+					return false;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.opClearSelection();
+				}
+			});
 		}
 		
 		if (RoomCookie.getInstance().getFlags(iMode) == 0) {
@@ -140,7 +214,8 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 							return (iFlags & (1 << colIdx)) != 0;
 						}
 						@Override
-						public boolean hasSeparator() { 
+						public boolean hasSeparator() {
+							if (iSelectable && column == RoomsColumn.EXTERNAL_ID) return true;
 							return false;
 						}
 						@Override
@@ -263,7 +338,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 
 			@Override
 			public boolean isApplicable() {
-				return getRowCount() > 1;
+				return getRowCount() > 1 && !iSelectable;
 			}
 
 			@Override
@@ -280,6 +355,20 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		setSortBy(RoomCookie.getInstance().getRoomsSortBy());
 		
 		setVisible(false);
+		
+		if (iSelectable) {
+			setAllowSelection(true);
+			addMouseClickListener(new MouseClickListener<RoomDetailInterface>() {
+				@Override
+				public void onMouseClick(TableEvent<RoomDetailInterface> event) {
+					selectRoom(event.getRow(), isSelected(event.getRow()));
+				}
+			});
+		}
+	}
+	
+	public RoomsTable(RoomsPageMode mode, RoomPropertiesInterface properties) {
+		this(mode, properties, false);
 	}
 	
 	public String getColumnName(RoomsColumn column, int idx) {
@@ -326,7 +415,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		}
 	}
 	
-	protected HorizontalAlignmentConstant getColumnAlignment(RoomsColumn column) {
+	protected HorizontalAlignmentConstant getColumnAlignment(RoomsColumn column, int idx) {
 		switch (column) {
 		case CAPACITY:
 		case EXAM_CAPACITY:
@@ -468,8 +557,23 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	
 	public void sort() {
 		if (iSortBy == null) return;
+		Comparator<RoomDetailInterface> rc = null;
+		if (iSelectable && iSortBy == RoomsColumn.NAME) {
+			rc = new Comparator<RoomDetailInterface>() {
+				private Comparator<RoomDetailInterface> iRC = new RoomsComparator(iSortBy, true);
+				@Override
+				public int compare(RoomDetailInterface r1, RoomDetailInterface r2) {
+					boolean s1 = isRoomSelected(r1), s2 = isRoomSelected(r2);
+					if (s1 != s2)
+						return s1 ? -1 : 1;
+					return iRC.compare(r1, r2);
+				}
+			};
+		} else {
+			rc = new RoomsComparator(iSortBy, true);
+		}
 		UniTimeTableHeader header = getHeader(getCellIndex(iSortBy));
-		sort(header, new RoomsComparator(iSortBy, true), iAsc);
+		sort(header, rc, iAsc);
 	}
 
 	public void setDepartment(String department) { iDepartment = department; }
@@ -525,7 +629,11 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		}
 		switch (column) {
 		case NAME:
-			return new RoomNameCell(room);
+			if (iSelectable) {
+				return new SelectableRoomNameCell(room);	
+			} else {
+				return new RoomNameCell(room);
+			}
 			
 		case EXTERNAL_ID:
 			if (!room.hasExternalId()) return null;
@@ -754,6 +862,44 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
 					RoomHint.showHint(RoomNameCell.this.getElement(), room.getUniqueId(), room.getPrefix(), room.getProperty("distance", null), true);
+				}
+			});
+			addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					RoomHint.hideHint();
+				}
+			});
+			if (iDepartment != null && iProperties != null && iProperties.isCanSeeCourses()) {
+				for (DepartmentInterface d: room.getDepartments()) {
+					if (iDepartment.equals(d.getDeptCode()) && d.getPreference() != null) {
+						getElement().getStyle().setColor(d.getPreference().getColor());
+						room.setPrefix(d.getPreference().getName());
+					}
+				}
+			}
+		}
+	}
+	
+	class SelectableRoomNameCell extends AriaCheckBox {
+		SelectableRoomNameCell(final RoomDetailInterface room) {
+			addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
+				}
+			});
+			addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					setSelected(getRow(room), event.getValue());
+				}
+			});
+			setText(room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel());
+			addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					RoomHint.showHint(SelectableRoomNameCell.this.getElement(), room.getUniqueId(), room.getPrefix(), room.getProperty("distance", null), true);
 				}
 			});
 			addMouseOutHandler(new MouseOutHandler() {
@@ -1200,5 +1346,56 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				return getData(i + 1);
 		}
 		return null;
+	}
+	
+	public Boolean isRoomSelected(int row) {
+		Widget w = getWidget(row, 0);
+		if (w != null && w instanceof CheckBox) {
+			return ((CheckBox)w).getValue();
+		} else {
+			return null;
+		}
+	}
+	
+	public boolean isRoomSelected(RoomDetailInterface room) {
+		if (!iSelectable) return false;
+		for (int row = 1; row < getRowCount(); row++ ) {
+			if (getData(row).getUniqueId().equals(room.getUniqueId()))
+				return isRoomSelected(row);
+		}
+		return false;
+	}
+	
+	public int getRow(RoomDetailInterface room) {
+		for (int row = 1; row < getRowCount(); row++ )
+			if (getData(row).getUniqueId().equals(room.getUniqueId()))
+				return row;
+		return -1;
+	}
+	
+	public void selectRoom(RoomDetailInterface room, boolean value) {
+		if (!iSelectable) return;
+		for (int row = 1; row < getRowCount(); row++ ) {
+			if (getData(row).getUniqueId().equals(room.getUniqueId())) {
+				selectRoom(row, value);
+				break;
+			}
+		}
+	}
+	
+	public void selectRoom(int row, boolean value) {
+		Widget w = getWidget(row, 0);
+		if (w != null && w instanceof CheckBox) {
+			((CheckBox)w).setValue(value);
+		}
+	}
+	
+	public CheckBox getRoomSelection(int row) {
+		Widget w = getWidget(row, 0);
+		if (w != null && w instanceof CheckBox) {
+			return (CheckBox)w;
+		} else {
+			return null;
+		}
 	}
 }
