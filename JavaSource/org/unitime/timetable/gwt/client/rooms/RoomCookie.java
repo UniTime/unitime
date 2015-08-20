@@ -44,6 +44,7 @@ public class RoomCookie {
 	private Boolean iHorizontal = null;
 	private String iMode = "";
 	private Map<Long, Integer> iFutures = new HashMap<Long, Integer>();
+	private int iSortRoomGroupsBy = 0, iSortRoomFeaturesBy = 0;
 	
 	private RoomCookie() {
 		iFlags = new int[RoomsPageMode.values().length];
@@ -58,6 +59,8 @@ public class RoomCookie {
 				String[] params = cookie.split("\\|");
 				int idx = 0;
 				iSortRoomsBy = Integer.valueOf(params[idx++]);
+				iSortRoomGroupsBy = Integer.valueOf(params[idx++]);
+				iSortRoomFeaturesBy = Integer.valueOf(params[idx++]);
 				setOrientation(params[idx++]);
 				iDeptMode = Integer.valueOf(params[idx++]);
 				for (int i = 0; i < iFlags.length; i++) {
@@ -74,7 +77,7 @@ public class RoomCookie {
 	}
 	
 	private void save() {
-		String cookie = iSortRoomsBy + "|" + getOrientation() + "|" + iDeptMode;
+		String cookie = iSortRoomsBy + "|" + iSortRoomGroupsBy + "|" + iSortRoomFeaturesBy + "|" + getOrientation() + "|" + iDeptMode;
 		for (int i = 0; i < iFlags.length; i++) {
 			cookie += "|" + iFlags[i] + "|" + (iHash[i] == null ? "" : iHash[i]);
 		}
@@ -220,6 +223,24 @@ public class RoomCookie {
 			iFutures.remove(sessionId);
 		else
 			iFutures.put(sessionId, flags);
+		save();
+	}
+	
+	public int getRoomGroupsSortBy() {
+		return iSortRoomGroupsBy;
+	}
+	
+	public void setSortRoomGroupsBy(int sortRoomGroupsBy) {
+		iSortRoomGroupsBy = sortRoomGroupsBy;
+		save();
+	}
+
+	public int getRoomFeaturesSortBy() {
+		return iSortRoomFeaturesBy;
+	}
+	
+	public void setSortRoomFeaturesBy(int sortRoomFeaturesBy) {
+		iSortRoomFeaturesBy = sortRoomFeaturesBy;
 		save();
 	}
 }

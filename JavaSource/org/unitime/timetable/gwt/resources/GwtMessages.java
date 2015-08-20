@@ -746,6 +746,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("&otimes;")
 	String colSelection();
 	
+	@DefaultMessage("Abbreviation")
+	String colAbbreviation();
+	
+	@DefaultMessage("Default")
+	String colDefault();
+	
+	@DefaultMessage("Rooms")
+	String colRooms();
+	
+	@DefaultMessage("Description")
+	String colDescription();
+
 	@DefaultMessage("pending")
 	String approvalNotApproved();
 	
@@ -1144,6 +1156,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>E</u>dit Room Sharing")
 	String buttonEditRoomSharing();
+	
+	@DefaultMessage("<u>A</u>dd New")
+	String buttonAddNewRoomGroup();
+	
+	@DefaultMessage("<u>C</u>reate Room Group")
+	String buttonCreateRoomGroup();
+
+	@DefaultMessage("<u>U</u>pdate Room Group")
+	String buttonUpdateRoomGroup();
+
+	@DefaultMessage("<u>D</u>elete Room Group")
+	String buttonDeleteRoomGroup();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -1349,6 +1373,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Updating room departments ...")
 	String waitUpdatingRoomDepartments();
 
+	@DefaultMessage("Loading room groups...")
+	String waitLoadingRoomGroups();
+	
+	@DefaultMessage("Saving room group ...")
+	String waitSavingRoomGroup();
+	
+	@DefaultMessage("Updating room group ...")
+	String waitUpdatingRoomGroup();
+	
+	@DefaultMessage("Deleting room group ...")
+	String waitDeletingRoomGroup();
+	
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
 	
@@ -1571,6 +1607,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to delete {0} in {1}: {2}")
 	String failedDeleteLocation(String name, String session, String reason);
 	
+	@DefaultMessage("Failed to load room groups: {0}")
+	String failedToLoadRoomGroups(String reason);
+	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
 	
@@ -1790,6 +1829,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to update room departments: {0}")
 	String errorFailedToUpdateRoomDepartments(String message);
 	
+	@DefaultMessage("Failed to delete the room group: {0}")
+	String errorFailedToDeleteRoomGroup(String message);
+	
+	@DefaultMessage("Failed to save the room group: {0}")
+	String errorFailedToSaveRoomGroup(String message);
+	
+	@DefaultMessage("Failed to update the room group: {0}")
+	String errorFailedToUpdateRoomGroup(String message);
+
 	@DefaultMessage("Building {0} does not exist.")
 	String errorBuildingNotExist(String bldgAbbv);
 	
@@ -1801,6 +1849,27 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Location name {0} does not meet the required pattern {1}: {2}.")
 	String errorLocationNameDoesNotMeetRequiredPatternWithReason(String locationName, String regExp, String reason);
+	
+	@DefaultMessage("There are no room groups created.")
+	String errorNoRoomGroups();
+	
+	@DefaultMessage("Name is required.")
+	String errorNameIsEmpty();
+	
+	@DefaultMessage("Abbreviation is required.")
+	String errorAbbreviationIsEmpty();
+	
+	@DefaultMessage("Department must be selected.")
+	String errorNoDepartmentSelected();
+	
+	@DefaultMessage("Description is too long.")
+	String errorDescriptionTooLong();
+	
+	@DefaultMessage("Room group {0} does not exist.")
+	String errorRoomGroupDoesNotExist(Long id);
+	
+	@DefaultMessage("Room group {0} already exists.")
+	String errorRoomGroupAlreadyExists(String name);
 	
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
@@ -2257,6 +2326,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Edit Room Departments")
 	String pageEditRoomsDepartments();
+	
+	@DefaultMessage("Add Room Group")
+	String pageAddRoomGroup();
+	
+	@DefaultMessage("Edit Room Group")
+	String pageEditRoomGroup();
+	
+	@DefaultMessage("Room Groups")
+	String pageRoomGroups();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -2785,6 +2863,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Room Sharing Note:")
 	String propRoomSharingNote();
+	
+	@DefaultMessage("Global:")
+	String propGlobalGroup();
+	
+	@DefaultMessage("Default:")
+	String propDefaultGroup();
 
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -3107,6 +3191,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Update Future Academic Sessions")
 	String headerRoomApplyToFutureRooms();
 	
+	@DefaultMessage("Global Room Groups")
+	String headerGlobalRoomGroups();
+	
+	@DefaultMessage("Departmental Room Groups")
+	String headerDepartmentalRoomGroups();
+	
+	@DefaultMessage("Rooms")
+	String headerRooms();
+	
 	@DefaultMessage("The selected offering has no curricula.")
 	String offeringHasNoCurricula();
 	
@@ -3193,6 +3286,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Do you realy want to delete this room (including {0} as well)?")
 	String confirmDeleteRoomInFutureSessions(String futureSessions);
+	
+	@DefaultMessage("Do you realy want to delete this room group?")
+	String confirmDeleteRoomGroup();
 	
 	@DefaultMessage("&nbsp;(of&nbsp;{0})")
 	String curriculumProjectionRulesOfTotal(int total);
@@ -3544,6 +3640,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Yes")
 	String exportTrue();
+	
+	@DefaultMessage("Default")
+	String exportDefaultRoomGroup();
+	
+	@DefaultMessage("Global")
+	String exportGlobalRoomGroup();
 	
 	@DefaultMessage("Location of {0}.")
 	String titleRoomMap(String roomLabel);

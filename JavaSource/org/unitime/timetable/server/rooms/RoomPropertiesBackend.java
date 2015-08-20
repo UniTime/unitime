@@ -86,6 +86,9 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setCanSeeCourses(context.hasPermission(Right.InstructionalOfferings) || context.hasPermission(Right.Classes));
 		response.setCanSeeExams(context.hasPermission(Right.Examinations));
 		response.setCanSeeEvents(context.hasPermission(Right.Events));
+		response.setCanExportRoomGroups(context.hasPermission(Right.RoomGroupsExportPdf));
+		response.setCanAddGlobalRoomGroup(context.hasPermission(Right.GlobalRoomFeatureAdd));
+		response.setCanAddDepartmentalRoomGroup(context.hasPermission(Right.DepartmentRoomGroupAdd));
 		
 		if (context.getUser() != null) {
 			response.setCanChangeAvailability(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditAvailability));
@@ -98,6 +101,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 			response.setCanChangeGroups(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditGroups) || context.getUser().getCurrentAuthority().hasRight(Right.RoomEditGlobalGroups));
 			response.setCanChangePicture(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditChangePicture));
 			response.setCanChangePreferences(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditPreference));
+			response.setCanChangeDefaultGroup(context.getUser().getCurrentAuthority().hasRight(Right.GlobalRoomGroupEditSetDefault));
 		}
 		
 		for (RoomType type: RoomType.findAll())

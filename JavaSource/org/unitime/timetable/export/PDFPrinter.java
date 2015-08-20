@@ -190,15 +190,10 @@ public class PDFPrinter implements Printer {
 				Font font = PdfFont.getFont(f.has(F.BOLD), f.has(F.ITALIC));
 				if (f.getColor() != null) font.setColor(f.getColor());
 				if (f.has(F.UNDERLINE)) font.setStyle(Font.UNDERLINE);
-				Chunk ch = new Chunk(f.getText(), font);
-				//ch.setLeading(0f, 1f);
+				Paragraph ch = new Paragraph(f.getText(), font);
+				ch.setLeading(0f, 1f);
 				cell.addElement(ch);
-				float width = 0; 
-				if (f.getText().indexOf('\n')>=0) {
-					for (StringTokenizer s = new StringTokenizer(f.getText(),"\n"); s.hasMoreTokens();)
-						width = Math.max(width,font.getBaseFont().getWidthPoint(s.nextToken(), font.getSize()));
-				} else 
-					width = Math.max(width,font.getBaseFont().getWidthPoint(f.getText(), font.getSize()));
+				float width = f.getWidth(font);
 				iMaxWidth[idx] = Math.max(iMaxWidth[idx], width + rpad);
 			}
 			
@@ -218,12 +213,7 @@ public class PDFPrinter implements Printer {
 						Paragraph ch = new Paragraph(g.getText(), font);
 						ch.setLeading(0f, underline ? 1.4f : 1.0f);
 						cell.addElement(ch);
-						float width = 0; 
-						if (g.getText().indexOf('\n')>=0) {
-							for (StringTokenizer s = new StringTokenizer(g.getText(),"\n"); s.hasMoreTokens();)
-								width = Math.max(width,font.getBaseFont().getWidthPoint(s.nextToken(), font.getSize()));
-						} else 
-							width = Math.max(width,font.getBaseFont().getWidthPoint(g.getText(), font.getSize()));
+						float width = g.getWidth(font);
 						iMaxWidth[idx] = Math.max(iMaxWidth[idx], width + rpad);
 						underline = g.has(F.UNDERLINE);
 					}
@@ -265,6 +255,7 @@ public class PDFPrinter implements Printer {
 		private int iFlag = 0;
 		private String iColor = null;
 		private Image iImage = null;
+		private Float iMaxWidth = null;
 		
 		public A() {}
 		
@@ -340,6 +331,30 @@ public class PDFPrinter implements Printer {
 		public A color(String color) { setColor(color); return this; }
 		public A center() { set(F.CENTER); return this; }
 		public A right() { set(F.RIGHT); return this; }
+		
+		public boolean hasMaxWidth() { return iMaxWidth != null; }
+		public A maxWidth(Float maxWidth) { iMaxWidth = maxWidth; return this; }
+		public Float getMaxWidth() { return iMaxWidth; }
+		
+		private float width(String text, Font font) {
+			float ret = font.getBaseFont().getWidthPoint(text, font.getSize());
+			return (iMaxWidth == null ? ret : Math.min(iMaxWidth, ret));
+		}
+		
+		public float getWidth(Font font) {
+			if (hasText()) {
+				if (getText().indexOf('\n')>=0) {
+					float width = 0f;
+					for (StringTokenizer s = new StringTokenizer(getText(),"\n"); s.hasMoreTokens();)
+						width = Math.max(width, width(s.nextToken(), font));
+					return width;
+				} else {
+					return width(getText(), font);
+				}
+			} else {
+				return 0f;
+			}
+		}
 	} 
 	
 	public static enum F {

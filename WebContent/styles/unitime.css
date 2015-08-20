@@ -3857,3 +3857,12 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-RoomEdit .space-above {
 	margin-top: 20px;
 }
+
+.unitime-RoomGroups {
+	width: 100%;
+}
+
+.unitime-RoomGroups .rooms .room {
+	display: inline-block;
+	padding-right: 3px;
+}

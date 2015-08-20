@@ -123,6 +123,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 							CheckBox ch = (CheckBox)w;
 							ch.setValue(true);
 						}
+						setSelected(row, true);
 					}
 				}
 				@Override
@@ -154,6 +155,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 							CheckBox ch = (CheckBox)w;
 							ch.setValue(false);
 						}
+						setSelected(row, false);
 					}
 				}
 				@Override

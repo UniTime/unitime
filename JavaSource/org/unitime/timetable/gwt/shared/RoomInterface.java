@@ -710,6 +710,14 @@ public class RoomInterface implements IsSerializable {
 			iId = id; iAbbv = abbv; iLabel = label;
 		}
 		
+		public RoomPropertyInterface(RoomPropertyInterface property) {
+			iId = property.iId;
+			iAbbv = property.iAbbv;
+			iLabel = property.iLabel;
+			iColor = property.iColor;
+			iTitle = property.iTitle;
+		}
+		
 		public Long getId() { return iId; }
 		public void setId(Long id) { iId = id; }
 		
@@ -867,6 +875,10 @@ public class RoomInterface implements IsSerializable {
 	
 	public static class GroupInterface extends RoomPropertyInterface {
 		private DepartmentInterface iDepartment = null;
+		private Boolean iDefault = null;
+		private String iDescription = null;
+		private List<FilterRpcResponse.Entity> iRooms = null;
+		private Boolean iCanEdit = null, iCanDelete = null;
 
 		public GroupInterface() {
 			super();
@@ -876,15 +888,52 @@ public class RoomInterface implements IsSerializable {
 			super(id, abbv, label);
 		}
 		
+		public GroupInterface(GroupInterface group) {
+			super(group);
+			iDepartment = group.iDepartment;
+			iDefault = group.iDefault;
+			iDescription = group.iDescription;
+			iRooms = (group.iRooms == null ? null : new ArrayList<FilterRpcResponse.Entity>(group.iRooms));
+			iCanEdit = group.iCanEdit;
+			iCanDelete = group.iCanDelete;
+		}
+		
 		public boolean isDepartmental() { return iDepartment != null; }
 		public DepartmentInterface getDepartment() { return iDepartment; }
 		public void setDepartment(DepartmentInterface department) { iDepartment = department; }
+		
+		public boolean isDefault() { return iDefault != null && iDefault.booleanValue(); }
+		public void setDefault(Boolean isDefault) { iDefault = isDefault; }
+		
+		public boolean hasDescription() { return iDescription != null && !iDescription.isEmpty(); }
+		public void setDescription(String description) { iDescription = description; }
+		public String getDescription() { return iDescription; }
+		
+		public boolean hasRooms() { return iRooms != null && !iRooms.isEmpty(); }
+		public void addRoom(FilterRpcResponse.Entity room) {
+			if (iRooms == null) iRooms = new ArrayList<FilterRpcResponse.Entity>();
+			iRooms.add(room);
+		}
+		public List<FilterRpcResponse.Entity> getRooms() { return iRooms; }
+		public FilterRpcResponse.Entity getRoom(Long id) {
+			if (iRooms == null) return null;
+			for (FilterRpcResponse.Entity room: iRooms)
+				if (id.equals(room.getUniqueId())) return room;
+			return null;
+		}
+		
+		public boolean canEdit() { return iCanEdit != null && iCanEdit; }
+		public void setCanEdit(Boolean canEdit) { iCanEdit = canEdit; }
+		
+		public boolean canDelete() { return iCanDelete != null && iCanDelete; }
+		public void setCanDelete(Boolean canDelete) { iCanDelete = canDelete; }
 	}
 	
 	public static class AcademicSessionInterface implements GwtRpcResponse {
 		private Long iId;
 		private String iLabel;
 		private boolean iCanAddRoom = false, iCanAddNonUniversity = false;
+		private boolean iCanAddDepartmentalRoomGroup = false, iCanAddGlobalRoomGroup = false;
 		
 		public AcademicSessionInterface() {}
 		
@@ -907,6 +956,12 @@ public class RoomInterface implements IsSerializable {
 		public boolean isCanAddNonUniversity() { return iCanAddNonUniversity; }
 		public void setCanAddNonUniversity(boolean canAddNonUniv) { iCanAddNonUniversity = canAddNonUniv; }
 		
+		public boolean isCanAddDepartmentalRoomGroup() { return iCanAddDepartmentalRoomGroup; }
+		public void setCanAddDepartmentalRoomGroup(boolean canAddDepartmentalRoomGroup) { iCanAddDepartmentalRoomGroup = canAddDepartmentalRoomGroup; }
+		
+		public boolean isCanAddGlobalRoomGroup() { return iCanAddGlobalRoomGroup; }
+		public void setCanAddGlobalRoomGroup(boolean canAddGlobalRoomGroup) { iCanAddGlobalRoomGroup = canAddGlobalRoomGroup; }
+
 		@Override
 		public boolean equals(Object object) {
 			if (object == null || !(object instanceof AcademicSessionInterface)) return false;
@@ -1565,6 +1620,7 @@ public class RoomInterface implements IsSerializable {
 				iCanChangeEventProperties = false, iCanChangePicture = false, iCanChangePreferences = false,
 				iCanChangeGroups = false, iCanChangeFeatures = false, iCanChangeEventAvailability = false;
 		private List<AcademicSessionInterface> iFutureSessions = null;
+		private boolean iCanExportRoomGroups = false, iCanChangeDefaultGroup = false;
 		
 		public RoomPropertiesInterface() {}
 		
@@ -1599,6 +1655,26 @@ public class RoomInterface implements IsSerializable {
 			if (iSession != null)
 				iSession.setCanAddNonUniversity(canAddNonUniv);
 		}
+		
+		public boolean isCanAddGlobalRoomGroup() {
+			return  (iSession == null ? false : iSession.isCanAddGlobalRoomGroup());
+		}
+		public void setCanAddGlobalRoomGroup(boolean canAddGlobalRoomGroup) {
+			if (iSession != null) iSession.setCanAddGlobalRoomGroup(canAddGlobalRoomGroup);
+		}
+
+		public boolean isCanAddDepartmentalRoomGroup() {
+			return  (iSession == null ? false : iSession.isCanAddDepartmentalRoomGroup());
+		}
+		public void setCanAddDepartmentalRoomGroup(boolean canAddDepartmentalRoomGroup) {
+			if (iSession != null) iSession.setCanAddDepartmentalRoomGroup(canAddDepartmentalRoomGroup);
+		}
+
+		public boolean isCanExportRoomGroups() { return iCanExportRoomGroups; }
+		public void setCanExportRoomGroups(boolean canExportRoomGroups) { iCanExportRoomGroups = canExportRoomGroups; }
+		
+		public boolean isCanChangeDefaultGroup() { return iCanChangeDefaultGroup; }
+		public void setCanChangeDefaultGroup(boolean canChangeDefaultGroup) { iCanChangeDefaultGroup = canChangeDefaultGroup; }
 		
 		public void addRoomType(RoomTypeInterface roomType) { iRoomTypes.add(roomType); }
 		public List<RoomTypeInterface> getRoomTypes() { return iRoomTypes; }
@@ -1765,6 +1841,16 @@ public class RoomInterface implements IsSerializable {
 		BREAK_TIME,
 		GROUPS,
 		FEATURES,
+		;
+	}
+	
+	public static enum RoomGroupsColumn {
+		NAME,
+		ABBREVIATION,
+		DEFAULT,
+		DEPARTMENT,
+		ROOMS,
+		DESCRIPTION,
 		;
 	}
 	
@@ -1998,5 +2084,54 @@ public class RoomInterface implements IsSerializable {
 					(hasAddLocations() ? " ADD" + getAddLocations() : "") +
 					(hasDropLocations() ? " DROP" + getDropLocations() : "");
 		}
+	}
+	
+	public static class SearchRoomGroupsRequest implements GwtRpcRequest<GwtRpcResponseList<GroupInterface>> {
+		private EventInterface.RoomFilterRpcRequest iFilter;
+		
+		public SearchRoomGroupsRequest() {}
+		
+		public EventInterface.RoomFilterRpcRequest getFilter() { return iFilter; }
+		public void setFilter(EventInterface.RoomFilterRpcRequest filter) { iFilter = filter; }
+		
+		@Override
+		public String toString() {
+			return (iFilter == null ? "NULL" : iFilter.toString());
+		}
+	}
+	
+	public static class UpdateRoomGroupRequest implements GwtRpcRequest<GroupInterface> {
+		private Long iDeleteGroupId = null;
+		private GroupInterface iGroup = null;
+		private List<Long> iAddLocations = new ArrayList<Long>();
+		private List<Long> iDropLocations = new ArrayList<Long>();
+		
+		public UpdateRoomGroupRequest() {}
+		
+		public void setDeleteGroupId(Long groupId) { iDeleteGroupId = groupId; }
+		public boolean hasDeleteGroupId() { return iDeleteGroupId != null; }
+		public Long getDeleteGroupId() { return iDeleteGroupId; }
+		
+		public boolean hasGroup() { return iGroup != null; }
+		public void setGroup(GroupInterface group) { iGroup = group; }
+		public GroupInterface getGroup() { return iGroup; }
+		
+		public void addLocation(Long locationId) { iAddLocations.add(locationId); }
+		public List<Long> getAddLocations() { return iAddLocations; }
+		public boolean hasAddLocations() { return !iAddLocations.isEmpty(); }
+		
+		public void dropLocation(Long locationId) { iDropLocations.add(locationId); }
+		public List<Long> getDropLocations() { return iDropLocations; }
+		public boolean hasDropLocations() { return !iDropLocations.isEmpty(); }
+		
+		@Override
+		public String toString() {
+			if (hasGroup())
+				return getGroup().getLabel() + (getGroup().isDepartmental() ? " (" + getGroup().getDepartment().getDeptCode() + ")" : getGroup().isDefault() ? "(Default)" : "(Global)") +
+						(hasAddLocations() ? " ADD" + getAddLocations() : "") +
+						(hasDropLocations() ? " DROP" + getDropLocations() : "");
+			else
+				return "DELETE " + getDeleteGroupId();
+		}		
 	}
 }
