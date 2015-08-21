@@ -88,7 +88,8 @@
 					<hasPermission name="Rooms"/>
 					<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
 				</condition>
-				<item name="Room Features" page="roomFeatureSearch.do">
+				<item name="Room Features" page="roomfeatures" type="gwt">
+					<parameter name="mode">courses</parameter>
 					<condition>
 						<hasPermission name="RoomFeatures"/>
 					</condition>
@@ -356,13 +357,14 @@
 					<hasPermission name="Rooms"/>
 					<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
 				</condition>
-				<item name="Room Features" page="roomFeatureSearch.do?default=Exam">
+				<item name="Room Features" page="roomfeatures" type="gwt">
+					<parameter name="mode">exams</parameter>
 					<condition>
 						<hasPermission name="RoomFeatures"/>
 					</condition>
 				</item>
 				<item name="Room Groups" page="roomgroups" type="gwt">
-					<parameter name="mode">courses</parameter>
+					<parameter name="mode">exams</parameter>
 					<condition>
 						<hasPermission name="RoomGroups"/>
 					</condition>
@@ -550,13 +552,14 @@
 				<hasPermission name="Rooms"/>
 				<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
 			</condition>
-			<item name="Room Features" page="roomFeatureSearch.do">
+			<item name="Room Features" page="roomfeatures" type="gwt">
+				<parameter name="mode">events</parameter>
 				<condition>
 					<hasPermission name="RoomFeatures"/>
 				</condition>
 			</item>
 			<item name="Room Groups" page="roomgroups" type="gwt">
-				<parameter name="mode">courses</parameter>
+				<parameter name="mode">events</parameter>
 				<condition>
 					<hasPermission name="RoomGroups"/>
 				</condition>

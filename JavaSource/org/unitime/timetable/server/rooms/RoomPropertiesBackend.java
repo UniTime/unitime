@@ -87,8 +87,11 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setCanSeeExams(context.hasPermission(Right.Examinations));
 		response.setCanSeeEvents(context.hasPermission(Right.Events));
 		response.setCanExportRoomGroups(context.hasPermission(Right.RoomGroupsExportPdf));
-		response.setCanAddGlobalRoomGroup(context.hasPermission(Right.GlobalRoomFeatureAdd));
+		response.setCanExportRoomFeatures(context.hasPermission(Right.RoomFeaturesExportPdf));
+		response.setCanAddGlobalRoomGroup(context.hasPermission(Right.GlobalRoomGroupAdd));
 		response.setCanAddDepartmentalRoomGroup(context.hasPermission(Right.DepartmentRoomGroupAdd));
+		response.setCanAddGlobalRoomFeature(context.hasPermission(Right.GlobalRoomFeatureAdd));
+		response.setCanAddDepartmentalRoomFeature(context.hasPermission(Right.DepartmentRoomFeatureAdd));
 		
 		if (context.getUser() != null) {
 			response.setCanChangeAvailability(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditAvailability));

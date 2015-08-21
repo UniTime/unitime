@@ -3866,3 +3866,12 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline-block;
 	padding-right: 3px;
 }
+
+.unitime-RoomFeatures {
+	width: 100%;
+}
+
+.unitime-RoomFeatures .rooms .room {
+	display: inline-block;
+	padding-right: 3px;
+}

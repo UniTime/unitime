@@ -855,6 +855,8 @@ public class RoomInterface implements IsSerializable {
 	public static class FeatureInterface extends RoomPropertyInterface {
 		private DepartmentInterface iDepartment = null;
 		private FeatureTypeInterface iType;
+		private List<FilterRpcResponse.Entity> iRooms = null;
+		private Boolean iCanEdit = null, iCanDelete = null;
 		
 		public FeatureInterface() {
 			super();
@@ -864,6 +866,14 @@ public class RoomInterface implements IsSerializable {
 			super(id, abbv, label);
 		}
 		
+		public FeatureInterface(FeatureInterface feature) {
+			super(feature);
+			iDepartment = feature.iDepartment;
+			iRooms = (feature.iRooms == null ? null : new ArrayList<FilterRpcResponse.Entity>(feature.iRooms));
+			iCanEdit = feature.iCanEdit;
+			iCanDelete = feature.iCanDelete;
+		}
+		
 		public boolean isDepartmental() { return iDepartment != null; }
 		public DepartmentInterface getDepartment() { return iDepartment; }
 		public void setDepartment(DepartmentInterface department) { iDepartment = department; }
@@ -871,6 +881,25 @@ public class RoomInterface implements IsSerializable {
 		public boolean hasType() { return iType != null; }
 		public FeatureTypeInterface getType() { return iType; }
 		public void setType(FeatureTypeInterface type) { iType = type; }
+		
+		public boolean hasRooms() { return iRooms != null && !iRooms.isEmpty(); }
+		public void addRoom(FilterRpcResponse.Entity room) {
+			if (iRooms == null) iRooms = new ArrayList<FilterRpcResponse.Entity>();
+			iRooms.add(room);
+		}
+		public List<FilterRpcResponse.Entity> getRooms() { return iRooms; }
+		public FilterRpcResponse.Entity getRoom(Long id) {
+			if (iRooms == null) return null;
+			for (FilterRpcResponse.Entity room: iRooms)
+				if (id.equals(room.getUniqueId())) return room;
+			return null;
+		}
+		
+		public boolean canEdit() { return iCanEdit != null && iCanEdit; }
+		public void setCanEdit(Boolean canEdit) { iCanEdit = canEdit; }
+		
+		public boolean canDelete() { return iCanDelete != null && iCanDelete; }
+		public void setCanDelete(Boolean canDelete) { iCanDelete = canDelete; }
 	}
 	
 	public static class GroupInterface extends RoomPropertyInterface {
@@ -934,6 +963,7 @@ public class RoomInterface implements IsSerializable {
 		private String iLabel;
 		private boolean iCanAddRoom = false, iCanAddNonUniversity = false;
 		private boolean iCanAddDepartmentalRoomGroup = false, iCanAddGlobalRoomGroup = false;
+		private boolean iCanAddDepartmentalRoomFeature = false, iCanAddGlobalRoomFeature = false;
 		
 		public AcademicSessionInterface() {}
 		
@@ -961,6 +991,12 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean isCanAddGlobalRoomGroup() { return iCanAddGlobalRoomGroup; }
 		public void setCanAddGlobalRoomGroup(boolean canAddGlobalRoomGroup) { iCanAddGlobalRoomGroup = canAddGlobalRoomGroup; }
+
+		public boolean isCanAddDepartmentalRoomFeature() { return iCanAddDepartmentalRoomFeature; }
+		public void setCanAddDepartmentalRoomFeature(boolean canAddDepartmentalRoomFeature) { iCanAddDepartmentalRoomFeature = canAddDepartmentalRoomFeature; }
+		
+		public boolean isCanAddGlobalRoomFeature() { return iCanAddGlobalRoomFeature; }
+		public void setCanAddGlobalRoomFeature(boolean canAddGlobalRoomFeature) { iCanAddGlobalRoomFeature = canAddGlobalRoomFeature; }
 
 		@Override
 		public boolean equals(Object object) {
@@ -1620,7 +1656,7 @@ public class RoomInterface implements IsSerializable {
 				iCanChangeEventProperties = false, iCanChangePicture = false, iCanChangePreferences = false,
 				iCanChangeGroups = false, iCanChangeFeatures = false, iCanChangeEventAvailability = false;
 		private List<AcademicSessionInterface> iFutureSessions = null;
-		private boolean iCanExportRoomGroups = false, iCanChangeDefaultGroup = false;
+		private boolean iCanExportRoomGroups = false, iCanChangeDefaultGroup = false, iCanExportRoomFeatures = false;
 		
 		public RoomPropertiesInterface() {}
 		
@@ -1669,12 +1705,29 @@ public class RoomInterface implements IsSerializable {
 		public void setCanAddDepartmentalRoomGroup(boolean canAddDepartmentalRoomGroup) {
 			if (iSession != null) iSession.setCanAddDepartmentalRoomGroup(canAddDepartmentalRoomGroup);
 		}
+		
+		public boolean isCanAddGlobalRoomFeature() {
+			return  (iSession == null ? false : iSession.isCanAddGlobalRoomFeature());
+		}
+		public void setCanAddGlobalRoomFeature(boolean canAddGlobalRoomFeature) {
+			if (iSession != null) iSession.setCanAddGlobalRoomFeature(canAddGlobalRoomFeature);
+		}
+
+		public boolean isCanAddDepartmentalRoomFeature() {
+			return  (iSession == null ? false : iSession.isCanAddDepartmentalRoomFeature());
+		}
+		public void setCanAddDepartmentalRoomFeature(boolean canAddDepartmentalRoomFeature) {
+			if (iSession != null) iSession.setCanAddDepartmentalRoomFeature(canAddDepartmentalRoomFeature);
+		}
 
 		public boolean isCanExportRoomGroups() { return iCanExportRoomGroups; }
 		public void setCanExportRoomGroups(boolean canExportRoomGroups) { iCanExportRoomGroups = canExportRoomGroups; }
 		
 		public boolean isCanChangeDefaultGroup() { return iCanChangeDefaultGroup; }
 		public void setCanChangeDefaultGroup(boolean canChangeDefaultGroup) { iCanChangeDefaultGroup = canChangeDefaultGroup; }
+		
+		public boolean isCanExportRoomFeatures() { return iCanExportRoomFeatures; }
+		public void setCanExportRoomFeatures(boolean canExportRoomFeatures) { iCanExportRoomFeatures = canExportRoomFeatures; }
 		
 		public void addRoomType(RoomTypeInterface roomType) { iRoomTypes.add(roomType); }
 		public List<RoomTypeInterface> getRoomTypes() { return iRoomTypes; }
@@ -1851,6 +1904,15 @@ public class RoomInterface implements IsSerializable {
 		DEPARTMENT,
 		ROOMS,
 		DESCRIPTION,
+		;
+	}
+	
+	public static enum RoomFeaturesColumn {
+		NAME,
+		ABBREVIATION,
+		TYPE,
+		DEPARTMENT,
+		ROOMS,
 		;
 	}
 	
@@ -2100,6 +2162,20 @@ public class RoomInterface implements IsSerializable {
 		}
 	}
 	
+	public static class SearchRoomFeaturesRequest implements GwtRpcRequest<GwtRpcResponseList<FeatureInterface>> {
+		private EventInterface.RoomFilterRpcRequest iFilter;
+		
+		public SearchRoomFeaturesRequest() {}
+		
+		public EventInterface.RoomFilterRpcRequest getFilter() { return iFilter; }
+		public void setFilter(EventInterface.RoomFilterRpcRequest filter) { iFilter = filter; }
+		
+		@Override
+		public String toString() {
+			return (iFilter == null ? "NULL" : iFilter.toString());
+		}
+	}
+	
 	public static class UpdateRoomGroupRequest implements GwtRpcRequest<GroupInterface> {
 		private Long iDeleteGroupId = null;
 		private GroupInterface iGroup = null;
@@ -2132,6 +2208,41 @@ public class RoomInterface implements IsSerializable {
 						(hasDropLocations() ? " DROP" + getDropLocations() : "");
 			else
 				return "DELETE " + getDeleteGroupId();
+		}		
+	}
+	
+	public static class UpdateRoomFeatureRequest implements GwtRpcRequest<FeatureInterface> {
+		private Long iDeleteFeatureId = null;
+		private FeatureInterface iFeature = null;
+		private List<Long> iAddLocations = new ArrayList<Long>();
+		private List<Long> iDropLocations = new ArrayList<Long>();
+		
+		public UpdateRoomFeatureRequest() {}
+		
+		public void setDeleteFeatureId(Long featureId) { iDeleteFeatureId = featureId; }
+		public boolean hasDeleteFeatureId() { return iDeleteFeatureId != null; }
+		public Long getDeleteFeatureId() { return iDeleteFeatureId; }
+		
+		public boolean hasFeature() { return iFeature != null; }
+		public void setFeature(FeatureInterface Feature) { iFeature = Feature; }
+		public FeatureInterface getFeature() { return iFeature; }
+		
+		public void addLocation(Long locationId) { iAddLocations.add(locationId); }
+		public List<Long> getAddLocations() { return iAddLocations; }
+		public boolean hasAddLocations() { return !iAddLocations.isEmpty(); }
+		
+		public void dropLocation(Long locationId) { iDropLocations.add(locationId); }
+		public List<Long> getDropLocations() { return iDropLocations; }
+		public boolean hasDropLocations() { return !iDropLocations.isEmpty(); }
+		
+		@Override
+		public String toString() {
+			if (hasFeature())
+				return getFeature().getLabel() + (getFeature().isDepartmental() ? " (" + getFeature().getDepartment().getDeptCode() + ")" : getFeature().getType() == null ? "(Global)" : "(" + getFeature().getType().getAbbreviation() + ")") +
+						(hasAddLocations() ? " ADD" + getAddLocations() : "") +
+						(hasDropLocations() ? " DROP" + getDropLocations() : "");
+			else
+				return "DELETE " + getDeleteFeatureId();
 		}		
 	}
 }
