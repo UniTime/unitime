@@ -1965,6 +1965,14 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("API: trim leading zeros from extednal user id")
 	ApiTrimLeadingZerosFromUserExternalIds("unitime.api.user.id-trim"),
+	
+	@Description("Student Group Timetable: minimal enrollment for a class event to appear in the table (given as % of the group size or as an absolute number)")
+	StudentGroupsTimetableMinimalEnrollment("unitime.events.group.minimalEnrollment"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Student Group Timetable: count enrollments within the group")
+	StudentGroupsTimetableGroupEnrollments("unitime.events.group.showGroupEnrollment"),
 	;
 
 	String iKey;

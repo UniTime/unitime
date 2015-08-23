@@ -32,7 +32,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.events.EventFilterBackend.EventQuery.EventInstance;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -66,12 +68,16 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
@@ -171,6 +177,11 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
 				Collection<Long> curriculumCourses = null;
 				Department department = null;
+				StudentGroup group = null;
+				if (request.getResourceType() == ResourceType.GROUP)
+					group = StudentGroupDAO.getInstance().get(request.getResourceId(), hibSession);
+				boolean groupEnrollments = (request.getResourceType() == ResourceType.GROUP && group != null && ApplicationProperty.StudentGroupsTimetableGroupEnrollments.isTrue());
+				
 				switch (request.getResourceType()) {
 				case ROOM:
 					if (request.getResourceId() == null)
@@ -989,7 +1000,185 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
                     		.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
                     		.query(hibSession).list());
                     break;
-				default:
+				case GROUP:
+					allSessions = request.getEventFilter().hasOption("flag") && request.getEventFilter().getOptions("flag").contains("All Sessions");
+					curriculumCourses = new HashSet<Long>();
+					Integer minEnrollment = null;
+					String pMinEnrl = ApplicationProperty.StudentGroupsTimetableMinimalEnrollment.value();
+					if (pMinEnrl != null) {
+						if (pMinEnrl.endsWith("%"))
+							minEnrollment = (int)Math.floor(Double.parseDouble(pMinEnrl.substring(0, pMinEnrl.length() - 1)) * group.getStudents().size() / 100.0);
+						else
+							minEnrollment = Integer.parseInt(pMinEnrl);
+					}
+					
+					if (allSessions) {
+						if (group.getExternalUniqueId() != null)
+							curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.externalId = :externalId")
+									.setString("externalId", group.getExternalUniqueId()).list());
+						else
+							curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.groupAbbreviation = :abbreviation")
+									.setString("abbreviation", group.getGroupAbbreviation()).list());
+					} else {
+						curriculumCourses.addAll(hibSession.createQuery("select distinct e.courseOffering.uniqueId from StudentGroup g inner join g.students s inner join s.classEnrollments e where g.uniqueId = :resourceId")
+								.setLong("resourceId", group.getUniqueId()).list());
+					}
+					meetings = new ArrayList<Meeting>();
+
+					if (limit <= 0 || meetings.size() < limit) {
+						EventInstance ec = query.select("distinct m").type("ClassEvent").from("inner join e.clazz.studentEnrollments enrl inner join enrl.student.groups grp");
+						if (minEnrollment != null)
+							ec.where("(select count(enrlX) from StudentClassEnrollment enrlX inner join enrlX.student.groups grpX where grpX.uniqueId = grp.uniqueId and enrlX.clazz.uniqueId = e.clazz.uniqueId) >= :minEnrl")
+								.set("minEnrl", minEnrollment);
+						if (allSessions) {
+							if (group.getExternalUniqueId() != null)
+								ec.where("grp.externalId = :externalId").set("externalId", group.getExternalUniqueId()).where("enrl.student.session.uniqueId = s.uniqueId");
+							else
+								ec.where("grp.groupAbbreviation = :abbreviation").set("abbreviation", group.getGroupAbbreviation()).where("enrl.student.session.uniqueId = s.uniqueId");
+						} else {
+							ec.where("grp.uniqueId = :resourceId").set("resourceId", group.getUniqueId());
+						}
+						meetings.addAll(ec.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+					}
+					
+					if (limit <= 0 || meetings.size() < limit) {
+						EventInstance ec = query.select("distinct m").type("ExamEvent").from("inner join e.exam.owners o, StudentClassEnrollment enrl inner join enrl.courseOffering co inner join enrl.student.groups grp")
+								.where("o.ownerType = :type and o.ownerId = co.uniqueId").set("type", ExamOwner.sOwnerTypeCourse);
+						if (minEnrollment != null)
+							ec.where("(select count(enrlX) from StudentClassEnrollment enrlX inner join enrlX.student.groups grpX where grpX.uniqueId = grp.uniqueId and enrlX.courseOffering.uniqueId = co.uniqueId) >= :minEnrl")
+								.set("minEnrl", minEnrollment);
+						if (allSessions) {
+							if (group.getExternalUniqueId() != null)
+								ec.where("grp.externalId = :externalId").set("externalId", group.getExternalUniqueId()).where("enrl.student.session.uniqueId = s.uniqueId");
+							else
+								ec.where("grp.groupAbbreviation = :abbreviation").set("abbreviation", group.getGroupAbbreviation()).where("enrl.student.session.uniqueId = s.uniqueId");
+						} else {
+							ec.where("grp.uniqueId = :resourceId").set("resourceId", group.getUniqueId());
+						}
+						meetings.addAll(ec.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+					}
+					
+					if (limit <= 0 || meetings.size() < limit) {
+						EventInstance ec = query.select("distinct m").type("ExamEvent").from("inner join e.exam.owners o, StudentClassEnrollment enrl inner join enrl.courseOffering co inner join enrl.student.groups grp")
+								.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId").set("type", ExamOwner.sOwnerTypeOffering);
+						if (minEnrollment != null)
+							ec.where("(select count(enrlX) from StudentClassEnrollment enrlX inner join enrlX.student.groups grpX where grpX.uniqueId = grp.uniqueId and enrlX.courseOffering.uniqueId = co.uniqueId) >= :minEnrl")
+								.set("minEnrl", minEnrollment);
+						if (allSessions) {
+							if (group.getExternalUniqueId() != null)
+								ec.where("grp.externalId = :externalId").set("externalId", group.getExternalUniqueId()).where("enrl.student.session.uniqueId = s.uniqueId");
+							else
+								ec.where("grp.groupAbbreviation = :abbreviation").set("abbreviation", group.getGroupAbbreviation()).where("enrl.student.session.uniqueId = s.uniqueId");
+						} else {
+							ec.where("grp.uniqueId = :resourceId").set("resourceId", group.getUniqueId());
+						}
+						meetings.addAll(ec.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+					}
+					
+					if (limit <= 0 || meetings.size() < limit) {
+						EventInstance ec = query.select("distinct m").type("ExamEvent").from("inner join e.exam.owners o, StudentClassEnrollment enrl inner join enrl.clazz c inner join enrl.student.groups grp")
+								.where("o.ownerType = :type and o.ownerId = c.uniqueId").set("type", ExamOwner.sOwnerTypeClass);
+						if (minEnrollment != null)
+							ec.where("(select count(enrlX) from StudentClassEnrollment enrlX inner join enrlX.student.groups grpX where grpX.uniqueId = grp.uniqueId and enrlX.clazz.uniqueId = c.uniqueId) >= :minEnrl")
+								.set("minEnrl", minEnrollment);
+						if (allSessions) {
+							if (group.getExternalUniqueId() != null)
+								ec.where("grp.externalId = :externalId").set("externalId", group.getExternalUniqueId()).where("enrl.student.session.uniqueId = s.uniqueId");
+							else
+								ec.where("grp.groupAbbreviation = :abbreviation").set("abbreviation", group.getGroupAbbreviation()).where("enrl.student.session.uniqueId = s.uniqueId");
+						} else {
+							ec.where("grp.uniqueId = :resourceId").set("resourceId", group.getUniqueId());
+						}
+						meetings.addAll(ec.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+					}
+					
+					if (limit <= 0 || meetings.size() < limit) {
+						EventInstance ec = query.select("distinct m").type("ExamEvent").from("inner join e.exam.owners o, StudentClassEnrollment enrl inner join enrl.clazz c inner join c.schedulingSubpart.instrOfferingConfig cfg inner join enrl.student.groups grp")
+								.where("o.ownerType = :type and o.ownerId = cfg.uniqueId").set("type", ExamOwner.sOwnerTypeConfig);
+						if (minEnrollment != null)
+							ec.where("(select count(enrlX) from StudentClassEnrollment enrlX inner join enrlX.student.groups grpX where grpX.uniqueId = grp.uniqueId and enrlX.clazz.uniqueId = c.uniqueId) >= :minEnrl")
+								.set("minEnrl", minEnrollment);
+						if (allSessions) {
+							if (group.getExternalUniqueId() != null)
+								ec.where("grp.externalId = :externalId").set("externalId", group.getExternalUniqueId()).where("enrl.student.session.uniqueId = s.uniqueId");
+							else
+								ec.where("grp.groupAbbreviation = :abbreviation").set("abbreviation", group.getGroupAbbreviation()).where("enrl.student.session.uniqueId = s.uniqueId");
+						} else {
+							ec.where("grp.uniqueId = :resourceId").set("resourceId", group.getUniqueId());
+						}
+						meetings.addAll(ec.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+					}
+					
+					
+					if (limit <= 0 || meetings.size() < limit) {
+						EventInstance ec = query.select("distinct m").type("CourseEvent").from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.courseOffering co inner join enrl.student.groups grp")
+								.where("o.ownerType = :type and o.ownerId = co.uniqueId").set("type", ExamOwner.sOwnerTypeCourse);
+						if (minEnrollment != null)
+							ec.where("(select count(enrlX) from StudentClassEnrollment enrlX inner join enrlX.student.groups grpX where grpX.uniqueId = grp.uniqueId and enrlX.courseOffering.uniqueId = co.uniqueId) >= :minEnrl")
+								.set("minEnrl", minEnrollment);
+						if (allSessions) {
+							if (group.getExternalUniqueId() != null)
+								ec.where("grp.externalId = :externalId").set("externalId", group.getExternalUniqueId()).where("enrl.student.session.uniqueId = s.uniqueId");
+							else
+								ec.where("grp.groupAbbreviation = :abbreviation").set("abbreviation", group.getGroupAbbreviation()).where("enrl.student.session.uniqueId = s.uniqueId");
+						} else {
+							ec.where("grp.uniqueId = :resourceId").set("resourceId", group.getUniqueId());
+						}
+						meetings.addAll(ec.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+					}
+					
+					if (limit <= 0 || meetings.size() < limit) {
+						EventInstance ec = query.select("distinct m").type("CourseEvent").from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.courseOffering co inner join enrl.student.groups grp")
+								.where("o.ownerType = :type and o.ownerId = co.instructionalOffering.uniqueId").set("type", ExamOwner.sOwnerTypeOffering);
+						if (minEnrollment != null)
+							ec.where("(select count(enrlX) from StudentClassEnrollment enrlX inner join enrlX.student.groups grpX where grpX.uniqueId = grp.uniqueId and enrlX.courseOffering.uniqueId = co.uniqueId) >= :minEnrl")
+								.set("minEnrl", minEnrollment);
+						if (allSessions) {
+							if (group.getExternalUniqueId() != null)
+								ec.where("grp.externalId = :externalId").set("externalId", group.getExternalUniqueId()).where("enrl.student.session.uniqueId = s.uniqueId");
+							else
+								ec.where("grp.groupAbbreviation = :abbreviation").set("abbreviation", group.getGroupAbbreviation()).where("enrl.student.session.uniqueId = s.uniqueId");
+						} else {
+							ec.where("grp.uniqueId = :resourceId").set("resourceId", group.getUniqueId());
+						}
+						meetings.addAll(ec.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+					}
+					
+					if (limit <= 0 || meetings.size() < limit) {
+						EventInstance ec = query.select("distinct m").type("CourseEvent").from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.clazz c inner join enrl.student.groups grp")
+								.where("o.ownerType = :type and o.ownerId = c.uniqueId").set("type", ExamOwner.sOwnerTypeClass);
+						if (minEnrollment != null)
+							ec.where("(select count(enrlX) from StudentClassEnrollment enrlX inner join enrlX.student.groups grpX where grpX.uniqueId = grp.uniqueId and enrlX.clazz.uniqueId = c.uniqueId) >= :minEnrl")
+								.set("minEnrl", minEnrollment);
+						if (allSessions) {
+							if (group.getExternalUniqueId() != null)
+								ec.where("grp.externalId = :externalId").set("externalId", group.getExternalUniqueId()).where("enrl.student.session.uniqueId = s.uniqueId");
+							else
+								ec.where("grp.groupAbbreviation = :abbreviation").set("abbreviation", group.getGroupAbbreviation()).where("enrl.student.session.uniqueId = s.uniqueId");
+						} else {
+							ec.where("grp.uniqueId = :resourceId").set("resourceId", group.getUniqueId());
+						}
+						meetings.addAll(ec.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+					}
+					
+					if (limit <= 0 || meetings.size() < limit) {
+						EventInstance ec = query.select("distinct m").type("CourseEvent").from("inner join e.relatedCourses o, StudentClassEnrollment enrl inner join enrl.clazz c inner join c.schedulingSubpart.instrOfferingConfig cfg inner join enrl.student.groups grp")
+								.where("o.ownerType = :type and o.ownerId = cfg.uniqueId").set("type", ExamOwner.sOwnerTypeConfig);
+						if (minEnrollment != null)
+							ec.where("(select count(enrlX) from StudentClassEnrollment enrlX inner join enrlX.student.groups grpX where grpX.uniqueId = grp.uniqueId and enrlX.clazz.uniqueId = c.uniqueId) >= :minEnrl")
+								.set("minEnrl", minEnrollment);
+						if (allSessions) {
+							if (group.getExternalUniqueId() != null)
+								ec.where("grp.externalId = :externalId").set("externalId", group.getExternalUniqueId()).where("enrl.student.session.uniqueId = s.uniqueId");
+							else
+								ec.where("grp.groupAbbreviation = :abbreviation").set("abbreviation", group.getGroupAbbreviation()).where("enrl.student.session.uniqueId = s.uniqueId");
+						} else {
+							ec.where("grp.uniqueId = :resourceId").set("resourceId", group.getUniqueId());
+						}
+						meetings.addAll(ec.limit(limit <= 0 ? -1 : 1 + limit - meetings.size()).query(hibSession).list());
+					}
+                    break;
+                default:
 					throw new GwtRpcException("Resource type " + request.getResourceType().getLabel() + " not supported.");
 				}
 				
@@ -1049,6 +1238,12 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		if (r != null && hide(r, clazz)) continue;
 				    		
 							event.setEnrollment(clazz.getEnrollment());
+							if (groupEnrollments) {
+								int enrl = 0;
+								for (StudentClassEnrollment e: clazz.getStudentEnrollments())
+									if (group.getStudents().contains(e.getStudent())) enrl ++;
+								event.setEnrollment(enrl);
+							}
 							event.setMaxCapacity(clazz.getClassLimit());
 				    		if (clazz.getDisplayInstructor()) {
 				    			for (ClassInstructor i: clazz.getClassInstructors()) {
@@ -1108,6 +1303,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		*/
 				    		case CURRICULUM:
 				    		case PERSON:
+				    		case GROUP:
 			    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
 			    					CourseOffering co = i.next();
 			    					if (curriculumCourses.contains(co.getUniqueId())) {
@@ -1153,6 +1349,13 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		event.setEnrollment(xe.getExam().countStudents());
 				    		event.setMaxCapacity(xe.getExam().getSize());
+				    		if (groupEnrollments) {
+								int enrl = 0;
+								Set<Long> studentIds = xe.getExam().getStudentIds();
+								for (Student s: group.getStudents())
+									if (studentIds.contains(s.getUniqueId())) enrl ++;
+								event.setEnrollment(enrl);
+							}
 			    			for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
 								ContactInterface instructor = new ContactInterface();
 								instructor.setFirstName(i.getFirstName());
@@ -1187,6 +1390,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		*/
 						    		case CURRICULUM:
 						    		case PERSON:
+						    		case GROUP:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			break;
 						    		}
@@ -1217,7 +1421,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    				}
 			    				}
 			    			}
-			    			if (event.hasCourseNames() && event.getCourseNames().size() == 1 && (request.getResourceType() == ResourceType.PERSON || request.getResourceType() == ResourceType.CURRICULUM))
+			    			if (event.hasCourseNames() && event.getCourseNames().size() == 1 && (request.getResourceType() == ResourceType.PERSON || request.getResourceType() == ResourceType.CURRICULUM || request.getResourceType() == ResourceType.GROUP))
 		    					event.setName(name);
 				    	} else if (Event.sEventTypeCourse == m.getEvent().getEventType()) {
 				    		CourseEvent ce = CourseEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
@@ -1225,7 +1429,14 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							int enrl = 0;
 							int cap = 0;
 							for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
-								enrl += owner.countStudents();
+								if (groupEnrollments) {
+									Set<Long> studentIds = new HashSet<Long>(owner.getStudentIds());
+									for (Student s: group.getStudents())
+										if (studentIds.contains(s.getUniqueId())) enrl ++;
+									event.setEnrollment(enrl);
+								} else {
+									enrl += owner.countStudents();
+								}
 								cap += owner.getLimit();
 			    				TreeSet<CourseOffering> courses = new TreeSet<CourseOffering>();
 			    				if (owner.getOwnerType() == ExamOwner.sOwnerTypeCourse || request.getResourceType() == ResourceType.ROOM) {
@@ -1249,6 +1460,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		*/
 						    		case CURRICULUM:
 						    		case PERSON:
+						    		case GROUP:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			break;
 						    		}
@@ -1653,6 +1865,12 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 						    		Class_ clazz = ce.getClazz();
 									event.setEnrollment(clazz.getEnrollment());
+									if (groupEnrollments) {
+										int enrl = 0;
+										for (StudentClassEnrollment e: clazz.getStudentEnrollments())
+											if (group.getStudents().contains(e.getStudent())) enrl ++;
+										event.setEnrollment(enrl);
+									}
 									event.setMaxCapacity(clazz.getClassLimit());
 						    		if (clazz.getDisplayInstructor()) {
 						    			for (ClassInstructor i: clazz.getClassInstructors()) {
@@ -1742,6 +1960,13 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 						    		event.setEnrollment(xe.getExam().countStudents());
 						    		event.setMaxCapacity(xe.getExam().getSize());
+						    		if (groupEnrollments) {
+										int enrl = 0;
+										Set<Long> studentIds = xe.getExam().getStudentIds();
+										for (Student s: group.getStudents())
+											if (studentIds.contains(s.getUniqueId())) enrl ++;
+										event.setEnrollment(enrl);
+									}
 					    			for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
 										ContactInterface instructor = new ContactInterface();
 										instructor.setFirstName(i.getFirstName());
@@ -1782,14 +2007,21 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    				event.addExternalId(label.trim());
 					    				}
 					    			}
-					    			if (event.hasCourseNames() && event.getCourseNames().size() == 1 && (request.getResourceType() == ResourceType.PERSON || request.getResourceType() == ResourceType.CURRICULUM))
+					    			if (event.hasCourseNames() && event.getCourseNames().size() == 1 && (request.getResourceType() == ResourceType.PERSON || request.getResourceType() == ResourceType.CURRICULUM || request.getResourceType() == ResourceType.GROUP))
 				    					event.setName((event.getCourseNames().get(0) + " " + event.getExternalIds().get(0)).trim());
 						    	} else if (Event.sEventTypeCourse == m.getEvent().getEventType()) {
 						    		CourseEvent ce = CourseEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 						    		event.setRequiredAttendance(ce.isReqAttendance());
 									int enrl = 0, cap = 0;
 									for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
-										enrl += owner.countStudents();
+										if (groupEnrollments) {
+											Set<Long> studentIds = new HashSet<Long>(owner.getStudentIds());
+											for (Student s: group.getStudents())
+												if (studentIds.contains(s.getUniqueId())) enrl ++;
+											event.setEnrollment(enrl);
+										} else {
+											enrl += owner.countStudents();
+										}
 										cap += owner.getLimit();
 										/* courses: */
 										for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
@@ -1921,6 +2153,30 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								hibSession.createQuery("select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.coordinators cc where c.committedAssignment is null and c.cancelled = false and cc.department.session.uniqueId = :sessionId and  cc.externalUniqueId = :externalId")
 								.setString("externalId", request.getResourceExternalId()).setLong("sessionId", request.getSessionId())
 								.setCacheable(true).list());
+						break;
+					case GROUP:
+						Integer minEnrollment = null;
+						String pMinEnrl = ApplicationProperty.StudentGroupsTimetableMinimalEnrollment.value();
+						if (pMinEnrl != null) {
+							if (pMinEnrl.endsWith("%"))
+								minEnrollment = (int)Math.floor(Double.parseDouble(pMinEnrl.substring(0, pMinEnrl.length() - 1)) * group.getStudents().size() / 100.0);
+							else
+								minEnrollment = Integer.parseInt(pMinEnrl);
+						}
+						arrageHourClasses = new ArrayList<Class_>();
+						if (minEnrollment == null)
+							arrageHourClasses.addAll(hibSession.createQuery(
+								"select distinct c from StudentGroup g inner join g.students s inner join s.classEnrollments e inner join e.clazz c where c.committedAssignment is null and c.cancelled = false and g.uniqueId = :resourceId")
+								.setLong("resourceId", group.getUniqueId())
+								.setCacheable(true).list());
+						else
+							arrageHourClasses.addAll(hibSession.createQuery(
+									"select distinct c from StudentGroup g inner join g.students s inner join s.classEnrollments e inner join e.clazz c where c.committedAssignment is null and c.cancelled = false and g.uniqueId = :resourceId "+
+									"and (select count(x) from StudentClassEnrollment x inner join x.student.groups y where y.uniqueId = g.uniqueId and x.clazz.uniqueId = e.clazz.uniqueId) >= :minEnrl")
+									.setLong("resourceId", group.getUniqueId())
+									.setInteger("minEnrl", minEnrollment)
+									.setCacheable(true).list());
+						break;
 					}
 					
 					if (arrageHourClasses != null) {
@@ -1933,6 +2189,12 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								event.setCanView(false);
 								event.setMaxCapacity(clazz.getClassLimit());
 								event.setEnrollment(clazz.getEnrollment());
+								if (groupEnrollments) {
+									int enrl = 0;
+									for (StudentClassEnrollment e: clazz.getStudentEnrollments())
+										if (group.getStudents().contains(e.getStudent())) enrl ++;
+									event.setEnrollment(enrl);
+								}
 								if (clazz.getDisplayInstructor()) {
 									for (ClassInstructor i: clazz.getClassInstructors()) {
 										ContactInterface instructor = new ContactInterface();
@@ -1950,6 +2212,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    		switch (request.getResourceType()) {
 					    		case CURRICULUM:
 					    		case PERSON:
+					    		case GROUP:
 				    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
 				    					CourseOffering co = i.next();
 				    					if (curriculumCourses.contains(co.getUniqueId())) {

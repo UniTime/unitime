@@ -253,15 +253,21 @@ public class TimeGrid extends Composite {
 	public ResourceType getResourceType() { return iResourceType; }
 	
 	public boolean isShowVerticalSplit() {
-		return getMode() == Mode.OVERLAP && (getResourceType() != ResourceType.PERSON || !isSingleWeek());
+		if (CONSTANTS.timeGridStudentGroupDoesNotOverlap())
+			return getMode() == Mode.OVERLAP && (getResourceType() != ResourceType.PERSON || !isSingleWeek() || getResourceType() != ResourceType.GROUP);
+		else
+			return getMode() == Mode.OVERLAP && (getResourceType() != ResourceType.PERSON || !isSingleWeek());
 	}
 
 	public boolean isAllowSelection() {
-		return getMode() == Mode.OVERLAP && (isSingleRoom() || isSingleWeek()) && (getResourceType() != ResourceType.PERSON);
+		if (CONSTANTS.timeGridStudentGroupDoesNotOverlap())
+			return getMode() == Mode.OVERLAP && (isSingleRoom() || isSingleWeek()) && (getResourceType() != ResourceType.PERSON) && (getResourceType() != ResourceType.GROUP);
+		else
+			return getMode() == Mode.OVERLAP && (isSingleRoom() || isSingleWeek()) && (getResourceType() != ResourceType.PERSON);
 	}
 	
 	private boolean isVerticalSplitByWeek() {
-		return isSingleRoom() || getResourceType() == ResourceType.PERSON;
+		return isSingleRoom() || getResourceType() == ResourceType.PERSON || (CONSTANTS.timeGridStudentGroupDoesNotOverlap() && getResourceType() == ResourceType.GROUP);
 	}
 
 	public List<WeekInterface> getSelectedWeeks() { return iSelectedWeeks; }

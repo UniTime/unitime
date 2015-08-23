@@ -181,6 +181,28 @@
 				<line>This feature can be disabled by setting the application property unitime.encode.hash to false.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Group Timetable</name>
+			<description>
+				<line>On the Events Timetable page, it is now possible to select a student group.</line>
+				<line>If a student group is selected, all classes / exams, and course-related events of students of the selected student group are displayed.</line>
+				<line>It is possible to hide some events by defining a minimal enrollment parameter (see below).</line>
+				<line>Parameters:
+					<line>unitime.events.group.minimalEnrollment
+						<line>Minimal enrollment for a class event to appear in the results (given as % of the group size or as an absolute number).</line>
+						<line>For instance, set it to 5 (only classes with at least 5 students of the group are shown) or to 10% (limit is 10% of the number of students in the group).</line>
+					</line>
+					<line>unitime.events.group.showGroupEnrollment
+						<line>On the Events / Timetable page, count the enrollments only within the group (may be slow).</line>
+						<line>If set to true, enrollment field shows the number of students of the group enrolled in the class / exam / course related event (default is false).</line>
+					</line>
+					<line>GwtConstants: timeGridStudentGroupDoesNotOverlap
+						<line>If true, it is assumed that there are no overlaps in the events of the group — the display is like on the personal timetable or when a single week / room is selected (defaults to false).</line>
+						<line>This property needs to be set in the JavaSource/org/unitime/timetable/gwt/resources/GwtConstants.properties before the build.</line>
+					</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 </release-history>

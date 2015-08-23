@@ -580,6 +580,8 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 						query.setBoolean(param.getKey(), (Boolean)param.getValue());
 					} else if (param.getValue() instanceof Date) {
 						query.setDate(param.getKey(), (Date)param.getValue());
+					} else if (param.getValue() instanceof Collection<?>) {
+						query.setParameterList(param.getKey(), (Collection<?>)param.getValue());
 					} else {
 						query.setString(param.getKey(), param.getValue().toString());
 					}

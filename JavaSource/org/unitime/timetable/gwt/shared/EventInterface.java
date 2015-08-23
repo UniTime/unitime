@@ -76,7 +76,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		CURRICULUM("Curriculum Timetable","curriculum", true),
 		DEPARTMENT("Departmental Timetable", "department", true),
 		PERSON("Personal Timetable", "person", true),
-		COURSE("Course Timetable", "course", false);
+		COURSE("Course Timetable", "course", false),
+		GROUP("Student Group Timetable", "group", true),
+		;
 
 		private String iPage;
 		private String iLabel;

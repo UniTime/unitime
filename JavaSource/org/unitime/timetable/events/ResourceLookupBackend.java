@@ -41,6 +41,7 @@ import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -262,6 +263,20 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					ret.setExternalId(name);
 					ret.setName("");
 					return ret;
+				case GROUP:
+					List<StudentGroup> groups = hibSession.createQuery("select g from StudentGroup g where g.session.uniqueId = :sessionId and " +
+							"(lower(g.groupName) = :name or lower(g.groupAbbreviation) = :name)")
+							.setString("name", name.toLowerCase()).setLong("sessionId", academicSession.getUniqueId()).list();
+					if (!groups.isEmpty()) {
+						StudentGroup group = groups.get(0);
+						ret = new ResourceInterface();
+						ret.setType(ResourceType.GROUP);
+						ret.setId(group.getUniqueId());
+						ret.setAbbreviation(group.getGroupAbbreviation());
+						ret.setName(group.getGroupName());
+						return ret;
+					}
+					throw new GwtRpcException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				default:
 					throw new GwtRpcException("Resource type " + type.getLabel() + " not supported.");
 				}
@@ -500,6 +515,21 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						ret.setId(department.getUniqueId());
 						ret.setAbbreviation(department.getAbbreviation() == null ? department.getDeptCode() : department.getAbbreviation());
 						ret.setName(department.getName());
+						resources.add(ret);
+					}
+					break;
+				case GROUP:
+					List<StudentGroup> groups = hibSession.createQuery("select g from StudentGroup g where g.session.uniqueId = :sessionId and (" +
+							"lower(g.groupAbbreviation) like :abbv or lower(g.groupName) like :name) " +
+							"order by g.groupAbbreviation, g.groupName")
+							.setString("abbv", query.toLowerCase() + "%").setString("name", "%" + query.toLowerCase() + "%")
+							.setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
+					for (StudentGroup group: groups) {
+						ResourceInterface ret = new ResourceInterface();
+						ret.setType(ResourceType.GROUP);
+						ret.setId(group.getUniqueId());
+						ret.setAbbreviation(group.getGroupAbbreviation());
+						ret.setName(group.getGroupName());
 						resources.add(ret);
 					}
 					break;

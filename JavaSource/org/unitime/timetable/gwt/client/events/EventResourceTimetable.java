@@ -314,7 +314,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iResourceTypes = new ListBox();
 		for (ResourceType resource: ResourceType.values()) {
 			if (resource.isVisible())
-				iResourceTypes.addItem(resource.getResourceType(CONSTANTS), resource.toString());
+				iResourceTypes.addItem(resource.getResourceType(CONSTANTS), resource.name());
 		}
 		
 		iResourceTypes.addChangeHandler(new ChangeHandler() {
@@ -1151,7 +1151,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	public ResourceType getResourceType() {
 		if (iResourceTypes.getSelectedIndex() < 0)
 			return null;
-		return ResourceType.values()[iResourceTypes.getSelectedIndex()];
+		return ResourceType.valueOf(iResourceTypes.getValue(iResourceTypes.getSelectedIndex()));
 	}
 	
 	public String getResourceName() {
@@ -1387,6 +1387,9 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			return (iRoomPanel.isOne() || (iWeekPanel.isOne() && iRoomPanel.getSelected().size() <= 20) ? TimeGrid.Mode.OVERLAP : TimeGrid.Mode.PROPORTIONAL);
 		case PERSON:
 			return TimeGrid.Mode.OVERLAP;
+		case GROUP:
+			if (CONSTANTS.timeGridStudentGroupDoesNotOverlap()) return TimeGrid.Mode.OVERLAP;
+			// else use default
 		default:
 			return (iRoomPanel.isOne() || (iWeekPanel.isOne() && iRoomPanel.getSelected().size() <= 10) ? TimeGrid.Mode.OVERLAP : TimeGrid.Mode.PROPORTIONAL);
 		}

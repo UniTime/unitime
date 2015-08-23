@@ -139,12 +139,12 @@ public interface GwtConstants extends Constants {
 	String[] meetingColors();
 	
 	@DefaultStringArrayValue({
-		"Room Timetable", "Subject Timetable", "Curriculum Timetable", "Departmental Timetable", "Personal Timetable", "Course Timetable"
+		"Room Timetable", "Subject Timetable", "Curriculum Timetable", "Departmental Timetable", "Personal Timetable", "Course Timetable", "Student Group Timetable"
 	})
 	String[] resourceType();
 
 	@DefaultStringArrayValue({
-		"Room", "Subject", "Curriculum", "Department", "Person", "Course"
+		"Room", "Subject", "Curriculum", "Department", "Person", "Course", "Student Group"
 	})
 	String[] resourceName();
 	
@@ -248,4 +248,7 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue("ft2")
 	String roomAreaUnitsShortPlainText();
+	
+	@DefaultBooleanValue(false)
+	boolean timeGridStudentGroupDoesNotOverlap();
 }
