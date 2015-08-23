@@ -30,6 +30,7 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.events.EventLookupBackend;
+import org.unitime.timetable.events.ResourceLookupBackend;
 import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
@@ -43,6 +44,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
 import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.PageAccessException;
@@ -123,6 +125,15 @@ public abstract class EventsExporter implements Exporter {
     	} else if (!helper.isRequestEncoded() && request.getResourceType() == ResourceType.PERSON) {
     		throw new PageAccessException("Request parameters must be encrypted.");
     	}
+    	
+		if (request.getResourceType() != ResourceType.ROOM && request.getResourceType() != ResourceType.PERSON && request.getResourceId() == null) {
+			String name = helper.getParameter("name");
+			if (name != null) {
+				ResourceInterface resource = new ResourceLookupBackend().findResource(request.getSessionId(), request.getResourceType(), name);
+				if (resource != null)
+					request.setResourceId(resource.getId());
+			}
+		}
     	
     	List<EventInterface> events = new EventLookupBackend().findEvents(request, context);
     	
