@@ -30,8 +30,8 @@
 <subjectAreas campus="puWestLafayetteTrdtn" term="Fal" year="2007">
 	<!-- Since UniTime 3.4, only title is needed (instead of shortTitle and longTitle). If title is not present, longTitle is used instead. -->
 	<!-- Attributes schedBookOnly and pseudoSubjArea are deprecated in UniTime 3.4.  -->
-	<subjectArea externalId="19O0S71C0WD4X1GODPVN" abbreviation="A&amp;AE" shortTitle="Aeronautics And Astronautics" longTitle="Aeronautics And Astronautics Engineering" schedBookOnly="false" pseudoSubjArea="false" department="1282"/>
-	<subjectArea externalId="19O0K81C12O4L1GODPXO" abbreviation="G S" shortTitle="General Studies-Lafayette" longTitle="General Studies-Lafayette" schedBookOnly="false" pseudoSubjArea="false" department="1357"/>
-  	<subjectArea externalId="19O0SB1C0WHAY1GODPVO" abbreviation="A&amp;D" shortTitle="Art And Design" longTitle="Art And Design" schedBookOnly="false" pseudoSubjArea="false" department="1352"/>
-  	<subjectArea externalId="19O0G61C101HU1GODPXP" abbreviation="MSE" shortTitle="Materials Engineering" longTitle="Materials Engineering" schedBookOnly="false" pseudoSubjArea="false" department="1289"/>
+	<subjectArea externalId="19O0S71C0WD4X1GODPVN" abbreviation="A&amp;AE" title="Aeronautics And Astronautics Engineering" schedBookOnly="false" pseudoSubjArea="false" department="1282"/>
+	<subjectArea externalId="19O0K81C12O4L1GODPXO" abbreviation="G S" title="General Studies-Lafayette" schedBookOnly="false" pseudoSubjArea="false" department="1357"/>
+  	<subjectArea externalId="19O0SB1C0WHAY1GODPVO" abbreviation="A&amp;D" title="Art And Design" schedBookOnly="false" pseudoSubjArea="false" department="1352"/>
+  	<subjectArea externalId="19O0G61C101HU1GODPXP" abbreviation="MSE" title="Materials Engineering" schedBookOnly="false" pseudoSubjArea="false" department="1289"/>
 </subjectAreas>

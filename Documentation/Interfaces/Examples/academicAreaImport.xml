@@ -26,6 +26,6 @@
 	-->
 <academicAreas campus="woebegon" term="Fal" year="2010">
 	<!-- Since UniTime 3.4, only title is needed (instead of shortTitle and longTitle). If title is not present, longTitle is used instead. -->
-	<academicArea externalId="A" abbreviation="A" shortTitle="Woebegon" longTitle="The Woebegon's Only Academic Area"/>
-	<academicArea abbreviation="TEST" shortTitle="Test" longTitle="Test Area"/>
+	<academicArea externalId="A" abbreviation="A" title="The Woebegon's Only Academic Area"/>
+	<academicArea abbreviation="TEST" title="Test Area"/>
 </academicAreas>

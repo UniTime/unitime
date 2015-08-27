@@ -23,9 +23,9 @@
 <!ATTLIST academicArea externalId CDATA #IMPLIED >
 <!ATTLIST academicArea title CDATA #REQUIRED >
 <!-- deprecated in UniTime 3.4 -->
-<!ATTLIST academicArea longTitle CDATA #REQUIRED >
+<!ATTLIST academicArea longTitle CDATA #IMPLIED >
 <!-- deprecated in UniTime 3.4 -->
-<!ATTLIST academicArea shortTitle CDATA #REQUIRED >
+<!ATTLIST academicArea shortTitle CDATA #IMPLIED >
 
 <!ELEMENT academicAreas ( academicArea+ ) >
 <!ATTLIST academicAreas campus CDATA #REQUIRED >

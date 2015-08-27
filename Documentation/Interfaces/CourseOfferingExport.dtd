@@ -24,7 +24,7 @@
 <!-- studentScheduling was introduced in UniTime 3.4, if false class appears like it has zero limit in (both batch and online) student scheduling -->
 <!ATTLIST class studentScheduling ( false | true ) #IMPLIED >
 <!ATTLIST class id CDATA #IMPLIED >
-<!ATTLIST class limit NMTOKEN #REQUIRED >
+<!ATTLIST class limit NMTOKEN #IMPLIED >
 <!ATTLIST class scheduleNote CDATA #IMPLIED >
 <!ATTLIST class suffix CDATA #REQUIRED >
 <!ATTLIST class type CDATA #REQUIRED >

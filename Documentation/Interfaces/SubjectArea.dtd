@@ -24,13 +24,13 @@
 <!ATTLIST subjectArea externalId CDATA #IMPLIED >
 <!ATTLIST subjectArea title CDATA #REQUIRED >
 <!-- deprecated in UniTime 3.4 -->
-<!ATTLIST subjectArea longTitle CDATA #REQUIRED >
+<!ATTLIST subjectArea longTitle CDATA #IMPLIED >
 <!-- deprecated in UniTime 3.4 -->
 <!ATTLIST subjectArea pseudoSubjArea ( false | False | true | True ) #IMPLIED >
 <!-- deprecated in UniTime 3.4 -->
 <!ATTLIST subjectArea schedBookOnly ( false | False | true | True ) #IMPLIED >
 <!-- deprecated in UniTime 3.4 -->
-<!ATTLIST subjectArea shortTitle CDATA #REQUIRED >
+<!ATTLIST subjectArea shortTitle CDATA #IMPLIED >
 
 <!ELEMENT subjectAreas ( subjectArea+ ) >
 <!ATTLIST subjectAreas campus CDATA #REQUIRED >
