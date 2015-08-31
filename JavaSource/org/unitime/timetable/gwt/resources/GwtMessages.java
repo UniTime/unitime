@@ -1907,14 +1907,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Room group {0} does not exist.")
 	String errorRoomGroupDoesNotExist(Long id);
 	
-	@DefaultMessage("Room group {0} already exists.")
-	String errorRoomGroupAlreadyExists(String name);
+	@DefaultMessage("Room group {0} already exists in {1}.")
+	String errorRoomGroupAlreadyExists(String name, String session);
 	
 	@DefaultMessage("Room feature {0} does not exist.")
 	String errorRoomFeatureDoesNotExist(Long id);
 	
-	@DefaultMessage("Room feature {0} already exists.")
-	String errorRoomFeatureAlreadyExists(String name);
+	@DefaultMessage("Room feature {0} already exists in {1}.")
+	String errorRoomFeatureAlreadyExists(String name, String session);
 	
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
@@ -2932,6 +2932,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Global:")
 	String propGlobalFeature();
+	
+	@DefaultMessage("Applies To:")
+	String propApplyToFutureSessions();
 
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -3361,6 +3364,24 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Do you realy want to delete this room feature?")
 	String confirmDeleteRoomFeature();
+	
+	@DefaultMessage("Do you really want to create the room feature in {0} as well?")
+	String confirmCreateRoomFeatureInFutureSessions(String futureSessions);
+	
+	@DefaultMessage("Do you really want to update the room feature in {0} as well?")
+	String confirmUpdateRoomFeatureInFutureSessions(String futureSessions);
+	
+	@DefaultMessage("Do you realy want to delete this room feature (including {0} as well)?")
+	String confirmDeleteRoomFeatureInFutureSessions(String futureSessions);
+	
+	@DefaultMessage("Do you really want to create the room group in {0} as well?")
+	String confirmCreateRoomGroupInFutureSessions(String futureSessions);
+	
+	@DefaultMessage("Do you really want to update the room group in {0} as well?")
+	String confirmUpdateRoomGroupInFutureSessions(String futureSessions);
+	
+	@DefaultMessage("Do you realy want to delete this room group (including {0} as well)?")
+	String confirmDeleteRoomGroupInFutureSessions(String futureSessions);
 	
 	@DefaultMessage("&nbsp;(of&nbsp;{0})")
 	String curriculumProjectionRulesOfTotal(int total);

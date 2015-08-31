@@ -3875,3 +3875,39 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline-block;
 	padding-right: 3px;
 }
+
+.unitime-RoomFeatureEdit .future-sessions {
+	padding-top: 20px;
+}
+
+.unitime-RoomFeatureEdit .future-sessions .future-session {
+	display: inline-block;
+	width: 24%;
+	white-space: nowrap;
+    overflow:hidden !important;
+    text-overflow: ellipsis;	
+}
+
+.unitime-RoomFeatureEdit .future-sessions-header {
+	padding-top: 20px;
+	color: purple;
+	font-style: italic;
+}
+
+.unitime-RoomGroupEdit .future-sessions {
+	margin-top: 20px;
+}
+
+.unitime-RoomGroupEdit .future-sessions .future-session {
+	display: inline-block;
+	width: 24%;
+	white-space: nowrap;
+    overflow:hidden !important;
+    text-overflow: ellipsis;	
+}
+
+.unitime-RoomGroupEdit .future-sessions-header {
+	color: purple;
+	font-style: italic;
+	padding-top: 20px;
+}

@@ -73,8 +73,10 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		
 		RoomPropertiesInterface response = new RoomPropertiesInterface();
 		
-		if (context.getUser() != null)
-			response.setAcademicSession(new AcademicSessionInterface(context.getUser().getCurrentAcademicSessionId(), context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel()));
+		if (context.getUser() != null) {
+			Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
+			response.setAcademicSession(new AcademicSessionInterface(context.getUser().getCurrentAcademicSessionId(), session.getAcademicTerm() + " " + session.getAcademicYear()));
+		}
 		
 		response.setCanEditDepartments(context.hasPermission(Right.EditRoomDepartments));
 		response.setCanExportCsv(context.hasPermission(Right.RoomsExportCsv));
@@ -210,6 +212,10 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 				EventContext cx = new EventContext(context, context.getUser(), session.getUniqueId());
 				s.setCanAddRoom(cx.hasPermission(Right.AddRoom));
 				s.setCanAddNonUniversity(cx.hasPermission(Right.AddNonUnivLocation));
+				s.setCanAddGlobalRoomGroup(cx.hasPermission(Right.GlobalRoomGroupAdd));
+				s.setCanAddDepartmentalRoomGroup(cx.hasPermission(Right.DepartmentRoomGroupAdd));
+				s.setCanAddGlobalRoomFeature(cx.hasPermission(Right.GlobalRoomFeatureAdd));
+				s.setCanAddDepartmentalRoomFeature(cx.hasPermission(Right.DepartmentRoomFeatureAdd));
 				if (s.isCanAddRoom() || s.isCanAddNonUniversity())
 					response.addFutureSession(s);
 			}

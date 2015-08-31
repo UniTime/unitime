@@ -442,7 +442,7 @@ public class RoomGroupsPage extends Composite {
 			@Override
 			protected void onHide(boolean refresh) {
 				iRootPanel.setWidget(iGroupsPanel);
-				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRooms());
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRoomGroups());
 				if (refresh && (iGroupsPanel.getRowFormatter().isVisible(iGlobalGroupsRow) || iGroupsPanel.getRowFormatter().isVisible(iDepartmentalGroupsRow))) search();
 			}
 		};

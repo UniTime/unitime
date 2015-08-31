@@ -442,7 +442,7 @@ public class RoomFeaturesPage extends Composite {
 			@Override
 			protected void onHide(boolean refresh) {
 				iRootPanel.setWidget(iFeaturesPanel);
-				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRooms());
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRoomFeatures());
 				if (refresh && (iFeaturesPanel.getRowFormatter().isVisible(iGlobalFeaturesRow) || iFeaturesPanel.getRowFormatter().isVisible(iDepartmentalFeaturesRow))) search();
 			}
 		};

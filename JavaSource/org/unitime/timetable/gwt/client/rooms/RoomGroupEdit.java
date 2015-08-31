@@ -19,11 +19,16 @@
 */
 package org.unitime.timetable.gwt.client.rooms;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
@@ -33,7 +38,9 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
+import org.unitime.timetable.gwt.shared.RoomInterface.AcademicSessionInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.FutureOperation;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
@@ -76,12 +83,14 @@ public class RoomGroupEdit extends Composite {
 	private UniTimeWidget<TextArea> iDescription;
 
 	private RoomsTable iRooms = null;
+	
+	private Map<Long, CheckBox> iFutureSessionsToggles = new HashMap<Long, CheckBox>();
 
 	public RoomGroupEdit(RoomPropertiesInterface properties) {
 		iProperties = properties;
 
 		iForm = new SimpleForm();
-		iForm.addStyleName("unitime-RoomDepartmentsEdit");
+		iForm.addStyleName("unitime-RoomGroupEdit");
 		
 		iHeader = new UniTimeHeaderPanel();
 		ClickHandler createOrUpdateGroup = new ClickHandler() {
@@ -90,6 +99,13 @@ public class RoomGroupEdit extends Composite {
 				if (validate()) {
 					UpdateRoomGroupRequest request = new UpdateRoomGroupRequest();
 					request.setGroup(iGroup);
+					String future = generateAlsoUpdateMessage();
+					if (future != null) {
+						if (Window.confirm(iGroup.getId() == null ? MESSAGES.confirmCreateRoomGroupInFutureSessions(future) : MESSAGES.confirmUpdateRoomGroupInFutureSessions(future)))
+							fillFutureFlags(request);
+						else
+							return;
+					}
 					for (int i = 1; i < iRooms.getRowCount(); i++) {
 						RoomDetailInterface room = iRooms.getData(i);
 						boolean wasSelected = (iGroup.getRoom(room.getUniqueId()) != null);
@@ -128,26 +144,30 @@ public class RoomGroupEdit extends Composite {
 		iHeader.addButton("delete", MESSAGES.buttonDeleteRoomGroup(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (Window.confirm(MESSAGES.confirmDeleteRoomGroup())) {
-					UpdateRoomGroupRequest request = new UpdateRoomGroupRequest();
-					request.setDeleteGroupId(iGroup.getId());
-					LoadingWidget.getInstance().show(MESSAGES.waitDeletingRoomGroup());
-					RPC.execute(request, new AsyncCallback<GroupInterface>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							LoadingWidget.getInstance().hide();
-							String message = MESSAGES.errorFailedToDeleteRoomGroup(caught.getMessage());
-							iHeader.setErrorMessage(message);
-							UniTimeNotifications.error(message);
-						}
-
-						@Override
-						public void onSuccess(GroupInterface result) {
-							LoadingWidget.getInstance().hide();
-							hide(true);
-						}
-					});
+				String future = generateAlsoUpdateMessage();
+				UpdateRoomGroupRequest request = new UpdateRoomGroupRequest();
+				if (Window.confirm(future == null ? MESSAGES.confirmDeleteRoomGroup() : MESSAGES.confirmDeleteRoomGroupInFutureSessions(future))) {
+					if (future != null) fillFutureFlags(request);
+				} else {
+					return;
 				}
+				request.setDeleteGroupId(iGroup.getId());
+				LoadingWidget.getInstance().show(MESSAGES.waitDeletingRoomGroup());
+				RPC.execute(request, new AsyncCallback<GroupInterface>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						String message = MESSAGES.errorFailedToDeleteRoomGroup(caught.getMessage());
+						iHeader.setErrorMessage(message);
+						UniTimeNotifications.error(message);
+					}
+
+					@Override
+					public void onSuccess(GroupInterface result) {
+						LoadingWidget.getInstance().hide();
+						hide(true);
+					}
+				});
 			}
 		});
 		iHeader.addButton("back", MESSAGES.buttonBack(), 100, new ClickHandler() {
@@ -219,6 +239,26 @@ public class RoomGroupEdit extends Composite {
 			}
 		});
 		
+		if (iProperties.hasFutureSessions()) {
+			P sessions = new P("future-sessions");
+			CheckBox current = new CheckBox(iProperties.getAcademicSessionName());
+			current.setValue(true); current.setEnabled(false);
+			current.addStyleName("future-session");
+			sessions.add(current);
+			for (AcademicSessionInterface session: iProperties.getFutureSessions()) {
+				if (session.isCanAddGlobalRoomGroup() || session.isCanAddDepartmentalRoomGroup()) {
+					CheckBox ch = new CheckBox(session.getLabel());
+					iFutureSessionsToggles.put(session.getId(), ch);
+					ch.addStyleName("future-session");
+					sessions.add(ch);
+				}
+			}
+			if (!iFutureSessionsToggles.isEmpty()) {
+				int row = iForm.addRow(MESSAGES.propApplyToFutureSessions(), sessions);
+				iForm.getCellFormatter().addStyleName(row, 0, "future-sessions-header");
+			}
+		}
+		
 		iFooter = iHeader.clonePanel();
 		iForm.addBottomRow(iFooter);
 		
@@ -262,7 +302,7 @@ public class RoomGroupEdit extends Composite {
 			iAbbreviation.getWidget().setText("");
 			iDescription.getWidget().setText("");
 			iDepartment.getWidget().clear();
-			iGlobal.setValue(true, true); iDefault.setValue(false);
+			iGlobal.setValue(true); iDefault.setValue(false);
 			iGlobal.setEnabled(true);
 			if (iProperties.isCanAddDepartmentalRoomGroup()) {
 				iDepartment.getWidget().addItem(MESSAGES.itemSelect(), "-1");
@@ -276,9 +316,9 @@ public class RoomGroupEdit extends Composite {
 				}
 			}
 			if (!iProperties.isCanAddGlobalRoomGroup()) {
-				iGlobal.setValue(false, true); iGlobal.setEnabled(false);
+				iGlobal.setValue(false); iGlobal.setEnabled(false);
 			} else if (!iProperties.isCanAddDepartmentalRoomGroup()) {
-				iGlobal.setValue(true, true); iGlobal.setEnabled(false);
+				iGlobal.setValue(true); iGlobal.setEnabled(false);
 			}
 		} else {
 			iGroup = new GroupInterface(group);
@@ -288,7 +328,7 @@ public class RoomGroupEdit extends Composite {
 			iName.getWidget().setText(group.getLabel() == null ? "" : group.getLabel());
 			iAbbreviation.getWidget().setText(group.getAbbreviation() == null ? "" : group.getAbbreviation());
 			iDescription.getWidget().setText(group.getDescription() == null ? "" : group.getDescription());
-			iGlobal.setValue(!group.isDepartmental(), true);
+			iGlobal.setValue(!group.isDepartmental());
 			iGlobal.setEnabled(false);
 			if (!group.isDepartmental())
 				iDefault.setValue(group.isDefault());
@@ -298,7 +338,7 @@ public class RoomGroupEdit extends Composite {
 					iDepartment.getWidget().addItem(department.getExtAbbreviationOrCode() + " - " + department.getExtLabelWhenExist(), department.getId().toString());
 				int index = iProperties.getDepartments().indexOf(group.getDepartment());
 				if (index >= 0) {
-					iDepartment.getWidget().setSelectedIndex(1 + index);
+					iDepartment.getWidget().setSelectedIndex(index);
 				} else {
 					iDepartment.getWidget().addItem(group.getDepartment().getExtAbbreviationOrCode() + " - " + group.getDepartment().getExtLabelWhenExist(), group.getDepartment().getId().toString());
 					iDepartment.getWidget().setSelectedIndex(iDepartment.getWidget().getItemCount() - 1);
@@ -306,6 +346,17 @@ public class RoomGroupEdit extends Composite {
 			}
 		}
 		iDefault.setEnabled(iProperties.isCanChangeDefaultGroup());
+		
+		if (iProperties.hasFutureSessions()) {
+			for (AcademicSessionInterface session: iProperties.getFutureSessions()) {
+				CheckBox ch = iFutureSessionsToggles.get(session.getId());
+				if (ch != null) {
+					ch.setValue(RoomCookie.getInstance().getFutureFlags(session.getId()) != null);
+				}
+			}
+		}
+		iForm.getRowFormatter().setVisible(iDefaultRow, iGlobal.getValue());
+		iForm.getRowFormatter().setVisible(iDepartmentRow, !iGlobal.getValue());
 	}
 	
 	public void setRooms(List<Entity> rooms) {
@@ -348,17 +399,48 @@ public class RoomGroupEdit extends Composite {
 			iDescription.setErrorHint(MESSAGES.errorDescriptionTooLong());
 			result = false;
 		}
-		if (iGroup.getId() == null) {
-			if (!iGlobal.getValue()) {
-				iGroup.setDepartment(iProperties.getDepartment(Long.valueOf(iDepartment.getWidget().getValue(iDepartment.getWidget().getSelectedIndex()))));
-				if (iGroup.getDepartment() == null) {
-					iDepartment.setErrorHint(MESSAGES.errorNoDepartmentSelected());
-					result = false;
-				}
-			} else {
-				iGroup.setDepartment(null);
+		if (!iGlobal.getValue()) {
+			iGroup.setDepartment(iProperties.getDepartment(Long.valueOf(iDepartment.getWidget().getValue(iDepartment.getWidget().getSelectedIndex()))));
+			if (iGroup.getDepartment() == null) {
+				iDepartment.setErrorHint(MESSAGES.errorNoDepartmentSelected());
+				result = false;
 			}
+		} else {
+			iGroup.setDepartment(null);
 		}
 		return result;
 	}
+	
+	protected String generateAlsoUpdateMessage() {
+		if (!iProperties.hasFutureSessions()) return null;
+		List<String> ret = new ArrayList<String>();
+		for (AcademicSessionInterface session: iProperties.getFutureSessions()) {
+			CheckBox ch = iFutureSessionsToggles.get(session.getId());
+			if (ch != null && ch.getValue()) {
+				ret.add(session.getLabel());
+			}
+		}
+		if (!ret.isEmpty())
+			return ToolBox.toString(ret);
+		return null;
+	}
+	
+	protected void fillFutureFlags(UpdateRoomGroupRequest request) {
+		if (iProperties.hasFutureSessions()) {
+			for (AcademicSessionInterface session: iProperties.getFutureSessions()) {
+				CheckBox ch = iFutureSessionsToggles.get(session.getId());
+				if (ch != null) {
+					Integer flags = RoomCookie.getInstance().getFutureFlags(session.getId());
+					if (ch.getValue()) {
+						request.addFutureSession(session.getId());
+						if (flags == null)
+							RoomCookie.getInstance().setFutureFlags(session.getId(), FutureOperation.getFlagDefaultsEnabled());
+					} else {
+						if (flags != null)
+							RoomCookie.getInstance().setFutureFlags(session.getId(), null);
+					}
+				}
+			}
+		}
+	}	
 }

@@ -2074,6 +2074,13 @@ public class RoomInterface implements IsSerializable {
 				ret = op.set(ret);
 			return ret;
 		}
+		public static int getFlagDefaultsEnabled() {
+			int ret = 0;
+			for (FutureOperation op: values())
+				if (op.getDefaultSelection())
+					ret = op.set(ret);
+			return ret;
+		}
 	}
 	
 	public static class AttachmentTypeInterface implements IsSerializable {
@@ -2181,6 +2188,7 @@ public class RoomInterface implements IsSerializable {
 		private GroupInterface iGroup = null;
 		private List<Long> iAddLocations = new ArrayList<Long>();
 		private List<Long> iDropLocations = new ArrayList<Long>();
+		private List<Long> iFutureSessions = null;
 		
 		public UpdateRoomGroupRequest() {}
 		
@@ -2200,6 +2208,17 @@ public class RoomInterface implements IsSerializable {
 		public List<Long> getDropLocations() { return iDropLocations; }
 		public boolean hasDropLocations() { return !iDropLocations.isEmpty(); }
 		
+		public void addFutureSession(Long sessionId) {
+			if (iFutureSessions == null) iFutureSessions = new ArrayList<Long>();
+			iFutureSessions.add(sessionId);
+		}
+		public List<Long> getFutureSessions() {
+			return iFutureSessions;
+		}
+		public boolean hasFutureSessions() {
+			return iFutureSessions != null && !iFutureSessions.isEmpty();
+		}
+		
 		@Override
 		public String toString() {
 			if (hasGroup())
@@ -2216,6 +2235,7 @@ public class RoomInterface implements IsSerializable {
 		private FeatureInterface iFeature = null;
 		private List<Long> iAddLocations = new ArrayList<Long>();
 		private List<Long> iDropLocations = new ArrayList<Long>();
+		private List<Long> iFutureSessions = null;
 		
 		public UpdateRoomFeatureRequest() {}
 		
@@ -2234,6 +2254,17 @@ public class RoomInterface implements IsSerializable {
 		public void dropLocation(Long locationId) { iDropLocations.add(locationId); }
 		public List<Long> getDropLocations() { return iDropLocations; }
 		public boolean hasDropLocations() { return !iDropLocations.isEmpty(); }
+		
+		public void addFutureSession(Long sessionId) {
+			if (iFutureSessions == null) iFutureSessions = new ArrayList<Long>();
+			iFutureSessions.add(sessionId);
+		}
+		public List<Long> getFutureSessions() {
+			return iFutureSessions;
+		}
+		public boolean hasFutureSessions() {
+			return iFutureSessions != null && !iFutureSessions.isEmpty();
+		}
 		
 		@Override
 		public String toString() {

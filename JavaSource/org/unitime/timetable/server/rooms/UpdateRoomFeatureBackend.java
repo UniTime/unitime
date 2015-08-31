@@ -19,16 +19,19 @@
 */
 package org.unitime.timetable.server.rooms;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
 import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.UpdateRoomFeatureRequest;
 import org.unitime.timetable.model.ChangeLog;
@@ -61,123 +64,199 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
             tx = hibSession.beginTransaction();
 
             if (request.hasFeature()) {
-            	RoomFeature rf = null;
             	
-            	if (request.getFeature().getId() == null) {
-            		Department d = request.getFeature().isDepartmental() ? DepartmentDAO.getInstance().get(request.getFeature().getDepartment().getId(), hibSession) : null;
-            		if (d == null)
-            			context.checkPermission(Right.GlobalRoomFeatureAdd);
-            		else
-            			context.checkPermission(d, Right.DepartmentRoomFeatureAdd);
-            		
-            		if (d == null) {
-            			rf = new GlobalRoomFeature();
-            			((GlobalRoomFeature)rf).setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()));
-            		} else {
-            			rf = new DepartmentRoomFeature();
-            			((DepartmentRoomFeature)rf).setDepartment(d);
-            		}
-        			rf.setRooms(new HashSet<Location>());
-            	} else {
-            		rf = RoomFeatureDAO.getInstance().get(request.getFeature().getId(), hibSession);
-            		if (rf == null) throw new GwtRpcException(MESSAGES.errorRoomFeatureDoesNotExist(request.getFeature().getId()));
-            		
-            		if (rf instanceof GlobalRoomFeature)
-            			context.checkPermission(rf, Right.GlobalRoomFeatureEdit);
-            		else
-            			context.checkPermission(rf, Right.DepartmenalRoomFeatureEdit);
-            	}
-            	
-    			for (Iterator i = RoomFeature.getAllGlobalRoomFeatures(context.getUser().getCurrentAcademicSessionId()).iterator();i.hasNext();) {
-    				RoomFeature x = (RoomFeature)i.next();
-    				if (x.getLabel().equalsIgnoreCase(request.getFeature().getLabel()) && !x.getUniqueId().equals(request.getFeature().getId()))
-    					throw new GwtRpcException(MESSAGES.errorRoomFeatureAlreadyExists(request.getFeature().getLabel()));
-    			}
-    			
-    			if (rf instanceof DepartmentRoomFeature) {
-    				for (Iterator i=RoomFeature.getAllDepartmentRoomFeatures(((DepartmentRoomFeature)rf).getDepartment()).iterator();i.hasNext();) {
-    					RoomFeature x = (RoomFeature)i.next();
-    					if (x.getLabel().equalsIgnoreCase(request.getFeature().getLabel()) && !x.getUniqueId().equals(request.getFeature().getId()))
-    						throw new GwtRpcException(MESSAGES.errorRoomFeatureAlreadyExists(request.getFeature().getLabel()));
-    				}
-    			}
-            	
-            	rf.setAbbv(request.getFeature().getAbbreviation());
-            	rf.setLabel(request.getFeature().getLabel());
-            	rf.setFeatureType(request.getFeature().getType() == null ? null : RoomFeatureTypeDAO.getInstance().get(request.getFeature().getType().getId(), hibSession));
-
-            	hibSession.saveOrUpdate(rf);
-            	
-            	if (request.hasAddLocations())
-    				for (Location location: (List<Location>)hibSession.createQuery("from Location where uniqueId in :ids").setParameterList("ids", request.getAddLocations()).list()) {
-    					rf.getRooms().add(location);
-    					location.getFeatures().add(rf);
-    					hibSession.saveOrUpdate(location);
-    				}
-
-            	if (request.hasDropLocations())
-    				for (Location location: (List<Location>)hibSession.createQuery("from Location where uniqueId in :ids").setParameterList("ids", request.getDropLocations()).list()) {
-    					rf.getRooms().remove(location);
-    					location.getFeatures().remove(rf);
-    					hibSession.saveOrUpdate(location);
-    				}
-            	
-            	hibSession.saveOrUpdate(rf);
-            	
-	            ChangeLog.addChange(
-	                    hibSession, 
-	                    context, 
-	                    rf, 
-	                    ChangeLog.Source.ROOM_FEATURE_EDIT, 
-	                    (request.getFeature().getId() == null ? ChangeLog.Operation.CREATE : ChangeLog.Operation.UPDATE),
-	                    null, 
-	                    rf instanceof DepartmentRoomFeature ? ((DepartmentRoomFeature)rf).getDepartment() : null);
+            	if (request.hasFutureSessions())
+            		for (Long id: request.getFutureSessions())
+            			createOrUpdateFeature(request.getFeature(), request.getAddLocations(), request.getDropLocations(), id, hibSession, new EventContext(context, context.getUser(), id), true);
+            	createOrUpdateFeature(request.getFeature(), request.getAddLocations(), request.getDropLocations(), context.getUser().getCurrentAcademicSessionId(), hibSession, context, false);
 	            
-	            tx.commit();
-	            return null;
             } else if (request.getDeleteFeatureId() != null) {
-            	RoomFeature rf = RoomFeatureDAO.getInstance().get(request.getDeleteFeatureId(), hibSession);
-        		if (rf == null) throw new GwtRpcException(MESSAGES.errorRoomFeatureDoesNotExist(request.getDeleteFeatureId()));
-        		
-        		if (rf instanceof GlobalRoomFeature)
-        			context.checkPermission(rf, Right.GlobalRoomFeatureDelete);
-        		else
-        			context.checkPermission(rf, Right.DepartmenalRoomFeatureDelete);
-        		
-                ChangeLog.addChange(
-                        hibSession, 
-                        context, 
-                        rf, 
-                        ChangeLog.Source.ROOM_FEATURE_EDIT, 
-                        ChangeLog.Operation.DELETE, 
-                        null, 
-                        rf instanceof DepartmentRoomFeature ? ((DepartmentRoomFeature)rf).getDepartment() : null);
-                
-                for (Location location: rf.getRooms()) {
-                	location.getFeatures().remove(rf);
-                	hibSession.saveOrUpdate(location);
-                }
-                
-                for (RoomFeaturePref p: (List<RoomFeaturePref>)hibSession.createQuery("from RoomFeaturePref p where p.roomFeature.uniqueId = :id")
-    						.setLong("id", request.getDeleteFeatureId()).list()) {
-    					p.getOwner().getPreferences().remove(p);
-    					hibSession.delete(p);
-    					hibSession.saveOrUpdate(p.getOwner());
-    				}
-                
-                hibSession.delete(rf);
-                tx.commit();
-    			
-            	return null;
+            	
+            	if (request.hasFutureSessions())
+            		for (Long id: request.getFutureSessions())
+            			dropFeature(request.getDeleteFeatureId(), id, hibSession, new EventContext(context, context.getUser(), id), true);
+            	dropFeature(request.getDeleteFeatureId(), context.getUser().getCurrentAcademicSessionId(), hibSession, context, false);
+            	
             } else {
             	throw new GwtRpcException("Bad request.");
             }
+
+            tx.commit();
+            return null;
         } catch (Exception e) {
         	e.printStackTrace();
             if (tx != null) tx.rollback();
             if (e instanceof GwtRpcException) throw (GwtRpcException) e;
             throw new GwtRpcException(e.getMessage());
         }
+	}
+	
+	protected Department lookuDepartment(org.hibernate.Session hibSession, DepartmentInterface original, boolean future, Long sessionId) {
+		if (original == null) return null;
+		if (future) {
+			return Department.findByDeptCode(original.getDeptCode(), sessionId, hibSession);
+		} else {
+			return DepartmentDAO.getInstance().get(original.getId(), hibSession);
+		}
+	}
+	
+	protected RoomFeature lookupFeature(org.hibernate.Session hibSession, FeatureInterface original, boolean future, Long sessionId) {
+		if (original == null) return null;
+		if (future) {
+			if (original.isDepartmental())
+				return (DepartmentRoomFeature)hibSession.createQuery(
+					"select f from DepartmentRoomFeature f, DepartmentRoomFeature o where o.uniqueId = :originalId and f.department.session.uniqueId = :sessionId " +
+					"and f.abbv = o.abbv and f.department.deptCode = o.department.deptCode")
+					.setLong("sessionId", sessionId).setLong("originalId", original.getId()).setCacheable(true).setMaxResults(1).uniqueResult();
+			else
+				return (GlobalRoomFeature)hibSession.createQuery(
+					"select f from GlobalRoomFeature f, GlobalRoomFeature o where o.uniqueId = :originalId and f.session.uniqueId = :sessionId " +
+					"and f.abbv = o.abbv")
+					.setLong("sessionId", sessionId).setLong("originalId", original.getId()).setCacheable(true).setMaxResults(1).uniqueResult();
+		} else {
+			return RoomFeatureDAO.getInstance().get(original.getId(), hibSession);
+		}
+	}
+	
+	protected RoomFeature lookupFeature(org.hibernate.Session hibSession, Long featureId, boolean future, Long sessionId) {
+		if (featureId == null) return null;
+		if (future) {
+			RoomFeature feature = (DepartmentRoomFeature)hibSession.createQuery(
+					"select f from DepartmentRoomFeature f, DepartmentRoomFeature o where o.uniqueId = :originalId and f.department.session.uniqueId = :sessionId " +
+					"and f.abbv = o.abbv and f.department.deptCode = o.department.deptCode")
+					.setLong("sessionId", sessionId).setLong("originalId", featureId).setCacheable(true).setMaxResults(1).uniqueResult();
+			if (feature == null)
+				feature = (GlobalRoomFeature)hibSession.createQuery(
+					"select f from GlobalRoomFeature f, GlobalRoomFeature o where o.uniqueId = :originalId and f.session.uniqueId = :sessionId " +
+					"and f.abbv = o.abbv")
+					.setLong("sessionId", sessionId).setLong("originalId", featureId).setCacheable(true).setMaxResults(1).uniqueResult();
+			return feature;
+		} else {
+			return RoomFeatureDAO.getInstance().get(featureId, hibSession);
+		}
+	}
+	
+	protected List<Location> lookupLocations(org.hibernate.Session hibSession, List<Long> ids, boolean future, Long sessionId) {
+		if (ids == null || ids.isEmpty()) return new ArrayList<Location>();
+		if (future) {
+			return (List<Location>)hibSession.createQuery(
+					"select l from Location l, Location o where o.uniqueId in :ids and l.session.uniqueId = :sessionId and l.permanentId = o.permanentId")
+					.setParameterList("ids", ids).setLong("sessionId", sessionId).list();
+		} else {
+			return (List<Location>)hibSession.createQuery("from Location where uniqueId in :ids").setParameterList("ids", ids).list();
+		}
+	}
+	
+	protected RoomFeature createOrUpdateFeature(FeatureInterface feature, List<Long> add, List<Long> drop, Long sessionId, org.hibernate.Session hibSession, SessionContext context, boolean future) {
+		Department d = feature.isDepartmental() ? lookuDepartment(hibSession, feature.getDepartment(), future, sessionId) : null;
+		if (feature.isDepartmental() && d == null) return null;
+
+		RoomFeature rf = (feature.getId() == null ? null : lookupFeature(hibSession, feature, future, sessionId));
+
+		if (rf == null) {
+			if (!future && feature.getId() != null)
+				throw new GwtRpcException(MESSAGES.errorRoomFeatureDoesNotExist(feature.getId()));
+    		if (d == null) {
+    			context.checkPermission(Right.GlobalRoomFeatureAdd);
+    			rf = new GlobalRoomFeature();
+    			((GlobalRoomFeature)rf).setSession(SessionDAO.getInstance().get(sessionId));
+    		} else {
+    			context.checkPermission(d, Right.DepartmentRoomFeatureAdd);
+    			rf = new DepartmentRoomFeature();
+    			((DepartmentRoomFeature)rf).setDepartment(d);
+    		}
+    		rf.setRooms(new HashSet<Location>());
+		} else {
+			if (rf instanceof GlobalRoomFeature) {
+    			context.checkPermission(rf, Right.GlobalRoomFeatureEdit);
+			} else {
+    			context.checkPermission(rf, Right.DepartmenalRoomFeatureEdit);
+    			((DepartmentRoomFeature)rf).setDepartment(d);
+			}
+		}
+    	
+		for (Iterator i = RoomFeature.getAllGlobalRoomFeatures(sessionId).iterator();i.hasNext();) {
+			RoomFeature x = (RoomFeature)i.next();
+			if ((x.getLabel().equalsIgnoreCase(feature.getLabel()) || x.getAbbv().equalsIgnoreCase(feature.getAbbreviation())) && !x.getUniqueId().equals(rf.getUniqueId()))
+				throw new GwtRpcException(MESSAGES.errorRoomFeatureAlreadyExists(feature.getLabel(), SessionDAO.getInstance().get(sessionId).getLabel()));
+		}
+		
+		if (rf instanceof DepartmentRoomFeature) {
+			for (Iterator i=RoomFeature.getAllDepartmentRoomFeatures(d).iterator();i.hasNext();) {
+				RoomFeature x = (RoomFeature)i.next();
+				if ((x.getLabel().equalsIgnoreCase(feature.getLabel()) || x.getAbbv().equalsIgnoreCase(feature.getAbbreviation())) && !x.getUniqueId().equals(rf.getUniqueId()))
+					throw new GwtRpcException(MESSAGES.errorRoomFeatureAlreadyExists(feature.getLabel(), d.getSession().getLabel()));
+			}
+		}
+    	
+    	rf.setAbbv(feature.getAbbreviation());
+    	rf.setLabel(feature.getLabel());
+    	rf.setFeatureType(feature.getType() == null ? null : RoomFeatureTypeDAO.getInstance().get(feature.getType().getId(), hibSession));
+
+    	hibSession.saveOrUpdate(rf);
+    	
+    	if (add != null && !add.isEmpty())
+			for (Location location: lookupLocations(hibSession, add, future, sessionId)) {
+				rf.getRooms().add(location);
+				location.getFeatures().add(rf);
+				hibSession.saveOrUpdate(location);
+			}
+
+    	if (drop != null && !drop.isEmpty())
+			for (Location location: lookupLocations(hibSession, drop, future, sessionId)) {
+				rf.getRooms().remove(location);
+				location.getFeatures().remove(rf);
+				hibSession.saveOrUpdate(location);
+			}
+    	
+    	hibSession.saveOrUpdate(rf);
+    	
+        ChangeLog.addChange(
+                hibSession, 
+                context, 
+                rf, 
+                ChangeLog.Source.ROOM_FEATURE_EDIT, 
+                (feature.getId() == null ? ChangeLog.Operation.CREATE : ChangeLog.Operation.UPDATE),
+                null, 
+                rf instanceof DepartmentRoomFeature ? ((DepartmentRoomFeature)rf).getDepartment() : null);
+        
+        return rf;
+	}
+	
+	protected boolean dropFeature(Long featureId, Long sessionId, org.hibernate.Session hibSession, SessionContext context, boolean future) {
+		RoomFeature rf = lookupFeature(hibSession, featureId, future, sessionId);
+		if (rf == null) {
+			if (!future) throw new GwtRpcException(MESSAGES.errorRoomFeatureDoesNotExist(featureId));
+			return false;
+		}
+		
+		if (rf instanceof GlobalRoomFeature)
+			context.checkPermission(rf, Right.GlobalRoomFeatureDelete);
+		else
+			context.checkPermission(rf, Right.DepartmenalRoomFeatureDelete);
+		
+        ChangeLog.addChange(
+                hibSession, 
+                context, 
+                rf, 
+                ChangeLog.Source.ROOM_FEATURE_EDIT, 
+                ChangeLog.Operation.DELETE, 
+                null, 
+                rf instanceof DepartmentRoomFeature ? ((DepartmentRoomFeature)rf).getDepartment() : null);
+        
+        for (Location location: rf.getRooms()) {
+        	location.getFeatures().remove(rf);
+        	hibSession.saveOrUpdate(location);
+        }
+        
+        for (RoomFeaturePref p: (List<RoomFeaturePref>)hibSession.createQuery("from RoomFeaturePref p where p.roomFeature.uniqueId = :id").setLong("id", rf.getUniqueId()).list()) {
+				p.getOwner().getPreferences().remove(p);
+				hibSession.delete(p);
+				hibSession.saveOrUpdate(p.getOwner());
+			}
+        
+        hibSession.delete(rf);
+        return true;
 	}
 
 }
