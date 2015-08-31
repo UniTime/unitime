@@ -141,7 +141,8 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					}
 					if (request.getTimeStamp() != null)
 						e.setRequestedDate(request.getTimeStamp());
-					e.setEnrollmentMessage(request.getEnrollmentMessage());
+					if (enrollment == null)
+						e.setEnrollmentMessage(request.getEnrollmentMessage());
 					
 					// fill enrollment information in
 					if (enrollment != null) {
