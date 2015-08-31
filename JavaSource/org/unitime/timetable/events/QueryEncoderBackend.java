@@ -83,7 +83,7 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 			if (text.length() > 2048) return null;
 			MessageDigest md5 = MessageDigest.getInstance("MD5");
 			Date ts = new Date();
-			String hash = new BigInteger(md5.digest(text.getBytes())).toString(36) + Long.toUnsignedString(ts.getTime(), 36);
+			String hash = new BigInteger(md5.digest(text.getBytes())).toString(36) + Long.toString(ts.getTime(), 36);
 			HashedQuery hq = new HashedQuery();
 			hq.setQueryHash(hash);
 			hq.setQueryText(text);
