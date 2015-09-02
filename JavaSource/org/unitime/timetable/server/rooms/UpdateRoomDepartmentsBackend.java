@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.hibernate.Transaction;
+import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -47,6 +48,9 @@ public class UpdateRoomDepartmentsBackend implements GwtRpcImplementation<Update
 
 	@Override
 	public GwtRpcResponseNull execute(UpdateRoomDepartmentsRequest request, SessionContext context) {
+		if (request.hasSessionId())
+			context = new EventContext(context, request.getSessionId());
+
 		Transaction tx = null;
         try {
             org.hibernate.Session hibSession = new RoomDeptDAO().getSession();

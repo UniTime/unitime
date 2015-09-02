@@ -47,6 +47,12 @@ public class RoomFeaturesBackend implements GwtRpcImplementation<SearchRoomFeatu
 
 	@Override
 	public GwtRpcResponseList<FeatureInterface> execute(SearchRoomFeaturesRequest request, SessionContext context) {
+		if (request.hasSessionId())
+			context = new EventContext(context, request.getSessionId());
+
+		if (context.isAuthenticated())
+			request.getFilter().setOption("user", context.getUser().getExternalUserId());
+
 		context.checkPermission(Right.RoomFeatures);
 		GwtRpcResponseList<FeatureInterface> list = new GwtRpcResponseList<FeatureInterface>();
 		
@@ -65,6 +71,8 @@ public class RoomFeaturesBackend implements GwtRpcImplementation<SearchRoomFeatu
 				feature.setType(new FeatureTypeInterface(f.getFeatureType().getUniqueId(), f.getFeatureType().getReference(), f.getFeatureType().getLabel(), f.getFeatureType().isShowInEventManagement()));
 			feature.setCanEdit(context.hasPermission(f, Right.GlobalRoomFeatureEdit));
 			feature.setCanDelete(context.hasPermission(f, Right.GlobalRoomFeatureDelete));
+			feature.setSessionId(f.getSession().getUniqueId());
+			feature.setSessionName(f.getSession().getLabel());
 			
 			for (Location location: f.getRooms()) {
 				Entity e = locations.get(location.getUniqueId());
@@ -85,6 +93,8 @@ public class RoomFeaturesBackend implements GwtRpcImplementation<SearchRoomFeatu
 			feature.setDepartment(RoomDetailsBackend.wrap(f.getDepartment(), null, null));
 			feature.setCanEdit(context.hasPermission(f, Right.DepartmenalRoomFeatureEdit));
 			feature.setCanDelete(context.hasPermission(f, Right.DepartmenalRoomFeatureDelete));
+			feature.setSessionId(f.getDepartment().getSession().getUniqueId());
+			feature.setSessionName(f.getDepartment().getSession().getLabel());
 
 			for (Location location: f.getRooms()) {
 				Entity e = locations.get(location.getUniqueId());

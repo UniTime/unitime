@@ -58,6 +58,9 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
 	
 	@Override
 	public FeatureInterface execute(UpdateRoomFeatureRequest request, SessionContext context) {
+		if (request.hasSessionId())
+			context = new EventContext(context, request.getSessionId());
+
 		Transaction tx = null;
         try {
             org.hibernate.Session hibSession = new RoomDeptDAO().getSession();

@@ -98,12 +98,75 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	private RoomPropertiesInterface iProperties = null;
 	private boolean iSelectable;
 	
-	public RoomsTable(RoomsPageMode mode, RoomPropertiesInterface properties, boolean selectable) {
+	public RoomsTable(RoomsPageMode mode, boolean selectable) {
 		setStyleName("unitime-Rooms");
 		iMode = mode;
-		iProperties = properties;
 		iSelectable = selectable;
+		
+		addOperation(new Operation() {
 
+			@Override
+			public void execute() {
+				final RoomsTable table = new RoomsTable(iMode);
+				table.setProperties(iProperties);
+				table.setDepartment(iDepartment);
+				for (int i = 1; i < getRowCount(); i++)
+					table.addRoom(getData(i));
+				table.getElement().getStyle().setWidth(1040, Unit.PX);
+				
+				// Move header row to thead
+				Element headerRow = table.getRowFormatter().getElement(0);
+				Element tableElement = table.getElement();
+				Element thead = DOM.createTHead();
+				tableElement.insertFirst(thead);
+				headerRow.getParentElement().removeChild(headerRow);
+				thead.appendChild(headerRow);
+				
+				ToolBox.print(
+						new ToolBox.Page() {
+							@Override
+							public String getName() { return MESSAGES.pageRooms(); }
+							@Override
+							public String getUser() { return UniTimePageHeader.getInstance().getMiddle().getText(); }
+							@Override
+							public String getSession() { return UniTimePageHeader.getInstance().getRight().getText(); }
+							@Override
+							public Element getBody() { return table.getElement(); }
+						}
+						);
+			}
+
+			@Override
+			public String getName() {
+				return MESSAGES.buttonPrint();
+			}
+
+			@Override
+			public boolean isApplicable() {
+				return getRowCount() > 1 && !iSelectable;
+			}
+
+			@Override
+			public boolean hasSeparator() {
+				return true;
+			}
+		});
+	}
+	
+	public RoomsTable(RoomsPageMode mode) {
+		this(mode, false);
+	}
+	
+	public RoomsTable(RoomsPageMode mode, RoomPropertiesInterface properties, boolean selectable) {
+		this(mode, selectable);
+		setProperties(properties);
+	}
+	
+	public void setProperties(RoomPropertiesInterface properties) {
+		iProperties = properties;
+		
+		super.clearTable();
+		
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		for (RoomsColumn column: RoomsColumn.values()) {
 			int nrCells = getNbrCells(column);
@@ -196,6 +259,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 
 		addRow(null, header);
 		
+		iShowHideOperations.clear();
 		for (final RoomsColumn column: RoomsColumn.values()) {
 			int nrCells = getNbrCells(column);
 			int cellIdx = getCellIndex(column);
@@ -241,6 +305,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			}
 		}
 		
+		iDepartmentOperations.clear();
 		for (final DeptMode d: DeptMode.values()) {
 			Operation op = new Operation() {
 				@Override
@@ -272,6 +337,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			}
 		}
 		
+		iSortOperations.clear();
 		for (final RoomsColumn column: RoomsColumn.values()) {
 			if (RoomsComparator.isApplicable(column)) {
 				final UniTimeTableHeader h = header.get(getCellIndex(column));
@@ -301,53 +367,8 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			}
 		}
 		
-		addOperation(new Operation() {
-
-			@Override
-			public void execute() {
-				final RoomsTable table = new RoomsTable(iMode, iProperties);
-				table.setDepartment(iDepartment);
-				for (int i = 1; i < getRowCount(); i++)
-					table.addRoom(getData(i));
-				table.getElement().getStyle().setWidth(1040, Unit.PX);
-				
-				// Move header row to thead
-				Element headerRow = table.getRowFormatter().getElement(0);
-				Element tableElement = table.getElement();
-				Element thead = DOM.createTHead();
-				tableElement.insertFirst(thead);
-				headerRow.getParentElement().removeChild(headerRow);
-				thead.appendChild(headerRow);
-				
-				ToolBox.print(
-						new ToolBox.Page() {
-							@Override
-							public String getName() { return MESSAGES.pageRooms(); }
-							@Override
-							public String getUser() { return UniTimePageHeader.getInstance().getMiddle().getText(); }
-							@Override
-							public String getSession() { return UniTimePageHeader.getInstance().getRight().getText(); }
-							@Override
-							public Element getBody() { return table.getElement(); }
-						}
-						);
-			}
-
-			@Override
-			public String getName() {
-				return MESSAGES.buttonPrint();
-			}
-
-			@Override
-			public boolean isApplicable() {
-				return getRowCount() > 1 && !iSelectable;
-			}
-
-			@Override
-			public boolean hasSeparator() {
-				return true;
-			}
-		});
+		for (Operation op: getOtherOperations())
+			header.get(0).addOperation(op);
 		
 		
 		for (int i = 0; i < getCellCount(0); i++)
@@ -367,10 +388,6 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				}
 			});
 		}
-	}
-	
-	public RoomsTable(RoomsPageMode mode, RoomPropertiesInterface properties) {
-		this(mode, properties, false);
 	}
 	
 	public String getColumnName(RoomsColumn column, int idx) {
@@ -554,7 +571,6 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	
 	protected void addOperation(Operation op) {
 		iOtherOperations.add(op);
-		getHeader(MESSAGES.colName()).addOperation(op);
 	}
 	
 	public void sort() {

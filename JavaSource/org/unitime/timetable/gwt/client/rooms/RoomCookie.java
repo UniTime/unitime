@@ -51,7 +51,7 @@ public class RoomCookie {
 		iHash = new String[RoomsPageMode.values().length];
 		for (int i = 0; i < iFlags.length; i++) {
 			iFlags[i] = 0;
-			iHash[i] = RoomsPageMode.values()[i].getQuery();
+			iHash[i] = "";
 		}
 		try {
 			String cookie = Cookies.getCookie("UniTime:Room");

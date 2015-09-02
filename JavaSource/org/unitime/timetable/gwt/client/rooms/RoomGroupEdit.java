@@ -58,6 +58,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
@@ -84,11 +85,12 @@ public class RoomGroupEdit extends Composite {
 
 	private RoomsTable iRooms = null;
 	
+	private P iFutureSessions;
 	private Map<Long, CheckBox> iFutureSessionsToggles = new HashMap<Long, CheckBox>();
+	private int iFutureSessionsRow = -1;
+	private Label iSessionLabel = null;
 
-	public RoomGroupEdit(RoomPropertiesInterface properties) {
-		iProperties = properties;
-
+	public RoomGroupEdit(RoomsPageMode mode) {
 		iForm = new SimpleForm();
 		iForm.addStyleName("unitime-RoomGroupEdit");
 		
@@ -99,6 +101,7 @@ public class RoomGroupEdit extends Composite {
 				if (validate()) {
 					UpdateRoomGroupRequest request = new UpdateRoomGroupRequest();
 					request.setGroup(iGroup);
+					request.setSessionId(iGroup.getSessionId());
 					String future = generateAlsoUpdateMessage();
 					if (future != null) {
 						if (Window.confirm(iGroup.getId() == null ? MESSAGES.confirmCreateRoomGroupInFutureSessions(future) : MESSAGES.confirmUpdateRoomGroupInFutureSessions(future)))
@@ -108,7 +111,7 @@ public class RoomGroupEdit extends Composite {
 					}
 					for (int i = 1; i < iRooms.getRowCount(); i++) {
 						RoomDetailInterface room = iRooms.getData(i);
-						boolean wasSelected = (iGroup.getRoom(room.getUniqueId()) != null);
+						boolean wasSelected = room.hasGroup(iGroup.getId());
 						boolean selected = iRooms.isRoomSelected(i);
 						if (selected != wasSelected) {
 							if (selected)
@@ -152,6 +155,7 @@ public class RoomGroupEdit extends Composite {
 					return;
 				}
 				request.setDeleteGroupId(iGroup.getId());
+				request.setSessionId(iGroup.getSessionId());
 				LoadingWidget.getInstance().show(MESSAGES.waitDeletingRoomGroup());
 				RPC.execute(request, new AsyncCallback<GroupInterface>() {
 					@Override
@@ -178,6 +182,11 @@ public class RoomGroupEdit extends Composite {
 		});
 
 		iForm.addHeaderRow(iHeader);
+		
+		if (mode.hasSessionSelection()) {
+			iSessionLabel = new Label();
+			iForm.addRow(MESSAGES.propAcademicSession(), iSessionLabel);
+		}
 		
 		iName = new UniTimeWidget<TextBox>(new TextBox());
 		iName.getWidget().setStyleName("unitime-TextBox");
@@ -230,7 +239,7 @@ public class RoomGroupEdit extends Composite {
 		
 		iForm.addHeaderRow(MESSAGES.headerRooms());
 		
-		iRooms = new RoomsTable(RoomsPageMode.COURSES, iProperties, true);
+		iRooms = new RoomsTable(mode, true);
 		iForm.addRow(iRooms);
 		iRooms.addMouseClickListener(new MouseClickListener<RoomDetailInterface>() {
 			@Override
@@ -239,30 +248,37 @@ public class RoomGroupEdit extends Composite {
 			}
 		});
 		
-		if (iProperties.hasFutureSessions()) {
-			P sessions = new P("future-sessions");
-			CheckBox current = new CheckBox(iProperties.getAcademicSessionName());
-			current.setValue(true); current.setEnabled(false);
-			current.addStyleName("future-session");
-			sessions.add(current);
-			for (AcademicSessionInterface session: iProperties.getFutureSessions()) {
-				if (session.isCanAddGlobalRoomGroup() || session.isCanAddDepartmentalRoomGroup()) {
-					CheckBox ch = new CheckBox(session.getLabel());
-					iFutureSessionsToggles.put(session.getId(), ch);
-					ch.addStyleName("future-session");
-					sessions.add(ch);
-				}
-			}
-			if (!iFutureSessionsToggles.isEmpty()) {
-				int row = iForm.addRow(MESSAGES.propApplyToFutureSessions(), sessions);
-				iForm.getCellFormatter().addStyleName(row, 0, "future-sessions-header");
-			}
-		}
+		iFutureSessions = new P("future-sessions");
+		iFutureSessionsRow = iForm.addRow(MESSAGES.propApplyToFutureSessions(), iFutureSessions);
+		iForm.getCellFormatter().addStyleName(iFutureSessionsRow, 0, "future-sessions-header");
+		iForm.getRowFormatter().setVisible(iFutureSessionsRow, false);
 		
 		iFooter = iHeader.clonePanel();
 		iForm.addBottomRow(iFooter);
 		
 		initWidget(iForm);
+	}
+	
+	public void setProperties(RoomPropertiesInterface properties) {
+		iProperties = properties;
+		iRooms.setProperties(properties);
+		
+		iFutureSessions.clear();
+		iForm.getRowFormatter().setVisible(iFutureSessionsRow, iProperties.hasFutureSessions());
+		if (iProperties.hasFutureSessions()) {
+			CheckBox current = new CheckBox(iProperties.getAcademicSessionName());
+			current.setValue(true); current.setEnabled(false);
+			current.addStyleName("future-session");
+			iFutureSessions.add(current);
+			for (AcademicSessionInterface session: iProperties.getFutureSessions()) {
+				if (session.isCanAddGlobalRoomGroup() || session.isCanAddDepartmentalRoomGroup()) {
+					CheckBox ch = new CheckBox(session.getLabel());
+					iFutureSessionsToggles.put(session.getId(), ch);
+					ch.addStyleName("future-session");
+					iFutureSessions.add(ch);
+				}
+			}
+		}
 	}
 	
 	private void hide(boolean refresh) {
@@ -295,6 +311,9 @@ public class RoomGroupEdit extends Composite {
 		iDescription.clearHint();
 		if (group == null) {
 			iGroup = new GroupInterface();
+			iGroup.setSessionId(iProperties.getAcademicSessionId());
+			iGroup.setSessionName(iProperties.getAcademicSessionName());
+			if (iSessionLabel != null) iSessionLabel.setText(iProperties.getAcademicSessionName());
 			iHeader.setEnabled("create", true);
 			iHeader.setEnabled("update", false);
 			iHeader.setEnabled("delete", false);
@@ -322,6 +341,7 @@ public class RoomGroupEdit extends Composite {
 			}
 		} else {
 			iGroup = new GroupInterface(group);
+			if (iSessionLabel != null) iSessionLabel.setText(group.getSessionName());
 			iHeader.setEnabled("create", false);
 			iHeader.setEnabled("update", group.canEdit());
 			iHeader.setEnabled("delete", group.canDelete());
@@ -371,7 +391,7 @@ public class RoomGroupEdit extends Composite {
 		for (Entity e: rooms) {
 			RoomDetailInterface room = (RoomDetailInterface)e;
 			int row = iRooms.addRoom(room);
-			boolean selected = (iGroup.getRoom(room.getUniqueId()) != null);
+			boolean selected = room.hasGroup(iGroup.getId());
 			iRooms.selectRoom(row, selected);
 			iRooms.setSelected(row, selected);
 			iRooms.getRoomSelection(row).addValueChangeHandler(clearErrorMessage);
@@ -411,6 +431,10 @@ public class RoomGroupEdit extends Composite {
 		return result;
 	}
 	
+	public GroupInterface getGroup() {
+		return iGroup;
+	}
+	
 	protected String generateAlsoUpdateMessage() {
 		if (!iProperties.hasFutureSessions()) return null;
 		List<String> ret = new ArrayList<String>();
@@ -442,5 +466,5 @@ public class RoomGroupEdit extends Composite {
 				}
 			}
 		}
-	}	
+	}
 }

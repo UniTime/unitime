@@ -65,9 +65,7 @@ public class RoomDepartmentsEdit extends Composite {
 	
 	private RoomsTable iRooms = null;
 	
-	public RoomDepartmentsEdit(RoomPropertiesInterface properties) {
-		iProperties = properties;
-
+	public RoomDepartmentsEdit() {
 		iForm = new SimpleForm();
 		iForm.addStyleName("unitime-RoomDepartmentsEdit");
 		
@@ -76,6 +74,7 @@ public class RoomDepartmentsEdit extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				UpdateRoomDepartmentsRequest request = new UpdateRoomDepartmentsRequest();
+				request.setSessionId(iProperties.getAcademicSessionId());
 				request.setDepartment(iDepartment);
 				request.setExamType(iExamType);
 				for (int i = 1; i < iRooms.getRowCount(); i++) {
@@ -124,7 +123,7 @@ public class RoomDepartmentsEdit extends Composite {
 
 		iForm.addHeaderRow(iHeader);
 		
-		iRooms = new RoomsTable(RoomsPageMode.COURSES, iProperties, true);
+		iRooms = new RoomsTable(RoomsPageMode.COURSES, true);
 		iForm.addRow(iRooms);
 		iRooms.addMouseClickListener(new MouseClickListener<RoomDetailInterface>() {
 			@Override
@@ -137,6 +136,11 @@ public class RoomDepartmentsEdit extends Composite {
 		iForm.addBottomRow(iFooter);
 		
 		initWidget(iForm);
+	}
+	
+	public void setProperties(RoomPropertiesInterface properties) {
+		iProperties = properties;
+		iRooms.setProperties(iProperties);
 	}
 	
 	private void hide(boolean refresh) {
@@ -162,6 +166,7 @@ public class RoomDepartmentsEdit extends Composite {
 	}
 	
 	public boolean setDepartmentOrExamType(String code) {
+		if (iProperties == null) return false;
 		iDepartment = null; iExamType = null;
 		for (ExamTypeInterface type: iProperties.getExamTypes())
 			if (type.getReference().equals(code)) {

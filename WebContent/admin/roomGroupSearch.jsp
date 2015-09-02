@@ -56,7 +56,7 @@
 			<TD align="right" nowrap>			
 				&nbsp;&nbsp;&nbsp;
 				<html:submit property="op" value="Search" onclick="displayLoading();" accesskey="S" styleClass="btn"/>
-				<sec:authorize access="hasPermission(null, 'Department', 'RoomGroupsExportPdf')">
+				<sec:authorize access="hasPermission(null, 'Session', 'RoomGroupsExportPdf')">
 					&nbsp;&nbsp;
 					<html:submit property="op" value="Export PDF" accesskey="P" styleClass="btn"/>
 				</sec:authorize>

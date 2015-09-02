@@ -335,6 +335,7 @@ public class RoomInterface implements IsSerializable {
 			SAVE
 		}
 		private Operation iOperation;
+		private Long iSessionId;
 		private Long iLocationId;
 		private RoomSharingModel iModel;
 		private boolean iEventAvailability = false;
@@ -359,8 +360,13 @@ public class RoomInterface implements IsSerializable {
 		public boolean isIncludeRoomPreferences() { return iIncludeRoomPreferences; }
 		public void setIncludeRoomPreferences(boolean includeRoomPreferences) { iIncludeRoomPreferences = includeRoomPreferences; }
 		
-		public static RoomSharingRequest load(Long locationId, boolean eventAvailability, boolean includeRoomPreferences) {
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public static RoomSharingRequest load(Long sessionId, Long locationId, boolean eventAvailability, boolean includeRoomPreferences) {
 			RoomSharingRequest request = new RoomSharingRequest();
+			request.setSessionId(sessionId);
 			request.setOperation(Operation.LOAD);
 			request.setLocationId(locationId);
 			request.setEventAvailability(eventAvailability);
@@ -369,12 +375,21 @@ public class RoomInterface implements IsSerializable {
 		}
 		
 		public static RoomSharingRequest load(Long locationId, boolean eventAvailability) {
-			return load(locationId, eventAvailability, false);
+			return load(null, locationId, eventAvailability, false);
 		}
 		
-		public static RoomSharingRequest save(Long locationId, RoomSharingModel model, boolean eventAvailability, boolean includeRoomPreferences) {
+		public static RoomSharingRequest load(Long locationId, boolean eventAvailability, boolean includeRoomPreferences) {
+			return load(null, locationId, eventAvailability, includeRoomPreferences);
+		}
+		
+		public static RoomSharingRequest load(Long sessionId, Long locationId, boolean eventAvailability) {
+			return load(sessionId, locationId, eventAvailability, false);
+		}
+		
+		public static RoomSharingRequest save(Long sessionId, Long locationId, RoomSharingModel model, boolean eventAvailability, boolean includeRoomPreferences) {
 			RoomSharingRequest request = new RoomSharingRequest();
 			request.setOperation(Operation.SAVE);
+			request.setSessionId(sessionId);
 			request.setLocationId(locationId);
 			request.setModel(model);
 			request.setEventAvailability(eventAvailability);
@@ -382,8 +397,12 @@ public class RoomInterface implements IsSerializable {
 			return request;
 		}
 		
+		public static RoomSharingRequest save(Long locationId, RoomSharingModel model, boolean eventAvailability, boolean includeRoomPreferences) {
+			return save(null, locationId, model, eventAvailability, includeRoomPreferences);
+		}
+		
 		public static RoomSharingRequest save(Long locationId, RoomSharingModel model, boolean eventAvailability) {
-			return save(locationId, model, eventAvailability, false);
+			return save(null, locationId, model, eventAvailability, false);
 		}
 	}
 	
@@ -550,6 +569,7 @@ public class RoomInterface implements IsSerializable {
 		}
 		private Operation iOperation;
 		private Apply iApply;
+		private Long iSessionId;
 		private Long iLocationId;
 		private List<RoomPictureInterface> iPictures;
 		
@@ -567,17 +587,27 @@ public class RoomInterface implements IsSerializable {
 		public Apply getApply() { return iApply; }
 		public void setApply(Apply apply) { iApply = apply; }
 		
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
 		public String toString() { return getOperation().name() + "[" + getLocationId() + "]"; }
 		
-		public static RoomPictureRequest load(Long locationId) {
+		public static RoomPictureRequest load(Long sessionId, Long locationId) {
 			RoomPictureRequest request = new RoomPictureRequest();
+			request.setSessionId(sessionId);
 			request.setOperation(Operation.LOAD);
 			request.setLocationId(locationId);
 			return request;
 		}
 		
-		public static RoomPictureRequest save(Long locationId, Apply apply, List<RoomPictureInterface> pictures) {
+		public static RoomPictureRequest load(Long locationId) {
+			return load(null, locationId);
+		}
+		
+		public static RoomPictureRequest save(Long sessionId, Long locationId, Apply apply, List<RoomPictureInterface> pictures) {
 			RoomPictureRequest request = new RoomPictureRequest();
+			request.setSessionId(sessionId);
 			request.setOperation(Operation.SAVE);
 			request.setLocationId(locationId);
 			request.setPictures(pictures);
@@ -585,11 +615,20 @@ public class RoomInterface implements IsSerializable {
 			return request;
 		}
 		
-		public static RoomPictureRequest upload(Long locationId) {
+		public static RoomPictureRequest save(Long locationId, Apply apply, List<RoomPictureInterface> pictures) {
+			return save(null, locationId, apply, pictures);
+		}
+		
+		public static RoomPictureRequest upload(Long sessionId, Long locationId) {
 			RoomPictureRequest request = new RoomPictureRequest();
+			request.setSessionId(sessionId);
 			request.setOperation(Operation.UPLOAD);
 			request.setLocationId(locationId);
 			return request;
+		}
+		
+		public static RoomPictureRequest upload(Long locationId) {
+			return upload(null, locationId);
 		}
 	}
 	
@@ -857,6 +896,8 @@ public class RoomInterface implements IsSerializable {
 		private FeatureTypeInterface iType;
 		private List<FilterRpcResponse.Entity> iRooms = null;
 		private Boolean iCanEdit = null, iCanDelete = null;
+		private Long iSessionId = null;
+		private String iSessionName = null;
 		
 		public FeatureInterface() {
 			super();
@@ -872,6 +913,8 @@ public class RoomInterface implements IsSerializable {
 			iRooms = (feature.iRooms == null ? null : new ArrayList<FilterRpcResponse.Entity>(feature.iRooms));
 			iCanEdit = feature.iCanEdit;
 			iCanDelete = feature.iCanDelete;
+			iSessionId = feature.iSessionId;
+			iSessionName = feature.iSessionName;
 		}
 		
 		public boolean isDepartmental() { return iDepartment != null; }
@@ -900,6 +943,14 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean canDelete() { return iCanDelete != null && iCanDelete; }
 		public void setCanDelete(Boolean canDelete) { iCanDelete = canDelete; }
+		
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+
+		public boolean hasSessionName() { return iSessionName != null; }
+		public String getSessionName() { return iSessionName; }
+		public void setSessionName(String sessionName) { iSessionName = sessionName; }
 	}
 	
 	public static class GroupInterface extends RoomPropertyInterface {
@@ -908,6 +959,8 @@ public class RoomInterface implements IsSerializable {
 		private String iDescription = null;
 		private List<FilterRpcResponse.Entity> iRooms = null;
 		private Boolean iCanEdit = null, iCanDelete = null;
+		private Long iSessionId = null;
+		private String iSessionName = null;
 
 		public GroupInterface() {
 			super();
@@ -925,6 +978,8 @@ public class RoomInterface implements IsSerializable {
 			iRooms = (group.iRooms == null ? null : new ArrayList<FilterRpcResponse.Entity>(group.iRooms));
 			iCanEdit = group.iCanEdit;
 			iCanDelete = group.iCanDelete;
+			iSessionId = group.iSessionId;
+			iSessionName = group.iSessionName;
 		}
 		
 		public boolean isDepartmental() { return iDepartment != null; }
@@ -956,6 +1011,14 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean canDelete() { return iCanDelete != null && iCanDelete; }
 		public void setCanDelete(Boolean canDelete) { iCanDelete = canDelete; }
+		
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+
+		public boolean hasSessionName() { return iSessionName != null; }
+		public String getSessionName() { return iSessionName; }
+		public void setSessionName(String sessionName) { iSessionName = sessionName; }
 	}
 	
 	public static class AcademicSessionInterface implements GwtRpcResponse {
@@ -1076,6 +1139,8 @@ public class RoomInterface implements IsSerializable {
 		private RoomSharingModel iRoomSharingModel = null, iEventAvailabilityModel = null;
 		private Map<Long, PeriodPreferenceModel> iPeriodPreferenceModels = null;
 		private List<FutureRoomInterface> iFutureRooms = null;
+		private Long iSessionId = null;
+		private String iSessionName = null;
 		
 		public RoomDetailInterface() {}
 		
@@ -1138,7 +1203,7 @@ public class RoomInterface implements IsSerializable {
 			return groups;
 		}
 		public boolean hasGroup(Long groupId) {
-			if (iGroups == null) return false;
+			if (iGroups == null || groupId == null) return false;
 			for (GroupInterface group: iGroups)
 				if (groupId.equals(group.getId())) return true;
 			return false;
@@ -1173,7 +1238,7 @@ public class RoomInterface implements IsSerializable {
 			return ret;
 		}
 		public boolean hasFeature(Long featureId) {
-			if (iFeatures == null) return false;
+			if (iFeatures == null || featureId == null) return false;
 			for (FeatureInterface feature: iFeatures)
 				if (featureId.equals(feature.getId())) return true;
 			return false;
@@ -1398,6 +1463,14 @@ public class RoomInterface implements IsSerializable {
 			if (iFutureRooms == null) iFutureRooms = new ArrayList<FutureRoomInterface>();
 			iFutureRooms.add(futureRoom);
 		}
+		
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+
+		public boolean hasSessionName() { return iSessionName != null; }
+		public String getSessionName() { return iSessionName; }
+		public void setSessionName(String sessionName) { iSessionName = sessionName; }
 	}
 	
 	public static class RoomDetailsRequest implements GwtRpcRequest<GwtRpcResponseList<RoomDetailInterface>> {
@@ -1591,6 +1664,7 @@ public class RoomInterface implements IsSerializable {
 		private Long iLocationId;
 		private PeriodPreferenceModel iModel;
 		private Long iExamTypeId = null;
+		private Long iSessionId;
 		
 		public PeriodPreferenceRequest() {}
 		
@@ -1608,30 +1682,53 @@ public class RoomInterface implements IsSerializable {
 		public Long getExamTypeId() { return iExamTypeId; }
 		public void setExamTypeId(Long examTypeId) { iExamTypeId = examTypeId; }
 		
-		public static PeriodPreferenceRequest load(Long locationId, Long examTypeId) {
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public static PeriodPreferenceRequest load(Long sessionId, Long locationId, Long examTypeId) {
 			PeriodPreferenceRequest request = new PeriodPreferenceRequest();
+			request.setSessionId(sessionId);
 			request.setOperation(Operation.LOAD);
 			request.setLocationId(locationId);
 			request.setExamTypeId(examTypeId);
 			return request;
 		}
 		
-		public static PeriodPreferenceRequest save(Long locationId, Long examTypeId, PeriodPreferenceModel model) {
+		public static PeriodPreferenceRequest load(Long locationId, Long examTypeId) {
+			return load(null, locationId, examTypeId);
+		}
+		
+		public static PeriodPreferenceRequest save(Long sessionId, Long locationId, Long examTypeId, PeriodPreferenceModel model) {
 			PeriodPreferenceRequest request = new PeriodPreferenceRequest();
+			request.setSessionId(sessionId);
 			request.setOperation(Operation.SAVE);
 			request.setLocationId(locationId);
 			request.setModel(model);
 			request.setExamTypeId(examTypeId);
 			return request;
 		}
+		
+		public static PeriodPreferenceRequest save(Long locationId, Long examTypeId, PeriodPreferenceModel model) {
+			return save(null, locationId, examTypeId, model);
+		}
 	}
 	
 	public static class RoomPropertiesRequest implements GwtRpcRequest<RoomPropertiesInterface> {
+		private Long iSessionId = null;
 		
 		public RoomPropertiesRequest() {}
 		
+		public RoomPropertiesRequest(Long sessionId) {
+			iSessionId = sessionId;
+		}
+		
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
 		@Override
-		public String toString() { return ""; }
+		public String toString() { return (hasSessionId() ? getSessionId().toString() : ""); }
 	}
 	
 	public static class RoomPropertiesInterface implements GwtRpcResponse {
@@ -1784,6 +1881,11 @@ public class RoomInterface implements IsSerializable {
 		
 		public void addGroup(GroupInterface group) { iGroups.add(group); }
 		public List<GroupInterface> getGroups() { return iGroups; }
+		public GroupInterface getGroup(Long groupId) {
+			for (GroupInterface group: iGroups)
+				if (groupId.equals(group.getId())) return group;
+			return null;
+		}
 		
 		public void addFeature(FeatureInterface feature) { iFeatures.add(feature); }
 		public List<FeatureInterface> getFeatures() { return iFeatures; }
@@ -1917,23 +2019,34 @@ public class RoomInterface implements IsSerializable {
 	}
 	
 	public static enum RoomsPageMode implements IsSerializable {
-		COURSES("department:Managed", RoomsColumn.NAME, RoomsColumn.TYPE, RoomsColumn.CAPACITY, RoomsColumn.AREA, RoomsColumn.AVAILABILITY, RoomsColumn.DEPARTMENTS, RoomsColumn.FEATURES, RoomsColumn.GROUPS),
-		EXAMS("department:Managed", RoomsColumn.NAME, RoomsColumn.TYPE, RoomsColumn.CAPACITY, RoomsColumn.EXAM_CAPACITY, RoomsColumn.AREA, RoomsColumn.EXAM_TYPES, RoomsColumn.PERIOD_PREF, RoomsColumn.FEATURES, RoomsColumn.GROUPS),
-		EVENTS("flag:Events department:Managed", RoomsColumn.NAME, RoomsColumn.TYPE, RoomsColumn.CAPACITY, RoomsColumn.AREA, RoomsColumn.EVENT_DEPARTMENT, RoomsColumn.EVENT_AVAILABILITY,
+		COURSES("q=department:Managed", RoomsColumn.NAME, RoomsColumn.TYPE, RoomsColumn.CAPACITY, RoomsColumn.AREA, RoomsColumn.AVAILABILITY, RoomsColumn.DEPARTMENTS, RoomsColumn.FEATURES, RoomsColumn.GROUPS),
+		EXAMS("q=department:Managed", RoomsColumn.NAME, RoomsColumn.TYPE, RoomsColumn.CAPACITY, RoomsColumn.EXAM_CAPACITY, RoomsColumn.AREA, RoomsColumn.EXAM_TYPES, RoomsColumn.PERIOD_PREF, RoomsColumn.FEATURES, RoomsColumn.GROUPS),
+		EVENTS("q=flag:Events+department:Managed", true, RoomsColumn.NAME, RoomsColumn.TYPE, RoomsColumn.CAPACITY, RoomsColumn.AREA, RoomsColumn.EVENT_DEPARTMENT, RoomsColumn.EVENT_AVAILABILITY,
 				RoomsColumn.EVENT_STATUS, RoomsColumn.EVENT_MESSAGE, RoomsColumn.BREAK_TIME, RoomsColumn.FEATURES, RoomsColumn.GROUPS), 
 		;
+		
 		private String iQuery;
 		private int iColumns;
-		RoomsPageMode(String query, RoomsColumn... column) {
+		private boolean iSessionSelection;
+
+		RoomsPageMode(String query, boolean sessionSelection, RoomsColumn... column) {
 			iQuery = query;
+			iSessionSelection = sessionSelection;
 			iColumns = 0;
 			for (RoomsColumn f: column) iColumns += ( 1 << f.ordinal() );
 		}
+
+		RoomsPageMode(String query, RoomsColumn... column) {
+			this(query, false, column);
+		}
 		
 		public String getQuery() { return iQuery; }
+
 		public boolean hasColumn(RoomsColumn column) {
 			return (iColumns & (1 << column.ordinal())) != 0;
 		}
+
+		public boolean hasSessionSelection() { return iSessionSelection; }
 	}
 	
 	public static class RoomFilterRpcRequest extends org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest {
@@ -1945,6 +2058,7 @@ public class RoomInterface implements IsSerializable {
 	}
 	
 	public static class RoomUpdateRpcRequest implements GwtRpcRequest<RoomDetailInterface> {
+		private Long iSessionId;
 		private Operation iOperation;
 		private Long iLocationId;
 		private RoomDetailInterface iRoom;
@@ -1957,6 +2071,10 @@ public class RoomInterface implements IsSerializable {
 		}
 		
 		public RoomUpdateRpcRequest() {}
+		
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		
 		public boolean hasRoom() { return iRoom != null; }
 		public RoomDetailInterface getRoom() { return iRoom; }
@@ -1994,8 +2112,9 @@ public class RoomInterface implements IsSerializable {
 			return getOperation().name() + " " + (hasLocationId() ? getLocationId() + (hasLabel() ? "/" + getLabel() : "") : hasLabel() ? getLabel() : "");
 		}
 		
-		public static RoomUpdateRpcRequest createDeleteRequest(Long locationId) {
+		public static RoomUpdateRpcRequest createDeleteRequest(Long sessionId, Long locationId) {
 			RoomUpdateRpcRequest request = new RoomUpdateRpcRequest();
+			request.setSessionId(sessionId);
 			request.setOperation(Operation.DELETE);
 			request.setLocationId(locationId);
 			return request;
@@ -2005,6 +2124,7 @@ public class RoomInterface implements IsSerializable {
 			RoomUpdateRpcRequest request = new RoomUpdateRpcRequest();
 			request.setOperation(room.getUniqueId() == null ? Operation.CREATE : Operation.UPDATE);
 			request.setRoom(room);
+			request.setSessionId(room.getSessionId());
 			return request;
 		}
 	}
@@ -2124,12 +2244,17 @@ public class RoomInterface implements IsSerializable {
 	}
 	
 	public static class UpdateRoomDepartmentsRequest implements GwtRpcRequest<GwtRpcResponseNull> {
+		private Long iSessionId = null;
 		private DepartmentInterface iDepartment;
 		private ExamTypeInterface iExamType;
 		private List<Long> iAddLocations = new ArrayList<Long>();
 		private List<Long> iDropLocations = new ArrayList<Long>();
 		
 		public UpdateRoomDepartmentsRequest() {}
+		
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		
 		public void setDepartment(DepartmentInterface department) { iDepartment = department; }
 		public DepartmentInterface getDepartment() { return iDepartment; }
@@ -2157,11 +2282,20 @@ public class RoomInterface implements IsSerializable {
 	
 	public static class SearchRoomGroupsRequest implements GwtRpcRequest<GwtRpcResponseList<GroupInterface>> {
 		private EventInterface.RoomFilterRpcRequest iFilter;
+		private Long iSessionId;
 		
 		public SearchRoomGroupsRequest() {}
 		
+		public SearchRoomGroupsRequest(Long sessionId) {
+			iSessionId = sessionId;
+		}
+		
 		public EventInterface.RoomFilterRpcRequest getFilter() { return iFilter; }
 		public void setFilter(EventInterface.RoomFilterRpcRequest filter) { iFilter = filter; }
+		
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		
 		@Override
 		public String toString() {
@@ -2171,8 +2305,17 @@ public class RoomInterface implements IsSerializable {
 	
 	public static class SearchRoomFeaturesRequest implements GwtRpcRequest<GwtRpcResponseList<FeatureInterface>> {
 		private EventInterface.RoomFilterRpcRequest iFilter;
+		private Long iSessionId;
 		
 		public SearchRoomFeaturesRequest() {}
+		
+		public SearchRoomFeaturesRequest(Long sessionId) {
+			iSessionId = sessionId;
+		}
+		
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		
 		public EventInterface.RoomFilterRpcRequest getFilter() { return iFilter; }
 		public void setFilter(EventInterface.RoomFilterRpcRequest filter) { iFilter = filter; }
@@ -2184,6 +2327,7 @@ public class RoomInterface implements IsSerializable {
 	}
 	
 	public static class UpdateRoomGroupRequest implements GwtRpcRequest<GroupInterface> {
+		private Long iSessionId = null;
 		private Long iDeleteGroupId = null;
 		private GroupInterface iGroup = null;
 		private List<Long> iAddLocations = new ArrayList<Long>();
@@ -2208,6 +2352,10 @@ public class RoomInterface implements IsSerializable {
 		public List<Long> getDropLocations() { return iDropLocations; }
 		public boolean hasDropLocations() { return !iDropLocations.isEmpty(); }
 		
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+
 		public void addFutureSession(Long sessionId) {
 			if (iFutureSessions == null) iFutureSessions = new ArrayList<Long>();
 			iFutureSessions.add(sessionId);
@@ -2231,6 +2379,7 @@ public class RoomInterface implements IsSerializable {
 	}
 	
 	public static class UpdateRoomFeatureRequest implements GwtRpcRequest<FeatureInterface> {
+		private Long iSessionId = null;
 		private Long iDeleteFeatureId = null;
 		private FeatureInterface iFeature = null;
 		private List<Long> iAddLocations = new ArrayList<Long>();
@@ -2254,6 +2403,10 @@ public class RoomInterface implements IsSerializable {
 		public void dropLocation(Long locationId) { iDropLocations.add(locationId); }
 		public List<Long> getDropLocations() { return iDropLocations; }
 		public boolean hasDropLocations() { return !iDropLocations.isEmpty(); }
+		
+		public boolean hasSessionId() { return iSessionId != null; }
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		
 		public void addFutureSession(Long sessionId) {
 			if (iFutureSessions == null) iFutureSessions = new ArrayList<Long>();

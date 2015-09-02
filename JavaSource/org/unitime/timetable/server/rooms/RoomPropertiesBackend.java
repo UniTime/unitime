@@ -69,6 +69,9 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 
 	@Override
 	public RoomPropertiesInterface execute(RoomPropertiesRequest request, SessionContext context) {
+		if (request.hasSessionId())
+			context = new EventContext(context, request.getSessionId());
+		
 		context.checkPermission(Right.Rooms);
 		
 		RoomPropertiesInterface response = new RoomPropertiesInterface();

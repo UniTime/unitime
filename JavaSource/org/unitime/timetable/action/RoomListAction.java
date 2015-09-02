@@ -244,11 +244,11 @@ public class RoomListAction extends Action {
 			Department department = Department.findByDeptCode(form.getDeptCodeX(), sessionContext.getUser().getCurrentAcademicSessionId());
 			if (department != null) {
 				if ("Export PDF".equals(op)) {
-					sessionContext.checkPermission(department, Right.RoomsExportPdf);
+					sessionContext.checkPermission(Right.RoomsExportPdf);
 				} else if ("Export CSV".equals(op)) {
-					sessionContext.checkPermission(department, Right.RoomsExportCsv);
+					sessionContext.checkPermission(Right.RoomsExportCsv);
 				} else {
-					sessionContext.checkPermission(department, Right.Rooms);
+					sessionContext.checkPermission(Right.Rooms);
 				}
 				where += " and (rd.department.uniqueId = :dept0 or l.eventDepartment.uniqueId = :dept0)";
 				departmentIds = new ArrayList<Long>(); departmentIds.add(department.getUniqueId());

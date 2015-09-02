@@ -45,16 +45,16 @@ import org.unitime.timetable.security.rights.Right;
 public class LocationPermissions {
 	
 	@PermissionForRight(Right.Rooms)
-	public static class Rooms implements Permission<Department> {
-		@Autowired PermissionDepartment permissionDepartment;
+	public static class Rooms implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
 
 		@Override
-		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source) || source.isExternalManager();
+		public boolean check(UserContext user, Session source) {
+			return permissionSession.check(user, source);
 		}
 
 		@Override
-		public Class<Department> type() { return Department.class; }
+		public Class<Session> type() { return Session.class; }
 	}
 	
 	@PermissionForRight(Right.RoomsExportPdf)
@@ -198,8 +198,7 @@ public class LocationPermissions {
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) ||
-					(permissionDepartment.check(user, source) && user.getCurrentAuthority().getQualifiers("Department").size() > 1);
+			return permissionDepartment.check(user, source) && (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) || user.getCurrentAuthority().getQualifiers("Department").size() > 1);
 		}
 
 		@Override

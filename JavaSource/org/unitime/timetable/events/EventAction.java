@@ -103,7 +103,7 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 		private boolean iAllowEditPast = false;
 		
 		public EventContext(SessionContext context, UserContext user, Long sessionId) {
-			iContext = context;
+			iContext = (context instanceof EventContext ? ((EventContext)context).iContext : context);
 			iUser = user;
 			
 			if (sessionId == null)

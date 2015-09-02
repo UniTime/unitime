@@ -27,8 +27,11 @@ import java.util.Set;
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.rooms.RoomsPage.HistoryToken;
 import org.unitime.timetable.gwt.client.rooms.RoomsTable.DeptMode;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -42,6 +45,8 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
@@ -77,6 +82,7 @@ import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.UIObject;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
@@ -86,7 +92,7 @@ public class RoomGroupsPage extends Composite {
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
-	private Session iSession = null;
+	private AcademicSessionProvider iSession = null;
 	private RoomFilterBox iFilter = null;
 	private AriaButton iSearch = null;
 	private AriaButton iNew = null;
@@ -105,85 +111,30 @@ public class RoomGroupsPage extends Composite {
 	private RoomGroupsTable iDepartmentalGroupsTable = null;
 	private int iDepartmentalGroupsRow = -1;
 	private RoomsPageMode iMode = RoomsPageMode.COURSES;
+	private UniTimeHeaderPanel iHeaderPanel = null;
+	private HistoryToken iHistoryToken = null;
 	
 	private RoomGroupEdit iRoomGroupEdit = null;
 	
 	public RoomGroupsPage() {
 		if (Location.getParameter("mode") != null)
 			iMode = RoomsPageMode.valueOf(Location.getParameter("mode").toUpperCase());
+		iHistoryToken = new HistoryToken(iMode);
 		
 		iPanel = new SimplePanel();
 		
 		iGroupsPanel = new SimpleForm();
-		
-		iFilterPanel = new HorizontalPanel();
-		iFilterPanel.setSpacing(3);
-		
-		Label filterLabel = new Label(MESSAGES.propFilter());
-		iFilterPanel.add(filterLabel);
-		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
-		
-		iSession = new Session();
-		iFilter = new RoomFilterBox(iSession);
-		iFilterPanel.add(iFilter);
-		
-		iSearch = new AriaButton(MESSAGES.buttonSearch());
-		iSearch.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iSearch);
-		
-		iMore = new AriaButton(MESSAGES.buttonMoreOperations());
-		iMore.setEnabled(false);
-		iMore.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iMore);
-
-		iNew = new AriaButton(MESSAGES.buttonAddNewRoomGroup());
-		iNew.setEnabled(false);
-		iNew.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iNew);
-		
-		int filterRow = iGroupsPanel.addRow(iFilterPanel);
-		iGroupsPanel.getCellFormatter().setHorizontalAlignment(filterRow, 0, HasHorizontalAlignment.ALIGN_CENTER);
-		
 		iGroupsPanel.setWidth("100%");
 		
-		iGlobalGroupsHeader = new UniTimeHeaderPanel(MESSAGES.headerGlobalRoomGroups());
-		iGlobalGroupsRow = iGroupsPanel.addHeaderRow(iGlobalGroupsHeader);
-		iGlobalGroupsTable = new RoomGroupsTable(true) {
-			protected void doSort(RoomGroupsColumn column) {
-				super.doSort(column);
-				iDepartmentalGroupsTable.setSortBy(RoomCookie.getInstance().getRoomGroupsSortBy());
-			}
-		};
-		iGroupsPanel.addRow(iGlobalGroupsTable);
-		iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow, false);
-		iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow + 1, false);
-		
-		iDepartmentalGroupsHeader = new UniTimeHeaderPanel(MESSAGES.headerDepartmentalRoomGroups());
-		iDepartmentalGroupsRow = iGroupsPanel.addHeaderRow(iDepartmentalGroupsHeader);
-		iDepartmentalGroupsTable = new RoomGroupsTable(false) {
-			protected void doSort(RoomGroupsColumn column) {
-				super.doSort(column);
-				iGlobalGroupsTable.setSortBy(RoomCookie.getInstance().getRoomGroupsSortBy());
-			}
-		};
-		iGroupsPanel.addRow(iDepartmentalGroupsTable);
-		iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow, false);
-		iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow + 1, false);
-		
-		iRootPanel = new SimplePanel(iGroupsPanel);
-		iPanel.setWidget(iRootPanel);
-		
-		initWidget(iPanel);
-		
-		iSearch.addClickHandler(new ClickHandler() {
+		ClickHandler clickSearch = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				changeUrl();
 				search();
 			}
-		});
+		};
 		
-		iMore.addClickHandler(new ClickHandler() {
+		ClickHandler clickMore = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
@@ -265,9 +216,9 @@ public class RoomGroupsPage extends Composite {
 				popup.showRelativeTo((UIObject)event.getSource());
 				menu.focus();
 			}
-		});
+		};
 		
-		iNew.addClickHandler(new ClickHandler() {
+		ClickHandler clickNew = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iRoomGroupEdit == null) return;
@@ -291,148 +242,9 @@ public class RoomGroupsPage extends Composite {
 					}
 				}, MESSAGES.waitLoadingRooms());
 			}
-		});
+		};
 		
-		History.addValueChangeHandler(new ValueChangeHandler<String>() {
-			@Override
-			public void onValueChange(ValueChangeEvent<String> event) {
-				iFilter.setValue(event.getValue(), true);
-				if (iGroupsPanel.getRowFormatter().isVisible(iGlobalGroupsRow) || iGroupsPanel.getRowFormatter().isVisible(iDepartmentalGroupsRow))
-					search();
-			}
-		});
-		
-		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
-		RPC.execute(new RoomPropertiesRequest(), new AsyncCallback<RoomPropertiesInterface>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				LoadingWidget.getInstance().hide();
-				iFilter.setErrorHint(MESSAGES.failedToInitialize(caught.getMessage()));
-				UniTimeNotifications.error(MESSAGES.failedToInitialize(caught.getMessage()), caught);
-			}
-
-			@Override
-			public void onSuccess(RoomPropertiesInterface result) {
-				LoadingWidget.getInstance().hide();
-				iProperties = result;
-				iSession.fireChange();
-				initialize();
-			}
-		});
-	}
-	
-	protected void changeUrl() {
-		String token = null;
-		token = iFilter.getValue();
-		RoomCookie.getInstance().setHash(iMode, token);
-		if (!History.getToken().equals(token))
-			History.newItem(token, false);
-		Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
-	}
-	
-	protected void search() {
-		iMore.setEnabled(false);
-		iGlobalGroupsTable.clearTable(1);
-		iDepartmentalGroupsTable.clearTable(1);
-		iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow, false);
-		iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow + 1, false);
-		iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow, false);
-		iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow + 1, false);
-		SearchRoomGroupsRequest request = new SearchRoomGroupsRequest();
-		request.setFilter(iFilter.getElementsRequest());
-		LoadingWidget.execute(request, new AsyncCallback<GwtRpcResponseList<GroupInterface>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				iFilter.setErrorHint(MESSAGES.failedToLoadRoomGroups(caught.getMessage()));
-				UniTimeNotifications.error(MESSAGES.failedToLoadRoomGroups(caught.getMessage()), caught);
-			}
-			@Override
-			public void onSuccess(GwtRpcResponseList<GroupInterface> result) {
-				iFilter.clearHint();
-				if (result == null || result.isEmpty()) {
-					iFilter.setErrorHint(MESSAGES.errorNoRoomGroups());
-				} else {
-					Chip dept = iFilter.getChip("department");
-					boolean skipDepartmental = false;
-					DepartmentInterface department = null;
-					if (dept != null) {
-						for (ExamTypeInterface type: iProperties.getExamTypes())
-							if (type.getReference().equals(dept.getValue())) {
-								skipDepartmental = true;
-								break;
-							}
-						for (DepartmentInterface d: iProperties.getDepartments())
-							if (dept.getValue().equals(d.getDeptCode())) {
-								department = d; break;
-							}
-					}
-					for (GroupInterface group: result) {
-						if (group.isDepartmental()) {
-							if (skipDepartmental) continue;
-							if (department != null && !department.equals(group.getDepartment())) continue;
-							if (dept == null && !group.hasRooms()) continue;
-							iDepartmentalGroupsTable.addGroup(group);
-						} else {
-							iGlobalGroupsTable.addGroup(group);
-						}
-					}
-					iDepartmentalGroupsTable.sort();
-					iGlobalGroupsTable.sort();
-				}
-				iMore.setEnabled(iDepartmentalGroupsTable.getRowCount() > 1 || iGlobalGroupsTable.getRowCount() > 1);
-				iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow, iGlobalGroupsTable.getRowCount() > 1);
-				iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow + 1, iGlobalGroupsTable.getRowCount() > 1);
-				iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow, iDepartmentalGroupsTable.getRowCount() > 1);
-				iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow + 1, iDepartmentalGroupsTable.getRowCount() > 1);
-			}
-		}, MESSAGES.waitLoadingRoomGroups());
-	}
-	
-	protected void export(String format) {
-		RPC.execute(EncodeQueryRpcRequest.encode(query(format)), new AsyncCallback<EncodeQueryRpcResponse>() {
-			@Override
-			public void onFailure(Throwable caught) {
-			}
-			@Override
-			public void onSuccess(EncodeQueryRpcResponse result) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
-			}
-		});
-	}
-	
-	protected String query(String format) {
-		RoomCookie cookie = RoomCookie.getInstance();
-		String query = "output=" + format + "&sort=" + cookie.getRoomsSortBy() + (cookie.hasMode() ? "&mode=" + cookie.getMode() : "") + "&dm=" + cookie.getDeptMode();
-		if (iProperties.getAcademicSessionId() != null)
-			query += "&sid=" + iProperties.getAcademicSessionId();
-				
-		FilterRpcRequest rooms = iFilter.getElementsRequest();
-		if (rooms.hasOptions()) {
-			for (Map.Entry<String, Set<String>> option: rooms.getOptions().entrySet()) {
-				for (String value: option.getValue()) {
-					query += "&r:" + option.getKey() + "=" + URL.encodeQueryString(value);
-				}
-			}
-		}
-		
-		if (rooms.getText() != null && !rooms.getText().isEmpty())
-			query += "&r:text=" + URL.encodeQueryString(rooms.getText());
-				
-		return query;
-	}
-	
-	private boolean iInitialized = false;
-	protected void initialize() {
-		if (iInitialized) return;
-		if (iProperties == null) return;
-		iNew.setEnabled(iProperties.isCanAddDepartmentalRoomGroup() || iProperties.isCanAddGlobalRoomGroup()); 
-		if (History.getToken() != null && !History.getToken().isEmpty()) {
-			iFilter.setValue(History.getToken(), true);
-		} else {
-			iFilter.setValue(RoomCookie.getInstance().getHash(iMode), true);
-		}
-		
-		iRoomGroupEdit = new RoomGroupEdit(iProperties) {
+		iRoomGroupEdit = new RoomGroupEdit(iMode) {
 			@Override
 			protected void onShow() {
 				RoomHint.hideHint();
@@ -446,6 +258,101 @@ public class RoomGroupsPage extends Composite {
 				if (refresh && (iGroupsPanel.getRowFormatter().isVisible(iGlobalGroupsRow) || iGroupsPanel.getRowFormatter().isVisible(iDepartmentalGroupsRow))) search();
 			}
 		};
+		
+		if (iMode.hasSessionSelection()) {
+			iHeaderPanel = new UniTimeHeaderPanel(MESSAGES.sectFilter());
+			iGroupsPanel.addHeaderRow(iHeaderPanel);
+			
+			iSession = new AcademicSessionSelectionBox(iHistoryToken.getParameter("term")) {
+				@Override
+				protected void onInitializationSuccess(List<AcademicSession> sessions) {
+					UniTimePageHeader.getInstance().getRight().setVisible(false);
+					UniTimePageHeader.getInstance().getRight().setPreventDefault(true);
+					setup(getAcademicSessionId());
+				}
+				
+				@Override
+				protected void onInitializationFailure(Throwable caught) {
+					UniTimeNotifications.error(MESSAGES.failedLoadSessions(caught.getMessage()), caught);
+				}
+			};
+			iSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
+				@Override
+				public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
+					setup(event.getNewAcademicSessionId());					
+				}
+			});;
+			iGroupsPanel.addRow(MESSAGES.propAcademicSession(), (Widget)iSession);
+			
+			iFilter = new RoomFilterBox(iSession);
+			iGroupsPanel.addRow(MESSAGES.propRoomFilter(), iFilter);
+			
+			iHeaderPanel.addButton("search", MESSAGES.buttonSearch(), clickSearch);
+			iHeaderPanel.addButton("more", MESSAGES.buttonMoreOperations(), clickMore);
+			iHeaderPanel.addButton("new", MESSAGES.buttonAddNewRoom(), clickNew);
+			iHeaderPanel.setEnabled("more", false);
+			iHeaderPanel.setEnabled("new", false);
+		} else {
+			iFilterPanel = new HorizontalPanel();
+			iFilterPanel.setSpacing(3);
+			
+			Label filterLabel = new Label(MESSAGES.propFilter());
+			iFilterPanel.add(filterLabel);
+			iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
+			
+			iSession = new Session();
+			iFilter = new RoomFilterBox(iSession);
+			iFilterPanel.add(iFilter);
+			
+			iSearch = new AriaButton(MESSAGES.buttonSearch());
+			iSearch.addStyleName("unitime-NoPrint");
+			iSearch.addClickHandler(clickSearch);
+			iFilterPanel.add(iSearch);
+			
+			iMore = new AriaButton(MESSAGES.buttonMoreOperations());
+			iMore.setEnabled(false);
+			iMore.addStyleName("unitime-NoPrint");
+			iMore.addClickHandler(clickMore);
+			iFilterPanel.add(iMore);
+
+			iNew = new AriaButton(MESSAGES.buttonAddNewRoomGroup());
+			iNew.setEnabled(false);
+			iNew.addStyleName("unitime-NoPrint");
+			iNew.addClickHandler(clickNew);
+			iFilterPanel.add(iNew);
+			
+			int filterRow = iGroupsPanel.addRow(iFilterPanel);
+			iGroupsPanel.getCellFormatter().setHorizontalAlignment(filterRow, 0, HasHorizontalAlignment.ALIGN_CENTER);
+			
+			setup(null);
+		}
+		
+		iGlobalGroupsHeader = new UniTimeHeaderPanel(MESSAGES.headerGlobalRoomGroups());
+		iGlobalGroupsRow = iGroupsPanel.addHeaderRow(iGlobalGroupsHeader);
+		iGlobalGroupsTable = new RoomGroupsTable(true) {
+			protected void doSort(RoomGroupsColumn column) {
+				super.doSort(column);
+				iDepartmentalGroupsTable.setSortBy(RoomCookie.getInstance().getRoomGroupsSortBy());
+			}
+		};
+		iGroupsPanel.addRow(iGlobalGroupsTable);
+		iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow, false);
+		iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow + 1, false);
+		
+		iDepartmentalGroupsHeader = new UniTimeHeaderPanel(MESSAGES.headerDepartmentalRoomGroups());
+		iDepartmentalGroupsRow = iGroupsPanel.addHeaderRow(iDepartmentalGroupsHeader);
+		iDepartmentalGroupsTable = new RoomGroupsTable(false) {
+			protected void doSort(RoomGroupsColumn column) {
+				super.doSort(column);
+				iGlobalGroupsTable.setSortBy(RoomCookie.getInstance().getRoomGroupsSortBy());
+			}
+		};
+		iGroupsPanel.addRow(iDepartmentalGroupsTable);
+		iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow, false);
+		iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow + 1, false);
+		
+		iRootPanel = new SimplePanel(iGroupsPanel);
+		iPanel.setWidget(iRootPanel);
 		
 		iGlobalGroupsTable.addMouseClickListener(new MouseClickListener<GroupInterface>() {
 			@Override
@@ -505,7 +412,161 @@ public class RoomGroupsPage extends Composite {
 			}
 		});
 		
-		iInitialized = true;
+		initWidget(iPanel);
+		
+		History.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				if (!iInitialized) return;
+				iHistoryToken.reset(event.getValue());
+				updateFilter(iGroupsPanel.getRowFormatter().isVisible(iGlobalGroupsRow) || iGroupsPanel.getRowFormatter().isVisible(iDepartmentalGroupsRow));
+			}
+		});
+	}
+	
+	private boolean iInitialized = false;
+	protected void setup(final Long sessionId) {
+		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
+		RPC.execute(new RoomPropertiesRequest(sessionId), new AsyncCallback<RoomPropertiesInterface>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				iFilter.setErrorHint(MESSAGES.failedToInitialize(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToInitialize(caught.getMessage()), caught);
+			}
+
+			@Override
+			public void onSuccess(RoomPropertiesInterface result) {
+				LoadingWidget.getInstance().hide();
+				iProperties = result;
+				iRoomGroupEdit.setProperties(iProperties);
+				
+				if (iSession instanceof Session)
+					((Session)iSession).fireChange();
+				
+				boolean search = iDepartmentalGroupsTable.getRowCount() > 1 || iGlobalGroupsTable.getRowCount() > 1;
+				
+				if (iNew != null) iNew.setEnabled(iProperties.isCanAddDepartmentalRoomGroup() || iProperties.isCanAddGlobalRoomGroup());
+				if (iHeaderPanel != null) iHeaderPanel.setEnabled("new", iProperties.isCanAddDepartmentalRoomGroup() || iProperties.isCanAddGlobalRoomGroup());
+				
+				if (sessionId != null && iSession instanceof AcademicSessionSelectionBox) {
+					iHistoryToken.setParameter("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation());
+					iHistoryToken.mark();
+				}
+				updateFilter(search);
+				iInitialized = true;
+			}
+		});
+	}
+	
+	protected void updateFilter(boolean search) {
+		iFilter.setValue(iHistoryToken.getParameter("q"), true);
+		if (iSession instanceof AcademicSessionSelectionBox && iHistoryToken.isChanged("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation()) && iHistoryToken.getParameter("term") != null)
+			((AcademicSessionSelectionBox)iSession).selectSession(iHistoryToken.getParameter("term"), null);
+		if (search)
+			search();
+	}
+	
+	protected void changeUrl() {
+		iHistoryToken.reset(null);
+		if (iSession instanceof AcademicSessionSelectionBox)
+			iHistoryToken.setParameter("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation());
+		iHistoryToken.setParameter("q", iFilter.getValue());
+		iHistoryToken.mark();
+		Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
+	}
+	
+	protected void search() {
+		if (iMore != null) iMore.setEnabled(false);
+		if (iHeaderPanel != null) iHeaderPanel.setEnabled("more", false);
+		iGlobalGroupsTable.clearTable(1);
+		iDepartmentalGroupsTable.clearTable(1);
+		iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow, false);
+		iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow + 1, false);
+		iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow, false);
+		iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow + 1, false);
+		SearchRoomGroupsRequest request = new SearchRoomGroupsRequest(iProperties.getAcademicSessionId());
+		request.setFilter(iFilter.getElementsRequest());
+		LoadingWidget.execute(request, new AsyncCallback<GwtRpcResponseList<GroupInterface>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				iFilter.setErrorHint(MESSAGES.failedToLoadRoomGroups(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToLoadRoomGroups(caught.getMessage()), caught);
+			}
+			@Override
+			public void onSuccess(GwtRpcResponseList<GroupInterface> result) {
+				iFilter.clearHint();
+				if (result == null || result.isEmpty()) {
+					iFilter.setErrorHint(MESSAGES.errorNoRoomGroups());
+				} else {
+					Chip dept = iFilter.getChip("department");
+					boolean skipDepartmental = false;
+					DepartmentInterface department = null;
+					if (dept != null) {
+						for (ExamTypeInterface type: iProperties.getExamTypes())
+							if (type.getReference().equals(dept.getValue())) {
+								skipDepartmental = true;
+								break;
+							}
+						for (DepartmentInterface d: iProperties.getDepartments())
+							if (dept.getValue().equals(d.getDeptCode())) {
+								department = d; break;
+							}
+					}
+					for (GroupInterface group: result) {
+						if (group.isDepartmental()) {
+							if (skipDepartmental) continue;
+							if (department != null && !department.equals(group.getDepartment())) continue;
+							if (dept == null && !group.hasRooms()) continue;
+							iDepartmentalGroupsTable.addGroup(group);
+						} else {
+							iGlobalGroupsTable.addGroup(group);
+						}
+					}
+					iDepartmentalGroupsTable.sort();
+					iGlobalGroupsTable.sort();
+				}
+				if (iMore != null) iMore.setEnabled(iDepartmentalGroupsTable.getRowCount() > 1 || iGlobalGroupsTable.getRowCount() > 1);
+				if (iHeaderPanel != null) iHeaderPanel.setEnabled("more", iDepartmentalGroupsTable.getRowCount() > 1 || iGlobalGroupsTable.getRowCount() > 1);
+				iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow, iGlobalGroupsTable.getRowCount() > 1);
+				iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow + 1, iGlobalGroupsTable.getRowCount() > 1);
+				iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow, iDepartmentalGroupsTable.getRowCount() > 1);
+				iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow + 1, iDepartmentalGroupsTable.getRowCount() > 1);
+			}
+		}, MESSAGES.waitLoadingRoomGroups());
+	}
+	
+	protected void export(String format) {
+		RPC.execute(EncodeQueryRpcRequest.encode(query(format)), new AsyncCallback<EncodeQueryRpcResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			@Override
+			public void onSuccess(EncodeQueryRpcResponse result) {
+				ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+			}
+		});
+	}
+	
+	protected String query(String format) {
+		RoomCookie cookie = RoomCookie.getInstance();
+		String query = "output=" + format + "&sort=" + cookie.getRoomsSortBy() + (cookie.hasMode() ? "&mode=" + cookie.getMode() : "") + "&dm=" + cookie.getDeptMode();
+		if (iProperties.getAcademicSessionId() != null)
+			query += "&sid=" + iProperties.getAcademicSessionId();
+				
+		FilterRpcRequest rooms = iFilter.getElementsRequest();
+		if (rooms.hasOptions()) {
+			for (Map.Entry<String, Set<String>> option: rooms.getOptions().entrySet()) {
+				for (String value: option.getValue()) {
+					query += "&r:" + option.getKey() + "=" + URL.encodeQueryString(value);
+				}
+			}
+		}
+		
+		if (rooms.getText() != null && !rooms.getText().isEmpty())
+			query += "&r:text=" + URL.encodeQueryString(rooms.getText());
+				
+		return query;
 	}
 	
 	private class Session implements AcademicSessionProvider {

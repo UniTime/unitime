@@ -55,6 +55,9 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
 	
 	@Override
 	public GroupInterface execute(UpdateRoomGroupRequest request, SessionContext context) {
+		if (request.hasSessionId())
+			context = new EventContext(context, request.getSessionId());
+
 		Transaction tx = null;
         try {
             org.hibernate.Session hibSession = new RoomDeptDAO().getSession();

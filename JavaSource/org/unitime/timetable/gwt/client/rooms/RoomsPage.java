@@ -20,16 +20,21 @@
 package org.unitime.timetable.gwt.client.rooms;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
@@ -42,6 +47,8 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
@@ -65,6 +72,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
@@ -78,6 +86,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
@@ -87,7 +96,7 @@ public class RoomsPage extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
-	private Session iSession = null;
+	private AcademicSessionProvider iSession = null;
 	private RoomFilterBox iFilter = null;
 	private AriaButton iSearch = null;
 	private AriaButton iNew = null;
@@ -100,70 +109,42 @@ public class RoomsPage extends Composite {
 	private SimplePanel iRootPanel;
 	
 	private SimplePanel iPanel = null;
+	private SimpleForm iFilterForm = null;
 	private HorizontalPanel iFilterPanel = null;
 	private RoomsPageMode iMode = RoomsPageMode.COURSES;
 	private RoomPropertiesInterface iProperties = null;
 	private RoomEdit iRoomEdit;
 	private RoomDepartmentsEdit iRoomDepartmentsEdit;
+	private UniTimeHeaderPanel iHeaderPanel = null;
+	private HistoryToken iHistoryToken = null;
 	
 	public RoomsPage() {
 		if (Location.getParameter("mode") != null)
 			iMode = RoomsPageMode.valueOf(Location.getParameter("mode").toUpperCase());
+		iHistoryToken = new HistoryToken(iMode);
 
 		iPanel = new SimplePanel();
 		
 		iRoomsPanel = new VerticalPanel();
-		
-		iFilterPanel = new HorizontalPanel();
-		iFilterPanel.setSpacing(3);
-		
-		Label filterLabel = new Label(MESSAGES.propFilter());
-		iFilterPanel.add(filterLabel);
-		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
-		
-		iSession = new Session();
-		iFilter = new RoomFilterBox(iSession);
-		iFilterPanel.add(iFilter);
-		
-		iSearch = new AriaButton(MESSAGES.buttonSearch());
-		iSearch.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iSearch);
-		
-		iMore = new AriaButton(MESSAGES.buttonMoreOperations());
-		iMore.setEnabled(false);
-		iMore.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iMore);
-
-		iNew = new AriaButton(MESSAGES.buttonAddNewRoom());
-		iNew.setEnabled(false);
-		iNew.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iNew);
-		
-		iEditRoomSharing = new AriaButton(MESSAGES.buttonEditRoomSharing());
-		iEditRoomSharing.setEnabled(false);
-		iEditRoomSharing.setVisible(false);
-		iEditRoomSharing.addStyleName("unitime-NoPrint");
-		iFilterPanel.add(iEditRoomSharing);
-				
-		iRoomsPanel.add(iFilterPanel);
-		iRoomsPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
-		
 		iRoomsPanel.setWidth("100%");
 		
-		iRootPanel = new SimplePanel(iRoomsPanel);
-		iPanel.setWidget(iRootPanel);
-		
-		initWidget(iPanel);
-		
-		iSearch.addClickHandler(new ClickHandler() {
+		ClickHandler clickSearch = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				changeUrl();
 				search();
 			}
-		});
+		};
 		
-		iMore.addClickHandler(new ClickHandler() {
+		ClickHandler clickNew = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iRoomEdit.setRoom(null);
+				iRoomEdit.show();
+			}
+		};
+		
+		ClickHandler clickMore = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iRoomsTable == null) return;
@@ -346,53 +327,192 @@ public class RoomsPage extends Composite {
 				popup.showRelativeTo((UIObject)event.getSource());
 				menu.focus();
 			}
-		});
+		};
+		
+		ClickHandler clickEditRoomSharing = new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				RoomFilterRpcRequest request = iFilter.getElementsRequest();
+				request.getOptions().remove("department");
+				LoadingWidget.execute(request, new AsyncCallback<FilterRpcResponse>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						iFilter.setErrorHint(MESSAGES.failedToLoadRooms(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedToLoadRooms(caught.getMessage()), caught);
+					}
+					@Override
+					public void onSuccess(FilterRpcResponse result) {
+						iFilter.clearHint();
+						if (result == null || result.getResults() == null || result.getResults().isEmpty()) {
+							iFilter.setErrorHint(MESSAGES.errorNoRoomsMatchingFilter());
+							UniTimeNotifications.error(MESSAGES.errorNoRoomsMatchingFilter());
+						} else {
+							iRoomDepartmentsEdit.setRooms(result.getResults(), iRoomsTable.hasSortBy() ? new Integer(iRoomsTable.getSortBy()) : null);
+							iRoomDepartmentsEdit.show();
+						}
+					}
+				}, MESSAGES.waitLoadingRooms());
+				
+			}
+		};
+		
+		if (iMode.hasSessionSelection()) {
+			iFilterForm = new SimpleForm();
+			
+			iHeaderPanel = new UniTimeHeaderPanel(MESSAGES.sectFilter());
+			iFilterForm.addHeaderRow(iHeaderPanel);
+			
+			iSession = new AcademicSessionSelectionBox(iHistoryToken.getParameter("term")) {
+				@Override
+				protected void onInitializationSuccess(List<AcademicSession> sessions) {
+					iFilterForm.setVisible(sessions != null && !sessions.isEmpty());
+					UniTimePageHeader.getInstance().getRight().setVisible(false);
+					UniTimePageHeader.getInstance().getRight().setPreventDefault(true);
+					setup(getAcademicSessionId());
+				}
+				
+				@Override
+				protected void onInitializationFailure(Throwable caught) {
+					UniTimeNotifications.error(MESSAGES.failedLoadSessions(caught.getMessage()), caught);
+				}
+			};
+			iSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
+				@Override
+				public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
+					setup(event.getNewAcademicSessionId());					
+				}
+			});;
+			iFilterForm.addRow(MESSAGES.propAcademicSession(), (Widget)iSession);
+			
+			iFilter = new RoomFilterBox(iSession);
+			iFilterForm.addRow(MESSAGES.propRoomFilter(), iFilter);
+			
+			iRoomsPanel.add(iFilterForm);
+			
+			iHeaderPanel.addButton("search", MESSAGES.buttonSearch(), clickSearch);
+			iHeaderPanel.addButton("more", MESSAGES.buttonMoreOperations(), clickMore);
+			iHeaderPanel.addButton("new", MESSAGES.buttonAddNewRoom(), clickNew);
+			iHeaderPanel.addButton("sharing", MESSAGES.buttonEditRoomSharing(), clickEditRoomSharing);
+			iHeaderPanel.setEnabled("more", false);
+			iHeaderPanel.setEnabled("new", false);
+			iHeaderPanel.setEnabled("sharing", false);
+		} else {
+			iFilterPanel = new HorizontalPanel();
+			iFilterPanel.setSpacing(3);
+			
+			Label filterLabel = new Label(MESSAGES.propFilter());
+			iFilterPanel.add(filterLabel);
+			iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
+			
+			iSession = new Session();
+			iFilter = new RoomFilterBox(iSession);
+			iFilterPanel.add(iFilter);
+			
+			iSearch = new AriaButton(MESSAGES.buttonSearch());
+			iSearch.addStyleName("unitime-NoPrint");
+			iSearch.addClickHandler(clickSearch);
+			iFilterPanel.add(iSearch);
+			
+			iMore = new AriaButton(MESSAGES.buttonMoreOperations());
+			iMore.setEnabled(false);
+			iMore.addStyleName("unitime-NoPrint");
+			iMore.addClickHandler(clickMore);
+			iFilterPanel.add(iMore);
+
+			iNew = new AriaButton(MESSAGES.buttonAddNewRoom());
+			iNew.setEnabled(false);
+			iNew.addStyleName("unitime-NoPrint");
+			iNew.addClickHandler(clickNew);
+			iFilterPanel.add(iNew);
+			
+			iEditRoomSharing = new AriaButton(MESSAGES.buttonEditRoomSharing());
+			iEditRoomSharing.setEnabled(false);
+			iEditRoomSharing.setVisible(false);
+			iEditRoomSharing.addStyleName("unitime-NoPrint");
+			iEditRoomSharing.addClickHandler(clickEditRoomSharing);
+			iFilterPanel.add(iEditRoomSharing);
+					
+			iRoomsPanel.add(iFilterPanel);
+			iRoomsPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
+			
+			setup(null);
+		}
+		
+		iRoomsTable = new RoomsTable(iMode);
+		iRoomsTable.getElement().getStyle().setMarginTop(10, Unit.PX);
+		iRoomsPanel.add(iRoomsTable);
+		
+		iRootPanel = new SimplePanel(iRoomsPanel);
+		iPanel.setWidget(iRootPanel);
+		
+		initWidget(iPanel);
 		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
-				try {
-					RoomDetailInterface room = (iRoomsTable == null ? null : iRoomsTable.getRoom(Long.parseLong(event.getValue())));
-					if (room != null) {
-						iRoomDetail.setRoom(room);
-						iRoomDetail.show();
-					}
-				} catch (NumberFormatException e) {
-					iFilter.setValue(event.getValue(), true);
-					if (iRoomDetail.equals(iRootPanel.getWidget()))
-						iRoomDetail.hide();
-					else if (iRoomsTable != null && iRoomsTable.isVisible()) 
-						search();
-				}
+				if (!iInitialized) return;
+				if ("id=add".equals(event.getValue()))
+					iHistoryToken.parse(event.getValue());
+				else
+					iHistoryToken.reset(event.getValue());
+				updateFilter(iRoomsTable.isVisible());
 			}
 		});
 		
-		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
-		RPC.execute(new RoomPropertiesRequest(), new AsyncCallback<RoomPropertiesInterface>() {
+		iRoomsTable.addOperation(new Operation() {
 			@Override
-			public void onFailure(Throwable caught) {
-				LoadingWidget.getInstance().hide();
-				iFilter.setErrorHint(MESSAGES.failedToInitialize(caught.getMessage()));
-				UniTimeNotifications.error(MESSAGES.failedToInitialize(caught.getMessage()), caught);
+			public void execute() {
+				export("rooms.pdf");
 			}
-
+			
 			@Override
-			public void onSuccess(RoomPropertiesInterface result) {
-				LoadingWidget.getInstance().hide();
-				iProperties = result;
-				if (!RoomCookie.getInstance().hasOrientation())
-					RoomCookie.getInstance().setOrientation(iProperties.isGridAsText(), iProperties.isHorizontal());
-				iRoomsTable = new RoomsTable(iMode, iProperties);
-				iRoomsTable.getElement().getStyle().setMarginTop(10, Unit.PX);
-				iRoomsPanel.add(iRoomsTable);
-				iRoomDetail.setProperties(iProperties);
-				iEditRoomSharing.setVisible(iProperties.isCanEditRoomExams() || iProperties.isCanEditDepartments());
-				iSession.fireChange();
-				initialize();
+			public boolean isApplicable() {
+				return iRoomsTable.getRowCount() > 0 && (iProperties != null && iProperties.isCanExportPdf());
+			}
+			
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			
+			@Override
+			public String getName() {
+				return MESSAGES.opExportPDF();
 			}
 		});
 		
-		iRoomDetail = new RoomDetail() {
+		iRoomsTable.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				export("rooms.csv");
+			}
+			
+			@Override
+			public boolean isApplicable() {
+				return iRoomsTable.getRowCount() > 0 && (iProperties != null && iProperties.isCanExportCsv());
+			}
+			
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			
+			@Override
+			public String getName() {
+				return MESSAGES.opExportCSV();
+			}
+		});
+		
+		iRoomsTable.addMouseClickListener(new MouseClickListener<RoomDetailInterface>() {
+			@Override
+			public void onMouseClick(final TableEvent<RoomDetailInterface> event) {
+				if (event.getData() == null || !event.getData().isCanShowDetail()) return;
+				iRoomDetail.setRoom(event.getData());
+				iRoomDetail.show();
+			}
+		});		
+		
+		iRoomDetail = new RoomDetail(iMode) {
 			@Override
 			protected void onHide() {
 				iRootPanel.setWidget(iRoomsPanel);
@@ -457,56 +577,7 @@ public class RoomsPage extends Composite {
 			}
 		};
 		
-		iNew.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				iRoomEdit.setRoom(null);
-				iRoomEdit.show();
-			}
-		});
-		
-		iFilter.addValueChangeHandler(new ValueChangeHandler<String>() {
-			@Override
-			public void onValueChange(ValueChangeEvent<String> event) {
-				if (iRoomDepartmentsEdit != null)
-					iEditRoomSharing.setEnabled(iRoomDepartmentsEdit.setDepartmentOrExamType(iFilter) && iRoomDepartmentsEdit.canEdit());
-				
-			}
-		});
-		
-		iEditRoomSharing.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				if (iRoomDepartmentsEdit == null || !iRoomDepartmentsEdit.canEdit()) return;
-				RoomFilterRpcRequest request = iFilter.getElementsRequest();
-				request.getOptions().remove("department");
-				LoadingWidget.execute(request, new AsyncCallback<FilterRpcResponse>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						iFilter.setErrorHint(MESSAGES.failedToLoadRooms(caught.getMessage()));
-						UniTimeNotifications.error(MESSAGES.failedToLoadRooms(caught.getMessage()), caught);
-					}
-					@Override
-					public void onSuccess(FilterRpcResponse result) {
-						iFilter.clearHint();
-						if (result == null || result.getResults() == null || result.getResults().isEmpty()) {
-							iFilter.setErrorHint(MESSAGES.errorNoRoomsMatchingFilter());
-						} else {
-							iRoomDepartmentsEdit.setRooms(result.getResults(), iRoomsTable.hasSortBy() ? new Integer(iRoomsTable.getSortBy()) : null);
-							iRoomDepartmentsEdit.show();
-						}
-					}
-				}, MESSAGES.waitLoadingRooms());
-				
-			}
-		});
-	}
-	
-	private boolean iInitialized = false;
-	protected void initialize() {
-		if (iInitialized) return;
-		if (iProperties == null) return;
-		iRoomEdit = new RoomEdit(iProperties) {
+		iRoomEdit = new RoomEdit(iMode) {
 			@Override
 			protected void onShow() {
 				iRootPanel.setWidget(iRoomEdit);
@@ -526,7 +597,8 @@ public class RoomsPage extends Composite {
 				changeUrl();
 			}
 		};
-		iRoomDepartmentsEdit = new RoomDepartmentsEdit(iProperties) {
+		
+		iRoomDepartmentsEdit = new RoomDepartmentsEdit() {
 			@Override
 			protected void onShow() {
 				iRootPanel.setWidget(iRoomDepartmentsEdit);
@@ -539,14 +611,84 @@ public class RoomsPage extends Composite {
 				if (refresh && iRoomsTable.isVisible()) search();
 			}
 		};
-		iNew.setEnabled(iProperties.isCanAddRoom() || iProperties.isCanAddNonUniversity());
-		if (History.getToken() != null && !History.getToken().isEmpty()) {
-			try {
-				final Long roomId = Long.parseLong(History.getToken());
+		
+		iFilter.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				if (iEditRoomSharing != null) iEditRoomSharing.setEnabled(iRoomDepartmentsEdit.setDepartmentOrExamType(iFilter) && iRoomDepartmentsEdit.canEdit());
+				if (iHeaderPanel != null) iHeaderPanel.setEnabled("sharing",
+						iProperties != null && (iProperties.isCanEditRoomExams() || iProperties.isCanEditDepartments()) &&
+						iRoomDepartmentsEdit.setDepartmentOrExamType(iFilter) && iRoomDepartmentsEdit.canEdit());
+			}
+		});
+	}
+	
+	private boolean iInitialized = false;
+	protected void setup(final Long sessionId) {
+		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
+		RPC.execute(new RoomPropertiesRequest(sessionId), new AsyncCallback<RoomPropertiesInterface>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				iFilter.setErrorHint(MESSAGES.failedToInitialize(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToInitialize(caught.getMessage()), caught);
+			}
+
+			@Override
+			public void onSuccess(RoomPropertiesInterface result) {
+				LoadingWidget.getInstance().hide();
+				
+				iProperties = result;
+				boolean search = iRoomsTable.isVisible();
+				
+				if (!RoomCookie.getInstance().hasOrientation())
+					RoomCookie.getInstance().setOrientation(iProperties.isGridAsText(), iProperties.isHorizontal());
+				
+				iRoomDetail.setProperties(iProperties);
+				iRoomsTable.setProperties(iProperties);
+				iRoomEdit.setProperties(iProperties);
+				iRoomDepartmentsEdit.setProperties(iProperties);
+
+				if (iSession instanceof Session)
+					((Session)iSession).fireChange();
+
+				if (iNew != null) iNew.setEnabled(iProperties.isCanAddRoom() || iProperties.isCanAddNonUniversity());
+				if (iHeaderPanel != null) iHeaderPanel.setEnabled("new", iProperties.isCanAddRoom() || iProperties.isCanAddNonUniversity());
+				
+				if (iEditRoomSharing != null) {
+					iEditRoomSharing.setVisible(iProperties.isCanEditRoomExams() || iProperties.isCanEditDepartments());
+					iEditRoomSharing.setEnabled(iRoomDepartmentsEdit.setDepartmentOrExamType(iFilter) && iRoomDepartmentsEdit.canEdit());
+				}
+				if (iHeaderPanel != null) {
+					iHeaderPanel.setEnabled("sharing",
+						iProperties != null && (iProperties.isCanEditRoomExams() || iProperties.isCanEditDepartments()) &&
+						iRoomDepartmentsEdit.setDepartmentOrExamType(iFilter) && iRoomDepartmentsEdit.canEdit());
+				}
+				
+				if (sessionId != null && iSession instanceof AcademicSessionSelectionBox) {
+					iHistoryToken.setParameter("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation());
+					iHistoryToken.mark();
+				}
+				updateFilter(search);
+				iInitialized = true;
+			}
+		});
+	}
+	
+	protected void updateFilter(boolean search) {
+		iFilter.setValue(iHistoryToken.getParameter("q"), true);
+		if (iSession instanceof AcademicSessionSelectionBox && iHistoryToken.isChanged("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation()) && iHistoryToken.getParameter("term") != null)
+			((AcademicSessionSelectionBox)iSession).selectSession(iHistoryToken.getParameter("term"), null);
+		if (iHistoryToken.hasParameter("id")) {
+			if ("add".equals(iHistoryToken.getParameter("id"))) {
+				iRoomEdit.setRoom(null);
+				iRoomEdit.show();
+			} else {
+				final Long roomId = Long.valueOf(iHistoryToken.getParameter("id"));
 				FilterRpcRequest rooms = iFilter.createRpcRequest();
 				rooms.setCommand(FilterRpcRequest.Command.ENUMERATE);
 				rooms.addOption("id", roomId.toString());
-				iFilter.setValue(RoomCookie.getInstance().getHash(iMode), true);
+				iFilter.setValue(iHistoryToken.getParameter("q"), true);
 				rooms.setSessionId(iProperties.getAcademicSessionId());
 				LoadingWidget.execute(rooms, new AsyncCallback<FilterRpcResponse>() {
 					@Override
@@ -564,67 +706,10 @@ public class RoomsPage extends Composite {
 						}
 					}
 				}, MESSAGES.waitLoadingRoomDetails());
-			} catch (NumberFormatException e) {
-				iFilter.setValue(History.getToken(), true);
 			}
-		} else {
-			iFilter.setValue(RoomCookie.getInstance().getHash(iMode), true);
+		} else if (search) {
+			search();
 		}
-		
-		iRoomsTable.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				export("rooms.pdf");
-			}
-			
-			@Override
-			public boolean isApplicable() {
-				return iRoomsTable.getRowCount() > 0 && (iProperties != null && iProperties.isCanExportPdf());
-			}
-			
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			
-			@Override
-			public String getName() {
-				return MESSAGES.opExportPDF();
-			}
-		});
-		
-		iRoomsTable.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				export("rooms.csv");
-			}
-			
-			@Override
-			public boolean isApplicable() {
-				return iRoomsTable.getRowCount() > 0 && (iProperties != null && iProperties.isCanExportCsv());
-			}
-			
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			
-			@Override
-			public String getName() {
-				return MESSAGES.opExportCSV();
-			}
-		});
-		
-		iRoomsTable.addMouseClickListener(new MouseClickListener<RoomDetailInterface>() {
-			@Override
-			public void onMouseClick(final TableEvent<RoomDetailInterface> event) {
-				if (event.getData() == null) return;
-				iRoomDetail.setRoom(event.getData());
-				iRoomDetail.show();
-			}
-		});
-		
-		iInitialized = true;
 	}
 	
 	protected void export(String format) {
@@ -665,7 +750,8 @@ public class RoomsPage extends Composite {
 	
 	protected void search() {
 		if (iRoomsTable == null) return;
-		iMore.setEnabled(false);
+		if (iMore != null) iMore.setEnabled(false);
+		if (iHeaderPanel != null) iHeaderPanel.setEnabled("more", false);
 		iRoomsTable.clearTable(1);
 		LoadingWidget.execute(iFilter.getElementsRequest(), new AsyncCallback<FilterRpcResponse>() {
 			@Override
@@ -685,7 +771,8 @@ public class RoomsPage extends Composite {
 						iRoomsTable.addRoom((RoomDetailInterface)entity);
 					iRoomsTable.sort();
 				}
-				iMore.setEnabled(iRoomsTable.getRowCount() > 1);
+				if (iMore != null) iMore.setEnabled(iRoomsTable.getRowCount() > 1);
+				if (iHeaderPanel != null) iHeaderPanel.setEnabled("more", iRoomsTable.getRowCount() > 1);
 			}
 		}, MESSAGES.waitLoadingRooms());
 	}
@@ -742,15 +829,143 @@ public class RoomsPage extends Composite {
 	}
 	
 	protected void changeUrl() {
-		String token = null;
+		iHistoryToken.reset(null);
+		if (iSession instanceof AcademicSessionSelectionBox)
+			iHistoryToken.setParameter("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation());
+		iHistoryToken.setParameter("q", iFilter.getValue());
 		if (iRoomDetail.equals(iRootPanel.getWidget())) {
-			token = iRoomDetail.getRoom().getUniqueId().toString();
-		} else {
-			token = iFilter.getValue();
-			RoomCookie.getInstance().setHash(iMode, token);
+			iHistoryToken.setParameter("id", iRoomDetail.getRoom().getUniqueId() == null ? "add" : iRoomDetail.getRoom().getUniqueId().toString());
 		}
-		if (!History.getToken().equals(token))
-			History.newItem(token, false);
+		iHistoryToken.mark();
 		Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
+	}
+	
+	public static class HistoryToken {
+		private RoomsPageMode iMode = null;
+		private Map<String, String> iParams = new HashMap<String, String>();
+		private Map<String, String> iDefaults = new HashMap<String, String>();
+		
+		public HistoryToken(RoomsPageMode mode) {
+			iMode = mode;
+			
+			// 1. take page type defaults --> DEFAULTS
+			String query = iMode.getQuery();
+			if (query != null) {
+				for (String pair: query.split("\\&")) {
+					int idx = pair.indexOf('=');
+					if (idx >= 0) {
+						String key = pair.substring(0, idx);
+						if (Location.getParameter(key) == null)
+							iParams.put(key, URL.decodeQueryString(pair.substring(idx + 1)));
+					}
+				}
+			}
+			
+			// 2. take page parameters --> DEFAULTS (on top of the page type defaults)
+			for (Map.Entry<String, List<String>> params: Window.Location.getParameterMap().entrySet())
+				iDefaults.put(params.getKey(), params.getValue().get(0));
+			
+			// 3. take cookie --> PARAMS (override defaults)
+			String cookie = RoomCookie.getInstance().getHash(iMode); 
+			if (cookie != null) {
+				for (String pair: cookie.split("\\&")) {
+					int idx = pair.indexOf('=');
+					if (idx >= 0) {
+						String key = pair.substring(0, idx);
+						if (Location.getParameter(key) == null)
+							iParams.put(key, URL.decodeQueryString(pair.substring(idx + 1)));
+					}
+				}
+			}
+			
+			// 4. take page token (hash) --> PARAMS (override cookie)
+			parse(History.getToken());
+		}
+		
+		public void reset(String token) {
+			iParams.clear();
+			parse(token);
+		}
+		
+		public void parse(String token) {
+			if (token != null && !token.isEmpty())
+				for (String pair: token.split("\\&")) {
+					int idx = pair.indexOf('=');
+					if (idx >= 0)
+						iParams.put(pair.substring(0, idx), URL.decodeQueryString(pair.substring(idx + 1)));
+				}
+		}
+		
+		public void setParameter(String key, String value) {
+			if (value == null) {
+				iParams.remove(key);
+			} else {
+				String defaultValue = iDefaults.get(key);
+				if (value.equals(defaultValue))
+					iParams.remove(key);
+				else
+					iParams.put(key, value);
+			}
+		}
+		
+		public void setParameter(String key, Long value) {
+			setParameter(key, value == null ? null : value.toString());
+		}
+		
+		@Override
+		public String toString() {
+			return toString(null);
+		}
+		
+		public String toString(String skip) {
+			String ret = "";
+			for (String key: new TreeSet<String>(iParams.keySet())) {
+				if (key.equals(skip)) continue;
+				if (!ret.isEmpty()) ret += "&";
+				ret += key + "=" + URL.encodeQueryString(iParams.get(key));
+			}
+			return ret;
+		}
+		
+		public String getParameter(String key, String defaultValue) {
+			String value = getParameter(key);
+			return (value == null ? defaultValue : value);
+		}
+		
+		public String getParameter(String key) {
+			String value = iParams.get(key);
+			return (value == null ? iDefaults.get(key) : value);
+		}
+		
+		public String getDefaultParameter(String key, String defaultValue) {
+			String value = iDefaults.get(key);
+			return (value == null ? defaultValue : value);
+		}
+		
+		public void setDefaultParameter(String key, String value) {
+			if (value != null)
+				iDefaults.put(key, value);
+		}
+		
+		public boolean hasParameter(String key) {
+			return getParameter(key) != null;
+		}
+		
+		public boolean isChanged(String key, String value) {
+			String v = getParameter(key);
+			return (v == null ? value != null : !v.equals(value));
+		}
+		
+		public boolean isChanged(String key, String defaultValue, String value) {
+			String v = getParameter(key);
+			return (v == null ? !defaultValue.equals(value) : !v.equals(value));
+		}
+		
+		public void mark() {
+			String token = toString();
+			if (!History.getToken().equals(token))
+				History.newItem(token, false);
+			RoomCookie.getInstance().setHash(iMode, toString("id"));
+		}
 	}
 }

@@ -111,7 +111,7 @@ public class RoomFeatureListAction extends Action {
 
 		if (sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom) != null && roomFeatureListForm.getDeptCodeX() == null) {
 			deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
-			if (deptCode != null && ("All".equals(deptCode) || deptCode.matches("Exam[0-9]*") || sessionContext.hasPermission(deptCode, "Department", Right.RoomFeatures)))
+			if (deptCode != null && ("All".equals(deptCode) || deptCode.matches("Exam[0-9]*")))
 				roomFeatureListForm.setDeptCodeX((String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom));
 		}
 

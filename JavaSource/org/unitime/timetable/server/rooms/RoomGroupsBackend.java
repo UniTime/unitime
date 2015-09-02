@@ -45,6 +45,12 @@ public class RoomGroupsBackend implements GwtRpcImplementation<SearchRoomGroupsR
 
 	@Override
 	public GwtRpcResponseList<GroupInterface> execute(SearchRoomGroupsRequest request, SessionContext context) {
+		if (request.hasSessionId())
+			context = new EventContext(context, request.getSessionId());
+
+		if (context.isAuthenticated())
+			request.getFilter().setOption("user", context.getUser().getExternalUserId());
+
 		context.checkPermission(Right.RoomGroups);
 		GwtRpcResponseList<GroupInterface> list = new GwtRpcResponseList<GroupInterface>();
 		
@@ -66,9 +72,13 @@ public class RoomGroupsBackend implements GwtRpcImplementation<SearchRoomGroupsR
 				group.setDepartment(RoomDetailsBackend.wrap(g.getDepartment(), null, null));
 				group.setCanEdit(context.hasPermission(g, Right.DepartmenalRoomGroupEdit));
 				group.setCanDelete(context.hasPermission(g, Right.DepartmenalRoomGroupDelete));
+				group.setSessionId(g.getDepartment().getSession().getUniqueId());
+				group.setSessionName(g.getDepartment().getSession().getLabel());
 			} else {
 				group.setCanEdit(context.hasPermission(g, Right.GlobalRoomGroupEdit));
 				group.setCanDelete(context.hasPermission(g, Right.GlobalRoomGroupDelete));
+				group.setSessionId(g.getSession().getUniqueId());
+				group.setSessionName(g.getSession().getLabel());
 			}
 			
 			for (Location location: g.getRooms()) {

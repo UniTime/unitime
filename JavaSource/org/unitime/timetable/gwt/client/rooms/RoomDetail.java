@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingModel;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -68,8 +69,10 @@ public class RoomDetail extends Composite {
 	
 	private RoomPropertiesInterface iProperties = null;
 	private RoomDetailInterface iRoom = null;
+	private RoomsPageMode iMode = null;
 	
-	public RoomDetail() {
+	public RoomDetail(RoomsPageMode mode) {
+		iMode = mode;
 		iHeader = new UniTimeHeaderPanel();
 		iHeader.addButton("edit", MESSAGES.buttonEditRoom(), 100, new ClickHandler() {
 			@Override
@@ -161,7 +164,12 @@ public class RoomDetail extends Composite {
 		boolean exams = iProperties != null && iProperties.isCanSeeExams();
 		boolean events = iProperties != null && iProperties.isCanSeeEvents();
 		
-		int firstRow = iForm.addRow(MESSAGES.propType(), new Label(iRoom.getRoomType().getLabel()), 1);
+		int firstRow = iForm.getRowCount();
+		
+		if (iMode.hasSessionSelection())
+			iForm.addRow(MESSAGES.propAcademicSession(), new Label(iRoom.hasSessionName() ? iRoom.getSessionName() : iProperties.getAcademicSessionName()), 1);
+		
+		iForm.addRow(MESSAGES.propType(), new Label(iRoom.getRoomType().getLabel()), 1);
 		if (iRoom.hasExternalId()) {
 			iForm.addRow(MESSAGES.propExternalId(), new Label(iRoom.getExternalId()), 1);
 		}
@@ -234,7 +242,7 @@ public class RoomDetail extends Composite {
 			final RoomSharingWidget sharing = new RoomSharingWidget(false);
 			sharing.setVisible(false);
 			iForm.addRow(sharing);
-			RPC.execute(RoomInterface.RoomSharingRequest.load(iRoom.getUniqueId(), false), new AsyncCallback<RoomSharingModel>() {
+			RPC.execute(RoomInterface.RoomSharingRequest.load(iRoom.getSessionId(), iRoom.getUniqueId(), false), new AsyncCallback<RoomSharingModel>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					header.setErrorMessage(MESSAGES.failedToLoadRoomAvailability(caught.getMessage()));
@@ -258,7 +266,7 @@ public class RoomDetail extends Composite {
 				final int row = iForm.addRow(MESSAGES.propExaminationPreferences(type.getLabel()), pref);
 				iForm.getRowFormatter().setVisible(row, false);
 				
-				RPC.execute(RoomInterface.PeriodPreferenceRequest.load(iRoom.getUniqueId(), type.getId()), new AsyncCallback<PeriodPreferenceModel>() {
+				RPC.execute(RoomInterface.PeriodPreferenceRequest.load(iRoom.getSessionId(), iRoom.getUniqueId(), type.getId()), new AsyncCallback<PeriodPreferenceModel>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						header.setErrorMessage(MESSAGES.failedToLoadPeriodPreferences(caught.getMessage()));
@@ -281,7 +289,7 @@ public class RoomDetail extends Composite {
 			final RoomSharingWidget sharing = new RoomSharingWidget(false);
 			sharing.setVisible(false);
 			iForm.addRow(sharing);
-			RPC.execute(RoomInterface.RoomSharingRequest.load(iRoom.getUniqueId(), true), new AsyncCallback<RoomSharingModel>() {
+			RPC.execute(RoomInterface.RoomSharingRequest.load(iRoom.getSessionId(), iRoom.getUniqueId(), true), new AsyncCallback<RoomSharingModel>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					header.setErrorMessage(MESSAGES.failedToLoadRoomAvailability(caught.getMessage()));

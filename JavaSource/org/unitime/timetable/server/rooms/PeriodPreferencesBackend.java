@@ -25,6 +25,7 @@ import java.util.Set;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -56,6 +57,9 @@ public class PeriodPreferencesBackend implements GwtRpcImplementation<PeriodPref
 
 	@Override
 	public PeriodPreferenceModel execute(PeriodPreferenceRequest request, SessionContext context) {
+		if (request.hasSessionId())
+			context = new EventContext(context, request.getSessionId());
+
 		switch (request.getOperation()) {
 		case LOAD:
 			return loadPeriodPreferences(request, context);

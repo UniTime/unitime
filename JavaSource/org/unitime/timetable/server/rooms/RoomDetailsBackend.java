@@ -232,6 +232,8 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 			response.setName(room.getRoomNumber());
 		}
 		
+		response.setSessionId(location.getSession().getUniqueId());
+		response.setSessionName(location.getSession().getLabel());
 		response.setExternalId(location.getExternalUniqueId());
 		response.setRoomType(new RoomTypeInterface(location.getRoomType().getUniqueId(), location.getRoomType().getLabel(), location.getRoomType().isRoom()));
 		response.setX(location.getCoordinateX());

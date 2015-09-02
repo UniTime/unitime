@@ -47,6 +47,8 @@ public class SimpleForm extends FlexTable {
 		this(2);
 	}
 	
+	public void setColSpan(int colSpan) { iColSpan = colSpan; }
+	
 	public int addHeaderRow(Widget widget) {
 		int row = getRowCount();
 		getFlexCellFormatter().setColSpan(row, 0, iColSpan);

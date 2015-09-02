@@ -88,7 +88,7 @@ public class RoomGroupSearchAction extends Action {
 		    	sessionContext.setAttribute(SessionAttribute.DepartmentCodeRoom, deptCode);
 		}
 		if (deptCode != null && !deptCode.isEmpty() &&
-				("All".equals(deptCode) || deptCode.matches("Exam[0-9]*") || sessionContext.hasPermission(deptCode, "Department", Right.RoomFeatures))) {
+				("All".equals(deptCode) || deptCode.matches("Exam[0-9]*"))) {
 			roomGroupListForm.setDeptCodeX(deptCode);
 			
 			if ("Export PDF".equals(request.getParameter("op"))) {

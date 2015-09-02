@@ -97,6 +97,9 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 
 	@Override
 	public RoomDetailInterface execute(RoomUpdateRpcRequest request, SessionContext context) {
+		if (request.hasSessionId())
+			context = new EventContext(context, request.getSessionId());
+		
 		Location location = null;
 		RoomException exception = null;
 		try {
@@ -709,6 +712,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				NonUniversityLocation r = new NonUniversityLocation();
 				r.setPictures(new HashSet<NonUniversityLocationPicture>());
 				r.setName(room.getName());
+				location = r;
 			}
 			location.setSession(session);
 			location.setIgnoreTooFar(room.isIgnoreTooFar());

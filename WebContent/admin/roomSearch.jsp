@@ -50,13 +50,13 @@
 					<html:submit property="op" onclick="displayLoading();" accesskey="S" styleClass="btn" titleKey="title.searchRooms">
 						<bean:message key="button.search" />
 					</html:submit>
-					<sec:authorize access="hasPermission(null, 'Department', 'RoomsExportPdf')">
+					<sec:authorize access="hasPermission(null, 'Session', 'RoomsExportPdf')">
 						&nbsp;&nbsp;
 						<html:submit property="op" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
 							<bean:message key="button.exportPDF" />
 						</html:submit>
 					</sec:authorize>
-					<sec:authorize access="hasPermission(null, 'Department', 'RoomsExportCsv')">
+					<sec:authorize access="hasPermission(null, 'Session', 'RoomsExportCsv')">
 						&nbsp;&nbsp;
 						<html:submit property="op" accesskey="C" styleClass="btn" titleKey="title.exportCSV">
 							<bean:message key="button.exportCSV" />

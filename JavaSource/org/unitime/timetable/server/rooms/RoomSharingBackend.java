@@ -35,6 +35,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -68,6 +69,9 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 
 	@Override
 	public RoomSharingModel execute(RoomSharingRequest request, SessionContext context) {
+		if (request.hasSessionId())
+			context = new EventContext(context, request.getSessionId());
+
 		switch (request.getOperation()) {
 		case LOAD:
 			return (request.isEventAvailability() ? loadEventAvailability(request, context) : loadRoomSharing(request, context));

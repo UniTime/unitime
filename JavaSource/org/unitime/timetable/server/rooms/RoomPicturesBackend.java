@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import org.apache.commons.fileupload.FileItem;
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -72,6 +73,9 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 	
 	@Override
 	public RoomPictureResponse execute(RoomPictureRequest request, SessionContext context) {
+		if (request.hasSessionId())
+			context = new EventContext(context, request.getSessionId());
+
 		RoomPictureResponse response = new RoomPictureResponse();
 		Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(RoomPictureServlet.TEMP_ROOM_PICTURES);
 

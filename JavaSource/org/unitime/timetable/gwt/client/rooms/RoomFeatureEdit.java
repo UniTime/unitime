@@ -59,6 +59,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 
@@ -77,17 +78,19 @@ public class RoomFeatureEdit extends Composite {
 	private UniTimeWidget<TextBox> iName;
 	private UniTimeWidget<TextBox> iAbbreviation;
 	private ListBox iType = null;
+	private int iTypeRow = -1;
 	private UniTimeWidget<ListBox> iDepartment;
 	private CheckBox iGlobal;
 	private int iDepartmentRow = -1;
 
 	private RoomsTable iRooms = null;
 	
+	private P iFutureSessions;
 	private Map<Long, CheckBox> iFutureSessionsToggles = new HashMap<Long, CheckBox>();
+	private int iFutureSessionsRow = -1;
+	private Label iSessionLabel = null;
 
-	public RoomFeatureEdit(RoomPropertiesInterface properties) {
-		iProperties = properties;
-
+	public RoomFeatureEdit(RoomsPageMode mode) {
 		iForm = new SimpleForm();
 		iForm.addStyleName("unitime-RoomFeatureEdit");
 		
@@ -99,6 +102,7 @@ public class RoomFeatureEdit extends Composite {
 					String future = generateAlsoUpdateMessage();
 					UpdateRoomFeatureRequest request = new UpdateRoomFeatureRequest();
 					request.setFeature(iFeature);
+					request.setSessionId(iFeature.getSessionId());
 					if (future != null) {
 						if (Window.confirm(iFeature.getId() == null ? MESSAGES.confirmCreateRoomFeatureInFutureSessions(future) : MESSAGES.confirmUpdateRoomFeatureInFutureSessions(future)))
 							fillFutureFlags(request);
@@ -107,7 +111,7 @@ public class RoomFeatureEdit extends Composite {
 					}
 					for (int i = 1; i < iRooms.getRowCount(); i++) {
 						RoomDetailInterface room = iRooms.getData(i);
-						boolean wasSelected = (iFeature.getRoom(room.getUniqueId()) != null);
+						boolean wasSelected = room.hasFeature(iFeature.getId());
 						boolean selected = iRooms.isRoomSelected(i);
 						if (selected != wasSelected) {
 							if (selected)
@@ -151,6 +155,7 @@ public class RoomFeatureEdit extends Composite {
 					return;
 				}
 				request.setDeleteFeatureId(iFeature.getId());
+				request.setSessionId(iFeature.getSessionId());
 				LoadingWidget.getInstance().show(MESSAGES.waitDeletingRoomFeature());
 				RPC.execute(request, new AsyncCallback<FeatureInterface>() {
 					@Override
@@ -178,6 +183,11 @@ public class RoomFeatureEdit extends Composite {
 
 		iForm.addHeaderRow(iHeader);
 		
+		if (mode.hasSessionSelection()) {
+			iSessionLabel = new Label();
+			iForm.addRow(MESSAGES.propAcademicSession(), iSessionLabel);
+		}
+		
 		iName = new UniTimeWidget<TextBox>(new TextBox());
 		iName.getWidget().setStyleName("unitime-TextBox");
 		iName.getWidget().setMaxLength(60);
@@ -204,13 +214,9 @@ public class RoomFeatureEdit extends Composite {
 		});
 		iForm.addRow(MESSAGES.propAbbreviation(), iAbbreviation);
 		
-		if (!iProperties.getFeatureTypes().isEmpty()) {
-			iType = new ListBox();
-			iType.addItem(MESSAGES.itemNoFeatureType(), "-1");
-			for (FeatureTypeInterface type: iProperties.getFeatureTypes())
-				iType.addItem(type.getLabel(), type.getId().toString());
-			iForm.addRow(MESSAGES.propFeatureType(), iType);
-		}
+		iType = new ListBox();
+		iTypeRow = iForm.addRow(MESSAGES.propFeatureType(), iType);
+		iForm.getRowFormatter().setVisible(iTypeRow, false);
 		
 		iGlobal = new CheckBox();
 		iForm.addRow(MESSAGES.propGlobalFeature(), iGlobal);
@@ -219,7 +225,7 @@ public class RoomFeatureEdit extends Composite {
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
 				iForm.getRowFormatter().setVisible(iDepartmentRow, !event.getValue());
 			}
-		});			
+		});
 		
 		iDepartment = new UniTimeWidget<ListBox>(new ListBox());
 		iDepartment.getWidget().setStyleName("unitime-TextBox");
@@ -227,7 +233,7 @@ public class RoomFeatureEdit extends Composite {
 		
 		iForm.addHeaderRow(MESSAGES.headerRooms());
 		
-		iRooms = new RoomsTable(RoomsPageMode.COURSES, iProperties, true);
+		iRooms = new RoomsTable(mode, true);
 		iForm.addRow(iRooms);
 		iRooms.addMouseClickListener(new MouseClickListener<RoomDetailInterface>() {
 			@Override
@@ -236,30 +242,45 @@ public class RoomFeatureEdit extends Composite {
 			}
 		});
 		
-		if (iProperties.hasFutureSessions()) {
-			P sessions = new P("future-sessions");
-			CheckBox current = new CheckBox(iProperties.getAcademicSessionName());
-			current.setValue(true); current.setEnabled(false);
-			current.addStyleName("future-session");
-			sessions.add(current);
-			for (AcademicSessionInterface session: iProperties.getFutureSessions()) {
-				if (session.isCanAddDepartmentalRoomFeature() || session.isCanAddGlobalRoomFeature()) {
-					CheckBox ch = new CheckBox(session.getLabel());
-					iFutureSessionsToggles.put(session.getId(), ch);
-					ch.addStyleName("future-session");
-					sessions.add(ch);
-				}
-			}
-			if (!iFutureSessionsToggles.isEmpty()) {
-				int row = iForm.addRow(MESSAGES.propApplyToFutureSessions(), sessions);
-				iForm.getCellFormatter().addStyleName(row, 0, "future-sessions-header");
-			}
-		}
+		iFutureSessions = new P("future-sessions");
+		iFutureSessionsRow = iForm.addRow(MESSAGES.propApplyToFutureSessions(), iFutureSessions);
+		iForm.getCellFormatter().addStyleName(iFutureSessionsRow, 0, "future-sessions-header");
+		iForm.getRowFormatter().setVisible(iFutureSessionsRow, false);
 		
 		iFooter = iHeader.clonePanel();
 		iForm.addBottomRow(iFooter);
 		
 		initWidget(iForm);
+	}
+	
+	public void setProperties(RoomPropertiesInterface properties) {
+		iProperties = properties;
+		iRooms.setProperties(properties);
+		
+		iForm.getRowFormatter().setVisible(iTypeRow, !iProperties.getFeatureTypes().isEmpty());
+		iType.clear();
+		if (!iProperties.getFeatureTypes().isEmpty()) {
+			iType.addItem(MESSAGES.itemNoFeatureType(), "-1");
+			for (FeatureTypeInterface type: iProperties.getFeatureTypes())
+				iType.addItem(type.getLabel(), type.getId().toString());
+		}
+
+		iFutureSessions.clear();
+		iForm.getRowFormatter().setVisible(iFutureSessionsRow, iProperties.hasFutureSessions());
+		if (iProperties.hasFutureSessions()) {
+			CheckBox current = new CheckBox(iProperties.getAcademicSessionName());
+			current.setValue(true); current.setEnabled(false);
+			current.addStyleName("future-session");
+			iFutureSessions.add(current);
+			for (AcademicSessionInterface session: iProperties.getFutureSessions()) {
+				if (session.isCanAddGlobalRoomGroup() || session.isCanAddDepartmentalRoomGroup()) {
+					CheckBox ch = new CheckBox(session.getLabel());
+					iFutureSessionsToggles.put(session.getId(), ch);
+					ch.addStyleName("future-session");
+					iFutureSessions.add(ch);
+				}
+			}
+		}
 	}
 	
 	private void hide(boolean refresh) {
@@ -291,6 +312,9 @@ public class RoomFeatureEdit extends Composite {
 		iDepartment.clearHint();
 		if (feature == null) {
 			iFeature = new FeatureInterface();
+			iFeature.setSessionId(iProperties.getAcademicSessionId());
+			iFeature.setSessionName(iProperties.getAcademicSessionName());
+			if (iSessionLabel != null) iSessionLabel.setText(iProperties.getAcademicSessionName());
 			iHeader.setEnabled("create", true);
 			iHeader.setEnabled("update", false);
 			iHeader.setEnabled("delete", false);
@@ -318,6 +342,7 @@ public class RoomFeatureEdit extends Composite {
 			}
 		} else {
 			iFeature = new FeatureInterface(feature);
+			if (iSessionLabel != null) iSessionLabel.setText(feature.getSessionName());
 			iHeader.setEnabled("create", false);
 			iHeader.setEnabled("update", feature.canEdit());
 			iHeader.setEnabled("delete", feature.canDelete());
@@ -368,7 +393,7 @@ public class RoomFeatureEdit extends Composite {
 		for (Entity e: rooms) {
 			RoomDetailInterface room = (RoomDetailInterface)e;
 			int row = iRooms.addRoom(room);
-			boolean selected = (iFeature.getRoom(room.getUniqueId()) != null);
+			boolean selected = room.hasFeature(iFeature.getId());
 			iRooms.selectRoom(row, selected);
 			iRooms.setSelected(row, selected);
 			iRooms.getRoomSelection(row).addValueChangeHandler(clearErrorMessage);
