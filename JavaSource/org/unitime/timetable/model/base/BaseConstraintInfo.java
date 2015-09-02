@@ -72,10 +72,10 @@ public abstract class BaseConstraintInfo extends SolverInfo implements Serializa
 
 	public String toDebugString() {
 		return "ConstraintInfo[" +
+			"\n	Data: " + getData() +
 			"\n	Definition: " + getDefinition() +
 			"\n	Opt: " + getOpt() +
 			"\n	UniqueId: " + getUniqueId() +
-			"\n	Value: " + getValue() +
 			"]";
 	}
 }

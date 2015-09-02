@@ -44,11 +44,10 @@
             length="3"/>
 
         <property
-            name="value"
+            name="data"
             column="value"
-            type="org.unitime.commons.hibernate.blob.XmlBlobType"
-            not-null="true"
-            length="65535"/>
+            type="byte[]"
+            not-null="true"/>
 
         <property
             name="opt"

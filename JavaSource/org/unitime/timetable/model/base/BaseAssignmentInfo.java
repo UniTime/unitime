@@ -67,10 +67,10 @@ public abstract class BaseAssignmentInfo extends SolverInfo implements Serializa
 	public String toDebugString() {
 		return "AssignmentInfo[" +
 			"\n	Assignment: " + getAssignment() +
+			"\n	Data: " + getData() +
 			"\n	Definition: " + getDefinition() +
 			"\n	Opt: " + getOpt() +
 			"\n	UniqueId: " + getUniqueId() +
-			"\n	Value: " + getValue() +
 			"]";
 	}
 }

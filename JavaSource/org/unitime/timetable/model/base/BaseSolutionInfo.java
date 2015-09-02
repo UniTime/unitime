@@ -66,11 +66,11 @@ public abstract class BaseSolutionInfo extends SolverInfo implements Serializabl
 
 	public String toDebugString() {
 		return "SolutionInfo[" +
+			"\n	Data: " + getData() +
 			"\n	Definition: " + getDefinition() +
 			"\n	Opt: " + getOpt() +
 			"\n	Solution: " + getSolution() +
 			"\n	UniqueId: " + getUniqueId() +
-			"\n	Value: " + getValue() +
 			"]";
 	}
 }

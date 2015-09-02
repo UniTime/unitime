@@ -19,13 +19,23 @@
 */
 package org.unitime.timetable.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+import org.hibernate.HibernateException;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base.BaseSolverInfo;
 import org.unitime.timetable.solver.ui.FileInfo;
@@ -68,7 +78,7 @@ public class SolverInfo extends BaseSolverInfo {
 		TimetableInfo info = getCached(getUniqueId());
 		if (info!=null) return info;
 		
-		if (getValue()==null) return null;
+		if (getData()==null) return null;
 		Element root = getValue().getRootElement();
         Class infoClass = null;
         try {
@@ -121,7 +131,7 @@ public class SolverInfo extends BaseSolverInfo {
     }
 	
 	public void delete(org.hibernate.Session hibSession, TimetableInfoFileProxy proxy) throws Exception {
-		if (getValue()!=null) {
+		if (getData()!=null) {
 			Element root = getValue().getRootElement();
             Class infoClass = null;
             try {
@@ -226,5 +236,35 @@ public class SolverInfo extends BaseSolverInfo {
     		iTimeStamp = System.currentTimeMillis();
     	}
     }
+	
+	public Document getValue() {
+		try {
+			SAXReader reader = new SAXReader();
+			GZIPInputStream gzipInput = new GZIPInputStream(new ByteArrayInputStream(getData()));
+			Document document = reader.read(gzipInput);
+			gzipInput.close();
+			return document;
+		} catch (IOException e) {
+			throw new HibernateException(e.getMessage(),e);
+		} catch (DocumentException e) {
+			throw new HibernateException(e.getMessage(),e);
+		}
+	}
+	
+	public void setValue(Document document) {
+		try {
+			if (document == null) {
+				setData(null);
+			} else {
+				 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+	             XMLWriter writer = new XMLWriter(new GZIPOutputStream(bytes),OutputFormat.createCompactFormat());
+	             writer.write(document);
+	             writer.flush(); writer.close();
+	             setData(bytes.toByteArray());
+			}
+		} catch (IOException e) {
+			throw new HibernateException(e.getMessage(),e);
+		}
+	}
 	
 }

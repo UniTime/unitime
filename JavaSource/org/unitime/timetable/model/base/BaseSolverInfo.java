@@ -21,7 +21,6 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-import org.dom4j.Document;
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.SolverInfoDef;
 
@@ -33,13 +32,13 @@ public abstract class BaseSolverInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Long iUniqueId;
-	private Document iValue;
+	private byte[] iData;
 	private String iOpt;
 
 	private SolverInfoDef iDefinition;
 
 	public static String PROP_UNIQUEID = "uniqueId";
-	public static String PROP_VALUE = "value";
+	public static String PROP_VALUE = "data";
 	public static String PROP_OPT = "opt";
 
 	public BaseSolverInfo() {
@@ -56,8 +55,8 @@ public abstract class BaseSolverInfo implements Serializable {
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
 
-	public Document getValue() { return iValue; }
-	public void setValue(Document value) { iValue = value; }
+	public byte[] getData() { return iData; }
+	public void setData(byte[] data) { iData = data; }
 
 	public String getOpt() { return iOpt; }
 	public void setOpt(String opt) { iOpt = opt; }
@@ -82,10 +81,10 @@ public abstract class BaseSolverInfo implements Serializable {
 
 	public String toDebugString() {
 		return "SolverInfo[" +
+			"\n	Data: " + getData() +
 			"\n	Definition: " + getDefinition() +
 			"\n	Opt: " + getOpt() +
 			"\n	UniqueId: " + getUniqueId() +
-			"\n	Value: " + getValue() +
 			"]";
 	}
 }
