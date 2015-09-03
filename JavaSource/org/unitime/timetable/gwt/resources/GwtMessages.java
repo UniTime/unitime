@@ -3766,4 +3766,16 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Show in Room Tooltip")
 	String attachementTypeFlagShowRoomTooltip();
+	
+	@DefaultMessage("Distance conflicts will be checked.")
+	String infoDistanceCheckOn();
+	
+	@DefaultMessage("Distance conflict checking is disabled.")
+	String infoDistanceCheckOff();
+	
+	@DefaultMessage("Room conflicts are not allowed.")
+	String infoRoomCheckOn();
+	
+	@DefaultMessage("Room conflict checking is disabled.")
+	String infoRoomCheckOff();
 }

@@ -53,6 +53,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.Label;
 
 /**
@@ -187,8 +188,10 @@ public class RoomDetail extends Composite {
 		if (iRoom.getArea() != null)
 			iForm.addRow(MESSAGES.propRoomArea(), new HTML(MESSAGES.roomArea(iRoom.getArea()) + " " + CONSTANTS.roomAreaUnitsShort()), 1);
 		if (courses) {
-			iForm.addRow(MESSAGES.propDistanceCheck(), new Image(!room.isIgnoreRoomCheck() ? RESOURCES.on() : RESOURCES.off()), 1);
-			iForm.addRow(MESSAGES.propRoomCheck(), new Image(!room.isIgnoreTooFar() ? RESOURCES.on() : RESOURCES.off()), 1);
+			iForm.addRow(MESSAGES.propDistanceCheck(), new Check(!room.isIgnoreTooFar(), MESSAGES.infoDistanceCheckOn(), MESSAGES.infoDistanceCheckOff()));
+			iForm.addRow(MESSAGES.propRoomCheck(), new Check(!room.isIgnoreRoomCheck(), MESSAGES.infoRoomCheckOn(), MESSAGES.infoRoomCheckOff()));
+		} else if (events) {
+			iForm.addRow(MESSAGES.propRoomCheck(), new Check(!room.isIgnoreRoomCheck(), MESSAGES.infoRoomCheckOn(), MESSAGES.infoRoomCheckOff()));
 		}
 		if (events && iRoom.getEventDepartment() != null)
 			iForm.addRow(MESSAGES.propEventDepartment(), new Label(RoomDetail.toString(iRoom.getEventDepartment(), true)), 1);
@@ -423,6 +426,22 @@ public class RoomDetail extends Composite {
 	
 	static String toString(DepartmentInterface department) {
 		return toString(department, false);
+	}
+	
+	static class Check extends P {
+		Check(boolean value, String onMessage, String offMessage) {
+			Image image = new Image(value ? RESOURCES.on() : RESOURCES.off());
+			image.addStyleName("image");
+			add(image);
+			InlineHTML text = new InlineHTML(value ? onMessage : offMessage);
+			text.addStyleName("message");
+			add(text);
+			if (value)
+				addStyleName("check-enabled");
+			else
+				addStyleName("check-disabled");
+		}
+		
 	}
 
 }

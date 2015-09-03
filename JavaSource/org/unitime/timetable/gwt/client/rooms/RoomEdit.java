@@ -27,6 +27,7 @@ import java.util.Map;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.rooms.RoomDetail.Check;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -366,8 +367,20 @@ public class RoomEdit extends Composite {
 		iAreaPanel.getWidget().add(iAreaFormat);
 		
 		iDistanceCheck = new CheckBox();
+		iDistanceCheck.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				distanceCheckChanged();
+			}
+		});
 		
 		iRoomCheck = new CheckBox();
+		iRoomCheck.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				roomCheckChanged();
+			}
+		});
 		
 		iExaminationRoomsPanel = new P("exams"); iExaminationRoomsPanel.setWidth("100%");
 		
@@ -765,9 +778,13 @@ public class RoomEdit extends Composite {
 			iForm.addRow(MESSAGES.propCoordinates(), iCoordinates, 1);
 			iArea.setValue(iRoom.getArea());
 			iForm.addRow(MESSAGES.propRoomArea(), iAreaPanel, 1);
-			iDistanceCheck.setValue(!iRoom.isIgnoreTooFar());
-			iForm.addRow(MESSAGES.propDistanceCheck(), iDistanceCheck, 1);
+			if (iProperties.isCanSeeCourses()) {
+				iDistanceCheck.setValue(!iRoom.isIgnoreTooFar());
+				distanceCheckChanged();
+				iForm.addRow(MESSAGES.propDistanceCheck(), iDistanceCheck, 1);
+			}
 			iRoomCheck.setValue(!iRoom.isIgnoreRoomCheck());
+			roomCheckChanged();
 			iForm.addRow(MESSAGES.propRoomCheck(), iRoomCheck, 1);
 			if (iGoogleMapControl != null) iGoogleMapControl.setVisible(true);
 		} else {
@@ -779,8 +796,10 @@ public class RoomEdit extends Composite {
 			if (iRoom.getArea() != null)
 				iForm.addRow(MESSAGES.propRoomArea(), new HTML(MESSAGES.roomArea(iRoom.getArea()) + " " + CONSTANTS.roomAreaUnitsShort()), 1);
 			if (iProperties.isCanSeeCourses()) {
-				iForm.addRow(MESSAGES.propDistanceCheck(), new Image(!room.isIgnoreRoomCheck() ? RESOURCES.on() : RESOURCES.off()), 1);
-				iForm.addRow(MESSAGES.propRoomCheck(), new Image(!room.isIgnoreTooFar() ? RESOURCES.on() : RESOURCES.off()), 1);
+				iForm.addRow(MESSAGES.propDistanceCheck(), new Check(!room.isIgnoreTooFar(), MESSAGES.infoDistanceCheckOn(), MESSAGES.infoDistanceCheckOff()), 1);
+				iForm.addRow(MESSAGES.propRoomCheck(), new Check(!room.isIgnoreRoomCheck(), MESSAGES.infoRoomCheckOn(), MESSAGES.infoRoomCheckOff()), 1);
+			} else if (iProperties.isCanSeeEvents()) {
+				iForm.addRow(MESSAGES.propRoomCheck(), new Check(!room.isIgnoreRoomCheck(), MESSAGES.infoRoomCheckOn(), MESSAGES.infoRoomCheckOff()), 1);
 			}
 			if (iGoogleMapControl != null) iGoogleMapControl.setVisible(false);
 		}
@@ -1286,7 +1305,8 @@ public class RoomEdit extends Composite {
 			iRoom.setX(iX.toDouble());
 			iRoom.setY(iY.toDouble());
 			iRoom.setArea(iArea.toDouble());
-			iRoom.setIgnoreTooFar(!iDistanceCheck.getValue());
+			if (iProperties.isCanSeeCourses())
+				iRoom.setIgnoreTooFar(!iDistanceCheck.getValue());
 			iRoom.setIgnoreRoomCheck(!iRoomCheck.getValue());
 		}
 		if ((iRoom.getUniqueId() == null && iProperties.isCanChangeExternalId()) || iRoom.isCanChangeExternalId()) {
@@ -1655,6 +1675,28 @@ public class RoomEdit extends Composite {
 					RoomHint.hideHint();
 				}
 			});
+		}
+	}
+	
+	protected void roomCheckChanged() {
+		iRoomCheck.setHTML(iRoomCheck.getValue() ? MESSAGES.infoRoomCheckOn() : MESSAGES.infoRoomCheckOff());
+		if (iRoomCheck.getValue()) {
+			iRoomCheck.addStyleName("check-enabled");
+			iRoomCheck.removeStyleName("check-disabled");
+		} else {
+			iRoomCheck.addStyleName("check-disabled");
+			iRoomCheck.removeStyleName("check-enabled");
+		}
+	}
+	
+	protected void distanceCheckChanged() {
+		iDistanceCheck.setHTML(iDistanceCheck.getValue() ? MESSAGES.infoDistanceCheckOn() : MESSAGES.infoDistanceCheckOff());
+		if (iDistanceCheck.getValue()) {
+			iDistanceCheck.addStyleName("check-enabled");
+			iDistanceCheck.removeStyleName("check-disabled");
+		} else {
+			iDistanceCheck.addStyleName("check-disabled");
+			iDistanceCheck.removeStyleName("check-enabled");
 		}
 	}
 }

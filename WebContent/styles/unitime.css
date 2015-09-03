@@ -3712,6 +3712,19 @@ unitime-RoomSharingWidget .legend .blank {
 	margin: 2px;
 }
 
+.unitime-RoomDetail .check-enabled .message {
+	font-style: italic;
+	padding-left: 5px;
+	vertical-align: top;
+}
+
+.unitime-RoomDetail .check-disabled .message {
+	font-style: italic;
+	padding-left: 5px;
+	vertical-align: top;
+	color: red;
+}
+
 .unitime-RoomEdit .map {
 	width: 600px;
 	height: 400px;
@@ -3803,6 +3816,15 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-RoomEdit .default {
 	font-style: italic;	
+}
+
+.unitime-RoomEdit .check-enabled {
+	font-style: italic;
+}
+
+.unitime-RoomEdit .check-disabled {
+	font-style: italic;
+	color: red;
 }
 
 .unitime-Widget {

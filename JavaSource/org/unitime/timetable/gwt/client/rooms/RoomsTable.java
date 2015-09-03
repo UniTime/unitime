@@ -618,8 +618,9 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	protected Widget getCell(final RoomDetailInterface room, final RoomsColumn column, final int idx) {
 		if (iProperties == null || !iProperties.isCanSeeCourses()) {
 			switch (column) {
-			case DISTANCE_CHECK:
 			case ROOM_CHECK:
+				if (iProperties != null && iProperties.isCanSeeEvents()) break;
+			case DISTANCE_CHECK:
 			case PREFERENCE:
 			case AVAILABILITY:
 			case DEPARTMENTS:
@@ -677,10 +678,14 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			return new Label(MESSAGES.coordinates(room.getX(), room.getY()));
 			
 		case DISTANCE_CHECK:
-			return new Image(!room.isIgnoreTooFar() ? RESOURCES.on() : RESOURCES.off());
+			Image dc = new Image(!room.isIgnoreTooFar() ? RESOURCES.on() : RESOURCES.off());
+			dc.setTitle(!room.isIgnoreTooFar() ? MESSAGES.infoDistanceCheckOn() : MESSAGES.infoDistanceCheckOff());
+			return dc;
 		
 		case ROOM_CHECK:
-			return new Image(!room.isIgnoreRoomCheck() ? RESOURCES.on() : RESOURCES.off());
+			Image rc = new Image(!room.isIgnoreRoomCheck() ? RESOURCES.on() : RESOURCES.off());
+			rc.setTitle(!room.isIgnoreRoomCheck() ? MESSAGES.infoRoomCheckOn() : MESSAGES.infoRoomCheckOff());
+			return rc;
 		
 		case PREFERENCE:
 			boolean hasPreferences = false;
