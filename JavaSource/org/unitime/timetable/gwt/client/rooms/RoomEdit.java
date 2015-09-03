@@ -761,13 +761,15 @@ public class RoomEdit extends Composite {
 					iControllingDepartment.getWidget().setSelectedIndex(iControllingDepartment.getWidget().getItemCount() - 1);
 				}
 			}
+			if (iRoom.getUniqueId() == null && iControllingDepartment.getWidget().getItemCount() == 2)
+				iControllingDepartment.getWidget().setSelectedIndex(1);
 			iForm.addRow(MESSAGES.propControllingDepartment(), iControllingDepartment, 1);
-		} else if (iRoom.getUniqueId() == null) {
+/*		} else if (iRoom.getUniqueId() == null) {
 			iControllingDepartment.getWidget().clear();
 			for (DepartmentInterface department: iProperties.getDepartments())
 				iControllingDepartment.getWidget().addItem(department.getExtAbbreviationOrCode() + " - " + department.getExtLabelWhenExist(), department.getId().toString());
 			//TODO: guess selected department from filter
-			iForm.addRow(MESSAGES.propDepartment(), iControllingDepartment, 1);
+			iForm.addRow(MESSAGES.propDepartment(), iControllingDepartment, 1);*/
 		} else if (iRoom.getControlDepartment() != null && iProperties.isCanSeeCourses()) {
 			iForm.addRow(MESSAGES.propControllingDepartment(), new Label(RoomDetail.toString(iRoom.getControlDepartment())), 1);
 		}
@@ -821,7 +823,8 @@ public class RoomEdit extends Composite {
 		
 		if ((iRoom.getUniqueId() == null && iProperties.isCanChangeEventProperties()) || iRoom.isCanChangeEventProperties()) {
 			iEventDepartment.clear();
-			iEventDepartment.addItem(MESSAGES.itemNoEventDepartment(), "-1");
+			if ((iRoom.getUniqueId() == null || iRoom.getEventDepartment() != null) && ((iRoom.getUniqueId() == null && iProperties.isCanChangeControll()) || iRoom.isCanChangeControll()))
+				iEventDepartment.addItem(MESSAGES.itemNoEventDepartment(), "-1");
 			for (DepartmentInterface department: iProperties.getDepartments())
 				if (department.isEvent())
 					iEventDepartment.addItem(department.getDeptCode() + " - " + department.getLabel(), department.getId().toString());
@@ -836,7 +839,7 @@ public class RoomEdit extends Composite {
 				}
 				if (iRoom.getEventDepartment() != null && iEventDepartment.getSelectedIndex() == 0) {
 					iEventDepartment.addItem(iRoom.getEventDepartment().getDeptCode() + " - " + iRoom.getEventDepartment().getLabel(), iRoom.getEventDepartment().getId().toString());
-					iEventDepartment.setSelectedIndex(iEventDepartment.getItemCount() - 1);
+					iEventDepartment.setSelectedIndex(iEventDepartment.getItemCount() + - 1);
 				}
 			}
 			iForm.addRow(MESSAGES.propEventDepartment(), iEventDepartment, 1);
@@ -1320,7 +1323,7 @@ public class RoomEdit extends Composite {
 			}
 		}
 		
-		if (iRoom.getUniqueId() == null || iRoom.isCanChangeControll()) {
+		if ((iRoom.getUniqueId() == null && iProperties.isCanChangeControll()) || iRoom.isCanChangeControll()) {
 			Long deptId = Long.valueOf(iControllingDepartment.getWidget().getValue(iControllingDepartment.getWidget().getSelectedIndex()));
 			if (deptId < 0) {
 				iRoom.setControlDepartment(null);
@@ -1423,8 +1426,8 @@ public class RoomEdit extends Composite {
 		}
 		
 		if (iProperties.isCanEditDepartments() || (iRoom.getUniqueId() == null && iProperties.isCanChangeAvailability()) || iRoom.isCanChangeAvailability()) {
-			boolean hasDepartment = false;
-			if (iRoomSharing.getModel() != null) {
+			boolean hasDepartment = (iRoom.getEventDepartment() != null);
+			if (!hasDepartment && iRoomSharing.getModel() != null) {
 				for (RoomSharingOption opt: iRoomSharing.getModel().getOptions()) {
 					if (opt.getId() > 0) { hasDepartment = true; break; }
 				}

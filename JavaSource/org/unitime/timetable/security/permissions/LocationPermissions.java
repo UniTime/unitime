@@ -72,12 +72,15 @@ public class LocationPermissions {
 
 		@Override
 		public boolean check(UserContext user, Location source) {
-			if (source.getRoomDepts().isEmpty())
-				return user.getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+			if (source.getRoomDepts().isEmpty() && user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
+				return true;
 			
 			for (RoomDept rd: source.getRoomDepts())
 				if (permissionDepartment.check(user, rd.getDepartment()))
 					return true;
+			
+			if (source.getEventDepartment() != null && permissionDepartment.check(user, source.getEventDepartment()))
+				return true;
 			
 			return false;
 		}
@@ -100,7 +103,7 @@ public class LocationPermissions {
 					controls = true;
 				if (!permissionDepartment.check(user, rd.getDepartment()))
 					allDepts = false;
-			}			
+			}
 			return controls || allDepts;
 		}
 
@@ -122,7 +125,7 @@ public class LocationPermissions {
 					controls = true;
 				if (!permissionDepartment.check(user, rd.getDepartment()))
 					allDepts = false;
-			}			
+			}
 			return controls || allDepts;
 		}
 

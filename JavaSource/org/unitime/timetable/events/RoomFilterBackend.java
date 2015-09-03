@@ -174,6 +174,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		Map<Long, Entity> depts = new HashMap<Long, Entity>();
 		boolean eventRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("event") || request.getOptions("flag").contains("Event")));
 		boolean allRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("all") || request.getOptions("flag").contains("All")));
+		boolean deptIndep = context.hasPermission(request.getSessionId(), Right.DepartmentIndependent); 
 		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "department")) {
 			Department evtDept = (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() ? location.getEventDepartment() : null);
 			boolean isManaged = false;
@@ -187,6 +188,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				if (userDepts != null && userDepts.contains(location.getEventDepartment().getUniqueId())) isManaged = true;
 			} else {
 				for (RoomDept rd: location.getRoomDepts()) {
+					if (!deptIndep && !allRooms && (userDepts == null || !(userDepts.contains(rd.getDepartment().getUniqueId())))) continue;
 					if (evtDept != null && rd.getDepartment().equals(evtDept)) evtDept = null;
 					Entity department = depts.get(rd.getDepartment().getUniqueId());
 					if (department == null) {
