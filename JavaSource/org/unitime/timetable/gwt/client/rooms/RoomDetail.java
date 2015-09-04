@@ -156,7 +156,7 @@ public class RoomDetail extends Composite {
 
 		iHeader.clearMessage();
 		iHeader.setHeaderTitle(iRoom.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : iRoom.getLabel());
-		iHeader.setEnabled("edit", iRoom.isCanChange());
+		iHeader.setEnabled("edit", iRoom.isCanEdit());
 		iHeader.setEnabled("previous", getPrevious(iRoom.getUniqueId()) != null);
 		iHeader.setEnabled("next", getNext(iRoom.getUniqueId()) != null);
 		iForm.addHeaderRow(iHeader);

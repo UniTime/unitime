@@ -259,20 +259,9 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			Location location = LocationDAO.getInstance().get(room.getUniqueId(), hibSession);
 			if (location == null) return null;
 			sessionLabel = location.getSession().getLabel();
-			if (future) {
-				if (location instanceof Room) {
-					if (!context.hasPermission((Room)location, Right.RoomEdit)) return null;
-				} else {
-					if (!context.hasPermission((NonUniversityLocation)location, Right.NonUniversityLocationEdit)) return null;
-				}
-			} else {
-				if (location instanceof Room)
-					context.checkPermission((Room)location, Right.RoomEdit);
-				else
-					context.checkPermission((NonUniversityLocation)location, Right.NonUniversityLocationEdit);
-			}
+			boolean canEdit = context.hasPermission(location, location instanceof Room ? Right.RoomEdit : Right.NonUniversityLocationEdit);
 			
-			if (context.hasPermission(location, Right.RoomEditChangeRoomProperties) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
+			if (canEdit && context.hasPermission(location, Right.RoomEditChangeRoomProperties) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
 				if (location instanceof Room) {
 					Building building = lookupBuilding(hibSession, room.getBuilding(), future, location.getSession().getUniqueId());
 					if (future && room.getBuilding() != null && building == null)
@@ -314,22 +303,22 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				location.setDisplayName(room.getDisplayName());
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditChangeCapacity) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
+			if (canEdit && context.hasPermission(location, Right.RoomEditChangeCapacity) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
 				location.setCapacity(room.getCapacity());
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditChangeExternalId) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
+			if (canEdit && context.hasPermission(location, Right.RoomEditChangeExternalId) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
 				location.setExternalUniqueId(room.getExternalId());
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditChangeType) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
+			if (canEdit && context.hasPermission(location, Right.RoomEditChangeType) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
 				RoomType type = (room.getRoomType() == null ? null : RoomTypeDAO.getInstance().get(room.getRoomType().getId(), hibSession));
 				if (type != null && ((type.isRoom() && location instanceof Room) || !(type.isRoom() && location instanceof NonUniversityLocation)))
 					location.setRoomType(type);
 			}
 
             String oldNote = location.getNote();
-            if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && FutureOperation.EVENT_PROPERTIES.in(flags)) {
+            if (canEdit && context.hasPermission(location, Right.RoomEditChangeEventProperties) && FutureOperation.EVENT_PROPERTIES.in(flags)) {
             	Department eventDepartment = lookuDepartment(hibSession, room.getEventDepartment(), future, location.getSession().getUniqueId());
             	if (!future || room.getEventDepartment() == null || eventDepartment != null) {
             		location.setEventDepartment(eventDepartment);
@@ -340,7 +329,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
             	location.setNote(room.getEventNote() == null ? "" : room.getEventNote().length() > 2048 ? room.getEventNote().substring(0, 2048) : room.getEventNote());
             }
 			
-			if (context.hasPermission(location, Right.RoomEditChangeExaminationStatus) && FutureOperation.EXAM_PROPERTIES.in(flags)) {
+			if (canEdit && context.hasPermission(location, Right.RoomEditChangeExaminationStatus) && FutureOperation.EXAM_PROPERTIES.in(flags)) {
 				location.setExamCapacity(room.getExamCapacity());
 				boolean examTypesChanged = false;
 				List<ExamType> types = ExamType.findAll(hibSession);
@@ -555,7 +544,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			for (RoomDept rd: location.getRoomDepts())
 				hibSession.saveOrUpdate(rd);
 			
-        	if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && !ToolBox.equals(oldNote, location.getNote()) && FutureOperation.EVENT_PROPERTIES.in(flags))
+        	if (canEdit && context.hasPermission(location, Right.RoomEditChangeEventProperties) && !ToolBox.equals(oldNote, location.getNote()) && FutureOperation.EVENT_PROPERTIES.in(flags))
         		ChangeLog.addChange(hibSession, context, location, (location.getNote() == null || location.getNote().isEmpty() ? "-" : location.getNote()), ChangeLog.Source.ROOM_EDIT, ChangeLog.Operation.NOTE, null, location.getControllingDepartment());
 			
             ChangeLog.addChange(
