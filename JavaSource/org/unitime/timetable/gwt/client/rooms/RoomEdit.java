@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.rooms.RoomDetail.Check;
+import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -1188,9 +1189,18 @@ public class RoomEdit extends Composite {
 	private List<Widget> line(final RoomPictureInterface picture) {
 		List<Widget> line = new ArrayList<Widget>();
 		
-		Image image = new Image(GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
-		image.addStyleName("image");
-		line.add(image);
+		Image image = null;
+		if (picture.getPictureType() == null || picture.getPictureType().isImage()) {
+			image = new Image(GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
+			image.addStyleName("image");
+		} else {
+			image = new Image(RESOURCES.download());
+		}
+		final ImageLink link = new ImageLink(image, GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
+		if (picture.getPictureType() != null && !picture.getPictureType().isImage())
+			link.setText(MESSAGES.roomPictureLink());
+		link.setTitle(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getLabel() + ")"));
+		line.add(link);
 		
 		line.add(new Label(picture.getName()));
 		line.add(new Label(picture.getType()));
@@ -1207,6 +1217,15 @@ public class RoomEdit extends Composite {
 					public void onChange(ChangeEvent event) {
 						Long id = Long.valueOf(type.getValue(type.getSelectedIndex()));
 						picture.setPictureType(iProperties.getPictureType(id));
+						if (picture.getPictureType() == null || picture.getPictureType().isImage()) {
+							link.setImage(new Image(GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId()));
+							link.getImage().addStyleName("image");
+							link.setText("");
+						} else {
+							link.setImage(new Image(RESOURCES.download()));
+							link.setText(MESSAGES.roomPictureLink());
+						}
+						link.setTitle(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getLabel() + ")"));
 					}
 				});
 			} else {
@@ -1232,6 +1251,15 @@ public class RoomEdit extends Composite {
 							picture.setPictureType(last);
 						else
 							picture.setPictureType(iProperties.getPictureType(id));
+						if (picture.getPictureType() == null || picture.getPictureType().isImage()) {
+							link.setImage(new Image(GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId()));
+							link.getImage().addStyleName("image");
+							link.setText("");
+						} else {
+							link.setImage(new Image(RESOURCES.download()));
+							link.setText(MESSAGES.roomPictureLink());
+						}
+						link.setTitle(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getLabel() + ")"));
 					}
 				});
 			}

@@ -3778,4 +3778,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Room conflict checking is disabled.")
 	String infoRoomCheckOff();
+	
+	@DefaultMessage("link")
+	String roomPictureLink();
 }
