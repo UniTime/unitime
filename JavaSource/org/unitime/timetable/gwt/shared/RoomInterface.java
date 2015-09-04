@@ -1347,7 +1347,7 @@ public class RoomInterface implements IsSerializable {
 		public boolean isCanChange() { return iCanChange; }
 		public void setCanChange(boolean canChange) { iCanChange = canChange; }
 		
-		public boolean isCanEdit() { return isCanChange() || isCanChangeFeatures() || isCanChangeGroups() || isCanChangeAvailability() || isCanChangeEventAvailability() || isCanChangePicture() || isCanChangePreferences() || isCanDelete(); }
+		public boolean isCanEdit() { return isCanChange() || isCanChangeFeatures() || isCanChangeGroups() || isCanChangeAvailability() || isCanChangeEventAvailability() || isCanChangePicture() || isCanChangePreferences() || isCanDelete() || isCanChangeEventProperties(); }
 
 		public boolean isCanChangeAvailability() { return iCanChangeAvailability; }
 		public void setCanChangeAvailability(boolean canChangeAvailability) { iCanChangeAvailability = canChangeAvailability; }

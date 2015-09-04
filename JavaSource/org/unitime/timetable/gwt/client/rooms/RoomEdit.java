@@ -403,8 +403,8 @@ public class RoomEdit extends Composite {
 		iEventDepartment.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				iEventAvailabilityHeader.setVisible(iEventDepartment.getSelectedIndex() > 0);
-				iEventAvailability.setVisible(iEventDepartment.getSelectedIndex() > 0);
+				iEventAvailabilityHeader.setVisible(!"-1".equals(iEventDepartment.getValue(iEventDepartment.getSelectedIndex())));
+				iEventAvailability.setVisible(!"-1".equals(iEventDepartment.getValue(iEventDepartment.getSelectedIndex())));
 			}
 		});
 		
@@ -838,7 +838,7 @@ public class RoomEdit extends Composite {
 						iEventDepartment.setSelectedIndex(i); break;
 					}
 				}
-				if (iRoom.getEventDepartment() != null && iEventDepartment.getSelectedIndex() == 0) {
+				if (iRoom.getEventDepartment() != null && "-1".equals(iEventDepartment.getValue(iEventDepartment.getSelectedIndex()))) {
 					iEventDepartment.addItem(iRoom.getEventDepartment().getDeptCode() + " - " + iRoom.getEventDepartment().getLabel(), iRoom.getEventDepartment().getId().toString());
 					iEventDepartment.setSelectedIndex(iEventDepartment.getItemCount() + - 1);
 				}
@@ -895,10 +895,10 @@ public class RoomEdit extends Composite {
 			iForm.addHeaderRow(MESSAGES.headerRoomGroups());			
 			List<GroupInterface> globalGroups = iRoom.getGlobalGroups();
 			if (!globalGroups.isEmpty())
-				iForm.addRow(MESSAGES.propGlobalGroups(), new RoomDetail.GroupsCell(globalGroups), 1);
+				iForm.addRow(MESSAGES.propGlobalGroups(), new RoomDetail.GroupsCell(globalGroups));
 			List<GroupInterface> departmentalGroups = iRoom.getDepartmentalGroups(null);
 			if (!departmentalGroups.isEmpty())
-				iForm.addRow(MESSAGES.propDepartmenalGroups(), new RoomDetail.GroupsCell(departmentalGroups), 1);
+				iForm.addRow(MESSAGES.propDepartmenalGroups(), new RoomDetail.GroupsCell(departmentalGroups));
 		}
 		
 		if (((iRoom.getUniqueId() == null && iProperties.isCanChangeFeatures()) || iRoom.isCanChangeFeatures()) && !iProperties.getFeatures().isEmpty()) {
@@ -948,11 +948,11 @@ public class RoomEdit extends Composite {
 			iForm.addHeaderRow(MESSAGES.headerRoomFeatures());
 			List<FeatureInterface> features = iRoom.getFeatures((Long)null);
 			if (!features.isEmpty())
-				iForm.addRow(MESSAGES.propFeatures(), new RoomDetail.FeaturesCell(features), 1);
+				iForm.addRow(MESSAGES.propFeatures(), new RoomDetail.FeaturesCell(features));
 			for (FeatureTypeInterface type: iProperties.getFeatureTypes()) {
 				List<FeatureInterface> featuresOfType = iRoom.getFeatures(type);
 				if (!featuresOfType.isEmpty())
-					iForm.addRow(type.getLabel() + ":", new RoomDetail.FeaturesCell(featuresOfType), 1);
+					iForm.addRow(type.getLabel() + ":", new RoomDetail.FeaturesCell(featuresOfType));
 			}
 		}
 		
@@ -1041,12 +1041,12 @@ public class RoomEdit extends Composite {
 			(iProperties.isCanSeeEvents() && iRoom.isCanSeeEventAvailability())) {
 			iForm.addHeaderRow(iEventAvailabilityHeader);
 			iForm.addRow(iEventAvailability);
-			iEventAvailabilityHeader.setVisible(iEventDepartment.getSelectedIndex() > 0);
+			iEventAvailabilityHeader.setVisible(!"-1".equals(iEventDepartment.getValue(iEventDepartment.getSelectedIndex())));
 			if (iRoom.hasEventAvailabilityModel()) {
 				iEventAvailabilityHeader.clearMessage();
 				iEventAvailability.setEditable((iRoom.getUniqueId() == null && iProperties.isCanChangeEventAvailability()) || iRoom.isCanChangeEventAvailability());
 				iEventAvailability.setModel(iRoom.getEventAvailabilityModel());
-				iEventAvailability.setVisible(iEventDepartment.getSelectedIndex() > 0);
+				iEventAvailability.setVisible(!"-1".equals(iEventDepartment.getValue(iEventDepartment.getSelectedIndex())));
 			} else {
 				iEventAvailabilityHeader.showLoading();
 				iEventAvailability.setVisible(false);
@@ -1060,7 +1060,7 @@ public class RoomEdit extends Composite {
 						iEventAvailabilityHeader.clearMessage();
 						iEventAvailability.setEditable((iRoom.getUniqueId() == null && iProperties.isCanChangeEventAvailability()) || iRoom.isCanChangeEventAvailability());
 						iEventAvailability.setModel(result);
-						iEventAvailability.setVisible(iEventDepartment.getSelectedIndex() > 0);
+						iEventAvailability.setVisible(!"-1".equals(iEventDepartment.getValue(iEventDepartment.getSelectedIndex())));
 					}
 				});
 			}

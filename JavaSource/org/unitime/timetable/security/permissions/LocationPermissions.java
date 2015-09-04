@@ -169,7 +169,7 @@ public class LocationPermissions {
 					controls = true;
 				if (!permissionDepartment.check(user, rd.getDepartment()))
 					allDepts = false;
-			}			
+			}
 			return controls || allDepts;
 		}
 
@@ -190,10 +190,26 @@ public class LocationPermissions {
 	public static class RoomEditChangeType extends RoomEditChangeCapacity {}
 
 	@PermissionForRight(Right.RoomEditChangeEventProperties)
-	public static class RoomEditChangeEventProperties extends RoomEditChangeCapacity {}
+	public static class RoomEditChangeEventProperties extends RoomEditChangeCapacity {
+		@Override
+		public boolean check(UserContext user, Location source) {
+			if (source.getEventDepartment() != null)
+				return permissionDepartment.check(user, source.getEventDepartment());
+			
+			return super.check(user, source);
+		}
+	}
 	
 	@PermissionForRight(Right.RoomEditChangePicture)
-	public static class RoomEditChangePicture extends RoomEditChangeCapacity {}
+	public static class RoomEditChangePicture extends RoomEditChangeCapacity {
+		@Override
+		public boolean check(UserContext user, Location source) {
+			if (source.getEventDepartment() != null && permissionDepartment.check(user, source.getEventDepartment()))
+				return true;
+
+			return super.check(user, source);
+		}
+	}
 
 	@PermissionForRight(Right.EditRoomDepartments)
 	public static class EditRoomDepartments implements Permission<Department> {

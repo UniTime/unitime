@@ -186,10 +186,10 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		response.setCanChangePicture(context.hasPermission(location, Right.RoomEditChangePicture));
 		response.setCanChangePreferences(context.hasPermission(location, Right.RoomEditPreference));
 		if (editPermissions) {
+			response.setCanChangeEventProperties(context.hasPermission(location, Right.RoomEditChangeEventProperties));
 			if (response.isCanChange()) {
 				response.setCanChangeCapacity(context.hasPermission(location, Right.RoomEditChangeCapacity));
 				response.setCanChangeControll(context.hasPermission(location, Right.RoomEditChangeControll));
-				response.setCanChangeEventProperties(context.hasPermission(location, Right.RoomEditChangeEventProperties));
 				response.setCanChangeExamStatus(context.hasPermission(location, Right.RoomEditChangeExaminationStatus));
 				response.setCanChangeExternalId(context.hasPermission(location, Right.RoomEditChangeExternalId));
 				response.setCanChangeRoomProperties(context.hasPermission(location, Right.RoomEditChangeRoomProperties));
