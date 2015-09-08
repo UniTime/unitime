@@ -174,7 +174,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		Map<Long, Entity> depts = new HashMap<Long, Entity>();
 		boolean eventRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("event") || request.getOptions("flag").contains("Event")));
 		boolean allRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("all") || request.getOptions("flag").contains("All")));
-		boolean deptIndep = context.hasPermission(request.getSessionId(), Right.DepartmentIndependent); 
+		boolean deptIndep = context.hasPermission(Right.DepartmentIndependent); 
 		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "department")) {
 			Department evtDept = (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() ? location.getEventDepartment() : null);
 			boolean isManaged = false;
