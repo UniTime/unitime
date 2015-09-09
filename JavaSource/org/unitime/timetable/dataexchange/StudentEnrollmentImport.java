@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,10 +78,10 @@ public class StudentEnrollmentImport extends BaseImport {
 	        if(session == null)
 	           	throw new Exception("No session found for the given campus, year, and term.");
 
-	    	HashMap<String, Class_> extId2class = new HashMap<String, Class_>();
+	    	HashMap<String, Set<Class_>> extId2class = new HashMap<String, Set<Class_>>();
 	    	HashMap<String, Class_> name2class = new HashMap<String, Class_>();
 	    	HashMap<Long, Class_> id2class = new HashMap<Long, Class_>();
-	    	HashMap<String, CourseOffering> extId2course = new HashMap<String, CourseOffering>();
+	    	HashMap<String, Set<CourseOffering>> extId2course = new HashMap<String, Set<CourseOffering>>();
 	    	HashMap<String, CourseOffering> name2course = new HashMap<String, CourseOffering>();
 	    	HashMap<String, CourseOffering> cextId2course = new HashMap<String, CourseOffering>();
 	    	HashMap<String, CourseOffering> cname2course = new HashMap<String, CourseOffering>();
@@ -94,14 +95,26 @@ public class StudentEnrollmentImport extends BaseImport {
 	 			Class_ clazz = (Class_)o[0];
 	 			CourseOffering course = (CourseOffering)o[1];
 				String extId = clazz.getExternalId(course);
-				if (extId != null && !extId.isEmpty())
-					extId2class.put(extId, clazz);
+				if (extId != null && !extId.isEmpty()) {
+					Set<Class_> sameExtIdClasses = extId2class.get(extId);
+					if (sameExtIdClasses == null) {
+						sameExtIdClasses = new HashSet<Class_>();
+						extId2class.put(extId, sameExtIdClasses);
+					}
+					sameExtIdClasses.add(clazz);
+				}
 				String name = clazz.getClassLabel(course);
 				name2class.put(name, clazz);
 				name2course.put(name, course);
 				id2class.put(clazz.getUniqueId(), clazz);
-				if (!extId2course.containsKey(extId) || course.isIsControl())
-					extId2course.put(extId, course);
+				if (extId != null && !extId.isEmpty()) {
+					Set<CourseOffering> sameExtIdCourses = extId2course.get(extId);
+					if (sameExtIdCourses == null) {
+						sameExtIdCourses = new HashSet<CourseOffering>();
+						extId2course.put(extId, sameExtIdCourses);
+					}
+					sameExtIdCourses.add(course);
+				}
 				Set<CourseOffering> courses = class2courses.get(clazz.getUniqueId());
 				if (course.getExternalUniqueId() != null && !course.getExternalUniqueId().isEmpty())
 					cextId2course.put(course.getExternalUniqueId(), course);
@@ -164,22 +177,30 @@ public class StudentEnrollmentImport extends BaseImport {
             			nextPriority = cd.getPriority() + 1;
             	Set<CourseDemand> remaining = new HashSet<CourseDemand>(student.getCourseDemands());
             	
+            	List<Enrollment> selected = new ArrayList<Enrollment>();
             	for (Iterator j = studentElement.elementIterator("class"); j.hasNext(); ) {
             		Element classElement = (Element) j.next();
             		
             		Class_ clazz = null;
             		CourseOffering course = null;
+            		Set<Class_> classes = null;
+            		Set<CourseOffering> courses = null;
 
             		if (clazz == null && classElement.attributeValue("id") != null)
             			clazz = id2class.get(Long.valueOf(classElement.attributeValue("id")));
             		
             		String classExternalId  = classElement.attributeValue("externalId");
             		if (clazz == null && classExternalId != null) {
-            			clazz = extId2class.get(classExternalId);
-            			course = extId2course.get(classExternalId);
-            			if (clazz == null) {
+            			classes = extId2class.get(classExternalId);
+            			courses = extId2course.get(classExternalId);
+            			if (classes == null) {
                 			clazz = name2class.get(classExternalId);
                 			course = name2course.get(classExternalId);
+            			} else {
+            				if (classes.size() == 1)
+            					clazz = classes.iterator().next();
+            				if (courses.size() == 1)
+            					course = courses.iterator().next();
             			}
             		}
             		
@@ -211,20 +232,58 @@ public class StudentEnrollmentImport extends BaseImport {
                 			clazz = name2class.get(course.getCourseName() + " " + type.trim() + " " + suffix);
             		}
             		
-            		if (clazz == null) {
+            		if (clazz == null && classes == null) {
             			warn("Class " + (classExternalId != null ? classExternalId : classElement.attributeValue("name",
             					classElement.attributeValue("course", classElement.attributeValue("subject") + " " + classElement.attributeValue("courseNbr")) + " " +
             					classElement.attributeValue("type") + " " + classElement.attributeValue("suffix"))) + " not found.");
             			continue;
             		}
             		
-            		Set<CourseOffering> courses = class2courses.get(clazz.getUniqueId());
-            		if (course == null || !courses.contains(course)) {
-            			for (CourseOffering co: courses)
-            				if (co.isIsControl())
-            					{ course = co; break; }
+            		if (clazz != null) {
+            			Set<CourseOffering> coursesThisClass = class2courses.get(clazz.getUniqueId());
+            			if (course == null && courses != null)
+            				for (CourseOffering co: courses)
+                				if (co.isIsControl() && coursesThisClass.contains(co))
+                					{ course = co; break; }
+            			if (course == null && courses != null)
+            				for (CourseOffering co: courses)
+                				if (coursesThisClass.contains(co))
+                					{ course = co; break; }
+            			if (course == null || !coursesThisClass.contains(course)) {
+            				for (CourseOffering co: coursesThisClass)
+                				if (co.isIsControl())
+                					{ course = co; break; }
+            			}
+            			selected.add(new Enrollment(course, clazz));
+            		} else {
+            			classes: for (Class_ c: classes) {
+            				Set<CourseOffering> coursesThisClass = class2courses.get(c.getUniqueId());
+            				if (course != null) {
+            					if (coursesThisClass.contains(course))
+            						selected.add(new Enrollment(course, c));
+            				} else {
+            					for (CourseOffering co: courses) {
+            						if (coursesThisClass.contains(co) && co.isIsControl()) {
+            							selected.add(new Enrollment(co, c));
+            							continue classes;
+            						}
+            					}
+            					for (CourseOffering co: courses) {
+            						if (coursesThisClass.contains(co)) {
+            							selected.add(new Enrollment(co, c));
+            								continue classes;
+            						}
+            					}
+            				}
+            			}
             		}
-            		
+            	}
+            	
+            	Set<Enrollment> imported = new HashSet<Enrollment>();
+            	for (Enrollment e: selected) {
+            		if (!imported.add(e)) continue; // skip duplicates
+            		Class_ clazz = e.getClazz();
+            		CourseOffering course = e.getCourse();
             		StudentClassEnrollment enrollment = enrollments.remove(new Pair(course.getUniqueId(), clazz.getUniqueId()));
             		if (enrollment == null) {
                 		enrollment = new StudentClassEnrollment();
@@ -384,6 +443,35 @@ public class StudentEnrollmentImport extends BaseImport {
 		}
 		public int hashCode() {
 			return getCourseId().hashCode() ^ getClassId().hashCode();
+		}
+		public String toString() {
+			return "(" + getCourseId() + "," + getClassId() + ")";
+		}
+	}
+	
+	public static class Enrollment {
+		private CourseOffering iCourse;
+		private Class_ iClazz;
+		private Enrollment(CourseOffering course, Class_ clazz) {
+			iCourse = course; iClazz = clazz;
+		}
+		public Long getCourseId() { return iCourse.getUniqueId(); }
+		public CourseOffering getCourse() { return iCourse; }
+		public Long getClassId() { return iClazz.getUniqueId(); }
+		public Class_ getClazz() { return iClazz; }
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof Enrollment)) return false;
+			Enrollment p = (Enrollment)o;
+			return getCourseId().equals(p.getCourseId()) && getClassId().equals(p.getClassId());
+		}
+		public int hashCode() {
+			return getCourseId().hashCode() ^ getClassId().hashCode();
+		}
+		public String toString() {
+			return getClazz().getClassLabel(getCourse(), true); 
+		}
+		public Pair toPair() {
+			return new Pair(getCourseId(), getClassId());
 		}
 	}
 	
