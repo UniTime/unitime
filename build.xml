@@ -110,6 +110,7 @@
 			<jvmarg value="-Xmx1g"/>
 			<jvmarg value="${macJvmArgs}"/>
 			<jvmarg value="-Dgwt.persistentunitcache=false"/>
+			<jvmarg value="-Duser.language=en"/>
 			<arg value="org.unitime.timetable.gwt.UniTime"/>
 			<arg value="-localWorkers"/>
 			<arg value="4"/>
@@ -439,6 +440,7 @@
 			<classpath path="${env.TOMCAT_HOME}/webapps/UniTime/WEB-INF/classes"/>
 			<jvmarg value="-Xmx1g"/>
 			<jvmarg value="${macJvmArgs}"/>
+			<jvmarg value="-Duser.language=en"/>
 			<arg value="-war"/>
 			<arg value="${env.TOMCAT_HOME}/webapps/UniTime"/>
 			<arg value="org.unitime.timetable.gwt.UniTime"/>
@@ -463,6 +465,7 @@
 			<classpath path="${env.TOMCAT_HOME}/webapps/UniTime/WEB-INF/classes"/>
 			<jvmarg value="-Xmx1g"/>
 			<jvmarg value="${macJvmArgs}"/>
+			<jvmarg value="-Duser.language=en"/>
 			<arg value="-war"/>
 			<arg value="${env.TOMCAT_HOME}/webapps/UniTime"/>
 			<arg value="-draftCompile"/>
