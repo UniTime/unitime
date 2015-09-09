@@ -162,6 +162,12 @@
 				<line>Do not list enrollment message for requests that are enrolled (enrollment message contains a reason why a request is not enrolled).</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Student Enrollments and Student Sectioning XML imports</name>
+			<description>
+				<line>The import can now work with a case where class external ids are NOT unique (e.g., when Lec 1 and Lec 1a share the same external id).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
