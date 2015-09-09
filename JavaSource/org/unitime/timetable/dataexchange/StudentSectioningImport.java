@@ -25,8 +25,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -50,6 +52,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.util.Constants;
@@ -506,17 +509,23 @@ public class StudentSectioningImport extends BaseImport {
                             	elements.add(requestElement);
                             }
                             
-                            for (Iterator j = requestElement.elementIterator("alternative"); j.hasNext(); ) {
-                                Element altElement = (Element)j.next();
-                                
-                                CourseOffering altCourse = name2course.get(altElement.attributeValue("subjectArea") + " " + altElement.attributeValue("courseNumber"));
-                                if (altCourse == null)
-                                    warn("Course " + altElement.attributeValue("subjectArea") + " " + altElement.attributeValue("courseNumber") + " not found.");
-                                else {
-                                	courses.add(altCourse);
-                                	credits.add(Integer.valueOf(altElement.attributeValue("credit", "0")));
-                                	elements.add(altElement);
-                                }
+                            Queue<Element> queue = new LinkedList<Element>(); queue.add(requestElement);
+                            Element requestOrAlternativeElement = null; 
+                            while ((requestOrAlternativeElement = queue.poll()) != null) {
+                                for (Iterator j = requestOrAlternativeElement.elementIterator("alternative"); j.hasNext(); ) {
+                                    Element altElement = (Element)j.next();
+                                    
+                                    CourseOffering altCourse = name2course.get(altElement.attributeValue("subjectArea") + " " + altElement.attributeValue("courseNumber"));
+                                    if (altCourse == null)
+                                        warn("Course " + altElement.attributeValue("subjectArea") + " " + altElement.attributeValue("courseNumber") + " not found.");
+                                    else {
+                                    	courses.add(altCourse);
+                                    	credits.add(Integer.valueOf(altElement.attributeValue("credit", "0")));
+                                    	elements.add(altElement);
+                                    }
+                                    
+                                    queue.add(altElement);
+                                }                            	
                             }
                             
                             if (courses.isEmpty()) continue;
@@ -534,6 +543,7 @@ public class StudentSectioningImport extends BaseImport {
             					cd = new CourseDemand();
             					cd.setTimestamp(ts);
             					cd.setCourseRequests(new HashSet<CourseRequest>());
+            					cd.setEnrollmentMessages(new HashSet<StudentEnrollmentMessage>());
             					cd.setStudent(student);
             					student.getCourseDemands().add(cd);
             				}
@@ -600,6 +610,14 @@ public class StudentSectioningImport extends BaseImport {
                                 			warn(co.getCourseName() + ": Class " + (classExternalId != null ? classExternalId : classElement.attributeValue("type") + " " + classElement.attributeValue("suffix")) + " not found.");
                                 			continue;
                                 		}
+                                		
+                                		CourseRequest request = course2request.get(co.getUniqueId());
+                                		if (request != null)
+                                			for (Iterator<StudentEnrollmentMessage> l = request.getCourseDemand().getEnrollmentMessages().iterator(); l.hasNext(); ) {
+                                				StudentEnrollmentMessage message = l.next();
+                                				getHibSession().delete(message);
+                                				l.remove();
+                                			}
 
                                 		for (Class_ clazz: classes) {
                                 			if (!imported.add(clazz.getUniqueId())) continue; // avoid duplicates
@@ -612,7 +630,7 @@ public class StudentSectioningImport extends BaseImport {
                                     		enrollment.setCourseOffering(co);
                                     		enrollment.setTimestamp(ts);
                                     		enrollment.setChangedBy(StudentClassEnrollment.SystemChange.IMPORT.toString());
-                                    		enrollment.setCourseRequest(course2request.get(co.getUniqueId()));
+                                    		enrollment.setCourseRequest(request);
                                     		student.getClassEnrollments().add(enrollment);
                                 		}
                                     }
@@ -683,8 +701,10 @@ public class StudentSectioningImport extends BaseImport {
                 		}
                     }
             		
-            		for (CourseRequest cr: unusedRequests)
+            		for (CourseRequest cr: unusedRequests) {
+            			cr.getCourseDemand().getCourseRequests().remove(cr);
             			getHibSession().delete(cr);
+            		}
             		
             		for (CourseDemand cd: remaining) {
             			if (cd.getFreeTime() != null)
@@ -715,12 +735,42 @@ public class StudentSectioningImport extends BaseImport {
     
     
     private TimeLocation makeTime(DatePattern dp, String days, String startTime, String endTime, String length) {
-        int dayCode = 0, idx = 0;
-        for (int i=0;i<Constants.DAY_NAMES_SHORT.length;i++) {
-            if (days.startsWith(Constants.DAY_NAMES_SHORT[i], idx)) {
-                dayCode += Constants.DAY_CODES[i];
-                idx += Constants.DAY_NAMES_SHORT[i].length();
-            }
+        int dayCode = 0;
+        if (days.contains("Th")) {
+        	dayCode += Constants.DAY_CODES[Constants.DAY_THU];
+        	days = days.replace("Th", "..");
+        }
+        if (days.contains("R")) {
+        	dayCode += Constants.DAY_CODES[Constants.DAY_THU];
+        	days = days.replace("R", ".");
+        }
+        if (days.contains("Su")) {
+        	dayCode += Constants.DAY_CODES[Constants.DAY_SUN];
+        	days = days.replace("Su", "..");
+        }
+        if (days.contains("U")) {
+        	dayCode += Constants.DAY_CODES[Constants.DAY_SUN];
+        	days = days.replace("U", ".");
+        }
+        if (days.contains("M")) {
+        	dayCode += Constants.DAY_CODES[Constants.DAY_MON];
+        	days = days.replace("M", ".");
+        }
+        if (days.contains("T")) {
+        	dayCode += Constants.DAY_CODES[Constants.DAY_TUE];
+        	days = days.replace("T", ".");
+        }
+        if (days.contains("W")) {
+        	dayCode += Constants.DAY_CODES[Constants.DAY_WED];
+        	days = days.replace("W", ".");
+        }
+        if (days.contains("F")) {
+        	dayCode += Constants.DAY_CODES[Constants.DAY_FRI];
+        	days = days.replace("F", ".");
+        }
+        if (days.contains("S")) {
+        	dayCode += Constants.DAY_CODES[Constants.DAY_SAT];
+        	days = days.replace("S", ".");
         }
         int startSlot = (((Integer.parseInt(startTime)/100)*60 + Integer.parseInt(startTime)%100) - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
         int nrSlots = 0;
