@@ -41,6 +41,7 @@ import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.test.UpdateExamConflicts;
 
@@ -308,10 +309,16 @@ public class StudentEnrollmentImport extends BaseImport {
             		
             		if (enrollment.getCourseRequest() != null) {
             			remaining.remove(enrollment.getCourseRequest().getCourseDemand());
+            			for (Iterator<StudentEnrollmentMessage> j = enrollment.getCourseRequest().getCourseDemand().getEnrollmentMessages().iterator(); j.hasNext(); ) {
+            				StudentEnrollmentMessage message = j.next();
+            				getHibSession().delete(message);
+            				j.remove();
+            			}
             		} else {
             			CourseDemand cd = new CourseDemand();
     					cd.setTimestamp(ts);
     					cd.setCourseRequests(new HashSet<CourseRequest>());
+    					cd.setEnrollmentMessages(new HashSet<StudentEnrollmentMessage>());
     					cd.setStudent(student);
     					student.getCourseDemands().add(cd);
     					cd.setAlternative(false);
