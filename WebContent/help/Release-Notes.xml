@@ -166,6 +166,10 @@
 			<name>Data Exchange: Student Enrollments and Student Sectioning XML imports</name>
 			<description>
 				<line>The import can now work with a case where class external ids are NOT unique (e.g., when Lec 1 and Lec 1a share the same external id).</line>
+				<line>Fixed an issue with dropping alternative course request (deleted object would be re-saved by cascade).</line>
+				<line>Fixed an issue with parsing free-time request days of week (Thursday, Sunday were incorrectly parsed).</line>
+				<line>Added ability to have &lt;alternative&gt; element of an &lt;alternative&gt; element (which is the way how 2nd alternative is exported).</line>
+				<line>When a student is enrolled into an existing course request, drop the enrollment message if there is one (enrollment message contains a reason why a request is not enrolled).</line>
 			</description>
 		</item>
 	</category>
