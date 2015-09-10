@@ -475,7 +475,7 @@ public class StudentEnrollmentImport extends BaseImport {
 			return getCourseId().hashCode() ^ getClassId().hashCode();
 		}
 		public String toString() {
-			return getClazz().getClassLabel(getCourse(), true); 
+			return getClazz().getClassLabel(getCourse()); 
 		}
 		public Pair toPair() {
 			return new Pair(getCourseId(), getClassId());
