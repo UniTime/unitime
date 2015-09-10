@@ -1046,7 +1046,7 @@
 		<item name="Contact Us" page="inquiry.do">
 			<condition>
 				<or>
-					<hasProperty name="tmtbl.inquiry.email"/>
+					<hasProperty name="unitime.email.notif"/>
 					<hasProperty name="unitime.email.inquiry"/>
 				</or>
 				<hasPermission name="Inquiry"/>
