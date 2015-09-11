@@ -203,14 +203,12 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	}
 	
 	public boolean isRoomSharingColorConflicting(String color) {
-		for (Iterator i=getRoomDepts().iterator();i.hasNext();) {
-			RoomDept rd = (RoomDept)i.next();
-			for (Iterator j=rd.getRoom().getRoomDepts().iterator();j.hasNext();) {
-				BaseDepartment d = (BaseDepartment)((RoomDept)j.next()).getDepartment();
-				if (d.equals(this)) continue;
-				if (d.getRoomSharingColor()==null) continue;
-				if (distance(color, d.getRoomSharingColor())<50) return true; 
-			}
+		if (getUniqueId() == null) return false;
+		for (String other: (List<String>)DepartmentDAO.getInstance().getSession().createQuery(
+				"select distinct x.department.roomSharingColor from Department d inner join d.roomDepts rd inner join rd.room.roomDepts x " +
+				"where d.uniqueId = :uniqueId and d != x.department"
+				).setLong("uniqueId", getUniqueId()).setCacheable(true).list()) {
+			if (distance(color, other) < 50) return true;
 		}
 		return false;
 	}
@@ -256,7 +254,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	}
 	
 	public String getRoomSharingColor(Collection otherDepartments) {
-		if (getRoomSharingColor()==null) {
+		if (getRoomSharingColor() == null) {
 			setRoomSharingColor(color2hex(RoomSharingModel.sDepartmentColors[0]));
 		}
 		fixRoomSharingColor(otherDepartments);
