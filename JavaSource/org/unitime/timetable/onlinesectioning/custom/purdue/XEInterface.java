@@ -108,7 +108,13 @@ public class XEInterface {
 		}
 		
 		public boolean canAdd() {
-			return !"DD".equals(courseRegistrationStatus);
+			// return !"DD".equals(courseRegistrationStatus);
+			if (registrationActions != null)
+				for (RegistrationAction action: registrationActions) {
+					if ("RW".equals(action.courseRegistrationStatus))
+						return true;
+				}
+			return false;
 		}
 		
 		public boolean isRegistered() {
@@ -155,10 +161,15 @@ public class XEInterface {
 	
 	public static class CourseReferenceNumber {
 		public String courseReferenceNumber;
+		public String courseRegistrationStatus;
 		
 		public CourseReferenceNumber() {}
 		public CourseReferenceNumber(String crn) {
 			this.courseReferenceNumber = crn;
+		}
+		public CourseReferenceNumber(String crn, String status) {
+			this.courseReferenceNumber = crn;
+			this.courseRegistrationStatus = status;
 		}
 	}
 	
@@ -180,11 +191,12 @@ public class XEInterface {
 		public String bannerId;
 		public String term;
 		public String altPin;
+		public String systemIn;
 		public List<CourseReferenceNumber> courseReferenceNumbers;
 		public List<RegisterAction> actionsAndOptions;
 		
-		public RegisterRequest(String term, String bannerId, String pin) {
-			this.term = term; this.bannerId = bannerId; this.altPin = pin;
+		public RegisterRequest(String term, String bannerId, String pin, boolean admin) {
+			this.term = term; this.bannerId = bannerId; this.altPin = pin; this.systemIn = (admin ? "SB" : "WA");
 		}
 		
 		public RegisterRequest drop(String crn) {
@@ -193,10 +205,32 @@ public class XEInterface {
 			return this;
 		}
 		
-		public RegisterRequest add(String crn) {
+		public RegisterRequest keep(String crn) {
 			if (courseReferenceNumbers == null)
 				courseReferenceNumbers = new ArrayList<XEInterface.CourseReferenceNumber>();
 			courseReferenceNumbers.add(new CourseReferenceNumber(crn));
+			return this;
+		}
+		
+		public RegisterRequest add(String crn, boolean changeStatus) {
+			if (changeStatus) {
+				if (actionsAndOptions == null) actionsAndOptions = new ArrayList<RegisterAction>();
+				actionsAndOptions.add(new RegisterAction("RW", crn));
+			} else {
+				if (courseReferenceNumbers == null)
+					courseReferenceNumbers = new ArrayList<XEInterface.CourseReferenceNumber>();
+				if ("SB".equals(systemIn))
+					courseReferenceNumbers.add(new CourseReferenceNumber(crn, "RW"));
+				else
+					courseReferenceNumbers.add(new CourseReferenceNumber(crn));
+			}
+			return this;
+		}
+		
+		public RegisterRequest empty() {
+			if (courseReferenceNumbers == null)
+				courseReferenceNumbers = new ArrayList<XEInterface.CourseReferenceNumber>();
+			courseReferenceNumbers.add(new CourseReferenceNumber());
 			return this;
 		}
 		
