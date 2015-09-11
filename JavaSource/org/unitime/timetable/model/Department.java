@@ -208,7 +208,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 				"select distinct x.department.roomSharingColor from Department d inner join d.roomDepts rd inner join rd.room.roomDepts x " +
 				"where d.uniqueId = :uniqueId and d != x.department"
 				).setLong("uniqueId", getUniqueId()).setCacheable(true).list()) {
-			if (distance(color, other) < 50) return true;
+			if (other != null && distance(color, other) < 50) return true;
 		}
 		return false;
 	}

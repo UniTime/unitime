@@ -120,7 +120,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     	
     	boolean courses = context.hasPermission(Right.InstructionalOfferings) || context.hasPermission(Right.Classes);
     	boolean exams = context.hasPermission(Right.Examinations);
-    	boolean events = context.hasPermission(Right.Events);
+    	boolean events = context.hasPermission(Right.Events) || context.getUser().getCurrentAuthority().hasRight(Right.RoomEditChangeEventProperties);
     	boolean editPermissions = request.hasOption("id");
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();

@@ -110,6 +110,8 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 			response.setCanChangePicture(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditChangePicture));
 			response.setCanChangePreferences(context.getUser().getCurrentAuthority().hasRight(Right.RoomEditPreference));
 			response.setCanChangeDefaultGroup(context.getUser().getCurrentAuthority().hasRight(Right.GlobalRoomGroupEditSetDefault));
+			if (!response.isCanSeeEvents() && response.isCanChangeEventProperties())
+				response.setCanSeeEvents(true);
 		}
 		
 		for (RoomType type: RoomType.findAll())
