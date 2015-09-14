@@ -1643,10 +1643,10 @@ public class RoomEdit extends Composite {
 							flags = op.set(flags);
 					}
 					if (flags == 0 && !includeWhenNoFlags) continue;
-					request.setFutureFlag(-iApplyTo.getData(1).getSession().getId(), flags);
-					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(1).getSession().getId(), flags);
+					request.setFutureFlag(-iApplyTo.getData(i).getSession().getId(), flags);
+					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(i).getSession().getId(), flags);
 				} else {
-					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(1).getSession().getId(), null);
+					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(i).getSession().getId(), null);
 				}
 			}
 		} else if (iRoom.hasFutureRooms()) {
@@ -1660,10 +1660,10 @@ public class RoomEdit extends Composite {
 							flags = op.set(flags);
 					}
 					if (flags == 0 && !includeWhenNoFlags) continue;
-					request.setFutureFlag(iApplyTo.getData(1).getId(), flags);
-					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(1).getSession().getId(), flags);
+					request.setFutureFlag(iApplyTo.getData(i).getId(), flags);
+					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(i).getSession().getId(), flags);
 				} else  {
-					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(1).getSession().getId(), null);
+					RoomCookie.getInstance().setFutureFlags(iApplyTo.getData(i).getSession().getId(), null);
 				}
 			}
 		}
