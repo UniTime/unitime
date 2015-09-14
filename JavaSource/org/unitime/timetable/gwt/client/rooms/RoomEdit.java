@@ -270,7 +270,6 @@ public class RoomEdit extends Composite {
 		});
 		
 		iBuilding = new UniTimeWidget<ListBox>(new ListBox()); iBuilding.getWidget().setStyleName("unitime-TextBox");
-		iBuilding.getWidget().addItem(MESSAGES.itemSelect(), "-1");
 		iBuilding.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -520,6 +519,7 @@ public class RoomEdit extends Composite {
 		iForm.setColSpan(iProperties.isGoogleMap() ? 3 : 2);
 		
 		iBuilding.getWidget().clear();
+		iBuilding.getWidget().addItem(MESSAGES.itemSelect(), "-1");
 		for (BuildingInterface building: iProperties.getBuildings())
 			iBuilding.getWidget().addItem(building.getAbbreviation() + " - " + building.getName(), building.getId().toString());
 
@@ -824,8 +824,9 @@ public class RoomEdit extends Composite {
 		
 		if ((iRoom.getUniqueId() == null && iProperties.isCanChangeEventProperties()) || iRoom.isCanChangeEventProperties()) {
 			iEventDepartment.clear();
-			if ((iRoom.getUniqueId() == null || iRoom.getEventDepartment() != null) && ((iRoom.getUniqueId() == null && iProperties.isCanChangeControll()) || iRoom.isCanChangeControll()))
+			if ((iRoom.getUniqueId() == null && iProperties.isCanChangeControll()) || (iRoom.getUniqueId() != null && (iRoom.getEventDepartment() == null || iRoom.isCanChangeControll()))) { 
 				iEventDepartment.addItem(MESSAGES.itemNoEventDepartment(), "-1");
+			}
 			for (DepartmentInterface department: iProperties.getDepartments())
 				if (department.isEvent())
 					iEventDepartment.addItem(department.getDeptCode() + " - " + department.getLabel(), department.getId().toString());
