@@ -318,7 +318,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			}
 
             String oldNote = location.getNote();
-            if (canEdit && context.hasPermission(location, Right.RoomEditChangeEventProperties) && FutureOperation.EVENT_PROPERTIES.in(flags)) {
+            if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && FutureOperation.EVENT_PROPERTIES.in(flags)) {
             	Department eventDepartment = lookuDepartment(hibSession, room.getEventDepartment(), future, location.getSession().getUniqueId());
             	if (!future || room.getEventDepartment() == null || eventDepartment != null) {
             		location.setEventDepartment(eventDepartment);
@@ -544,7 +544,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			for (RoomDept rd: location.getRoomDepts())
 				hibSession.saveOrUpdate(rd);
 			
-        	if (canEdit && context.hasPermission(location, Right.RoomEditChangeEventProperties) && !ToolBox.equals(oldNote, location.getNote()) && FutureOperation.EVENT_PROPERTIES.in(flags))
+        	if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && !(oldNote == null ? "" : oldNote).equals(location.getNote() == null ? "" : location.getNote()) && FutureOperation.EVENT_PROPERTIES.in(flags))
         		ChangeLog.addChange(hibSession, context, location, (location.getNote() == null || location.getNote().isEmpty() ? "-" : location.getNote()), ChangeLog.Source.ROOM_EDIT, ChangeLog.Operation.NOTE, null, location.getControllingDepartment());
 			
             ChangeLog.addChange(
@@ -789,7 +789,6 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				location.setExternalUniqueId(room.getExternalId());
 			}
 			
-            String oldNote = location.getNote();
             if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && FutureOperation.EVENT_PROPERTIES.in(flags)) {
             	Department eventDepartment = lookuDepartment(hibSession, room.getEventDepartment(), future, session.getUniqueId());
             	if (!future || room.getEventDepartment() == null || eventDepartment != null) {
@@ -913,7 +912,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			for (RoomDept rd: location.getRoomDepts())
 				hibSession.saveOrUpdate(rd);
 			
-        	if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && !ToolBox.equals(oldNote, location.getNote()) && FutureOperation.EVENT_PROPERTIES.in(flags))
+        	if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && location.getNote() != null && !location.getNote().isEmpty() && FutureOperation.EVENT_PROPERTIES.in(flags))
         		ChangeLog.addChange(hibSession, context, location, (location.getNote() == null || location.getNote().isEmpty() ? "-" : location.getNote()), ChangeLog.Source.ROOM_EDIT, ChangeLog.Operation.NOTE, null, location.getControllingDepartment());
 			
             ChangeLog.addChange(
