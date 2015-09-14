@@ -258,19 +258,23 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			if (original == null || !original.validStudent) {
 				String bannerRecheck = getBannerRecheck();
 				String reason = null;
+				boolean noreason = true;
 				boolean recheck = true;
 				if (original != null && original.failureReasons != null) {
 					for (String m: original.failureReasons) {
-						if ("Your PIN is invalid.".equals(m))
-							check.setFlag(EligibilityFlag.PIN_REQUIRED, true);
 						if (bannerRecheck == null || !m.matches(bannerRecheck)) recheck = false;
+						noreason = false;
+						if ("Your PIN is invalid.".equals(m)) {
+							check.setFlag(EligibilityFlag.PIN_REQUIRED, true);
+							if (pin == null || pin.isEmpty()) continue;
+						}
 						if (reason == null)
 							reason = m;
 						else
 							reason += "<br>" + m;
 					}
 				}
-				if (reason == null) {
+				if (noreason) {
 					reason = "Failed to check student registration eligility.";
 					if (bannerRecheck == null || !reason.matches(bannerRecheck)) recheck = false;
 				}
@@ -278,9 +282,6 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					check.setFlag(EligibilityFlag.RECHECK_BEFORE_ENROLLMENT, true);
 				} else {
 					check.setFlag(EligibilityFlag.CAN_ENROLL, false);
-				}
-				if (check.hasFlag(EligibilityFlag.PIN_REQUIRED) && (pin == null || pin.isEmpty())) {
-					return;
 				}
 				check.setMessage(reason);
 			} else if (student.getStudentId() == null) {
@@ -376,8 +377,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(), getBannerPassword());
 			Gson gson = getGson(helper);
 			XEInterface.RegisterResponse original = null;
-
-			if (isBannerAdmin() && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER) {
+			boolean admin = (isBannerAdmin() && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER);
+			
+			if (admin) {
 				// ADMIN: POST empty request with systemIn filled in
 				XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), pin, true);
 				helper.getAction().addOptionBuilder().setKey("term").setValue(req.term);
@@ -471,7 +473,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 							nodrop.add(reg.courseReferenceNumber);
 					} else {
 						notregistered.add(reg.courseReferenceNumber);
-						if (!reg.canAdd())
+						if (!reg.canAdd(admin))
 							noadd.add(reg.courseReferenceNumber);
 					}
 				}
