@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cpsolver.ifs.util.ToolBox;
+import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.localization.impl.Localization;
@@ -94,6 +94,7 @@ import org.unitime.timetable.util.LocationPermIdGenerator;
 @GwtRpcImplements(RoomUpdateRpcRequest.class)
 public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequest, RoomDetailInterface> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	private static Logger sLog = Logger.getLogger(RoomUpdateBackend.class);
 
 	@Override
 	public RoomDetailInterface execute(RoomUpdateRpcRequest request, SessionContext context) {
@@ -151,6 +152,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				break;
 			}
 		} catch (RoomException e) {
+			sLog.error(e.getMessage(), e);
 			exception = e;
 		}
 		if (location != null) {
@@ -974,6 +976,10 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 								if (location instanceof Room) {
 									((RoomPicture)picture).setLocation((Room)location);
 									((Room)location).getPictures().add((RoomPicture)picture);
+									if (p.getPictureType() != null)
+										picture.setType(AttachementTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
+									hibSession.saveOrUpdate(picture);
+									p.setUniqueId(picture.getUniqueId());
 								} else {
 									NonUniversityLocationPicture np = new NonUniversityLocationPicture();
 									np.setDataFile(picture.getDataFile());
@@ -982,11 +988,11 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 									np.setTimeStamp(picture.getTimeStamp());
 									np.setLocation((NonUniversityLocation)location);
 									((NonUniversityLocation)location).getPictures().add(np);
+									if (p.getPictureType() != null)
+										np.setType(AttachementTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
+									hibSession.saveOrUpdate(np);
+									p.setUniqueId(np.getUniqueId());
 								}
-								if (p.getPictureType() != null)
-									picture.setType(AttachementTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
-								hibSession.saveOrUpdate(picture);
-								p.setUniqueId(picture.getUniqueId());
 							}
 						} else if (picture != null) {
 							if (p.getPictureType() != null)
