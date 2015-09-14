@@ -98,23 +98,21 @@ public class XEInterface {
 		
 		public List<RegistrationAction> registrationActions;
 		
-		public boolean canDrop() {
+		public boolean can(String status) {
 			if (registrationActions != null)
 				for (RegistrationAction action: registrationActions) {
-					if ("DW".equals(action.courseRegistrationStatus))
+					if (status.equals(action.courseRegistrationStatus))
 						return true;
 				}
 			return false;
 		}
+
+		public boolean canDrop() {
+			return can("DW");
+		}
 		
-		public boolean canAdd() {
-			// return !"DD".equals(courseRegistrationStatus);
-			if (registrationActions != null)
-				for (RegistrationAction action: registrationActions) {
-					if ("RW".equals(action.courseRegistrationStatus))
-						return true;
-				}
-			return false;
+		public boolean canAdd(boolean admin) {
+			return can(admin ? "RE" : "RW");
 		}
 		
 		public boolean isRegistered() {
@@ -215,14 +213,12 @@ public class XEInterface {
 		public RegisterRequest add(String crn, boolean changeStatus) {
 			if (changeStatus) {
 				if (actionsAndOptions == null) actionsAndOptions = new ArrayList<RegisterAction>();
-				actionsAndOptions.add(new RegisterAction("RW", crn));
+				actionsAndOptions.add(new RegisterAction("SB".equals(systemIn) ? "RE" : "RW", crn));
 			} else {
 				if (courseReferenceNumbers == null)
 					courseReferenceNumbers = new ArrayList<XEInterface.CourseReferenceNumber>();
-				if ("SB".equals(systemIn))
-					courseReferenceNumbers.add(new CourseReferenceNumber(crn, "RW"));
-				else
-					courseReferenceNumbers.add(new CourseReferenceNumber(crn));
+				// if ("SB".equals(systemIn)) courseReferenceNumbers.add(new CourseReferenceNumber(crn, "RW")); else
+				courseReferenceNumbers.add(new CourseReferenceNumber(crn));
 			}
 			return this;
 		}
