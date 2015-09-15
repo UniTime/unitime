@@ -136,7 +136,7 @@ public class RoomEdit extends Composite {
 	private AbsolutePanel iGoogleMapControl;
 	private boolean iGoogleMapInitialized = false;
 	private ListBox iEventDepartment;
-	private ListBox iEventStatus;
+	private UniTimeWidget<ListBox> iEventStatus;
 	private P iBreakTimePanel;
 	private NumberBox iBreakTime;
 	private UniTimeWidget<TextArea> iNote;
@@ -407,11 +407,11 @@ public class RoomEdit extends Composite {
 			}
 		});
 		
-		iEventStatus = new ListBox();
-		iEventStatus.setStyleName("unitime-TextBox");
-		iEventStatus.addItem(MESSAGES.itemDefault(), "-1");
+		iEventStatus = new UniTimeWidget<ListBox>(new ListBox());
+		iEventStatus.getWidget().setStyleName("unitime-TextBox");
+		iEventStatus.getWidget().addItem(MESSAGES.itemDefault(), "-1");
 		for (int i = 0; i < CONSTANTS.eventStatusName().length; i++)
-			iEventStatus.addItem(CONSTANTS.eventStatusName()[i], String.valueOf(i));
+			iEventStatus.getWidget().addItem(CONSTANTS.eventStatusName()[i], String.valueOf(i));
 		
 		iNote = new UniTimeWidget<TextArea>(new TextArea());
 		iNote.getWidget().setStyleName("unitime-TextArea");
@@ -845,7 +845,8 @@ public class RoomEdit extends Composite {
 				}
 			}
 			iForm.addRow(MESSAGES.propEventDepartment(), iEventDepartment, 1);
-			iEventStatus.setSelectedIndex(iRoom.getEventStatus() == null ? 0 : iRoom.getEventStatus() + 1);
+			iEventStatus.getWidget().setSelectedIndex(iRoom.getEventStatus() == null ? 0 : iRoom.getEventStatus() + 1);
+			iEventStatus.clearHint();
 			iForm.addRow(MESSAGES.propEventStatus(), iEventStatus, 1);
 			iNote.getWidget().setText(iRoom.getEventNote() == null ? "" : iRoom.getEventNote());
 			iForm.addRow(MESSAGES.propEventNote(), iNote, 1);
@@ -1091,6 +1092,12 @@ public class RoomEdit extends Composite {
 				List<Widget> line = new ArrayList<Widget>();
 				CheckBox select = new CheckBox(); 
 				line.add(select);
+				select.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<Boolean> event) {
+						futureChanged();
+					}
+				});
 				line.add(new Label());
 				line.add(new Label(session.getLabel()));
 				Integer flags = RoomCookie.getInstance().getFutureFlags(session.getId());
@@ -1114,6 +1121,7 @@ public class RoomEdit extends Composite {
 			}
 			iApplyTo.setColumnVisible(1, false);
 			iForm.addRow(iApplyTo);
+			futureChanged();
 		} else if (iRoom.hasFutureRooms()) {
 			int row = iForm.addHeaderRow(iApplyToHeader);
 			iForm.getRowFormatter().addStyleName(row, "space-above");
@@ -1122,6 +1130,12 @@ public class RoomEdit extends Composite {
 				List<Widget> line = new ArrayList<Widget>();
 				CheckBox select = new CheckBox(); 
 				line.add(select);
+				select.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<Boolean> event) {
+						futureChanged();
+					}
+				});
 				line.add(new FutureRoomNameCell(fr));
 				line.add(new Label(fr.getSession().getLabel()));
 				Integer flags = RoomCookie.getInstance().getFutureFlags(fr.getSession().getId());
@@ -1138,6 +1152,7 @@ public class RoomEdit extends Composite {
 			}
 			iApplyTo.setColumnVisible(1, true);
 			iForm.addRow(iApplyTo);
+			futureChanged();
 		}
 	}
 	
@@ -1151,6 +1166,19 @@ public class RoomEdit extends Composite {
 		}
 		if (iProperties.isGoogleMap())
 			setMarker();
+	}
+	
+	protected void futureChanged() {
+		if ((iRoom.getUniqueId() == null && iProperties.hasFutureSessions()) || iRoom.hasFutureRooms()) {
+			for (int i = 1; i < iApplyTo.getRowCount(); i++) {
+				CheckBox ch = (CheckBox)iApplyTo.getWidget(i, 0);
+				if (ch.getValue()) {
+					iEventStatus.setHint(MESSAGES.eventStatusHint(iRoom.hasSessionName() ? iRoom.getSessionName() : iProperties.getAcademicSessionName()));
+					return;
+				}
+			}
+		}
+		iEventStatus.clearHint();
 	}
 	
 	protected void typeChanged() {
@@ -1406,10 +1434,10 @@ public class RoomEdit extends Composite {
 						iRoom.setEventDepartment(dept);
 				}
 			}
-			if (iEventStatus.getSelectedIndex() == 0)
+			if (iEventStatus.getWidget().getSelectedIndex() == 0)
 				iRoom.setEventStatus(null);
 			else
-				iRoom.setEventStatus(iEventStatus.getSelectedIndex() - 1);
+				iRoom.setEventStatus(iEventStatus.getWidget().getSelectedIndex() - 1);
 			iRoom.setEventNote(iNote.getWidget().getText().isEmpty() ? null : iNote.getWidget().getText());
 			if (iNote.getWidget().getText().length() > 2048) {
 				iNote.setErrorHint(MESSAGES.errorEventNoteTooLong());

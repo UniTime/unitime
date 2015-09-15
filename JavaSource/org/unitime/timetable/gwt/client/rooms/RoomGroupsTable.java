@@ -184,7 +184,7 @@ public class RoomGroupsTable extends UniTimeTable<GroupInterface> {
 			else
 				return null;
 		case DEPARTMENT:
-			return new DepartmentCell(group.getDepartment());
+			return new DepartmentCell(true, group.getDepartment());
 		case DESCRIPTION:
 			if (group.hasDescription())
 				return new HTML(group.getDescription());

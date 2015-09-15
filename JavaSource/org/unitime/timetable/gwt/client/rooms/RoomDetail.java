@@ -373,7 +373,7 @@ public class RoomDetail extends Composite {
 	
 	static class PreferenceCell extends DepartmentCell {
 		PreferenceCell(List<DepartmentInterface> departments) {
-			addStyleName("departments");
+			super(true);
 			for (DepartmentInterface department: departments) {
 				if (department.getPreference() == null) continue;
 				P p = new P("department");

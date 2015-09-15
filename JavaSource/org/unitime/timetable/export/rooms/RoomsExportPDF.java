@@ -148,7 +148,7 @@ public class RoomsExportPDF extends RoomsExporter {
 			a = new A();
 			for (DepartmentInterface d: room.getDepartments()) {
 				if (d.getPreference() == null) continue;
-				a.add(new A(PreferenceLevel.prolog2abbv(d.getPreference().getCode()) + " " + context.dept2string(d)).color(d.getPreference().getColor()));
+				a.add(new A(PreferenceLevel.prolog2abbv(d.getPreference().getCode()) + " " + context.dept2string(d, true)).color(d.getPreference().getColor()));
 			}
 			return a;
 			
@@ -198,14 +198,14 @@ public class RoomsExportPDF extends RoomsExporter {
 			if (!room.hasDepartments()) return new A();
 			a = new A();
 			for (DepartmentInterface d: room.getDepartments()) {
-				A b = new A(context.dept2string(d)).color(d.getColor());
+				A b = new A(context.dept2string(d, true)).color(d.getColor());
 				if (d.equals(room.getControlDepartment())) b.underline();
 				a.add(b);
 			}
 			return a;
 		
 		case CONTROL_DEPT:
-			return new A(context.dept2string(room.getControlDepartment())).color(room.getControlDepartment() == null ? null : room.getControlDepartment().getColor());
+			return new A(context.dept2string(room.getControlDepartment(), true)).color(room.getControlDepartment() == null ? null : room.getControlDepartment().getColor());
 			
 		case EXAM_TYPES:
 			if (!room.hasExamTypes()) return new A();
@@ -219,7 +219,7 @@ public class RoomsExportPDF extends RoomsExporter {
 			return periodPreferences(room, context);
 			
 		case EVENT_DEPARTMENT:
-			return new A(context.dept2string(room.getEventDepartment())).color(room.getEventDepartment() == null ? null : room.getEventDepartment().getColor());
+			return new A(context.dept2string(room.getEventDepartment(), false)).color(room.getEventDepartment() == null ? null : room.getEventDepartment().getColor());
 			
 		case EVENT_STATUS:
 			return room.getEventStatus() != null ? new A(CONSTANTS.eventStatusAbbv()[room.getEventStatus()]) : room.getDefaultEventStatus() != null ? new A(CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()]).italic() : new A();
@@ -237,7 +237,7 @@ public class RoomsExportPDF extends RoomsExporter {
 			if (!room.hasGroups()) return new A();
 			a = new A();
 			for (GroupInterface g: room.getGroups()) {
-				a.add(new A(g.getLabel() + (g.getDepartment() == null ? "" : " (" + context.dept2string(g.getDepartment()) + ")")).color(g.getDepartment() == null ? null : g.getDepartment().getColor()));
+				a.add(new A(g.getLabel() + (g.getDepartment() == null ? "" : " (" + context.dept2string(g.getDepartment(), true) + ")")).color(g.getDepartment() == null ? null : g.getDepartment().getColor()));
 			}
 			return a;
 			
@@ -294,7 +294,7 @@ public class RoomsExportPDF extends RoomsExporter {
 				a.add(new A(f.getLabel()));
 			if (type != null && type.equals(f.getType())) {
 				if (f.getDepartment() != null)
-					a.add(new A(f.getLabel() + " (" + context.dept2string(f.getDepartment()) + ")").color(f.getDepartment().getColor()));
+					a.add(new A(f.getLabel() + " (" + context.dept2string(f.getDepartment(), true) + ")").color(f.getDepartment().getColor()));
 				else
 					a.add(new A(f.getLabel()));					
 			}

@@ -178,7 +178,7 @@ public class RoomFeaturesTable extends UniTimeTable<FeatureInterface> {
 				return type;
 			}
 		case DEPARTMENT:
-			return new DepartmentCell(feature.getDepartment());
+			return new DepartmentCell(true, feature.getDepartment());
 		case ROOMS:
 			if (feature.hasRooms())
 				return new RoomsCell(feature);

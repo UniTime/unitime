@@ -715,10 +715,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			return new AvailabilityCell(room, false);
 			
 		case DEPARTMENTS:
-			return new DepartmentCell(room.getDepartments(), room.getControlDepartment());
+			return new DepartmentCell(true, room.getDepartments(), room.getControlDepartment());
 		
 		case CONTROL_DEPT:
-			return new DepartmentCell(room.getControlDepartment());
+			return new DepartmentCell(true, room.getControlDepartment());
 		
 		case EXAM_TYPES:
 			return new ExamTypesCell(room.getUniqueId(), room.getExamTypes());
@@ -733,7 +733,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		
 		case EVENT_DEPARTMENT:
 			if (room.getEventDepartment() == null) return null;
-			final DepartmentCell edc = new DepartmentCell(room.getEventDepartment());
+			final DepartmentCell edc = new DepartmentCell(false, room.getEventDepartment());
 			if (room.isCanSeeEventAvailability()) {
 				edc.addMouseOverHandler(new MouseOverHandler() {
 					@Override
@@ -964,7 +964,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				p.setText(feature.getLabel());
 				if (feature.getTitle() != null) p.setTitle(feature.getTitle());
 				if (feature.getDepartment() != null) {
-					p.setText(feature.getLabel() + " (" + RoomsTable.toString(feature.getDepartment()) + ")");
+					p.setText(feature.getLabel() + " (" + RoomsTable.toString(feature.getDepartment(), true) + ")");
 					if (feature.getDepartment().getColor() != null)
 						p.getElement().getStyle().setColor(feature.getDepartment().getColor());
 				}
@@ -979,7 +979,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				P p = e.getValue();
 				FeatureInterface feature = e.getKey();
 				if (feature.getDepartment() != null)
-					p.setText(feature.getLabel() + " (" + RoomsTable.toString(feature.getDepartment()) + ")");
+					p.setText(feature.getLabel() + " (" + RoomsTable.toString(feature.getDepartment(), true) + ")");
 			}
 		}
 	}
@@ -995,7 +995,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				p.setText(group.getLabel());
 				if (group.getTitle() != null) p.setTitle(group.getTitle());
 				if (group.getDepartment() != null) {
-					p.setText(group.getLabel() + " (" + RoomsTable.toString(group.getDepartment()) + ")");
+					p.setText(group.getLabel() + " (" + RoomsTable.toString(group.getDepartment(), true) + ")");
 					if (group.getDepartment().getColor() != null)
 						p.getElement().getStyle().setColor(group.getDepartment().getColor());
 				}
@@ -1010,7 +1010,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				P p = e.getValue();
 				GroupInterface group = e.getKey();
 				if (group.getDepartment() != null)
-					p.setText(group.getLabel() + " (" + RoomsTable.toString(group.getDepartment()) + ")");
+					p.setText(group.getLabel() + " (" + RoomsTable.toString(group.getDepartment(), true) + ")");
 			}
 		}
 	}
@@ -1060,33 +1060,35 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		}
 	}
 	
-	public static String toString(DepartmentInterface d) {
+	public static String toString(DepartmentInterface d, boolean ext) {
 		RoomCookie cookie = RoomCookie.getInstance();
 		switch (DeptMode.values()[cookie.getDeptMode()]) {
 		case ABBV:
-			return d.getExtAbbreviationWhenExist();
+			return ext ? d.getExtAbbreviationWhenExist() : d.getAbbreviationOrCode();
 		case CODE:
 			return d.getDeptCode();
 		case ABBV_NAME:
-			return d.getExtAbbreviationWhenExist() + " - " + d.getExtLabelWhenExist();
+			return ext ? d.getExtAbbreviationWhenExist() + " - " + d.getExtLabelWhenExist() : d.getAbbreviationOrCode() + " - " + d.getLabel();
 		case CODE_NAME:
-			return d.getDeptCode() + " - " + d.getLabel();
+			return ext ? d.getDeptCode() + " - " + d.getExtLabelWhenExist() : d.getDeptCode() + " - " + d.getLabel();
 		case NAME:
-			return d.getExtLabelWhenExist();
+			return ext ? d.getExtLabelWhenExist() : d.getLabel();
 		default:
-			return d.getExtAbbreviationWhenExist();
+			return d.getDeptCode();
 		}
 	}
 	
 	public static class DepartmentCell extends P implements HasRefresh {
+		boolean iExt;
 		Map<DepartmentInterface, P> iP = new HashMap<DepartmentInterface, P>();
 		
-		public DepartmentCell(DepartmentInterface... departments) {
+		public DepartmentCell(boolean ext, DepartmentInterface... departments) {
 			super("departments");
+			iExt = ext;
 			for (DepartmentInterface department: departments) {
 				if (department == null) continue;
 				P p = new P("department");
-				p.setText(RoomsTable.toString(department));
+				p.setText(RoomsTable.toString(department, iExt));
 				if (department.getTitle() != null) p.setTitle(department.getTitle());
 				if (department.getColor() != null)
 					p.getElement().getStyle().setColor(department.getColor());
@@ -1095,11 +1097,12 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			}
 		}
 		
-		public DepartmentCell(List<DepartmentInterface> departments, DepartmentInterface control) {
+		public DepartmentCell(boolean ext, List<DepartmentInterface> departments, DepartmentInterface control) {
 			super("departments");
+			iExt = ext;
 			for (DepartmentInterface department: departments) {
 				P p = new P("department");
-				p.setText(RoomsTable.toString(department));
+				p.setText(RoomsTable.toString(department, iExt));
 				if (department.getTitle() != null) p.setTitle(department.getTitle());
 				if (department.getColor() != null)
 					p.getElement().getStyle().setColor(department.getColor());
@@ -1113,17 +1116,17 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		@Override
 		public void refresh() {
 			for (Map.Entry<DepartmentInterface, P> e: iP.entrySet())
-				e.getValue().setText(RoomsTable.toString(e.getKey()));
+				e.getValue().setText(RoomsTable.toString(e.getKey(), iExt));
 		}
 	}
 	
 	public static class PreferenceCell extends DepartmentCell {
 		public PreferenceCell(List<DepartmentInterface> departments) {
-			addStyleName("departments");
+			super(true);
 			for (DepartmentInterface department: departments) {
 				if (department.getPreference() == null) continue;
 				P p = new P("department");
-				p.setText(RoomsTable.toString(department));
+				p.setText(RoomsTable.toString(department, iExt));
 				p.setTitle(department.getPreference().getName() + " " + department.getLabel());
 				p.getElement().getStyle().setColor(department.getPreference().getColor());
 				iP.put(department, p);

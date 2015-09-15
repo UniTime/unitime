@@ -132,15 +132,15 @@ public class RoomsExportCSV extends RoomsExporter {
 		case AVAILABILITY:
 			return room.getAvailability();
 		case DEPARTMENTS:
-			return context.dept2string(room.getDepartments());
+			return context.dept2string(room.getDepartments(), true);
 		case CONTROL_DEPT:
-			return context.dept2string(room.getControlDepartment());
+			return context.dept2string(room.getControlDepartment(), true);
 		case EXAM_TYPES:
 			return context.examTypes2string(room.getExamTypes());
 		case PERIOD_PREF:
 			return room.getPeriodPreference();
 		case EVENT_DEPARTMENT:
-			return context.dept2string(room.getEventDepartment());
+			return context.dept2string(room.getEventDepartment(), false);
 		case EVENT_STATUS:
 			return room.getEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getEventStatus()] : room.getDefaultEventStatus() != null ? CONSTANTS.eventStatusAbbv()[room.getDefaultEventStatus()] : "";
 		case EVENT_AVAILABILITY:

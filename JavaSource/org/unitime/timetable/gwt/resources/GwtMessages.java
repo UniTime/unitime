@@ -3781,4 +3781,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("link")
 	String roomPictureLink();
+	
+	@DefaultMessage("Event status changes apply only to {0}.")
+	String eventStatusHint(String session);
 }

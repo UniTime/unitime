@@ -280,23 +280,23 @@ public abstract class RoomsExporter implements Exporter {
 		public Format<Number> getAreaFormat() { return iAreaFormat; }
 		public Format<Number> getCoordinateFormat() { return iCoordinateFormat; }
 		
-		protected String dept2string(DepartmentInterface d) {
+		protected String dept2string(DepartmentInterface d, boolean ext) {
 			if (d == null) return "";
 			switch (getDepartmentMode()) {
 			case 0: return d.getDeptCode();
-			case 1: return d.getExtAbbreviationWhenExist();
-			case 2: return d.getExtLabelWhenExist();
-			case 3: return d.getExtAbbreviationWhenExist() + " - " + d.getExtLabelWhenExist();
-			case 4: return d.getDeptCode() + " - " + d.getExtLabelWhenExist();
+			case 1: return ext ? d.getExtAbbreviationWhenExist() : d.getAbbreviationOrCode();
+			case 2: return ext ? d.getExtLabelWhenExist() : d.getLabel();
+			case 3: return ext ? d.getExtAbbreviationWhenExist() + " - " + d.getExtLabelWhenExist() : d.getAbbreviationOrCode() + " - " + d.getLabel();
+			case 4: return ext ? d.getDeptCode() + " - " + d.getExtLabelWhenExist() : d.getDeptCode() + " - " + d.getLabel();
 			default: return d.getDeptCode();
 			}
 		}
 		
-		protected String dept2string(Collection<DepartmentInterface> departments) {
+		protected String dept2string(Collection<DepartmentInterface> departments, boolean ext) {
 			if (departments == null || departments.isEmpty()) return "";
 			String ret = "";
 			for (DepartmentInterface d: departments) {
-				ret += (ret.isEmpty() ? "" : getSeparator()) + dept2string(d);
+				ret += (ret.isEmpty() ? "" : getSeparator()) + dept2string(d, ext);
 			}
 			return ret;
 		}
@@ -306,7 +306,7 @@ public abstract class RoomsExporter implements Exporter {
 			String ret = "";
 			for (DepartmentInterface d: departments) {
 				if (d.getPreference() == null) continue;
-				ret += (ret.isEmpty() ? "" : getSeparator()) + d.getPreference().getName() + " " + dept2string(d);
+				ret += (ret.isEmpty() ? "" : getSeparator()) + d.getPreference().getName() + " " + dept2string(d, true);
 			}
 			return ret;
 		}
@@ -328,7 +328,7 @@ public abstract class RoomsExporter implements Exporter {
 					ret += (ret.isEmpty() ? "" : getSeparator()) + f.getLabel();
 				if (type != null && type.equals(f.getType())) {
 					if (f.getDepartment() != null)
-						ret += (ret.isEmpty() ? "" : getSeparator()) + f.getLabel() + " (" + dept2string(f.getDepartment()) + ")";
+						ret += (ret.isEmpty() ? "" : getSeparator()) + f.getLabel() + " (" + dept2string(f.getDepartment(), true) + ")";
 					else
 						ret += (ret.isEmpty() ? "" : getSeparator()) + f.getLabel();
 				}
@@ -340,7 +340,7 @@ public abstract class RoomsExporter implements Exporter {
 			if (groups == null || groups.isEmpty()) return "";
 			String ret = "";
 			for (GroupInterface g: groups) {
-				ret += (ret.isEmpty() ? "" : getSeparator()) + g.getLabel() + (g.getDepartment() == null ? "" : " (" + dept2string(g.getDepartment()) + ")");
+				ret += (ret.isEmpty() ? "" : getSeparator()) + g.getLabel() + (g.getDepartment() == null ? "" : " (" + dept2string(g.getDepartment(), true) + ")");
 			}
 			return ret;
 		}
