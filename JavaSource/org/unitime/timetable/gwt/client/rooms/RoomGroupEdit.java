@@ -133,7 +133,7 @@ public class RoomGroupEdit extends Composite {
 						@Override
 						public void onSuccess(GroupInterface result) {
 							LoadingWidget.getInstance().hide();
-							hide(true);
+							hide(true, result);
 						}
 					});
 				} else {
@@ -169,7 +169,7 @@ public class RoomGroupEdit extends Composite {
 					@Override
 					public void onSuccess(GroupInterface result) {
 						LoadingWidget.getInstance().hide();
-						hide(true);
+						hide(true, result);
 					}
 				});
 			}
@@ -177,7 +177,7 @@ public class RoomGroupEdit extends Composite {
 		iHeader.addButton("back", MESSAGES.buttonBack(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				hide(false);
+				hide(false, iGroup);
 			}
 		});
 
@@ -281,13 +281,13 @@ public class RoomGroupEdit extends Composite {
 		}
 	}
 	
-	private void hide(boolean refresh) {
+	private void hide(boolean refresh, GroupInterface group) {
 		setVisible(false);
-		onHide(refresh);
+		onHide(refresh, group);
 		Window.scrollTo(iLastScrollLeft, iLastScrollTop);
 	}
 	
-	protected void onHide(boolean refresh) {
+	protected void onHide(boolean refresh, GroupInterface group) {
 	}
 	
 	protected void onShow() {

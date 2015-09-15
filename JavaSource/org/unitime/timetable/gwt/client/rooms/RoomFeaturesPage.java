@@ -130,7 +130,7 @@ public class RoomFeaturesPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				changeUrl();
-				search();
+				search(null);
 			}
 		};
 		
@@ -252,10 +252,10 @@ public class RoomFeaturesPage extends Composite {
 			}
 			
 			@Override
-			protected void onHide(boolean refresh) {
+			protected void onHide(boolean refresh, FeatureInterface feature) {
 				iRootPanel.setWidget(iFeaturesPanel);
 				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRoomFeatures());
-				if (refresh && (iFeaturesPanel.getRowFormatter().isVisible(iGlobalFeaturesRow) || iFeaturesPanel.getRowFormatter().isVisible(iDepartmentalFeaturesRow))) search();
+				if (refresh && (iFeaturesPanel.getRowFormatter().isVisible(iGlobalFeaturesRow) || iFeaturesPanel.getRowFormatter().isVisible(iDepartmentalFeaturesRow))) search(feature == null ? null : feature.getId());
 			}
 		};
 		
@@ -464,7 +464,7 @@ public class RoomFeaturesPage extends Composite {
 		if (iSession instanceof AcademicSessionSelectionBox && iHistoryToken.isChanged("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation()) && iHistoryToken.getParameter("term") != null)
 			((AcademicSessionSelectionBox)iSession).selectSession(iHistoryToken.getParameter("term"), null);
 		if (search)
-			search();
+			search(null);
 	}
 	
 	protected void changeUrl() {
@@ -476,7 +476,7 @@ public class RoomFeaturesPage extends Composite {
 		Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
 	}
 	
-	protected void search() {
+	protected void search(final Long featureId) {
 		if (iMore != null) iMore.setEnabled(false);
 		if (iHeaderPanel != null) iHeaderPanel.setEnabled("more", false);
 		iGlobalFeaturesTable.clearTable(1);
@@ -532,6 +532,8 @@ public class RoomFeaturesPage extends Composite {
 				iFeaturesPanel.getRowFormatter().setVisible(iGlobalFeaturesRow + 1, iGlobalFeaturesTable.getRowCount() > 1);
 				iFeaturesPanel.getRowFormatter().setVisible(iDepartmentalFeaturesRow, iDepartmentalFeaturesTable.getRowCount() > 1);
 				iFeaturesPanel.getRowFormatter().setVisible(iDepartmentalFeaturesRow + 1, iDepartmentalFeaturesTable.getRowCount() > 1);
+				iDepartmentalFeaturesTable.scrollTo(featureId);
+				iGlobalFeaturesTable.scrollTo(featureId);
 			}
 		}, MESSAGES.waitLoadingRoomFeatures());
 	}

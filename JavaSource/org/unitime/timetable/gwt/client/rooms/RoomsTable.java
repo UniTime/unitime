@@ -1356,6 +1356,15 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		return null;
 	}
 	
+	public void scrollTo(Long roomId) {
+		if (roomId == null) return;
+		for (int i = 1; i < getRowCount(); i++) {
+			if (roomId.equals(getData(i).getUniqueId())) {
+				ToolBox.scrollToElement(getRowFormatter().getElement(i));
+			}
+		}
+	}
+	
 	public RoomDetailInterface getPrevious(Long roomId) {
 		if (roomId == null) return null;
 		for (int i = 2; i < getRowCount(); i++) {

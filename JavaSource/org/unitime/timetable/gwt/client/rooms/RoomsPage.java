@@ -132,7 +132,7 @@ public class RoomsPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				changeUrl();
-				search();
+				search(null);
 			}
 		};
 		
@@ -517,7 +517,7 @@ public class RoomsPage extends Composite {
 			protected void onHide() {
 				iRootPanel.setWidget(iRoomsPanel);
 				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRooms());
-				if (iRoomsTable != null && iRoomsTable.isVisible()) search();
+				if (iRoomsTable != null && iRoomsTable.isVisible()) search(getRoom() == null ? null : getRoom().getUniqueId());
 				changeUrl();
 			}
 			@Override
@@ -588,7 +588,7 @@ public class RoomsPage extends Composite {
 				if (!canShowDetail || (detail == null && getRoom().getUniqueId() == null)) {
 					iRootPanel.setWidget(iRoomsPanel);
 					UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRooms());
-					if (iRoomsTable.isVisible()) search();
+					if (iRoomsTable.isVisible()) search(detail == null ? null : detail.getUniqueId());
 				} else {
 					if (detail != null)
 						iRoomDetail.setRoom(detail);
@@ -608,7 +608,7 @@ public class RoomsPage extends Composite {
 			protected void onHide(boolean refresh) {
 				iRootPanel.setWidget(iRoomsPanel);
 				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRooms());
-				if (refresh && iRoomsTable.isVisible()) search();
+				if (refresh && iRoomsTable.isVisible()) search(null);
 			}
 		};
 		
@@ -708,7 +708,7 @@ public class RoomsPage extends Composite {
 				}, MESSAGES.waitLoadingRoomDetails());
 			}
 		} else if (search) {
-			search();
+			search(null);
 		}
 	}
 	
@@ -748,7 +748,7 @@ public class RoomsPage extends Composite {
 		return query;
 	}
 	
-	protected void search() {
+	protected void search(final Long roomId) {
 		if (iRoomsTable == null) return;
 		if (iMore != null) iMore.setEnabled(false);
 		if (iHeaderPanel != null) iHeaderPanel.setEnabled("more", false);
@@ -773,6 +773,7 @@ public class RoomsPage extends Composite {
 				}
 				if (iMore != null) iMore.setEnabled(iRoomsTable.getRowCount() > 1);
 				if (iHeaderPanel != null) iHeaderPanel.setEnabled("more", iRoomsTable.getRowCount() > 1);
+				iRoomsTable.scrollTo(roomId);
 			}
 		}, MESSAGES.waitLoadingRooms());
 	}

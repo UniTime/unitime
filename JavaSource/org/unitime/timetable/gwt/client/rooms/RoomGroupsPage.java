@@ -130,7 +130,7 @@ public class RoomGroupsPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				changeUrl();
-				search();
+				search(null);
 			}
 		};
 		
@@ -252,10 +252,10 @@ public class RoomGroupsPage extends Composite {
 			}
 			
 			@Override
-			protected void onHide(boolean refresh) {
+			protected void onHide(boolean refresh, GroupInterface group) {
 				iRootPanel.setWidget(iGroupsPanel);
 				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRoomGroups());
-				if (refresh && (iGroupsPanel.getRowFormatter().isVisible(iGlobalGroupsRow) || iGroupsPanel.getRowFormatter().isVisible(iDepartmentalGroupsRow))) search();
+				if (refresh && (iGroupsPanel.getRowFormatter().isVisible(iGlobalGroupsRow) || iGroupsPanel.getRowFormatter().isVisible(iDepartmentalGroupsRow))) search(group == null ? null : group.getId());
 			}
 		};
 		
@@ -464,7 +464,7 @@ public class RoomGroupsPage extends Composite {
 		if (iSession instanceof AcademicSessionSelectionBox && iHistoryToken.isChanged("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation()) && iHistoryToken.getParameter("term") != null)
 			((AcademicSessionSelectionBox)iSession).selectSession(iHistoryToken.getParameter("term"), null);
 		if (search)
-			search();
+			search(null);
 	}
 	
 	protected void changeUrl() {
@@ -476,7 +476,7 @@ public class RoomGroupsPage extends Composite {
 		Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
 	}
 	
-	protected void search() {
+	protected void search(final Long groupId) {
 		if (iMore != null) iMore.setEnabled(false);
 		if (iHeaderPanel != null) iHeaderPanel.setEnabled("more", false);
 		iGlobalGroupsTable.clearTable(1);
@@ -532,6 +532,8 @@ public class RoomGroupsPage extends Composite {
 				iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow + 1, iGlobalGroupsTable.getRowCount() > 1);
 				iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow, iDepartmentalGroupsTable.getRowCount() > 1);
 				iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow + 1, iDepartmentalGroupsTable.getRowCount() > 1);
+				iGlobalGroupsTable.scrollTo(groupId);
+				iDepartmentalGroupsTable.scrollTo(groupId);
 			}
 		}, MESSAGES.waitLoadingRoomGroups());
 	}

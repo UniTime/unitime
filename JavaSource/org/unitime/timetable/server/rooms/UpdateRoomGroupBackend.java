@@ -63,12 +63,13 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
             org.hibernate.Session hibSession = new RoomDeptDAO().getSession();
             tx = hibSession.beginTransaction();
 
+            RoomGroup g = null;
             if (request.hasGroup()) {
             	
             	if (request.hasFutureSessions())
             		for (Long id: request.getFutureSessions())
             			createOrUpdateGroup(request.getGroup(), request.getAddLocations(), request.getDropLocations(), id, hibSession, new EventContext(context, context.getUser(), id), true);
-            	createOrUpdateGroup(request.getGroup(), request.getAddLocations(), request.getDropLocations(), context.getUser().getCurrentAcademicSessionId(), hibSession, context, false);
+            	g = createOrUpdateGroup(request.getGroup(), request.getAddLocations(), request.getDropLocations(), context.getUser().getCurrentAcademicSessionId(), hibSession, context, false);
 
             } else if (request.getDeleteGroupId() != null) {
             	
@@ -81,8 +82,17 @@ public class UpdateRoomGroupBackend implements GwtRpcImplementation<UpdateRoomGr
             	throw new GwtRpcException("Bad request.");
             }
             
+            GroupInterface group = null;
+            if (g != null) {
+            	group = new GroupInterface(g.getUniqueId(), g.getAbbv(), g.getName());
+        		if (g.getDepartment() != null) {
+        			group.setDepartment(RoomDetailsBackend.wrap(g.getDepartment(), null, null));
+        			group.setTitle((g.getDescription() == null || g.getDescription().isEmpty() ? g.getName() : g.getDescription()) + " (" + g.getDepartment().getName() + ")");
+        		}
+            }
+            
             tx.commit();
-        	return null;
+        	return group;
         } catch (Exception e) {
         	e.printStackTrace();
             if (tx != null) tx.rollback();

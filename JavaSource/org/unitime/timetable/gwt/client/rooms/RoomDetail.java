@@ -110,9 +110,12 @@ public class RoomDetail extends Composite {
 		initWidget(iForm);
 	}
 	
+	private int iLastScrollLeft, iLastScrollTop;
 	public void show() {
 		UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRoomDetail());
 		setVisible(true);
+		iLastScrollLeft = Window.getScrollLeft();
+		iLastScrollTop = Window.getScrollTop();
 		onShow();
 		Window.scrollTo(0, 0);
 	}
@@ -128,6 +131,7 @@ public class RoomDetail extends Composite {
 	public void hide() {
 		setVisible(false);
 		onHide();
+		Window.scrollTo(iLastScrollLeft, iLastScrollTop);
 	}
 	
 	protected void onHide() {

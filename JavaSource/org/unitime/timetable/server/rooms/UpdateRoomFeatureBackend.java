@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.UpdateRoomFeatureRequest;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -62,6 +63,7 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
 			context = new EventContext(context, request.getSessionId());
 
 		Transaction tx = null;
+		RoomFeature f = null;
         try {
             org.hibernate.Session hibSession = new RoomDeptDAO().getSession();
             tx = hibSession.beginTransaction();
@@ -71,7 +73,7 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
             	if (request.hasFutureSessions())
             		for (Long id: request.getFutureSessions())
             			createOrUpdateFeature(request.getFeature(), request.getAddLocations(), request.getDropLocations(), id, hibSession, new EventContext(context, context.getUser(), id), true);
-            	createOrUpdateFeature(request.getFeature(), request.getAddLocations(), request.getDropLocations(), context.getUser().getCurrentAcademicSessionId(), hibSession, context, false);
+            	f = createOrUpdateFeature(request.getFeature(), request.getAddLocations(), request.getDropLocations(), context.getUser().getCurrentAcademicSessionId(), hibSession, context, false);
 	            
             } else if (request.getDeleteFeatureId() != null) {
             	
@@ -83,9 +85,24 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
             } else {
             	throw new GwtRpcException("Bad request.");
             }
+            
+            FeatureInterface feature = null;
+            if (f != null) {
+            	feature = new FeatureInterface(f.getUniqueId(), f.getAbbv(), f.getLabel());
+        		if (f.getFeatureType() != null)
+        			feature.setType(new FeatureTypeInterface(f.getFeatureType().getUniqueId(), f.getFeatureType().getReference(), f.getFeatureType().getLabel(), f.getFeatureType().isShowInEventManagement()));
+        		if (f instanceof DepartmentRoomFeature) {
+        			Department d = ((DepartmentRoomFeature)f).getDepartment();
+        			feature.setDepartment(RoomDetailsBackend.wrap(d, null, null));
+        			feature.setTitle(f.getLabel() + " (" + d.getName() + (f.getFeatureType() == null ? "" : ", " + f.getFeatureType().getLabel()) + ")");
+        		} else {
+        			feature.setTitle(f.getLabel() + (f.getFeatureType() == null ? "" : " (" + f.getFeatureType().getLabel() + ")"));
+        		}
+            }
 
             tx.commit();
-            return null;
+            
+            return feature;
         } catch (Exception e) {
         	e.printStackTrace();
             if (tx != null) tx.rollback();

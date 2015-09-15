@@ -133,7 +133,7 @@ public class RoomFeatureEdit extends Composite {
 						@Override
 						public void onSuccess(FeatureInterface result) {
 							LoadingWidget.getInstance().hide();
-							hide(true);
+							hide(true, result);
 						}
 					});
 				} else {
@@ -169,7 +169,7 @@ public class RoomFeatureEdit extends Composite {
 					@Override
 					public void onSuccess(FeatureInterface result) {
 						LoadingWidget.getInstance().hide();
-						hide(true);
+						hide(true, result);
 					}
 				});
 			}
@@ -177,7 +177,7 @@ public class RoomFeatureEdit extends Composite {
 		iHeader.addButton("back", MESSAGES.buttonBack(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				hide(false);
+				hide(false, iFeature);
 			}
 		});
 
@@ -283,13 +283,13 @@ public class RoomFeatureEdit extends Composite {
 		}
 	}
 	
-	private void hide(boolean refresh) {
+	private void hide(boolean refresh, FeatureInterface feature) {
 		setVisible(false);
-		onHide(refresh);
+		onHide(refresh, feature);
 		Window.scrollTo(iLastScrollLeft, iLastScrollTop);
 	}
 	
-	protected void onHide(boolean refresh) {
+	protected void onHide(boolean refresh, FeatureInterface feature) {
 	}
 	
 	protected void onShow() {

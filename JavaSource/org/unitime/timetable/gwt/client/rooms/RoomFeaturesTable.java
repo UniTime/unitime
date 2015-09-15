@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.rooms.RoomsTable.DepartmentCell;
 import org.unitime.timetable.gwt.client.rooms.RoomsTable.HasRefresh;
 import org.unitime.timetable.gwt.client.rooms.RoomsTable.SortOperation;
@@ -238,5 +239,15 @@ public class RoomFeaturesTable extends UniTimeTable<FeatureInterface> {
 			if (featureId.equals(getData(i).getId())) return getData(i);
 		}
 		return null;
+	}
+	
+	public void scrollTo(Long featureId) {
+		if (featureId == null) return;
+		for (int i = 1; i < getRowCount(); i++) {
+			if (featureId.equals(getData(i).getId())) {
+				ToolBox.scrollToElement(getRowFormatter().getElement(i));
+				return;
+			}
+		}
 	}
 }
