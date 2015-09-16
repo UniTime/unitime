@@ -324,5 +324,12 @@
                 type="java.lang.Integer"
                 not-null="true"/>
         </union-subclass>
+        
+        <union-subclass name="InstructionalMethod" table="instructional_method" abstract="false">
+        	<property
+        		name="visible"
+        		column="visible"
+        		type="boolean"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>

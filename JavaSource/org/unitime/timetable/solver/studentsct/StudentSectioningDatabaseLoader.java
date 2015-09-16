@@ -394,7 +394,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     		ss.getSchedulingSubpartLabel() +", but the appropriate parent subpart is not loaded.");
                 }
                 Subpart subpart = new Subpart(ss.getUniqueId().longValue(), df.format(ss.getItype().getItype()) + sufix,
-                		ss.getItype().getAbbv().trim(), config, parentSubpart);
+                		ss.getItype().getAbbv().trim() + (ioc.getInstructionalMethod() == null ? "" : " (" + ioc.getInstructionalMethod().getLabel() + ")"), config, parentSubpart);
                 subpart.setAllowOverlap(ss.isStudentAllowOverlap());
                 ss2subpart.put(ss.getUniqueId(), subpart);
                 for (Iterator<Class_> j = ss.getClasses().iterator(); j.hasNext(); ) {

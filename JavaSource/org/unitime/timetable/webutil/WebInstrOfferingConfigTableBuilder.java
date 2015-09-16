@@ -82,7 +82,10 @@ public class WebInstrOfferingConfigTableBuilder extends
 		btnTable.append("<DIV class='WelcomeRowHeadNoLine'>");
 		String configName = ioc.getName();
 	    if (configName==null || configName.trim().length()==0) configName = ioc.getUniqueId().toString();
-		btnTable.append(MSG.sectionTitleConfiguration() + configName);
+	    if (ioc.getInstructionalMethod() != null)
+	    	btnTable.append(MSG.labelConfigurationWithInstructionalMethod(configName, ioc.getInstructionalMethod().getLabel()));
+	    else
+	    	btnTable.append(MSG.labelConfiguration(configName));
 		btnTable.append("</DIV>");
 		btnTable.append("</td><td style='padding-bottom: 3px' nowrap>");
 		boolean notOffered = ioc.getInstructionalOffering().isNotOffered().booleanValue();

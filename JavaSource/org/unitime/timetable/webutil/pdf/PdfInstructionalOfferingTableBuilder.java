@@ -47,6 +47,7 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
@@ -476,7 +477,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 
     private PdfPCell pdfSubjectAndCourseInfo(InstructionalOffering io, CourseOffering co) {
     	PdfPCell cell = createCell();
-        addText(cell, (co!=null? co.getSubjectAreaAbbv()+" "+co.getCourseNbr():"") + (co != null && co.getCourseType() != null ? " (" + co.getCourseType().getReference() + ")" : ""), true, false, Element.ALIGN_LEFT, (co.isIsControl().booleanValue()?sEnableColor:sDisableColor), true);
+    	InstructionalMethod im = (co != null && co.getInstructionalOffering().getInstrOfferingConfigs().size() == 1 ? co.getInstructionalOffering().getInstrOfferingConfigs().iterator().next().getInstructionalMethod() : null);
+        addText(cell, (co!=null? co.getSubjectAreaAbbv()+" "+co.getCourseNbr():"") +
+        		(co != null && co.getCourseType() != null ? " (" + co.getCourseType().getReference() + (im != null ? ", " + im.getReference() : "") + ")" : im != null ? " (" + im.getReference() + ")" : ""),
+        		true, false, Element.ALIGN_LEFT, (co.isIsControl().booleanValue()?sEnableColor:sDisableColor), true);
         for (Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator(); it.hasNext(); ) {
         	CourseOffering tempCo = (org.unitime.timetable.model.CourseOffering) it.next();
             addText(cell,  indent+""+tempCo.getSubjectAreaAbbv()+" "+tempCo.getCourseNbr() + " " + (tempCo.getCourseType() != null ? " (" + tempCo.getCourseType().getReference() + ")" : ""), false, false, Element.ALIGN_LEFT, sDisableColor, true);
@@ -1233,7 +1237,8 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	    if (configName==null || configName.trim().length()==0)
         	        configName = ioc.getUniqueId().toString();
         	    PdfPCell cell = createCell();
-        	    addText(cell, indent + "Configuration " + configName, false, false, Element.ALIGN_LEFT, color, true);
+        	    addText(cell, indent + (ioc.getInstructionalMethod() == null ? MSG.labelConfiguration(configName) : MSG.labelConfigurationWithInstructionalMethod(configName, ioc.getInstructionalMethod().getReference())),
+        	    		false, false, Element.ALIGN_LEFT, color, true);
         	    iPdfTable.addCell(cell);
         	}
         	if (isShowDivSec()){

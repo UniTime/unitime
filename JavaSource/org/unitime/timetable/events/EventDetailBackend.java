@@ -192,6 +192,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		if (clazz.getClassSuffix() != null)
     			related.addExternalId(clazz.getClassSuffix());
     		related.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc());
+    		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+    			related.setInstruction(related.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
     		related.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
     		for (CourseOffering co: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
 				if (!co.isIsControl()) {
@@ -239,6 +241,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		event.addCourseName(courseOffering.getCourseName());
     		event.addCourseTitle(courseOffering.getTitle() == null ? "" : courseOffering.getTitle());
     		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
+    		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+    			event.setInstruction(event.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
     		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
     		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
     		if (clazz.getClassSuffix(courseOffering) == null) {
@@ -330,6 +334,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		if (clazz.getClassSuffix() != null)
 		    			related.addExternalId(clazz.getClassSuffix());
 		    		related.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc());
+		    		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+		    			related.setInstruction(related.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
 		    		related.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 						if (!course.isIsControl()) {
@@ -386,6 +392,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
 					related.setSectionNumber(config.getName());
 					related.setInstruction(MESSAGES.colConfig());
+					if (config.getInstructionalMethod() != null)
+		    			related.setInstruction(related.getInstruction() + " (" + config.getInstructionalMethod().getLabel() + ")");
 				} else {
 					related.setInstruction(MESSAGES.colCourse());
 				}
@@ -426,6 +434,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		if (clazz.getClassSuffix() != null)
 		    			related.addExternalId(clazz.getClassSuffix());
 		    		related.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc());
+		    		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+		    			related.setInstruction(related.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
 		    		related.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 						if (!course.isIsControl()) {
@@ -483,6 +493,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					related.setSelection(new long[] { owner.getCourse().getSubjectArea().getUniqueId(), owner.getCourse().getUniqueId(), config.getUniqueId()});
 					related.setSectionNumber(config.getName());
 					related.setInstruction(MESSAGES.colConfig());
+					if (config.getInstructionalMethod() != null)
+		    			related.setInstruction(related.getInstruction() + " (" + config.getInstructionalMethod().getLabel() + ")");
 				} else {
 					related.setInstruction(MESSAGES.colCourse());
 				}
@@ -663,6 +675,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    		confEvent.addCourseName(correctedOffering.getCourseName());
 				    		confEvent.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 				    		confEvent.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
+				    		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+				    			event.setInstruction(event.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
 				    		confEvent.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 				    		confEvent.setSectionNumber(clazz.getSectionNumberString(hibSession));
 				    		if (clazz.getClassSuffix(correctedOffering) == null) {

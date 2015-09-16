@@ -814,6 +814,12 @@
 					<hasPermission name="CourseTypes"/>
 				</condition>
 			</item>
+			<item name="Instructional Methods" page="admin" type="gwt">
+				<parameter name="type">instructionalMethod</parameter>
+				<condition>
+					<hasPermission name="InstructionalMethods"/>
+				</condition>
+			</item>
 			<item name="Sponsoring Organizations" page="sponsoringOrgList.do">
 				<condition>
 					<hasPermission name="SponsoringOrganizations"/>

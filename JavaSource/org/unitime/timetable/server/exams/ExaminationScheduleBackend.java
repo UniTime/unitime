@@ -125,11 +125,15 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
     			Class_ clazz = (Class_)owner.getOwnerObject();
     			related.setSectionNumber(clazz.getSectionNumberString(hibSession));
 	    		related.setInstruction(clazz.getSchedulingSubpart().getItype().getAbbv());
+	    		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+	    			related.setInstruction(related.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
         		if (clazz.getClassSuffix() != null) related.addExternalId(clazz.getClassSuffix());
     		} else if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig) {
     			InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
-				related.setSectionNumber("[" + config.getName() + "]");
+				related.setSectionNumber(config.getName());
 				related.setInstruction(MESSAGES.colConfig());
+				if (config.getInstructionalMethod() != null)
+	    			related.setInstruction(related.getInstruction() + " (" + config.getInstructionalMethod().getLabel() + ")");
     		} else if (owner.getOwnerType() == ExamOwner.sOwnerTypeCourse) {
     			related.setInstruction(MESSAGES.colCourse());
     		} else if (owner.getOwnerType() == ExamOwner.sOwnerTypeOffering) {

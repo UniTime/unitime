@@ -102,6 +102,16 @@
 				<line>Conflict checking: avoid showing conflicts between classes that can overlap because of the Can Share Room or the Meet Together distribution.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Methods</name>
+			<description>
+				<line>Added instructional methods lookup table. Each method has a reference and a label.</line>
+				<line>Example instructional methods: Online, Hybrid, or Face-to-Face.</line>
+				<line>Instructional offering configuration can have an instructional method set.</line>
+				<line>If set, instructional method appear on various pages, including the Scheduling Assistant and Events.</line>
+				<line>It is usually included in the Type column, next to the instructional type, e.g., Lecture (Online).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

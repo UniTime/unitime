@@ -92,5 +92,12 @@
 			column="duration_type_id"
 			not-null="false"
 			foreign-key="fk_ioconfig_durtype"/>
+
+		<many-to-one
+			name="instructionalMethod"
+			class="InstructionalMethod"
+			column="instr_method_id"
+			not-null="false"
+			foreign-key="fk_ioconfig_instr_method"/>
     </class>
 </hibernate-mapping>

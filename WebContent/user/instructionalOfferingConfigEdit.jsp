@@ -193,6 +193,18 @@
 				<html:text property="name" size="10" maxlength="10" />
 			</TD>
 		</TR>
+		
+		<logic:notEmpty name="instructionalOfferingConfigEditForm" property="instructionalMethods">
+			<TR>
+				<TD><loc:message name="propertyInstructionalMethod"/></TD>
+				<TD colspan="2">
+					<html:select property="instructionalMethod">
+						<html:option value="-1"><loc:message name="selectNoInstructionalMethod"/></html:option>
+						<html:optionsCollection property="instructionalMethods" value="id" label="value" />
+					</html:select>
+				</TD>
+			</TR>
+		</logic:notEmpty>		
 
 		<TR>
 			<TD><loc:message name="propertyUnlimitedEnrollment"/></TD>
@@ -209,25 +221,7 @@
 			</TD>
 		</TR>
 		</logic:notEqual>
-
-		<TR>
-			<TD><loc:message name="filterInstructionalType"/></TD>
-			<TD>
-				<html:select property="itype" onchange="javascript: itypeChanged(this);">
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
-					<html:option value="more" style="background-color:rgb(223,231,242);">More Options &gt;&gt;&gt;</html:option>
-				</html:select>
-				&nbsp;
-				<html:submit property="op" 
-					styleClass="btn" 
-					accesskey="<%=MSG.accessAddInstructionalTypeToConfig() %>" 
-					title="<%=MSG.titleAddInstructionalTypeToConfig(MSG.accessAddInstructionalTypeToConfig()) %>" 
-					onclick="document.forms[0].elements['click'].value='y'" >
-					<loc:message name="actionAddInstructionalTypeToConfig" />
-				</html:submit>
-		</TR>
-
+		
 		<logic:notEmpty name="instructionalOfferingConfigEditForm" property="catalogLinkLabel">
 		<TR>
 			<TD><loc:message name="propertyCourseCatalog"/> </TD>
@@ -261,6 +255,24 @@
 				</TD>
 			</TR>
 		</logic:equal>
+		
+		<TR>
+			<TD><loc:message name="filterInstructionalType"/></TD>
+			<TD>
+				<html:select property="itype" onchange="javascript: itypeChanged(this);">
+					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+					<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
+					<html:option value="more" style="background-color:rgb(223,231,242);">More Options &gt;&gt;&gt;</html:option>
+				</html:select>
+				&nbsp;
+				<html:submit property="op" 
+					styleClass="btn" 
+					accesskey="<%=MSG.accessAddInstructionalTypeToConfig() %>" 
+					title="<%=MSG.titleAddInstructionalTypeToConfig(MSG.accessAddInstructionalTypeToConfig()) %>" 
+					onclick="document.forms[0].elements['click'].value='y'" >
+					<loc:message name="actionAddInstructionalTypeToConfig" />
+				</html:submit>
+		</TR>		
 
 		<TR>
 			<TD colspan="2">

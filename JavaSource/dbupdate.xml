@@ -10188,4 +10188,40 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypeEdit'
 		</sql>
 	</update>
+	<update version="150" date="16-Sep-2015" comment="Instructional Method">
+		<plsql>
+			create table %SCHEMA%.instructional_method (
+				uniqueid number(20,0) constraint nn_instr_method_id not null,
+				reference varchar2(20 char) constraint nn_instr_method_ref not null,
+				label varchar2(60 char) constraint nn_instr_method_label not null,
+				visible number(1) default 1 constraint nn_instr_method_visible not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.instructional_method add constraint pk_instructional_method primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.instructional_method (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				visible int(1) not null default 1
+			)
+		</mysql>
+		<plsql>alter table %SCHEMA%.instr_offering_config add instr_method_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.instr_offering_config add instr_method_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.instr_offering_config
+  			add constraint fk_ioconfig_instr_method foreign key (instr_method_id)
+  			references %SCHEMA%.instructional_method (uniqueid) on delete set null
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructionalMethods'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypes'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructionalMethodEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypeEdit'
+		</sql>
+	</update>
 </dbupdate>

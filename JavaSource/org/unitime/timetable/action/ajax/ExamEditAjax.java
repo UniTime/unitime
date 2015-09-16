@@ -147,7 +147,7 @@ public class ExamEditAjax extends Action {
             print(out, String.valueOf(Long.MIN_VALUE+2),"-- Configurations --");
             for (Iterator i=configs.iterator();i.hasNext();) {
                 InstrOfferingConfig c = (InstrOfferingConfig)i.next();
-                print(out,String.valueOf(-c.getUniqueId()), c.getName());
+                print(out,String.valueOf(-c.getUniqueId()), c.getName() + (c.getInstructionalMethod() == null ? "" : " (" + c.getInstructionalMethod().getLabel() + ")"));
             }
         }
         if (!configs.isEmpty() && !subparts.isEmpty())

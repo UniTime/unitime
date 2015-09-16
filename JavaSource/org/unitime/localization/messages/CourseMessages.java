@@ -679,6 +679,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Configuration {0}")
 	String labelConfiguration(String name);
 	
+	@DefaultMessage("Configuration {0} ({1})")
+	String labelConfigurationWithInstructionalMethod(String name, String instructionalMethod);
+	
 	@DefaultMessage("{0} Not Offered Courses")
 	String labelNotOfferedCourses(String subjectAreaAbbv);
 	
@@ -2102,4 +2105,10 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Class {0} conflicts with {1}.")
 	String classIsConflicting(String name, String conflicts);
+	
+	@DefaultMessage("Instructional Method:")
+	String propertyInstructionalMethod();
+	
+	@DefaultMessage("Not Selected")
+	String selectNoInstructionalMethod();
 }

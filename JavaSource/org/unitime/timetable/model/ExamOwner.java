@@ -883,6 +883,8 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
      * I ... itype code
      * p ... itype parent abbv
      * P ... itype parent code
+     * m ... instructional method reference
+     * M ... instructional method label
      * _ ... space
      */
 	protected String genName(char code) {
@@ -953,6 +955,40 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
                 return itype.getItype().toString();
             default : return "";
             }
+        case 'm':
+        	switch (getOwnerType()) {
+            case sOwnerTypeConfig :
+            	InstructionalMethod im = ((InstrOfferingConfig)getOwnerObject()).getInstructionalMethod();
+            	if (im != null) return im.getReference();
+            	return "";
+            case sOwnerTypeClass:
+            	im = ((Class_)getOwnerObject()).getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+            	if (im != null) return im.getReference();
+            	return "";
+            default:
+            	if (getCourse().getInstructionalOffering().getInstrOfferingConfigs().size() == 1) {
+            		im = getCourse().getInstructionalOffering().getInstrOfferingConfigs().iterator().next().getInstructionalMethod();
+            		if (im != null) return im.getLabel();	
+            	}
+            	return "";
+        	}
+        case 'M':
+        	switch (getOwnerType()) {
+            case sOwnerTypeConfig :
+            	InstructionalMethod im = ((InstrOfferingConfig)getOwnerObject()).getInstructionalMethod();
+            	if (im != null) return im.getLabel();
+            	return "";
+            case sOwnerTypeClass:
+            	im = ((Class_)getOwnerObject()).getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+            	if (im != null) return im.getLabel();
+            	return "";
+            default:
+            	if (getCourse().getInstructionalOffering().getInstrOfferingConfigs().size() == 1) {
+            		im = getCourse().getInstructionalOffering().getInstrOfferingConfigs().iterator().next().getInstructionalMethod();
+            		if (im != null) return im.getLabel();	
+            	}
+            	return "";
+        	}
         }
         return "";
     }

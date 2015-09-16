@@ -1319,6 +1319,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		event.addCourseName(correctedOffering.getCourseName());
 				    		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 				    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
+				    		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+				    			event.setInstruction(event.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
 				    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 				    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
 				    		if (clazz.getClassSuffix(correctedOffering) == null) {
@@ -1477,7 +1479,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    					break;
 				    				case ExamOwner.sOwnerTypeConfig:
 				    					InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
-				    					event.addExternalId("[" + config.getName() + "]");
+				    					event.addExternalId("[" + config.getName() + (config.getInstructionalMethod() == null ? "" : " " + config.getInstructionalMethod().getLabel()) + "]");
 				    					break;
 				    				case ExamOwner.sOwnerTypeCourse:
 				    					event.addExternalId(MESSAGES.colCourse());
@@ -1939,6 +1941,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		event.addCourseName(correctedOffering.getCourseName());
 						    		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 						    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
+						    		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+						    			event.setInstruction(event.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
 						    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 						    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
 						    		if (clazz.getClassSuffix(correctedOffering) == null) {
@@ -2228,6 +2232,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    		event.addCourseName(correctedOffering.getCourseName());
 					    		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 					    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
+					    		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
+					    			event.setInstruction(event.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
 					    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 					    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
 					    		if (clazz.getClassSuffix(correctedOffering) == null) {

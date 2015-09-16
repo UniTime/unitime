@@ -280,7 +280,7 @@ public class ExamEditForm extends PreferencesForm {
                 for (Iterator i=configs.iterator();i.hasNext();) {
                     InstrOfferingConfig c = (InstrOfferingConfig)i.next();
                     if (c.getUniqueId().equals(getItype(idx))) contains = true;
-                    ret.add(new IdValue(-c.getUniqueId(), c.getName()));
+                    ret.add(new IdValue(-c.getUniqueId(), c.getName() + (c.getInstructionalMethod() == null ? "" : " (" + c.getInstructionalMethod().getLabel() + ")")));
                 }
             }
             TreeSet subparts = new TreeSet(new SchedulingSubpartComparator(null));

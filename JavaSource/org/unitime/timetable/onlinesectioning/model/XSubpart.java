@@ -69,6 +69,8 @@ public class XSubpart implements Serializable, Externalizable {
         iInstructionalType = sF3Z.format(subpart.getItype().getItype()) + subpart.getSchedulingSubpartSuffix(helper.getHibSession());
         iAllowOverlap = subpart.isStudentAllowOverlap();
         iName = subpart.getItype().getAbbv().trim();
+        if (subpart.getInstrOfferingConfig().getInstructionalMethod() != null)
+        	iName += " (" + subpart.getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")";
         iConfigId = subpart.getInstrOfferingConfig().getUniqueId();
         iParentId = subpart.getParentSubpart() == null ? null : subpart.getParentSubpart().getUniqueId();
         if (subpart.getCredit() != null) {

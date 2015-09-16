@@ -36,6 +36,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ClassDurationType;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SimpleItypeConfig;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -81,6 +82,7 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
     private String durationTypeDefault;
     private Long durationType;
     private boolean durationTypeEditable;
+    private Long instructionalMethod;
     
     // Error Codes
     private final short NO_ERR = 0;
@@ -336,6 +338,7 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
         durationType = null;
         durationTypeDefault = null;
         durationTypeEditable = false;
+        instructionalMethod = null;
     }
 
     /**
@@ -526,4 +529,14 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
     }
     public boolean isDurationTypeEditable() { return durationTypeEditable; }
     public void setDurationTypeEditable(boolean durationTypeEditable) { this.durationTypeEditable = durationTypeEditable; }
+    
+    public Long getInstructionalMethod() { return instructionalMethod; }
+    public void setInstructionalMethod(Long instructionalMethod) { this.instructionalMethod = instructionalMethod; }
+    public List<IdValue> getInstructionalMethods() {
+    	List<IdValue> ret = new ArrayList<IdValue>();
+    	for (InstructionalMethod type: InstructionalMethod.findAll())
+    		if (type.isVisible() || type.getUniqueId().equals(instructionalMethod))
+    			ret.add(new IdValue(type.getUniqueId(), type.getLabel()));
+    	return ret;
+    }
 }

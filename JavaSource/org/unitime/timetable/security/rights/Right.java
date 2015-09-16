@@ -517,6 +517,9 @@ public enum Right {
 	AttachementTypes,
 	AttachementTypeEdit,
 	
+	InstructionalMethods,
+	InstructionalMethodEdit,
+	
 	/** Administration: Defaults */
 	
 	ApplicationConfig,

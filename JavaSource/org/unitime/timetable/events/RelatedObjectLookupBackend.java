@@ -199,7 +199,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						RelatedObjectInterface relatedConfig = new RelatedObjectInterface();
 						relatedConfig.setType(RelatedObjectInterface.RelatedObjectType.Config);
 						relatedConfig.setUniqueId(config.getUniqueId());
-						relatedConfig.setName(config.getName());
+						relatedConfig.setName(config.getName() + (config.getInstructionalMethod() == null ? "" : " (" + config.getInstructionalMethod().getLabel() + ")"));
 						relatedConfig.addCourseName(course.getCourseName());
 						relatedConfig.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						relatedConfig.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), config.getUniqueId()});
@@ -208,7 +208,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						response.add(new RelatedObjectLookupRpcResponse(
 								RelatedObjectLookupRpcRequest.Level.CONFIG,
 								config.getUniqueId(),
-								config.getName(),
+								config.getName() + (config.getInstructionalMethod() == null ? "" : " (" + config.getInstructionalMethod().getLabel() + ")"),
 								relatedConfig));
 					}
 				}
@@ -402,7 +402,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					RelatedObjectInterface relatedConfig = new RelatedObjectInterface();
 					relatedConfig.setType(RelatedObjectInterface.RelatedObjectType.Config);
 					relatedConfig.setUniqueId(config.getUniqueId());
-					relatedConfig.setName(config.getName());
+					relatedConfig.setName(config.getName() + (config.getInstructionalMethod() == null ? "" : " (" + config.getInstructionalMethod().getLabel() + ")"));
 					relatedConfig.addCourseName(course.getCourseName());
 					relatedConfig.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					relatedConfig.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), config.getUniqueId()});
@@ -411,7 +411,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					response.add(new RelatedObjectLookupRpcResponse(
 							RelatedObjectLookupRpcRequest.Level.CONFIG,
 							config.getUniqueId(),
-							config.getName(),
+							config.getName() + (config.getInstructionalMethod() == null ? "" : " (" + config.getInstructionalMethod().getLabel() + ")"),
 							relatedConfig));
 					subparts.addAll(config.getSchedulingSubparts());
 				}
@@ -431,7 +431,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 		                parent = parent.getParentSubpart();
 		            }
 		            if (subpart.getInstrOfferingConfig().getInstructionalOffering().getInstrOfferingConfigs().size() > 1)
-		                name += " [" + subpart.getInstrOfferingConfig().getName() + "]";
+		            	name += " [" + subpart.getInstrOfferingConfig().getName() + "]";
 					response.add(new RelatedObjectLookupRpcResponse(
 							RelatedObjectLookupRpcRequest.Level.SUBPART,
 							subpart.getUniqueId(),

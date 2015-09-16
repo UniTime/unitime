@@ -59,6 +59,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
@@ -531,7 +532,16 @@ public class WebInstructionalOfferingTableBuilder {
         cell.addContent(co != null? ("<span title='" + co.getCourseNameWithTitle() + "'><b>" + co.getSubjectAreaAbbv() + "</b>") :"");
         cell.addContent(" ");
         cell.addContent(co!= null? ("<b>" + co.getCourseNbr() + "</b></span>") :"");
-        if (co != null && co.getCourseType() != null) cell.addContent(" (<span title='" + co.getCourseType().getLabel() + "'>" + co.getCourseType().getReference() + "</span>)");
+        InstructionalMethod im = (co != null && co.getInstructionalOffering().getInstrOfferingConfigs().size() == 1 ? co.getInstructionalOffering().getInstrOfferingConfigs().iterator().next().getInstructionalMethod() : null);
+        if (co != null && co.getCourseType() != null) {
+        	if (im != null) {
+        		cell.addContent(" (<span title='" + co.getCourseType().getLabel() + "'>" + co.getCourseType().getReference() + "</span>, <span title='" + im.getLabel() + "'>" + im.getReference() + ")");
+        	} else {
+        		cell.addContent(" (<span title='" + co.getCourseType().getLabel() + "'>" + co.getCourseType().getReference() + "</span>)");
+        	}
+        } else if (im != null) {
+        	cell.addContent(" (<span title='" + im.getLabel() + "'>" + im.getReference() + ")");
+        }
         Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator();
         StringBuffer addlCos = new StringBuffer();
         CourseOffering tempCo = null;
@@ -1394,7 +1404,10 @@ public class WebInstructionalOfferingTableBuilder {
         	            indent + "<u>Configuration</u>: <font class='configTitle'>" + configName + "</font> ", 
         	            isEditable);
         	    */
-        	    cell = this.initNormalCell(indent + MSG.labelConfiguration(configName), isEditable);
+        	    if (ioc.getInstructionalMethod() != null)
+        	    	cell = this.initNormalCell(indent + "<span title=\"" + ioc.getInstructionalMethod().getLabel() + "\">" + MSG.labelConfigurationWithInstructionalMethod(configName, ioc.getInstructionalMethod().getReference()) + "</span>", isEditable);
+        	    else
+        	    	cell = this.initNormalCell(indent + MSG.labelConfiguration(configName), isEditable);
         	    cell.setNoWrap(true);
         	    row.addContent(cell);
 

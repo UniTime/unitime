@@ -2369,6 +2369,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Attachement Types")
 	String pageAttachementTypes();
 	
+	@DefaultMessage("InstructionalMethod")
+	String pageInstructionalMethod();
+	
+	@DefaultMessage("Instructional Methods")
+	String pageInstructionalMethods();
+	
 	@DefaultMessage("Edit Room Departments")
 	String pageEditRoomsDepartments();
 	

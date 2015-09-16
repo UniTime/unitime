@@ -60,6 +60,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -77,6 +78,7 @@ import org.unitime.timetable.model.dao.ClassDurationTypeDAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
+import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -397,6 +399,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         	if (dtype != null && dtype.isVisible())
         		frm.setDurationTypeEditable(false);
         }
+        frm.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
     }
 
     /**
@@ -434,6 +437,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         frm.setDurationType(io.getSession().getDefaultClassDurationType() == null ? -1 : io.getSession().getDefaultClassDurationType().getUniqueId());
         frm.setDurationTypeDefault(io.getSession().getDefaultClassDurationType() == null ? MSG.systemDefaultDurationType() : MSG.sessionDefault(io.getSession().getDefaultClassDurationType().getLabel()));
         frm.setDurationTypeEditable(true);
+        frm.setInstructionalMethod(null);
 
 	    Set configs = io.getInstrOfferingConfigs();
 	    frm.setConfigCount(new Integer (configs.size()));
@@ -893,6 +897,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             Boolean unlimitedEnroll = (frm.getUnlimited()==null) ? new Boolean(false) : frm.getUnlimited();
             int limit = (unlimitedEnroll.booleanValue()) ? 0 : frm.getLimit();
             ClassDurationType dtype = (frm.getDurationType() == null || frm.getDurationType() < 0 ? null : ClassDurationTypeDAO.getInstance().get(frm.getDurationType(), hibSession));
+            InstructionalMethod imeth = (frm.getInstructionalMethod() == null || frm.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(frm.getInstructionalMethod(), hibSession));
 
             if (configId==null || configId.intValue()==0) {
                 ioc = new InstrOfferingConfig();
@@ -901,6 +906,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 ioc.setUnlimitedEnrollment(unlimitedEnroll);
                 ioc.setInstructionalOffering(io);
                 ioc.setClassDurationType(dtype);
+                ioc.setInstructionalMethod(imeth);
                 io.addToinstrOfferingConfigs(ioc);
 
                 hibSession.saveOrUpdate(ioc);
@@ -912,6 +918,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 ioc.setName(frm.getName());
                 ioc.setUnlimitedEnrollment(unlimitedEnroll);
                 ioc.setClassDurationType(dtype);
+                ioc.setInstructionalMethod(imeth);
             }
 
             HashMap notDeletedSubparts = new HashMap();
