@@ -38,6 +38,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -45,6 +46,7 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
+import org.unitime.timetable.util.IdValue;
 
 
 /**
@@ -78,6 +80,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private Boolean editExternalId;
 	private Boolean displayDisplayInstructors;
 	private Boolean displayEnabledForStudentScheduling;
+	private Long instructionalMethod;
 	
 	private List classIds;
 	private List subpartIds;
@@ -480,6 +483,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	editExternalId = new Boolean(false);
     	enableAllClassesForStudentScheduling = "";
     	displayAllClassesInstructors = "";
+    	instructionalMethod = null;
     	resetLists();
     }
     
@@ -1643,4 +1647,14 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     		}
     	}
 	}
+	
+    public Long getInstructionalMethod() { return instructionalMethod; }
+    public void setInstructionalMethod(Long instructionalMethod) { this.instructionalMethod = instructionalMethod; }
+    public List<IdValue> getInstructionalMethods() {
+    	List<IdValue> ret = new ArrayList<IdValue>();
+    	for (InstructionalMethod type: InstructionalMethod.findAll())
+    		if (type.isVisible() || type.getUniqueId().equals(instructionalMethod))
+    			ret.add(new IdValue(type.getUniqueId(), type.getLabel()));
+    	return ret;
+    }
 }

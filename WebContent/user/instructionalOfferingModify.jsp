@@ -188,21 +188,31 @@
 		</TR>
 		</logic:messagesPresent>
 		
+		<logic:notEmpty name="instructionalOfferingModifyForm" property="instructionalMethods">
+			<TR>
+				<TD><loc:message name="propertyInstructionalMethod"/></TD>
+				<TD>
+					<html:select property="instructionalMethod">
+						<html:option value="-1"><loc:message name="selectNoInstructionalMethod"/></html:option>
+						<html:optionsCollection property="instructionalMethods" value="id" label="value" />
+					</html:select>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+		
 		<html:hidden property="instrOffrConfigUnlimitedReadOnly"/>
 		<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimitedReadOnly" value="true">
 			<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
-				<TR><TD align="left" colspan="2">
-					<loc:message name="propertyUnlimitedEnrollment"/>&nbsp;&nbsp;&nbsp;<IMG border='0' title='<%=MSG.titleUnlimitedEnrollment()%>' alt='true' align='middle' src='images/accept.png'>
+				<TR><TD align="left">
+					<loc:message name="propertyUnlimitedEnrollment"/></TD><TD><IMG border='0' title='<%=MSG.titleUnlimitedEnrollment()%>' alt='true' align='middle' src='images/accept.png'>
 				</TD></TR>
 			</logic:equal>
 			<html:hidden property="instrOffrConfigUnlimited"/>
 		</logic:equal>
 		<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimitedReadOnly" value="true">
 			<TR>
-				<TD align="left" colspan="2">
-						<loc:message name="propertyUnlimitedEnrollment"/>&nbsp;&nbsp;&nbsp;<html:checkbox property="instrOffrConfigUnlimited"
-							onclick="document.forms[0].elements['hdnOp'].value='unlimited';document.forms[0].submit();"/>
-				</TD>
+				<TD><loc:message name="propertyUnlimitedEnrollment"/></TD>
+				<TD><html:checkbox property="instrOffrConfigUnlimited" onclick="document.forms[0].elements['hdnOp'].value='unlimited';document.forms[0].submit();"/></TD>
 			</TR>
 		</logic:notEqual>
 		<logic:equal name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
@@ -210,21 +220,14 @@
 		</logic:equal>
 		<logic:notEqual name="<%=frmName%>" property="instrOffrConfigUnlimited" value="true">
 			<TR>
-				<TD align="left" colspan="2">
-					<loc:message name="propertyConfigurationLimit"/>&nbsp;&nbsp;&nbsp;<html:text property="instrOffrConfigLimit" maxlength="5" size="5"/>
-				</TD>
+				<TD><loc:message name="propertyConfigurationLimit"/></TD>
+				<TD><html:text property="instrOffrConfigLimit" maxlength="5" size="5"/></TD>
 			</TR>
 		</logic:notEqual>
 		<TR>
-			<TD align="left" colspan="2">
-			<table align="left" border="0" cellspacing="0" cellpadding="1">
-				<tr>
-					<td valign="top">
-						<loc:message name="propertySchedulingSubpartLimits"/>
-					</td>
-					<td> &nbsp;&nbsp;&nbsp;</td>
-					<td valign="top">
-						<table align="left" border="0" cellspacing="0" cellpadding="0">
+			<TD valign="top" style="white-space: nowrap; width: 165px;"><loc:message name="propertySchedulingSubpartLimits"/></TD>
+			<TD>
+				<table align="left" border="0" cellspacing="0" cellpadding="0">
 							<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">
 								<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';"> 
 									<td valign="top" align="right" nowrap>
@@ -274,11 +277,7 @@
 									</logic:equal>	
 								</tr>
 							</logic:iterate>			
-			<!-- </tr> -->	
 						</table>
-					</td>
-				</tr>
-			</table>
 			</TD>
 		</TR>
 		<TR>
@@ -638,15 +637,8 @@
 			if (frm.getDisplayDisplayInstructors().booleanValue() || frm.getDisplayEnabledForStudentScheduling().booleanValue()){
 		%>
 		<TR>
-			<TD align="left" colspan="2">
-				<table align="left" border="0" cellspacing="0" cellpadding="0">
-					<tr> 
-						<td valign="top">
-							<loc:message name="propertySchedulingSubpartLimits"/>
-						</td> 
-						<td> &nbsp;&nbsp;&nbsp;</td>
-						<td valign="middle">
-							<table align="left" border="0" cellspacing="0" cellpadding="0">
+			<TD valign="top"><loc:message name="propertySchedulingSubpartLimits"/></TD>
+			<TD><table align="left" border="0" cellspacing="0" cellpadding="0">
 								<logic:iterate name="<%=frmName%>" property="subtotalValues" id="v" indexId="ctr">				
 									<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
 										<td valign="top" align="right" nowrap>
@@ -695,9 +687,6 @@
 									</tr>
 								</logic:iterate>
 							</table>
-						</td>
-					</tr>
-				</table>
 			</td>
 		</tr>
 	<% } %>

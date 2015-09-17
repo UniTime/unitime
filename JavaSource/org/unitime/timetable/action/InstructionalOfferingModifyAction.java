@@ -37,6 +37,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.action.ActionRedirect;
 import org.apache.struts.util.MessageResources;
+import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
@@ -71,6 +73,7 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
+import org.unitime.timetable.model.dao.InstructionalMethodDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -279,6 +282,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setDisplayEnabledForStudentScheduling(ApplicationProperty.ClassSetupEnabledForStudentScheduling.isTrue());
         frm.setDisplayExternalId(ApplicationProperty.ClassSetupShowExternalIds.isTrue() && !ApplicationProperty.ClassSetupEditExternalIds.isTrue());
         frm.setEditExternalId(ApplicationProperty.ClassSetupEditExternalIds.isTrue());
+        frm.setInstructionalMethod(ioc.getInstructionalMethod() == null ? -1l : ioc.getInstructionalMethod().getUniqueId());
        
 
         String name = io.getCourseNameWithTitle();
@@ -365,6 +369,12 @@ public class InstructionalOfferingModifyAction extends Action {
 	        	hibSession.update(ioc);
 	        } else if (!frm.getInstrOffrConfigLimit().equals(ioc.getLimit())) {
 	        	ioc.setLimit(frm.getInstrOffrConfigLimit());
+	        	hibSession.update(ioc);
+	        }
+
+	        InstructionalMethod imeth = (frm.getInstructionalMethod() == null || frm.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(frm.getInstructionalMethod(), hibSession));
+	        if (!ToolBox.equals(ioc.getInstructionalMethod(), imeth)) {
+	        	ioc.setInstructionalMethod(imeth);
 	        	hibSession.update(ioc);
 	        }
 
