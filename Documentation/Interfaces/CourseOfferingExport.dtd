@@ -41,7 +41,8 @@
 <!ATTLIST course courseNbr NMTOKEN #REQUIRED >
 <!ATTLIST course scheduleBookNote CDATA #IMPLIED >
 <!ATTLIST course subject CDATA #REQUIRED >
-<!ATTLIST course title CDATA #IMPLIED >
+<!ATTLIST course title CDATA #IMPLIED > 
+<!ATTLIST course reserved NMTOKEN #IMPLIED >
 
 <!ELEMENT courseCredit EMPTY >
 <!ATTLIST courseCredit creditFormat ( arrangeHours | fixedUnit | variableMinMax | variableRange ) #REQUIRED >

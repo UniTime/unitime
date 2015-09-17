@@ -171,6 +171,12 @@
 				<line>When a student is enrolled into an existing course request, drop the enrollment message if there is one (enrollment message contains a reason why a request is not enrolled).</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Course Offering XML export and import</name>
+			<description>
+				<line>Added course offering reserved space (reserved attribute of the course element).</line>
+			</description>
+		</item>
 	</category>
 </release>
 

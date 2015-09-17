@@ -212,6 +212,8 @@ public class CourseOfferingExport extends BaseExport {
         courseElement.addAttribute("id", (course.getExternalUniqueId()!=null?course.getExternalUniqueId():course.getUniqueId().toString()));
         courseElement.addAttribute("subject", course.getSubjectArea().getSubjectAreaAbbreviation());
         courseElement.addAttribute("courseNbr", course.getCourseNbr());
+        if (course.getReservation() != null)
+        	courseElement.addAttribute("reserved", course.getReservation().toString());
         courseElement.addAttribute("controlling", course.isIsControl()?"true":"false");
         if (course.getConsentType()!=null)
         	courseElement.addElement("consent").addAttribute("type", course.getConsentType().getReference());

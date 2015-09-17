@@ -710,6 +710,13 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					String consentType = getRequiredStringAttribute(consentElement, "type", "consent");
 					newCourseOffering.setConsentType(OfferingConsentType.getOfferingConsentTypeForReference(consentType));
 				}
+
+				String reserved = getOptionalStringAttribute(courseElement, "reserved");
+				if (reserved != null) {
+					try {
+						newCourseOffering.setReservation(Integer.parseInt(reserved));
+					} catch (NumberFormatException e) {}
+				}
 				
 				elementCourseCredit(courseElement, newCourseOffering);
 				
@@ -1386,6 +1393,19 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						if (oco.getPermId() == null){
 							oco.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), this).toString());
 							addNote("\tadded missing permId: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+							changed = true;
+						}
+						if (oco.getReservation() == null && nco.getReservation() != null) {
+							oco.setReservation(nco.getReservation());
+							addNote("\tadded reservation: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+							changed = true;
+						} else if (oco.getReservation() != null && nco.getReservation() == null) {
+							oco.setReservation(null);
+							addNote("\tremoved reservation: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+							changed = true;
+						} else if (oco.getReservation() != null && nco.getReservation() != null && !oco.getReservation().equals(nco.getReservation())) {
+							oco.setReservation(nco.getReservation());
+							addNote("\tchanged reservation: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
 							changed = true;
 						}
 						if (handleCustomCourseChildElements(oco, ico.getElement())){
