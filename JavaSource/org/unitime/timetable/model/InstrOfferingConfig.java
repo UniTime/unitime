@@ -240,6 +240,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
     	newInstrOffrConfig.setName(getName());
     	newInstrOffrConfig.setUnlimitedEnrollment(isUnlimitedEnrollment());
     	newInstrOffrConfig.setClassDurationType(getClassDurationType());
+    	newInstrOffrConfig.setInstructionalMethod(getInstructionalMethod());
     	return(newInstrOffrConfig);
     }
     

@@ -52,6 +52,7 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Meeting;
@@ -1501,6 +1502,14 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						(ioc.getClassDurationType() != null && !ioc.getClassDurationType().getReference().equals(durationTypeStr))) {
 						ioc.setClassDurationType(durationTypeStr == null ? null : ClassDurationType.findByReference(durationTypeStr, getHibSession()));
 						addNote("\tduration type changed");
+						changed = true;
+				}
+				
+				String instructionalMethodStr = getOptionalStringAttribute(configElement, "instructionalMethod");
+				if ((ioc.getInstructionalMethod() == null && instructionalMethodStr != null) ||
+						(ioc.getInstructionalMethod() != null && !ioc.getInstructionalMethod().getReference().equals(instructionalMethodStr))) {
+						ioc.setInstructionalMethod(instructionalMethodStr == null ? null : InstructionalMethod.findByReference(instructionalMethodStr, getHibSession()));
+						addNote("\tinstructional method changed");
 						changed = true;
 				}
 				
