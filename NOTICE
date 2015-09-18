@@ -30,11 +30,7 @@ AOP alliance (aopalliance-1.0.jar)
 	under Public Domain
 	http://aopalliance.sourceforge.net
 
-ASM Core (asm-3.3.1.jar)
-	under BSD or BSD-style License
-	http://asm.objectweb.org/asm/
-
-Code Generation Library (cglib-2.2.2.jar)
+Code Generation Library (cglib-3.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://cglib.sourceforge.net/
 
@@ -46,15 +42,15 @@ Gson (gson-2.2.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://code.google.com/p/google-gson/
 
-gwt-dev (gwt-dev-2.6.1.jar)
+gwt-dev (gwt-dev-2.7.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.gwtproject.org/gwt-dev/
 
-gwt-servlet (gwt-servlet-2.6.1.jar)
+gwt-servlet (gwt-servlet-2.7.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.gwtproject.org/gwt-servlet/
 
-gwt-user (gwt-user-2.6.1.jar)
+gwt-user (gwt-user-2.7.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.gwtproject.org/gwt-user/
 
@@ -259,6 +255,22 @@ JGroups (jgroups-3.4.1.Final.jar)
 JSON in Java (json-20140107.jar)
 	under Public Domain
 	https://github.com/douglascrockford/JSON-java
+
+ASM Core (asm-5.0.3.jar)
+	under BSD or BSD-style License
+	http://asm.objectweb.org/asm/
+
+ASM Commons (asm-commons-5.0.3.jar)
+	under BSD or BSD-style License
+	http://asm.objectweb.org/asm-commons/
+
+ASM Tree (asm-tree-5.0.3.jar)
+	under BSD or BSD-style License
+	http://asm.objectweb.org/asm-tree/
+
+ASM Util (asm-util-5.0.3.jar)
+	under BSD or BSD-style License
+	http://asm.objectweb.org/asm-util/
 
 Restlet Core - API and Engine (org.restlet-2.2.1.jar)
 	under Apache Software License (ASL), Version 2.0
