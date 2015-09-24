@@ -264,6 +264,7 @@ public enum ApplicationProperty {
 	 * LDAP Authentication. See http://help35.unitime.org/LDAP for more details.
 	 */
 	@Description("LDAP Authentication: ldap url")
+	@DefaultValue("ldap://null")
 	AuthenticationLdapUrl("unitime.authentication.ldap.url"),
 
 	@DefaultValue("uid={0},ou=authenticate")

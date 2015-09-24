@@ -77,7 +77,7 @@
 		</beans:property>
 	</beans:bean>
 		
-	<beans:bean id="ldapAuthProvider" class="org.springframework.security.ldap.authentication.LdapAuthenticationProvider">
+	<beans:bean id="ldapAuthProvider" class="org.unitime.timetable.spring.ldap.SpringLdapAuthenticationProvider">
 		<beans:constructor-arg>
 			<beans:bean class="org.springframework.security.ldap.authentication.BindAuthenticator">
 				<beans:constructor-arg ref="unitimeLdapContextSource"/>
