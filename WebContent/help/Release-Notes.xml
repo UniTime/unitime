@@ -178,6 +178,13 @@
 				<line>Added course offering reserved space (reserved attribute of the course element).</line>
 			</description>
 		</item>
+		<item>
+			<name>Technology Update: GWT 2.7.0</name>
+			<description>
+				<line>GWT updated to version 2.7.0 (was 2.6.1).</line>
+				<line>Also updated CGLIB to version 3.1 (was 2.2.2), to use the same version of ASM as GWT (5.0.3, was 3.3.1).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
