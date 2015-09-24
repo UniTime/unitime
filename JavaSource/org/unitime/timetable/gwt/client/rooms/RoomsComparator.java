@@ -44,7 +44,19 @@ public class RoomsComparator implements Comparator<RoomDetailInterface> {
 	}
 	
 	public int compareByType(RoomDetailInterface r1, RoomDetailInterface r2) {
-		return compare(r1.getRoomType().getLabel(), r2.getRoomType().getLabel());
+		if (r1.getRoomType().hasOrder()) {
+			if (r2.getRoomType().hasOrder()) {
+				return compare(r1.getRoomType().getOrder(), r2.getRoomType().getOrder());
+			} else {
+				return -1;
+			}
+		} else {
+			if (r2.getRoomType().hasOrder()) {
+				return 1;
+			} else {
+				return compare(r1.getRoomType().getLabel(), r2.getRoomType().getLabel());
+			}
+		}
 	}
 	
 	public int compareByCapacity(RoomDetailInterface r1, RoomDetailInterface r2) {
@@ -112,6 +124,7 @@ public class RoomsComparator implements Comparator<RoomDetailInterface> {
 	@Override
 	public int compare(RoomDetailInterface r1, RoomDetailInterface r2) {
 		int cmp = compareByColumn(r1, r2);
+		if (cmp == 0) cmp = compareByType(r1, r2);
 		if (cmp == 0) cmp = compareByName(r1, r2);
 		if (cmp == 0) cmp = compareById(r1, r2);
 		return (iAsc ? cmp : -cmp);

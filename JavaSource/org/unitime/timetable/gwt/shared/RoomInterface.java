@@ -672,11 +672,12 @@ public class RoomInterface implements IsSerializable {
 		private Long iId;
 		private String iLabel;
 		private boolean iRoom = false;
+		private Integer iOrder = null;
 		
 		public RoomTypeInterface() {}
 		
-		public RoomTypeInterface(Long id, String label, boolean room) {
-			iId = id; iLabel = label; iRoom = room;
+		public RoomTypeInterface(Long id, String label, boolean room, Integer ord) {
+			iId = id; iLabel = label; iRoom = room; iOrder = ord;
 		}
 		
 		public Long getId() { return iId; }
@@ -687,6 +688,10 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean isRoom() { return iRoom; }
 		public void setRoom(boolean room) { iRoom = room; }
+		
+		public Integer getOrder() { return iOrder; }
+		public void setOrder(Integer order) { iOrder = order; }
+		public boolean hasOrder() { return iOrder != null; }
 		
 		@Override
 		public int hashCode() { return getId().hashCode(); }
@@ -1154,7 +1159,7 @@ public class RoomInterface implements IsSerializable {
 			setName(entity.getName());
 			String roomType = entity.getProperty("type", null);
 			if (roomType != null)
-				setRoomType(new RoomTypeInterface(-1l, roomType, true));
+				setRoomType(new RoomTypeInterface(-1l, roomType, true, null));
 			String capacity = entity.getProperty("capacity", null);
 			if (capacity != null)
 				setCapacity(Integer.valueOf(capacity));

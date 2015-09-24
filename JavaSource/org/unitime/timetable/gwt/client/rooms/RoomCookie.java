@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
 import com.google.gwt.core.client.GWT;
@@ -38,7 +39,7 @@ public class RoomCookie {
 	
 	private int[] iFlags = null;
 	private String[] iHash = null;
-	private int iSortRoomsBy = 0;
+	private int iSortRoomsBy = (RoomsColumn.TYPE.ordinal() + 1);
 	private int iDeptMode = 1;
 	private Boolean iGridAsText = null;
 	private Boolean iHorizontal = null;
