@@ -29,14 +29,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.transaction.TransactionManager;
+
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.jmx.CacheJmxRegistration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
+import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.remoting.ReplicationQueue;
@@ -560,6 +564,12 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 				addCourses(offering);
 		}
 		
+		@CacheEntryCreated
+		public void created(CacheEntryCreatedEvent<Long, XOffering> event) {
+			if (!event.isPre())
+				addCourses(event.getValue());
+		}
+		
 		@CacheEntryModified
 		public void modified(CacheEntryModifiedEvent<Long, XOffering> event) {
 			if (event.isPre()) {
@@ -625,6 +635,12 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 				addRequests(student);
 		}
 		
+		@CacheEntryCreated
+		public void created(CacheEntryCreatedEvent<Long, XStudent> event) {
+			if (!event.isPre())
+				addRequests(event.getValue());
+		}
+		
 		@CacheEntryModified
 		public void modified(CacheEntryModifiedEvent<Long, XStudent> event) {
 			if (event.isPre()) {
@@ -680,29 +696,33 @@ public class ReplicatedServerWithMaster extends AbstractLockingServer {
 		}
 	}
 	
+	private TransactionManager getTransactionManager() {
+		return iOfferingTable.getAdvancedCache().getTransactionManager();
+	}
+	
 	class BatchLock implements Lock {
 		private Lock iLock = null;
-		private boolean iStudentBatch = false, iOfferingBatch = false;
+		private boolean iTransaction = false;
 		
 		BatchLock(Lock lock) {
 			iLock = lock;
 			try {
-				iStudentBatch = iStudentTable.startBatch();
+				if (getTransactionManager().getTransaction() == null) {
+					getTransactionManager().begin();
+					iTransaction = true;
+				}
 			} catch (Throwable t) {
-				iLog.warn("Failed to start batch for StudentTable: " + t.getMessage(), t);
-			}
-			try {
-				iOfferingBatch = iOfferingTable.startBatch();
-			} catch (Throwable t) {
-				iLog.warn("Failed to start batch for OfferingTable: " + t.getMessage(), t);
+				iLog.warn("Failed to start a transaction: " + t.getMessage(), t);
 			}
 		}
 
 		@Override
 		public void release() {
 			try {
-				if (iStudentBatch) iStudentTable.endBatch(true);
-				if (iOfferingBatch) iOfferingTable.endBatch(true);
+				if (iTransaction)
+					getTransactionManager().commit();
+			} catch (Throwable t) {
+				iLog.warn("Failed to commit a transaction: " + t.getMessage(), t);
 			} finally {
 				iLock.release();
 			}

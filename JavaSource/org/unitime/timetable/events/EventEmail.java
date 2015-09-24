@@ -69,11 +69,11 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.NameFormat;
 
 import biweekly.Biweekly;
+import biweekly.ICalVersion;
 import biweekly.ICalendar;
 import biweekly.property.CalendarScale;
 import biweekly.property.Method;
 import biweekly.property.Status;
-import biweekly.property.Version;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -329,7 +329,7 @@ public class EventEmail {
 
 	public String icalendar() throws IOException {
 		ICalendar ical = new ICalendar();
-		ical.setVersion(Version.v2_0());
+		ical.setVersion(ICalVersion.V2_0);
 		ical.setCalendarScale(CalendarScale.gregorian());
 		ical.setMethod(new Method("PUBLISH"));
 		ical.setExperimentalProperty("X-WR-CALNAME", "UniTime Schedule");

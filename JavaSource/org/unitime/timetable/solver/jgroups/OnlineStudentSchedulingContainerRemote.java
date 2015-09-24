@@ -39,6 +39,7 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.transaction.TransactionMode;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.SuspectedException;
@@ -85,13 +86,12 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 		if (iCacheManager == null && ApplicationProperty.OnlineSchedulingServerReplicated.isTrue()) {
 			GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
 					.transport().addProperty("channelLookup", "org.unitime.commons.jgroups.SectioningChannelLookup").clusterName("UniTime:sectioning")
-					.asyncTransportExecutor().addProperty("maxThreads", "50")
 					.globalJmxStatistics().cacheManagerName("OnlineSchedulingCacheManager").allowDuplicateDomains(true).disable()
 					.build();
 			Configuration config = new ConfigurationBuilder()
 					.clustering().cacheMode(CacheMode.REPL_ASYNC)
 					.async().useReplQueue(true).replQueueInterval(500, TimeUnit.MILLISECONDS).replQueueMaxElements(1000)
-					.invocationBatching().enable()
+					.transaction().transactionMode(TransactionMode.TRANSACTIONAL)
 					.storeAsBinary().enable()
 					.build();
 			iCacheManager = new DefaultCacheManager(global, config);

@@ -48,6 +48,7 @@ import org.unitime.timetable.server.CourseDetailsBackend;
 import org.unitime.timetable.util.Constants;
 
 import biweekly.Biweekly;
+import biweekly.ICalVersion;
 import biweekly.ICalendar;
 import biweekly.component.VEvent;
 import biweekly.component.VFreeBusy;
@@ -60,7 +61,6 @@ import biweekly.property.ExceptionDates;
 import biweekly.property.Method;
 import biweekly.property.Organizer;
 import biweekly.property.Status;
-import biweekly.property.Version;
 import biweekly.util.Recurrence;
 import biweekly.util.Recurrence.DayOfWeek;
 import biweekly.util.Recurrence.Frequency;
@@ -82,7 +82,7 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 	public String execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		try {
 			ICalendar ical = new ICalendar();
-			ical.setVersion(Version.v2_0());
+			ical.setVersion(ICalVersion.V2_0);
 			ical.setCalendarScale(CalendarScale.gregorian());
 			ical.setMethod(new Method("PUBLISH"));
 			ical.setExperimentalProperty("X-WR-CALNAME", "UniTime Schedule");
@@ -121,7 +121,7 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 	public static String getCalendar(OnlineSectioningServer server, XStudent student) throws IOException {
 		if (student == null) return null;
 		ICalendar ical = new ICalendar();
-		ical.setVersion(Version.v2_0());
+		ical.setVersion(ICalVersion.V2_0);
 		ical.setCalendarScale(CalendarScale.gregorian());
 		ical.setMethod(new Method("PUBLISH"));
 		ical.setExperimentalProperty("X-WR-CALNAME", "UniTime Schedule");
@@ -245,9 +245,9 @@ public class CalendarExport implements OnlineSectioningAction<String>{
     	cal.set(Calendar.SECOND, 0);
     	
     	VEvent vevent = new VEvent();
-    	DateStart dstart = new DateStart(first, true); dstart.setLocalTime(false); dstart.setTimezoneId(TimeZone.getDefault().getID());
+    	DateStart dstart = new DateStart(first, true);
     	vevent.setDateStart(dstart);
-    	DateEnd dend = new DateEnd(firstEnd, true); dend.setLocalTime(false); dend.setTimezoneId(TimeZone.getDefault().getID());
+    	DateEnd dend = new DateEnd(firstEnd, true);
     	vevent.setDateEnd(dend);
     	
     	Recurrence.Builder recur = new Recurrence.Builder(Frequency.WEEKLY);
@@ -272,7 +272,7 @@ public class CalendarExport implements OnlineSectioningAction<String>{
         recur.workweekStarts(DayOfWeek.MONDAY).until(last);
         vevent.setRecurrenceRule(recur.build());
 
-        ExceptionDates exdates = new ExceptionDates(true);
+        ExceptionDates exdates = new ExceptionDates();
     	while (idx < time.getWeeks().length()) {
     		int dow = cal.get(Calendar.DAY_OF_WEEK);
     		boolean offered = false;
@@ -339,12 +339,10 @@ public class CalendarExport implements OnlineSectioningAction<String>{
         if (section.getInstructors() != null && !section.getInstructors().isEmpty()) {
 			for (XInstructor instructor: section.getInstructors()) {
 				if (vevent.getOrganizer() == null) {
-					Organizer organizer = new Organizer("mailto:" + (instructor.getEmail() != null ? instructor.getEmail() : ""));
-					organizer.setCommonName(instructor.getName());
+					Organizer organizer = new Organizer(instructor.getName(), (instructor.getEmail() != null ? instructor.getEmail() : ""));
 					vevent.setOrganizer(organizer);
 				} else {
-					Attendee attendee = new Attendee("mailto:" + (instructor.getEmail() != null ? instructor.getEmail() : ""));
-					attendee.setCommonName(instructor.getName());
+					Attendee attendee = new Attendee(instructor.getName(), (instructor.getEmail() != null ? instructor.getEmail() : ""));
 					attendee.setRole(Role.CHAIR);
 					vevent.addAttendee(attendee);
 				}
@@ -435,10 +433,10 @@ public class CalendarExport implements OnlineSectioningAction<String>{
     	if (last == null) return;
     	
     	VFreeBusy vfree = new VFreeBusy();
-    	DateStart dstart = new DateStart(first, true); dstart.setLocalTime(false); dstart.setTimezoneId(TimeZone.getDefault().getID());
+    	DateStart dstart = new DateStart(first, true);
     	vfree.setDateStart(dstart);
     	Calendar c = Calendar.getInstance(Locale.US); c.setTime(first); c.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * len);
-    	DateEnd dend = new DateEnd(c.getTime(), true); dend.setLocalTime(false); dend.setTimezoneId(TimeZone.getDefault().getID());
+    	DateEnd dend = new DateEnd(c.getTime(), true);
     	vfree.setDateEnd(dend);
     	vfree.addComment("Free Time");
     	ical.addFreeBusy(vfree);
@@ -479,10 +477,10 @@ public class CalendarExport implements OnlineSectioningAction<String>{
         	    	cal.set(Calendar.SECOND, 0);
         	    	
         	    	vfree = new VFreeBusy();
-        	    	dstart = new DateStart(cal.getTime(), true); dstart.setLocalTime(false); dstart.setTimezoneId(TimeZone.getDefault().getID());
+        	    	dstart = new DateStart(cal.getTime(), true);
         	    	vfree.setDateStart(dstart);
         	    	cal.add(Calendar.MINUTE, Constants.SLOT_LENGTH_MIN * len);
-        	    	dend = new DateEnd(cal.getTime(), true); dend.setLocalTime(false); dend.setTimezoneId(TimeZone.getDefault().getID());
+        	    	dend = new DateEnd(cal.getTime(), true);
         	    	vfree.setDateEnd(dend);
         	    	vfree.addComment("Free Time");
         	    	ical.addFreeBusy(vfree);

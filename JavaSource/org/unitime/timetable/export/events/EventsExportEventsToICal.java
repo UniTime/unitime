@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.util.Constants;
 
 import biweekly.Biweekly;
+import biweekly.ICalVersion;
 import biweekly.ICalendar;
 import biweekly.component.VEvent;
 import biweekly.parameter.Role;
@@ -54,7 +55,6 @@ import biweekly.property.Method;
 import biweekly.property.Organizer;
 import biweekly.property.RecurrenceId;
 import biweekly.property.Status;
-import biweekly.property.Version;
 import biweekly.util.Recurrence;
 import biweekly.util.Recurrence.DayOfWeek;
 import biweekly.util.Recurrence.Frequency;
@@ -75,7 +75,7 @@ public class EventsExportEventsToICal extends EventsExporter {
 		helper.setup("text/calendar", reference(), false);
 		
 		ICalendar ical = new ICalendar();
-		ical.setVersion(Version.v2_0());
+		ical.setVersion(ICalVersion.V2_0);
 		ical.setCalendarScale(CalendarScale.gregorian());
 		ical.setMethod(new Method("PUBLISH"));
 		ical.setExperimentalProperty("X-WR-CALNAME", "UniTime Schedule");
@@ -158,7 +158,7 @@ public class EventsExportEventsToICal extends EventsExporter {
             recur.workweekStarts(DayOfWeek.MONDAY).until(until.toDate());
             master.setRecurrenceRule(recur.build());
             
-            ExceptionDates exdates = new ExceptionDates(true);
+            ExceptionDates exdates = new ExceptionDates();
             // for all dates till the last date
             dates: for (DateTime date = first.getStart(); !date.isAfter(until); date = date.plusDays(1)) {
             	// skip days of week with no meeting
@@ -177,8 +177,6 @@ public class EventsExportEventsToICal extends EventsExporter {
             		if (date.getYear() == ics.getStart().getYear() && date.getDayOfYear() == ics.getStart().getDayOfYear()) {
         				VEvent x = new VEvent();
         				RecurrenceId id = new RecurrenceId(date.toDate(), true);
-        				id.setLocalTime(false);
-        				id.setTimezoneId(TimeZone.getDefault().getID());
         				x.setRecurrenceId(id);
         				x.setDateStart(ics.getDateStart());
         				x.setDateEnd(ics.getDateEnd());
@@ -202,8 +200,6 @@ public class EventsExportEventsToICal extends EventsExporter {
     			// use exception as recurrence if there is one available
     			if (!exdates.getValues().isEmpty()) {
     				RecurrenceId id = new RecurrenceId(exdates.getValues().get(0), true);
-    				id.setLocalTime(false);
-    				id.setTimezoneId(TimeZone.getDefault().getID());
     				x.setRecurrenceId(id);
     				exdates.getValues().remove(0);
     			}
@@ -242,23 +238,19 @@ public class EventsExportEventsToICal extends EventsExporter {
             	int idx = 0;
             	for (ContactInterface instructor: event.getInstructors()) {
             		if (idx++ == 0) {
-            			Organizer organizer = new Organizer("mailto:" + (instructor.hasEmail() ? instructor.getEmail() : ""));
-            			organizer.setCommonName(instructor.getName(MESSAGES));
+            			Organizer organizer = new Organizer(instructor.getName(MESSAGES), (instructor.hasEmail() ? instructor.getEmail() : ""));
             			vevent.setOrganizer(organizer);
             		} else {
-                		Attendee attendee = new Attendee("mailto:" + (instructor.hasEmail() ? instructor.getEmail() : ""));
-                		attendee.setCommonName(instructor.getName(MESSAGES));
+                		Attendee attendee = new Attendee(instructor.getName(MESSAGES), (instructor.hasEmail() ? instructor.getEmail() : ""));
                 		attendee.setRole(Role.CHAIR);
                 		vevent.addAttendee(attendee);
             		}
             	}
             } else if (event.hasSponsor()) {
-    			Organizer organizer = new Organizer("mailto:" + (event.getSponsor().hasEmail() ? event.getSponsor().getEmail() : ""));
-    			organizer.setCommonName(event.getSponsor().getName());
+    			Organizer organizer = new Organizer(event.getSponsor().getName(), (event.getSponsor().hasEmail() ? event.getSponsor().getEmail() : ""));
     			vevent.setOrganizer(organizer);
             } else if (event.hasContact()) {
-    			Organizer organizer = new Organizer("mailto:" + (event.getContact().hasEmail() ? event.getContact().getEmail() : ""));
-    			organizer.setCommonName(event.getContact().getName(MESSAGES));
+    			Organizer organizer = new Organizer(event.getContact().getName(MESSAGES), (event.getContact().hasEmail() ? event.getContact().getEmail() : ""));
     			vevent.setOrganizer(organizer);
             }
             ical.addEvent(vevent);
@@ -299,16 +291,12 @@ public class EventsExportEventsToICal extends EventsExporter {
 		public DateTime getStart() { return iStart; }
 		public DateStart getDateStart() {
 			DateStart ds = new DateStart(iStart.toDate(), true);
-			ds.setLocalTime(false);
-			ds.setTimezoneId(TimeZone.getDefault().getID());
 			return ds;
 		}
 		
 		public DateTime getEnd() { return iEnd; }
 		public DateEnd getDateEnd() {
 			DateEnd de = new DateEnd(iEnd.toDate(), true);
-			de.setLocalTime(false);
-			de.setTimezoneId(TimeZone.getDefault().getID());
 			return de;
 		}
 

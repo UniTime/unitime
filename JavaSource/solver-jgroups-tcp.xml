@@ -24,7 +24,6 @@
     <TCP
          bind_addr="${jgroups.tcp.address:127.0.0.1}"
          bind_port="${unitime.solver.port:7800}"
-         loopback="false"
          recv_buf_size="${tcp.recv_buf_size:5M}"
          send_buf_size="${tcp.send_buf_size:640K}"
          max_bundle_size="64K"
