@@ -1902,7 +1902,7 @@ public class ExamAssignmentReportAction extends Action {
         }
         colName[idx] = (html?"&gt;":"")+"2 A Day"; colAlign[idx] = "left"; colOrd[idx++] = true;
         colName[idx] = (html?"&gt;":"")+"2 A Day [%]"; colAlign[idx] = "left"; colOrd[idx++] = true;
-        PdfWebTable table = new PdfWebTable( 3+4*max, form.getReport(), "examAssignmentReport.do?ord=%%", colName, colAlign, colOrd);
+        PdfWebTable table = new PdfWebTable( 3+3*max, form.getReport(), "examAssignmentReport.do?ord=%%", colName, colAlign, colOrd);
         table.setRowStyle("white-space:nowrap");
         for (ExamAssignmentInfo exam : exams) {
             if (!match(form, exam)) continue;
