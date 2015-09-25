@@ -130,6 +130,9 @@
 					<line>when the custom eligibility chek returns RECHECK_BEFORE_ENROLLMENT flag, or</line>
 					<line>when unitime.enrollment.recheckCustomEligibility is set tu true (defaults to false).</line>
 				</line>
+				<line>Course Requests: Added a missing notification when a course is selected using the Course Finder dialog.
+					<line>This fixes the issue of the course alternative not being enabled when the course is entered using the Course Finder dialog.</line>
+				</line>
 			</description>
 		</item>
 		<item>
