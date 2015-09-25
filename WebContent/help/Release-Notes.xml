@@ -61,6 +61,13 @@
 					(number of permissions of a role is used in the ordering).</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Missing Solver Group</name>
+			<description>
+				<line>Fixed a NullPointerException thrown when the solver tries to load a class that is managed by a department which does not have a solver group.</line>
+				<line>Warning "Manager of class X has no solver group." is logged instead.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
