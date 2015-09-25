@@ -77,20 +77,27 @@ public class TimetableManagerListAction extends Action {
         sessionContext.checkPermission(Right.TimetableManagers);
 
 		WebTable.setOrder(sessionContext,"timetableManagerList.ord",request.getParameter("order"),1);
+		
+		boolean showAll = "1".equals(sessionContext.getUser().getProperty("TimetableManagers.showAll", "0"));
+		if (request.getParameter("all") != null) {
+			showAll = ("true".equalsIgnoreCase(request.getParameter("all")));
+			sessionContext.getUser().setProperty("TimetableManagers.showAll", showAll ? "1" : "0");
+		}
         
-        PdfWebTable table =  new TimetableManagerBuilder().getManagersTable(sessionContext,true);
+        PdfWebTable table =  new TimetableManagerBuilder().getManagersTable(sessionContext, true, showAll);
         int order = WebTable.getOrder(sessionContext,"timetableManagerList.ord");
         String tblData = (order>=1?table.printTable(order):table.printTable());
         
         if ("Export PDF".equals(request.getParameter("op"))) {
         	ExportUtils.exportPDF(
-        			new TimetableManagerBuilder().getManagersTable(sessionContext,false),
+        			new TimetableManagerBuilder().getManagersTable(sessionContext, false, showAll),
         			order, response, "managers");
         	return null;
         }
             
 
         request.setAttribute("schedDeputyList", errM + tblData);
+        request.setAttribute("showAllManagers", showAll); 
         return mapping.findForward("success");
     }
 }
