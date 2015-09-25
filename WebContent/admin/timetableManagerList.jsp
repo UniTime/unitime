@@ -20,6 +20,7 @@
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
+<%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
@@ -65,7 +66,16 @@
 		<tr>
 			<td align="right">
 				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
-					<TR><TD nowrap>
+					<TR>
+					<TD nowrap style="padding-right: 10px;">
+						<logic:equal value="true" scope="request" name="showAllManagers">
+							<input type="checkbox" checked onclick="document.location='timetableManagerList.do?all=false';">Show all managers
+						</logic:equal>
+						<logic:notEqual value="true" scope="request" name="showAllManagers">
+							<input type="checkbox" onclick="document.location='timetableManagerList.do?all=true';">Show all managers
+						</logic:notEqual>
+					</TD>
+					<TD nowrap>
 						<sec:authorize access="hasPermission(null, null, 'TimetableManagerAdd')">
 						<html:form action="timetableManagerEdit" styleClass="FormWithNoPadding">			
 							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="T" titleKey="title.addTimetableManager">

@@ -48,7 +48,7 @@ import org.unitime.timetable.util.NameFormat;
  */
 public class TimetableManagerBuilder {
     
-    public PdfWebTable getManagersTable(SessionContext context, boolean html) {
+    public PdfWebTable getManagersTable(SessionContext context, boolean html, boolean showAll) {
 
         int cols = 7;
 		org.hibernate.Session hibSession = null;
@@ -102,6 +102,7 @@ public class TimetableManagerBuilder {
 	        ArrayList mgrRoles = new ArrayList(mgrRolesSet);
 	        Collections.sort(mgrRoles, new RolesComparator());
 	        
+	        boolean sessionIndependent = false;
 		    for (Iterator i=mgrRoles.iterator(); i.hasNext(); ) {
 		        ManagerRole mgrRole = (ManagerRole) i.next();
                 String roleRef = mgrRole.getRole().getAbbv(); 
@@ -114,13 +115,17 @@ public class TimetableManagerBuilder {
                     roleStr += (html?(!receivesEmail?"<span title='"+roleRef + (receivesEmail?"":", * No Email for this Role")+"' style='font-weight:normal;'>"+roleRef + (receivesEmail?"":"*") +"</span>": roleRef):roleRef + (receivesEmail?"":"*"));
                 }
 		        roleOrd += title;
+		        if (mgrRole.getRole().hasRight(Right.SessionIndependent) || (mgrRole.getRole().hasRight(Right.SessionIndependentIfNoSessionGiven) && manager.getDepartments().isEmpty()))
+		        	sessionIndependent = true;
 		    }
 		    
 		    // Departments
+		    boolean departmental = false;
 		    for (Iterator di=depts.iterator(); di.hasNext(); ) {
 		        Department dept = (Department) di.next();
 		        
 		        if (!dept.getSession().getUniqueId().equals(currentAcadSession)) continue;
+		        departmental = true;
 		        
 	            if (deptStr.trim().length()>0) deptStr += ", "+(html?"<br>":"\n");
 	            deptStr += 
@@ -144,6 +149,8 @@ public class TimetableManagerBuilder {
 			        }
 			    }
 		    }
+		    
+		    if (!showAll && !sessionIndependent && !departmental) continue;
 		    
 		    if (html && deptStr.trim().length()==0)
 		        deptStr = "&nbsp;";

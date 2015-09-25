@@ -187,6 +187,15 @@
 				<line>Also updated CGLIB to version 3.1 (was 2.2.2), to use the same version of ASM as GWT (5.0.3, was 3.3.1).</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Managers: Show all managers</name>
+			<description>
+				<line>Added ability to hide managers that have no session independent role and no relation to the current academic session.
+					<line>By default only managers that have a session independent role or at least one department of the current academic session are shown.</line>
+					<line>This can be changed by checking the "Show all managers" at the bottom of the list.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
