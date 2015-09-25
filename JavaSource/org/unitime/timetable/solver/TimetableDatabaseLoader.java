@@ -2276,6 +2276,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			for (Class_ clazz: subpart.getClasses()) {
     				Lecture lecture = iLectures.get(clazz.getUniqueId());
     				if (lecture == null) {
+    					if (clazz.getManagingDept().getSolverGroup() == null) {
+    						iProgress.message(msglevel("noSolverGroup", Progress.MSGLEVEL_WARN), "Manager of class " + getClassLabel(clazz) + " has no solver group (" + clazz.getManagingDept().getManagingDeptAbbv() + ").");
+    						continue;
+    					}
         				if (solverGroupIds.contains(clazz.getManagingDept().getSolverGroup().getUniqueId())) continue; // only classes of other problems
         				if (clazz.getCommittedAssignment() == null) continue; // only committed classes
         	   			if (iLectures.containsKey(clazz.getUniqueId())) continue; // already loaded
