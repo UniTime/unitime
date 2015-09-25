@@ -402,7 +402,7 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 			iCourseFinder.addSelectionHandler(new SelectionHandler<String>() {
 				@Override
 				public void onSelection(SelectionEvent<String> event) {
-					iSuggest.setValue(event.getSelectedItem());
+					setValue(event.getSelectedItem(), true);
 				}
 			});
 			if (iCourseFinder instanceof HasCloseHandlers) {
