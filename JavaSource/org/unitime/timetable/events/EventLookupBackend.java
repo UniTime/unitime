@@ -93,8 +93,36 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 	public GwtRpcResponseList<EventInterface> execute(EventLookupRpcRequest request, EventContext context) {
 		if (request.getResourceType() == ResourceType.PERSON) {
 			if (!request.hasResourceExternalId()) request.setResourceExternalId(context.isAuthenticated() ? context.getUser().getExternalUserId() : null);
-			else if (!request.getResourceExternalId().equals(context.isAuthenticated() ? context.getUser().getExternalUserId() : null))
+			else if (!request.getResourceExternalId().equals(context.isAuthenticated() ? context.getUser().getExternalUserId() : null)) {
 				context.checkPermission(Right.EventLookupSchedule);
+				Set<String> roles = request.getEventFilter().getOptions("role");
+				if (roles == null) {
+					roles = new HashSet<String>();
+					if (context.hasPermission(Right.CanLookupStudents)) {
+						roles.add("Student");
+					}
+					if (context.hasPermission(Right.CanLookupInstructors)) {
+						roles.add("Instructor");
+						roles.add("Coordinator");
+					}
+					if (context.hasPermission(Right.CanLookupEventContacts)) {
+						roles.add("Contact");
+					}
+					if (roles.size() < 4)
+						request.getEventFilter().setOptions("role", roles);
+				} else {
+					if (!context.hasPermission(Right.CanLookupStudents)) {
+						roles.remove("Student"); roles.remove("student");
+					}
+					if (!context.hasPermission(Right.CanLookupInstructors)) {
+						roles.remove("Instructor"); roles.remove("instructor");
+						roles.remove("Coordinator"); roles.remove("coordinator");
+					}
+					if (!context.hasPermission(Right.CanLookupStudents)) {
+						roles.remove("Contact"); roles.remove("contact");
+					}
+				}
+			}
 		}
 		
 		if (request.getEventFilter() == null) {

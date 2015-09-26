@@ -10224,4 +10224,36 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypeEdit'
 		</sql>
 	</update>
+	<update version="151" date="26-Sep-2016" comment="People Lookup Permissions">
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'CanLookupStudents'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('EventLookupContact', 'EventLookupSchedule', 'InstructorAdd', 'InstructorEdit', 'StudentGroupEdit', 'ReservationAdd', 'ReservationEdit', 'Users', 'StudentSchedulingAdvisor', 'StudentSchedulingAdmin', 'ApiRetrieveEvents')
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'CanLookupInstructors'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('EventLookupContact', 'EventLookupSchedule', 'InstructorAdd', 'InstructorEdit', 'Users', 'ApiRetrieveEvents')
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'CanLookupManagers'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('EventLookupContact', 'EventLookupSchedule', 'InstructorAdd', 'InstructorEdit', 'TimetableManagerAdd', 'TimetableManagerEdit', 'Users')
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'CanLookupStaff'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('EventLookupContact', 'EventLookupSchedule', 'InstructorAdd', 'InstructorEdit', 'TimetableManagerAdd', 'TimetableManagerEdit', 'Users')
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'CanLookupEventContacts'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('EventLookupContact', 'EventLookupSchedule', 'ApiRetrieveEvents')
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'CanLookupLdap'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('EventLookupContact', 'EventLookupSchedule', 'InstructorAdd', 'InstructorEdit', 'TimetableManagerAdd', 'TimetableManagerEdit', 'Users')
+		</sql>
+	</update>
 </dbupdate>

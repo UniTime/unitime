@@ -133,20 +133,20 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 			}
 
 			if (sources == null) {
-				findPeopleFromLdap(cx);
-				findPeopleFromStudents(cx);
-				findPeopleFromInstructors(cx);
-				findPeopleFromStaff(cx);
-				findPeopleFromTimetableManagers(cx);
-				findPeopleFromEventContact(cx);
+				if (context == null || context.hasPermission(Right.CanLookupLdap)) findPeopleFromLdap(cx);
+				if (context == null || context.hasPermission(Right.CanLookupStudents)) findPeopleFromStudents(cx);
+				if (context == null || context.hasPermission(Right.CanLookupInstructors)) findPeopleFromInstructors(cx);
+				if (context == null || context.hasPermission(Right.CanLookupStaff)) findPeopleFromStaff(cx);
+				if (context == null || context.hasPermission(Right.CanLookupManagers)) findPeopleFromTimetableManagers(cx);
+				if (context == null || context.hasPermission(Right.CanLookupEventContacts)) findPeopleFromEventContact(cx);
 			} else {
 				for (String source: sources) {
-					if ("ldap".equals(source)) findPeopleFromLdap(cx);
-					if ("students".equals(source)) findPeopleFromStudents(cx);
-					if ("staff".equals(source)) findPeopleFromInstructors(cx);
-					if ("managers".equals(source)) findPeopleFromStaff(cx);
-					if ("events".equals(source)) findPeopleFromTimetableManagers(cx);
-					if ("instructors".equals(source)) findPeopleFromEventContact(cx);
+					if ("ldap".equals(source) && (context == null || context.hasPermission(Right.CanLookupLdap))) findPeopleFromLdap(cx);
+					if ("students".equals(source) && (context == null || context.hasPermission(Right.CanLookupStudents))) findPeopleFromStudents(cx);
+					if ("staff".equals(source) && (context == null || context.hasPermission(Right.CanLookupStaff))) findPeopleFromInstructors(cx);
+					if ("managers".equals(source) && (context == null || context.hasPermission(Right.CanLookupManagers))) findPeopleFromStaff(cx);
+					if ("events".equals(source) && (context == null || context.hasPermission(Right.CanLookupEventContacts))) findPeopleFromTimetableManagers(cx);
+					if ("instructors".equals(source) && (context == null || context.hasPermission(Right.CanLookupInstructors))) findPeopleFromEventContact(cx);
 				}
 			}
 			

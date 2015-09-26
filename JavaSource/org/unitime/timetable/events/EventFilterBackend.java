@@ -182,10 +182,16 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			response.add("sponsor", sponsor);
 		}
 		
-		response.add("role", new Entity(1l, "Student", "Student"));
-		response.add("role", new Entity(2l, "Instructor", "Instructor"));
-		response.add("role", new Entity(3l, "Coordinator", "Coordinator"));
-		response.add("role", new Entity(4l, "Contact", "Contact"));
+		if (context.hasPermission(Right.EventLookupSchedule)) {
+			if (context.hasPermission(Right.CanLookupStudents))
+				response.add("role", new Entity(1l, "Student", "Student"));
+			if (context.hasPermission(Right.CanLookupInstructors)) {
+				response.add("role", new Entity(2l, "Instructor", "Instructor"));
+				response.add("role", new Entity(3l, "Coordinator", "Coordinator"));
+			}
+			if (context.hasPermission(Right.CanLookupEventContacts))
+				response.add("role", new Entity(4l, "Contact", "Contact"));
+		}
 	}
 	
 	public static EventQuery getQuery(FilterRpcRequest request, EventContext context) {
