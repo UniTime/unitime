@@ -445,6 +445,7 @@
 			<arg value="-localWorkers"/>
 			<arg value="4"/>
 		</java>
+		<touch file="${env.TOMCAT_HOME}/webapps/UniTime/unitime/unitime.nocache.js"/>
 	</target>
 	
 	<target name="redeploy-gwtdev" depends="check-tomcat-home,load-properties">
@@ -473,6 +474,7 @@
 			<arg value="-localWorkers"/>
 			<arg value="4"/>
 		</java>
+		<touch file="${env.TOMCAT_HOME}/webapps/UniTime/unitime/unitime.nocache.js"/>
 	</target>
 
 	<target name="check-java-opts-def" depends="load-properties" if="env.JAVA_OPTS">
