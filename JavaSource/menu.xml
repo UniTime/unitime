@@ -283,12 +283,12 @@
 		</item>
 		<item name="Online Scheduling Dashboard" page="onlinesctdash" type="gwt">
 			<condition>
-				<hasPermission name="SchedulingDashboard" authority="any"/>
+				<hasPermission name="SchedulingDashboard"/>
 			</condition>
 		</item>
 		<item name="Online Scheduling Reports" page="onlinereport" type="gwt">
 			<condition>
-				<hasPermission name="SchedulingDashboard"/>
+				<hasPermission name="SchedulingReports"/>
 			</condition>
 		</item>
 		<item name="Course Requests" page="requests" type="gwt">

@@ -37,8 +37,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
-import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
-import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
@@ -60,6 +59,10 @@ public class DatabaseServer extends AbstractLockingServer {
 
 	public DatabaseServer(OnlineSectioningServerContext context) throws SectioningException {
 		super(context);
+	}
+	
+	public DatabaseServer(AcademicSessionInfo session, boolean allowAsyncCalls) {
+		super(session, allowAsyncCalls);
 	}
 
 	@Override
@@ -140,7 +143,16 @@ public class DatabaseServer extends AbstractLockingServer {
 
 	@Override
 	public XStudent getStudent(Long studentId) {
-		Student s = StudentDAO.getInstance().get(studentId, getCurrentHelper().getHibSession());
+		Student s = (Student)getCurrentHelper().getHibSession().createQuery(
+				"select s from Student s " +
+				"left join fetch s.courseDemands as cd " +
+                "left join fetch cd.courseRequests as cr " +
+                "left join fetch cd.freeTime as ft " +
+                "left join fetch cr.courseOffering as co " +
+                "left join fetch cr.courseRequestOptions as cro " +
+                "left join fetch cr.classWaitLists as cwl " + 
+                "left join fetch s.classEnrollments as e " +
+				"where s.uniqueId = :studentId").setLong("studentId", studentId).setCacheable(true).uniqueResult();
 		return s == null ? null : new XStudent(s, getCurrentHelper(), getAcademicSession().getFreeTimePattern());
 	}
 
@@ -171,7 +183,19 @@ public class DatabaseServer extends AbstractLockingServer {
         		}
         	}
         }
-		InstructionalOffering o = InstructionalOfferingDAO.getInstance().get(offeringId, getCurrentHelper().getHibSession());
+		InstructionalOffering o = (InstructionalOffering)getCurrentHelper().getHibSession().createQuery(
+				"select io from InstructionalOffering io " +
+				"left join fetch io.courseOfferings co " +
+				"left join fetch io.instrOfferingConfigs cf " +
+				"left join fetch cf.schedulingSubparts ss " +
+				"left join fetch ss.classes c " +
+				"left join fetch c.assignments a " +
+				"left join fetch a.rooms r " +
+				"left join fetch c.classInstructors i " +
+				"left join fetch io.reservations x " +
+				"left join fetch co.creditConfigs cc " +
+				"left join fetch ss.creditConfigs sc " +
+				"where io.uniqueId = :offeringId").setLong("offeringId", offeringId).setCacheable(true).uniqueResult();
 		return o == null ? null : new XOffering(o, distributions, getCurrentHelper());
 	}
 
@@ -179,7 +203,12 @@ public class DatabaseServer extends AbstractLockingServer {
 	public Collection<XCourseRequest> getRequests(Long offeringId) {
 		Collection<XCourseRequest> ret = new ArrayList<XCourseRequest>();
 		for (CourseDemand d: (List<CourseDemand>)getCurrentHelper().getHibSession().createQuery(
-				"select distinct d from CourseRequest r inner join r.courseDemand d where r.courseOffering.instructionalOffering = :offeringId")
+				"select distinct cd from CourseRequest r inner join r.courseDemand cd " +
+				"left join fetch cd.courseRequests as cr " +
+				"left join fetch cr.classWaitLists as cwl " +
+				"left join fetch cd.student as s " +
+				"left join fetch s.classEnrollments as e " +
+				"where r.courseOffering.instructionalOffering = :offeringId")
 				.setLong("offeringId", offeringId).setCacheable(true).list()) {
 			ret.add(new XCourseRequest(d, getCurrentHelper()));
 		}

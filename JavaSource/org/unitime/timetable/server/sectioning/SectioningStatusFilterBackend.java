@@ -30,12 +30,17 @@ import org.unitime.timetable.gwt.server.UniTimePrincipal;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.ProxyHolder;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
@@ -67,8 +72,18 @@ public class SectioningStatusFilterBackend implements GwtRpcImplementation<Secti
 				Long sessionId = getStatusPageSessionId(context);
 
 				OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString());
-				if (server == null)
-					throw new SectioningException(MSG.exceptionBadSession());
+				if (server == null) {
+					ProxyHolder<Long, OnlineSectioningServer> h = (ProxyHolder<Long, OnlineSectioningServer>)context.getAttribute("OnlineSectioning.DummyServer");
+					if (h != null && h.isValid(sessionId))
+						server = h.getProxy();
+					else {
+						Session session = SessionDAO.getInstance().get(sessionId);
+						if (session == null)
+							throw new SectioningException(MSG.exceptionBadSession()); 
+						server = new DatabaseServer(new AcademicSessionInfo(session), false);
+						context.setAttribute("OnlineSectioning.DummyServer", new ProxyHolder<Long, OnlineSectioningServer>(sessionId, server));
+					}
+				}
 
 				context.checkPermission(server.getAcademicSession().getUniqueId(), "Session", Right.SchedulingDashboard);
 				request.setSessionId(server.getAcademicSession().getUniqueId());

@@ -81,7 +81,7 @@ public class SectioningReportsExporter implements Exporter {
 		boolean online = parameters.getPropertyBoolean("online", true);
 		SessionContext context = helper.getSessionContext();
 		if (online) {
-			context.checkPermissionAnyAuthority(sessionId, "Session", Right.SchedulingDashboard);
+			context.checkPermissionAnyAuthority(sessionId, "Session", Right.SchedulingReports);
 			
 			OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString());
 			if (server == null)

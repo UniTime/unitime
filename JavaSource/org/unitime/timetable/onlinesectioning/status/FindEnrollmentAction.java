@@ -61,14 +61,16 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 	private Query iQuery;
 	private Long iCourseId, iClassId;
 	private boolean iConsentToDoCourse;
-	private boolean iCanShowExtIds = false;
+	private boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
 	
-	public FindEnrollmentAction withParams(String query, Long courseId, Long classId, boolean isConsentToDoCourse, boolean canShowExtIds) {
+	public FindEnrollmentAction withParams(String query, Long courseId, Long classId, boolean isConsentToDoCourse, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant) {
 		iQuery = new Query(query);
 		iCourseId = courseId;
 		iClassId = classId;
 		iConsentToDoCourse = isConsentToDoCourse;
 		iCanShowExtIds = canShowExtIds;
+		iCanRegister = canRegister;
+		iCanUseAssistant = canUseAssistant;
 		return this;
 	}
 	
@@ -115,6 +117,8 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 			st.setSessionId(session.getUniqueId());
 			st.setExternalId(student.getExternalId());
 			st.setCanShowExternalId(iCanShowExtIds);
+			st.setCanRegister(iCanRegister);
+			st.setCanUseAssistant(iCanUseAssistant);
 			st.setName(student.getName());
 			for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 				st.addArea(ac.getArea());

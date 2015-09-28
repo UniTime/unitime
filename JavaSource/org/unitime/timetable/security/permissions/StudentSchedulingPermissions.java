@@ -63,7 +63,7 @@ public class StudentSchedulingPermissions {
 		
 		@Autowired SolverServerService solverServerService;
 		
-		private boolean hasInstance(Long sessionId) {
+		protected boolean hasInstance(Long sessionId) {
 			if (sessionId == null) return false;
 			return solverServerService.getOnlineStudentSchedulingContainer().hasSolver(sessionId.toString());
 		}
@@ -81,7 +81,15 @@ public class StudentSchedulingPermissions {
 	}
 	
 	@PermissionForRight(Right.SchedulingDashboard)
-	public static class SchedulingDashboard extends SchedulingAssistant {}
+	public static class SchedulingDashboard extends SchedulingAssistant {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return super.check(user, source) || permissionSession.check(user, source, DepartmentStatusType.Status.StudentsPreRegister);
+		}
+	}
+	
+	@PermissionForRight(Right.SchedulingReports)
+	public static class SchedulingReports extends SchedulingAssistant {}
 	
 	@PermissionForRight(Right.CourseRequests)
 	public static class CourseRequests implements Permission<Session> {

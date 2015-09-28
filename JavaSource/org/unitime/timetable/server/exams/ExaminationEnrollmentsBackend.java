@@ -83,7 +83,7 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
 			period = exam.getAssignedPeriod();
 		}
 		
-		GwtRpcResponseList<ClassAssignmentInterface.Enrollment> ret = EventEnrollmentsBackend.convert(exam.getStudentClassEnrollments(), null, context.hasPermission(Right.EnrollmentsShowExternalId));
+		GwtRpcResponseList<ClassAssignmentInterface.Enrollment> ret = EventEnrollmentsBackend.convert(exam.getStudentClassEnrollments(), null, context.hasPermission(Right.EnrollmentsShowExternalId), context.hasPermission(Right.CourseRequests), context.hasPermission(Right.SchedulingAssistant));
 		
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);

@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.status;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -61,6 +62,7 @@ import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseInfoMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
@@ -121,7 +123,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 			int gConNeed = 0, gtConNeed = 0;
 			
-			for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery))) {
+			for (XCourseId info: findCourses(server, helper)) {
 				XOffering offering = server.getOffering(info.getOfferingId());
 				if (offering == null) continue;
 				XCourse course = offering.getCourse(info.getCourseId());
@@ -523,6 +525,18 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			}
 		}
 		return ret;
+	}
+	
+	protected Collection<? extends XCourseId> findCourses(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
+		if (iFilter != null && server instanceof DatabaseServer) {
+			List<XCourseId> courses = new ArrayList<XCourseId>();
+			FindEnrollmentInfoCourseMatcher m = new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery);
+			for (XCourse course :server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getCourses(server, helper))
+				if (m.match(course)) courses.add(course);
+			return courses;
+		} else {
+			 return server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery));
+		}
 	}
 
 	@Override

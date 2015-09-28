@@ -89,7 +89,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	private DistanceMetric iDistanceMetric = null;
 	private DataProperties iConfig = null;
 	
-	protected AsyncExecutor iExecutor;
+	protected AsyncExecutor iExecutor = null;
 	private Queue<Runnable> iExecutorQueue = new LinkedList<Runnable>();
 	private HashSet<CacheElement<Long>> iOfferingsToPersistExpectedSpaces = new HashSet<CacheElement<Long>>();
 	private static ThreadLocal<LinkedList<OnlineSectioningHelper>> sHelper = new ThreadLocal<LinkedList<OnlineSectioningHelper>>();
@@ -117,6 +117,18 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		iLog.info("Config: " + ToolBox.dict2string(iConfig, 2));
 		
 		load(context);
+	}
+	
+	protected AbstractServer(AcademicSessionInfo session, boolean allowAsyncCalls) {
+		iConfig = new ServerConfig();
+		iDistanceMetric = new DistanceMetric(iConfig);
+		TravelTime.populateTravelTimes(iDistanceMetric, session.getUniqueId());
+		iLog = LogFactory.getLog(OnlineSectioningServer.class.getName() + ".server[" + session.toCompactString() + "]");
+		iProperties.put("AcademicSession", session);
+		if (allowAsyncCalls) {
+			iExecutor = new AsyncExecutor(session);
+			iExecutor.start();
+		}
 	}
 	
 	protected void load(OnlineSectioningServerContext context) throws SectioningException {
@@ -395,6 +407,14 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	
 	@Override
 	public <E> void execute(final OnlineSectioningAction<E> action, final OnlineSectioningLog.Entity user, final ServerCallback<E> callback) throws SectioningException {
+		if (iExecutor == null) {
+			try {
+				callback.onSuccess(execute(action, user));
+			} catch (Throwable t) {
+				callback.onFailure(t);
+			}
+			return;
+		}
 		final String locale = Localization.getLocale();
 		synchronized (iExecutorQueue) {
 			iExecutorQueue.offer(new Runnable() {

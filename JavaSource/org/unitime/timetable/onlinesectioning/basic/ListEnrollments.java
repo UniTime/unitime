@@ -59,7 +59,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	
 	private Long iOfferingId, iSectionId;
-	private boolean iCanShowExtIds = false;
+	private boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
 	
 	public ListEnrollments forOffering(Long offeringId) {
 		iOfferingId = offeringId;
@@ -73,6 +73,16 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 	
 	public ListEnrollments canShowExternalIds(boolean canShowExtIds) {
 		iCanShowExtIds = canShowExtIds;
+		return this;
+	}
+	
+	public ListEnrollments canRegister(boolean canRegister) {
+		iCanRegister = canRegister;
+		return this;
+	}
+	
+	public ListEnrollments canUseAssistant(boolean canUseAssistant) {
+		iCanUseAssistant = canUseAssistant;
 		return this;
 	}
 	
@@ -107,6 +117,8 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					st.setSessionId(server.getAcademicSession().getUniqueId());
 					st.setExternalId(student.getExternalId());
 					st.setCanShowExternalId(iCanShowExtIds);
+					st.setCanRegister(iCanRegister);
+					st.setCanUseAssistant(iCanUseAssistant);
 					st.setName(student.getName());
 					for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 						st.addArea(ac.getArea());

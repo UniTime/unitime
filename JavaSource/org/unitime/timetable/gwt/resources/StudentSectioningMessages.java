@@ -934,9 +934,15 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Scheduling <u>A</u>ssistant")
 	String buttonAssistant();
+	
+	@DefaultMessage("Course <u>R</u>equests")
+	String buttonRegistration();
 
 	@DefaultMessage("Student Scheduling Assistant for {0}")
 	String dialogAssistant(String student);
+	
+	@DefaultMessage("Student Course Requests for {0}")
+	String dialogRegistration(String student);
 	
 	@DefaultMessage("Close")
 	String buttonClose();

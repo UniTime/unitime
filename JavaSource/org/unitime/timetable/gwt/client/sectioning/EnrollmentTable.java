@@ -322,6 +322,23 @@ public class EnrollmentTable extends Composite {
 				dialog.setEscapeToHide(true);
 				if (totalCredit > 0f)
 					buttons.setMessage(MESSAGES.totalCredit(totalCredit));
+				buttons.addButton("registration", MESSAGES.buttonRegistration(), new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent e) {
+						showCourseRequests(student, new AsyncCallback<Boolean>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								UniTimeNotifications.error(caught);
+							}
+							@Override
+							public void onSuccess(Boolean result) {
+								if (result)
+									dialog.hide();
+							}
+						});
+					}
+				});
+				buttons.setEnabled("registration", student.getSessionId() != null && student.isCanRegister());
 				buttons.addButton("assistant", MESSAGES.buttonAssistant(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {
@@ -338,7 +355,7 @@ public class EnrollmentTable extends Composite {
 						});
 					}
 				});
-				buttons.setEnabled("assistant", student.getSessionId() != null);
+				buttons.setEnabled("assistant", student.getSessionId() != null && student.isCanUseAssistant());
 				if (iOnline) {
 					buttons.addButton("log", MESSAGES.buttonChangeLog(), new ClickHandler() {
 						@Override
@@ -358,7 +375,8 @@ public class EnrollmentTable extends Composite {
 								}
 							});
 						}
-					});					
+					});		
+					buttons.setEnabled("log", student.getSessionId() != null && student.isCanUseAssistant());
 				}
 				buttons.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
 					@Override
@@ -457,6 +475,64 @@ public class EnrollmentTable extends Composite {
 								d.center();
 							}
 						});
+					}
+				});
+			}
+		});
+	}
+	
+	public void showCourseRequests(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
+		UserAuthenticationProvider user = new UserAuthenticationProvider() {
+			@Override
+			public String getUser() {
+				return student.getName();
+			}
+			@Override
+			public void setUser(String user, AsyncCallback<Boolean> callback) {
+			}
+		};
+		
+		AcademicSessionProvider session = new AcademicSessionProvider() {
+			@Override
+			public Long getAcademicSessionId() {
+				return student.getSessionId();
+			}
+			@Override
+			public String getAcademicSessionName() {
+				return "Current Session";
+			}
+			@Override
+			public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {
+			}
+			@Override
+			public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
+			}
+			@Override
+			public AcademicSessionInfo getAcademicSessionInfo() {
+				return null;
+			}
+		};
+		
+		final StudentSectioningWidget widget = new StudentSectioningWidget(iOnline, session, user, StudentSectioningPage.Mode.REQUESTS, false);
+		
+		iSectioningService.logIn(iOnline ? "LOOKUP" : "BATCH", iOnline ? student.getExternalId() : String.valueOf(student.getId()), null, new AsyncCallback<String>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				callback.onFailure(caught);
+			}
+			@Override
+			public void onSuccess(String result) {
+				widget.lastRequest(student.getSessionId(), student.getId(), true);
+				final UniTimeDialogBox d = new UniTimeDialogBox(true, false);
+				d.setWidget(widget);
+				d.setText(MESSAGES.dialogRegistration(student.getName()));
+				d.setEscapeToHide(true);
+				callback.onSuccess(true);
+				d.center();
+				widget.addResizeHandler(new ResizeHandler() {
+					@Override
+					public void onResize(ResizeEvent event) {
+						d.center();
 					}
 				});
 			}

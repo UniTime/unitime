@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.status;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction.FindEnrollmentInfoCourseMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseRequestMatcher;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
@@ -62,13 +64,15 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	private Query iQuery;
 	private Integer iLimit = null;
 	private Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
-	private boolean iCanShowExtIds = false;
+	private boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
 	
-	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, boolean canShowExtIds) {
+	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant) {
 		iQuery = new Query(query);
 		iCoursesIcanApprove = coursesIcanApprove;
 		iCoursesIcoordinate = coursesIcoordinage;
 		iCanShowExtIds = canShowExtIds;
+		iCanRegister = canRegister;
+		iCanUseAssistant = canUseAssistant;
 		Matcher m = Pattern.compile("limit:[ ]?([0-9]*)", Pattern.CASE_INSENSITIVE).matcher(query);
 		if (m.find()) {
 			iLimit = Integer.parseInt(m.group(1));
@@ -104,7 +108,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		Set<Long> unassigned = new HashSet<Long>();
 		AcademicSessionInfo session = server.getAcademicSession();
 		Set<Long> studentIds = (iFilter == null ? null : server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getStudentIds(server, helper));
-		for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery))) {
+		for (XCourseId info: findCourses(server, helper)) {
 			XOffering offering = server.getOffering(info.getOfferingId());
 			if (offering == null) continue;
 			XCourse course = offering.getCourse(info.getCourseId());
@@ -129,6 +133,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						st.setSessionId(session.getUniqueId());
 						st.setExternalId(student.getExternalId());
 						st.setCanShowExternalId(iCanShowExtIds);
+						st.setCanRegister(iCanRegister);
+						st.setCanUseAssistant(iCanUseAssistant);
 						st.setName(student.getName());
 						for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 							st.addArea(ac.getArea());
@@ -238,7 +244,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		
 		List<StudentInfo> ret = new ArrayList<StudentInfo>(students.values());
 		
-		if (studentIds != null && studentIds.size() < 1000) {
+		if (studentIds != null && (studentIds.size() < 1000 || server instanceof DatabaseServer)) {
 			FindStudentInfoMatcher m = new FindStudentInfoMatcher(session, query());
 			for (Long id: studentIds) {
 				if (students.containsKey(id)) continue;
@@ -251,6 +257,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				st.setSessionId(session.getUniqueId());
 				st.setExternalId(student.getExternalId());
 				st.setCanShowExternalId(iCanShowExtIds);
+				st.setCanRegister(iCanRegister);
+				st.setCanUseAssistant(iCanUseAssistant);
 				st.setName(student.getName());
 				for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 					st.addArea(ac.getArea());
@@ -278,6 +286,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 				st.setSessionId(session.getUniqueId());
 				st.setExternalId(student.getExternalId());
 				st.setCanShowExternalId(iCanShowExtIds);
+				st.setCanRegister(iCanRegister);
+				st.setCanUseAssistant(iCanUseAssistant);
 				st.setName(student.getName());
 				for (XAcademicAreaCode ac: student.getAcademicAreaClasiffications()) {
 					st.addArea(ac.getArea());
@@ -335,6 +345,18 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		ret.add(t);				
 		
 		return ret;
+	}
+	
+	protected Collection<? extends XCourseId> findCourses(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
+		if (iFilter != null && server instanceof DatabaseServer) {
+			List<XCourseId> courses = new ArrayList<XCourseId>();
+			FindEnrollmentInfoCourseMatcher m = new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery);
+			for (XCourse course :server.createAction(SectioningStatusFilterAction.class).forRequest(iFilter).getCourses(server, helper))
+				if (m.match(course)) courses.add(course);
+			return courses;
+		} else {
+			 return server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery));
+		}
 	}
 	
 	protected static Pattern sCreditPattern = Pattern.compile("\\d+\\.?\\d*");

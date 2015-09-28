@@ -57,7 +57,7 @@ public class SectioningReportsBackend implements GwtRpcImplementation<Sectioning
 		parameters.setProperty("useAmPm", CONSTANTS.useAmPm() ? "true" : "false");
 
 		if (online) {
-			context.checkPermission(Right.SchedulingDashboard);
+			context.checkPermission(Right.SchedulingReports);
 			OnlineSectioningServer server = solverServerService.getOnlineStudentSchedulingContainer().getSolver(context.getUser().getCurrentAcademicSessionId().toString());
 			if (server == null)
 				throw new GwtRpcException("Online student scheduling is not enabled for " + context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() + ".");

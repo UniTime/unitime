@@ -44,6 +44,9 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.util.Constants;
 
 /**
@@ -81,7 +84,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		List<Entity> areas = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title, count(distinct s.uniqueId)")
 				.order("aac.academicArea.academicAreaAbbreviation, aac.academicArea.title").group("aac.academicArea.uniqueId, aac.academicArea.academicAreaAbbreviation, aac.academicArea.title")
-				.exclude("area").exclude("major").query(helper.getHibSession()).list()) {
+				.exclude("area").exclude("major").exclude("course").query(helper.getHibSession()).list()) {
 			Entity a = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -110,7 +113,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		List<Entity> classifications = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("aac.academicClassification.uniqueId, aac.academicClassification.code, aac.academicClassification.name, count(distinct s)")
 				.order("aac.academicClassification.code, aac.academicClassification.name").group("aac.academicClassification.uniqueId, aac.academicClassification.code, aac.academicClassification.name")
-				.exclude("classification").query(helper.getHibSession()).list()) {
+				.exclude("classification").exclude("course").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -124,7 +127,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
 				.from("StudentGroup g").where("g in elements(s.groups)")
 				.order("g.groupAbbreviation, g.groupName").group("g.uniqueId, g.groupAbbreviation, g.groupName")
-				.exclude("group").query(helper.getHibSession()).list()) {
+				.exclude("group").exclude("course").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -138,7 +141,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		for (Object[] o: (List<Object[]>)query.select("a.uniqueId, a.abbreviation, a.name, count(distinct s)")
 				.from("StudentAccomodation a").where("a in elements(s.accomodations)")
 				.order("a.abbreviation, a.name").group("a.uniqueId, a.abbreviation, a.name")
-				.exclude("accommodation").query(helper.getHibSession()).list()) {
+				.exclude("accommodation").exclude("course").query(helper.getHibSession()).list()) {
 			Entity c = new Entity(
 					(Long)o[0],
 					(String)o[1],
@@ -225,7 +228,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		StudentQuery query = getQuery(iRequest, server);
 		if (!iRequest.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
-			StudentQuery.StudentInstance instance = query.select("distinct s").exclude("student").order("s.lastName, s.firstName, s.middleName");
+			StudentQuery.QueryInstance instance = query.select("distinct s").exclude("student").order("s.lastName, s.firstName, s.middleName");
 			
 			int id = 0;
 			String where = "";
@@ -266,7 +269,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		
 		if (iRequest.getText().length() > 1 && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
-			StudentQuery.StudentInstance instance = query.select("distinct l.operation").exclude("operation").order("l.operation")
+			StudentQuery.QueryInstance instance = query.select("distinct l.operation").exclude("operation").order("l.operation")
 					.from("OnlineSectioningLog l").where("l.session.uniqueId = :sessionId").where("l.student = s.externalUniqueId");
 			String q = iRequest.getText();
 			if (!"operation".startsWith(q.toLowerCase())) {
@@ -394,34 +397,60 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				query.addWhere("student", student);
 			}
 		}
-
+		
+		if (request.hasOption("course")) {
+			query.addParameter("course", "Xco", request.getOption("course"));
+			query.addWhere("course", "co.subjectAreaAbbv = :Xco or co.subjectAreaAbbv || ' ' || co.courseNbr = :Xco");
+			query.addFrom("course", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");
+		}
+		
 		return query;
 	}
 	
 	public static class StudentQuery {
-		private Long iSessionId;
-		private Map<String, String> iFrom = new HashMap<String, String>();
-		private Map<String, String> iWhere = new HashMap<String, String>();
-		private Map<String, Map<String, Object>> iParams = new HashMap<String, Map<String,Object>>();
+		protected Long iSessionId;
+		protected Map<String, String> iFrom = new HashMap<String, String>();
+		protected Map<String, String> iWhere = new HashMap<String, String>();
+		protected Map<String, Map<String, Object>> iParams = new HashMap<String, Map<String,Object>>();
 		
 		public StudentQuery(Long sessionId) {
 			iSessionId = sessionId;
 		}
 		
-		public void addFrom(String option, String from) { iFrom.put(option, from); }
-		public void addWhere(String option, String where) { iWhere.put(option, where); }
+		public StudentQuery(StudentQuery q) {
+			iSessionId = q.iSessionId;
+			iFrom.putAll(q.iFrom);
+			iWhere.putAll(q.iWhere);
+			iParams.putAll(q.iParams);
+		}
+		
+		public void addFrom(String option, String from) {
+			if (from == null)
+				iFrom.remove(option);
+			else
+				iFrom.put(option, from);
+		}
+		public void addWhere(String option, String where) {
+			if (where == null)
+				iWhere.remove(option);
+			else
+				iWhere.put(option, where);
+		}
 
-		private void addParameter(String option, String name, Object value) {
+		protected void addParameter(String option, String name, Object value) {
 			Map<String, Object> params = iParams.get(option);
 			if (params == null) { params = new HashMap<String, Object>(); iParams.put(option, params); }
-			params.put(name, value);
+			if (value == null)
+				params.remove(name);
+			else
+				params.put(name, value);
 		}
 		
 		public String getFrom(Collection<String> excludeOption) {
 			String from = "";
 			for (Map.Entry<String, String> entry: iFrom.entrySet()) {
 				if (excludeOption != null && excludeOption.contains(entry.getKey())) continue;
-				from += ", " + entry.getValue();
+				from += (entry.getValue().startsWith("inner join") ? " " : ", ") + entry.getValue();
 			}
 			return from;
 		}
@@ -457,42 +486,40 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			return query;
 		}
 		
-		public StudentInstance select(String select) {
-			return new StudentInstance(select);
+		public QueryInstance select(String select) {
+			return new QueryInstance(select);
 		}
 		
 		
-		public class StudentInstance {
-			private String iSelect = null, iFrom = null, iWhere = null, iOrderBy = null, iGroupBy = null, iType = "Student";
-			private Integer iLimit = null;
-			private Set<String> iExclude = new HashSet<String>();
-			private Map<String, Object> iParams = new HashMap<String, Object>();
+		public class QueryInstance {
+			protected String iSelect = null, iFrom = null, iWhere = null, iOrderBy = null, iGroupBy = null, iType = "Student";
+			protected Integer iLimit = null;
+			protected Set<String> iExclude = new HashSet<String>();
+			protected Map<String, Object> iParams = new HashMap<String, Object>();
 			
-			private StudentInstance(String select) {
+			private QueryInstance(String select) {
 				iSelect = select;
 			}
 			
-			public StudentInstance from(String from) { iFrom = from; return this; }
-			public StudentInstance where(String where) { 
+			public QueryInstance from(String from) { iFrom = from; return this; }
+			public QueryInstance where(String where) { 
 				if (iWhere == null)
 					iWhere = "(" + where + ")";
 				else
 					iWhere += " and (" + where + ")";
 				return this;
 			}
-			public StudentInstance type(String type) { iType = type; return this; }
-			public StudentInstance order(String orderBy) { iOrderBy = orderBy; return this; }
-			public StudentInstance group(String groupBy) { iGroupBy = groupBy; return this; }
-			public StudentInstance exclude(String excludeOption) { iExclude.add(excludeOption); return this; }
-			public StudentInstance set(String param, Object value) { iParams.put(param, value); return this; }
-			public StudentInstance limit(Integer limit) { iLimit = (limit == null || limit <= 0 ? null : limit); return this; }
+			public QueryInstance type(String type) { iType = type; return this; }
+			public QueryInstance order(String orderBy) { iOrderBy = orderBy; return this; }
+			public QueryInstance group(String groupBy) { iGroupBy = groupBy; return this; }
+			public QueryInstance exclude(String excludeOption) { iExclude.add(excludeOption); return this; }
+			public QueryInstance set(String param, Object value) { iParams.put(param, value); return this; }
+			public QueryInstance limit(Integer limit) { iLimit = (limit == null || limit <= 0 ? null : limit); return this; }
 			
 			public String query() {
 				return
 					"select " + (iSelect == null ? "distinct s" : iSelect) +
-					" from " + iType + " s left outer join s.academicAreaClassifications aac " + 
-					(iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom :
-						", " + iFrom) + getFrom(iExclude) +
+					" from " + iType + " s left outer join s.academicAreaClassifications aac " +  (iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
 					" where s.session.uniqueId = :sessionId" +
 					getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
 					(iGroupBy == null ? "" : " group by " + iGroupBy) +
@@ -525,6 +552,69 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	
 	public Set<Long> getStudentIds(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		return new HashSet<Long>((List<Long>)getQuery(iRequest, server).select("distinct s.uniqueId").query(helper.getHibSession()).list());
+	}
+	
+	public List<XStudent> getStudens(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		List<XStudent> students = new ArrayList<XStudent>();
+		for (XStudent student: (List<XStudent>)getQuery(iRequest, server).select("distinct s").query(helper.getHibSession()).list()) {
+			students.add(new XStudent(student));
+		}
+		return students;
+	}
+	
+	public static CourseQuery getCourseQuery(FilterRpcRequest request, OnlineSectioningServer server) {
+		CourseQuery query = new CourseQuery(getQuery(request, server));
+		
+		if (request.hasOption("course")) {
+			query.addParameter("course", "Xco", request.getOption("course"));
+			query.addWhere("course", "co.subjectAreaAbbv = :Xco or co.subjectAreaAbbv || ' ' || co.courseNbr = :Xco");
+			query.addFrom("course", null);
+		}
+
+		return query;
+	}
+	
+	public List<XCourseId> getCourseIds(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		List<XCourseId> ids = new ArrayList<XCourseId>(); 
+		for (Object[] line: (List<Object[]>)getCourseQuery(iRequest, server).select("distinct co.instructionalOffering.uniqueId, co.uniqueId, co.subjectAreaAbbv, co.courseNbr").query(helper.getHibSession()).list()) {
+			ids.add(new XCourseId(((Number)line[0]).longValue(), ((Number)line[1]).longValue(), line[2] + " " + line[3]));
+		}
+		return ids;
+	}
+	
+	public List<XCourse> getCourses(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		List<XCourse> courses = new ArrayList<XCourse>(); 
+		for (CourseOffering co: (List<CourseOffering>)getCourseQuery(iRequest, server).select("distinct co").query(helper.getHibSession()).list()) {
+			courses.add(new XCourse(co));
+		}
+		return courses;
+	}
+	
+	public static class CourseQuery extends StudentQuery {
+		
+		public CourseQuery(Long sessionId) {
+			super(sessionId);
+		}
+		
+		public CourseQuery(StudentQuery q) {
+			super(q);
+		}		
+		
+		@Override
+		public QueryInstance select(String select) {
+			return new QueryInstance(select) {
+				@Override
+				public String query() {
+					return
+							"select " + (iSelect == null ? "distinct co" : iSelect) +
+							" from CourseRequest cr inner join cr.courseOffering co inner join cr.courseDemand cd inner join cd.student s left outer join s.academicAreaClassifications aac " + 
+							(iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
+							" where s.session.uniqueId = :sessionId" + getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
+							(iGroupBy == null ? "" : " group by " + iGroupBy) +
+							(iOrderBy == null ? "" : " order by " + iOrderBy);
+				}
+			};
+		}
 	}
 
 }

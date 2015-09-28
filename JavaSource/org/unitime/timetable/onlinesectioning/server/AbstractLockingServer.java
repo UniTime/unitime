@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.MultiLock;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -46,6 +47,11 @@ public abstract class AbstractLockingServer extends AbstractServer {
 	
 	public AbstractLockingServer(OnlineSectioningServerContext context) throws SectioningException {
 		super(context);
+	}
+	
+	protected AbstractLockingServer(AcademicSessionInfo session, boolean allowAsyncCalls) {
+		super(session, allowAsyncCalls);
+		iMultiLock = new MultiLock(getAcademicSession());
 	}
 	
 	@Override
