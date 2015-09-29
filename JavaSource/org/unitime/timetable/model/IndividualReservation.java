@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseIndividualReservation;
 
 
@@ -43,5 +44,33 @@ public class IndividualReservation extends BaseIndividualReservation {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	@Override
+	public boolean isApplicable(Student student, CourseRequest request) {
+		return getStudents().contains(student);
+	}
 
+	@Override
+	public int getPriority() {
+		return ApplicationProperty.ReservationPriorityIndividual.intValue();
+	}
+
+	@Override
+	public boolean isCanAssignOverLimit() {
+		return ApplicationProperty.ReservationCanOverLimitIndividual.isTrue();
+	}
+
+	@Override
+	public boolean isMustBeUsed() {
+		return ApplicationProperty.ReservationMustBeUsedIndividual.isTrue();
+	}
+
+	@Override
+	public boolean isAllowOverlap() {
+		return ApplicationProperty.ReservationAllowOverlapIndividual.isTrue();
+	}
+
+	@Override
+	public int getReservationLimit() {
+		return getStudents().size();
+	}
 }

@@ -61,10 +61,10 @@ import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction
  */
 public class FindStudentInfoAction implements OnlineSectioningAction<List<StudentInfo>> {
 	private static final long serialVersionUID = 1L;
-	private Query iQuery;
-	private Integer iLimit = null;
-	private Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
-	private boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
+	protected Query iQuery;
+	protected Integer iLimit = null;
+	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
+	protected boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
 	
 	public FindStudentInfoAction withParams(String query, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant) {
 		iQuery = new Query(query);
@@ -80,7 +80,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		return this;
 	}
 	
-	private SectioningStatusFilterRpcRequest iFilter = null;
+	protected SectioningStatusFilterRpcRequest iFilter = null;
 	public FindStudentInfoAction withFilter(SectioningStatusFilterRpcRequest filter) {
 		iFilter = filter;
 		return this;
@@ -375,8 +375,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	
 	public static class FindStudentInfoMatcher extends AbstractStudentMatcher {
 		private static final long serialVersionUID = 1L;
-		private Query iQuery;
-		private String iDefaultSectioningStatus;
+		protected Query iQuery;
+		protected String iDefaultSectioningStatus;
 		
 		public FindStudentInfoMatcher(AcademicSessionInfo session, Query query) {
 			iQuery = query;

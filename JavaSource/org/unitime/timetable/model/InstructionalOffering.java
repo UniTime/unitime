@@ -623,5 +623,36 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	}
     	return demand;
     }
+    
+    public int getUnreservedSpace() {
+        // compute available space
+        int available = 0;
+        for (InstrOfferingConfig config: getInstrOfferingConfigs()) {
+            available += config.getLimit() - getEnrollment();
+            // offering is unlimited -> there is unreserved space unless there is an unlimited reservation too 
+            // (in which case there is no unreserved space)
+            if (config.isUnlimitedEnrollment()) {
+                for (Reservation r: getReservations()) {
+                    // ignore expired reservations
+                    if (r.isExpired()) continue;
+                    // there is an unlimited reservation -> no unreserved space
+                    if (r.getReservationLimit() < 0) return 0;
+                }
+                return Integer.MAX_VALUE;
+            }
+        }
+        
+        // compute reserved space (out of the available space)
+        int reserved = 0;
+        for (Reservation r: getReservations()) {
+            // ignore expired reservations
+            if (r.isExpired()) continue;
+            // unlimited reservation -> no unreserved space
+            if (r.getReservationLimit() < 0) return 0;
+            reserved += Math.max(0.0, r.getReservedAvailableSpace());
+        }
+        
+        return available - reserved;
+    }
 
 }

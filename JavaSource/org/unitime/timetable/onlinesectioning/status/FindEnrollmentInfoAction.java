@@ -72,11 +72,11 @@ import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction
  */
 public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<EnrollmentInfo>> {
 	private static final long serialVersionUID = 1L;
-	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	private Query iQuery;
-	private Integer iLimit = null;
-	private Long iCourseId;
-	private Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
+	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
+	protected Query iQuery;
+	protected Integer iLimit = null;
+	protected Long iCourseId;
+	protected Set<Long> iCoursesIcoordinate, iCoursesIcanApprove;
 	
 	public FindEnrollmentInfoAction withParams(String query, Long courseId, Set<Long> coursesIcoordinage, Set<Long> coursesIcanApprove) {
 		iQuery = new Query(query);
@@ -90,7 +90,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 		return this;
 	}
 	
-	private SectioningStatusFilterRpcRequest iFilter = null;
+	protected SectioningStatusFilterRpcRequest iFilter = null;
 	public FindEnrollmentInfoAction withFilter(SectioningStatusFilterRpcRequest filter) {
 		iFilter = filter;
 		return this;
@@ -123,7 +123,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 			int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0;
 			int gConNeed = 0, gtConNeed = 0;
 			
-			for (XCourseId info: findCourses(server, helper)) {
+			for (XCourseId info: server.findCourses(new FindEnrollmentInfoCourseMatcher(iCoursesIcoordinate, iCoursesIcanApprove, iQuery))) {
 				XOffering offering = server.getOffering(info.getOfferingId());
 				if (offering == null) continue;
 				XCourse course = offering.getCourse(info.getCourseId());
@@ -545,10 +545,10 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 	}
 
 	public static class FindEnrollmentInfoCourseMatcher extends AbstractCourseMatcher {
-		private static final long serialVersionUID = 1L;
-		private Set<Long> iCoursesIcoordinate;
-		private Set<Long> iCoursesIcanApprove;
-		private Query iQuery;
+		protected static final long serialVersionUID = 1L;
+		protected Set<Long> iCoursesIcoordinate;
+		protected Set<Long> iCoursesIcanApprove;
+		protected Query iQuery;
 		
 		public FindEnrollmentInfoCourseMatcher(Set<Long> coursesIcoordinate, Set<Long> coursesIcanApprove, Query query) {
 			iCoursesIcoordinate = coursesIcoordinate;

@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseCourseReservation;
 
 /**
@@ -31,4 +32,28 @@ public class CourseReservation extends BaseCourseReservation {
 		super();
 	}
 
+	@Override
+	public boolean isApplicable(Student student, CourseRequest request) {
+		return request.getCourseOffering().equals(getCourse());
+	}
+	
+	@Override
+	public int getPriority() {
+		return ApplicationProperty.ReservationPriorityCourse.intValue();
+	}
+
+	@Override
+	public boolean isCanAssignOverLimit() {
+		return ApplicationProperty.ReservationCanOverLimitCourse.isTrue();
+	}
+
+	@Override
+	public boolean isMustBeUsed() {
+		return ApplicationProperty.ReservationMustBeUsedCourse.isTrue();
+	}
+
+	@Override
+	public boolean isAllowOverlap() {
+		return ApplicationProperty.ReservationAllowOverlapCourse.isTrue();
+	}
 }

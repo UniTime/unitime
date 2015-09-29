@@ -291,4 +291,14 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 		if (type == null) return new MinutesPerWeek(null);
 		else return type.getModel();
 	}
+	
+	public int getEnrollment() {
+		int enrollment = 0;
+    	for (SchedulingSubpart subpart: getSchedulingSubparts()) {
+    		for (Class_ clazz: subpart.getClasses())
+    			enrollment += clazz.getEnrollment();
+    		break;
+    	}
+    	return enrollment;
+	}
 }

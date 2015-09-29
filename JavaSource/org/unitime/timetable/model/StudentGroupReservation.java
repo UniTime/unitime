@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseStudentGroupReservation;
 
 
@@ -43,5 +44,28 @@ public class StudentGroupReservation extends BaseStudentGroupReservation {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	@Override
+	public boolean isApplicable(Student student, CourseRequest request) {
+		return student.getGroups().contains(getGroup());
+	}
 
+	@Override
+	public int getPriority() {
+		return ApplicationProperty.ReservationPriorityGroup.intValue();
+	}
+
+	@Override
+	public boolean isCanAssignOverLimit() {
+		return ApplicationProperty.ReservationCanOverLimitGroup.isTrue();
+	}
+
+	@Override
+	public boolean isMustBeUsed() {
+		return ApplicationProperty.ReservationMustBeUsedGroup.isTrue();
+	}
+
+	@Override
+	public boolean isAllowOverlap() {
+		return ApplicationProperty.ReservationAllowOverlapGroup.isTrue();
+	}
 }

@@ -122,6 +122,9 @@ import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.FindOnlineSectioningLogAction;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction;
+import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentAction;
+import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction;
+import org.unitime.timetable.onlinesectioning.status.db.DbFindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.updates.ApproveEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.ChangeStudentStatus;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
@@ -1265,6 +1268,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								clazz.setCredit(credit.creditAbbv() + "|" + credit.creditText());
 							}
 							credit = null;
+							if (clazz.getParentSection() == null)
+								clazz.setParentSection(enrollment.getCourseOffering().getConsentType() == null ? null : enrollment.getCourseOffering().getConsentType().getLabel());
 						}
 						demands: for (CourseDemand demand: (List<CourseDemand>)hibSession.createQuery(
 								"from CourseDemand d where d.student.uniqueId = :studentId order by d.priority"
@@ -1476,6 +1481,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
+				
+				if (server instanceof DatabaseServer) {
+					return server.execute(server.createAction(DbFindEnrollmentInfoAction.class).withParams(
+							query,
+							courseId,
+							getCoordinatingCourses(sessionId),
+							query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null)
+							.withFilter(filter), currentUser()
+					);	
+				}
 							
 				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(
 						query,
@@ -1515,7 +1530,19 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
-							
+				
+				if (server instanceof DatabaseServer) {
+					return server.execute(server.createAction(DbFindStudentInfoAction.class).withParams(
+							query,
+							getCoordinatingCourses(sessionId),
+							query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId) : null,
+							sessionContext.hasPermission(Right.EnrollmentsShowExternalId),
+							sessionContext.hasPermission(Right.CourseRequests),
+							sessionContext.hasPermission(Right.SchedulingAssistant))
+							.withFilter(filter), currentUser()
+					);
+				}
+				
 				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(
 						query,
 						getCoordinatingCourses(sessionId),
@@ -1592,6 +1619,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				
 				if (getSessionContext().isAuthenticated())
 					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
+				
+				if (server instanceof DatabaseServer) {
+					return server.execute(server.createAction(DbFindEnrollmentAction.class).withParams(
+							query, courseId, classId, 
+							query.matches("(?i:.*consent:[ ]?(todo|\\\"to do\\\").*)") ? getApprovableCourses(sessionId).contains(courseId): false,
+							sessionContext.hasPermission(Right.EnrollmentsShowExternalId),
+							sessionContext.hasPermission(Right.CourseRequests),
+							sessionContext.hasPermission(Right.SchedulingAssistant)).withFilter(filter), currentUser());
+				}
 				
 				return server.execute(server.createAction(FindEnrollmentAction.class).withParams(
 						query, courseId, classId, 
@@ -1708,6 +1744,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 				CourseRequestInterface request = new CourseRequestInterface();
 				request.setAcademicSessionId(sessionId);
+				Set<Long> courseIds = new HashSet<Long>();
 				if (!student.getCourseDemands().isEmpty()) {
 					TreeSet<CourseDemand> demands = new TreeSet<CourseDemand>(new Comparator<CourseDemand>() {
 						public int compare(CourseDemand d1, CourseDemand d2) {
@@ -1746,6 +1783,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							r = new CourseRequestInterface.Request();
 							for (Iterator<CourseRequest> i = cd.getCourseRequests().iterator(); i.hasNext(); ) {
 								CourseRequest course = i.next();
+								courseIds.add(course.getCourseOffering().getUniqueId());
 								XCourse c = (server == null ? new XCourse(course.getCourseOffering()) : server.getCourse(course.getCourseOffering().getUniqueId()));
 								if (c == null) continue;
 								switch (course.getOrder()) {
@@ -1775,6 +1813,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					TreeSet<XCourse> courses = new TreeSet<XCourse>();
 					for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext(); ) {
 						StudentClassEnrollment enrl = i.next();
+						if (courseIds.contains(enrl.getCourseOffering().getUniqueId())) continue;
 						XCourse c = (server == null ? new XCourse(enrl.getCourseOffering()) : server.getCourse(enrl.getCourseOffering().getUniqueId()));
 						if (c != null)  courses.add(c);
 					}
@@ -1784,6 +1823,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						request.getCourses().add(r);
 					}
 				}
+				
 				return request;
 			} catch (PageAccessException e) {
 				throw e;

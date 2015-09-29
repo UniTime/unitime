@@ -57,11 +57,11 @@ import org.unitime.timetable.onlinesectioning.model.XSubpart;
  */
 public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAssignmentInterface.Enrollment>> {
 	private static final long serialVersionUID = 1L;
-	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	private Query iQuery;
-	private Long iCourseId, iClassId;
-	private boolean iConsentToDoCourse;
-	private boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
+	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
+	protected Query iQuery;
+	protected Long iCourseId, iClassId;
+	protected boolean iConsentToDoCourse;
+	protected boolean iCanShowExtIds = false, iCanRegister = false, iCanUseAssistant = false;
 	
 	public FindEnrollmentAction withParams(String query, Long courseId, Long classId, boolean isConsentToDoCourse, boolean canShowExtIds, boolean canRegister, boolean canUseAssistant) {
 		iQuery = new Query(query);
@@ -74,7 +74,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 		return this;
 	}
 	
-	private SectioningStatusFilterRpcRequest iFilter = null;
+	protected SectioningStatusFilterRpcRequest iFilter = null;
 	public FindEnrollmentAction withFilter(SectioningStatusFilterRpcRequest filter) {
 		iFilter = filter;
 		return this;

@@ -671,7 +671,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return enrollment() != null && enrollment().getReservation() != null;
 				} else if (eq("Not Assigned", term)) {
 					return enrollment() == null;
-				} else if (eq("Not Assigned", term)) {
+				} else if (eq("Wait-Listed", term)) {
 					return enrollment() == null && request().isWaitlist();
 				}
 			}
@@ -709,7 +709,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				} else if (eq("todo", term) || eq("To Do", term)) {
 					return isConsentToDoCourse() && enrollment() != null && enrollment().getApproval() == null;
 				} else {
-					return info().getConsentLabel() != null && ((enrollment() != null && enrollment().getApproval() != null && (has(enrollment().getApproval().getExternalId(), term) || eq(enrollment().getApproval().getName(), term))) || eq(info().getConsentAbbv(), term));
+					return info().getConsentLabel() != null && (enrollment() != null && ((enrollment().getApproval() != null && (has(enrollment().getApproval().getExternalId(), term) || eq(enrollment().getApproval().getName(), term))) || eq(info().getConsentAbbv(), term)));
 				}
 			}
 			

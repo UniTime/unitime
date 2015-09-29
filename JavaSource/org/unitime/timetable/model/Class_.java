@@ -1665,4 +1665,73 @@ public class Class_ extends BaseClass_ {
 				new String[] { "MEET_WITH"}
 				).isEmpty();
 	}
+	
+	public boolean isParentOf(Class_ clazz) {
+		Class_ parent = clazz.getParentClass();
+		return parent != null && (this.equals(parent) || isParentOf(parent)); 
+	}
+	
+	public int getSectioningLimit() {
+		if (!isEnabledForStudentScheduling()) {
+        	return 0;
+        } else if (getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment()) {
+        	return -1;
+        } else {
+        	int limit = getMaxExpectedCapacity();
+        	Assignment assignment = getCommittedAssignment();
+        	if (getExpectedCapacity() < getMaxExpectedCapacity() && assignment != null && !assignment.getRooms().isEmpty()) {
+        		int roomSize = Integer.MAX_VALUE;
+        		for (Location room: assignment.getRooms())
+        			roomSize = Math.min(roomSize, room.getCapacity() == null ? 0 : room.getCapacity());
+        		int roomLimit = (int) Math.floor(roomSize / (getRoomRatio() == null ? 1.0f : getRoomRatio()));
+        		limit = Math.min(Math.max(getExpectedCapacity(), roomLimit), getMaxExpectedCapacity());
+        	}
+            if (limit >= 9999) limit = -1;
+            return limit;
+        }
+	}
+	
+	private List<Reservation> getSectionReservations() {
+		List<Reservation> reservations = new ArrayList<Reservation>();
+		for (Reservation reservation: getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getReservations()) {
+			if (reservation.getClasses().isEmpty()) continue;
+			for (Class_ clazz: reservation.getClasses()) {
+				if (this.equals(clazz) || this.isParentOf(clazz)) {
+					reservations.add(reservation);
+					break;
+				}
+			}
+		}
+		return reservations;
+	}
+	
+	public int getUnreservedSectionSpace() {
+        // section is unlimited -> there is unreserved space unless there is an unlimited reservation too 
+        // (in which case there is no unreserved space)
+        if (getSectioningLimit() < 0) {
+            // exclude reservations that are not directly set on this section
+            for (Reservation r: getSectionReservations()) {
+                // ignore expired reservations
+                if (r.isExpired()) continue;
+                // there is an unlimited reservation -> no unreserved space
+                if (r.getReservationLimit() < 0) return 0;
+            }
+            return Integer.MAX_VALUE;
+        }
+        
+        int available = getSectioningLimit() - getEnrollment();
+        // exclude reservations that are not directly set on this section
+        for (Reservation r: getSectionReservations()) {
+            // ignore expired reservations
+            if (r.isExpired()) continue;
+            // unlimited reservation -> all the space is reserved
+            if (r.getReservationLimit() < 0.0) return 0;
+            // compute space that can be potentially taken by this reservation
+            int reserved = r.getReservedAvailableSpace();
+            // deduct the space from available space
+            available -= Math.max(0, reserved);
+        }
+        
+        return available;
+    }
 }

@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseCurriculumReservation;
 
 /**
@@ -31,4 +32,38 @@ public class CurriculumReservation extends BaseCurriculumReservation {
 		super();
 	}
 
+	@Override
+	public boolean isApplicable(Student student, CourseRequest request) {
+		for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
+			if (aac.getAcademicArea().equals(getArea())) {
+				if (getClassifications().isEmpty() || getClassifications().contains(aac.getAcademicClassification())) {
+					if (getMajors().isEmpty()) return true;
+					else for (PosMajor major: getMajors()) {
+						if (student.getPosMajors().contains(major)) return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public int getPriority() {
+		return ApplicationProperty.ReservationPriorityCurriculum.intValue();
+	}
+
+	@Override
+	public boolean isCanAssignOverLimit() {
+		return ApplicationProperty.ReservationCanOverLimitCurriculum.isTrue();
+	}
+
+	@Override
+	public boolean isMustBeUsed() {
+		return ApplicationProperty.ReservationMustBeUsedCurriculum.isTrue();
+	}
+
+	@Override
+	public boolean isAllowOverlap() {
+		return ApplicationProperty.ReservationAllowOverlapCurriculum.isTrue();
+	}
 }
