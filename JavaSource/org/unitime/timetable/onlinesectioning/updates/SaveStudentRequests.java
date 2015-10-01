@@ -377,8 +377,9 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 			if (keepEnrollments) {
 				CourseRequest cr = course2request.get(enrl.getCourseOffering().getUniqueId());
 				if (cr == null) {
-					enrl.setCourseRequest(null);
-					helper.getHibSession().saveOrUpdate(enrl);
+					enrl.getClazz().getStudentEnrollments().remove(enrl);
+					helper.getHibSession().delete(enrl);
+					i.remove();
 				} else {
 					enrl.setCourseRequest(cr);
 					helper.getHibSession().saveOrUpdate(enrl);
