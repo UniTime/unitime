@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.gwt.resources;
 
-import com.google.gwt.i18n.client.Constants;
-
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
@@ -63,6 +61,7 @@ public interface StudentSectioningConstants extends Constants {
 		"12:30p", "1:00p", "1:30p", "2:00p", "2:30p", "3:00p", "3:30p", "4:00p", "4:30p", "5:00p", "5:30p",
 		"6:00p", "6:30p", "7:00p", "7:30p"
 	})
+	@DoNotTranslate
 	String[] freeTimePeriods();
 	
 	@DefaultStringArrayValue({"Mon", "Tue", "Wed", "Thu", "Fri"})
@@ -75,6 +74,7 @@ public interface StudentSectioningConstants extends Constants {
 	String[] freeTimeLongDays();
 
 	@DefaultStringArrayValue({"0", "2", "6", "8", "12", "14", "15", "16", "17", "18", "19", "20"})
+	@DoNotTranslate
 	String[] freeTimeOneDay150();
 	
 	@DefaultStringArrayValue({"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"})
@@ -91,18 +91,23 @@ public interface StudentSectioningConstants extends Constants {
 		"purple", "teal", "darkpurple", "steelblue", "lightblue",
 		"lightgreen", "yellowgreen", "redorange", "lightbrown", "lightpurple",
 		"grey", "bluegrey", "lightteal", "yellowgrey", "brown"})
+	@DoNotTranslate
 	String[] meetingColors();
 	
 	@DefaultStringValue("red")
+	@DoNotTranslate
 	String freeTimeColor();
 	
 	@DefaultBooleanValue(false)
+	@DoNotTranslate
 	boolean printReportShowUserName();
 	
 	@DefaultIntValue(12)
+	@DoNotTranslate
 	int numberOfCourses();
 	
 	@DefaultIntValue(3)
+	@DoNotTranslate
 	int numberOfAlternatives();
 	
 	@DefaultStringValue("MM/dd/yyyy")
@@ -112,27 +117,34 @@ public interface StudentSectioningConstants extends Constants {
 	String timeStampFormat();
 
 	@DefaultBooleanValue(true)
+	@DoNotTranslate
 	boolean useAmPm();
 	
 	@DefaultStringValue("MM/dd")
 	String patternDateFormat();
 	
 	@DefaultBooleanValue(false)
+	@DoNotTranslate
 	boolean isAuthenticationRequired();
 	
 	@DefaultBooleanValue(true)
+	@DoNotTranslate
 	boolean tryAuthenticationWhenGuest();
 	
 	@DefaultBooleanValue(false)
+	@DoNotTranslate
 	boolean hasAuthenticationPin();
 	
 	@DefaultBooleanValue(true)
+	@DoNotTranslate
 	boolean allowEmptySchedule();
 	
 	@DefaultBooleanValue(true)
+	@DoNotTranslate
 	boolean allowUserLogin();
 	
 	@DefaultBooleanValue(false)
+	@DoNotTranslate
 	boolean allowCalendarExport();
 	
 	@DefaultStringArrayValue({
@@ -141,8 +153,10 @@ public interface StudentSectioningConstants extends Constants {
 	String[] enrollmentFilterValues();
 	
 	@DefaultBooleanValue(false)
+	@DoNotTranslate
 	boolean showCourseTitle();
 	
 	@DefaultBooleanValue(false)
+	@DoNotTranslate
 	boolean courseFinderSuggestWhenEmpty();
 }

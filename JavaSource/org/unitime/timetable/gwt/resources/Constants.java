@@ -17,25 +17,15 @@
  * limitations under the License.
  * 
 */
-package org.unitime.localization.messages;
+package org.unitime.timetable.gwt.resources;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.unitime.localization.impl.LocalizedLookupDispatchAction;
-
-/**
- * @author Tomas Muller
- */
-public interface Messages extends org.unitime.timetable.gwt.resources.Messages {
+public interface Constants extends com.google.gwt.i18n.client.Constants {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
-	public @interface StrutsAction {
-		String value();
-		Class<? extends LocalizedLookupDispatchAction>[] apply() default {};
-	}
-	
-	public String translateMessage(String name, String defaultMessage, Object... arguments);
+	public @interface DoNotTranslate{}
 }

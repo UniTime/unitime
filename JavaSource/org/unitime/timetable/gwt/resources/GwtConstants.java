@@ -19,23 +19,25 @@
 */
 package org.unitime.timetable.gwt.resources;
 
-import com.google.gwt.i18n.client.Constants;
-
 /**
  * @author Tomas Muller
  */
 public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue("4.1")
+	@DoNotTranslate
 	String version();
 
 	@DefaultStringValue("&copy; 2008 - 2015 The Apereo Foundation")
+	@DoNotTranslate
 	String copyright();
 	
 	@DefaultBooleanValue(true)
+	@DoNotTranslate
 	boolean useAmPm();
 
 	@DefaultBooleanValue(false)
+	@DoNotTranslate
 	boolean firstDayThenMonth();
 
 	@DefaultStringArrayValue({"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"})
@@ -66,18 +68,23 @@ public interface GwtConstants extends Constants {
 	String timeStampFormatShort();
 	
 	@DefaultIntValue(3)
+	@DoNotTranslate
 	int eventSlotIncrement();
 	
 	@DefaultIntValue(90)
+	@DoNotTranslate
 	int eventStartDefault();
 	
 	@DefaultIntValue(210)
+	@DoNotTranslate
 	int eventStopDefault();
 	
 	@DefaultIntValue(12)
+	@DoNotTranslate
 	int eventLengthDefault();
 	
 	@DefaultIntValue(10000)
+	@DoNotTranslate
 	int maxMeetings();
 	
 	@DefaultStringArrayValue({"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"})
@@ -136,6 +143,7 @@ public interface GwtConstants extends Constants {
 		"purple", "teal", "darkpurple", "steelblue", "lightblue",
 		"lightgreen", "yellowgreen", "redorange", "lightbrown", "lightpurple",
 		"grey", "bluegrey", "lightteal", "yellowgrey", "brown", "red"})
+	@DoNotTranslate
 	String[] meetingColors();
 	
 	@DefaultStringArrayValue({
@@ -210,6 +218,7 @@ public interface GwtConstants extends Constants {
 	String[] reservationOverrideTypeAbbv();
 
 	@DefaultBooleanValue(false)
+	@DoNotTranslate
 	boolean displayMidtermPeriodPreferencesAsCalendar();
 	
 	@DefaultStringArrayValue({
@@ -250,5 +259,6 @@ public interface GwtConstants extends Constants {
 	String roomAreaUnitsShortPlainText();
 	
 	@DefaultBooleanValue(false)
+	@DoNotTranslate
 	boolean timeGridStudentGroupDoesNotOverlap();
 }

@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.gwt.resources;
 
-import com.google.gwt.i18n.client.Messages;
-
 /**
  * @author Tomas Muller
  */
@@ -2085,153 +2083,203 @@ public interface GwtMessages extends Messages {
 	String totalEnrollmentOfType(String type);
 	
 	@DefaultMessage("Add Event")
+	@DoNotTranslate
 	String pageAddEvent();
 	
 	@DefaultMessage("Edit Event")
+	@DoNotTranslate
 	String pageEditEvent();
 
 	@DefaultMessage("Event Detail")
+	@DoNotTranslate
 	String pageEventDetail();
 	
 	@DefaultMessage("Edit Room Event Availability")
+	@DoNotTranslate
 	String pageEditRoomEventAvailability();
 	
 	@DefaultMessage("Edit {0}")
+	@DoNotTranslate
 	String pageEdit(String name);
 	
 	@DefaultMessage("Add {0}")
+	@DoNotTranslate
 	String pageAdd(String name);
 	
 	@DefaultMessage("Academic Area")
+	@DoNotTranslate
 	String pageAcademicArea();
 	
 	@DefaultMessage("Academic Areas")
+	@DoNotTranslate
 	String pageAcademicAreas();
 	
 	@DefaultMessage("Academic Classification")
+	@DoNotTranslate
 	String pageAcademicClassification();
 
 	@DefaultMessage("Academic Classifications")
+	@DoNotTranslate
 	String pageAcademicClassifications();
 	
 	@DefaultMessage("Course Credit Format")
+	@DoNotTranslate
 	String pageCourseCreditFormat();
 
 	@DefaultMessage("Course Credit Formats")
+	@DoNotTranslate
 	String pageCourseCreditFormats();
 	
 	@DefaultMessage("Course Credit Type")
+	@DoNotTranslate
 	String pageCourseCreditType();
 
 	@DefaultMessage("Course Credit Types")
+	@DoNotTranslate
 	String pageCourseCreditTypes();
 	
 	@DefaultMessage("Course Credit Unit")
+	@DoNotTranslate
 	String pageCourseCreditUnit();
 
 	@DefaultMessage("Course Credit Units")
+	@DoNotTranslate
 	String pageCourseCreditUnits();
 	
 	@DefaultMessage("Course Type")
+	@DoNotTranslate
 	String pageCourseType();
 	
 	@DefaultMessage("Course Types")
+	@DoNotTranslate
 	String pageCourseTypes();
 
 	@DefaultMessage("Event Date Mapping")
+	@DoNotTranslate
 	String pageEventDateMapping();
 	
 	@DefaultMessage("Event Date Mappings")
+	@DoNotTranslate
 	String pageEventDateMappings();
 	
 	@DefaultMessage("Event Status")
+	@DoNotTranslate
 	String pageEventStatus();
 
 	@DefaultMessage("Event Statuses")
+	@DoNotTranslate
 	String pageEventStatuses();
 	
 	@DefaultMessage("Event Default")
+	@DoNotTranslate
 	String pageEventDefault();
 
 	@DefaultMessage("Event Defaults")
+	@DoNotTranslate
 	String pageEventDefaults();
 	
 	@DefaultMessage("Examination Type")
+	@DoNotTranslate
 	String pageExaminationType();
 
 	@DefaultMessage("Examination Types")
+	@DoNotTranslate
 	String pageExaminationTypes();
 	
 	@DefaultMessage("Instructor Role")
+	@DoNotTranslate
 	String pageInstructorRole();
 	
 	@DefaultMessage("Instructor Roles")
+	@DoNotTranslate
 	String pageInstructorRoles();
 	
 	@DefaultMessage("Logging Level")
+	@DoNotTranslate
 	String pageLoggingLevel();
 	
 	@DefaultMessage("Logging Levels")
+	@DoNotTranslate
 	String pageLoggingLevels();
 	
 	@DefaultMessage("Major")
+	@DoNotTranslate
 	String pageMajor();
 
 	@DefaultMessage("Majors")
+	@DoNotTranslate
 	String pageMajors();
 
 	@DefaultMessage("Minor")
+	@DoNotTranslate
 	String pageMinor();
 
 	@DefaultMessage("Minors")
+	@DoNotTranslate
 	String pageMinors();
 	
 	@DefaultMessage("Offering Consent Type")
+	@DoNotTranslate
 	String pageOfferingConsentType();
 	
 	@DefaultMessage("Offering Consent Types")
+	@DoNotTranslate
 	String pageOfferingConsentTypes();
 	
 	@DefaultMessage("Permission")
+	@DoNotTranslate
 	String pagePermission();
 	
 	@DefaultMessage("Permissions")
+	@DoNotTranslate
 	String pagePermissions();
 	
 	@DefaultMessage("Position Type")
+	@DoNotTranslate
 	String pagePositionType();
 	
 	@DefaultMessage("Position Types")
+	@DoNotTranslate
 	String pagePositionTypes();
 	
 	@DefaultMessage("Room Feature Type")
+	@DoNotTranslate
 	String pageRoomFeatureType();
 	
 	@DefaultMessage("Room Feature Types")
+	@DoNotTranslate
 	String pageRoomFeatureTypes();
 	
 	@DefaultMessage("Standard Event Note")
+	@DoNotTranslate
 	String pageStandardEventNote();
 	
 	@DefaultMessage("Standard Event Notes")
+	@DoNotTranslate
 	String pageStandardEventNotes();
 	
 	@DefaultMessage("Student Group")
+	@DoNotTranslate
 	String pageStudentGroup();
 	
 	@DefaultMessage("Student Groups")
+	@DoNotTranslate
 	String pageStudentGroups();
 	
 	@DefaultMessage("Student Scheduling Status Type")
+	@DoNotTranslate
 	String pageStudentSchedulingStatusType();
 	
 	@DefaultMessage("Student Scheduling Status Types")
+	@DoNotTranslate
 	String pageStudentSchedulingStatusTypes();
 	
 	@DefaultMessage("Role")
+	@DoNotTranslate
 	String pageRole();
 	
 	@DefaultMessage("Roles")
+	@DoNotTranslate
 	String pageRoles();
 	
 	@DefaultMessage("Class Duration Type")
@@ -2247,108 +2295,143 @@ public interface GwtMessages extends Messages {
 	String pageExaminationStatuses();
 	
 	@DefaultMessage("Add Curriculum")
+	@DoNotTranslate
 	String pageAddCurriculum();
 	
 	@DefaultMessage("Edit Curriculum")
+	@DoNotTranslate
 	String pageEditCurriculum();
 	
 	@DefaultMessage("Curriculum Details")
+	@DoNotTranslate
 	String pageCurriculumDetails();
 	
 	@DefaultMessage("Curricula")
+	@DoNotTranslate
 	String pageCurricula();
 	
 	@DefaultMessage("Course Reports")
+	@DoNotTranslate
 	String pageCourseReports();
 	
 	@DefaultMessage("Examination Reports")
+	@DoNotTranslate
 	String pageExaminationReports();
 	
 	@DefaultMessage("Student Sectioning Reports")
+	@DoNotTranslate
 	String pageStudentSectioningReports();
 	
 	@DefaultMessage("Event Reports")
+	@DoNotTranslate
 	String pageEventReports();
 	
 	@DefaultMessage("Administration Reports")
+	@DoNotTranslate
 	String pageAdministrationReports();
 	
 	@DefaultMessage("Curriculum Requested Enrollments")
+	@DoNotTranslate
 	String pageCurriculumRequestedEnrollments();
 	
 	@DefaultMessage("Reservations")
+	@DoNotTranslate
 	String pageReservations();
 	
 	@DefaultMessage("Add Reservation")
+	@DoNotTranslate
 	String pageAddReservation();
 	
 	@DefaultMessage("Edit Reservation")
+	@DoNotTranslate
 	String pageEditReservation();
 	
 	@DefaultMessage("Curriculum Projection Rules")
+	@DoNotTranslate
 	String pageCurriculumProjectionRules();
 	
 	@DefaultMessage("Student Scheduling Assistant")
+	@DoNotTranslate
 	String pageStudentSchedulingAssistant();
 	
 	@DefaultMessage("Student Course Requests")
+	@DoNotTranslate
 	String pageStudentCourseRequests();
 	
 	@DefaultMessage("Administration")
+	@DoNotTranslate
 	String pageAdministration();
 	
 	@DefaultMessage("Events")
+	@DoNotTranslate
 	String pageEvents();
 	
 	@DefaultMessage("Event Timetable")
+	@DoNotTranslate
 	String pageEventTimetable();
 	
 	@DefaultMessage("Room Timetable")
+	@DoNotTranslate
 	String pageRoomTimetable();
 	
 	@DefaultMessage("Online Student Sectioning Test")
+	@DoNotTranslate
 	String pageOnlineStudentSectioningTest();
 	
 	@DefaultMessage("Online Student Scheduling Dashboard")
+	@DoNotTranslate
 	String pageOnlineStudentSchedulingDashboard();
 	
 	@DefaultMessage("Student Sectioning Dashboard")
+	@DoNotTranslate
 	String pageStudentSectioningDashboard();
 	
 	@DefaultMessage("Travel Times")
+	@DoNotTranslate
 	String pageTravelTimes();
 	
 	@DefaultMessage("Lookup Classes")
+	@DoNotTranslate
 	String pageClasses();
 	
 	@DefaultMessage("Lookup Examinations")
+	@DoNotTranslate
 	String pageExaminations();
 	
 	@DefaultMessage("Personal Schedule")
+	@DoNotTranslate
 	String pagePersonalTimetable();
 	
 	@DefaultMessage("Edit Room Availability")
+	@DoNotTranslate
 	String pageEditRoomAvailability();
 	
 	@DefaultMessage("Scripts")
+	@DoNotTranslate
 	String pageScripts();
 	
 	@DefaultMessage("Event Room Availability")
+	@DoNotTranslate
 	String pageEventRoomAvailability();
 	
 	@DefaultMessage("Student Accommodation")
+	@DoNotTranslate
 	String pageStudentAccommodation();
 	
 	@DefaultMessage("Student Accommodations")
+	@DoNotTranslate
 	String pageStudentAccommodations();
 	
 	@DefaultMessage("Student Sectioning Solver Reports")
+	@DoNotTranslate
 	String pageBatchSectioningReports();
 	
 	@DefaultMessage("Online Student Scheduling Reports")
+	@DoNotTranslate
 	String pageOnlineSectioningReports();
 	
 	@DefaultMessage("Room Pictures")
+	@DoNotTranslate
 	String pageRoomPictures();
 	
 	@DefaultMessage("Rooms")
@@ -3588,6 +3671,7 @@ public interface GwtMessages extends Messages {
 	String altStarFilterSelected();
 	
 	@DefaultMessage("Password")
+	@DoNotTranslate
 	String pageChangePassword();
 	
 	@DefaultMessage("Change Password")
