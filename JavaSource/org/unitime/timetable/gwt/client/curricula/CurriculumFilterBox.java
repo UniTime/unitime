@@ -55,7 +55,8 @@ public class CurriculumFilterBox extends UniTimeFilterBox<CurriculumInterface.Cu
 		
 		setShowSuggestionsOnFocus(false);
 
-		iDepartments = new ListBox(false);
+		iDepartments = new ListBox();
+		iDepartments.setMultipleSelect(false);
 		iDepartments.setWidth("100%");
 		
 		addFilter(new FilterBox.CustomFilter("department", iDepartments) {

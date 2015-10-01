@@ -103,7 +103,7 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 					Email email = Email.createEmail();
 					email.setSubject(MESSAGES.emailPasswordChange());
 					
-					Configuration cfg = new Configuration();
+					Configuration cfg = new Configuration(Configuration.VERSION_2_3_0);
 					cfg.setClassForTemplateLoading(PasswordChangeBackend.class, "");
 					cfg.setLocale(Localization.getJavaLocale());
 					cfg.setOutputEncoding("utf-8");

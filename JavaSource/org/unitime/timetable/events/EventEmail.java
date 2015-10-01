@@ -290,7 +290,7 @@ public class EventEmail {
 	}
 	
 	private String message() throws IOException, TemplateException {
-		Configuration cfg = new Configuration();
+		Configuration cfg = new Configuration(Configuration.VERSION_2_3_0);
 		cfg.setClassForTemplateLoading(EventEmail.class, "");
 		cfg.setLocale(Localization.getJavaLocale());
 		cfg.setOutputEncoding("utf-8");

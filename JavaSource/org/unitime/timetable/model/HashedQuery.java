@@ -22,6 +22,7 @@ package org.unitime.timetable.model;
 import org.unitime.timetable.model.base.BaseHashedQuery;
 
 public class HashedQuery extends BaseHashedQuery {
+	private static final long serialVersionUID = 1L;
 
 	public HashedQuery() {
 		super();

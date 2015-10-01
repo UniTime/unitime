@@ -361,7 +361,8 @@ public class ScriptPage extends Composite {
 				for (final ScriptParameterInterface param: script.getParameters()) {
 					Widget widget = null;
 					if (param.hasOptions()) {
-						final ListBox list = new ListBox(param.isMultiSelect());
+						final ListBox list = new ListBox();
+						list.setMultipleSelect(param.isMultiSelect());
 						if (!param.isMultiSelect()) list.addItem(MESSAGES.itemSelect());
 						for (ScriptInterface.ListItem item: param.getOptions()) {
 							list.addItem(item.getText(), item.getValue());
@@ -523,7 +524,8 @@ public class ScriptPage extends Composite {
 			});
 			iDialogForm.addRow(MESSAGES.propDescription(), iDescription);
 			
-			iEngine = new ListBox(false);
+			iEngine = new ListBox();
+			iEngine.setMultipleSelect(false);
 			iEngine.addItem(MESSAGES.itemSelect());
 			iEngine.addChangeHandler(new ChangeHandler() {
 				@Override
@@ -533,7 +535,8 @@ public class ScriptPage extends Composite {
 			});
 			iDialogForm.addRow(MESSAGES.propEngine(), iEngine);
 			
-			iPermission = new ListBox(false);
+			iPermission = new ListBox();
+			iPermission.setMultipleSelect(false);
 			iPermission.addItem(MESSAGES.itemNone());
 			iPermission.addChangeHandler(new ChangeHandler() {
 				@Override

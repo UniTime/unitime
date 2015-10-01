@@ -312,7 +312,8 @@ public class CurriculumEdit extends Composite {
 			}
 		});
 
-		iCurriculumArea = new UniTimeWidget<ListBox>(new ListBox(false));
+		iCurriculumArea = new UniTimeWidget<ListBox>(new ListBox());
+		iCurriculumArea.getWidget().setMultipleSelect(false);
 		iCurriculumArea.getWidget().setWidth("300px");
 		iCurriculumArea.getWidget().setStyleName("unitime-TextBox");
 		iCurriculumArea.getWidget().setVisibleItemCount(1);
@@ -338,7 +339,8 @@ public class CurriculumEdit extends Composite {
 			}
 		});
 
-		iCurriculumMajors = new UniTimeWidget<ListBox>(new ListBox(true));
+		iCurriculumMajors = new UniTimeWidget<ListBox>(new ListBox());
+		iCurriculumMajors.getWidget().setMultipleSelect(true);
 		iCurriculumMajors.getWidget().setWidth("300px");
 		iCurriculumMajors.getWidget().setStyleName("unitime-TextBox");
 		iCurriculumMajors.getWidget().setVisibleItemCount(3);
@@ -375,7 +377,8 @@ public class CurriculumEdit extends Composite {
 			}
 		});
 
-		iCurriculumDept = new UniTimeWidget<ListBox>(new ListBox(false));
+		iCurriculumDept = new UniTimeWidget<ListBox>(new ListBox());
+		iCurriculumDept.getWidget().setMultipleSelect(false);
 		iCurriculumDept.getWidget().setWidth("300px");
 		iCurriculumDept.getWidget().setStyleName("unitime-TextBox");
 		iCurriculumDept.getWidget().setVisibleItemCount(1);

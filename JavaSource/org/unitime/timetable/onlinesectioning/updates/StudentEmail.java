@@ -428,7 +428,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	};
 	
 	private String generateMessage(org.unitime.timetable.model.Student student, OnlineSectioningServer server, OnlineSectioningHelper helper)  throws IOException, TemplateException {
-		Configuration cfg = new Configuration();
+		Configuration cfg = new Configuration(Configuration.VERSION_2_3_0);
 		cfg.setClassForTemplateLoading(StudentEmail.class, "/");
 		cfg.setLocale(Localization.getJavaLocale());
 		cfg.setOutputEncoding("utf-8");

@@ -65,7 +65,8 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 		
 		addFilter(new FilterBox.StaticSimpleFilter("type"));
 
-		iDepartments = new ListBox(false);
+		iDepartments = new ListBox();
+		iDepartments.setMultipleSelect(false);
 		iDepartments.setWidth("100%");
 		
 		addFilter(new FilterBox.CustomFilter("department", iDepartments) {
@@ -118,7 +119,8 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 			}
 		});
 		
-		iSubjects = new ListBox(true);
+		iSubjects = new ListBox();
+		iSubjects.setMultipleSelect(true);
 		iSubjects.setWidth("100%"); iSubjects.setVisibleItemCount(3);
 		
 		addFilter(new FilterBox.CustomFilter("subject", iSubjects) {

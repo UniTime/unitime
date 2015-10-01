@@ -354,13 +354,15 @@ public class ReservationEdit extends Composite {
 		iArea.getWidget().setSelectedIndex(0);
 		iPanel.addRow(MESSAGES.propAcademicArea(), iArea);
 		iAreaLine = iPanel.getRowCount() - 1;
-		iClassifications = new ListBox(true);
+		iClassifications = new ListBox();
+		iClassifications.setMultipleSelect(true);
 		iClassifications.setWidth("300px");
 		iClassifications.setStyleName("unitime-TextBox");
 		iClassifications.setVisibleItemCount(3);
 		iClassifications.setHeight("100px");
 		iPanel.addRow(MESSAGES.propClassifications(), iClassifications);
-		iMajors = new ListBox(true);
+		iMajors = new ListBox();
+		iMajors.setMultipleSelect(true);
 		iMajors.setWidth("300px");
 		iMajors.setStyleName("unitime-TextBox");
 		iMajors.setVisibleItemCount(3);

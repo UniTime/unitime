@@ -71,7 +71,8 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 	public RoomFilterBox(AcademicSessionProvider session) {
 		super(session);
 		
-		iDepartments = new ListBox(false);
+		iDepartments = new ListBox();
+		iDepartments.setMultipleSelect(false);
 		iDepartments.setWidth("100%");
 		
 		addFilter(new FilterBox.CustomFilter("department", iDepartments) {
@@ -130,7 +131,8 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		addFilter(new FilterBox.StaticSimpleFilter("size"));
 		addFilter(new FilterBox.StaticSimpleFilter("flag"));
 		
-		iBuildings = new ListBox(true);
+		iBuildings = new ListBox();
+		iBuildings.setMultipleSelect(true);
 		iBuildings.setWidth("100%"); iBuildings.setVisibleItemCount(3);
 		
 		addFilter(new FilterBox.CustomFilter("building", iBuildings) {

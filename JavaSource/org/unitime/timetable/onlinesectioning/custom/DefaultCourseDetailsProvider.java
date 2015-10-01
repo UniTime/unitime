@@ -110,7 +110,7 @@ public class DefaultCourseDetailsProvider implements CourseDetailsProvider, Cour
 			return MSG.infoCourseDetailsNotAvailable(subject, courseNbr);
 
 		try {
-			Configuration cfg = new Configuration();
+			Configuration cfg = new Configuration(Configuration.VERSION_2_3_0);
 			cfg.setClassForTemplateLoading(DefaultCourseDetailsProvider.class, "");
 			cfg.setLocale(Localization.getJavaLocale());
 			cfg.setOutputEncoding("utf-8");

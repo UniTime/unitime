@@ -1056,7 +1056,8 @@ public class SimpleEditPage extends Composite {
 					}
 					break;
 				case list:
-					final ListBox list = new ListBox(false);
+					final ListBox list = new ListBox();
+					list.setMultipleSelect(false);
 					list.setStyleName("unitime-TextBox");
 					if (((record.getField(index) == null || record.getField(index).isEmpty()) || (!field.isNotEmpty() && (isChild(record) || field.isParentNotEmpty())))
 						&& (field.getValues().isEmpty() || !field.getValues().get(0).getValue().isEmpty())) {
@@ -1086,7 +1087,8 @@ public class SimpleEditPage extends Composite {
 					}
 					break;
 				case multi:
-					final ListBox multi = new ListBox(true);
+					final ListBox multi = new ListBox();
+					multi.setMultipleSelect(true);
 					multi.setStyleName("unitime-TextArea");
 					multi.setVisibleItemCount(5);
 					for (ListItem item: field.getValues())

@@ -387,7 +387,8 @@ public class SavedHQLPage extends Composite {
 				iHeader.setEnabled("add", result.isEditable());
 				for (int i = 0; i < iOptions.size(); i++) {
 					SavedHQLInterface.Option option = iOptions.get(i);
-					ListBox list = new ListBox(option.isMultiSelect());
+					ListBox list = new ListBox();
+					list.setMultipleSelect(option.isMultiSelect());
 					if (!option.isMultiSelect())
 						list.addItem(MESSAGES.itemSelect(), "-1");
 					for (SavedHQLInterface.IdValue v: option.values())
