@@ -374,6 +374,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (limit >= 9999) unlimited = true;
             if (unlimited) limit=-1;
             Course course = new Course(co.getUniqueId(), co.getSubjectArea().getSubjectAreaAbbreviation(), co.getCourseNbr(), offering, limit, projected);
+            if (co.getCredit() != null)
+            	course.setCredit(co.getCredit().creditAbbv() + "|" + co.getCredit().creditText());
             courseTable.put(co.getUniqueId(), course);
         }
         Hashtable<Long,Section> class2section = new Hashtable<Long,Section>();
@@ -396,6 +398,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 Subpart subpart = new Subpart(ss.getUniqueId().longValue(), df.format(ss.getItype().getItype()) + sufix,
                 		ss.getItype().getAbbv().trim() + (ioc.getInstructionalMethod() == null ? "" : " (" + ioc.getInstructionalMethod().getLabel() + ")"), config, parentSubpart);
                 subpart.setAllowOverlap(ss.isStudentAllowOverlap());
+                if (ss.getCredit() != null)
+                	subpart.setCredit(ss.getCredit().creditAbbv() + "|" + ss.getCredit().creditText());
                 ss2subpart.put(ss.getUniqueId(), subpart);
                 for (Iterator<Class_> j = ss.getClasses().iterator(); j.hasNext(); ) {
                 	Class_ c = j.next();

@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Subpart;
 import org.infinispan.commons.marshall.Externalizer;
@@ -89,7 +89,7 @@ public class XSubpart implements Serializable, Externalizable {
         Collections.sort(iSections);
     }
     
-    public XSubpart(Subpart subpart) {
+    public XSubpart(Subpart subpart, boolean courseCredit) {
     	iUniqueId = subpart.getId();
     	iInstructionalType = subpart.getInstructionalType();
     	iAllowOverlap = subpart.isAllowOverlap();
@@ -97,9 +97,20 @@ public class XSubpart implements Serializable, Externalizable {
     	iConfigId = subpart.getConfig().getId();
     	iParentId = (subpart.getParent() == null ? null : subpart.getParent().getId());
     	if (subpart.getCredit() != null) {
-    		String[] cred = subpart.getCredit().split("\\|");
-    		iCreditAbbv = cred[0];
-    		iCreditText = cred[1];
+        	int split = subpart.getCredit().indexOf('|');
+        	if (split >= 0) {
+        		iCreditAbbv = subpart.getCredit().substring(0, split);
+        		iCreditText = subpart.getCredit().substring(split + 1);
+        	}
+    	}
+    	if (courseCredit) {
+    		for (Course course: subpart.getConfig().getOffering().getCourses()) {
+    			if (course.getCredit() != null) {
+    				int split = course.getCredit().indexOf('|');
+    	        	if (split >= 0)
+    	        		iCreditByCourse.put(course.getId(), new String[] {course.getCredit().substring(0, split), course.getCredit().substring(split + 1)});
+    			}
+    		}
     	}
     	for (Section section: subpart.getSections())
     		iSections.add(new XSection(section));

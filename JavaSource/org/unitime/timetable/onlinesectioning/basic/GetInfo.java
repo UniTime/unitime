@@ -103,12 +103,11 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 	        	XOffering offering = server.getOffering(ci.getOfferingId());
 	        	if (offering == null || offerings.containsKey(offering.getOfferingId())) continue;
         		Offering clonedOffering = new Offering(offering.getOfferingId(), offering.getName());
-        		Long courseId = null;
         		for (XCourse course: offering.getCourses()) {
         			Course clonedCourse = new Course(course.getCourseId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, course.getLimit(), course.getProjected());
 	        		clonedCourse.setNote(course.getNote());
+	        		clonedCourse.setCredit(course.getCredit());
 	        		courses.put(course.getCourseId(), clonedCourse);
-	        		if (offering.getName().equals(course.getCourseName())) courseId = course.getCourseId();
         		}
         		for (XConfig config: offering.getConfigs()) {
         			Config clonedConfig = new Config(config.getConfigId(), config.getLimit(), config.getName(), clonedOffering);
@@ -117,7 +116,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
         				Subpart clonedSubpart = new Subpart(subpart.getSubpartId(), subpart.getInstructionalType(), subpart.getName(), clonedConfig,
         						(subpart.getParentId() == null ? null: subparts.get(subpart.getParentId())));
         				clonedSubpart.setAllowOverlap(subpart.isAllowOverlap());
-        				clonedSubpart.setCredit(subpart.getCredit(courseId));
+        				clonedSubpart.setCredit(subpart.getCredit(null));
         				subparts.put(subpart.getSubpartId(), clonedSubpart);
         				for (XSection section: subpart.getSections()) {
         					Section clonedSection = new Section(section.getSectionId(), section.getLimit(),

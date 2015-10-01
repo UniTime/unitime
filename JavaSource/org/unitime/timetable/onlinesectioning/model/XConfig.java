@@ -30,8 +30,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
-
 import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Subpart;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
@@ -84,8 +84,14 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
     	iName = config.getName();
     	iOfferingId = config.getOffering().getId();
     	iLimit = config.getLimit();
-    	for (Subpart subpart: config.getSubparts())
-    		iSubparts.add(new XSubpart(subpart));
+        boolean credit = false;
+        for (Course course: config.getOffering().getCourses()) {
+        	if (course.getCredit() != null) { credit = true; break; }
+        }
+    	for (Subpart subpart: config.getSubparts()) {
+    		iSubparts.add(new XSubpart(subpart, credit));
+    		credit = false;
+    	}
     }
 
     /** Configuration id */

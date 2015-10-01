@@ -100,6 +100,13 @@ public class XCourse extends XCourseId {
 		iNote = course.getNote();
         iLimit = course.getLimit();
         iProjected = course.getProjected();
+        if (course.getCredit() != null) {
+        	int split = course.getCredit().indexOf('|');
+        	if (split >= 0) {
+        		iCreditAbbv = course.getCredit().substring(0, split);
+        		iConsentLabel = course.getCredit().substring(split + 1);
+        	}
+        }
     }
 
     /** Subject area */
