@@ -1073,7 +1073,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Timetable")
 	String emailTimetable();
 
-	@DefaultMessage("This email was send on behalf of {0}.")
+	@DefaultMessage("This email was sent on behalf of {0}.")
 	String emailSentBy(String manager);
 
 	@DefaultMessage("The changes in your schedule were made by {0}.")
