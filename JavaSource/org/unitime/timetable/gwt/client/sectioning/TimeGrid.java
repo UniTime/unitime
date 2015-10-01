@@ -457,6 +457,13 @@ public class TimeGrid extends Composite {
 		if (row.isSaved() && !iPrint) {
 			for (Meeting m: meetings) m.setSaved(row.isSaved());
 		}
+		if (row.isCancelled() && !iPrint) {
+			for (Meeting m: meetings) {
+				Image cancelled = new Image(RESOURCES.cancelled());
+				cancelled.setTitle(MESSAGES.classCancelled(name));
+				m.addIcon(cancelled);
+			}
+		}
 		iMeetings.add(meetings);
 		return meetings;
 	}
@@ -523,6 +530,7 @@ public class TimeGrid extends Composite {
 	        iHeaderPanel.setCellHorizontalAlignment(iPin, HasHorizontalAlignment.ALIGN_CENTER);
 	        iSaved = new Image(RESOURCES.saved());
 	        iSaved.setVisible(false);
+	        iSaved.setTitle(MESSAGES.saved(name));
 	        iHeaderPanel.add(iSaved);
 	        iPin.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {

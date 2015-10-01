@@ -370,6 +370,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
             		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
             	}
                 if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+                a.setCancelled(clazz.isCancelled());
 				a.setLimit(new int[] {clazz.getEnrollment() == 0 ? -1 : clazz.getEnrollment(), limit});
 				
 				if (p != null && p.getTimeLocation() != null) {
@@ -1239,6 +1240,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		                		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
 		                	}
 		                    if (enrollment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+		                    clazz.setCancelled(enrollment.getClazz().isCancelled());
 							clazz.setLimit(new int[] { enrollment.getClazz().getEnrollment(), limit});
 							if (placement != null) {
 								if (placement.getTimeLocation() != null) {

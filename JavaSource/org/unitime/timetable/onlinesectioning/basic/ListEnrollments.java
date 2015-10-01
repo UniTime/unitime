@@ -189,6 +189,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 							a.setSubpart(subpart.getName());
 							a.setSection(section.getName(course.getCourseId()));
 							a.setClassNumber(section.getName(-1l));
+							a.setCancelled(section.isCancelled());
 							a.setLimit(new int[] {requests.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 							if (section.getTime() != null) {
 								for (DayCode d : DayCode.toDayCodes(section.getTime().getDays()))

@@ -224,6 +224,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							a.setSubpart(subpart.getName());
 							a.setClassNumber(section.getName(-1l));
 							a.setSection(section.getName(course.getCourseId()));
+							a.setCancelled(section.isCancelled());
 							a.setLimit(new int[] {enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 							if (section.getTime() != null) {
 								for (DayCode d : DayCode.toDayCodes(section.getTime().getDays()))
@@ -324,6 +325,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							a.setSubpart(subpart.getName());
 							a.setClassNumber(section.getName(-1l));
 							a.setSection(section.getName(course.getCourseId()));
+							a.setCancelled(section.isCancelled());
 							a.setLimit(new int[] {enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 							if (section.getTime() != null) {
 								for (DayCode d : DayCode.toDayCodes(section.getTime().getDays()))

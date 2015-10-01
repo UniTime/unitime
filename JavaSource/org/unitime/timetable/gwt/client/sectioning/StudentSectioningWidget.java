@@ -724,6 +724,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							icons.add(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()));
 						if (clazz != null && clazz.hasOverlapNote())
 							icons.add(RESOURCES.overlap(), clazz.getOverlapNote());
+						if (clazz.isCancelled())
+							icons.add(RESOURCES.cancelled(), MESSAGES.classCancelled(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 
 						totalCredit += clazz.guessCreditCount();
 						if (clazz.isAssigned()) {
@@ -949,6 +951,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 							if (clazz.isOfHighDemand())
 								icons.add(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()));
+							if (clazz.isCancelled())
+								icons.add(RESOURCES.cancelled(), MESSAGES.classCancelled(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 							
 							if (clazz.isAssigned()) {
 								row = new WebTable.Row(
@@ -1012,6 +1016,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							icons.add(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 						if (clazz.isOfHighDemand())
 							icons.add(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()));
+						if (clazz.isCancelled())
+							icons.add(RESOURCES.cancelled(), MESSAGES.classCancelled(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()));
 
 						if (clazz.isAssigned()) {
 							row = new WebTable.Row(

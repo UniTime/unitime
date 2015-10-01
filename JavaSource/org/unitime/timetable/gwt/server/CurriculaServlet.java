@@ -1900,9 +1900,11 @@ public class CurriculaServlet implements CurriculaService {
 				for (Class_ clazz: classes) {
 					ClassAssignmentInterface.ClassAssignment a = new ClassAssignmentInterface.ClassAssignment();
 					a.setClassId(clazz.getUniqueId());
-					a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());
+					a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc().trim());
 					a.setSection(clazz.getClassSuffix(courseOffering));
 					a.setClassNumber(clazz.getSectionNumberString(hibSession));
+					if (a.getSection() == null)
+						a.setSection(a.getClassNumber());
 					a.addNote(clazz.getSchedulePrintNote());
 					
 					Assignment ass = clazz.getCommittedAssignment();
@@ -1917,6 +1919,7 @@ public class CurriculaServlet implements CurriculaService {
                 		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
                 	}
                     if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+                    a.setCancelled(clazz.isCancelled());
 					a.setLimit(new int[] {clazz.getEnrollment(), limit});
 					
 					if (p != null && p.getTimeLocation() != null) {

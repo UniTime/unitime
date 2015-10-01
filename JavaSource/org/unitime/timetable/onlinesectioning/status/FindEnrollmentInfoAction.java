@@ -487,6 +487,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 				a.setSubpart(section.getSubpartName());
 				a.setClassNumber(section.getName(-1l));
 				a.setSection(section.getName(courseId()));
+				a.setCancelled(section.isCancelled());
 				a.setLimit(new int[] {enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 				if (section.getTime() != null) {
 					for (DayCode d : DayCode.toDayCodes(section.getTime().getDays()))

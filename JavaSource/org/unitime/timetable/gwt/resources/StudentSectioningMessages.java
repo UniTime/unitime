@@ -530,6 +530,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("You are currently not registered for {0}. Please click the Submit Schedule button to update your registration.")
 	String assignment(String clazz);
 	
+	@DefaultMessage("Class {0} has been cancelled.")
+	String classCancelled(String clazz);
+	
 	@DefaultMessage("Show unassignments")
 	String showUnassignments();
 	

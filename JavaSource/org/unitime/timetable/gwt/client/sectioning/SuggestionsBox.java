@@ -279,6 +279,8 @@ public class SuggestionsBox extends UniTimeDialogBox {
 										icons.add(RESOURCES.note(), clazz.getNote());
 									if (clazz != null && clazz.hasOverlapNote())
 										icons.add(RESOURCES.overlap(), clazz.getOverlapNote());
+									if (clazz.isCancelled())
+										icons.add(RESOURCES.cancelled(), MESSAGES.classCancelled(MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection())));
 									
 									final WebTable.Row row = new WebTable.Row(
 											new WebTable.Cell(rows.size() == lastSize ? suggestionId + "." : ""),
@@ -324,6 +326,8 @@ public class SuggestionsBox extends UniTimeDialogBox {
 										icons.add(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()));
 									if (old != null && old.hasNote())
 										icons.add(RESOURCES.note(), old.getNote());
+									if (old != null && old.isCancelled())
+										icons.add(RESOURCES.cancelled(), MESSAGES.classCancelled(MESSAGES.clazz(old.getSubject(), old.getCourseNbr(), old.getSubpart(), old.getSection())));
 									
 									WebTable.Row row = new WebTable.Row(
 											new WebTable.Cell(rows.size() == lastSize ? suggestionId + "." : ""),
@@ -372,6 +376,8 @@ public class SuggestionsBox extends UniTimeDialogBox {
 								icons.add(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()));
 							if (old != null && old.hasNote())
 								icons.add(RESOURCES.note(), old.getNote());
+							if (old != null && old.isCancelled())
+								icons.add(RESOURCES.cancelled(), MESSAGES.classCancelled(MESSAGES.clazz(old.getSubject(), old.getCourseNbr(), old.getSubpart(), old.getSection())));
 							
 							WebTable.Row row = new WebTable.Row(
 									new WebTable.Cell(rows.size() == lastSize ? suggestionId + "." : ""),

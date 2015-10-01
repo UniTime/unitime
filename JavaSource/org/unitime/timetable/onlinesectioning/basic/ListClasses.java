@@ -102,6 +102,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						a.setSubpart(subpart.getName());
 						a.setSection(section.getName(c.getCourseId()));
 						a.setClassNumber(section.getName(-1l));
+						a.setCancelled(section.isCancelled());
 						a.setLimit(new int[] { enrollments.countEnrollmentsForSection(section.getSectionId()), section.getLimit()});
 						if (getStudentId() != null) {
 							for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId())) {

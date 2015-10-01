@@ -99,7 +99,10 @@ public class CourseFinderClasses extends WebTable implements CourseFinder.Course
 										new WebTable.Cell(clazz.getRooms(", ")),
 										new WebTable.Cell(clazz.getInstructors(", ")),
 										new WebTable.Cell(clazz.getParentSection()),
-										(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")),
+										(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), MESSAGES.saved(clazz.getSubpart() + " " + clazz.getSection()), null) :
+											clazz.isCancelled() ? new WebTable.IconCell(RESOURCES.cancelled(), MESSAGES.classCancelled(clazz.getSubpart() + " " + clazz.getSection()), null) :
+											clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) :
+											new WebTable.Cell("")),
 										clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""));
 							} else {
 								row = new WebTable.Row(
@@ -110,7 +113,10 @@ public class CourseFinderClasses extends WebTable implements CourseFinder.Course
 										new WebTable.Cell(clazz.getRooms(", ")),
 										new WebTable.Cell(clazz.getInstructors(", ")),
 										new WebTable.Cell(clazz.getParentSection()),
-										(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")),
+										(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), MESSAGES.saved(clazz.getSubpart() + " " + clazz.getSection()), null) :
+											clazz.isCancelled() ? new WebTable.IconCell(RESOURCES.cancelled(), MESSAGES.classCancelled(clazz.getSubpart() + " " + clazz.getSection()), null) :
+											clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) :
+											new WebTable.Cell("")),
 										clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""));
 
 							}
@@ -118,7 +124,7 @@ public class CourseFinderClasses extends WebTable implements CourseFinder.Course
 							String styleName = "";
 							if (lastSubpartId != null && !clazz.getSubpartId().equals(lastSubpartId))
 								styleName += "top-border-dashed";
-							if (!clazz.isSaved() && !clazz.isAvailable())
+							if (clazz.isCancelled() || (!clazz.isSaved() && !clazz.isAvailable()))
 								styleName += " text-gray";
 							for (WebTable.Cell cell: row.getCells())
 								cell.setStyleName(styleName.trim());

@@ -221,7 +221,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private boolean iPin = false;
 		private int iBackToBackDistance = 0;
 		private String iBackToBackRooms = null;
-		private boolean iSaved = false, iDummy = false;
+		private boolean iSaved = false, iDummy = false, iCancelled = false;
 		private Integer iExpected = null;
 		private String iOverlapNote = null;
 		private String iNote = null;
@@ -428,7 +428,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		}
 		public boolean isAvailable() {
 			if (iLimit == null) return true;
-			if (iLimit[0] < 0) return (iLimit[1] == 0);
+			if (iLimit[0] < 0) return (iLimit[1] != 0);
 			return iLimit[0] < iLimit[1];
 		}
 		public int getAvailableLimit() {
@@ -458,6 +458,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean isDummy() { return iDummy; }
 		public void setDummy(boolean dummy) { iDummy = dummy; }
 		
+		public boolean isCancelled() { return iCancelled; }
+		public void setCancelled(boolean cancelled) { iCancelled = cancelled; }
+		
 		public void setError(String error) { iError = error; }
 		public boolean hasError() { return iError != null && !iError.isEmpty(); }
 		public String getError() { return iError; }
@@ -474,7 +477,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 					(isAssigned() ? " " + getTimeString(new String[] {"M","T","W","R","F","S","X"}, true, "") : "") +
 					(hasRoom() ? " " + getRooms(",") : "") +
 					(isSaved() || isPinned() || isOfHighDemand() || hasAlternatives() || hasDistanceConflict() || isUnlimited() ? "[" +
-							(isSaved() ? "s" : "") + (isPinned() ? "p" : "") + (isOfHighDemand() ? "h" : "") + (hasAlternatives() ? "a" : "") + (hasDistanceConflict() ? "d" : "") + (isUnlimited() ? "u" : "") +
+							(isSaved() ? "s" : "") + (isPinned() ? "p" : "") + (isOfHighDemand() ? "h" : "") + (hasAlternatives() ? "a" : "") +
+							(hasDistanceConflict() ? "d" : "") + (isUnlimited() ? "u" : "") + (isCancelled() ? "c" : "") +
 							"]" : "");
 		}
 		

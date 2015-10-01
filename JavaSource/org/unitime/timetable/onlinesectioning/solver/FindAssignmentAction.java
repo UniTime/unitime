@@ -678,6 +678,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setSubpart(section.getSubpart().getName());
 					a.setSection(section.getName(course.getId()));
 					a.setClassNumber(section.getName(-1l));
+					a.setCancelled(section.isCancelled());
 					a.setLimit(new int[] {enrl.countEnrollmentsForSection(section.getId()), offering.getSection(section.getId()).getLimit()});
 					if (section.getTime() != null) {
 						for (DayCode d : DayCode.toDayCodes(section.getTime().getDayCode()))
