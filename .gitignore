@@ -6,3 +6,5 @@
 /WebContent/WEB-INF/classes/
 /.tern-project
 .DS_Store
+/.zanata-cache
+/Documentation/Translations

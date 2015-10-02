@@ -2283,15 +2283,19 @@ public interface GwtMessages extends Messages {
 	String pageRoles();
 	
 	@DefaultMessage("Class Duration Type")
+	@DoNotTranslate
 	String pageDurationType();
 
 	@DefaultMessage("Class Duration Types")
+	@DoNotTranslate
 	String pageDurationTypes();
 	
 	@DefaultMessage("Examination Status")
+	@DoNotTranslate
 	String pageExaminationStatus();
 
 	@DefaultMessage("Examination Statuses")
+	@DoNotTranslate
 	String pageExaminationStatuses();
 	
 	@DefaultMessage("Add Curriculum")
@@ -2435,48 +2439,63 @@ public interface GwtMessages extends Messages {
 	String pageRoomPictures();
 	
 	@DefaultMessage("Rooms")
+	@DoNotTranslate
 	String pageRooms();
 	
 	@DefaultMessage("Room Detail")
+	@DoNotTranslate
 	String pageRoomDetail();
 	
 	@DefaultMessage("Add Room")
+	@DoNotTranslate
 	String pageAddRoom();
 	
 	@DefaultMessage("Edit Room")
+	@DoNotTranslate
 	String pageEditRoom();
 	
 	@DefaultMessage("Attachement Type")
+	@DoNotTranslate
 	String pageAttachementType();
 	
 	@DefaultMessage("Attachement Types")
+	@DoNotTranslate
 	String pageAttachementTypes();
 	
 	@DefaultMessage("InstructionalMethod")
+	@DoNotTranslate
 	String pageInstructionalMethod();
 	
 	@DefaultMessage("Instructional Methods")
+	@DoNotTranslate
 	String pageInstructionalMethods();
 	
 	@DefaultMessage("Edit Room Departments")
+	@DoNotTranslate
 	String pageEditRoomsDepartments();
 	
 	@DefaultMessage("Add Room Group")
+	@DoNotTranslate
 	String pageAddRoomGroup();
 	
 	@DefaultMessage("Edit Room Group")
+	@DoNotTranslate
 	String pageEditRoomGroup();
 	
 	@DefaultMessage("Room Groups")
+	@DoNotTranslate
 	String pageRoomGroups();
 	
 	@DefaultMessage("Add Room Feature")
+	@DoNotTranslate
 	String pageAddRoomFeature();
 	
 	@DefaultMessage("Edit Room Feature")
+	@DoNotTranslate
 	String pageEditRoomFeature();
 	
 	@DefaultMessage("Room Features")
+	@DoNotTranslate
 	String pageRoomFeatures();
 
 	@DefaultMessage("N/A")
@@ -2828,6 +2847,7 @@ public interface GwtMessages extends Messages {
 	String legendFreeForAll();
 	
 	@DefaultMessage("")
+	@DoNotTranslate
 	String codeFreeForAll();
 	
 	@DefaultMessage("Not Available")
@@ -2840,6 +2860,7 @@ public interface GwtMessages extends Messages {
 	String legendAvailable();
 	
 	@DefaultMessage("")
+	@DoNotTranslate
 	String codeAvailable();
 	
 	@DefaultMessage("<u>A</u>dd Department...")

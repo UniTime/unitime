@@ -25,8 +25,8 @@ import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.Properties;
 
-import com.google.gwt.i18n.client.Constants;
-import com.google.gwt.i18n.client.Messages.DefaultMessage;
+import org.unitime.timetable.gwt.resources.Constants;
+import org.unitime.timetable.gwt.resources.Messages;
 
 /**
  * @author Tomas Muller
@@ -69,7 +69,7 @@ public class ImportTranslations {
 
 	public static void main(String[] args) {
 		try {
-			String bundles = System.getProperty("bundle", "CourseMessages,ConstantsMessages,ExaminationMessages,SecurityMessages,GwtConstants,GwtAriaMessages,GwtMessages,StudentSectioningConstants,StudentSectioningMessages");
+			String bundles = System.getProperty("bundle", "CourseMessages,ConstantsMessages,ExaminationMessages,SecurityMessages,GwtConstants,GwtMessages,StudentSectioningConstants,StudentSectioningMessages");
 			String locales = System.getProperty("locale", "cs");
 			String source = System.getProperty("source", "/Users/muller/git/unitime");
 			File translations = new File(new File(source), "Documentation/Translations");
@@ -130,7 +130,7 @@ public class ImportTranslations {
 					
 					for (Method method: clazz.getMethods()) {
 						String value = null;
-						DefaultMessage dm = method.getAnnotation(DefaultMessage.class);
+						Messages.DefaultMessage dm = method.getAnnotation(Messages.DefaultMessage.class);
 						if (dm != null)
 							value = dm.value();
 						Constants.DefaultBooleanValue db = method.getAnnotation(Constants.DefaultBooleanValue.class);
@@ -157,8 +157,9 @@ public class ImportTranslations {
 						if ("translateMessage".equals(method.getName())) continue;
 
 						String text = translation.getProperty(method.getName(), old.getProperty(method.getName()));
-						if (text == null && constants) continue;
-
+						boolean doNotTranslate = (method.getAnnotation(Messages.DoNotTranslate.class) != null) || (method.getAnnotation(Constants.DoNotTranslate.class) != null);
+						if (text == null && (constants || doNotTranslate)) continue;
+						
 						out.println();
 						if (value != null)
 							out.println("# Default: " + unicodeEscape(value, false).trim());
