@@ -181,6 +181,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
+			String campus = getBannerCampus(session);
 			if (helper.isDebugEnabled())
 				helper.debug("Checking eligility for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
 			
@@ -324,7 +325,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				if (original.registrations != null)
 					for (XEInterface.Registration reg: original.registrations) {
 						if (reg.isRegistered()) {
-							if (!sectionExternalIds.remove(reg.courseReferenceNumber) && !eligibilityIgnoreBannerRegistration(server, helper, student, reg))
+							if (!sectionExternalIds.remove(reg.courseReferenceNumber) && campus.equals(reg.campus) && !eligibilityIgnoreBannerRegistration(server, helper, student, reg))
 								added += (added.isEmpty() ? "" : ", ") + reg.courseReferenceNumber;
 							OnlineSectioningLog.Section.Builder section = external.addSectionBuilder()
 								.setClazz(OnlineSectioningLog.Entity.newBuilder().setName(reg.courseReferenceNumber))
@@ -374,6 +375,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			String pin = helper.getPin();
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
+			String campus = getBannerCampus(session);
 			if (helper.isDebugEnabled())
 				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + term + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
 			
@@ -465,7 +467,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 				throw new SectioningException(reason == null ? "Failed to check student registration status." : reason);
 			}
-			Set<String> registered = new HashSet<String>();
+			Map<String, XEInterface.Registration> registered = new HashMap<String, XEInterface.Registration>();
 			Set<String> noadd = new HashSet<String>();
 			Set<String> nodrop = new HashSet<String>();
 			Set<String> notregistered = new HashSet<String>();
@@ -474,7 +476,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			if (original.registrations != null)
 				for (XEInterface.Registration reg: original.registrations) {
 					if (reg.isRegistered()) {
-						registered.add(reg.courseReferenceNumber);
+						registered.put(reg.courseReferenceNumber, reg);
 						if (!reg.canDrop())
 							nodrop.add(reg.courseReferenceNumber);
 					} else {
@@ -500,7 +502,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					// offering is locked, make no changes
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
-						if (registered.contains(id)) {
+						if (registered.containsKey(id)) {
 							// no change to this section: keep the enrollment
 							if (added.add(id)) req.keep(id);
 							List<XSection> sections = id2section.get(id);
@@ -528,11 +530,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					// offering is not locked: propose the changes
 					for (XSection section: request.getSections()) {
 						String id = section.getExternalId(course.getCourseId());
-						if (!registered.contains(id) && (!section.isEnabledForScheduling() || noadd.contains(id))) {
+						if (!registered.containsKey(id) && (!section.isEnabledForScheduling() || noadd.contains(id))) {
 							fails.add(new EnrollmentFailure(course, section, "Section not available for student scheduling.", false));
 							checked.add(id); failed.add(id);
 						} else {
-							if (registered.contains(id)) {
+							if (registered.containsKey(id)) {
 								if (added.add(id)) req.keep(id);
 							} else {
 								changed = true;
@@ -550,9 +552,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 			}
 			// drop old sections
-			for (String id: registered) {
+			for (Map.Entry<String, XEInterface.Registration> entry: registered.entrySet()) {
+				String id = entry.getKey();
 				if (added.contains(id)) continue;
 				boolean drop = true;
+				boolean found = false;
 				for (XRequest r: student.getRequests())
 					if (r instanceof XCourseRequest) {
 						for (XCourseId c: ((XCourseRequest)r).getCourseIds()) {
@@ -562,6 +566,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 								for (XSubpart s: f.getSubparts())
 									for (XSection x: s.getSections())
 										if (id.equals(x.getExternalId(c.getCourseId()))) {
+											found = true;
 											List<XSection> sections = id2section.get(id);
 											if (sections == null) {
 												sections = new ArrayList<XSection>();
@@ -581,7 +586,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 										}
 						}
 					}
-				if (drop) {
+				if (!found && !campus.equals(entry.getValue().campus)) {
+					if (added.add(id)) req.keep(id);
+				} else  if (drop) {
 					changed = true;
 					req.drop(id);
 				} else {
