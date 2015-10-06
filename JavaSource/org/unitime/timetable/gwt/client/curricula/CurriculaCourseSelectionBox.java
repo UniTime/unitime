@@ -99,6 +99,8 @@ public class CurriculaCourseSelectionBox extends CourseSelectionSuggestBox {
 		if (enabled) {
 			iFinderButton.setTabIndex(0);
 			iFinderButton.setVisible(true);
+			iSuggest.getElement().getStyle().clearBackgroundColor();
+			iSuggest.getElement().getStyle().clearBorderColor();
 		} else {
 			iFinderButton.setTabIndex(-1);
 			iFinderButton.setVisible(false);

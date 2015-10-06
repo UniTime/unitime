@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.services.ReservationServiceAsync;
+import org.unitime.timetable.gwt.shared.ReservationInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -243,6 +244,42 @@ public class ReservationsPage extends Composite {
 				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageReservations());
 				iPanel.setWidget(iReservationPanel);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
+			}
+
+			@Override
+			public boolean hasNext(EditFinishedEvent evt) {
+				return iReservationTable.getNext(evt.getReservationId()) != null;
+			}
+
+			@Override
+			public boolean hasPrevious(EditFinishedEvent evt) {
+				return iReservationTable.getPrevious(evt.getReservationId()) != null;
+			}
+
+			@Override
+			public void onNext(EditFinishedEvent evt) {
+				ReservationInterface reservation = iReservationTable.getNext(evt.getReservationId());
+				if (reservation == null)
+					onSave(evt);
+				else {
+					iReservationEdit.setReservation(reservation);
+					iPanel.setWidget(iReservationEdit);
+					Client.fireGwtPageChanged(new GwtPageChangeEvent());
+					iLastReservationId = reservation.getId();
+				}
+			}
+
+			@Override
+			public void onPrevious(EditFinishedEvent evt) {
+				ReservationInterface reservation = iReservationTable.getPrevious(evt.getReservationId());
+				if (reservation == null)
+					onSave(evt);
+				else {
+					iReservationEdit.setReservation(reservation);
+					iPanel.setWidget(iReservationEdit);
+					Client.fireGwtPageChanged(new GwtPageChangeEvent());
+					iLastReservationId = reservation.getId();
+				}
 			}
 		});
 		

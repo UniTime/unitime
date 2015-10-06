@@ -26,6 +26,7 @@ import com.google.gwt.user.client.Cookies;
  */
 public class ReservationCookie {
 	private boolean iCourseDetails = false;
+	private int iSortBy = 0;
 	
 	private static ReservationCookie sInstance = null;
 	
@@ -35,14 +36,14 @@ public class ReservationCookie {
 			if (cookie != null && cookie.length() > 0) {
 				String[] values = cookie.split(":");
 				iCourseDetails = "T".equals(values[0]);
+				iSortBy = Integer.valueOf(values[1]);
 			}
 		} catch (Exception e) {
 		}
 	}
 	
 	private void save() {
-		String cookie = 
-			(iCourseDetails ? "T": "F");
+		String cookie =  (iCourseDetails ? "T": "F") + ":" + iSortBy;
 		Cookies.setCookie("UniTime:Reservations", cookie);
 	}
 	
@@ -58,6 +59,15 @@ public class ReservationCookie {
 	
 	public void setReservationCoursesDetails(boolean details) {
 		iCourseDetails = details;
+		save();
+	}
+	
+	public int getSortBy() {
+		return iSortBy;
+	}
+	
+	public void setSortBy(int sortBy) {
+		iSortBy = sortBy;
 		save();
 	}
 }

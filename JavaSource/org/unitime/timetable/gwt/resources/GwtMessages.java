@@ -3493,6 +3493,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Do you realy want to delete this room group (including {0} as well)?")
 	String confirmDeleteRoomGroupInFutureSessions(String futureSessions);
 	
+	@DefaultMessage("Do you realy want to delete this reservation?")
+	String confirmDeleteReservation();
+	
 	@DefaultMessage("&nbsp;(of&nbsp;{0})")
 	String curriculumProjectionRulesOfTotal(int total);
 	

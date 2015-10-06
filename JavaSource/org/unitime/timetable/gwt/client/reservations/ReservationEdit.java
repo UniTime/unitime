@@ -146,6 +146,58 @@ public class ReservationEdit extends Composite {
 						}
 					}.schedule(5000);
 				}
+
+				@Override
+				public boolean hasNext(EditFinishedEvent evt) {
+					String ids = Window.Location.getParameter("reservations");
+					if (ids != null) {
+						String[] arr = ids.split(",");
+						for (int i = 0; i < arr.length - 1; i++) {
+							if (evt.getReservationId().toString().equals(arr[i])) return true;
+						}
+					}
+					return false;
+				}
+
+				@Override
+				public boolean hasPrevious(EditFinishedEvent evt) {
+					String ids = Window.Location.getParameter("reservations");
+					if (ids != null) {
+						String[] arr = ids.split(",");
+						for (int i = 1; i < arr.length; i++) {
+							if (evt.getReservationId().toString().equals(arr[i])) return true;
+						}
+					}
+					return false;
+				}
+
+				@Override
+				public void onNext(EditFinishedEvent evt) {
+					String ids = Window.Location.getParameter("reservations");
+					if (ids != null) {
+						String[] arr = ids.split(",");
+						for (int i = 0; i < arr.length - 1; i++) {
+							if (evt.getReservationId().toString().equals(arr[i])) {
+								load(arr[i + 1]); return;
+							}
+						}
+					}
+					onSave(evt);
+				}
+
+				@Override
+				public void onPrevious(EditFinishedEvent evt) {
+					String ids = Window.Location.getParameter("reservations");
+					if (ids != null) {
+						String[] arr = ids.split(",");
+						for (int i = 1; i < arr.length; i++) {
+							if (evt.getReservationId().toString().equals(arr[i])) {
+								load(arr[i - 1]); return;
+							}
+						}
+					}
+					onSave(evt);
+				}
 			});
 			
 			if (Window.Location.getParameter("id") == null && Window.Location.getParameter("offering") == null) {
@@ -183,12 +235,67 @@ public class ReservationEdit extends Composite {
 				}
 			}
 		});
+		iTitleAndButtons.addButton("previous", MESSAGES.buttonPrevious(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iTitleAndButtons.clearMessage();
+				ReservationInterface r = validate();
+				if (r == null) {
+					iTitleAndButtons.setErrorMessage(MESSAGES.failedValidationCheckForm());
+				} else {
+					LoadingWidget.getInstance().show(MESSAGES.waitSavingReservation());
+					iReservationService.save(r, new AsyncCallback<Long>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							iTitleAndButtons.setErrorMessage(caught.getMessage());
+						}
+						@Override
+						public void onSuccess(Long result) {
+							LoadingWidget.getInstance().hide();
+							EditFinishedEvent e = new EditFinishedEvent(result);
+							for (EditFinishedHandler h: iEditFinishedHandlers)
+								h.onPrevious(e);
+						}
+					});
+				}
+			}
+		});
+		iTitleAndButtons.setEnabled("previous", false);
+		iTitleAndButtons.addButton("next", MESSAGES.buttonNext(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iTitleAndButtons.clearMessage();
+				ReservationInterface r = validate();
+				if (r == null) {
+					iTitleAndButtons.setErrorMessage(MESSAGES.failedValidationCheckForm());
+				} else {
+					LoadingWidget.getInstance().show(MESSAGES.waitSavingReservation());
+					iReservationService.save(r, new AsyncCallback<Long>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							iTitleAndButtons.setErrorMessage(caught.getMessage());
+						}
+						@Override
+						public void onSuccess(Long result) {
+							LoadingWidget.getInstance().hide();
+							EditFinishedEvent e = new EditFinishedEvent(result);
+							for (EditFinishedHandler h: iEditFinishedHandlers)
+								h.onNext(e);
+						}
+					});
+				}
+			}
+		});
+		iTitleAndButtons.setEnabled("next", false);
 		iTitleAndButtons.addButton("delete", MESSAGES.buttonDelete(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iReservation == null) {
 					iTitleAndButtons.setErrorMessage(MESSAGES.errorCannotDeleteUnsavedReservation());
 				} else {
+					if (!Window.confirm(MESSAGES.confirmDeleteReservation())) return;
 					LoadingWidget.getInstance().show(MESSAGES.waitDeletingReservation());
 					iReservationService.delete(iReservation.getId(), new AsyncCallback<Boolean>() {
 						@Override
@@ -416,58 +523,7 @@ public class ReservationEdit extends Composite {
 		iPanel.addNotPrintableBottomRow(iTitleAndButtons.clonePanel(null));
 		
 		if (standAlone) {
-			LoadingWidget.getInstance().show(MESSAGES.waitLoadingReservation());
-			if (Window.Location.getParameter("id") == null) {
-				new InitializationChain(new InitStudentGroups(), new InitCurricula(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						loadingFailed(caught);
-					}
-					@Override
-					public void onSuccess(Boolean result) {
-						setReservation(null);
-						LoadingWidget.getInstance().hide();
-					}
-				});
-			} else {
-				iReservationService.getReservation(Long.valueOf(Window.Location.getParameter("id")), new AsyncCallback<ReservationInterface>() {
-					public void onFailure(Throwable caught) {
-						loadingFailed(caught);
-					}
-					@Override
-					public void onSuccess(final ReservationInterface reservation) {
-						if (reservation instanceof ReservationInterface.CurriculumReservation) {
-							new InitializationChain(new InitCurricula(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									loadingFailed(caught);
-								}
-								@Override
-								public void onSuccess(Boolean result) {
-									setReservation(reservation);
-									LoadingWidget.getInstance().hide();
-								}
-							});
-						} else if (reservation instanceof ReservationInterface.GroupReservation) {
-							new InitializationChain(new InitStudentGroups(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									loadingFailed(caught);
-								}
-
-								@Override
-								public void onSuccess(Boolean result) {
-									setReservation(reservation);
-									LoadingWidget.getInstance().hide();
-								}
-							});
-						} else {
-							setReservation(reservation);
-							LoadingWidget.getInstance().hide();
-						}
-					};
-				});
-			}
+			load(Window.Location.getParameter("id"));
 		} else {
 			new InitializationChain(new InitStudentGroups(), new InitCurricula(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
 				@Override
@@ -499,6 +555,61 @@ public class ReservationEdit extends Composite {
 				}
 			}
 		});
+	}
+	
+	protected void load(String id) {
+		LoadingWidget.getInstance().show(MESSAGES.waitLoadingReservation());
+		if (id == null) {
+			new InitializationChain(new InitStudentGroups(), new InitCurricula(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					loadingFailed(caught);
+				}
+				@Override
+				public void onSuccess(Boolean result) {
+					setReservation(null);
+					LoadingWidget.getInstance().hide();
+				}
+			});
+		} else {
+			iReservationService.getReservation(Long.valueOf(id), new AsyncCallback<ReservationInterface>() {
+				public void onFailure(Throwable caught) {
+					loadingFailed(caught);
+				}
+				@Override
+				public void onSuccess(final ReservationInterface reservation) {
+					if (reservation instanceof ReservationInterface.CurriculumReservation) {
+						new InitializationChain(new InitCurricula(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								loadingFailed(caught);
+							}
+							@Override
+							public void onSuccess(Boolean result) {
+								setReservation(reservation);
+								LoadingWidget.getInstance().hide();
+							}
+						});
+					} else if (reservation instanceof ReservationInterface.GroupReservation) {
+						new InitializationChain(new InitStudentGroups(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								loadingFailed(caught);
+							}
+
+							@Override
+							public void onSuccess(Boolean result) {
+								setReservation(reservation);
+								LoadingWidget.getInstance().hide();
+							}
+						});
+					} else {
+						setReservation(reservation);
+						LoadingWidget.getInstance().hide();
+					}
+				};
+			});
+		}
 	}
 	
 	private void loadingFailed(Throwable caught) {
@@ -558,6 +669,17 @@ public class ReservationEdit extends Composite {
 					LoadingWidget.getInstance().hide();
 				}
 			});
+		}
+		
+		if (iReservation == null) {
+			iTitleAndButtons.setEnabled("previous", false);
+			iTitleAndButtons.setEnabled("next", false);
+		} else {
+			EditFinishedEvent e = new EditFinishedEvent(iReservation.getId());
+			for (EditFinishedHandler h: iEditFinishedHandlers) {
+				iTitleAndButtons.setEnabled("previous", h.hasPrevious(e));
+				iTitleAndButtons.setEnabled("next", h.hasNext(e));
+			}
 		}
 	}
 	
@@ -1127,6 +1249,10 @@ public class ReservationEdit extends Composite {
 		public void onDelete(EditFinishedEvent evt);
 		public void onSave(EditFinishedEvent evt);
 		public void onFailure(Throwable caught);
+		public boolean hasNext(EditFinishedEvent evt);
+		public boolean hasPrevious(EditFinishedEvent evt);
+		public void onNext(EditFinishedEvent evt);
+		public void onPrevious(EditFinishedEvent evt);
 	}
 
 	public void addEditFinishedHandler(EditFinishedHandler h) {
