@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomListForm;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -86,7 +87,7 @@ public class RoomSearchAction extends Action {
 		    	sessionContext.setAttribute(SessionAttribute.DepartmentCodeRoom, deptCode);
 		}
 		
-		if (deptCode != null && !deptCode.isEmpty() && ("All".equals(deptCode) || deptCode.matches("Exam[0-9]*") || sessionContext.hasPermission(deptCode, "Department", Right.Rooms))) {
+		if (deptCode != null && !deptCode.isEmpty() && ("All".equals(deptCode) || deptCode.matches("Exam[0-9]*") || Department.findByDeptCode(deptCode, sessionContext.getUser().getCurrentAcademicSessionId()) != null)) {
 			roomListForm.setDeptCodeX(deptCode);
 			return mapping.findForward("roomList");
 			
