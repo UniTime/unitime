@@ -97,6 +97,7 @@ import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.SolverInfoDef;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
@@ -534,6 +535,16 @@ public class SessionRestore implements SessionRestoreInterface {
 			if (getObject() instanceof Class_) {
 				Class_ clazz = (Class_)getObject();
 				if (clazz.getCancelled() == null) clazz.setCancelled(false);
+			}
+			if (getObject() instanceof SolverInfo) {
+				SolverInfo info = (SolverInfo)getObject();
+				TableData.Element element = getElement("value");
+				try {
+					Document value = new SAXReader().read(new StringReader(element.getValue(0)));
+					info.setValue(value);
+				} catch (DocumentException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		
