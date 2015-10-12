@@ -36,8 +36,27 @@ import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortB
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
+import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Curriculum;
+import org.unitime.timetable.model.CurriculumClassification;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.CurriculumClassificationDAO;
+import org.unitime.timetable.model.dao.CurriculumDAO;
+import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentGroupDAO;
+import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 
 import biweekly.Biweekly;
@@ -71,14 +90,14 @@ public class EventsExportEventsToICal extends EventsExporter {
 	}
 	
 	@Override
-	protected void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException {
+	protected void print(ExportHelper helper, EventLookupRpcRequest request, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException {
 		helper.setup("text/calendar", reference(), false);
 		
 		ICalendar ical = new ICalendar();
 		ical.setVersion(ICalVersion.V2_0);
 		ical.setCalendarScale(CalendarScale.gregorian());
 		ical.setMethod(new Method("PUBLISH"));
-		ical.setExperimentalProperty("X-WR-CALNAME", "UniTime Schedule");
+		ical.setExperimentalProperty("X-WR-CALNAME", guessScheduleName(helper, request));
 		ical.setExperimentalProperty("X-WR-TIMEZONE", TimeZone.getDefault().getID());
 		ical.setProductId("-//UniTime LLC/UniTime " + Constants.getVersion() + " Events//EN");
 
@@ -91,6 +110,68 @@ public class EventsExportEventsToICal extends EventsExporter {
 	public boolean print(ICalendar ical, EventInterface event) throws IOException {
 		return print(ical, event, null);
 	}
+	
+	protected String guessScheduleName(ExportHelper helper, EventLookupRpcRequest request) {
+		org.hibernate.Session hibSession = new _RootDAO().getSession();
+		String name = MESSAGES.scheduleNameDefault();
+		if (request.getResourceType() == ResourceType.PERSON) {
+			name = MESSAGES.pagePersonalTimetable();
+		} else if (helper.getParameter("name") != null) {
+			name  = MESSAGES.scheduleNameForResource(Constants.toInitialCase(helper.getParameter("name")));
+		} else {
+			String resource = getResourceName(request, hibSession);
+			if (resource != null)
+				name = MESSAGES.scheduleNameForResource(resource);
+			else if (request.getResourceType() != null && request.getResourceType() != ResourceType.ROOM)
+				name = CONSTANTS.resourceType()[request.getResourceType().ordinal()];
+		}
+		boolean allSessions = request.getEventFilter().hasOption("flag") && request.getEventFilter().getOptions("flag").contains("All Sessions");
+		if (!allSessions && request.getSessionId() != null) {
+			Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
+			name = MESSAGES.scheduleNameForSession(name, session.getAcademicTerm(), session.getAcademicYear());
+		}
+		return name;
+	}
+
+	public String getResourceName(EventLookupRpcRequest request, org.hibernate.Session hibSession) {
+		if (request.getResourceType() != null && request.getResourceId() != null) {
+			switch (request.getResourceType()) {
+			case ROOM:
+				Location location = LocationDAO.getInstance().get(request.getResourceId(), hibSession);
+				if (location != null) return location.getDisplayName() == null ? location.getLabel() : location.getDisplayName();
+				break;
+			case SUBJECT:
+				SubjectArea subject = SubjectAreaDAO.getInstance().get(request.getResourceId(), hibSession);
+				if (subject != null) return subject.getSubjectAreaAbbreviation();
+				break;
+			case COURSE:
+				CourseOffering course = CourseOfferingDAO.getInstance().get(request.getResourceId(), hibSession);
+				if (course != null) return course.getCourseName();
+				break;
+			case CURRICULUM:
+				Curriculum curriculum = CurriculumDAO.getInstance().get(request.getResourceId(), hibSession);
+				if (curriculum != null) return (curriculum.getAbbv() == null ? curriculum.getAcademicArea().getAcademicAreaAbbreviation() : curriculum.getAbbv());
+				CurriculumClassification clasf = CurriculumClassificationDAO.getInstance().get(request.getResourceId(), hibSession);
+				if (clasf != null) return (clasf.getCurriculum().getAbbv() == null ? clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation() : clasf.getCurriculum().getAbbv()) +
+						" " + (clasf.getName() == null ? clasf.getAcademicClassification().getCode() : clasf.getName());
+				break;
+			case DEPARTMENT:
+				Department department = DepartmentDAO.getInstance().get(request.getResourceId(), hibSession);
+				if (department != null) return department.getAbbreviation() == null ? department.getDeptCode() : department.getAbbreviation();
+				break;
+			case GROUP:
+				StudentGroup group = StudentGroupDAO.getInstance().get(request.getResourceId(), hibSession);
+				if (group != null) return group.getGroupAbbreviation();
+				break;
+			}
+		}
+		if (request.getEventFilter().hasOption("room")) {
+			Location location = LocationDAO.getInstance().get(Long.valueOf(request.getEventFilter().getOption("room")), hibSession);
+			if (location != null) return location.getDisplayName() == null ? location.getLabel() : location.getDisplayName();
+		}
+		return null;
+	}
+		
 	
 	public boolean print(ICalendar ical, EventInterface event, Status status) throws IOException {
 		if (event.getType() == EventType.Unavailabile) return false;

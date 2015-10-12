@@ -3898,4 +3898,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Event status changes apply only to {0}.")
 	String eventStatusHint(String session);
+	
+	@DefaultMessage("UniTime Schedule")
+	String scheduleNameDefault();
+	
+	@DefaultMessage("{0} Schedule")
+	String scheduleNameForResource(String resource);
+	
+	@DefaultMessage("{0} for {1} {2}")
+	String scheduleNameForSession(String scheduleName, String acadTerm, String acadYear);
 }

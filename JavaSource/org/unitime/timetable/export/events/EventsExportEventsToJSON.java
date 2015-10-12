@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
 
 import com.google.gson.FieldNamingStrategy;
 import com.google.gson.Gson;
@@ -53,7 +54,7 @@ public class EventsExportEventsToJSON extends EventsExporter {
 	}
 	
 	@Override
-	protected void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException {
+	protected void print(ExportHelper helper, EventLookupRpcRequest request, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException {
 		helper.setup("application/json", reference(), false);
 		
     	Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new JsonSerializer<Date>() {

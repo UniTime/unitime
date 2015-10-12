@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortB
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
+import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
@@ -47,7 +48,7 @@ public class EventsExportEventsToPDF extends EventsExporter {
 	}
 
 	@Override
-	protected void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException {
+	protected void print(ExportHelper helper, EventLookupRpcRequest request, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException {
 		sort(events, sort, asc);
 		Printer printer = new PDFPrinter(helper.getOutputStream(), true);
 		helper.setup(printer.getContentType(), reference(), false);

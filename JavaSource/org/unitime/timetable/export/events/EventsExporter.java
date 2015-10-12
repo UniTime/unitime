@@ -167,10 +167,10 @@ public abstract class EventsExporter implements Exporter {
     		}
     	}
     	
-    	print(helper, events, eventCookieFlags, sort, asc);
+    	print(helper, request, events, eventCookieFlags, sort, asc);
 	}
 	
-	protected abstract void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException;
+	protected abstract void print(ExportHelper helper, EventLookupRpcRequest request, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException;
 	
 	protected boolean checkRights() {
 		return true;
