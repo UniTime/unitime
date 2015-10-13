@@ -542,6 +542,27 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toCourseOffering.setNbrExpectedStudents(new Integer(0));
 		toCourseOffering.setDemand(new Integer(0));
 		toCourseOffering.setConsentType(OfferingConsentType.getOfferingConsentTypeForReference(courseCatalogEntry.getApprovalType()));
+		if (courseCatalogEntry.getCreditFormat() != null) {
+			CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseCatalogEntry.getCreditFormat(), courseCatalogEntry.getCreditType(), courseCatalogEntry.getCreditUnitType(), courseCatalogEntry.getFixedMinimumCredit(), courseCatalogEntry.getMaximumCredit(), courseCatalogEntry.isFractionalCreditAllowed(), new Boolean(true));
+			if (ccuc instanceof ArrangeCreditUnitConfig) {					
+				ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)ccuc;
+				toAcuc.setOwner(toCourseOffering);
+				toCourseOffering.addTocreditConfigs(toAcuc);
+			} else if (ccuc instanceof FixedCreditUnitConfig) {
+				FixedCreditUnitConfig toFcuc = (FixedCreditUnitConfig) ccuc;
+				toFcuc.setOwner(toCourseOffering);
+				toCourseOffering.addTocreditConfigs(toFcuc);
+			} else if (ccuc instanceof VariableRangeCreditUnitConfig) {
+				VariableRangeCreditUnitConfig toVrcuc = (VariableRangeCreditUnitConfig) ccuc;
+				toVrcuc.setOwner(toCourseOffering);
+				toCourseOffering.addTocreditConfigs(toVrcuc);
+			} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
+				VariableFixedCreditUnitConfig toVfcuc = (VariableFixedCreditUnitConfig) ccuc;
+				toVfcuc.setOwner(toCourseOffering);
+				toCourseOffering.addTocreditConfigs(toVfcuc);
+			}		
+		}
+
 		return(toCourseOffering);
 	}
 	
