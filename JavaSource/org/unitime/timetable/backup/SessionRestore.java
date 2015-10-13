@@ -81,6 +81,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.ExamOwner;
@@ -535,6 +536,10 @@ public class SessionRestore implements SessionRestoreInterface {
 			if (getObject() instanceof Class_) {
 				Class_ clazz = (Class_)getObject();
 				if (clazz.getCancelled() == null) clazz.setCancelled(false);
+			}
+			if (getObject() instanceof Curriculum) {
+				Curriculum curriculum = (Curriculum)getObject();
+				if (curriculum.isMultipleMajors() == null) curriculum.setMultipleMajors(false);
 			}
 			if (getObject() instanceof SolverInfo) {
 				SolverInfo info = (SolverInfo)getObject();

@@ -22,7 +22,9 @@ package org.unitime.timetable.gwt.client.widgets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
@@ -61,7 +63,7 @@ public class UniTimeTable<T> extends FlexTable {
 	private HintProvider<T> iHintProvider = null;
 	
 	private int iLastHoverRow = -1;
-	private String iLastHoverBackgroundColor = null;
+	private Map<Integer,String> iLastHoverBackgroundColor = new HashMap<Integer, String>();
 	private boolean iAllowSelection = false;
 	
 	public UniTimeTable() {
@@ -83,6 +85,7 @@ public class UniTimeTable<T> extends FlexTable {
 	public void clearTable(int headerRows) {
 		for (int row = getRowCount() - 1; row >= headerRows; row--)
 			removeRow(row);
+		iLastHoverBackgroundColor.clear();
 	}
 	
 	public void clearTable() {
@@ -489,18 +492,27 @@ public class UniTimeTable<T> extends FlexTable {
 			if (hasData) {
 				if (!iMouseClickListeners.isEmpty())
 					getRowFormatter().getElement(row).getStyle().setCursor(Cursor.POINTER);
+				boolean selected = false;
 				if (isAllowSelection()) {
-					if ("unitime-TableRowSelected".equals(style))
-						getRowFormatter().setStyleName(row, "unitime-TableRowSelectedHover");	
-					else
+					if ("unitime-TableRowSelected".equals(style)) {
+						getRowFormatter().setStyleName(row, "unitime-TableRowSelectedHover");
+						selected = true;
+					} else {
 						getRowFormatter().setStyleName(row, "unitime-TableRowHover");
+					}
 				} else {
 					getRowFormatter().addStyleName(row, "unitime-TableRowHover");
 				}
 				iLastHoverRow = row;
-				iLastHoverBackgroundColor = getRowFormatter().getElement(row).getStyle().getBackgroundColor();
-				if (iLastHoverBackgroundColor != null && !iLastHoverBackgroundColor.isEmpty())
-					getRowFormatter().getElement(row).getStyle().clearBackgroundColor();
+				if (!selected) {
+					String color = getRowFormatter().getElement(row).getStyle().getBackgroundColor();
+					if (color != null && !color.isEmpty()) {
+						getRowFormatter().getElement(row).getStyle().clearBackgroundColor();
+						iLastHoverBackgroundColor.put(row, color);
+					} else {
+						iLastHoverBackgroundColor.remove(row);
+					}
+				}
 			}
 			if (!iHintPanel.isShowing() && hint != null) {
 				iHintPanel.setWidget(hint);
@@ -521,18 +533,24 @@ public class UniTimeTable<T> extends FlexTable {
 			if (hasData) {
 				if (!iMouseClickListeners.isEmpty())
 					getRowFormatter().getElement(row).getStyle().clearCursor();
+				boolean selected = false;
 				if (isAllowSelection()) {
-					if ("unitime-TableRowHover".equals(style))
+					if ("unitime-TableRowHover".equals(style)) {
 						getRowFormatter().setStyleName(row, null);	
-					else if ("unitime-TableRowSelectedHover".equals(style))
+					} else if ("unitime-TableRowSelectedHover".equals(style)) {
 						getRowFormatter().setStyleName(row, "unitime-TableRowSelected");
+						selected = true;
+					}
 				} else {
 					getRowFormatter().removeStyleName(row, "unitime-TableRowHover");
 				}
-				if (iLastHoverBackgroundColor != null && !iLastHoverBackgroundColor.isEmpty())
-					getRowFormatter().getElement(row).getStyle().setBackgroundColor(iLastHoverBackgroundColor);
+				if (!selected) {
+					String color = iLastHoverBackgroundColor.remove(row);
+					if (color != null && !color.isEmpty()) {
+						getRowFormatter().getElement(row).getStyle().setBackgroundColor(color);
+					}
+				}
 				iLastHoverRow = -1;
-				iLastHoverBackgroundColor = null;
 			}
 			if (iHintPanel.isShowing()) iHintPanel.hide();
 			for (MouseOutListener<T> listener: iMouseOutListeners)
@@ -637,18 +655,22 @@ public class UniTimeTable<T> extends FlexTable {
 	
 	public void clearHover() {
 		if (iLastHoverRow >= 0 && iLastHoverRow < getRowCount()) {
+			boolean selected = false;
 			if (isAllowSelection()) {
 				String style = getRowFormatter().getStyleName(iLastHoverRow);
-				boolean selected = ("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
+				selected = ("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
 				getRowFormatter().setStyleName(iLastHoverRow, "unitime-TableRow" + (selected ? "Selected" : ""));
 			} else {
 				getRowFormatter().removeStyleName(iLastHoverRow, "unitime-TableRowHover");
 			}
-			if (iLastHoverBackgroundColor != null && !iLastHoverBackgroundColor.isEmpty())
-				getRowFormatter().getElement(iLastHoverRow).getStyle().setBackgroundColor(iLastHoverBackgroundColor);
+			if (!selected) {
+				String color = iLastHoverBackgroundColor.remove(iLastHoverRow);
+				if (color != null && !color.isEmpty()) {
+					getRowFormatter().getElement(iLastHoverRow).getStyle().setBackgroundColor(color);
+				}
+			}
 		}
 		iLastHoverRow = -1;
-		iLastHoverBackgroundColor = null;
 	}
 	
 	public boolean isSelected(int row) {
@@ -664,7 +686,22 @@ public class UniTimeTable<T> extends FlexTable {
 		if (isAllowSelection()) {
 			String style = getRowFormatter().getStyleName(row);
 			boolean hover = ("unitime-TableRowHover".equals(style) || "unitime-TableRowSelectedHover".equals(style));
+			boolean wasSelected = ("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
 			getRowFormatter().setStyleName(row, "unitime-TableRow" + (selected ? "Selected" : "") + (hover ? "Hover" : ""));
+			if (!hover && wasSelected != selected) {
+				if (selected) {
+					String color = getRowFormatter().getElement(row).getStyle().getBackgroundColor();
+					if (color != null && !color.isEmpty()) {
+						getRowFormatter().getElement(row).getStyle().clearBackgroundColor();
+						iLastHoverBackgroundColor.put(row, color);
+					}
+				} else {
+					String color = iLastHoverBackgroundColor.remove(row);
+					if (color != null && !color.isEmpty()) {
+						getRowFormatter().getElement(row).getStyle().setBackgroundColor(color);
+					}
+				}
+			}
 		}
 	}
 	

@@ -2385,6 +2385,7 @@ public class SessionRollForward {
     		Curriculum newCurriculum = new Curriculum();
     		newCurriculum.setAbbv(curriculum.getAbbv());
     		newCurriculum.setName(curriculum.getName());
+    		newCurriculum.setMultipleMajors(curriculum.isMultipleMajors());
     		AcademicArea area = areas.get(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
     		if (area == null) continue;
     		newCurriculum.setAcademicArea(area);

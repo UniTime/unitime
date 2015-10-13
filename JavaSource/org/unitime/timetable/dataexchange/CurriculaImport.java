@@ -202,6 +202,7 @@ public class CurriculaImport extends BaseImport {
                 }
                 if (name.length() > 60) name = name.substring(0, 60);
                 curriculum.setName(name);
+                curriculum.setMultipleMajors("true".equalsIgnoreCase(curriculumElement.attributeValue("multipleMajors", "false")));
                 
                 Hashtable<String, CurriculumCourseGroup> groups = new Hashtable<String, CurriculumCourseGroup>();
                 

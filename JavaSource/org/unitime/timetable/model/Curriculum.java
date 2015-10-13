@@ -63,4 +63,11 @@ public class Curriculum extends BaseCurriculum implements Comparable<Curriculum>
     	if (cmp != 0) return cmp;
     	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(c.getUniqueId() == null ? -1 : c.getUniqueId());
     }
+    
+    public boolean isTemplateFor(Curriculum curriculum) {
+    	if (!curriculum.isMultipleMajors()) return false;
+    	if (!curriculum.getAcademicArea().equals(curriculum.getAcademicArea())) return false;
+    	if (curriculum.getMajors().size() <= getMajors().size() || getMajors().size() > 1) return false;
+    	return getMajors().isEmpty() || curriculum.getMajors().containsAll(getMajors());
+    }
 }

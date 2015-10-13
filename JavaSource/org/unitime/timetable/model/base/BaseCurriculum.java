@@ -39,6 +39,7 @@ public abstract class BaseCurriculum implements Serializable {
 	private Long iUniqueId;
 	private String iAbbv;
 	private String iName;
+	private Boolean iMultipleMajors;
 
 	private AcademicArea iAcademicArea;
 	private Department iDepartment;
@@ -48,6 +49,7 @@ public abstract class BaseCurriculum implements Serializable {
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_ABBV = "abbv";
 	public static String PROP_NAME = "name";
+	public static String PROP_MULTIPLE_MAJORS = "multipleMajors";
 
 	public BaseCurriculum() {
 		initialize();
@@ -68,6 +70,10 @@ public abstract class BaseCurriculum implements Serializable {
 
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }
+
+	public Boolean isMultipleMajors() { return iMultipleMajors; }
+	public Boolean getMultipleMajors() { return iMultipleMajors; }
+	public void setMultipleMajors(Boolean multipleMajors) { iMultipleMajors = multipleMajors; }
 
 	public AcademicArea getAcademicArea() { return iAcademicArea; }
 	public void setAcademicArea(AcademicArea academicArea) { iAcademicArea = academicArea; }
@@ -109,6 +115,7 @@ public abstract class BaseCurriculum implements Serializable {
 			"\n	Abbv: " + getAbbv() +
 			"\n	AcademicArea: " + getAcademicArea() +
 			"\n	Department: " + getDepartment() +
+			"\n	MultipleMajors: " + getMultipleMajors() +
 			"\n	Name: " + getName() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

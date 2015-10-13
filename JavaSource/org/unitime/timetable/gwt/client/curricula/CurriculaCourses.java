@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculaClassifications.NameChangedEvent;
 import org.unitime.timetable.gwt.client.widgets.CourseSelectionEvent;
 import org.unitime.timetable.gwt.client.widgets.CourseSelectionHandler;
@@ -53,6 +54,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -109,6 +111,7 @@ public class CurriculaCourses extends Composite {
 	
 	private GroupDialogBox iNewGroupDialog;
 	private boolean iEditable = true;
+	private Map<String, String> iBgColors = new HashMap<String, String>();
 	
 	private static String[] sColors = new String[] {
 		"red", "blue", "green", "orange", "yellow", "pink",
@@ -117,8 +120,36 @@ public class CurriculaCourses extends Composite {
 		"grey", "bluegrey", "lightteal", "yellowgrey", "brown"
 	};
 	
+	private static String[] sBgColors = new String[] {
+		"#f0fff0", //Honeydew
+		"#f0f8ff", //AliceBlue
+		"#faebd7", //AntiqueWhite
+		"#f0ffff", //Azure
+		"#f5f5dc", //Beige
+		"#fff0f5", //LavenderBlush
+		"#f5fffa", //MintCream
+		"#faf0e6", //Linen
+		"#ffe4e1", //MistyRose
+		"#fffafa", //Snow
+		"#fdf5e6", //OldLace
+		"#f8f8ff", //GhostWhite
+		"#f5f5f5", //WhiteSmoke
+		"#fff5ee", //SeeShell
+		"#fffaf0", //FloralWhite
+		"#fffff0", //Ivory
+	};
+	
 	private TreeSet<String> iVisibleCourses = null;
 	private HashMap<String, CurriculumStudentsInterface[]> iLastCourses = null;
+	
+	public String getBackgroundColor(String template) {
+		String color = iBgColors.get(template);
+		if (color == null) {
+			color = sBgColors[iBgColors.size() % sBgColors.length];
+			iBgColors.put(template, color);
+		}
+		return color;
+	}
 	
 	public CurriculaCourses() {
 		iTable = new UniTimeTable<String>();
@@ -300,7 +331,13 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public boolean isApplicable() {
-				return iEditable && iTable.getSelectedCount() > 0 && iVisibleCourses == null;
+				if (!iEditable || iTable.getSelectedCount() == 0 || iVisibleCourses != null)
+					return false;
+				for (int row = iTable.getRowCount() - 1; row > 0; row --) {
+					if (iTable.isSelected(row) && !((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).isEnabled())
+						return false;
+				}
+				return true;
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -406,7 +443,7 @@ public class CurriculaCourses extends Composite {
 					for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
 						int x = 2 + 2 * c;
 						ShareTextBox text = (ShareTextBox)iTable.getWidget(row, x);
-						if (text.getShare() != null) continue rows;
+						if (text.getDisplayedShare() != null) continue rows;
 					}
 					iTable.removeRow(row);
 				}
@@ -904,6 +941,7 @@ public class CurriculaCourses extends Composite {
 		iTable.addRow(null, header);
 		
 		// body
+		iBgColors.clear();
 		if (curriculum.hasCourses()) {
 			for (CourseInterface course: curriculum.getCourses()) {
 				List<Widget> line = new ArrayList<Widget>();
@@ -917,7 +955,7 @@ public class CurriculaCourses extends Composite {
 							if (x.getName().equals(g.getName())) { gr = x; break; }
 						}
 						if (gr == null) {
-							gr = new Group(g.getName(), g.getType());
+							gr = new Group(g.getName(), g.getType(), g.isEditable());
 							if (g.getColor() != null) {
 								gr.setColor(g.getColor());
 							} else {
@@ -942,18 +980,25 @@ public class CurriculaCourses extends Composite {
 				if (cx.getCourseFinder() instanceof HasOpenHandlers)
 					((HasOpenHandlers<PopupPanel>)cx.getCourseFinder()).addOpenHandler(fx);
 				cx.addCourseSelectionHandler(iCourseChangedHandler);
-				if (!iEditable) cx.setEnabled(false);
+				if (!iEditable || course.hasDefaultShare()) cx.setEnabled(false);
 				line.add(cx);
 				
 				for (col = 0; col < iClassifications.getClassifications().size(); col++) {
 					CurriculumCourseInterface cci = course.getCurriculumCourse(col);
-					ShareTextBox ex = new ShareTextBox(col, cci == null ? null : cci.getShare());
+					ShareTextBox ex = new ShareTextBox(col, cci == null ? null : cci.hasShare() ? cci.getShare() : null, cci == null ? null : cci.getDefaultShare());
 					if (!iEditable) ex.setReadOnly(true);
+					if (cci != null && cci.hasTemplates() && cci.getDefaultShare() != null)
+						ex.setTitle(MESSAGES.hintDefaultPercentShare(NF.format(100.0 * cci.getDefaultShare()) + "%", ToolBox.toString(cci.getTemplates())));
 					line.add(ex);
 					EnrollmentLabel note = new EnrollmentLabel(col, cci == null ? null : cci.getEnrollment(), cci == null ? null : cci.getLastLike(), cci == null ? null : cci.getProjection(), cci == null ? null : cci.getRequested());
 					line.add(note);
 				}
-				iTable.addRow(course.getCourseName(), line);
+				int row = iTable.addRow(course.getCourseName(), line);
+				if (course.hasTemplate()) {
+					String color = getBackgroundColor(course.getTemplate());
+					iTable.getRowFormatter().getElement(row).getStyle().setBackgroundColor(color);
+					iTable.getRowFormatter().getElement(row).setTitle(MESSAGES.hintTakenFromTemplate(course.getTemplate()));
+				}
 			}
 		}
 		if (iEditable) addBlankLine();
@@ -993,6 +1038,7 @@ public class CurriculaCourses extends Composite {
 					gr = new CurriculumCourseGroupInterface();
 					gr.setName(g.getName());
 					gr.setType(g.getType());
+					gr.setEditable(g.isEditable());
 					gr.setColor(g.getColor());
 					groups.put(g.getName(), gr);
 				}
@@ -1001,6 +1047,68 @@ public class CurriculaCourses extends Composite {
 			c.addCourse(cr);
 		}
 		return ret;
+	}
+	
+	public boolean hasDefaultShare(int row) {
+		for (int i = 0; i < iClassifications.getClassifications().size(); i++) {
+			Float share = ((ShareTextBox)iTable.getWidget(row, 2 + 2 * i)).getDefaultShare();
+			if (share != null) return true;
+		}
+		return false;
+	}
+	
+	public void populateTemplate(CurriculumInterface c) {
+		HashSet<String> courses = new HashSet<String>();
+		HashMap<String, CurriculumCourseGroupInterface> groups = new HashMap<String, CurriculumCourseGroupInterface>();
+		if (c.hasCourses())
+			for (CourseInterface cr: c.getCourses())
+				if (cr.hasGroups())
+					for (CurriculumCourseGroupInterface g: cr.getGroups())
+						groups.put(g.getName(), g);
+		for (int row = 1; row < iTable.getRowCount(); row++) {
+			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getValue();
+			if (course.isEmpty()) continue;
+			if (!courses.add(course)) continue;
+			CourseInterface cr = c.getCourse(course);
+			if (cr == null) {
+				cr = new CourseInterface();
+				cr.setCourseName(course);
+				c.addCourse(cr);
+			}
+			boolean hasShare = false;
+			for (int i = 0; i < iClassifications.getClassifications().size(); i++) {
+				Float share = ((ShareTextBox)iTable.getWidget(row, 2 + 2 * i)).getShare();
+				if (share == null) continue;
+				CurriculumCourseInterface cx = cr.getCurriculumCourse(i);
+				if (cx == null) {
+					cx = new CurriculumCourseInterface();
+					cx.setCurriculumClassificationId(iClassifications.getClassifications().get(i).getId());
+					cr.setCurriculumCourse(i, cx);
+				}					
+				cx.setShare(share);
+				hasShare = true;
+			}
+			if (!cr.hasCurriculumCourses() || !hasShare) continue;
+			HorizontalPanel hp = (HorizontalPanel)iTable.getWidget(row, 0);
+			for (int i = 0; i < hp.getWidgetCount(); i++) {
+				Group g = (Group)hp.getWidget(i);
+				CurriculumCourseGroupInterface gr = groups.get(g.getName());
+				if (gr == null) {
+					gr = new CurriculumCourseGroupInterface();
+					gr.setName(g.getName());
+					gr.setType(g.getType());
+					gr.setColor(g.getColor());
+					gr.setEditable(g.isEditable());
+					groups.put(g.getName(), gr);
+				}
+				cr.addGroup(gr);
+			}
+		}
+		populate(c, true);
+		for (int i = 0; i < iClassifications.getClassifications().size(); i++) {
+			if (iClassifications.getExpected(i) == null)
+				setVisible(i, false);
+		}
 	}
 	
 	public void addBlankLine() {
@@ -1023,7 +1131,7 @@ public class CurriculaCourses extends Composite {
 		line.add(cx);
 		
 		for (int col = 0; col < iClassifications.getClassifications().size(); col++) {
-			ShareTextBox ex = new ShareTextBox(col, null);
+			ShareTextBox ex = new ShareTextBox(col, null, null);
 			if (!iEditable) ex.setReadOnly(true);
 			line.add(ex);
 			EnrollmentLabel note = new EnrollmentLabel(col, null, null, null, null);
@@ -1063,8 +1171,8 @@ public class CurriculaCourses extends Composite {
 		if (column == 1)
 			return ((CurriculaCourseSelectionBox)iTable.getWidget(r0, 1)).getValue().compareTo(((CurriculaCourseSelectionBox)iTable.getWidget(r1, 1)).getValue());
 		if (column % 2 == 0) {
-			Float s0 = ((ShareTextBox)iTable.getWidget(r0, column)).getShare();
-			Float s1 = ((ShareTextBox)iTable.getWidget(r1, column)).getShare();
+			Float s0 = ((ShareTextBox)iTable.getWidget(r0, column)).getDisplayedShare();
+			Float s1 = ((ShareTextBox)iTable.getWidget(r1, column)).getDisplayedShare();
 			return - (s0 == null ? new Float(0) : s0).compareTo(s1 == null ? new Float(0) : s1);
 		} else {
 			EnrollmentLabel l0 = ((EnrollmentLabel)iTable.getWidget(r0, column));
@@ -1383,12 +1491,13 @@ public class CurriculaCourses extends Composite {
 
 	public class ShareTextBox extends UniTimeTextBox {
 		private int iColumn;
-		private Float iShare = null;
+		private Float iShare = null, iDefaultShare = null;
 		
-		public ShareTextBox(int column, Float share) {
+		public ShareTextBox(int column, Float share, Float defaultShare) {
 			super(6, ValueBoxBase.TextAlignment.RIGHT);
 			iColumn = column;
 			iShare = share;
+			iDefaultShare = defaultShare;
 			addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {
@@ -1398,11 +1507,15 @@ public class CurriculaCourses extends Composite {
 						} else if (getText().endsWith("%")) {
 							iShare = (float)NF.parse(getText().substring(0, getText().length() - 1)) / 100.0f;
 							if (iShare > 1.0f) iShare = 1.0f;
-							if (iShare <= 0.0f) iShare = null;
+							if (iShare <= 0.0f) iShare = 0.0f;
 						} else {
-							iShare = (float)NF.parse(getText()) / iClassifications.getExpected(iColumn);
+							Integer exp = iClassifications.getExpected(iColumn);
+							if (exp == null || exp == 0)
+								iShare = (float)NF.parse(getText()) / 100.0f;
+							else
+								iShare = (float)NF.parse(getText()) / iClassifications.getExpected(iColumn);
 							if (iShare > 1.0f) iShare = 1.0f;
-							if (iShare <= 0.0f) iShare = null;
+							if (iShare < 0.0f) iShare = 0.0f;
 						}
 					} catch (Exception e) {
 						iShare = null;
@@ -1436,14 +1549,35 @@ public class CurriculaCourses extends Composite {
 			return iShare;
 		}
 		
+		public Float getDisplayedShare() {
+			return iShare == null ? iDefaultShare : iShare;
+		}
+		
+		public Float getDefaultShare() {
+			return iDefaultShare;
+		}
+		
 		public void update() {
-			if (iShare == null) 
-				setText("");
-			else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
+			if (iShare == null)  {
+				if (iDefaultShare != null) {
+					if (CurriculumCookie.getInstance().getCurriculaCoursesPercent() || new Integer(0).equals(iClassifications.getExpected(iColumn)))
+						setText(NF.format(100.0 * iDefaultShare) + "%");
+					else {
+						Integer exp = iClassifications.getExpected(iColumn);
+						setText(exp == null ? MESSAGES.notApplicable() : String.valueOf(Math.round(exp * iDefaultShare)));	
+					}
+					getElement().getStyle().setColor("gray");
+				} else {
+					setText("");
+					getElement().getStyle().clearColor();
+				}
+			} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent() || new Integer(0).equals(iClassifications.getExpected(iColumn))) {
 				setText(NF.format(100.0 * iShare) + "%");
-			else {
+				getElement().getStyle().clearColor();
+			} else {
 				Integer exp = iClassifications.getExpected(iColumn);
-				setText(exp == null ? MESSAGES.notApplicable() : String.valueOf(Math.round(exp * iShare)));	
+				setText(exp == null ? MESSAGES.notApplicable() : String.valueOf(Math.round(exp * iShare)));
+				getElement().getStyle().clearColor();
 			}
 		}
 	}
@@ -1461,13 +1595,17 @@ public class CurriculaCourses extends Composite {
 		private int iType;
 		private String iColor;
 		private Operation iOperation;
+		private boolean iGroupEditable;
 		
-		public Group(String name, int type) {
+		public Group(String name, int type, boolean editable) {
 			super(name, false);
 			iName = name;
 			iType = type;
+			iGroupEditable = editable;
 			setStylePrimaryName("unitime-TinyLabel" + (iType == 1 ? "White" : ""));
-			if (iEditable) {
+			if (iEditable && !iGroupEditable)
+				getElement().getStyle().setFontStyle(FontStyle.ITALIC);
+			if (iEditable && iGroupEditable) {
 				addClickHandler(iNewGroupDialog.getClickHandler());
 				getElement().getStyle().setCursor(Cursor.POINTER);
 			}
@@ -1483,7 +1621,7 @@ public class CurriculaCourses extends Composite {
 
 				@Override
 				public boolean isApplicable() {
-					return iEditable && iVisibleCourses == null;
+					return iEditable && iGroupEditable && iVisibleCourses == null;
 				}
 
 				@Override
@@ -1492,6 +1630,11 @@ public class CurriculaCourses extends Composite {
 				}
 			};
 		}
+		
+		public Group(String name, int type) {
+			this(name, type, true);
+		}
+		
 		public String getName() { return iName; }
 		public int getType() { return iType; }
 		public void setType(int type) {
@@ -1507,7 +1650,7 @@ public class CurriculaCourses extends Composite {
 			return getName().equals(((Group)o).getName());
 		}
 		public Group cloneGroup() {
-			Group g = new Group(iName, iType);
+			Group g = new Group(iName, iType, iGroupEditable);
 			g.setColor(getColor());
 			return g;
 		}
@@ -1523,6 +1666,7 @@ public class CurriculaCourses extends Composite {
 		}
 		
 		public Operation getOperation() { return iOperation; }
+		public boolean isEditable() { return iGroupEditable; }
 	}
 	
 	public void assignGroup(String oldName, String name, int type) {
@@ -1643,7 +1787,7 @@ public class CurriculaCourses extends Composite {
 		}
 		iVisibleCourses = null;
 		for (int row = 1; row < iTable.getRowCount(); row++) {
-			((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setEnabled(true);
+			((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setEnabled(!hasDefaultShare(row));
 			iTable.getRowFormatter().setVisible(row, true);
 		}
 	}

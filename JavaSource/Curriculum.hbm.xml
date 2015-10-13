@@ -81,7 +81,12 @@
             <key column="curriculum_id" foreign-key="fk_curriculum_clasf_curriculum"/>
             <one-to-many class="CurriculumClassification"/>
         </set>
-
+        
+        <property
+            name="multipleMajors"
+            column="multiple_majors"
+            type="java.lang.Boolean"
+            not-null="true"/>
     </class>
     <class name="CurriculumClassification" table="curriculum_clasf">
         <cache include="non-lazy" usage="transactional"/>

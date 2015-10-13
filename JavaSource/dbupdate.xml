@@ -10263,4 +10263,8 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'SchedulingDashboard'
 		</sql>
 	</update>
+	<update version="153" date="8-Oct-2016" comment="Curriculum Multiple Majors">
+		<mysql>alter table %SCHEMA%.curriculum add multiple_majors int(1) not null default 0</mysql>
+		<plsql>alter table %SCHEMA%.curriculum add multiple_majors number(1) default 0 constraint nn_curriculum_mmajors not null</plsql>
+	</update>
 </dbupdate>

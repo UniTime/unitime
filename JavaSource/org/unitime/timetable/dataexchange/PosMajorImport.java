@@ -72,7 +72,7 @@ public class PosMajorImport extends BaseImport {
                 Element element = (Element) it.next();
                 
                 String externalId = element.attributeValue("externalId");
-                String code = element.attributeValue("code");
+                String code = trim(element.attributeValue("code"), "code", 10);
                 AcademicArea area = abbv2area.get(element.attributeValue("academicArea"));
                 
                 if (area == null) {
@@ -97,7 +97,7 @@ public class PosMajorImport extends BaseImport {
                 
                 major.setExternalUniqueId(externalId);
                 major.setCode(code);
-                major.setName(element.attributeValue("name"));
+                major.setName(trim(element.attributeValue("name"), "name", 50));
                 
                 major.getAcademicAreas().clear();
                 major.getAcademicAreas().add(area);

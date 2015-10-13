@@ -936,6 +936,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Academic Area:")
 	String propAcademicArea();
 	
+	@DefaultMessage("Multiple Majors:")
+	String propMultipleMajors();
+	
 	@DefaultMessage("Major:")
 	String propMajor();
 	
@@ -3899,6 +3902,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Event status changes apply only to {0}.")
 	String eventStatusHint(String session);
 	
+	@DefaultMessage("A student must have all of the selected majors.")
+	String infoMultipleMajorsOn();
+	
+	@DefaultMessage("A student must have at least one of the selected majors.")
+	String infoMultipleMajorsOff();
+	
 	@DefaultMessage("UniTime Schedule")
 	String scheduleNameDefault();
 	
@@ -3907,4 +3916,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} for {1} {2}")
 	String scheduleNameForSession(String scheduleName, String acadTerm, String acadYear);
+	
+	@DefaultMessage("Common")
+	String abbvCommonTemplate();
+	
+	@DefaultMessage("Defaults to {0} ({1})")
+	String hintDefaultPercentShare(String defaultSharing, String template);
+	
+	@DefaultMessage("Taken from {0}")
+	String hintTakenFromTemplate(String template);
 }

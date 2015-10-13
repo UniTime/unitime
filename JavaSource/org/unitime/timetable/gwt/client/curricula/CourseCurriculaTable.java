@@ -489,7 +489,7 @@ public class CourseCurriculaTable extends Composite {
 		curriculumLabel.addClickHandler(iMenu);
 		iCurricula.setWidget(0, col, curriculumLabel);
 		iCurricula.getFlexCellFormatter().setStyleName(0, col, "unitime-ClickableTableHeader");
-		iCurricula.getFlexCellFormatter().setWidth(0, col, "100px");
+		iCurricula.getFlexCellFormatter().setWidth(0, col, "150px");
 		col++;
 		
 		final Label areaLabel = new Label(MESSAGES.colAcademicArea(), false);
@@ -625,7 +625,7 @@ public class CourseCurriculaTable extends Composite {
 					CurriculumCourseInterface cx = course.getCurriculumCourse(clasfIdx);
 					if (cx != null) {
 						iUsed[clasfIdx] = true;
-						exp += (f == null || f.getExpected() == null ? 0 : Math.round(f.getExpected() * cx.getShare()));
+						exp += (f == null || f.getExpected() == null ? 0 : Math.round(f.getExpected() * cx.getDisplayedShare()));
 						last += (cx.getLastLike() == null ? 0 : cx.getLastLike());
 						enrl += (cx.getEnrollment() == null ? 0 : cx.getEnrollment());
 						proj += (cx.getProjection() == null ? 0 : cx.getProjection());

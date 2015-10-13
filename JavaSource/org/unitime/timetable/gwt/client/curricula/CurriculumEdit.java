@@ -29,11 +29,13 @@ import org.unitime.timetable.gwt.client.curricula.CurriculaClassifications.NameC
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
@@ -50,9 +52,14 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
@@ -63,6 +70,7 @@ import com.google.gwt.user.client.ui.ValueBoxBase;
  */
 public class CurriculumEdit extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 
 	private SimpleForm iCurriculaTable;
@@ -71,6 +79,7 @@ public class CurriculumEdit extends Composite {
 	
 	private UniTimeWidget<TextBox> iCurriculumAbbv, iCurriculumName;
 	private UniTimeWidget<ListBox> iCurriculumMajors, iCurriculumArea, iCurriculumDept;
+	private UniTimeWidget<CheckBox> iMultipleMajor;
 	private CurriculaClassificationsPanel iCurriculumClasfTable = null;
 	
 	private boolean iDefaultAbbv = false, iDefaultName = false;
@@ -335,9 +344,23 @@ public class CurriculumEdit extends Composite {
 					} catch (Exception e) {}
 				}
 				iCurriculumArea.clearHint();
-				loadMajors(true);
+				loadMajors(true, true);
 			}
 		});
+		
+		iMultipleMajor = new UniTimeWidget<CheckBox>(new CheckBox(MESSAGES.infoMultipleMajorsOff()));
+		iMultipleMajor.getWidget().setValue(false);
+		iMultipleMajor.getWidget().addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				loadMajors(true, true);
+				iCurriculumArea.clearHint();
+				iMultipleMajor.getWidget().setText(event.getValue() ? MESSAGES.infoMultipleMajorsOn() : MESSAGES.infoMultipleMajorsOff());
+			}
+		});
+		iMultipleMajor.addStyleName("unitime-CurriculumMultipleMajors");
+		iCurriculaTable.addRow(MESSAGES.propMultipleMajors(), iMultipleMajor);
+		
 
 		iCurriculumMajors = new UniTimeWidget<ListBox>(new ListBox());
 		iCurriculumMajors.getWidget().setMultipleSelect(true);
@@ -373,7 +396,7 @@ public class CurriculumEdit extends Composite {
 					if (iDefaultName) iCurriculumName.getWidget().setText(defaultName);
 					iCurriculumMajors.setPrintText(majors);
 				} catch (Exception e) {}
-				loadEnrollments(true);
+				loadEnrollments(true, true);
 			}
 		});
 
@@ -385,7 +408,7 @@ public class CurriculumEdit extends Composite {
 		iCurriculaTable.addRow(MESSAGES.propDepartment(), iCurriculumDept);
 		
 		iCurriculaTable.addRow(MESSAGES.propLastChange(), new Label("",false));
-		iCurriculaTable.getRowFormatter().setVisible(6, false);
+		iCurriculaTable.getRowFormatter().setVisible(7, false);
 		
 		iCurriculumDept.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -430,6 +453,7 @@ public class CurriculumEdit extends Composite {
 		iCurriculumAbbv.clearHint();
 		iCurriculumName.clearHint();
 		iCurriculumArea.clearHint();
+		iMultipleMajor.clearHint();
 		iCurriculumDept.clearHint();
 		iCurriculumClasfTable.clearHint();
 
@@ -442,10 +466,10 @@ public class CurriculumEdit extends Composite {
 		iTitleAndButtons.setEnabled("next", iNavigation != null && iNavigation.next(iCurriculum) != null);
 
 		if (iCurriculum.hasLastChange() && iMode == Mode.DETAILS) {
-			((Label)iCurriculaTable.getWidget(6, 1)).setText(iCurriculum.getLastChange());
-			iCurriculaTable.getRowFormatter().setVisible(6, true);
+			((Label)iCurriculaTable.getWidget(7, 1)).setText(iCurriculum.getLastChange());
+			iCurriculaTable.getRowFormatter().setVisible(7, true);
 		} else {
-			iCurriculaTable.getRowFormatter().setVisible(6, false);
+			iCurriculaTable.getRowFormatter().setVisible(7, false);
 		}
 
 		iCurriculumAbbv.getWidget().setText(iCurriculum.getAbbv());
@@ -468,11 +492,16 @@ public class CurriculumEdit extends Composite {
 		}
 		iCurriculumDept.setText(iCurriculum.getDepartment() == null ? "" : iCurriculum.getDepartment().getLabel());
 		iCurriculumDept.setReadOnly(!iCurriculum.isEditable() || !iMode.areDetailsEditable() || !iMode.isEditable());
+		
+		iMultipleMajor.setReadOnly(!iCurriculum.isEditable() || !iMode.areDetailsEditable() || !iMode.isEditable());
+		iMultipleMajor.getWidget().setValue(iCurriculum.isMultipleMajors());
+		iMultipleMajor.getWidget().setText(iCurriculum.isMultipleMajors() ? MESSAGES.infoMultipleMajorsOn() : MESSAGES.infoMultipleMajorsOff());
+		iMultipleMajor.setReadOnlyWidget(new Check(iCurriculum.isMultipleMajors(), MESSAGES.infoMultipleMajorsOn(), MESSAGES.infoMultipleMajorsOff()));
 
 		iCurriculumMajors.setReadOnly(!iCurriculum.isEditable() || !iMode.areDetailsEditable() || !iMode.isEditable());
 		iCurriculumMajors.setText(iCurriculum.getCodeMajorNames("<br>"));
 		iCurriculumMajors.setPrintText(iCurriculum.getCodeMajorNames("<br>"));
-		loadMajors(iMode.areDetailsEditable());
+		loadMajors(iMode.areDetailsEditable(), false);
 		iCurriculumClasfTable.populate(iCurriculum.getClassifications());
 		iCurriculumClasfTable.setReadOnly(!iCurriculum.isEditable() || !iMode.isEditable());
 		iCurriculumCourses.populate(iCurriculum, iMode.isEditable());
@@ -497,6 +526,8 @@ public class CurriculumEdit extends Composite {
 			ret = false;
 		}
 		
+		iCurriculum.setMultipleMajors(iMultipleMajor.getWidget().getValue());
+		
 		if (iCurriculumArea.getWidget().getSelectedIndex() <= 0) {
 			iCurriculumArea.setErrorHint(MESSAGES.hintAcademicAreaNotSelected());
 			ret = false;
@@ -514,14 +545,14 @@ public class CurriculumEdit extends Composite {
 				iCurriculum.addMajor(m);
 			}
 		}
-		if (!iCurriculum.hasMajors())
+		if (!iCurriculum.hasMajors() && !iMultipleMajor.getWidget().getValue())
 			for (int i = 0; i < iCurriculumMajors.getWidget().getItemCount(); i++) {
 				MajorInterface m = new MajorInterface();
 				m.setId(Long.valueOf(iCurriculumMajors.getWidget().getValue(i)));
 				iCurriculum.addMajor(m);
 			}
 		
-		if (iCurriculumMajors.getWidget().getItemCount() == 0 && iCurriculumArea.getWidget().getSelectedIndex() > 0 && !iAreaHasNoMajors) {
+		if (iCurriculumMajors.getWidget().getItemCount() == 0 && iCurriculumArea.getWidget().getSelectedIndex() > 0 && !iAreaHasNoMajors && !iMultipleMajor.getWidget().getValue()) {
 			iCurriculumArea.setErrorHint(MESSAGES.hintAcademicAreaHasNoMajors());
 			ret = false;
 		}
@@ -538,6 +569,7 @@ public class CurriculumEdit extends Composite {
 		if (!iCurriculumClasfTable.getWidget().saveCurriculum(iCurriculum)) {
 			ret = false;
 		}
+		
 		if (!iCurriculum.hasClassifications()) {
 			iCurriculumClasfTable.setErrorHint(MESSAGES.hintNoStudentExpectations());
 			ret = false;
@@ -550,10 +582,12 @@ public class CurriculumEdit extends Composite {
 		return ret;
 	}
 
-	private void loadMajors(final boolean showEmptyCourses) {
+	private void loadMajors(final boolean showEmptyCourses, final boolean changed) {
 		if (iCurriculumArea.getWidget().getSelectedIndex() > 0) {
 			showLoading("Loading majors ...");
-			iService.loadMajors(iCurriculum.getId(), Long.valueOf(iCurriculumArea.getWidget().getValue(iCurriculumArea.getWidget().getSelectedIndex())),
+			iService.loadMajors(iCurriculum.getId(),
+					Long.valueOf(iCurriculumArea.getWidget().getValue(iCurriculumArea.getWidget().getSelectedIndex())),
+					iMultipleMajor.getWidget().getValue(),
 					new AsyncCallback<TreeSet<MajorInterface>>() {
 
 						@Override
@@ -608,7 +642,7 @@ public class CurriculumEdit extends Composite {
 							if (!iDefaultName && allSelected && area != null && area.getName().equalsIgnoreCase(iCurriculumName.getWidget().getText()))
 								iDefaultName = true;
 							iCurriculumMajors.getWidget().setVisibleItemCount(iCurriculumMajors.getWidget().getItemCount() <= 3 ? 3 : iCurriculumMajors.getWidget().getItemCount() > 10 ? 10 : iCurriculumMajors.getWidget().getItemCount());
-							loadEnrollments(showEmptyCourses);
+							loadEnrollments(showEmptyCourses, changed);
 							hideLoading();
 						}
 					});
@@ -617,7 +651,7 @@ public class CurriculumEdit extends Composite {
 		}
 	}
 	
-	private void loadEnrollments(final boolean showEmptyCourses) {
+	private void loadEnrollments(final boolean showEmptyCourses, final boolean changed) {
 		if (iCurriculumArea.getWidget().getSelectedIndex() >= 0) {
 			final Long areaId = Long.valueOf(iCurriculumArea.getWidget().getValue(iCurriculumArea.getWidget().getSelectedIndex()));
 			final List<Long> majorIds = new ArrayList<Long>();
@@ -625,15 +659,15 @@ public class CurriculumEdit extends Composite {
 				if (iCurriculumMajors.getWidget().isItemSelected(i)) majorIds.add(Long.valueOf(iCurriculumMajors.getWidget().getValue(i)));
 			}
 			
-			if (majorIds.isEmpty()) {
+			if (majorIds.isEmpty() && !iMultipleMajor.getWidget().getValue()) {
 				for (int i = 0; i < iCurriculumMajors.getWidget().getItemCount(); i++) {
 					majorIds.add(Long.valueOf(iCurriculumMajors.getWidget().getValue(i)));
 				}
 			}
-			if (majorIds.isEmpty() && !iAreaHasNoMajors) return;
+			if (majorIds.isEmpty() && !iMultipleMajor.getWidget().getValue() && !iAreaHasNoMajors) return;
 			
 			showLoading(MESSAGES.waitLoadingCourseEnrollments());
-			iService.computeEnrollmentsAndLastLikes(areaId, majorIds, new AsyncCallback<HashMap<String,CurriculumStudentsInterface[]>>() {
+			iService.computeEnrollmentsAndLastLikes(areaId, majorIds, iMultipleMajor.getWidget().getValue(), new AsyncCallback<HashMap<String,CurriculumStudentsInterface[]>>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -641,21 +675,62 @@ public class CurriculumEdit extends Composite {
 				}
 
 				@Override
-				public void onSuccess(HashMap<String, CurriculumStudentsInterface[]> result) {
-					CurriculumStudentsInterface[] x = result.get("");
-					for (int col = 0; col < iClassifications.size(); col++) {
-						iCurriculumClasfTable.getWidget().setEnrollment(col, x == null || x[col] == null ? null : x[col].getEnrollment());
-						iCurriculumClasfTable.getWidget().setLastLike(col, x == null || x[col] == null ? null : x[col].getLastLike());
-						iCurriculumClasfTable.getWidget().setProjection(col, x == null || x[col] == null ? null : x[col].getProjection());
-						iCurriculumClasfTable.getWidget().setRequested(col, x == null || x[col] == null ? null : x[col].getRequested());
+				public void onSuccess(final HashMap<String, CurriculumStudentsInterface[]> result) {
+					if (iMultipleMajor.getWidget().getValue() && iMode.isEditable() && changed) {
+						iService.loadTemplate(areaId, majorIds, new AsyncCallback<CurriculumInterface>() {
+							@Override
+							public void onSuccess(CurriculumInterface template) {
+								iCurriculumCourses.populateTemplate(template);
+								CurriculumStudentsInterface[] x = result.get("");
+								for (int col = 0; col < iClassifications.size(); col++) {
+									iCurriculumClasfTable.getWidget().setEnrollment(col, x == null || x[col] == null ? null : x[col].getEnrollment());
+									iCurriculumClasfTable.getWidget().setLastLike(col, x == null || x[col] == null ? null : x[col].getLastLike());
+									iCurriculumClasfTable.getWidget().setProjection(col, x == null || x[col] == null ? null : x[col].getProjection());
+									iCurriculumClasfTable.getWidget().setRequested(col, x == null || x[col] == null ? null : x[col].getRequested());
+								}
+								iCurriculumCourses.updateEnrollmentsAndLastLike(result, showEmptyCourses);
+								if (iCurriculumClasfTable.isShowingAllColumns())
+									iCurriculumClasfTable.getWidget().showAllColumns();
+								else
+									iCurriculumClasfTable.getWidget().hideEmptyColumns();
+								iCurriculumClasfTable.getWidget().hideEmptyRows();
+								hideLoading();
+							}
+							
+							@Override
+							public void onFailure(Throwable caught) {
+								CurriculumStudentsInterface[] x = result.get("");
+								for (int col = 0; col < iClassifications.size(); col++) {
+									iCurriculumClasfTable.getWidget().setEnrollment(col, x == null || x[col] == null ? null : x[col].getEnrollment());
+									iCurriculumClasfTable.getWidget().setLastLike(col, x == null || x[col] == null ? null : x[col].getLastLike());
+									iCurriculumClasfTable.getWidget().setProjection(col, x == null || x[col] == null ? null : x[col].getProjection());
+									iCurriculumClasfTable.getWidget().setRequested(col, x == null || x[col] == null ? null : x[col].getRequested());
+								}
+								iCurriculumCourses.updateEnrollmentsAndLastLike(result, showEmptyCourses);
+								if (iCurriculumClasfTable.isShowingAllColumns())
+									iCurriculumClasfTable.getWidget().showAllColumns();
+								else
+									iCurriculumClasfTable.getWidget().hideEmptyColumns();
+								iCurriculumClasfTable.getWidget().hideEmptyRows();
+								hideLoading();
+							}
+						});
+					} else {
+						CurriculumStudentsInterface[] x = result.get("");
+						for (int col = 0; col < iClassifications.size(); col++) {
+							iCurriculumClasfTable.getWidget().setEnrollment(col, x == null || x[col] == null ? null : x[col].getEnrollment());
+							iCurriculumClasfTable.getWidget().setLastLike(col, x == null || x[col] == null ? null : x[col].getLastLike());
+							iCurriculumClasfTable.getWidget().setProjection(col, x == null || x[col] == null ? null : x[col].getProjection());
+							iCurriculumClasfTable.getWidget().setRequested(col, x == null || x[col] == null ? null : x[col].getRequested());
+						}
+						iCurriculumCourses.updateEnrollmentsAndLastLike(result, showEmptyCourses);
+						if (iCurriculumClasfTable.isShowingAllColumns())
+							iCurriculumClasfTable.getWidget().showAllColumns();
+						else
+							iCurriculumClasfTable.getWidget().hideEmptyColumns();
+						iCurriculumClasfTable.getWidget().hideEmptyRows();
+						hideLoading();
 					}
-					iCurriculumCourses.updateEnrollmentsAndLastLike(result, showEmptyCourses);
-					if (iCurriculumClasfTable.isShowingAllColumns())
-						iCurriculumClasfTable.getWidget().showAllColumns();
-					else
-						iCurriculumClasfTable.getWidget().hideEmptyColumns();
-					iCurriculumClasfTable.getWidget().hideEmptyRows();
-					hideLoading();
 				}
 			});
 		}
@@ -807,5 +882,20 @@ public class CurriculumEdit extends Composite {
 	
 	public CurriculumInterface getCurriculum() {
 		return iCurriculum;
+	}
+	
+	static class Check extends P {
+		Check(boolean value, String onMessage, String offMessage) {
+			Image image = new Image(value ? RESOURCES.on() : RESOURCES.off());
+			image.addStyleName("image");
+			add(image);
+			InlineHTML text = new InlineHTML(value ? onMessage : offMessage);
+			text.addStyleName("message");
+			add(text);
+			if (value)
+				addStyleName("check-enabled");
+			else
+				addStyleName("check-disabled");
+		}
 	}
 }

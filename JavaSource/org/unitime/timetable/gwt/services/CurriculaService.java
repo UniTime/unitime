@@ -43,11 +43,11 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface CurriculaService extends RemoteService {
 	public TreeSet<CurriculumInterface> findCurricula(CurriculumInterface.CurriculumFilterRpcRequest filter) throws CurriculaException, PageAccessException;
 	public List<CurriculumInterface.CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException, PageAccessException;
-	public HashMap<String, CurriculumInterface.CurriculumStudentsInterface[]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException, PageAccessException;
+	public HashMap<String, CurriculumInterface.CurriculumStudentsInterface[]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors, boolean multipleMajors) throws CurriculaException, PageAccessException;
 	public TreeSet<CurriculumInterface.AcademicAreaInterface> loadAcademicAreas() throws CurriculaException, PageAccessException;
 	public TreeSet<CurriculumInterface.AcademicClassificationInterface> loadAcademicClassifications() throws CurriculaException, PageAccessException;
 	public TreeSet<CurriculumInterface.DepartmentInterface> loadDepartments() throws CurriculaException, PageAccessException;
-	public TreeSet<CurriculumInterface.MajorInterface> loadMajors(Long curriculumId, Long academicAreaId) throws CurriculaException, PageAccessException;
+	public TreeSet<CurriculumInterface.MajorInterface> loadMajors(Long curriculumId, Long academicAreaId, boolean multipleMajors) throws CurriculaException, PageAccessException;
 	public String lastCurriculaFilter() throws CurriculaException, PageAccessException;
 	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException, PageAccessException;
 	public Long saveCurriculum(CurriculumInterface curriculum) throws CurriculaException, PageAccessException;
@@ -72,4 +72,5 @@ public interface CurriculaService extends RemoteService {
 	public HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> loadProjectionRules() throws CurriculaException, PageAccessException;
 	public Boolean saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules) throws CurriculaException, PageAccessException;
 	public Boolean canEditProjectionRules() throws CurriculaException, PageAccessException;
+	public CurriculumInterface loadTemplate(Long acadAreaId, List<Long> majors) throws CurriculaException, PageAccessException;
 }

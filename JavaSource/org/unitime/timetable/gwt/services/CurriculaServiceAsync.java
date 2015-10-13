@@ -41,11 +41,11 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface CurriculaServiceAsync {
 	public void findCurricula(CurriculumInterface.CurriculumFilterRpcRequest filter, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException, PageAccessException;
 	public void loadClassifications(List<Long> curriculumIds, AsyncCallback<List<CurriculumInterface.CurriculumClassificationInterface>> callback) throws CurriculaException, PageAccessException;
-	public void computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors, AsyncCallback<HashMap<String, CurriculumInterface.CurriculumStudentsInterface[]>> callback) throws CurriculaException, PageAccessException;
+	public void computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors, boolean multipleMajors, AsyncCallback<HashMap<String, CurriculumInterface.CurriculumStudentsInterface[]>> callback) throws CurriculaException, PageAccessException;
 	public void loadAcademicAreas(AsyncCallback<TreeSet<CurriculumInterface.AcademicAreaInterface>> callback) throws CurriculaException, PageAccessException;
 	public void loadAcademicClassifications(AsyncCallback<TreeSet<CurriculumInterface.AcademicClassificationInterface>> callback) throws CurriculaException, PageAccessException;
 	public void loadDepartments(AsyncCallback<TreeSet<CurriculumInterface.DepartmentInterface>> callback) throws CurriculaException, PageAccessException;
-	public void loadMajors(Long curriculumId, Long academicAreaId, AsyncCallback<TreeSet<CurriculumInterface.MajorInterface>> callback) throws CurriculaException, PageAccessException;
+	public void loadMajors(Long curriculumId, Long academicAreaId, boolean multipleMajors, AsyncCallback<TreeSet<CurriculumInterface.MajorInterface>> callback) throws CurriculaException, PageAccessException;
 	public void lastCurriculaFilter(AsyncCallback<String> callback) throws CurriculaException, PageAccessException;
 	public void loadCurriculum(Long curriculumId, AsyncCallback<CurriculumInterface> callback) throws CurriculaException, PageAccessException;
 	public void saveCurriculum(CurriculumInterface curriculum, AsyncCallback<Long> callback) throws CurriculaException, PageAccessException;
@@ -71,4 +71,5 @@ public interface CurriculaServiceAsync {
 	public void loadProjectionRules(AsyncCallback<HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>>> callback) throws CurriculaException, PageAccessException;
 	public void saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules, AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
 	public void canEditProjectionRules(AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
+	public void loadTemplate(Long acadAreaId, List<Long> majors, AsyncCallback<CurriculumInterface> callback) throws CurriculaException, PageAccessException;
 }

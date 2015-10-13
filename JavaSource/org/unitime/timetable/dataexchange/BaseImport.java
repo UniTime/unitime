@@ -141,5 +141,15 @@ public abstract class BaseImport extends DataExchangeHelper {
 	protected TimetableManager findDefaultManager(){
 		return((TimetableManager)getHibSession().createQuery("from TimetableManager as m where m.uniqueId = (select min(tm.uniqueId) from TimetableManager as tm inner join tm.managerRoles as mr inner join mr.role as r where r.reference = 'Administrator')").uniqueResult());
 	}
+	
+	protected String trim(String text, String name, int maxLength) {
+		if (text != null && text.length() > maxLength) {
+			if (name != null)
+				info("Attribute " + name + " is too long (" + text + "), it will be trimmed to " + maxLength + " characters.");
+			return text.substring(0, maxLength);
+		} else {
+			return text;
+		}
+	}
 
 }

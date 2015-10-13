@@ -39,6 +39,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	private String iAbbv, iName;
 	private boolean iEditable = false;
 	private String iLastChange = null;
+	private boolean iMultipleMajors = false;
 	
 	private AcademicAreaInterface iAcademicArea;
 	private TreeSet<MajorInterface> iMajors;
@@ -63,6 +64,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	
 	public AcademicAreaInterface getAcademicArea() { return iAcademicArea; }
 	public void setAcademicArea(AcademicAreaInterface area) { iAcademicArea = area; }
+	
+	public boolean isMultipleMajors() { return iMultipleMajors; }
+	public void setMultipleMajors(boolean multipleMajors) { iMultipleMajors = multipleMajors; }
 	
 	public TreeSet<MajorInterface> getMajors() { return iMajors; }
 	public boolean hasMajors() { return iMajors != null && !iMajors.isEmpty(); }
@@ -108,12 +112,41 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		if (iClasf == null) iClasf = new TreeSet<CurriculumClassificationInterface>();
 		iClasf.add(clasf);
 	}
+	public CurriculumClassificationInterface getClassification(Long academicClassificationId) {
+		if (iClasf == null) return null;
+		for (CurriculumClassificationInterface clasf: iClasf) {
+			if (clasf.getAcademicClassification().getId().equals(academicClassificationId))
+				return clasf;
+		}
+		return null;
+	}
+	public CurriculumClassificationInterface getClassification(String academicClassificationCode) {
+		if (iClasf == null) return null;
+		for (CurriculumClassificationInterface clasf: iClasf) {
+			if (clasf.getAcademicClassification().getCode().equals(academicClassificationCode))
+				return clasf;
+		}
+		return null;
+	}
 	
 	public TreeSet<CourseInterface> getCourses() { return iCourses; }
 	public boolean hasCourses() { return iCourses != null && !iCourses.isEmpty(); }
 	public void addCourse(CourseInterface course) {
 		if (iCourses == null) iCourses = new TreeSet<CourseInterface>();
 		iCourses.add(course);
+	}
+	public CourseInterface getCourse(Long courseOfferingId) {
+		if (iCourses == null) return null;
+		for (CourseInterface course: iCourses)
+			if (course.getId().equals(courseOfferingId)) return course;
+		return null;
+	}
+	
+	public CourseInterface getCourse(String courseName) {
+		if (iCourses == null) return null;
+		for (CourseInterface course: iCourses)
+			if (course.getCourseName().equals(courseName)) return course;
+		return null;
 	}
 
 	public Integer getExpected() {
@@ -443,6 +476,18 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public TreeSet<CurriculumCourseGroupInterface> getGroups() {
 			return iGroups;
 		}
+		public CurriculumCourseGroupInterface getGroup(String name) {
+			if (iGroups == null) return null;
+			for (CurriculumCourseGroupInterface group: iGroups)
+				if (group.getName().equals(name)) return group;
+			return null;
+		}
+		public CurriculumCourseGroupInterface getGroup(Long groupId) {
+			if (iGroups == null) return null;
+			for (CurriculumCourseGroupInterface group: iGroups)
+				if (group.getId().equals(groupId)) return group;
+			return null;
+		}
 		
 		public int hashCode() {
 			return getId().hashCode();
@@ -453,7 +498,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 			for (int i = 0; i < iCurriculumCourses.size(); i++) {
 				CurriculumCourseInterface c = iCurriculumCourses.get(i);
 				if (c == null) continue;
-				if (c.getShare() > 0.0f) return i;
+				if (c.getDisplayedShare() > 0.0f) return i;
 			}
 			return iCurriculumCourses.size();
 		}
@@ -465,11 +510,40 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 			for (int i = 0; i < iCurriculumCourses.size(); i++) {
 				CurriculumCourseInterface c = iCurriculumCourses.get(i);
 				if (c == null) continue;
-				if (c.getShare() > bestShare) {
-					bestShare = c.getShare(); best = i;
+				if (c.getDisplayedShare() > bestShare) {
+					bestShare = c.getDisplayedShare(); best = i;
 				}
 			}
 			return best;
+		}
+		
+		public boolean hasDefaultShare() {
+			if (iCurriculumCourses == null) return false;
+			for (CurriculumCourseInterface c: iCurriculumCourses)
+				if (c != null && c.getDefaultShare() != null)
+					return true;
+			return false;
+		}
+		
+		public boolean hasTemplate() { 
+			if (iCurriculumCourses == null) return false;
+			for (CurriculumCourseInterface c: iCurriculumCourses)
+				if (c != null && c.hasTemplates())
+					return true;
+			return false;
+		}
+		public String getTemplate() {
+			if (iCurriculumCourses == null) return null;
+			TreeSet<String> templates = new TreeSet<String>();
+			for (CurriculumCourseInterface c: iCurriculumCourses)
+				if (c != null && c.hasTemplates())
+					templates.addAll(c.getTemplates());
+			if (templates.isEmpty()) return null;
+			String ret = "";
+			for (String template: templates) {
+				ret += (ret.isEmpty() ? "" : ", ") + template;
+			}
+			return ret;
 		}
 
 		public int compareTo(CourseInterface course) {
@@ -481,7 +555,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 				if (a <= iCurriculumCourses.size()) {
 					CurriculumCourseInterface c = getCurriculumCourse(a);
 					CurriculumCourseInterface d = course.getCurriculumCourse(a);
-					int cmp = Double.compare(d == null ? 0f : d.getShare(), c == null ? 0f : c.getShare());
+					int cmp = Double.compare(d == null ? 0f : d.getDisplayedShare(), c == null ? 0f : c.getDisplayedShare());
 					if (cmp != 0) return cmp;
 				}
 				a = firstClassification();
@@ -491,7 +565,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 				while (a <= iCurriculumCourses.size()) {
 					CurriculumCourseInterface c = getCurriculumCourse(a);
 					CurriculumCourseInterface d = course.getCurriculumCourse(a);
-					int cmp = Double.compare(d == null ? 0f : d.getShare(), c == null ? 0f : c.getShare());
+					int cmp = Double.compare(d == null ? 0f : d.getDisplayedShare(), c == null ? 0f : c.getDisplayedShare());
 					if (cmp != 0) return cmp;
 					a++;
 				}
@@ -504,8 +578,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	public static class CurriculumCourseInterface implements IsSerializable, Comparable<CurriculumCourseInterface> {
 		private Long iId, iCourseId, iClasfId;
 		private String iCourseName;
-		private float iShare = 0.0f;
+		private Float iShare = null, iDefaultShare = null;
 		private Integer iLastLike = null, iEnrollment = null, iProjection = null, iRequested = null;
+		private TreeSet<String> iTemplates = null;
 		
 		public CurriculumCourseInterface() {}
 		
@@ -521,9 +596,24 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public String getCourseName() { return iCourseName; }
 		public void setCourseName(String courseName) { iCourseName = courseName; }
 		
-		public float getShare() { return iShare; }
-		public void setShare(float share) { iShare = share; }
+		public float getShare() { return iShare == null ? 0f : iShare.floatValue(); }
+		public boolean hasShare() { return iShare != null; }
+		public void setShare(Float share) { iShare = share; }
 		
+		public Float getDefaultShare() { return iDefaultShare; }
+		public void setDefaultShare(Float share) { iDefaultShare = share; }
+		
+		public TreeSet<String> getTemplates() { return iTemplates; }
+		public boolean hasTemplates() { return iTemplates != null && !iTemplates.isEmpty(); }
+		public void addTemplate(String template) {
+			if (iTemplates == null) iTemplates = new TreeSet<String>();
+			iTemplates.add(template);
+		}
+		
+		public float getDisplayedShare() {
+			return iShare != null ? iShare.floatValue() :  iDefaultShare != null ? iDefaultShare.floatValue() : 0.0f;
+		}
+
 		public Integer getLastLike() { return iLastLike; }
 		public void setLastLike(Integer lastLike) { iLastLike = lastLike; }
 		
@@ -554,6 +644,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		private Long iId;
 		private String iName, iColor;
 		private int iType;
+		private boolean iEditable = true;
 		
 		public CurriculumCourseGroupInterface() {}
 		
@@ -569,6 +660,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public int getType() { return iType; }
 		public void setType(int type) { iType = type; }
 		
+		public boolean isEditable() { return iEditable; }
+		public void setEditable(boolean editable) { iEditable = editable; }
+		
 		public int hashCode() { return iName.hashCode(); }
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof CurriculumCourseGroupInterface)) return false;
@@ -582,7 +676,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	public static class CurriculumStudentsInterface implements IsSerializable {
 		private Set<Long> iEnrollment = null;
 		private Set<Long> iRequested = null;
-		private HashMap<String, Set<Long>> iLastLike = null;
+		private HashMap<Long, Set<String>> iLastLike = null;
 		private HashMap<String, Float> iProjection = null;
 		
 		public CurriculumStudentsInterface() {}
@@ -592,21 +686,26 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}		
 		public int getLastLike() {
 			if (iLastLike == null || iLastLike.isEmpty()) return 0;
-			int lastLike = 0;
-			for (Map.Entry<String, Set<Long>> entry: iLastLike.entrySet())
-				lastLike += entry.getValue().size();
-			return lastLike;
+			return iLastLike.size();
 		}
 		
 		public int getProjection() {
 			if (iLastLike == null || iLastLike.isEmpty()) return 0;
-			float proj = 0;
-			for (Map.Entry<String, Set<Long>> entry: iLastLike.entrySet()) {
-				Float f = (iProjection == null ? null : iProjection.get(entry.getKey()));
-				if (f == null && iProjection != null) f = iProjection.get("");
-				proj += (f == null ? 1.0f : f) * entry.getValue().size();
+			if (iProjection == null) return iLastLike.size();
+			double proj = 0;
+			for (Map.Entry<Long, Set<String>> entry: iLastLike.entrySet()) {
+				double weight = 1.0;
+				int cnt = 0;
+				for (String major: entry.getValue()) {
+					Float f = iProjection.get(major);
+					if (f == null) f = iProjection.get("");
+					if (f != null) {
+						weight *= f; cnt ++;
+					}
+				}
+				proj += (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
 			}
-			return Math.round(proj);
+			return (int) Math.round(proj);
 		}
 		
 		public int getRequested() {
@@ -619,11 +718,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		
 		public Set<Long> getLastLikeStudents() {
 			if (iLastLike == null || iLastLike.isEmpty()) return null;
-			if (iLastLike.size() == 1) return iLastLike.values().iterator().next();
-			Set<Long> lastLike = new HashSet<Long>();
-			for (Map.Entry<String, Set<Long>> entry: iLastLike.entrySet())
-				lastLike.addAll(entry.getValue());
-			return lastLike;
+			return iLastLike.keySet();
 		}
 		
 		public Set<Long> getProjectedStudents() {
@@ -632,18 +727,23 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		
 		public int countProjectedStudents(Set<Long> students) {
 			if (iLastLike == null || iLastLike.isEmpty()) return 0;
-			float proj = 0;
-			for (Map.Entry<String, Set<Long>> entry: iLastLike.entrySet()) {
-				int share = 0;
-				for (Long student: entry.getValue())
-					if (students.contains(student)) share++;
-				if (share > 0) {
-					Float f = (iProjection == null ? null : iProjection.get(entry.getKey()));
-					if (f == null && iProjection != null) f = iProjection.get("");
-					proj += (f == null ? 1.0f : f) * share;
+			if (iProjection == null) return iLastLike.size();
+			double proj = 0;
+			for (Long student: students) {
+				Set<String> majors = iLastLike.get(student);
+				if (majors == null) continue;
+				double weight = 1.0;
+				int cnt = 0;
+				for (String major: majors) {
+					Float f = iProjection.get(major);
+					if (f == null) f = iProjection.get("");
+					if (f != null)
+						weight *= f;
+					cnt ++;
 				}
+				proj += (cnt == 0 ? 1.0f : cnt == 1 ? weight : Math.pow(weight, 1.0 / cnt));
 			}
-			return Math.round(proj);
+			return (int) Math.round(proj);
 		}
 		
 		public Set<Long> getRequestedStudents() {
@@ -652,7 +752,23 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		
 		public void setEnrolledStudents(Set<Long> students) { iEnrollment = students; }
 		
-		public void setLastLikeStudents(HashMap<String, Set<Long>> students) { iLastLike = students; }
+		public void setLastLikeStudents(HashMap<String, Set<Long>> students) {
+			if (students == null) {
+				iLastLike = null;
+			} else {
+				iLastLike = new HashMap<Long, Set<String>>();
+				for (Map.Entry<String, Set<Long>> entry: students.entrySet()) {
+					for (Long student: entry.getValue()) {
+						Set<String> majors = iLastLike.get(student);
+						if (majors == null) {
+							majors = new HashSet<String>();
+							iLastLike.put(student, majors);
+						}
+						majors.add(entry.getKey());
+					}
+				}
+			}
+		}
 		
 		public void setProjection(HashMap<String, Float> projection) { iProjection = projection; }
 		

@@ -32,6 +32,7 @@ public class CurriculumCookie {
 	private boolean iRulesShowLastLike = false;
 	private boolean iCourseDetails = false;
 	private boolean iShowLast = true, iShowProjected = true, iShowExpected = true, iShowEnrolled = true, iShowRequested = false;
+	private int iSortBy = 0;
 	private CurriculaTable.DisplayMode iCurMode = new CurriculaTable.DisplayMode() {
 		@Override
 		public void changed() {
@@ -58,6 +59,7 @@ public class CurriculumCookie {
 				iShowExpected = !"F".equals(values[9]);
 				iShowEnrolled = !"F".equals(values[10]);
 				iShowRequested = "T".equals(values[11]);
+				iSortBy = Integer.parseInt(values[12]);
 			}
 		} catch (Exception e) {
 		}
@@ -76,7 +78,8 @@ public class CurriculumCookie {
 			(iShowProjected ? "T" : "F") + ":" +
 			(iShowExpected ? "T" : "F") + ":" +
 			(iShowEnrolled ? "T" : "F") + ":" +
-			(iShowRequested ? "T" : "F")
+			(iShowRequested ? "T" : "F") + ":" + 
+			iSortBy;
 			;
 		Cookies.setCookie("UniTime:Curriculum", cookie);
 	}
@@ -163,4 +166,7 @@ public class CurriculumCookie {
 	public boolean isAllHidden() {
 		return !iShowLast && !iShowProjected && !iShowExpected && !iShowEnrolled && !iShowRequested;
 	}
+	
+	public int getSortBy() { return iSortBy; }
+	public void setSortBy(int sortBy) { iSortBy = sortBy; save(); }
 }

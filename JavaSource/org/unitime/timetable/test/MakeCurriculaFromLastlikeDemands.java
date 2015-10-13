@@ -232,6 +232,7 @@ public class MakeCurriculaFromLastlikeDemands {
                 curriculum.setAbbv(e1.getKey().getAcademicAreaAbbreviation() + "/" + e2.getKey().getCode());
                 curriculum.setName(Constants.curriculaToInitialCase(e1.getKey().getTitle() == null ? e1.getKey().getTitle() : e1.getKey().getTitle()) + " / " + Constants.curriculaToInitialCase(e2.getKey().getName()));
 				if (curriculum.getName().length() > 60) curriculum.setName(curriculum.getName().substring(0, 60));
+                curriculum.setMultipleMajors(false);
                 curriculum.setClassifications(new HashSet());
                 curriculum.setMajors(new HashSet());
                 curriculum.getMajors().add(e2.getKey());

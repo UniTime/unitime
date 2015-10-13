@@ -117,7 +117,7 @@ public class CurriculaClassifications extends Composite {
 					if (!expected.getText().isEmpty()) {
 						try {
 							exp = Integer.parseInt(expected.getText());
-							if (exp <= 0) {
+							if (exp < 0) {
 								exp = null;
 								expected.setText(null);
 							}
