@@ -378,7 +378,9 @@ public class CourseOfferingEditAction extends Action {
 			        if (co.getCredit() != null){
 			        	hibSession.saveOrUpdate(co.getCredit());
 			        }
-
+		        }
+		        
+		        if (co.isIsControl()) {
 			        io.setByReservationOnly(frm.isByReservationOnly());
 			        try {
 			        	io.setLastWeekToEnroll(Integer.parseInt(frm.getWkEnroll()));
