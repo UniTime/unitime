@@ -59,7 +59,6 @@ public class CourseCatalogImport extends BaseImport {
                 catalog.setCourseNumber(element.attributeValue("courseNumber"));
                 catalog.setApprovalType(element.attributeValue("approvalType"));
                 catalog.setExternalUniqueId(element.attributeValue("externalId"));
-                catalog.setFractionalCreditAllowed(Boolean.valueOf(element.attributeValue("fractionalCreditAllowed")));
                 catalog.setPermanentId(element.attributeValue("permanentId"));
                 catalog.setPreviousCourseNumber(element.attributeValue("previousCourseNumber"));
                 catalog.setPreviousSubject(element.attributeValue("previousSubject"));
@@ -75,6 +74,7 @@ public class CourseCatalogImport extends BaseImport {
                 catalog.setCreditFormat(credit.attributeValue("creditFormat"));
                 catalog.setCreditType(credit.attributeValue("creditType"));
                 catalog.setCreditUnitType(credit.attributeValue("creditUnitType"));
+                catalog.setFractionalCreditAllowed(Boolean.valueOf(credit.attributeValue("fractionalCreditAllowed")));
                 String minCredit = credit.attributeValue("fixedCredit");
                 if(minCredit != null) 
                     catalog.setFixedMinimumCredit(Float.parseFloat(minCredit));
