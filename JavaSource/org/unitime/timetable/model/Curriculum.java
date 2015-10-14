@@ -66,7 +66,7 @@ public class Curriculum extends BaseCurriculum implements Comparable<Curriculum>
     
     public boolean isTemplateFor(Curriculum curriculum) {
     	if (!curriculum.isMultipleMajors()) return false;
-    	if (!curriculum.getAcademicArea().equals(curriculum.getAcademicArea())) return false;
+    	if (!curriculum.getAcademicArea().equals(getAcademicArea())) return false;
     	if (curriculum.getMajors().size() <= getMajors().size() || getMajors().size() > 1) return false;
     	return getMajors().isEmpty() || curriculum.getMajors().containsAll(getMajors());
     }

@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.curricula;
 
 import org.unitime.timetable.model.CurriculumCourse;
+import org.unitime.timetable.solver.curricula.CurriculaCourseDemands.CurriculumCourseGroupsProvider;
 
 /**
  * @author Tomas Muller
@@ -30,5 +31,5 @@ public interface CurriculumEnrollmentPriorityProvider {
      * Priority of a course (for a student of the curriculum & classification).
      * Null if not used, or between zero (no priority) and one (highest priority)
      */
-	public Double getEnrollmentPriority(CurriculumCourse course);
+	public Double getEnrollmentPriority(CurriculumCourse course, CurriculumCourseGroupsProvider course2groups);
 }

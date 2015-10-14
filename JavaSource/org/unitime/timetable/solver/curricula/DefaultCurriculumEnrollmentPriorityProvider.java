@@ -23,6 +23,7 @@ package org.unitime.timetable.solver.curricula;
 import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumCourseGroup;
+import org.unitime.timetable.solver.curricula.CurriculaCourseDemands.CurriculumCourseGroupsProvider;
 
 /**
  * @author Tomas Muller
@@ -37,20 +38,20 @@ public class DefaultCurriculumEnrollmentPriorityProvider implements CurriculumEn
 	}
 
 	@Override
-	public Double getEnrollmentPriority(CurriculumCourse course) {
+	public Double getEnrollmentPriority(CurriculumCourse course, CurriculumCourseGroupsProvider course2groups) {
 		if (course.getPercShare() >= iThreshold) return 1.0; // required course -- important
-		for (CurriculumCourseGroup group: course.getGroups()) {
+		for (CurriculumCourseGroup group: course2groups.getGroups(course)) {
 			if (iGroupMatch != null && !iGroupMatch.isEmpty() && group.getName().matches(iGroupMatch)) {
 				return 1.0; // matching group name
 			}
 			if (group.getType() == 0) { // optional group
 				float totalShare = 0.0f;
 				for (CurriculumCourse other: course.getClassification().getCourses())
-					if (other.getGroups().contains(group)) totalShare += other.getPercShare();
+					if (course2groups.getGroups(other).contains(group)) totalShare += other.getPercShare();
 				if (totalShare >= iThreshold) return 1.0; // it is required to take one of the courses of the group
 			} else if (group.getType() == 1) {
 				for (CurriculumCourse other: course.getClassification().getCourses())
-					if (other.getGroups().contains(group) && other.getPercShare() >= iThreshold)
+					if (course2groups.getGroups(other).contains(group) && other.getPercShare() >= iThreshold)
 						return 1.0; // it is required to take courses from this group
 			}
 		}
