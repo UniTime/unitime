@@ -55,7 +55,7 @@ public class EventsConnector extends ApiConnector {
 		if (session == null)
 			throw new IllegalArgumentException("Given academic session no longer exists.");
 		
-		helper.getSessionContext().checkPermission(session, Right.ApiRetrieveEvents);
+		helper.getSessionContext().checkPermissionAnyAuthority(session, Right.ApiRetrieveEvents);
 
 		EventLookupRpcRequest request = new EventLookupRpcRequest();
     	request.setSessionId(sessionId);

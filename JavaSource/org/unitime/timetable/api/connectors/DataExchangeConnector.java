@@ -51,7 +51,7 @@ public class DataExchangeConnector extends ApiConnector {
 
 	@Override
 	public void doGet(ApiHelper helper) throws IOException {
-		helper.getSessionContext().checkPermission(Right.ApiDataExchangeConnector);
+		helper.getSessionContext().checkPermissionAnyAuthority(Right.ApiDataExchangeConnector);
 		
 		Long sessionId = helper.getAcademicSessionId();
 		if (sessionId == null)
@@ -79,7 +79,7 @@ public class DataExchangeConnector extends ApiConnector {
 	
 	@Override
 	public void doPost(ApiHelper helper) throws IOException {
-		helper.getSessionContext().checkPermission(Right.ApiDataExchangeConnector);
+		helper.getSessionContext().checkPermissionAnyAuthority(Right.ApiDataExchangeConnector);
 		
 		Document document = helper.getRequest(Document.class);
 		Document output = DocumentHelper.createDocument();

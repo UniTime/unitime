@@ -54,7 +54,7 @@ public class RoomsConnector extends ApiConnector {
 		if (session == null)
 			throw new IllegalArgumentException("Given academic session no longer exists.");
 
-		helper.getSessionContext().checkPermission(session, Right.ApiRetrieveRooms);
+		helper.getSessionContext().checkPermissionAnyAuthority(session, Right.ApiRetrieveRooms);
 		
 		RoomFilterRpcRequest request = new RoomFilterRpcRequest();
 		request.setCommand(FilterRpcRequest.Command.ENUMERATE);
