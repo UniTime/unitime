@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,11 +34,9 @@ import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
-import org.restlet.Response;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
-import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.unitime.localization.impl.Localization;
@@ -72,13 +69,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.JsonReader;
 
 public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	private static Logger sLog = Logger.getLogger(XEStudentEnrollment.class);
@@ -160,17 +154,6 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return builder.create();
 	}
 	
-	protected <T> T readResponse(Gson gson, Response response, Type typeOfT) throws JsonIOException, JsonSyntaxException, IOException {
-		if (response == null) return null;
-		JsonReader reader = new JsonReader(response.getEntity().getReader());
-		try {
-			return gson.fromJson(reader, typeOfT);
-		} finally {
-			reader.close();
-			response.release();
-		}
-	}
-	
 	@Override
 	public void checkEligibility(OnlineSectioningServer server, OnlineSectioningHelper helper, EligibilityCheck check, XStudent student) throws SectioningException {
 		// Cannot enroll -> no additional check is needed (unless it is the case when UniTime does not know about the student)
@@ -199,10 +182,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				helper.getAction().addOptionBuilder().setKey("bannerId").setValue(req.bannerId);
 				helper.getAction().addOptionBuilder().setKey("systemIn").setValue(req.systemIn);
 				try {
-					resource.post(new JsonRepresentation(gson.toJson(req.empty())));
+					resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req.empty()));
 				} catch (ResourceException exception) {
 					try {
-						XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+						XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 						helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
 						XEInterface.Error error = response.getError();
 						if (error != null && error.message != null) {
@@ -220,7 +203,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	 					throw exception;
 					}
 				}
-				original = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.class);
+				original = new GsonRepresentation<XEInterface.RegisterResponse>(resource.getResponseEntity(), XEInterface.RegisterResponse.class).getObject();
 				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(original));
 			} else {
 				resource.addQueryParameter("term", term);
@@ -235,7 +218,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					resource.get(MediaType.APPLICATION_JSON);
 				} catch (ResourceException exception) {
 					try {
-						XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+						XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 						helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
 						XEInterface.Error error = response.getError();
 						if (error != null && error.message != null) {
@@ -253,7 +236,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						throw exception;
 					}
 				}
-				List<XEInterface.RegisterResponse> current = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.TYPE_LIST);
+				List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
 				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
 				if (current != null && !current.isEmpty())
 					original = current.get(0);
@@ -394,10 +377,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				helper.getAction().addOptionBuilder().setKey("bannerId").setValue(req.bannerId);
 				helper.getAction().addOptionBuilder().setKey("systemIn").setValue(req.systemIn);
 				try {
-					resource.post(new JsonRepresentation(gson.toJson(req.empty())));
+					resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req.empty()));
 				} catch (ResourceException exception) {
 					try {
-						XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+						XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 						helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
 						XEInterface.Error error = response.getError();
 						if (error != null && error.message != null) {
@@ -415,7 +398,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	 					throw exception;
 					}
 				}
-				original = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.class);
+				original = new GsonRepresentation<XEInterface.RegisterResponse>(resource.getResponseEntity(), XEInterface.RegisterResponse.class).getObject();
 				helper.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(original));
 			} else {
 				resource.addQueryParameter("term", term);
@@ -430,7 +413,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					resource.get(MediaType.APPLICATION_JSON);
 				} catch (ResourceException exception) {
 					try {
-						XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+						XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 						helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
 						XEInterface.Error error = response.getError();
 						if (error != null && error.message != null) {
@@ -448,7 +431,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						throw exception;
 					}
 				}
-				List<XEInterface.RegisterResponse> current = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.TYPE_LIST);
+				List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
 				helper.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(current));
 				if (current != null && !current.isEmpty())
 					original = current.get(0);
@@ -606,10 +589,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 
 			try {
-				resource.post(new JsonRepresentation(gson.toJson(req)));
+				resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req));
 			} catch (ResourceException exception) {
 				try {
-					XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
 					XEInterface.Error error = response.getError();
 					if (error != null && error.message != null) {
@@ -629,7 +612,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			
 			// Finally, check the response
-			XEInterface.RegisterResponse response = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.class);
+			XEInterface.RegisterResponse response = new GsonRepresentation<XEInterface.RegisterResponse>(resource.getResponseEntity(), XEInterface.RegisterResponse.class).getObject();
 			if (helper.isDebugEnabled())
 				helper.debug("Response: " + gson.toJson(response));
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));
@@ -829,10 +812,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			Gson gson = getGson(helper);
 			
 			try {
-				resource.post(new JsonRepresentation(gson.toJson(req.empty())));
+				resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req.empty()));
 			} catch (ResourceException exception) {
 				try {
-					XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 					sectioningRequest.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
 					XEInterface.Error error = response.getError();
 					if (error != null && error.message != null) {
@@ -852,7 +835,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			
 			// Check status, memorize enrolled sections
-			XEInterface.RegisterResponse original = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.class);
+			XEInterface.RegisterResponse original = new GsonRepresentation<XEInterface.RegisterResponse>(resource.getResponseEntity(), XEInterface.RegisterResponse.class).getObject();
 			sectioningRequest.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(original));
 			if (original != null && helper.isDebugEnabled())
 				helper.debug("Current registration: " + gson.toJson(original));
@@ -904,10 +887,10 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 
 			try {
-				resource.post(new JsonRepresentation(gson.toJson(req)));
+				resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req));
 			} catch (ResourceException exception) {
 				try {
-					XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
 					sectioningRequest.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
 					XEInterface.Error error = response.getError();
 					if (error != null && error.message != null) {
@@ -927,7 +910,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			
 			// Finally, check the response
-			XEInterface.RegisterResponse response = readResponse(gson, resource.getResponse(), XEInterface.RegisterResponse.class);
+			XEInterface.RegisterResponse response = new GsonRepresentation<XEInterface.RegisterResponse>(resource.getResponseEntity(), XEInterface.RegisterResponse.class).getObject();
 			if (helper.isDebugEnabled())
 				helper.debug("Response: " + gson.toJson(response));
 			sectioningRequest.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(response));

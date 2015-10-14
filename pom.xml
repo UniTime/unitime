@@ -239,17 +239,6 @@
 			<artifactId>org.restlet</artifactId>
 			<version>${restlet.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.restlet.jse</groupId>
-			<artifactId>org.restlet.ext.json</artifactId>
-			<version>${restlet.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.restlet.jse</groupId>
-					<artifactId>org.restlet.lib.org.restlet.lib.org.json</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<!-- Uncomment the following dependency for the restlet to use the Apache HTTP client (instead of the default HTTP client)
 		<dependency>
 			<groupId>org.restlet.jse</groupId>
@@ -257,11 +246,6 @@
 			<version>${restlet.version}</version>
 		</dependency>
 		-->
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>${json.version}</version>
-		</dependency>		
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
@@ -739,10 +723,6 @@
 									MPL 1.1|
 									Mozilla Public License
 								</licenseMerge>
-								<licenseMerge>
-									Public Domain|
-									The JSON License
-								</licenseMerge>
 							</licenseMerges>
 							<missingFile>3rd_party/3rd_party.properties</missingFile>
 							<fileTemplate>3rd_party/3rd_party.ftl</fileTemplate>
@@ -793,7 +773,6 @@
 		<ehcache.version>2.6.11</ehcache.version>
 		<ehcache-jgroups.version>1.7</ehcache-jgroups.version>
 		<joda.version>2.8.2</joda.version>
-		<json.version>20141113</json.version>
 		<gson.version>2.3.1</gson.version>
 		<mgwt.version>2.0.0</mgwt.version>
 		<biweekly.version>0.4.3</biweekly.version>

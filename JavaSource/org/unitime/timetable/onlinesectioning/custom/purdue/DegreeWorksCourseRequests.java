@@ -19,15 +19,12 @@
 */
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.restlet.Client;
-import org.restlet.Response;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
@@ -49,9 +46,6 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.JsonReader;
 
 /**
  * @author Tomas Muller
@@ -98,17 +92,6 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider {
 		GsonBuilder builder = new GsonBuilder();
 		if (helper.isDebugEnabled()) builder.setPrettyPrinting();
 		return builder.create();
-	}
-	
-	protected <T> T readResponse(Gson gson, Response response, Type typeOfT) throws JsonIOException, JsonSyntaxException, IOException {
-		if (response == null) return null;
-		JsonReader reader = new JsonReader(response.getEntity().getReader());
-		try {
-			return gson.fromJson(reader, typeOfT);
-		} finally {
-			reader.close();
-			response.release();
-		}
 	}
 	
 	protected XCourseId getCourse(OnlineSectioningServer server, XEInterface.Course course) {
@@ -240,7 +223,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider {
 				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
 				try {
-					XEInterface.ErrorResponse response = readResponse(gson, resource.getResponse(), XEInterface.ErrorResponse.class);
+					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject(); 
 					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
 					XEInterface.Error error = response.getError();
 					if (error != null && error.message != null) {
@@ -259,7 +242,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider {
 				}
 			}
 			
-			List<XEInterface.DegreePlan> current = readResponse(gson, resource.getResponse(), XEInterface.DegreePlan.TYPE_LIST);
+			List<XEInterface.DegreePlan> current = new GsonRepresentation<List<XEInterface.DegreePlan>>(resource.getResponseEntity(), XEInterface.DegreePlan.TYPE_LIST).getObject();
 			XEInterface.DegreePlan plan = (current.isEmpty() ? null : current.get(0));
 			
 			if (plan != null) {

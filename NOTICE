@@ -248,10 +248,6 @@ JGroups (jgroups-3.6.6.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jgroups.org
 
-JSON in Java (json-20141113.jar)
-	under Public Domain
-	https://github.com/douglascrockford/JSON-java
-
 ASM Core (asm-5.0.3.jar)
 	under BSD or BSD-style License
 	http://asm.objectweb.org/asm/
@@ -271,13 +267,6 @@ ASM Util (asm-util-5.0.3.jar)
 Restlet Core - API and Engine (org.restlet-2.3.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://restlet.org/org.restlet
-
-Restlet Extension - JSON (org.restlet.ext.json-2.3.4.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://restlet.org/org.restlet.ext.json
-
-JSON framework (org.restlet.lib.org.json-2.0.jar)
-	under Apache Software License (ASL), Version 2.0
 
 SLF4J API Module (slf4j-api-1.7.12.jar)
 	under MIT License
