@@ -489,7 +489,8 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 			// Load model from cache (if exists)
 			Solution<CurVariable, CurValue> cachedSolution = null;
 			iAssignment = new DefaultSingleAssignment<CurVariable, CurValue>();
-			Element cache = (iClassification.getStudents() == null ? null : iClassification.getStudents().getRootElement());
+			Document cachedXml = iClassification.getStudentsDocument();
+			Element cache = (cachedXml == null ? null : cachedXml.getRootElement());
 			if (cache != null && cache.getName().equals(getCacheName())) {
 				cachedSolution = CurModel.loadFromXml(cache);
 				if (iSetStudentCourseLimits)
@@ -548,7 +549,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 				Document doc = DocumentHelper.createDocument();
 				iModel.saveAsXml(doc.addElement(getCacheName()), iAssignment);
 				// sLog.debug("Model:\n" + doc.asXML());
-				iClassification.setStudents(doc);
+				iClassification.setStudentsDocument(doc);
 
 				hibSession.update(iClassification);
 			}

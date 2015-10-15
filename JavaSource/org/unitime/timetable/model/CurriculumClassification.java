@@ -19,6 +19,15 @@
 */
 package org.unitime.timetable.model;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.dom4j.Document;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
 import org.unitime.timetable.model.base.BaseCurriculumClassification;
 
 
@@ -27,6 +36,7 @@ import org.unitime.timetable.model.base.BaseCurriculumClassification;
  * @author Tomas Muller
  */
 public class CurriculumClassification extends BaseCurriculumClassification implements Comparable<CurriculumClassification> {
+	private static Log sLog = LogFactory.getLog(CurriculumClassification.class);
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -53,5 +63,31 @@ public class CurriculumClassification extends BaseCurriculumClassification imple
 	    int cmp = getName().compareToIgnoreCase(cc.getName());
 	    if (cmp!=0) return cmp;
 	    return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(cc.getUniqueId() == null ? -1 : cc.getUniqueId());
+	}
+	
+	public Document getStudentsDocument() {
+		if (getStudents() == null) return null;
+		try {
+			return new SAXReader().read(new StringReader(getStudents()));
+		} catch (Exception e) {
+			sLog.warn("Failed to load cached students for " + getCurriculum().getAbbv() + " " + getName() + ": " + e.getMessage(), e);
+			return null;
+		}
+	}
+	
+	public void setStudentsDocument(Document document) {
+		try {
+			if (document == null) {
+				setStudents(null);
+			} else {
+				StringWriter string = new StringWriter();
+				XMLWriter writer = new XMLWriter(string, OutputFormat.createCompactFormat());
+				writer.write(document);
+				writer.flush(); writer.close();
+				setStudents(string.toString());
+			}
+		} catch (Exception e) {
+			sLog.warn("Failed to store cached students for " + getCurriculum().getAbbv() + " " + getName() + ": " + e.getMessage(), e);
+		}
 	}
 }
