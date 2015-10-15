@@ -131,7 +131,7 @@
             lazy="true"
             name="students"
             column="students"
-            type="org.unitime.commons.hibernate.blob.XmlClobType"
+            type="java.lang.String"
             not-null="false"/>
 
         <set
