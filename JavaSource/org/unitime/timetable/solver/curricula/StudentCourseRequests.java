@@ -25,12 +25,12 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
-
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.Progress;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 
 /**
@@ -57,34 +57,28 @@ public class StudentCourseRequests implements StudentCourseDemands {
 	protected Hashtable<Long, Set<WeightedStudentId>> loadDemandsForSubjectArea(SubjectArea subjectArea) {
 		Hashtable<Long, Set<WeightedStudentId>> demands = new Hashtable<Long, Set<WeightedStudentId>>();
 		for (Object[] o: (List<Object[]>) iHibSession.createQuery(
-					"select distinct r.courseOffering.uniqueId, s.uniqueId, a.academicAreaAbbreviation, f.code, m.code, " +
-					"r.courseDemand.priority, r.courseDemand.alternative, r.order from CourseRequest r inner join r.courseDemand.student s " +
-					"left outer join s.academicAreaClassifications c left outer join s.posMajors m left outer join c.academicArea a left outer join c.academicClassification f " +
-					"where r.courseOffering.subjectArea.uniqueId = :subjectId")
+					"select distinct s, r.courseOffering.uniqueId, r.courseDemand.priority, r.courseDemand.alternative, r.order from " +
+					"CourseRequest r inner join r.courseDemand.student s left join fetch s.academicAreaClassifications left join fetch s.posMajors where " +
+					"r.courseOffering.subjectArea.uniqueId = :subjectId")
 					.setLong("subjectId", subjectArea.getUniqueId()).setCacheable(true).list()) {
-			Long courseId = (Long)o[0];
-			Long studentId = (Long)o[1];
-			String areaAbbv = (String)o[2];
-			String clasfCode = (String)o[3];
-			String majorCode = (String)o[4];
-			Integer priority = (Integer)o[5];
-			Boolean alternative = (Boolean)o[6];
-			Integer order = (Integer)o[7];
+			Student s = (Student)o[0];
+			Long courseId = (Long)o[1];
+			Integer priority = (Integer)o[2];
+			Boolean alternative = (Boolean)o[3];
+			Integer order = (Integer)o[4];
 			Set<WeightedStudentId> students = demands.get(courseId);
 			if (students == null) {
 				students = new HashSet<WeightedStudentId>();
 				demands.put(courseId, students);
 			}
-			WeightedStudentId student = new WeightedStudentId(studentId);
-			student.setStats(areaAbbv, clasfCode, majorCode);
-			student.setCurriculum(areaAbbv == null ? null : majorCode == null ? areaAbbv : areaAbbv + "/" + majorCode);
+			WeightedStudentId student = new WeightedStudentId(s);
 			students.add(student);
 			if (priority != null && Boolean.FALSE.equals(alternative)) {
 				if (order != null) priority += order;
-				Hashtable<Long, Double> priorities = iEnrollmentPriorities.get(studentId);
+				Hashtable<Long, Double> priorities = iEnrollmentPriorities.get(s.getUniqueId());
 				if (priorities == null) {
 					priorities = new Hashtable<Long, Double>();
-					iEnrollmentPriorities.put(studentId, priorities);
+					iEnrollmentPriorities.put(s.getUniqueId(), priorities);
 				}
 				priorities.put(courseId, Math.pow(iBasePriorityWeight, priority));
 			}

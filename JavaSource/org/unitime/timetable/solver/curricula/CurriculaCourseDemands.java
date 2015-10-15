@@ -217,12 +217,13 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 			if (curricula == null || curricula.isEmpty()) {
 				demands.addAll(other);
 			} else {
-				for (WeightedStudentId student: other) {
-					if (student.getArea() == null) continue; // ignore students w/o academic area
-					Set<String> majors = curricula.get(student.getArea());
-					if (majors != null && majors.contains("")) continue; // all majors
-					if (majors == null || (student.getMajor() != null && !majors.contains(student.getMajor())))
-						demands.add(student);
+				other: for (WeightedStudentId student: other) {
+					// if (student.getAreas().isEmpty()) continue; // ignore students w/o academic area
+					for (AreaCode area: student.getAreas()) {
+						Set<String> majors = curricula.get(area.getArea());
+						if (majors != null && (majors.contains("") || student.match(area.getArea(), majors))) continue other; // all majors or match
+					}
+					demands.add(student);
 				}
 			}
 			if (demands.size() > was)
@@ -366,9 +367,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 				majors += major.getCode();
 			}
 			for (CurStudent s: iModel.getStudents()) {
-				WeightedStudentId student = new WeightedStudentId(- lastStudentId.newId());
-				student.setStats(iClassification.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), iClassification.getAcademicClassification().getCode(), majors);
-				student.setCurriculum(iClassification.getCurriculum().getAbbv());
+				WeightedStudentId student = new WeightedStudentId(- lastStudentId.newId(), iClassification);
 				Set<WeightedCourseOffering> studentCourses = new HashSet<WeightedCourseOffering>();
 				iStudentRequests.put(student.getStudentId(), studentCourses);
 				Hashtable<Long, Double> priorities = new Hashtable<Long, Double>(); iEnrollmentPriorities.put(student.getStudentId(), priorities);

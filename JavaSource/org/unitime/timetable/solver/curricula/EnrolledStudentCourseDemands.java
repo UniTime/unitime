@@ -30,6 +30,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Student;
 
 
 /**
@@ -49,28 +50,23 @@ public class EnrolledStudentCourseDemands implements StudentCourseDemands {
 	public boolean isWeightStudentsToFillUpOffering() { return false; }
 	
 	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Collection<InstructionalOffering> offerings) {
-		for (Object[] o: (List<Object[]>)hibSession.createQuery("select e.courseOffering, s.uniqueId, a.academicAreaAbbreviation, f.code, m.code from StudentClassEnrollment e " +
-				"inner join e.student s left outer join s.academicAreaClassifications c left outer join s.posMajors m " +
-				"left outer join c.academicArea a left outer join c.academicClassification f where " +
+		for (Object[] o: (List<Object[]>)hibSession.createQuery(
+				"select distinct e.courseOffering, s " +
+				"from StudentClassEnrollment e inner join e.student s left join fetch s.academicAreaClassifications left join fetch s.posMajors where " +
 				"e.courseOffering.subjectArea.session.uniqueId = :sessionId").setLong("sessionId", session.getUniqueId()).list()) {
 			CourseOffering course = (CourseOffering)o[0];
-			Long sid = (Long)o[1];
-			String areaAbbv = (String)o[2];
-			String clasfCode = (String)o[3];
-			String majorCode = (String)o[4];
+			Student student = (Student)o[1];
 			Set<WeightedStudentId> students = iDemands.get(course.getUniqueId());
 			if (students == null) {
 				students = new HashSet<WeightedStudentId>();
 				iDemands.put(course.getUniqueId(), students);
 			}
-			WeightedStudentId studentId = new WeightedStudentId(sid);
-			studentId.setStats(areaAbbv, clasfCode, majorCode);
-			studentId.setCurriculum(areaAbbv == null ? null : majorCode == null ? areaAbbv : areaAbbv + "/" + majorCode);
+			WeightedStudentId studentId = new WeightedStudentId(student);
 			students.add(studentId);
 			Set<WeightedCourseOffering> courses = iStudentRequests.get(studentId);
 			if (courses == null) {
 				courses = new HashSet<WeightedCourseOffering>();
-				iStudentRequests.put(sid, courses);
+				iStudentRequests.put(student.getUniqueId(), courses);
 			}
 			courses.add(new WeightedCourseOffering(course));
 		}

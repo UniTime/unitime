@@ -2812,26 +2812,22 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         				if (reservation instanceof CourseReservation) continue;
         				if (reservation instanceof CurriculumReservation) {
         					CurriculumReservation cr = (CurriculumReservation)reservation;
-        					if (student.getAcademicArea() == null) continue;
-        					if (!cr.getArea().getAcademicAreaAbbreviation().equals(student.getAcademicArea())) continue;
+        					if (studentId.getArea() == null) continue;
+        					if (!studentId.hasArea(cr.getArea().getAcademicAreaAbbreviation())) continue;
         					if (!cr.getClassifications().isEmpty()) {
         						boolean match = false;
         						for (AcademicClassification clasf: cr.getClassifications()) {
-        							if (clasf.getCode().equals(student.getAcademicClassification())) { match = true; break; }
+        							if (studentId.hasClassification(cr.getArea().getAcademicAreaAbbreviation(), clasf.getCode())) { match = true; break; }
         						}
         						if (!match) continue;
         					}
         					if (!cr.getMajors().isEmpty()) {
-        						if (student.getMajor() == null) continue;
-        						if (!student.getMajor().isEmpty()) {
-            						boolean match = false;
-            						majors: for (PosMajor major: cr.getMajors()) {
-            							for (String code: student.getMajor().split("\\|")) {
-            								if (major.getCode().equals(code)) { match = true; break majors; }
-            							}
-            						}
-        							if (!match) continue;
+        						if (studentId.getMajor() == null) continue;
+        						boolean match = false;
+        						for (PosMajor major: cr.getMajors()) {
+        							if (studentId.hasMajor(cr.getArea().getAcademicAreaAbbreviation(), major.getCode())) { match = true; break; }
         						}
+    							if (!match) continue;
         					}
         				} else continue;
         				for (Class_ clazz: reservation.getClasses()) {
@@ -2846,7 +2842,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
         						for (Class_ clazz: subpart.getClasses())
                 					reservedClasses.add(clazz.getUniqueId());
-        				}        				
+        				}
         			}
         			
         			if (!reservedClasses.isEmpty()) {

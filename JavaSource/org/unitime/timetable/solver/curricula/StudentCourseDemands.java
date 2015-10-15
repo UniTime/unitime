@@ -21,14 +21,17 @@ package org.unitime.timetable.solver.curricula;
 
 import java.util.Collection;
 import java.util.Set;
-
+import java.util.TreeSet;
 
 import org.cpsolver.ifs.util.Progress;
+import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 
 /**
@@ -80,18 +83,97 @@ public interface StudentCourseDemands {
 	 */
 	public Set<WeightedCourseOffering> getCourses(Long studentId);
 	
+	public static class AreaCode implements Comparable<AreaCode> {
+		String iArea, iCode;
+		public AreaCode(String area, String code) {
+			iArea = area; iCode = code;
+		}
+		
+		public String getArea() { return iArea; }
+		public String getCode() { return iCode; }
+		
+		public String toString() { return getArea() + (getCode().isEmpty() ? "" : " " + getCode()); }
+		
+		@Override
+		public int hashCode() {
+			return toString().hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof AreaCode)) return false;
+			return toString().equals(o.toString());
+		}
+		
+		@Override
+		public int compareTo(AreaCode ac) {
+			return toString().compareTo(ac.toString());
+		}
+	}
+	
 	public static class WeightedStudentId {
 		private long iStudentId;
 		private float iWeight;
-		private String iAreaAbbv, iClasfCode, iMajorCode, iCurriculum;
+		private Set<AreaCode> iAreas = new TreeSet<AreaCode>();
+		private Set<AreaCode> iMajors = new TreeSet<AreaCode>();
+		private Set<String> iCurricula = new TreeSet<String>();
 		
-		public WeightedStudentId(long studentId, float weight) {
-			iStudentId = studentId;
-			iWeight = weight;
+		public WeightedStudentId(Student student, ProjectionsProvider projections) {
+			iStudentId = student.getUniqueId();
+			iWeight = 1.0f;
+			float rule = 1.0f; int cnt = 0;
+			for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
+				iAreas.add(new AreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(), aac.getAcademicClassification().getCode()));
+				boolean hasMajor = false;
+				for (PosMajor major: student.getPosMajors()) {
+					if (major.getAcademicAreas().contains(aac.getAcademicArea())) {
+						if (projections != null) {
+							rule *= projections.getProjection(aac.getAcademicArea().getAcademicAreaAbbreviation(), aac.getAcademicClassification().getCode(), major.getCode());
+							cnt ++;
+							hasMajor = true;
+						}
+						iMajors.add(new AreaCode(aac.getAcademicArea().getAcademicAreaAbbreviation(), major.getCode()));
+					}
+				}
+				if (!hasMajor && projections != null) {
+					rule *= projections.getProjection(aac.getAcademicArea().getAcademicAreaAbbreviation(), aac.getAcademicClassification().getCode(), "");
+					cnt ++;
+				}
+			}
+			if (cnt == 1)
+				iWeight = rule;
+			else if (cnt > 1)
+				iWeight = (float) Math.pow(rule, 1.0 / cnt);
 		}
 		
-		public WeightedStudentId(long studentId) {
-			this(studentId, 1.0f);
+		public WeightedStudentId(Long studentId, CurriculumClassification cc, ProjectionsProvider projections) {
+			Curriculum curriculum = cc.getCurriculum();
+			iWeight = 1.0f;
+			if (projections != null) {
+				if (curriculum.getMajors().isEmpty()) {
+					iWeight = projections.getProjection(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), cc.getAcademicClassification().getCode(), "");
+				} else if (curriculum.getMajors().size() == 1) {
+					for (PosMajor m: curriculum.getMajors())
+						iWeight = projections.getProjection(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), cc.getAcademicClassification().getCode(), m.getCode());
+				} else {
+					double rule = 1.0;
+					for (PosMajor m: curriculum.getMajors())
+						rule *= projections.getProjection(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), cc.getAcademicClassification().getCode(), m.getCode());
+					iWeight = (float)Math.pow(rule, 1.0 / curriculum.getMajors().size());
+				}
+			}
+			iAreas.add(new AreaCode(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), cc.getAcademicClassification().getCode()));
+			for (PosMajor major: curriculum.getMajors())
+				iMajors.add(new AreaCode(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), major.getCode()));
+			iCurricula.add(curriculum.getAbbv());
+		}
+		
+		public WeightedStudentId(Student student) {
+			this(student, null);
+		}
+		
+		public WeightedStudentId(Long studentId, CurriculumClassification cc) {
+			this(studentId, cc, null);
 		}
 		
 		public long getStudentId() {
@@ -106,29 +188,111 @@ public interface StudentCourseDemands {
 			iWeight = weight;
 		}
 		
-		public void setStats(String areaAbbv, String clasfCode, String majorCode) {
-			iAreaAbbv = areaAbbv;
-			iClasfCode = clasfCode;
-			iMajorCode = majorCode;
+		public void setCurriculum(String curriculum) {
+			iCurricula.clear(); iCurricula.add(curriculum);
 		}
 		
-		public void setCurriculum(String curriculum) { iCurriculum = curriculum; }
+		public boolean hasArea(String areaAbbv) {
+			for (AreaCode a: iAreas)
+				if (a.getArea().equals(areaAbbv)) return true;
+			return false;
+		}
 		
-		public String getArea() { return iAreaAbbv; }
-		public String getClasf() { return iClasfCode; }
-		public String getMajor() { return iMajorCode; }
-		public String getCurriculum() { return iCurriculum; }
+		public boolean hasClassification(String areaAbbv, String clasfCode) {
+			for (AreaCode a: iAreas)
+				if (a.getArea().equals(areaAbbv) && a.getCode().equals(clasfCode)) return true;
+			return false;
+		}
 		
-		public boolean match(String areaAbbv, String clasfCode, String majorCode) {
-			return areaAbbv.equals(iAreaAbbv) && clasfCode.equals(iClasfCode) && majorCode.equals(iMajorCode);
+		public boolean hasMajor(String areaAbbv, String majorCode) {
+			for (AreaCode a: iMajors)
+				if (a.getArea().equals(areaAbbv) && a.getCode().equals(majorCode)) return true;
+			return false;
+		}
+		
+		public Set<AreaCode> getAreas() { return iAreas; }
+		public Set<String> getMajors(String area) {
+			Set<String> ret = new TreeSet<String>();
+			for (AreaCode m: iMajors)
+				if (m.getArea().equals(area))
+					ret.add(m.getCode());
+			return ret;
+		}
+		
+		public String getArea() { return toString(iAreas, true, ","); }
+		public String getClasf() { return toString(iAreas, false, ","); }
+		public String getMajor() { return toString(iMajors, false, ","); }
+		public String getCurriculum() {
+			StringBuffer ret = new StringBuffer();
+			if (iCurricula.isEmpty()) {
+				for (AreaCode a: iAreas) {
+					StringBuffer majors = new StringBuffer();
+					for (AreaCode m: iMajors) {
+						if (a.getArea().equals(m.getArea())) {
+							if (majors.length() > 0) majors.append(",");
+							majors.append(m.getCode());
+						}
+					}
+					if (ret.length() > 0) ret.append(", ");
+					ret.append(a.getArea());
+					if (majors.length() > 0) {
+						ret.append("/");
+						ret.append(majors);
+					}
+				}
+			} else {
+				for (String curriculum: iCurricula) {
+					if (ret.length() > 0) ret.append(", ");
+					ret.append(curriculum);	
+				}
+			}
+			return ret.toString();
+		}
+		
+		private static String toString(Set<AreaCode> set, boolean area, String delim) {
+			if (set == null || set.isEmpty()) return null;
+			StringBuffer ret = new StringBuffer();
+			for (AreaCode s: set) {
+				if (ret.length() > 0) ret.append(delim);
+				ret.append(area ? s.getArea() : s.getCode());
+			}
+			return ret.toString();
+		}
+		
+		public boolean match(String areaAbbv, Set<String> majors) {
+			for (AreaCode a: iAreas) {
+				if (a.getArea().equals(areaAbbv)) {
+					for (AreaCode m: iMajors) {
+						if (m.getArea().equals(areaAbbv) && majors.contains(m.getCode()))
+							return true;
+					}
+				}
+			}
+			return false;
 		}
 		
 		public boolean match(CurriculumClassification clasf) {
-			if (!clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation().equals(iAreaAbbv)) return false;
-			if (!clasf.getAcademicClassification().getCode().equals(iClasfCode)) return false;
-			if (clasf.getCurriculum().getMajors().isEmpty()) return true;
-			for (PosMajor m: clasf.getCurriculum().getMajors()) {
-				if (m.getCode().equals(iMajorCode)) return true;
+			for (AreaCode a: iAreas) {
+				if (a.getArea().equals(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation()) && a.getCode().equals(clasf.getAcademicClassification().getCode())) {
+					if (clasf.getCurriculum().isMultipleMajors()) {
+						for (PosMajor major: clasf.getCurriculum().getMajors()) {
+							boolean found = false;
+							for (AreaCode m: iMajors) {
+								if (m.getArea().equals(a.getArea()) && m.getCode().equals(major.getCode())) {
+									found = true; break;
+								}
+							}
+							if (found) return true;
+						}
+					} else {
+						for (PosMajor major: clasf.getCurriculum().getMajors()) {
+							for (AreaCode m: iMajors) {
+								if (m.getArea().equals(a.getArea()) && m.getCode().equals(major.getCode()))
+									return true;
+							}
+						}
+					}
+				}
 			}
 			return false;
 		}
@@ -181,5 +345,9 @@ public interface StudentCourseDemands {
 		public float getWeight() {
 			return iWeight;
 		}
+	}
+	
+	public static interface ProjectionsProvider {
+		public float getProjection(String areaAbbv, String clasfCode, String majorCode);
 	}
 }

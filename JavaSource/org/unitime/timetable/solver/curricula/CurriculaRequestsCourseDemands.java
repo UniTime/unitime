@@ -50,6 +50,7 @@ import org.unitime.timetable.model.CurriculumCourseGroup;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.solver.curricula.CurriculaCourseDemands.CurriculumCourseGroupsProvider;
 import org.unitime.timetable.solver.curricula.CurriculaCourseDemands.DefaultCurriculumCourseGroupsProvider;
 import org.unitime.timetable.solver.curricula.CurriculaCourseDemands.TableCurriculumCourseGroupsProvider;
@@ -145,7 +146,6 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 
 		List<Initialization> inits = new ArrayList<Initialization>();
 		for (Curriculum curriculum: curricula) {
-			Map<String, Map<CourseOffering, Set<WeightedStudentId>>> requests = loadClasfCourse2req(hibSession, curriculum);
 			for (CurriculumClassification clasf: curriculum.getClassifications()) {
 				if (clasf.getNrStudents() > 0) {
 					List<CurriculumClassification> templates = new ArrayList<CurriculumClassification>();
@@ -157,7 +157,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 										templates.add(parentClasf);
 								}
 							}
-					inits.add(new Initialization(clasf, templates, requests.get(clasf.getAcademicClassification().getCode())));
+					inits.add(new Initialization(clasf, templates, loadCourseRegistrations(hibSession, clasf)));
 				}
 			}
 		}
@@ -167,73 +167,64 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 				inits).execute(hibSession, progress);		
 	}
 	
-	private Map<String, Map<CourseOffering, Set<WeightedStudentId>>> loadClasfCourse2req(org.hibernate.Session hibSession, Curriculum curriculum) {
+	private Map<CourseOffering, Set<WeightedStudentId>> loadCourseRegistrations(org.hibernate.Session hibSession, CurriculumClassification cc) {
 		List<Object[]> lines = null;
-		String select = "f.code, co, m.code, s.uniqueId";
-		String from = "CourseRequest r inner join r.courseOffering co inner join r.courseDemand.student s inner join s.academicAreaClassifications a inner join a.academicClassification f";
-		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :acadAreaId";
-		String mCode = null;
-		if (curriculum.getMajors().isEmpty()) {
+		String select = "distinct co, s";
+		String from = "CourseRequest r inner join r.courseOffering co inner join r.courseDemand.student s inner join s.academicAreaClassifications a";
+		String where = "s.session.uniqueId = :sessionId and a.academicArea.uniqueId = :acadAreaId and a.academicClassification.uniqueId = :clasfId";
+		if (cc.getCurriculum().getMajors().isEmpty()) {
 			// students with no major
-			select = "f.code, co, '', s.uniqueId";
-			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (curriculum.isMultipleMajors() ? " and s.posMajors is empty" : ""))
-					.setLong("sessionId", curriculum.getAcademicArea().getSessionId()).setLong("acadAreaId", curriculum.getAcademicArea().getUniqueId())
+			lines = hibSession.createQuery("select " + select + " from " + from + " where " + where + (cc.getCurriculum().isMultipleMajors() ? " and s.posMajors is empty" : ""))
+					.setLong("sessionId", cc.getCurriculum().getAcademicArea().getSessionId())
+					.setLong("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId())
+					.setLong("clasfId", cc.getAcademicClassification().getUniqueId())
 					.setCacheable(true).list();
-		} else if (!curriculum.isMultipleMajors() || curriculum.getMajors().size() == 1) {
-			List<String> codes = new ArrayList<String>();
-			for (PosMajor major: curriculum.getMajors())
-				codes.add(major.getCode());
+		} else if (!cc.getCurriculum().isMultipleMajors() || cc.getCurriculum().getMajors().size() == 1) {
+			List<Long> majorIds = new ArrayList<Long>();
+			for (PosMajor major: cc.getCurriculum().getMajors())
+				majorIds.add(major.getUniqueId());
 			// students with one major
-			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.code in :majorCodes")
-					.setLong("sessionId", curriculum.getAcademicArea().getSessionId()).setLong("acadAreaId", curriculum.getAcademicArea().getUniqueId())
-					.setParameterList("majorCodes", codes)
+			lines = hibSession.createQuery("select " + select + " from " + from + " inner join s.posMajors m where " + where + " and m.uniqueId in :majorIds")
+					.setLong("sessionId", cc.getCurriculum().getAcademicArea().getSessionId())
+					.setLong("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId())
+					.setLong("clasfId", cc.getAcademicClassification().getUniqueId())
+					.setParameterList("majorIds", majorIds)
 					.setCacheable(true).list();
 		} else {
 			// students with multiple majors
-			select = "f.code, co, '', s.uniqueId";
-			Map<String, String> params = new HashMap<String, String>();
+			Map<String, Long> params = new HashMap<String, Long>();
 			int idx = 1;
-			for (PosMajor major: curriculum.getMajors()) {
+			for (PosMajor major: cc.getCurriculum().getMajors()) {
 				from += " inner join s.posMajors m" + idx;
-				where += " and m" + idx + ".code = :m" + idx;
-				params.put("m" + idx, major.getCode());
+				where += " and m" + idx + ".uniqueId = :m" + idx;
+				params.put("m" + idx, major.getUniqueId());
 				idx ++;
-				if (mCode == null)
-					mCode = major.getCode();
-				else
-					mCode += ", " + mCode;
 			}
 			org.hibernate.Query q = hibSession.createQuery("select " + select + " from " + from + " where " + where)
-					.setLong("sessionId", curriculum.getAcademicArea().getSessionId()).setLong("acadAreaId", curriculum.getAcademicArea().getUniqueId());
-			for (Map.Entry<String, String> e: params.entrySet())
-				q.setString(e.getKey(), e.getValue());
+					.setLong("sessionId", cc.getCurriculum().getAcademicArea().getSessionId())
+					.setLong("acadAreaId", cc.getCurriculum().getAcademicArea().getUniqueId())
+					.setLong("clasfId", cc.getAcademicClassification().getUniqueId());
+			for (Map.Entry<String, Long> e: params.entrySet())
+				q.setLong(e.getKey(), e.getValue());
 			lines = q.setCacheable(true).list();
 		}
-		Map<String, Map<CourseOffering, Set<WeightedStudentId>>> clasf2course2req = new HashMap<String, Map<CourseOffering,Set<WeightedStudentId>>>();
+		Map<CourseOffering, Set<WeightedStudentId>> course2req = new HashMap<CourseOffering,Set<WeightedStudentId>>();
 		for (Object[] o : lines) {
-			String clasfCode = (String)o[0];
-			CourseOffering course = (CourseOffering)o[1];
-			String majorCode = (String)o[2];
-			Long studentId = (Long)o[3];
+			CourseOffering course = (CourseOffering)o[0];
+			Student student = (Student)o[1];
 			
-			WeightedStudentId student = new WeightedStudentId(studentId);
-			student.setStats(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), clasfCode, mCode != null ? mCode :  majorCode);
-			student.setCurriculum(curriculum.getAbbv());
-			
-			Map<CourseOffering, Set<WeightedStudentId>> course2req = clasf2course2req.get(clasfCode);
-			if (course2req == null) {
-				course2req = new HashMap<CourseOffering, Set<WeightedStudentId>>();
-				clasf2course2req.put(clasfCode, course2req);
-			}
+			WeightedStudentId studentId = new WeightedStudentId(student);
+			studentId.setCurriculum(cc.getCurriculum().getAbbv());
+
 			Set<WeightedStudentId> students = course2req.get(course);
 			if (students == null) {
 				students = new HashSet<WeightedStudentId>();
 				course2req.put(course, students);
 			}
-			students.add(student);
+			students.add(studentId);
 		}
 		
-		return clasf2course2req;
+		return course2req;
 	}
 	
 	protected String getCacheName() {
@@ -311,12 +302,13 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 				if (curricula == null || curricula.isEmpty()) {
 					demands.addAll(other);
 				} else {
-					for (WeightedStudentId student: other) {
-						if (student.getArea() == null) continue; // ignore students w/o academic area
-						Set<String> majors = curricula.get(student.getArea() + ":" + student.getClasf());
-						if (majors != null && majors.contains("")) continue; // all majors
-						if (majors == null || (student.getMajor() != null && !majors.contains(student.getMajor())))
-							demands.add(student);
+					other: for (WeightedStudentId student: other) {
+						// if (student.getAreas().isEmpty()) continue; // ignore students w/o academic area
+						for (AreaCode area: student.getAreas()) {
+							Set<String> majors = curricula.get(area.getArea() + ":" + area.getCode());
+							if (majors != null && (majors.contains("") || student.match(area.getArea(), majors))) continue other; // all majors or match
+						}
+						demands.add(student);
 					}
 				}
 				if (demands.size() > was)
@@ -402,9 +394,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 					majors += major.getCode();
 				}
 				for (int i = 0; i < studentsToMakeUp; i++) {
-					WeightedStudentId student = new WeightedStudentId(-iLastStudentId.newId());
-					student.setStats(iClassification.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), iClassification.getAcademicClassification().getCode(), majors);
-					student.setCurriculum(iClassification.getCurriculum().getAbbv());
+					WeightedStudentId student = new WeightedStudentId(-iLastStudentId.newId(), iClassification);
 					students.put(student, new HashSet<CourseOffering>());
 					iMadeUpStudents.add(student);
 				}
