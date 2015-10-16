@@ -49,6 +49,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Date Patterns</name>
+			<description>
+				<line>Week Number: Corrected computation of the week number to folow the formal definition in ISO 8601.
+					<line>Week 1 is the week with the year's first Thursday in it.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>

@@ -89,14 +89,15 @@ function calSetPreference(name, dates) {
 }
 
 function calGetWeekNumber(date) {
-	var w = 1;
-	var d=new Date(date.getFullYear(),0,1);
-	while (d.getDay()!=6)
-		d.setDate(d.getDate()+1);
-	while (date>d) {
-		w++; d.setDate(d.getDate()+7);
-	}
-	return w;
+	// Copy the date, week starts on Monday
+	var d = new Date(date); d.setDate(d.getDate() + 1); d.setHours(0, 0, 0);
+    // Set to nearest Thursday: current date + 4 - current day number
+    // Make Sunday's day number 7
+    d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+    // Get first day of year
+    var yearStart = new Date(d.getFullYear(), 0, 1);
+    // Calculate full weeks to nearest Thursday
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
 function calGenDayHeader(name, year, month, day, editable) {
