@@ -31,6 +31,38 @@
 	<category>
 		<title>Bug Fixes</title>
 		<item>
+			<name>Instructional Offering Detail</name>
+			<description>
+				<line>Curricula Table: Fixed a null pointer exception that sometimes occurs.</line>
+			</description>
+		</item>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Course Catalog XML Import: Fixed setting of the fractionalCreditAllowed attribute.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Other Improvements</title>
+		<item>
+			<name>Session Roll Forward</name>
+			<description>
+				<line>Instructional Offerings: When adding new instructional offerings based on course catalog data for a session,
+					set up the course credit unit configuration if it exists in the course catalog.
+					<line>This was already done when the course catalog was being used in conjunction with rolling existing courses forward for a session, but not for a new offering.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.0.37</version>
+	<release-date>Thu, 1 Oct 2015</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
 			<name>Course Timetabling: Student Sectioning</name>
 			<description>
 				<line>Include committed student conflicts in the check whether a student swap was improving.</line>
