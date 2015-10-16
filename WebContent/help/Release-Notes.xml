@@ -42,6 +42,14 @@
 				<line>Course Catalog XML Import: Fixed setting of the fractionalCreditAllowed attribute.</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Course Offering</name>
+			<description>
+				<line>By Reservation Only, Enrollment Deadlines: Corrected the condition when the by reservation only toggle and the enrollment deadlines are updated.
+					<line>This fixes the problem of the by reservation only toggle not being updated when the course has no credit information.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
