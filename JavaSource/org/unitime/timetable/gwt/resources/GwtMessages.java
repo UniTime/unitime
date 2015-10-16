@@ -1181,6 +1181,12 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("<u>D</u>elete Room Feature")
 	String buttonDeleteRoomFeature();
+	
+	@DefaultMessage("OK")
+	String buttonConfirmOK();
+	
+	@DefaultMessage("Cancel")
+	String buttonConfirmCancel();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -2551,6 +2557,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Edit Script")
 	String dialogEditScript();
+	
+	@DefaultMessage("Confirmation")
+	String dialogConfirmation();
+	
+	@DefaultMessage("Alert")
+	String dialogAlert();
 	
 	@DefaultMessage("Details of {0}")
 	String dialogDetailsOf(String item);
@@ -3925,4 +3937,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Taken from {0}")
 	String hintTakenFromTemplate(String template);
+	
+	@DefaultMessage("Type in {0} to confirm the action.")
+	String confirmationWrongAnswer(String answer);
 }

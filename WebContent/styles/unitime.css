@@ -3954,3 +3954,57 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-left: 5px;
     vertical-align: top;
 }
+
+.unitime-ConfirmationPanel {
+	max-width: 400px;
+	padding: 3px 10px 3px 10px;
+}
+
+.unitime-ConfirmationPanel .message-panel {
+	display: block;
+	font-weight: bold;
+	font-size: medium;
+	padding: 3px;
+}
+
+.unitime-ConfirmationPanel .question-panel {
+	display: block;
+	text-align: center;
+	padding: 3px; 
+	white-space: nowrap;
+}
+
+.unitime-ConfirmationPanel .question-panel .question {
+	margin: 4px 5px 0px 0px;
+	float: left;
+}
+
+.unitime-ConfirmationPanel .question-panel .answer {
+	float: left;
+}
+
+.unitime-ConfirmationPanel .error-panel {
+	display: block;
+	text-align: right;
+	vertical-align: top;
+	font-size: x-small;
+	font-style: italic;
+	color: red;
+	margin-top: -2px;
+	padding: 0px 10px 0px 10px;
+}
+
+.unitime-ConfirmationPanel .buttons-panel {
+	display: block;
+	border-top: 1px solid #9CB0CE;
+	text-align: right;
+	padding: 3px;
+}
+
+.unitime-ConfirmationPanel .buttons-panel .yes {
+	margin: 1px 3px 0px 3px;
+}
+
+.unitime-ConfirmationPanel .buttons-panel .no {
+	margin: 1px 3px 0px 3px;
+}

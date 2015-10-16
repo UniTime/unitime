@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.rooms.RoomSharingHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 
 import com.google.gwt.user.client.Command;
@@ -86,6 +87,11 @@ public enum Triggers {
 	instructorAvailabilityHint(new Command() {
 		public void execute() {
 			InstructorAvailabilityHint.createTriggers();
+		}
+	}),
+	confirmations(new Command() {
+		public void execute() {
+			UniTimeConfirmationDialog.createTriggers();
 		}
 	}),
 	;
