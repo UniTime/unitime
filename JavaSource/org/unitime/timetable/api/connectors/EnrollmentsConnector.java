@@ -61,7 +61,7 @@ public class EnrollmentsConnector extends ApiConnector {
 			if (event == null)
 				throw new IllegalArgumentException("Event with the given ID does not exist.");
 			
-			helper.getSessionContext().checkPermission(event.getSession(), Right.ApiRetrieveEnrollments);
+			helper.getSessionContext().checkPermissionAnyAuthority(event.getSession(), Right.ApiRetrieveEnrollments);
 
 	    	helper.setResponse(convert(event.getStudentClassEnrollments()));
 		}
@@ -71,7 +71,7 @@ public class EnrollmentsConnector extends ApiConnector {
 			if (clazz == null)
 				throw new IllegalArgumentException("Class with the given ID does not exist.");
 			
-			helper.getSessionContext().checkPermission(clazz.getManagingDept().getSession(), Right.ApiRetrieveEnrollments);
+			helper.getSessionContext().checkPermissionAnyAuthority(clazz.getManagingDept().getSession(), Right.ApiRetrieveEnrollments);
 
 			helper.setResponse(convert(clazz.getStudentEnrollments()));
 		}
@@ -81,7 +81,7 @@ public class EnrollmentsConnector extends ApiConnector {
 			if (exam == null)
 				throw new IllegalArgumentException("Examination with the given ID does not exist.");
 			
-			helper.getSessionContext().checkPermission(exam.getSession(), Right.ApiRetrieveEnrollments);
+			helper.getSessionContext().checkPermissionAnyAuthority(exam.getSession(), Right.ApiRetrieveEnrollments);
 
 			helper.setResponse(convert(exam.getStudentClassEnrollments()));
 		}
@@ -91,7 +91,7 @@ public class EnrollmentsConnector extends ApiConnector {
 			if (course == null)
 				throw new IllegalArgumentException("Course with the given ID does not exist.");
 			
-			helper.getSessionContext().checkPermission(course.getInstructionalOffering().getSession(), Right.ApiRetrieveEnrollments);
+			helper.getSessionContext().checkPermissionAnyAuthority(course.getInstructionalOffering().getSession(), Right.ApiRetrieveEnrollments);
 
 			helper.setResponse(convert(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"from StudentClassEnrollment e where e.courseOffering.uniqueId = :courseId"
@@ -103,7 +103,7 @@ public class EnrollmentsConnector extends ApiConnector {
 			if (offering == null)
 				throw new IllegalArgumentException("Offering with the given ID does not exist.");
 			
-			helper.getSessionContext().checkPermission(offering.getSession(), Right.ApiRetrieveEnrollments);
+			helper.getSessionContext().checkPermissionAnyAuthority(offering.getSession(), Right.ApiRetrieveEnrollments);
 
 			helper.setResponse(convert(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId"
@@ -115,7 +115,7 @@ public class EnrollmentsConnector extends ApiConnector {
 			if (config == null)
 				throw new IllegalArgumentException("Configuration with the given ID does not exist.");
 			
-			helper.getSessionContext().checkPermission(config.getInstructionalOffering().getSession(), Right.ApiRetrieveEnrollments);
+			helper.getSessionContext().checkPermissionAnyAuthority(config.getInstructionalOffering().getSession(), Right.ApiRetrieveEnrollments);
 
 			helper.setResponse(convert(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"from StudentClassEnrollment e where e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId = :configId"

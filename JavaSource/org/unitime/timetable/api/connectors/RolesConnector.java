@@ -45,7 +45,7 @@ public class RolesConnector extends ApiConnector {
 	
 	@Override
 	public void doGet(ApiHelper helper) throws IOException {
-		helper.getSessionContext().checkPermission(Right.ApiRetrieveRoles);
+		helper.getSessionContext().checkPermissionAnyAuthority(Right.ApiRetrieveRoles);
 
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 		List<Session> sessions = helper.getHibSession().createQuery("from Session order by academicInitiative, sessionBeginDateTime").list();

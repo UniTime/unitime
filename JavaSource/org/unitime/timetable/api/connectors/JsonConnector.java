@@ -59,7 +59,7 @@ public class JsonConnector extends ApiConnector {
 	}
 
 	public void doPost(ApiHelper helper) throws IOException {
-		helper.getSessionContext().checkPermission(Right.ApiJsonConnector);
+		helper.getSessionContext().checkPermissionAnyAuthority(Right.ApiJsonConnector);
 		
 		String type = helper.getParameter("type");
 		if (type == null)
