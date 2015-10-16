@@ -54,6 +54,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>UniTime RESTful API</name>
+			<description>
+				<line>API Permission Checks: Check any authority instead of the current (default) one.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

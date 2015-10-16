@@ -63,7 +63,7 @@ public class ClassInfoConnector extends ApiConnector {
 		if (sessionId == null)
 			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
 		
-		helper.getSessionContext().checkPermission(sessionId, "Session", Right.ApiRetrieveInstructorSchedule);
+		helper.getSessionContext().checkPermissionAnyAuthority(sessionId, "Session", Right.ApiRetrieveInstructorSchedule);
 		
 		String classId = helper.getParameter("id");
 		if (classId == null) classId = helper.getParameter("classId");
