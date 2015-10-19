@@ -37,7 +37,7 @@
 				<line>There is a new page (Administration > Other > Class Duration Types), where the class duration types can be managed.
 					<line>Permission ClassDurationTypes is needed to access the page, ClassDurationTypeEdit is needed to make changes.</line>
 				</line>
-				<line>Default duration type can be defined on an academic session, it can be overriden on the instructional offering configuration level (Instructional Offering Configuration page).
+				<line>Default duration type can be defined on an academic session, it can be overridden on the instructional offering configuration level (Instructional Offering Configuration page).
 					<line>Name of the default duration type is used in the column headers (Classes, Instructional Offerings), abbreviation is used to suffix durations that are using a non-default duration type.</line>
 				</line>
 				<line>Following class duration types have been implemented:
@@ -92,7 +92,7 @@
 			<name>Conficting Classes</name>
 			<description>
 				<line>Class Detail: Display conflicting classes.
-					<line>There is a new table called Conflicting Classes, just bellow the Timetable section.</line>
+					<line>There is a new table called Conflicting Classes, just below the Timetable section.</line>
 					<line>The table is only visible when the class is conflicting with some other class (or classes).</line>
 					<line>The same checking as on the Class Assignment page is used.</line>
 				</line>
@@ -112,6 +112,76 @@
 				<line>It is usually included in the Type column, next to the instructional type, e.g., Lecture (Online).</line>
 			</description>
 		</item>
+		<item>
+			<name>Multiple-Major Curricula</name>
+			<description>
+				<line>A curriculum has a new property named multiple majors (boolean, default to false).</line>
+				<line>If a curriculum is marked as multiple-major: a student meets the curriculum only when he/she has all the selected majors (not one of the selected).</line>
+				<line>A multiple-major curriculum will inherit course projections from curricula that have no or one of the matching majors.</line>
+				<line>There can be multiple curricula that get combined together to form a multiple-major curriculum.</line>
+				<line>If a course is on several curricula, the highest percent share (of the particular classification) will be used.</line>
+				<line>These shares can be overridden on the multiple-major curriculum, but no courses can be deleted (course projection must be set to zero instead).</line>
+				<line>The parent (single or no major curricula) can have zero requested students, only acting as templates for the multiple-major curricula.</line>
+				<line>If there is no multiple-major curriculum, everything works like before.</line>
+			</description>
+		</item>
+		<item>
+			<name>Reservations</name>
+			<descriptions>
+				<line>Remember last sort in the reservation cookie.</line>
+				<line>Added Previous / Next buttons (Edit Reservation).</line>
+				<line>Added confirmation message when deleting a reservation (Edit Reservation).</line>
+			</descriptions>
+		</item>
+	</category>
+	<category>
+		<title>Rooms</title>
+		<item>
+			<name>Overview</name>
+			<description>
+				<line>The room pages have been completely rewritten using the Google Web Toolkit.</line>
+				<line>The new pages are localizable, they are using the same Room Filter as is used in the event management, and they are allowing a change to propagate over to the future academic sessions as well.</line>
+				<line>It is also possible for users that are not managers in UniTime (e.g., instructors) and/or that have no relation to a particular department (e.g., students) to be allowed to use the new rooms pages.</line>
+				<line>When accessed from the Events menu, the Rooms, Room Groups and Room Features pages contain the selection of an academic session, just like the Events page.</line>
+				<line>It is possible to use the old pages by setting the application property unitime.legacy.rooms to true (defaults to false).</line>
+			</description>
+		</item>
+		<item>
+			<name>Rooms</name>
+			<description>
+				<line>The Rooms page now contains a Room Filter and a table with many features.</line>
+				<line>The table of rooms can be sorted by a given column, can show pretty much any room property, and it can be exported to PDF or CSV.</line>
+			</description>
+		</item>
+		<item>
+			<name>Add/Edit Room</name>
+			<description>
+				<line>Add Room and Edit Room page now contains all the functionality of the various edit pages that were accessible from the Room Detail page.</line>
+				<line>Moreover, it is now possible to make the update the room in the (selected) future academic sessions as well.</line>
+				<line>Only selected groups of properties can be updated in a particular future session.</line>
+			</description>
+		</item>
+		<item>
+			<name>Edit Room Departments</name>
+			<description>
+				<line>The page can be used to assign multiple rooms to a particular department or examination problem).</line>
+				<line>The page is only accessible when a department or an examination problem is selected in the Room Filter.</line>
+				<line>The page is now using the same table of rooms as the Rooms page and it is populated by all the rooms matching the Room Filter (except of the selected department / examination problem).</line>
+				<line>Rooms not matching the Room Filter are left unchanged.</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Groups / Features</name>
+			<description>
+				<line>The Room Groups and Room Features pages also use the Room Filter to list rooms (and matching room features and groups).</line>
+				<line>The Add and Edit pages are also using the same table as on the Rooms page with the list of rooms populated by all the rooms matching the Room Filter.</line>
+				<line>Rooms not matching the Room Filter are left unchanged.</line>
+				<line>When creating / updated a room group or feature, it is possible to select one or more future academic sessions that would be updated as well.
+					<line>Besides of the properties of the group (or feature) like name, abbreviation department, etc., only rooms with a change are updated.</line>
+					<line>This means that the future group (or feature) is NOT reset to the rooms that are currently selected on the group (or feature).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
@@ -121,7 +191,7 @@
 				<line>Added ability to set examination status individually for each examination type.
 					<line>This examination status, if set, overrides the academic session status (for all users).</line>
 					<line>Examination statues can be defined on the Administration > Other > Status Types page (Apply: Examinations).</line>
-					<line>Following statuses are created by default: Examination Distabled, Examination Data Entry, Examination Timetabling, and Examination Published.</line>
+					<line>The following statuses are created by default: Examination Disabled, Examination Data Entry, Examination Timetabling, and Examination Published.</line>
 					<line>Examination statuses can be set on the Administration > Academic Sessions > Examination Statuses page.</line>
 				</line>
 				<line>This allows for each examination problem to be viewed, edited, timetabled, and published at a different time.</line>
@@ -139,7 +209,7 @@
 		<item>
 			<name>Minimal Perturbation Mode</name>
 			<description>
-				<line>In priority and equal weigthing, the difference of an enrollment (from the initial one) is computed as an average using the following schema:
+				<line>In priority and equal weighting, the difference of an enrollment (from the initial one) is computed as an average using the following schema:
 					<line>an initial section counts as 1</line>
 					<line>same choice section counts as 0.9 (parameter StudentWeights.SameChoice)</line>
 					<line>same time section counts as 0.7 (parameter StudentWeights.SameTime)</line>
@@ -166,7 +236,7 @@
 						(the metric reflects how much are the students spread between the sections of the course).</line>
 				</line>
 				<line>There is a new Request Groups report on the Student Scheduling Solver Reports page.</line>
-				<line>Request groups are loaded in only when the solver paramter Load.RequestGroups is set to true, default is false</line>
+				<line>Request groups are loaded in only when the solver parameter Load.RequestGroups is set to true, default is false</line>
 			</description>
 		</item>
 		<item>
@@ -180,7 +250,24 @@
 		</item>
 	</category>
 	<category>
-		<title>Event Management</title>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Online Student Scheduling Dashboard</name>
+			<description>
+				<line>Added ability to use the Online Student Scheduling Dashboard page during the registration phase (Course Requests page is available to students).</line>
+				<line>This is done by leveraging the DatabaseServer (version of the online scheduling server that does not keep any data in memory).</line>
+			</description>
+		</item>
+		<item>
+			<name>Custom Interfaces</name>
+			<description>
+				<line>Added ability to use automated wait-listing together with the student enrollment provider interface.</line>
+				<line>Added ability to load course requests from an external system when there are none in UniTime (for a student).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Other Improvements</title>
 		<item>
 			<name>iCalendar Queries</name>
 			<description>
@@ -210,6 +297,26 @@
 						<line>If true, it is assumed that there are no overlaps in the events of the group — the display is like on the personal timetable or when a single week / room is selected (defaults to false).</line>
 						<line>This property needs to be set in the JavaSource/org/unitime/timetable/gwt/resources/GwtConstants.properties before the build.</line>
 					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Poeple Lookup dialog</name>
+			<description>
+				<line>Added individual lookup permissions to be able to filter what sources can be searched (by a user of the given role).</line>
+				<line>The following permissions were added:
+					<line>Can Lookup Students (search student table)</line>
+					<line>Can Lookup Instructor (search departmental_instructor table)</line>
+					<line>Can Lookup Staff (search staff table)</line>
+					<line>Can Lookup Managers (search timetable_manager table)</line>
+					<line>Can Lookup Event Contacts (search event_contact table)</line>
+					<line>Can Lookup Ldap (query LDAP directory, if configured)</line>
+				</line>
+				<line>By default, all roles that can use the People Lookup dialog can search through all the sources.</line>
+				<line>On the personal schedule (event management), if another person is looked up, the new permissions are also used to filter the role:
+					<line>Can Lookup Students is needed for the Student role (person is enrolled in a class, an exam, or a course related event as a student).</line>
+					<line>Can Lookup Instructors is needed for the Instructor and Coordinator roles (person is assigned to a class or an exam as an instructor or coordinator).</line>
+					<line>Can Lookup Event Contacts is needd for the Contact role (person is listed among contacts of the event).</line>
 				</line>
 			</description>
 		</item>
