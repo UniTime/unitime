@@ -64,7 +64,7 @@
 			<menu name="Rooms" page="roomSearch.do">
 				<condition>
 					<hasPermission name="Rooms"/>
-					<propertyEquals name="unitime.experimental.rooms" value="false" defaultValue="false"/>
+					<propertyEquals name="unitime.legacy.rooms" value="true" defaultValue="false"/>
 				</condition>
 				<item name="Room Features" page="roomFeatureSearch.do">
 					<condition>
@@ -86,7 +86,7 @@
 				<parameter name="mode">courses</parameter>
 				<condition>
 					<hasPermission name="Rooms"/>
-					<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
+					<propertyEquals name="unitime.legacy.rooms" value="false" defaultValue="false"/>
 				</condition>
 				<item name="Room Features" page="roomfeatures" type="gwt">
 					<parameter name="mode">courses</parameter>
@@ -333,7 +333,7 @@
 			<menu name="Rooms" page="roomSearch.do?default=Exam">
 				<condition>
 					<hasPermission name="Rooms"/>
-					<propertyEquals name="unitime.experimental.rooms" value="false" defaultValue="false"/>
+					<propertyEquals name="unitime.legacy.rooms" value="true" defaultValue="false"/>
 				</condition>
 				<item name="Room Features" page="roomFeatureSearch.do?default=Exam">
 					<condition>
@@ -355,7 +355,7 @@
 				<parameter name="mode">exams</parameter>
 				<condition>
 					<hasPermission name="Rooms"/>
-					<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
+					<propertyEquals name="unitime.legacy.rooms" value="false" defaultValue="false"/>
 				</condition>
 				<item name="Room Features" page="roomfeatures" type="gwt">
 					<parameter name="mode">exams</parameter>
@@ -533,7 +533,7 @@
 		<menu name="Rooms" page="roomSearch.do">
 			<condition>
 				<hasPermission name="Rooms"/>
-				<propertyEquals name="unitime.experimental.rooms" value="false" defaultValue="false"/>
+				<propertyEquals name="unitime.legacy.rooms" value="true" defaultValue="false"/>
 			</condition>
 			<item name="Room Features" page="roomFeatureSearch.do">
 				<condition>
@@ -550,7 +550,7 @@
 			<parameter name="mode">events</parameter>
 			<condition>
 				<hasPermission name="Rooms"/>
-				<propertyEquals name="unitime.experimental.rooms" value="true" defaultValue="false"/>
+				<propertyEquals name="unitime.legacy.rooms" value="false" defaultValue="false"/>
 			</condition>
 			<item name="Room Features" page="roomfeatures" type="gwt">
 				<parameter name="mode">events</parameter>

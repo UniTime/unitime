@@ -1974,6 +1974,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Student Group Timetable: count enrollments within the group")
 	StudentGroupsTimetableGroupEnrollments("unitime.events.group.showGroupEnrollment"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Legacy: switch the user interface back to the old (Struts-based) rooms pages")
+	LegacyRooms("unitime.legacy.rooms"),
 	;
 
 	String iKey;
