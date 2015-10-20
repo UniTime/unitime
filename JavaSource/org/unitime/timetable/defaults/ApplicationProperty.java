@@ -415,6 +415,11 @@ public enum ApplicationProperty {
 	@DefaultValue("#,##0.00")
 	@Description("Rooms: room area decimal format")
 	RoomAreaUnitsFormat("unitime.room.area.units.format"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Rooms: room area is in metric format (square meters) instead of square feet")
+	RoomAreaUnitsMetric("unitime.room.area.units.metric"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")

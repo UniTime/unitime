@@ -397,7 +397,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		case EXTERNAL_ID: return MESSAGES.colExternalId();
 		case CAPACITY: return MESSAGES.colCapacity();
 		case EXAM_CAPACITY: return MESSAGES.colExaminationCapacity();
-		case AREA: return MESSAGES.colArea(CONSTANTS.roomAreaUnitsShort());
+		case AREA: return MESSAGES.colArea(iProperties != null && iProperties.isRoomAreaInMetricUnits() ? CONSTANTS.roomAreaMetricUnitsShort() : CONSTANTS.roomAreaUnitsShort());
 		case COORDINATES: return MESSAGES.colCoordinates();
 		case DISTANCE_CHECK: return MESSAGES.colDistances();
 		case ROOM_CHECK: return MESSAGES.colRoomCheck();

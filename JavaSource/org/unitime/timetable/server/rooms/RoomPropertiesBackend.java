@@ -226,6 +226,8 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 			}
 		}
 		
+		response.setRoomAreaInMetricUnits(ApplicationProperty.RoomAreaUnitsMetric.isTrue());
+		
 		return response;
 	}
 

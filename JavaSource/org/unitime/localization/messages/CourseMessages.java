@@ -2088,6 +2088,18 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Area [ft2]")
 	String columnAreaPDF();
 	
+	@DefaultMessage("square meters")
+	String roomAreaMetricUnitsLong();
+
+	@DefaultMessage("m&sup2;")
+	String roomAreaMetricUnitsShort();
+
+	@DefaultMessage("Area [m&sup2;]")
+	String columnAreaMetric();
+	
+	@DefaultMessage("Area [m2]")
+	String columnAreaMetricPDF();
+
 	@DefaultMessage("System Default (Minutes per Week)")
 	String systemDefaultDurationType();
 	

@@ -224,7 +224,9 @@
 		
 		<logic:notEmpty name="<%=frmName%>" property="area">
 			<TR>
-				<TD><loc:message name="propertyRoomArea"/></TD><TD><bean:write name="<%=frmName%>" property="area"/> <loc:message name="roomAreaUnitsLong"/></TD>
+				<TD><loc:message name="propertyRoomArea"/></TD><TD><bean:write name="<%=frmName%>" property="area"/>
+				<tt:propertyEquals name="unitime.room.area.units.metric" value="true"><loc:message name="roomAreaMetricUnitsLong"/></tt:propertyEquals>
+				<tt:propertyNotEquals name="unitime.room.area.units.metric" value="true"><loc:message name="roomAreaUnitsLong"/></tt:propertyNotEquals>
 			</TR>
 		</logic:notEmpty>
 

@@ -123,7 +123,9 @@
 			<TR>
 				<TD><loc:message name="propertyRoomArea"/></TD>
 				<TD>
-					<html:text property="area" maxlength="12" size="12"/> <loc:message name="roomAreaUnitsLong"/>
+					<html:text property="area" maxlength="12" size="12"/>
+					<tt:propertyEquals name="unitime.room.area.units.metric" value="true"><loc:message name="roomAreaMetricUnitsLong"/></tt:propertyEquals>
+					<tt:propertyNotEquals name="unitime.room.area.units.metric" value="true"><loc:message name="roomAreaUnitsLong"/></tt:propertyNotEquals>
 				</TD>
 			</TR>
 

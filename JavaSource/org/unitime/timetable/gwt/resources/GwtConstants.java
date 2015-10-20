@@ -258,6 +258,15 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("ft2")
 	String roomAreaUnitsShortPlainText();
 	
+	@DefaultStringValue("square meters")
+	String roomAreaMetricUnitsLong();
+
+	@DefaultStringValue("m&sup2;")
+	String roomAreaMetricUnitsShort();
+	
+	@DefaultStringValue("m2")
+	String roomAreaMetricUnitsShortPlainText();
+
 	@DefaultBooleanValue(false)
 	@DoNotTranslate
 	boolean timeGridStudentGroupDoesNotOverlap();

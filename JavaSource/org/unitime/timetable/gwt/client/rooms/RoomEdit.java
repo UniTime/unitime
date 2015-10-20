@@ -363,7 +363,7 @@ public class RoomEdit extends Composite {
 		iAreaPanel = new UniTimeWidget<P>(new P("area"));
 		iAreaPanel.getWidget().add(iArea);
 		iAreaFormat = new P("format");
-		iAreaFormat.setText(CONSTANTS.roomAreaUnitsLong());
+		iAreaFormat.setText(iProperties != null && iProperties.isRoomAreaInMetricUnits() ? CONSTANTS.roomAreaMetricUnitsLong() : CONSTANTS.roomAreaUnitsLong());
 		iAreaPanel.getWidget().add(iAreaFormat);
 		
 		iDistanceCheck = new CheckBox();
@@ -780,6 +780,7 @@ public class RoomEdit extends Composite {
 			iY.setValue(iRoom.getY());
 			iForm.addRow(MESSAGES.propCoordinates(), iCoordinates, 1);
 			iArea.setValue(iRoom.getArea());
+			iAreaFormat.setText(iProperties != null && iProperties.isRoomAreaInMetricUnits() ? CONSTANTS.roomAreaMetricUnitsLong() : CONSTANTS.roomAreaUnitsLong());
 			iForm.addRow(MESSAGES.propRoomArea(), iAreaPanel, 1);
 			if (iProperties.isCanSeeCourses()) {
 				iDistanceCheck.setValue(!iRoom.isIgnoreTooFar());
@@ -797,7 +798,7 @@ public class RoomEdit extends Composite {
 				else
 					iForm.addRow(MESSAGES.propCoordinates(), new HTML(MESSAGES.coordinates(iRoom.getX(), iRoom.getY())), 1);
 			if (iRoom.getArea() != null)
-				iForm.addRow(MESSAGES.propRoomArea(), new HTML(MESSAGES.roomArea(iRoom.getArea()) + " " + CONSTANTS.roomAreaUnitsShort()), 1);
+				iForm.addRow(MESSAGES.propRoomArea(), new HTML(MESSAGES.roomArea(iRoom.getArea()) + " " + (iProperties != null && iProperties.isRoomAreaInMetricUnits() ? CONSTANTS.roomAreaMetricUnitsShort() : CONSTANTS.roomAreaUnitsShort())), 1);
 			if (iProperties.isCanSeeCourses()) {
 				iForm.addRow(MESSAGES.propDistanceCheck(), new Check(!room.isIgnoreTooFar(), MESSAGES.infoDistanceCheckOn(), MESSAGES.infoDistanceCheckOff()), 1);
 				iForm.addRow(MESSAGES.propRoomCheck(), new Check(!room.isIgnoreRoomCheck(), MESSAGES.infoRoomCheckOn(), MESSAGES.infoRoomCheckOff()), 1);

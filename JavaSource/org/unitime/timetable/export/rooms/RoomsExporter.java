@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.events.EventAction.EventContext;
@@ -204,7 +205,7 @@ public abstract class RoomsExporter implements Exporter {
 		case EXTERNAL_ID: return MESSAGES.colExternalId();
 		case CAPACITY: return MESSAGES.colCapacity();
 		case EXAM_CAPACITY: return MESSAGES.colExaminationCapacity();
-		case AREA: return MESSAGES.colArea(CONSTANTS.roomAreaUnitsShort());
+		case AREA: return MESSAGES.colArea(ApplicationProperty.RoomAreaUnitsMetric.isTrue() ? CONSTANTS.roomAreaMetricUnitsShortPlainText() : CONSTANTS.roomAreaUnitsShortPlainText());
 		case COORDINATES: return MESSAGES.colCoordinates();
 		case DISTANCE_CHECK: return MESSAGES.colDistances();
 		case ROOM_CHECK: return MESSAGES.colRoomCheck();

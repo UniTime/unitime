@@ -1761,6 +1761,7 @@ public class RoomInterface implements IsSerializable {
 				iCanChangeGroups = false, iCanChangeFeatures = false, iCanChangeEventAvailability = false;
 		private List<AcademicSessionInterface> iFutureSessions = null;
 		private boolean iCanExportRoomGroups = false, iCanChangeDefaultGroup = false, iCanExportRoomFeatures = false;
+		private boolean iRoomAreaMetricUnits = false;
 		
 		public RoomPropertiesInterface() {}
 		
@@ -1976,6 +1977,9 @@ public class RoomInterface implements IsSerializable {
 					return session;
 			return null;
 		}
+		
+		public boolean isRoomAreaInMetricUnits() { return iRoomAreaMetricUnits; }
+		public void setRoomAreaInMetricUnits(boolean roomAreaInMetricUnits) { iRoomAreaMetricUnits = roomAreaInMetricUnits; }
 	}
 	
 	public static enum RoomsColumn {

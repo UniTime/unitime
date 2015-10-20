@@ -974,7 +974,10 @@ public abstract class Location extends BaseLocation implements Comparable {
     	}
     	hint += "</td></tr>";
     	if (getArea() != null) {
-    		hint += "<tr><td>" + MSG.propertyRoomArea() + "</td><td width=\\'99%\\'>" + new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value()).format(getArea()) + " " + MSG.roomAreaUnitsShort() + "</td></tr>";
+    		hint += "<tr><td>" + MSG.propertyRoomArea() + "</td><td width=\\'99%\\'>" +
+    				new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value()).format(getArea()) + " " +
+    				(ApplicationProperty.RoomAreaUnitsMetric.isTrue() ? MSG.roomAreaMetricUnitsShort() : MSG.roomAreaUnitsShort()) +
+    				"</td></tr>";
     	}
     	Map<String, String> features = new HashMap<String, String>();
     	for (GlobalRoomFeature f: getGlobalRoomFeatures()) {

@@ -427,6 +427,7 @@ public class RoomListAction extends Action {
 			}
 	
 			//build headings for university rooms
+			String colArea = (ApplicationProperty.RoomAreaUnitsMetric.isTrue() ? MSG.columnAreaMetric() : MSG.columnArea());
 			String fixedHeading1[][] =
 			    (examType != null?
 		                (featuresOneColumn? new String[][]
@@ -434,7 +435,7 @@ public class RoomListAction extends Action {
 		                                                 { "Room", "left", "true" },
 		                                                 { "Capacity", "right", "false" },
 		                                                 { "Exam Capacity", "right", "false" },
-		                                                 { MSG.columnArea(), "right", "false" },
+		                                                 { colArea, "right", "false" },
 		                                                 { "Period Preferences", "center", "false" },
 		                                                 { "Groups", "left", "true" },
 		                                                 { "Features", "left", "true" } } 
@@ -442,7 +443,7 @@ public class RoomListAction extends Action {
 		                                                 { { "Bldg", "left", "true" },
 		                                                 { "Room", "left", "true" },
 		                                                 { "Capacity", "right", "false" },
-		                                                 { MSG.columnArea(), "right", "false" },
+		                                                 { colArea, "right", "false" },
 		                                                 { "Exam Capacity", "right", "false" },
 		                                                 { "Period Preferences", "center", "false" },
 		                                                 { "Groups", "left", "true" } })                    
@@ -451,7 +452,7 @@ public class RoomListAction extends Action {
 	                                                 { { "Bldg", "left", "true" },
 	                                                 { "Room", "left", "true" },
 	                                                 { "Capacity", "right", "false" },
-	                                                 { MSG.columnArea(), "right", "false" },
+	                                                 { colArea, "right", "false" },
 	                                                 { "Availability", "left", "true" },
 	                                                 { "Departments", "left", "true" },
 	                                                 { "Control", "left", "true" },
@@ -462,7 +463,7 @@ public class RoomListAction extends Action {
 	                                                 { { "Bldg", "left", "true" },
 	                                                 { "Room", "left", "true" },
 	                                                 { "Capacity", "right", "false" },
-	                                                 { MSG.columnArea(), "right", "false" },
+	                                                 { colArea, "right", "false" },
 	                                                 { "Availability", "left", "true" },
 	                                                 { "Departments", "left", "true" },
 	                                                 { "Control", "left", "true" },
@@ -511,7 +512,7 @@ public class RoomListAction extends Action {
 		                                                   {{ "Location", "left", "true" },
 		                                                   { "Capacity", "right", "false" },
 		                                                   { "Exam Capacity", "right", "false" },
-		                                                   { MSG.columnArea(), "right", "false" },
+		                                                   { colArea, "right", "false" },
 		                                                   { "Period Preferences", "center", "false" },
 		                                                   { "Groups", "left", "true" },
 		                                                   { "Features", "left", "true" }}
@@ -519,14 +520,14 @@ public class RoomListAction extends Action {
 		                                                   {{ "Location", "left", "true" },
 		                                                   { "Capacity", "right", "false" },
 		                                                   { "Exam Capacity", "right", "false" },
-		                                                   { MSG.columnArea(), "right", "false" },
+		                                                   { colArea, "right", "false" },
 		                                                   { "Period Preferences", "center", "false" },
 		                                                   { "Groups", "left", "true" } })
 			     :
 	                ( featuresOneColumn ? new String[][]
 	                                                   {{ "Location", "left", "true" },
 	                                                   { "Capacity", "right", "false" },
-	                                                   { MSG.columnArea(), "right", "false" },
+	                                                   { colArea, "right", "false" },
 	                                                   { "IgnTooFar", "center", "true" },
 	                                                   { "IgnChecks", "center", "true" },
 	                                                   { "Availability", "left", "true" },
@@ -538,7 +539,7 @@ public class RoomListAction extends Action {
 	                                           : new String[][]
 	                                                   {{ "Location", "left", "true" },
 	                                                   { "Capacity", "right", "false" },
-	                                                   { MSG.columnArea(), "right", "false" },
+	                                                   { colArea, "right", "false" },
 	                                                   { "IgnTooFar", "center", "true" },
 	                                                   { "IgnChecks", "center", "true" },
 	                                                   { "Availability", "left", "true" },
@@ -1003,6 +1004,7 @@ public class RoomListAction extends Action {
 		}
 
 		//build headings for university rooms
+		String colArea = (ApplicationProperty.RoomAreaUnitsMetric.isTrue() ? MSG.columnAreaMetricPDF() : MSG.columnAreaPDF());
 		String fixedHeading1[][] =
 		    (examType != null?
 		            (featuresOneColumn? new String[][]
@@ -1010,7 +1012,7 @@ public class RoomListAction extends Action {
 		                                             { "Room", "left", "true" },
 		                                             { "Capacity", "right", "false" },
 		                                             { "Exam Capacity", "right", "false" },
-		                                             { MSG.columnAreaPDF(), "right", "false" },
+		                                             { colArea, "right", "false" },
 		                                             { "Period Preferences", "center", "true" },
 		                                             { "Groups", "left", "true" },
 		                                             { "Features", "left", "true" } } 
@@ -1019,7 +1021,7 @@ public class RoomListAction extends Action {
 		                                             { "Room", "left", "true" },
 		                                             { "Capacity", "right", "false" },
 		                                             { "Exam Capacity", "right", "false" },
-		                                             { MSG.columnAreaPDF(), "right", "false" },
+		                                             { colArea, "right", "false" },
 		                                             { "Period Preferences", "center", "true" },
 		                                             { "Groups", "left", "true" } })			    
             :
@@ -1027,7 +1029,7 @@ public class RoomListAction extends Action {
                                                  { { "Bldg", "left", "true" },
                                                  { "Room", "left", "true" },
                                                  { "Capacity", "right", "false" },
-                                                 { MSG.columnAreaPDF(), "right", "false" },
+                                                 { colArea, "right", "false" },
                                                  { "Availability", "left", "true" },
                                                  { "Departments", "left", "true" },
                                                  { "Control", "left", "true" },
@@ -1038,7 +1040,7 @@ public class RoomListAction extends Action {
                                                  { { "Bldg", "left", "true" },
                                                  { "Room", "left", "true" },
                                                  { "Capacity", "right", "false" },
-                                                 { MSG.columnAreaPDF(), "right", "false" },
+                                                 { colArea, "right", "false" },
                                                  { "Availability", "left", "true" },
                                                  { "Departments", "left", "true" },
                                                  { "Control", "left", "true" },
@@ -1086,21 +1088,21 @@ public class RoomListAction extends Action {
 	                                                   {{ "Location", "left", "true" },
 	                                                   { "Capacity", "right", "false" },
 	                                                   { "Exam Capacity", "right", "false" },
-	                                                   { MSG.columnAreaPDF(), "right", "false" },
+	                                                   { colArea, "right", "false" },
 	                                                   { "Period Preferences", "center", "true" },
 	                                                   { "Groups", "left", "true" },
 	                                                   { "Features", "left", "true" }}
 	                                           : new String[][]
 	                                                   {{ "Location", "left", "true" },
 	                                                   { "Capacity", "right", "false" },
-	                                                   { MSG.columnAreaPDF(), "right", "false" },
+	                                                   { colArea, "right", "false" },
 	                                                   { "Period Preferences", "center", "true" },
 	                                                   { "Groups", "left", "true" } })
 		    :
                 ( featuresOneColumn ? new String[][]
                                                    {{ "Location", "left", "true" },
                                                    { "Capacity", "right", "false" },
-                                                   { MSG.columnAreaPDF(), "right", "false" },
+                                                   { colArea, "right", "false" },
                                                    { "IgnTooFar", "center", "true" },
                                                    { "IgnChecks", "center", "true" },
                                                    { "Availability", "left", "true" },
@@ -1113,7 +1115,7 @@ public class RoomListAction extends Action {
                                                    {{ "Location", "left", "true" },
                                                    { "Capacity", "right", "false" },
                                                    { "Exam Capacity", "right", "false" },
-                                                   { MSG.columnAreaPDF(), "right", "false" },
+                                                   { colArea, "right", "false" },
                                                    { "IgnTooFar", "center", "true" },
                                                    { "IgnChecks", "center", "true" },
                                                    { "Availability", "left", "true" },
@@ -1531,6 +1533,7 @@ public class RoomListAction extends Action {
 		}
 
 		//build headings for university rooms
+		String colArea = (ApplicationProperty.RoomAreaUnitsMetric.isTrue() ? MSG.columnAreaMetricPDF() : MSG.columnAreaPDF());
 		String fixedHeading1[][] =
 		    (examType != null?
 		            (featuresOneColumn? new String[][]
@@ -1538,7 +1541,7 @@ public class RoomListAction extends Action {
 		                                             { "Room", "left", "true" },
 		                                             { "Capacity", "right", "false" },
 		                                             { "Exam Capacity", "right", "false" },
-		                                             { MSG.columnAreaPDF(), "right", "false" },
+		                                             { colArea, "right", "false" },
 		                                             { "Period Preferences", "center", "true" },
 		                                             { "Groups", "left", "true" },
 		                                             { "Features", "left", "true" } } 
@@ -1554,7 +1557,7 @@ public class RoomListAction extends Action {
                                                  { { "Bldg", "left", "true" },
                                                  { "Room", "left", "true" },
                                                  { "Capacity", "right", "false" },
-                                                 { MSG.columnAreaPDF(), "right", "false" },
+                                                 { colArea, "right", "false" },
                                                  { "Availability", "left", "true" },
                                                  { "Departments", "left", "true" },
                                                  { "Control", "left", "true" },
@@ -1565,7 +1568,7 @@ public class RoomListAction extends Action {
                                                  { { "Bldg", "left", "true" },
                                                  { "Room", "left", "true" },
                                                  { "Capacity", "right", "false" },
-                                                 { MSG.columnAreaPDF(), "right", "false" },
+                                                 { colArea, "right", "false" },
                                                  { "Availability", "left", "true" },
                                                  { "Departments", "left", "true" },
                                                  { "Control", "left", "true" },
@@ -1605,21 +1608,21 @@ public class RoomListAction extends Action {
 	                                                   {{ "Location", "left", "true" },
 	                                                   { "Capacity", "right", "false" },
 	                                                   { "Exam Capacity", "right", "false" },
-	                                                   { MSG.columnAreaPDF(), "right", "false" },
+	                                                   { colArea, "right", "false" },
 	                                                   { "Period Preferences", "center", "true" },
 	                                                   { "Groups", "left", "true" },
 	                                                   { "Features", "left", "true" }}
 	                                           : new String[][]
 	                                                   {{ "Location", "left", "true" },
 	                                                   { "Capacity", "right", "false" },
-	                                                   { MSG.columnAreaPDF(), "right", "false" },
+	                                                   { colArea, "right", "false" },
 	                                                   { "Period Preferences", "center", "true" },
 	                                                   { "Groups", "left", "true" } })
 		    :
                 ( featuresOneColumn ? new String[][]
                                                    {{ "Location", "left", "true" },
                                                    { "Capacity", "right", "false" },
-                                                   { MSG.columnAreaPDF(), "right", "false" },
+                                                   { colArea, "right", "false" },
                                                    { "IgnTooFar", "center", "true" },
                                                    { "IgnChecks", "center", "true" },
                                                    { "Availability", "left", "true" },
@@ -1632,7 +1635,7 @@ public class RoomListAction extends Action {
                                                    {{ "Location", "left", "true" },
                                                    { "Capacity", "right", "false" },
                                                    { "Exam Capacity", "right", "false" },
-                                                   { MSG.columnAreaPDF(), "right", "false" },
+                                                   { colArea, "right", "false" },
                                                    { "IgnTooFar", "center", "true" },
                                                    { "IgnChecks", "center", "true" },
                                                    { "Availability", "left", "true" },

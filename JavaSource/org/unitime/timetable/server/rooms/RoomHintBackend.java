@@ -27,6 +27,7 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintResponse;
@@ -47,7 +48,8 @@ import org.unitime.timetable.security.SessionContext;
 @GwtRpcImplements(RoomHintRequest.class)
 public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, RoomHintResponse> {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	public static final CourseMessages MSG = Localization.create(CourseMessages.class);
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	@Override
 	public RoomHintResponse execute(RoomHintRequest request, SessionContext context) {
@@ -78,7 +80,7 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    	}
 	    	
 	    	if (location.getArea() != null)
-	    		response.setArea(new DecimalFormat(ApplicationProperty.RoomAreaUnitsFormat.value()).format(location.getArea()) + " " + MSG.roomAreaUnitsShort());
+	    		response.setArea(new DecimalFormat(CONSTANTS.roomAreaFormat()).format(location.getArea()) + " " + (ApplicationProperty.RoomAreaUnitsMetric.isTrue() ? MSG.roomAreaMetricUnitsShort() : MSG.roomAreaUnitsShort()));
 
 	    	for (GlobalRoomFeature f: location.getGlobalRoomFeatures()) {
 	    		String type = (f.getFeatureType() == null ? MESSAGES.roomFeatures() : f.getFeatureType().getReference());
