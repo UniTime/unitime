@@ -127,11 +127,11 @@
 		</item>
 		<item>
 			<name>Reservations</name>
-			<descriptions>
+			<description>
 				<line>Remember last sort in the reservation cookie.</line>
 				<line>Added Previous / Next buttons (Edit Reservation).</line>
 				<line>Added confirmation message when deleting a reservation (Edit Reservation).</line>
-			</descriptions>
+			</description>
 		</item>
 	</category>
 	<category>
