@@ -28,6 +28,8 @@
 <!ATTLIST class scheduleNote CDATA #IMPLIED >
 <!ATTLIST class suffix CDATA #REQUIRED >
 <!ATTLIST class type CDATA #REQUIRED >
+<!-- cancelled was introduced in UniTime 4.1 -->
+<!ATTLIST class cancelled ( false | true ) #IMPLIED >
 
 <!ELEMENT config ( (subpart|class)* ) >
 <!ATTLIST config limit NMTOKEN #REQUIRED >

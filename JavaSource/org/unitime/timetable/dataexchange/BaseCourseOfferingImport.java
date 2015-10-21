@@ -1639,6 +1639,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				String type = getRequiredStringAttribute(classElement, "type", elementName);
 				String scheduleNote = getOptionalStringAttribute(classElement, "scheduleNote");
 				Boolean enabledForStudentScheduling = getOptionalBooleanAttribute(classElement, "studentScheduling", getOptionalBooleanAttribute(classElement, "displayInScheduleBook", true));
+				boolean cancelled = getOptionalBooleanAttribute(classElement, "cancelled", false);
 				Integer itypeId = findItypeForString(type).getItype();
 				
 				Class_ clazz = null;
@@ -1716,6 +1717,14 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' display in schedule book changed");
 						changed = true;						
 					}
+					if (cancelled != clazz.isCancelled()) {
+						clazz.setCancelled(cancelled);
+						if (cancelled)
+							addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' cancelled");
+						else
+							addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' reopened");
+						changed = true;	
+					}
 				} else {
 					isAdd = true;
 					clazz = new Class_();
@@ -1734,6 +1743,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					clazz.setNbrRooms(new Integer(1));
 					clazz.setEnabledForStudentScheduling(enabledForStudentScheduling);
 					clazz.setSchedulePrintNote(scheduleNote);
+					clazz.setCancelled(cancelled);
 					clazz.setDisplayInstructor(new Boolean(true));
 					if (managingDept != null){
 						clazz.setManagingDept(managingDept);
@@ -2060,6 +2070,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		boolean changed = false;
 		Date approvedTime = new Date();
 		ClassEvent origEvent = c.getEvent();
+		Meeting.Status status = (c.isCancelled() ? Meeting.Status.CANCELLED : Meeting.Status.APPROVED);
 		if(meetings != null && !meetings.isEmpty() && origEvent==null){
 			ClassEvent newEvent = new ClassEvent();
 			newEvent.setClazz(c); c.setEvent(newEvent);
@@ -2069,7 +2080,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			for(Iterator<Meeting> mIt = meetings.iterator(); mIt.hasNext(); ){
 				Meeting meeting = (Meeting) mIt.next();
 				meeting.setEvent(newEvent);
-				meeting.setStatus(Meeting.Status.APPROVED);
+				meeting.setStatus(status);
 				meeting.setApprovalDate(approvedTime);
 				newEvent.addTomeetings(meeting);
 			}
@@ -2109,13 +2120,17 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
                         if(isSameMeeting(origMeeting, newMeeting)){
                             found = true;
                             origMeetings.remove(origMeeting);
+                            if (status != origMeeting.getStatus()) {
+                            	origMeeting.setStatus(status);
+                            	changed = true;
+                            }
                             break;
                         }
                     }
                     if (!found){
                         addNote("\tdid not find matching meeting, adding new meeting to event: " + c.getClassLabel());
                         newMeeting.setEvent(origEvent);
-                        newMeeting.setStatus(Meeting.Status.APPROVED);
+                        newMeeting.setStatus(status);
                         newMeeting.setApprovalDate(approvedTime);
                         origEvent.addTomeetings(newMeeting);
                         changed = true;

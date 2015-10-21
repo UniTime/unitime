@@ -97,6 +97,7 @@ public class CourseTimetableExport extends CourseOfferingExport {
         classElement.addAttribute("studentScheduling", clazz.isEnabledForStudentScheduling()?"true":"false");
         classElement.addAttribute("displayInScheduleBook", clazz.isEnabledForStudentScheduling()?"true":"false");
         classElement.addAttribute("controlling", course.isIsControl()?"true":"false");
+        classElement.addAttribute("cancelled", clazz.isCancelled() ? "true" : "false");
         if (clazz.getManagingDept().getSolverGroup() != null)
         	classElement.addAttribute("solver", clazz.getManagingDept().getSolverGroup().getAbbv());
         for (Iterator i=clazz.getChildClasses().iterator();i.hasNext();) {

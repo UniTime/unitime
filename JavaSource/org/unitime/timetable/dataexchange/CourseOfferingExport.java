@@ -278,6 +278,7 @@ public class CourseOfferingExport extends BaseExport {
             classElement.addAttribute("scheduleNote", clazz.getSchedulePrintNote());
         classElement.addAttribute("studentScheduling", clazz.isEnabledForStudentScheduling()?"true":"false");
         classElement.addAttribute("displayInScheduleBook", clazz.isEnabledForStudentScheduling()?"true":"false");
+        classElement.addAttribute("cancelled", clazz.isCancelled() ? "true" : "false");
         for (Iterator i=clazz.getChildClasses().iterator();i.hasNext();) {
             Class_ childClazz = (Class_)i.next();
             exportClass(classElement.addElement("class"), childClazz, session);
