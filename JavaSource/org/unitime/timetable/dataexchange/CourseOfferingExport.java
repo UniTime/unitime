@@ -21,13 +21,14 @@ package org.unitime.timetable.dataexchange;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
-
 
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.ToolBox;
@@ -58,6 +59,8 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SolverParameterDef;
+import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -74,6 +77,7 @@ public class CourseOfferingExport extends BaseExport {
     protected static Formats.Format<Date> sTimeFormat = Formats.getDateFormat("HHmm");
     protected Hashtable<Long, TreeSet<Exam>> iExams = null;
     protected boolean iExportAssignments = true;
+    protected Integer iDefaultMaxNbrRooms = null;
     
     public void saveXml(Document document, Session session, Properties parameters) throws Exception {
         try {
@@ -90,8 +94,13 @@ public class CourseOfferingExport extends BaseExport {
             root.addAttribute("created", new Date().toString());
             if (examsOnly)
                 root.addAttribute("type", parameters.getProperty("tmtbl.export.exam.type", "all"));
+            root.addAttribute("includeExams", parameters.getProperty("tmtbl.export.exam.type", "all"));
             
             document.addDocType(examsOnly?"exams":"offerings", "-//UniTime//DTD University Course Timetabling/EN", "http://www.unitime.org/interface/CourseOfferingExport.dtd");
+            
+            SolverParameterDef maxRoomsParam = SolverParameterDef.findByNameType(getHibSession(), "Exams.MaxRooms", SolverParameterGroup.sTypeExam);
+            if (maxRoomsParam != null && maxRoomsParam.getDefault() != null) 
+            	iDefaultMaxNbrRooms = Integer.valueOf(maxRoomsParam.getDefault());
             
             if (examsOnly) {
                 if ("all".equals(parameters.getProperty("tmtbl.export.exam.type", "all")) || "final".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
@@ -264,10 +273,7 @@ public class CourseOfferingExport extends BaseExport {
     }
     
     protected void exportClass(Element classElement, Class_ clazz, Session session) {
-        if (clazz.getExternalUniqueId()!=null)
-            classElement.addAttribute("id", clazz.getExternalUniqueId());
-        else
-            classElement.addAttribute("id", clazz.getUniqueId().toString());
+        classElement.addAttribute("id", getExternalUniqueId(clazz));
         classElement.addAttribute("type", clazz.getItypeDesc().trim());
         classElement.addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
         if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment())
@@ -455,84 +461,87 @@ public class CourseOfferingExport extends BaseExport {
     protected void exportExam(Element offeringElement, InstructionalOffering offering, Exam exam, Session session) {
         Element examElement = offeringElement.addElement("exam");
         examElement.addAttribute("id", exam.getUniqueId().toString());
-        examElement.addAttribute("name", (exam.getName()==null?exam.generateName():exam.getName()));
-        examElement.addAttribute("size", String.valueOf(exam.getSize())); 
+        examElement.addAttribute("name", exam.getLabel());
+        examElement.addAttribute("size", String.valueOf(exam.getSize()));
+        examElement.addAttribute("length", String.valueOf(exam.getLength()));
         if (exam.getNote()!=null)
             examElement.addAttribute("note", exam.getNote());
         examElement.addAttribute("seatingType", exam.getSeatingType()==Exam.sSeatingTypeExam?"exam":"normal");
         examElement.addAttribute("type", exam.getExamType().getReference());
-        Element courseElement = null; CourseOffering lastCourse = null;
+        if (exam.getPrintOffset() != null)
+        	examElement.addAttribute("printOffset", String.valueOf(exam.getPrintOffset()));
+        if (exam.getNote() != null)
+        	examElement.addAttribute("note", exam.getNote());
+        if (exam.getMaxNbrRooms() != null && !exam.getMaxNbrRooms().equals(iDefaultMaxNbrRooms))
+        	examElement.addAttribute("maxRooms", String.valueOf(exam.getMaxNbrRooms()));
+        Map<Long, Element> courseElements = new HashMap<Long, Element>();
         for (Iterator i=exam.getOwnerObjects().iterator();i.hasNext();) {
             Object owner = (Object)i.next();
             if (owner instanceof Class_) {
                 Class_ clazz = (Class_)owner;
-                if (offering==null) {
-                    if (lastCourse==null || !lastCourse.equals(clazz.getSchedulingSubpart().getControllingCourseOffering())) {
-                        lastCourse = clazz.getSchedulingSubpart().getControllingCourseOffering();
-                        courseElement = examElement.addElement("course");
-                        courseElement.addAttribute("id", (lastCourse.getExternalUniqueId()!=null?lastCourse.getExternalUniqueId():lastCourse.getUniqueId().toString()));
-                        courseElement.addAttribute("subject", lastCourse.getSubjectArea().getSubjectAreaAbbreviation());
-                        courseElement.addAttribute("courseNbr", lastCourse.getCourseNbr());
-                    }
-                    courseElement.addElement("class")
-                    .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
-                    .addAttribute("type", clazz.getItypeDesc().trim())
-                    .addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
-                } else {
-                    if (!clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().equals(offering)) continue;
-                    examElement.addElement("class")
-                    .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
-                    .addAttribute("type", clazz.getItypeDesc().trim())
-                    .addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
+                CourseOffering course = clazz.getSchedulingSubpart().getControllingCourseOffering();;
+                Element courseElement = null;
+                if (offering == null || !course.getInstructionalOffering().equals(offering)) {
+                	courseElement = courseElements.get(course.getUniqueId());
+                	if (courseElement == null) {
+                		courseElement = examElement.addElement("course");
+                        courseElement.addAttribute("id", (course.getExternalUniqueId() != null ? course.getExternalUniqueId() : course.getUniqueId().toString()));
+                        courseElement.addAttribute("subject", course.getSubjectAreaAbbv()); 
+                        courseElement.addAttribute("courseNbr", course.getCourseNbr());
+                        courseElements.put(course.getUniqueId(), courseElement);
+                	}
                 }
+                Element classElement = (courseElement == null ? examElement : courseElement).addElement("class");
+                classElement.addAttribute("id", getExternalUniqueId(clazz));
+                classElement.addAttribute("type", clazz.getItypeDesc().trim());
+                classElement.addAttribute("suffix", (clazz.getClassSuffix() !=null ? clazz.getClassSuffix() : clazz.getSectionNumberString()));
             } else if (owner instanceof InstrOfferingConfig) {
                 InstrOfferingConfig config = (InstrOfferingConfig)owner;
-                if (offering==null) {
-                    if (lastCourse==null || !lastCourse.equals(config.getControllingCourseOffering())) {
-                        lastCourse = config.getControllingCourseOffering();
-                        courseElement = examElement.addElement("course");
-                        courseElement.addAttribute("id", (lastCourse.getExternalUniqueId()!=null?lastCourse.getExternalUniqueId():lastCourse.getUniqueId().toString()));
-                        courseElement.addAttribute("subject", lastCourse.getSubjectArea().getSubjectAreaAbbreviation());
-                        courseElement.addAttribute("courseNbr", lastCourse.getCourseNbr());
-                    }
-                    TreeSet subparts = new TreeSet(new SchedulingSubpartComparator()); subparts.addAll(config.getSchedulingSubparts());
-                    for (Iterator j=((SchedulingSubpart)subparts.first()).getClasses().iterator();j.hasNext();) {
-                        Class_ clazz = (Class_)j.next();
-                        courseElement.addElement("class")
-                            .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
-                            .addAttribute("type", clazz.getItypeDesc().trim())
-                            .addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
-                    }
-                } else {
-                    if (!config.getInstructionalOffering().equals(offering)) continue;
-                    if (config.getSchedulingSubparts().isEmpty()) continue;
-                    TreeSet subparts = new TreeSet(new SchedulingSubpartComparator()); subparts.addAll(config.getSchedulingSubparts());
-                    for (Iterator j=((SchedulingSubpart)subparts.first()).getClasses().iterator();j.hasNext();) {
-                        Class_ clazz = (Class_)j.next();
-                        examElement.addElement("class")
-                            .addAttribute("id", (clazz.getExternalUniqueId()!=null?clazz.getExternalUniqueId():clazz.getUniqueId().toString()))
-                            .addAttribute("type", clazz.getItypeDesc().trim())
-                            .addAttribute("suffix", (clazz.getClassSuffix()!=null?clazz.getClassSuffix():clazz.getSectionNumberString()));
-                    }
+                CourseOffering course = config.getInstructionalOffering().getControllingCourseOffering();
+                Element courseElement = null;
+                if (offering == null || !course.getInstructionalOffering().equals(offering)) {
+                	courseElement = courseElements.get(course.getUniqueId());
+                	if (courseElement == null) {
+                		courseElement = examElement.addElement("course");
+                        courseElement.addAttribute("id", (course.getExternalUniqueId() != null ? course.getExternalUniqueId() : course.getUniqueId().toString()));
+                        courseElement.addAttribute("subject", course.getSubjectAreaAbbv()); 
+                        courseElement.addAttribute("courseNbr", course.getCourseNbr());
+                        courseElements.put(course.getUniqueId(), courseElement);
+                	}
                 }
+                SchedulingSubpart subpart = null;
+                SchedulingSubpartComparator cmp = new SchedulingSubpartComparator();
+                for (SchedulingSubpart s: config.getSchedulingSubparts()) {
+                	if (subpart == null || cmp.compare(s, subpart) < 0)
+                		subpart = s;
+                }
+                if (subpart != null)
+                	for (Class_ clazz: subpart.getClasses()) {
+                		Element classElement = (courseElement == null ? examElement : courseElement).addElement("class");
+                		classElement.addAttribute("id", getExternalUniqueId(clazz));
+                        classElement.addAttribute("type", clazz.getItypeDesc().trim());
+                        classElement.addAttribute("suffix", (clazz.getClassSuffix() !=null ? clazz.getClassSuffix() : clazz.getSectionNumberString()));
+                	}
             } else if (owner instanceof CourseOffering) {
                 CourseOffering course = (CourseOffering)owner;
-                if (offering!=null && !course.getInstructionalOffering().equals(offering)) continue;
-                if (offering!=null && offering.getCourseOfferings().size()==1) continue;
-                courseElement = examElement.addElement("course"); lastCourse = course;
-                courseElement.addAttribute("id", (course.getExternalUniqueId()!=null?course.getExternalUniqueId():course.getUniqueId().toString()));
-                courseElement.addAttribute("subject", course.getSubjectArea().getSubjectAreaAbbreviation());
-                courseElement.addAttribute("courseNbr", course.getCourseNbr());
-            } else if (owner instanceof CourseOffering) {
-                InstructionalOffering o = (InstructionalOffering)owner;
-                if (offering!=null) continue;
-                for (Iterator j=o.getCourseOfferings().iterator();j.hasNext();) {
-                    CourseOffering course = (CourseOffering)j.next();
-                    courseElement = examElement.addElement("course"); lastCourse = course;
-                    courseElement.addAttribute("id", (course.getExternalUniqueId()!=null?course.getExternalUniqueId():course.getUniqueId().toString()));
-                    courseElement.addAttribute("subject", course.getSubjectArea().getSubjectAreaAbbreviation());
+                if (offering == null || !course.getInstructionalOffering().equals(offering) || course.getInstructionalOffering().getCourseOfferings().size() > 1) {
+                	Element courseElement = examElement.addElement("course");
+                    courseElement.addAttribute("id", (course.getExternalUniqueId() != null ? course.getExternalUniqueId() : course.getUniqueId().toString()));
+                    courseElement.addAttribute("subject", course.getSubjectAreaAbbv()); 
                     courseElement.addAttribute("courseNbr", course.getCourseNbr());
+                    courseElements.put(course.getUniqueId(), courseElement);
                 }
+            } else if (owner instanceof InstructionalOffering) {
+            	InstructionalOffering o = (InstructionalOffering)owner;
+            	if (offering == null || !o.equals(offering)) {
+            		for (CourseOffering course: o.getCourseOfferings()) {
+                    	Element courseElement = examElement.addElement("course");
+                        courseElement.addAttribute("id", (course.getExternalUniqueId() != null ? course.getExternalUniqueId() : course.getUniqueId().toString()));
+                        courseElement.addAttribute("subject", course.getSubjectAreaAbbv()); 
+                        courseElement.addAttribute("courseNbr", course.getCourseNbr());
+                        courseElements.put(course.getUniqueId(), courseElement);
+            		}
+            	}
             }
         }
         for (Iterator i=exam.getInstructors().iterator();i.hasNext();) {
@@ -615,4 +624,10 @@ public class CourseOfferingExport extends BaseExport {
         }
     }
     
+	protected String getExternalUniqueId(Class_ clazz) {
+		if (clazz.getExternalUniqueId() != null)
+			return clazz.getExternalUniqueId();
+		else
+			return clazz.getClassLabel();
+	}    
 }

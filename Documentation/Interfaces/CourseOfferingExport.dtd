@@ -44,7 +44,7 @@
 <!ELEMENT consent EMPTY >
 <!ATTLIST consent type CDATA #REQUIRED >
 
-<!ELEMENT course ( consent?, courseCredit? ) >
+<!ELEMENT course ( consent?, courseCredit?, class*) >
 <!ATTLIST course id CDATA #IMPLIED >
 <!ATTLIST course controlling ( false | true ) #IMPLIED >
 <!ATTLIST course courseNbr NMTOKEN #REQUIRED >
@@ -87,7 +87,8 @@
 <!ATTLIST offerings timeFormat CDATA #IMPLIED >
 <!ATTLIST offerings useMeetsWith ( false | true ) #IMPLIED >
 <!ATTLIST offerings created CDATA #IMPLIED >
-<!ATTLIST offerings incremental ( false | true ) "false" > 
+<!ATTLIST offerings incremental ( false | true ) "false" >
+<!ATTLIST offerings includeExams ( none | final | midterm | all ) "none" >
 
 <!ELEMENT room EMPTY >
 <!ATTLIST room building CDATA #REQUIRED >
@@ -122,13 +123,15 @@
 <!ATTLIST date startDate CDATA #REQUIRED >
 
 <!ELEMENT exam ( (class|course)*, instructor*, (period, (room|location)*)?) >
-<!ATTLIST exam id CDATA #REQUIRED >
+<!ATTLIST exam id CDATA #IMPLIED >
 <!ATTLIST exam name CDATA #REQUIRED >
-<!ATTLIST exam size NMTOKEN #REQUIRED >
+<!ATTLIST exam size NMTOKEN #IMPLIED >
 <!ATTLIST exam note CDATA #IMPLIED >
-<!ATTLIST exam length NMTOKEN #IMPLIED >
+<!ATTLIST exam length NMTOKEN #REQUIRED >
 <!ATTLIST exam seatingType ( normal | exam) #IMPLIED >
-<!ATTLIST exam type ( final | midterm) #REQUIRED >
+<!ATTLIST exam type CDATA #REQUIRED >
+<!ATTLIST exam printOffset NMTOKEN #IMPLIED >
+<!ATTLIST exam note CDATA #IMPLIED >
 
 <!ELEMENT period EMPTY >
 <!ATTLIST period date CDATA #REQUIRED >

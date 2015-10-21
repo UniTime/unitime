@@ -275,7 +275,7 @@ public class ExamPeriodEditForm extends ActionForm {
 	            int hour = iStart / 100;
 	            int min = iStart % 100;
 	            int slot = (hour*60 + min - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
-	            ExamPeriod period = ExamPeriod.findByDateStart(session.getUniqueId(), dateOffset, slot);
+	            ExamPeriod period = ExamPeriod.findByDateStart(session.getUniqueId(), dateOffset, slot, iType);
 	            if (period!=null && !period.getUniqueId().equals(getUniqueId())) {
 	                errors.add("date", new ActionMessage("errors.exists", "An examination period with given date and start time"));
 	            }

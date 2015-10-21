@@ -50,11 +50,17 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamEvent;
+import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.OfferingConsentType;
@@ -63,6 +69,8 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.SolverParameterDef;
+import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
@@ -73,6 +81,7 @@ import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.test.MakeAssignmentsForClassEvents;
+import org.unitime.timetable.test.UpdateExamConflicts;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
@@ -101,18 +110,20 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	protected String rootElementName;
 	int changeCount;
 	protected boolean courseNumbersMustBeUnique;
+	protected Integer defaultMaxNbrRooms = null;
+	protected boolean examPeriodChanged = false;
+	protected String includeExams = null;
 
 	public BaseCourseOfferingImport() {
 		super();
 		changeCount = 0;
 		
 		courseNumbersMustBeUnique = ApplicationProperty.CourseOfferingNumberMustBeUnique.isTrue();
-
 	}
 
 	public void loadXml(Element rootElement) throws Exception {
-		initializeTrimLeadingZeros(); 
-
+		initializeTrimLeadingZeros();
+		
 		try {
 	        if (!rootElement.getName().equalsIgnoreCase(rootElementName)) {
 	        	throw new Exception("Given XML file is not a Course Offerings load file.");
@@ -122,6 +133,14 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	        incremental = "true".equalsIgnoreCase(rootElement.attributeValue("incremental", "false"));
 	        if (incremental)
 	        	info("Incremental mode.");
+	        
+	        includeExams = rootElement.attributeValue("includeExams", "none");
+	        if (!"none".equals(includeExams))
+	        	info("Includes " + includeExams + " exams.");
+	        
+	        SolverParameterDef maxRoomsParam = SolverParameterDef.findByNameType(getHibSession(), "Exams.MaxRooms", SolverParameterGroup.sTypeExam);
+	        if (maxRoomsParam != null && maxRoomsParam.getDefault() != null) 
+	        	defaultMaxNbrRooms = Integer.valueOf(maxRoomsParam.getDefault());
 
 	        initializeLoad(rootElement, rootElementName);
 			preLoadAction();
@@ -141,6 +160,31 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		} finally {
 			postLoadAction();
 		}
+		
+		if (examPeriodChanged && session!=null && ApplicationProperty.DataExchangeUpdateStudentConflictsFinal.isTrue()) {
+            try {
+                beginTransaction();
+                for (ExamType type: ExamType.findAllOfType(ExamType.sExamTypeFinal))
+                	new UpdateExamConflicts(this).update(session.getUniqueId(), type.getUniqueId(), getHibSession());
+                commitTransaction();
+            } catch (Exception e) {
+                fatal("Exception: " + e.getMessage(), e);
+                rollbackTransaction();
+            }
+        }
+
+		if (examPeriodChanged && session!=null && ApplicationProperty.DataExchangeUpdateStudentConflictsMidterm.isTrue()) {
+            try {
+                beginTransaction();
+                for (ExamType type: ExamType.findAllOfType(ExamType.sExamTypeMidterm))
+                	new UpdateExamConflicts(this).update(session.getUniqueId(), type.getUniqueId(), getHibSession());
+                commitTransaction();
+            } catch (Exception e) {
+                fatal("Exception: " + e.getMessage(), e);
+                rollbackTransaction();
+            }
+        }
+		
 		addNote("Records Changed: " + changeCount);
 		updateChangeList(true);
 		reportMissingLocations();
@@ -565,12 +609,16 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
          	addNote("\tcourses changed");
 			changed = true;
 		}
-
+		
 		if (changed){
 			this.getHibSession().saveOrUpdate(io);
 		}
 		
 		if (elementInstrOffrConfig(element, io)){
+			changed = true;
+		}
+		
+		if (elementExam(element, io)) {
 			changed = true;
 		}
 		
@@ -861,12 +909,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				String name = getRequiredStringAttribute(roomElement, "name", elementName);
 				String id = getOptionalStringAttribute(roomElement, "id");
 				
-				NonUniversityLocation location = findNonUniversityLocation(id, name, c);
+				NonUniversityLocation location = findNonUniversityLocation(id, name, c.getManagingDept());
 				if (location != null){
 					locations.add(location);
 				} else {
 					addMissingLocation(name + " - " + c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation());
-					addMissingLocation("\tCould not find location '" + name + "' not adding it to class '" + c.getClassLabel() + "'");
 				}
 			}
         }
@@ -939,7 +986,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						addMissingLocation(building + " " + roomNbr + " - " + c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation());
 					}
 				} else if (location != null){
-					NonUniversityLocation nul = findNonUniversityLocation(null, location, c);
+					NonUniversityLocation nul = findNonUniversityLocation(null, location, c.getManagingDept());
 					if (nul != null) {
 						nonUniversityLocations.add(nul);
 					} else {
@@ -1191,7 +1238,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		}
 		Vector<String> classIds = new Vector<String>();
 		if(element.element(elementName) != null){
-        	classIds.add(c.getExternalUniqueId());
+        	classIds.add(getExternalUniqueId(c));
         	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
         		Element distPrefElement = (Element) it.next();
         		classIds.add(getRequiredStringAttribute(distPrefElement, "id", elementName));
@@ -1259,7 +1306,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				distObj = (DistributionObject) doIt.next();
 				if (distObj.getPrefGroup() instanceof Class_) {
 					Class_ c = (Class_) distObj.getPrefGroup();
-					if (cei.equals(c.getExternalUniqueId())){
+					if (cei.equals(getExternalUniqueId(c))){
 						found = true;
 						existingDistObjs.remove(distObj);
 						break;
@@ -1587,11 +1634,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							Class_ c = (Class_) cIt.next();
 							allExistingClasses.add(c);
 							if (c.getParentClass() == null){
-								if (c.getExternalUniqueId() != null){
-									possibleClassesAtThisLevel.put(c.getExternalUniqueId(), c);
-								} else {
-									possibleClassesAtThisLevel.put(c.getSchedulingSubpart().getItype().getAbbv().trim() + c.getClassSuffix(), c);
-								}
+								possibleClassesAtThisLevel.put(getExternalUniqueId(c), c);
 							}
 						}
 					}
@@ -1604,11 +1647,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			if (parentClass.getChildClasses() != null){
 				for (Iterator<?> it = parentClass.getChildClasses().iterator(); it.hasNext();){
 					Class_ c = (Class_) it.next();
-					if (c.getExternalUniqueId() != null){
-						possibleClassesAtThisLevel.put(c.getExternalUniqueId(), c);
-					} else {
-						possibleClassesAtThisLevel.put(c.getSchedulingSubpart().getItype().getAbbv().trim() + c.getClassSuffix(), c);
-					}
+					possibleClassesAtThisLevel.put(getExternalUniqueId(c), c);
 				}
 			}
 			if (parentClass.getSchedulingSubpart().getChildSubparts() != null){
@@ -1648,7 +1687,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					origClass = (Class_) possibleClassesAtThisLevel.get(id);
 					if (origClass != null){
 						possibleClassesAtThisLevel.remove(id);
-						if (!origClass.getClassSuffix().equals(suffix)){
+						if (!equals(origClass.getClassSuffix(),suffix)){
 							changed = true;
 							origClass.setClassSuffix(suffix);
 							Integer origSectionNbr = origClass.getSectionNumberCache();
@@ -1663,10 +1702,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					}
 				} 
 				if (origClass == null){
-					origClass = (Class_) possibleClassesAtThisLevel.get(type+suffix);
-					if (origClass != null && origClass.getExternalUniqueId() != null && id != null && !origClass.getExternalUniqueId().equals(id)){
+					origClass = (Class_) possibleClassesAtThisLevel.get(ioc.getInstructionalOffering().getControllingCourseOffering().getCourseName() + " " + type + " " + suffix);
+					if (origClass != null && getExternalUniqueId(origClass) != null && id != null && !getExternalUniqueId(origClass).equals(id)){
 						origClass = null;
-					} else if(origClass != null){
+					} else if (origClass != null){
 						possibleClassesAtThisLevel.remove(type+suffix);
 					}
 				}
@@ -2025,7 +2064,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		String externalId = null;
 		for (Iterator<?> eIt = classIds.iterator(); eIt.hasNext();){
 			externalId = (String) eIt.next();
-			if (externalId.equals(clazz.getExternalUniqueId())){
+			if (externalId.equals(getExternalUniqueId(clazz))){
 				classes.add(clazz);
 				tmpClassIds.remove(externalId);
 			} else {
@@ -2581,7 +2620,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return(room);
 	}
 	
-	private NonUniversityLocation findNonUniversityLocation(String id, String name, Class_ c){
+	private NonUniversityLocation findNonUniversityLocation(String id, String name, Department dept){
 		NonUniversityLocation location = null;
 		List<?> possibleLocations = findNonUniversityLocationsWithIdOrName(id, name);
 		if (possibleLocations != null){
@@ -2590,7 +2629,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				if (l.getRoomDepts() != null) {
 					for(Iterator<?> rdIt = l.getRoomDepts().iterator(); rdIt.hasNext(); ){
 						RoomDept rd = (RoomDept) rdIt.next();
-						if (rd.getDepartment().getUniqueId().equals(c.getSchedulingSubpart().getControllingDept().getUniqueId())){
+						if (rd.getDepartment().getUniqueId().equals(dept.getUniqueId())){
 							location = l;
 							break;
 						}
@@ -2663,11 +2702,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	private void loadExistingClasses(Long sessionId) throws Exception {
  		for (Iterator<?> it = Class_.findAll(sessionId).iterator(); it.hasNext();) {
 			Class_ c = (Class_) it.next();
-			if (c.getExternalUniqueId() != null){
-				existingClasses.add(c.getUniqueId());
-			} else {
-				existingClasses.add(c.getUniqueId());				
-			} 
+			existingClasses.add(c.getUniqueId());
 		}
 	}
 
@@ -2705,8 +2740,463 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			this.element = element;
 		}
 		
-		
-		
 	}
 	
+    protected static boolean equals(Object o1, Object o2) {
+        return (o1 == null ? o2 == null : o1.equals(o2));
+    }
+	
+	private boolean elementExam(Element element, InstructionalOffering io) throws Exception{
+		boolean changed = false;
+		Set<Exam> exams = new TreeSet<Exam>(getHibSession().createQuery(
+				"select distinct x from Exam x inner join x.owners o inner join o.course co "+
+                "inner join co.instructionalOffering io "+
+                "left outer join io.instrOfferingConfigs ioc " +
+                "left outer join ioc.schedulingSubparts ss "+
+                "left outer join ss.classes c where "+
+                "io.uniqueId=:instructionalOfferingId and ("+
+                "(o.ownerType="+ExamOwner.sOwnerTypeCourse+" and o.ownerId=co.uniqueId) or "+
+                "(o.ownerType="+ExamOwner.sOwnerTypeOffering+" and o.ownerId=io.uniqueId) or "+
+                "(o.ownerType="+ExamOwner.sOwnerTypeConfig+" and o.ownerId=ioc.uniqueId) or "+
+                "(o.ownerType="+ExamOwner.sOwnerTypeClass+" and o.ownerId=c.uniqueId) "+
+                ") order by x.uniqueId").
+                setLong("instructionalOfferingId", io.getUniqueId()).setCacheable(true).list());
+		
+		String elementName = "exam";
+		if(element.element(elementName) != null) {
+			for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
+				Element examElement = (Element) it.next();
+				String name = getRequiredStringAttribute(examElement, "name", elementName);
+				Integer size = getOptionalIntegerAttribute(examElement, "size");
+				Integer length = getRequiredIntegerAttribute(examElement, "length", elementName);
+				String seating = getOptionalStringAttribute(examElement, "seatingType");
+				int seatingType = ("normal".equals(seating) ? Exam.sSeatingTypeNormal : Exam.sSeatingTypeNormal);
+				String type = getRequiredStringAttribute(examElement, "type", elementName);
+				String note = getOptionalStringAttribute(examElement, "note");
+				Integer printOffset = getOptionalIntegerAttribute(examElement, "printOffset");
+				String maxRooms = getOptionalStringAttribute(examElement, "maxRooms");
+				Integer maxNbrRooms = (maxRooms == null ? defaultMaxNbrRooms : Integer.valueOf(maxRooms));
+				
+				ExamType et = ExamType.findByReference(type);
+				if (et == null)
+					throw new Exception("Examination type " + type + " does not exist.");
+				
+				Exam exam = null;
+				for (Iterator<Exam> i = exams.iterator(); i.hasNext(); ) {
+					Exam x = i.next();
+					if (x.getExamType().equals(et) && x.getLabel().equals(name)) {
+						exam = x; i.remove(); break;
+					}
+				}
+				
+				boolean addNew = false;
+				if (exam == null) {
+					addNote("\t did not find matching exam element, adding new exam: " + name + " (" + et.getReference() + ")");
+					exam = new Exam();
+					exam.setSession(io.getSession());
+					exam.setName(name);
+					exam.setExamType(et);
+					exam.setSeatingType(seatingType);
+					exam.setExamSize(size);
+					exam.setLength(length);
+					exam.setNote(note);
+					exam.setMaxNbrRooms(maxNbrRooms);
+					exam.setPrintOffset(printOffset);
+					exam.setOwners(new HashSet<ExamOwner>());
+					exam.setInstructors(new HashSet<DepartmentalInstructor>());
+					exam.setAssignedRooms(new HashSet<Location>());
+					changed = true;
+					addNew = true;
+				} else {
+					if (exam.getSeatingType() != seatingType) {
+						addNote("\tseating type changed");
+						exam.setSeatingType(seatingType);
+						changed = true;
+					}
+					if (!length.equals(exam.getLength())) {
+						addNote("\t length changed");
+						exam.setLength(length);
+						changed = true;
+					}
+					if (!equals(size, exam.getExamSize())) {
+						addNote("\t size changed");
+						exam.setExamSize(size);
+						changed = true;
+					}
+					if (!equals(note, exam.getNote())) {
+						addNote("\t note changed");
+						exam.setNote(note);
+						changed = true;
+					}
+					if (!equals(maxNbrRooms, exam.getMaxNbrRooms())) {
+						addNote("\t max rooms changed");
+						exam.setMaxNbrRooms(maxNbrRooms);
+						changed = true;
+					}
+					if (!equals(printOffset, exam.getPrintOffset())) {
+						addNote("\t print offset changed");
+						exam.setPrintOffset(printOffset);
+						changed = true;
+					}
+				}
+				
+				Set<ExamOwner> owners = new HashSet<ExamOwner>(exam.getOwners());
+				
+				for (Object obj: getExamOwners(examElement, io)) {
+					ExamOwner owner = null;
+					for (Iterator<ExamOwner> i = owners.iterator(); i.hasNext(); ) {
+						ExamOwner own = i.next();
+						if (own.getOwnerType() == ExamOwner.sOwnerTypeClass && obj instanceof Class_ && own.getOwnerId().equals(((Class_)obj).getUniqueId())) {
+							owner = own; i.remove(); break;
+						}
+						if (own.getOwnerType() == ExamOwner.sOwnerTypeConfig && obj instanceof InstrOfferingConfig && own.getOwnerId().equals(((InstrOfferingConfig)obj).getUniqueId())) {
+							owner = own; i.remove(); break;
+						}
+						if (own.getOwnerType() == ExamOwner.sOwnerTypeCourse && obj instanceof CourseOffering && own.getOwnerId().equals(((CourseOffering)obj).getUniqueId())) {
+							owner = own; i.remove(); break;
+						}
+						if (own.getOwnerType() == ExamOwner.sOwnerTypeOffering && obj instanceof InstructionalOffering && own.getOwnerId().equals(((InstructionalOffering)obj).getUniqueId())) {
+							owner = own; i.remove(); break;
+						}
+					}
+					if (owner == null) {
+						owner = new ExamOwner();
+						if (obj instanceof Class_)
+							owner.setOwner((Class_)obj);
+						else if (obj instanceof InstrOfferingConfig)
+							owner.setOwner((InstrOfferingConfig)obj);
+						else if (obj instanceof CourseOffering)
+							owner.setOwner((CourseOffering)obj);
+						else if (obj instanceof InstructionalOffering)
+							owner.setOwner((InstructionalOffering)obj);
+						owner.setExam(exam);
+						exam.getOwners().add(owner);
+						addNote("\t exam owner changed (" + owner.getLabel() + ")");
+						changed = true;
+					}
+				}
+				if (!owners.isEmpty()) {
+					for (ExamOwner owner: owners) {
+						owner.setExam(null);
+						exam.getOwners().remove(owner);
+						getHibSession().delete(owner);
+						addNote("\t exam owner removed (" + owner.getLabel() + ")");
+						changed = true;
+					}
+				}
+				
+				if (elementInstructor(examElement, exam, io)) {
+					addNote("\t exam instructor(s) changed");
+					changed = true;
+				}
+				
+				ExamPeriod period = null;
+				Element periodElement = examElement.element("period");
+				if (periodElement != null) {
+					Calendar date = null;
+					if (dateFormat == null) {								
+						date = getCalendarForDate(getRequiredStringAttribute(periodElement, "date", "period"));
+					} else {
+						date = Calendar.getInstance();
+						date.setTime(CalendarUtils.getDate(getRequiredStringAttribute(periodElement, "date", "period"), dateFormat));
+					}
+					if (date == null) {
+						throw new Exception("For element 'period' a 'date' is required, unable to parse given date.");
+					}
+					long diff = date.getTimeInMillis() - io.getSession().getExamBeginDate().getTime();
+		            int dateOffset = (int)Math.round(diff/(1000.0 * 60 * 60 * 24)); 
+
+					int startSlot = str2Slot(getRequiredStringAttribute(periodElement, "startTime", "period"), exam.getPrintOffset());
+					period = ExamPeriod.findByDateStart(io.getSessionId(), dateOffset, startSlot, exam.getExamType().getUniqueId());
+					if (period == null) {
+						addNote("\t failed to find matchin examination period for " + new SimpleDateFormat(dateFormat == null ? "yyyy/M/d" : dateFormat).format(date) + " " + Constants.slot2str(startSlot));
+					} else if (!equals(period, exam.getAssignedPeriod())) {
+						addNote("\t exam assigned period changed");
+						exam.setAssignedPeriod(period);
+						examPeriodChanged = true;
+						changed = true;
+					}
+					
+					Set<Location> rooms = new HashSet<Location>(exam.getAssignedRooms());
+					for (Iterator<?> j = examElement.elementIterator("room"); j.hasNext();){
+						Element roomElement = (Element) j.next();
+						String building = getRequiredStringAttribute(roomElement, "building", "room");
+						String roomNbr = getRequiredStringAttribute(roomElement, "roomNbr", "room");
+						String id = getOptionalStringAttribute(roomElement, "id");
+						Room room = findRoom(id, building, roomNbr);
+						if (room != null) {
+							if (!rooms.remove(room)) {
+								exam.getAssignedRooms().add(room);
+								addNote("\t exam assigned room(s) changed");
+								changed = true;
+							}
+						} else {
+							addMissingLocation(building + " " + roomNbr + " - " + exam.getLabel());
+						}
+					}
+					for (Iterator<?> j = examElement.elementIterator("location"); j.hasNext();){
+						Element roomElement = (Element) j.next();
+						String locName = getRequiredStringAttribute(roomElement, "name", "location");
+						String id = getOptionalStringAttribute(roomElement, "id");
+						NonUniversityLocation location = findNonUniversityLocation(id, locName, io.getDepartment());
+						if (location != null){
+							if (!rooms.remove(location)) {
+								exam.getAssignedRooms().add(location);
+								addNote("\t exam assigned room(s) changed");
+								changed = true;
+							}
+						} else {
+							addMissingLocation(name + " - " + exam.getLabel());
+						}
+					}
+					if (!rooms.isEmpty()) {
+						addNote("\t exam assigned room(s) changed");
+						exam.getAssignedRooms().removeAll(rooms);
+						changed = true;
+					}
+				}
+				
+				if (changed){
+					addNote("\texam element changed: " + name);
+					getHibSession().saveOrUpdate(exam);
+		        	ChangeLog.addChange(getHibSession(), getManager(), session, exam, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), io.getControllingCourseOffering().getSubjectArea(), io.getControllingCourseOffering().getDepartment());
+
+					if (periodElement != null) {
+						ExamEvent event = exam.generateEvent(exam.getEvent(),true);
+			            if (event != null) {
+			            	event.setEventName(exam.getLabel());
+	                        event.setMinCapacity(exam.getSize());
+	                        event.setMaxCapacity(exam.getSize());
+			                getHibSession().saveOrUpdate(event);
+			            } else if (exam.getEvent() != null) {
+			            	getHibSession().delete(exam.getEvent());
+			            	exam.setEvent(null);
+			            }
+					}
+				}
+			}
+		} 
+
+		if (!exams.isEmpty() && !"none".equals(includeExams)) {
+			for(Iterator<Exam> i = exams.iterator(); i.hasNext();){
+				Exam exam = i.next();
+				if ("final".equals(includeExams) && exam.getExamType().getType() != ExamType.sExamTypeFinal) continue;
+				if ("midterm".equals(includeExams) && exam.getExamType().getType() != ExamType.sExamTypeMidterm) continue;
+				addNote("\tremoved exam: " + exam.getLabel() + " (" + exam.getExamType().getReference() + ")");
+				exam.deleteDependentObjects(getHibSession(), false);
+				getHibSession().delete(exam);
+				changed = true;
+			}
+		}
+		
+		return changed;
+	}
+	
+	private boolean elementInstructor(Element element, Exam exam, InstructionalOffering offering) throws Exception {
+		boolean changed = false;
+		
+		HashMap<String, DepartmentalInstructor> existingInstructors = new HashMap<String, DepartmentalInstructor>();
+		for (DepartmentalInstructor i: exam.getInstructors())
+			existingInstructors.put(i.getExternalUniqueId(), i);
+		
+		String elementName = "instructor";
+        if (element.element(elementName) != null) {
+        	HashSet<String> ids = new HashSet<String>();
+        	HashMap<String, String> firstNames = new HashMap<String, String>();
+        	HashMap<String, String> middleNames = new HashMap<String, String>();
+        	HashMap<String, String> lastNames = new HashMap<String, String>();
+        	HashMap<String, String> acadTitles = new HashMap<String, String>();
+        	for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
+				Element instructorElement = (Element) it.next();
+				String id = getRequiredStringAttribute(instructorElement, "id", elementName);
+	            if (trimLeadingZerosFromExternalId){
+	            	try {
+	            		Integer num = new Integer(id);
+	            		id = num.toString();
+					} catch (Exception e) {
+						// do nothing
+					}
+	            }
+				ids.add(id);
+				firstNames.put(id, getOptionalStringAttribute(instructorElement, "fname"));
+				middleNames.put(id, getOptionalStringAttribute(instructorElement, "mname"));
+				lastNames.put(id, getOptionalStringAttribute(instructorElement, "lname"));
+				acadTitles.put(id, getOptionalStringAttribute(instructorElement, "title"));
+        	}
+        	for (Iterator<String> it = ids.iterator(); it.hasNext(); ){
+				String id = (String) it.next();
+				DepartmentalInstructor di = existingInstructors.get(id);
+				if (di == null) {
+					di = findDepartmentalInstructorWithExternalUniqueId(id, offering.getControllingCourseOffering().getDepartment());
+					if (di == null) {
+						di = new DepartmentalInstructor();
+						di.setDepartment(offering.getControllingCourseOffering().getDepartment());
+						di.setExternalUniqueId(id);
+						if (lastNames.get(id) == null) {
+							Staff staffData = findStaffMember(id);
+							if (staffData != null){
+								firstNames.put(id, staffData.getFirstName());
+								middleNames.put(id, staffData.getMiddleName());
+								lastNames.put(id, staffData.getLastName());
+								acadTitles.put(id, staffData.getAcademicTitle());
+							}
+						}
+						di.setFirstName(firstNames.get(id));
+						di.setMiddleName(middleNames.get(id));
+						di.setAcademicTitle(acadTitles.get(id));
+						String lastName = lastNames.get(id);
+						di.setLastName((lastName != null?lastName:"Unknown Name"));
+						di.setIgnoreToFar(new Boolean(false));
+						getHibSession().save(di);
+						getHibSession().flush();
+						getHibSession().refresh(di);
+			        	ChangeLog.addChange(getHibSession(), getManager(), session, di, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.CREATE, offering.getControllingCourseOffering().getSubjectArea(), offering.getControllingCourseOffering().getDepartment());
+					}
+					exam.getInstructors().add(di);
+					di.getExams().add(exam);
+					changed = true;
+				} else {
+					existingInstructors.remove(id);
+				}
+			}
+        }
+       
+        if (!existingInstructors.isEmpty()) {
+        	for (DepartmentalInstructor di: existingInstructors.values()) {
+        		di.getExams().remove(exam);
+        		exam.getInstructors().remove(di);
+            	changed = true;
+        	}
+        }
+        
+        return changed;
+	}
+	
+	protected List<Object> getExamOwners(Element examElement, InstructionalOffering offering) throws Exception {
+		List<Object> owners = new ArrayList<Object>();
+		boolean hasThisOffering = false;
+		if (offering != null) {
+			for (Iterator<?> it = examElement.elementIterator("class"); it.hasNext();) {
+				Element classElement = (Element) it.next();
+				Class_ clazz = lookupClass(offering,
+						getOptionalStringAttribute(classElement, "id"),
+						getOptionalStringAttribute(classElement, "type"),
+						getOptionalStringAttribute(classElement, "suffix"));
+				if (clazz != null) {
+					owners.add(clazz);
+					hasThisOffering = true;
+				}
+			}
+		}
+		for (Iterator<?> it = examElement.elementIterator("course"); it.hasNext();) {
+			Element courseElement = (Element) it.next();
+			CourseOffering course = findCrsOffrForSubjCrs(
+					getRequiredStringAttribute(courseElement, "subject", "course"),
+					getRequiredStringAttribute(courseElement, "courseNbr", "course"),
+					offering.getSessionId());
+			if (course == null) continue;
+			List<Class_> classes = new ArrayList<Class_>();
+			for (Iterator<?> j = courseElement.elementIterator("class"); j.hasNext();) {
+				Element classElement = (Element) j.next();
+				Class_ clazz = lookupClass(course.getInstructionalOffering(),
+						getOptionalStringAttribute(classElement, "id"),
+						getOptionalStringAttribute(classElement, "type"),
+						getOptionalStringAttribute(classElement, "suffix"));
+				if (clazz != null)
+					classes.add(clazz);
+			}
+			if (classes.isEmpty()) {
+				if (course.getInstructionalOffering().getCourseOfferings().size() == 1)
+					owners.add(course.getInstructionalOffering());
+				else
+					owners.add(course);
+			} else
+				owners.addAll(classes);
+			if (course.getInstructionalOffering().equals(offering))
+				hasThisOffering = true;
+		}
+		
+		if (offering != null && !hasThisOffering) {
+			owners.add(offering);
+		}
+		return owners;
+	}
+	
+	protected Class_ lookupClass(InstructionalOffering offering, String id, String type, String suffix) {
+		if (id != null) {
+			for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+				for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+					for (Class_ clazz: subpart.getClasses()) {
+						if (id.equals(getExternalUniqueId(clazz)))
+							return clazz;
+					}
+				}
+			}
+			CourseOffering course = offering.getControllingCourseOffering();
+			for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+				for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+					for (Class_ clazz: subpart.getClasses()) {
+						if (id.equals(clazz.getExternalId(course)))
+							return clazz;
+					}
+				}
+			}
+		}
+		if (type != null && suffix != null) {
+			for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+				for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+					if (type.equals(subpart.getItypeDesc().trim())) 
+						for (Class_ clazz: subpart.getClasses()) {
+							if (suffix.equals(clazz.getClassSuffix()))
+								return clazz;
+						}
+				}
+			}
+			CourseOffering course = offering.getControllingCourseOffering();
+			for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+				for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+					if (type.equals(subpart.getItypeDesc().trim())) 
+						for (Class_ clazz: subpart.getClasses()) {
+							if (suffix.equals(clazz.getClassSuffix(course)))
+								return clazz;
+						}
+				}
+			}
+		}
+		return null;
+	}
+	
+	public Integer str2Slot(String timeString, Integer printOffset) throws Exception {
+		int slot = -1;
+		try {
+			Date date = CalendarUtils.getDate(timeString, timeFormat);
+			SimpleDateFormat df = new SimpleDateFormat("HHmm");
+			int time = Integer.parseInt(df.format(date));
+			if (printOffset != null)
+				time -= printOffset.intValue();
+			int hour = time/100;
+			int min = time%100;
+			if (hour >= 24)
+				throw new Exception("Invalid time '"+timeString+"' -- hour ("+hour+") must be between 0 and 23.");
+			if (min >= 60)
+				throw new Exception("Invalid time '"+timeString+"' -- minute ("+min+") must be between 0 and 59.");
+			
+			if ((min % Constants.SLOT_LENGTH_MIN) != 0){
+				min = min - (min % Constants.SLOT_LENGTH_MIN);
+			}
+			slot = (hour * 60 + min - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+		} catch (NumberFormatException ex) {
+			throw new Exception("Invalid time '"+timeString+"' -- not a number.");
+		}
+		if (slot < 0)
+			throw new Exception("Invalid time '"+timeString+"', did not meet format: " + timeFormat);
+		return slot;
+	}
+	
+	protected String getExternalUniqueId(Class_ clazz) {
+		if (clazz.getExternalUniqueId() != null)
+			return clazz.getExternalUniqueId();
+		else
+			return clazz.getClassLabel();
+	}
 }

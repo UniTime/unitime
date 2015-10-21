@@ -172,13 +172,14 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return ret;
     }
     
-    public static ExamPeriod findByDateStart(Long sessionId, int dateOffset, int startSlot) {
+    public static ExamPeriod findByDateStart(Long sessionId, int dateOffset, int startSlot, Long examTypeId) {
         return (ExamPeriod)new ExamPeriodDAO().getSession().createQuery(
                 "select ep from ExamPeriod ep where " +
-                "ep.session.uniqueId=:sessionId and ep.dateOffset=:dateOffset and ep.startSlot=:startSlot").
+                "ep.session.uniqueId = :sessionId and ep.dateOffset = :dateOffset and ep.startSlot = :startSlot and ep.examType.uniqueId = :typeId").
                 setLong("sessionId", sessionId).
                 setInteger("dateOffset", dateOffset).
-                setInteger("startSlot", startSlot).setCacheable(true).uniqueResult();
+                setInteger("startSlot", startSlot).
+                setLong("typeId", examTypeId).setCacheable(true).uniqueResult();
     }
     
     public static ExamPeriod findByIndex(Long sessionId, ExamType type, Integer idx) {
