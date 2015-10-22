@@ -147,6 +147,7 @@ public interface StudentCourseDemands {
 		}
 		
 		public WeightedStudentId(Long studentId, CurriculumClassification cc, ProjectionsProvider projections) {
+			iStudentId = studentId;
 			Curriculum curriculum = cc.getCurriculum();
 			iWeight = 1.0f;
 			if (projections != null) {
