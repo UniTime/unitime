@@ -50,4 +50,20 @@ public interface ApiHelper {
 	public org.hibernate.Session getHibSession();
 	
 	public void close();
+	
+	public String getOptinalParameter(String name, String defaultValue);
+	
+	public String getRequiredParameter(String name);
+	
+	public Integer getOptinalParameterInteger(String name, Integer defaultValue);
+	
+	public Integer getRequiredParameterInteger(String name);
+	
+	public Long getOptinalParameterLong(String name, Long defaultValue);
+	
+	public Long getRequiredParameterLong(String name);
+	
+	public Boolean getOptinalParameterBoolean(String name, Boolean defaultValue);
+	
+	public Boolean getRequiredParameterBoolean(String name);
 }

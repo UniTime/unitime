@@ -409,23 +409,27 @@ public class OnlineSectioningHelper {
     public static OnlineSectioningLog.Section toProto(ClassAssignmentInterface.ClassAssignment assignment) {
 		OnlineSectioningLog.Section.Builder section = OnlineSectioningLog.Section.newBuilder();
 		if (assignment.getClassId() != null) {
-			section.setClazz(
-					OnlineSectioningLog.Entity.newBuilder()
-					.setUniqueId(assignment.getClassId())
-					.setExternalId(assignment.getSection())
-					.setName(assignment.getClassNumber()));
+			OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder();
+			e.setUniqueId(assignment.getClassId());
+			if (assignment.getSection() != null)
+				e.setExternalId(assignment.getSection());
+			if (assignment.getClassNumber() != null)
+				e.setName(assignment.getClassNumber());
+			section.setClazz(e);
 		}
 		if (assignment.getSubpartId() != null) {
-			section.setSubpart(
-					OnlineSectioningLog.Entity.newBuilder()
-					.setUniqueId(assignment.getSubpartId())
-					.setName(assignment.getSubpart()));
+			OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder();
+			e.setUniqueId(assignment.getSubpartId());
+			if (assignment.getSubpart() != null)
+				e.setName(assignment.getSubpart());
+			section.setSubpart(e);
 		}
 		if (assignment.getCourseId() != null) {
-			section.setCourse(
-					OnlineSectioningLog.Entity.newBuilder()
-					.setUniqueId(assignment.getCourseId())
-					.setName(assignment.getSubject() + " " + assignment.getCourseNbr()));
+			OnlineSectioningLog.Entity.Builder e = OnlineSectioningLog.Entity.newBuilder();
+			e.setUniqueId(assignment.getCourseId());
+			if (assignment.getSubject() != null && assignment.getCourseNbr() != null)
+				e.setName(assignment.getSubject() + " " + assignment.getCourseNbr());
+			section.setCourse(e);
 		}
 		if (assignment.isAssigned()) {
 			OnlineSectioningLog.Time.Builder time = OnlineSectioningLog.Time.newBuilder();

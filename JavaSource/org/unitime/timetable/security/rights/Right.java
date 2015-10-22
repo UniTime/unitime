@@ -578,6 +578,7 @@ public enum Right {
     ApiRetrieveClassInfo(Session.class),
     ApiJsonConnector,
     ApiDataExchangeConnector,
+    ApiOnlineStudentScheduliung(Session.class),
     
     /** People Lookup limitations */
     CanLookupStudents,

@@ -124,4 +124,85 @@ public abstract class AbstractApiHelper implements ApiHelper {
 	
 	@Override
 	public void close() {}
+	
+	@Override
+	public String getOptinalParameter(String name, String defaultValue) {
+		String ret = getParameter(name);
+		return (ret != null ? ret : defaultValue);
+	}
+	
+	@Override
+	public String getRequiredParameter(String name) {
+		String ret = getParameter(name);
+		if (ret == null)
+			throw new IllegalArgumentException("Parameter '" + name + "' was not provided.");
+		return ret;
+	}
+	
+	@Override
+	public Integer getOptinalParameterInteger(String name, Integer defaultValue) {
+		String ret = getParameter(name);
+		if (ret != null) {
+			try {
+				return Integer.valueOf(ret);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Parameter '" + name + "' must be an integer.");
+			}
+		}
+		return defaultValue;
+	}
+	
+	@Override
+	public Integer getRequiredParameterInteger(String name) {
+		String ret = getParameter(name);
+		if (ret == null)
+			throw new IllegalArgumentException("Parameter '" + name + "' was not provided.");
+		try {
+			return Integer.valueOf(ret);
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("Parameter '" + name + "' must be an integer.");
+		}
+	}
+	
+	@Override
+	public Long getOptinalParameterLong(String name, Long defaultValue) {
+		String ret = getParameter(name);
+		if (ret != null) {
+			try {
+				return Long.valueOf(ret);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Parameter '" + name + "' must be a long.");
+			}
+		}
+		return defaultValue;
+	}
+	
+	@Override
+	public Long getRequiredParameterLong(String name) {
+		String ret = getParameter(name);
+		if (ret == null)
+			throw new IllegalArgumentException("Parameter '" + name + "' was not provided.");
+		try {
+			return Long.valueOf(ret);
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("Parameter '" + name + "' must be a long.");
+		}
+	}
+	
+	@Override
+	public Boolean getOptinalParameterBoolean(String name, Boolean defaultValue) {
+		String ret = getParameter(name);
+		if (ret != null) {
+			return "true".equalsIgnoreCase(ret) || "1".equalsIgnoreCase(ret);
+		}
+		return defaultValue;
+	}
+	
+	@Override
+	public Boolean getRequiredParameterBoolean(String name) {
+		String ret = getParameter(name);
+		if (ret == null)
+			throw new IllegalArgumentException("Parameter '" + name + "' was not provided.");
+		return "true".equalsIgnoreCase(ret) || "1".equalsIgnoreCase(ret);
+	}
 }
