@@ -203,6 +203,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Course Offering Export: More examination properties are now included (print offset, length, etc.).</line>
+				<line>Course Offering Import: Added ability to import examinations together with the offerings (including period and room assignments).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Batch Student Scheduling</title>
@@ -317,6 +324,37 @@
 					<line>Can Lookup Students is needed for the Student role (person is enrolled in a class, an exam, or a course related event as a student).</line>
 					<line>Can Lookup Instructors is needed for the Instructor and Coordinator roles (person is assigned to a class or an exam as an instructor or coordinator).</line>
 					<line>Can Lookup Event Contacts is needd for the Contact role (person is listed among contacts of the event).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>UniTime RESTful API</name>
+			<description>
+				<line>UniTime now offers a number of RESTful APIs (many of which have been merged back to UniTime 3.5 and 4.0), using JSON messages.</line>
+				<line>Most APIs are for getting data out of UniTime, but there are a few exceptions.</line>
+				<line>Following conntectors have been created so far: (including UniTime 3.5 and 4.0)
+					<line>/api/events: ability to retrieve events (using the EventInterface class converted to JSON, example: GET UniTime/api/events?type=PERSON&amp;ext=1001&amp;term=Fal2010)</line>
+					<line>/api/json: JSON interface for GWT calls (that implement the GwtRpcRequest interface)</line>
+					<line>/api/exchange: to export/import UniTime's data exchange XML files
+						<line>export example: GET UniTime/api/exchange?term=Fal2010&amp;type=students</line>
+						<line>import example: POST UniTime/api/exchange (with the XML as payload)</line>
+					</line>
+					<line>/api/roles?id=&lt;externalId&gt; returns a list of academic sessions (and roles) for a person (returns a list of academic sessions when there is no id parameter)</line>
+					<line>/api/enrollments?eventId=&lt;id&gt; returns student enrollments for an event, a class (when classId parameter is used instead),
+						 an exam (examId), a course offering (courseId), an instructional offering (offeringId), or instructional offering configuration (configId)</line>
+					<line>/api/instructor-schedule?id=&lt;externalId&gt;&amp;term=&lt;term&gt; returns classes, courses, and examinations assigned to an instructor.</line>
+					<line>/api/class-info?classId=&lt;id&gt; returns information about a class (including assinged instructors and coordinators)</line>
+				</line>
+				<line>Following conntectors are only available in UniTime 4.1:
+					<line>/api/rooms: ability to retrieve rooms (using RoomDetailInterface class converted to JSON, example GET UniTime/api/rooms?r:building=EDUC)</line>
+					<line>/api/sectioning: online student scheduling api (covering all functionality of the SectioningService)
+						<line>The SectioningService is used by the Online Student Scheduling Assistant and the Online Student Scheduling Dashboard pages.</line>
+						<line>Example: POST UniTime/api/sectioning?term=Fal2010&amp;studentId=1001&amp;operation=section (with the payload containing course requests and optionally the previous student schedule).</line>
+					</line>
+				</line>
+				<line>Each connector has the appropriate permission (see Api... permissions), with the ability to either use HTTP-simple authentication or an API token.</line>
+				<line>It is possible to change the hibernate cache mode for a particular API connector by setting the unitime.api.X.cacheMode application property (where X is the connector name).
+					<line>For example, setting unitime.api.enrollments.cacheMode=REFRESH will make the /api/enrollments connector to never read the hibernate cache, but it will keep it updated.</line>
 				</line>
 			</description>
 		</item>
