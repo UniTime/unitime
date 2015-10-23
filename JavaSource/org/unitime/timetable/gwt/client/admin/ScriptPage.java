@@ -272,14 +272,14 @@ public class ScriptPage extends Composite {
 		
 		for (final QueueItemInterface q: queue) {
 			List<Widget> line = new ArrayList<Widget>();
-			line.add(new Label(q.getName(), false));
-			line.add(new Label(q.getStatus(), false));
-			line.add(new Label(q.getProgress(), false));
-			line.add(new Label(q.getOwner(), false));
-			line.add(new Label(q.getSession(), false));
-			line.add(new Label(q.getCreated() == null ? "" : sTS.format(q.getCreated()), false));
-			line.add(new Label(q.getStarted() == null ? "" : sTS.format(q.getStarted()), false));
-			line.add(new Label(q.getFinished() == null ? "" : sTS.format(q.getFinished()), false));
+			line.add(new Label(q.getName()));
+			line.add(new Label(q.getStatus()));
+			line.add(new Label(q.getProgress()));
+			line.add(new Label(q.getOwner()));
+			line.add(new Label(q.getSession()));
+			line.add(new Label(q.getCreated() == null ? "" : sTS.format(q.getCreated())));
+			line.add(new Label(q.getStarted() == null ? "" : sTS.format(q.getStarted())));
+			line.add(new Label(q.getFinished() == null ? "" : sTS.format(q.getFinished())));
 			if (q.getOtuput() != null) {
 				line.add(new Anchor(q.getOtuput().substring(1 + q.getOtuput().lastIndexOf('.')), "temp/" + q.getOtuput()));
 			} else {
