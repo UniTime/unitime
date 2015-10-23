@@ -76,6 +76,7 @@ import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
 import org.unitime.timetable.model.AcademicAreaClassification;
 import org.unitime.timetable.model.AcademicClassification;
@@ -113,6 +114,7 @@ import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbStudentMatcher;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.ProjectedStudentCourseDemands;
@@ -147,6 +149,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iCheckForNoBatchStatus = true;
 	private boolean iCheckEnabledForScheduling = true;
 	private boolean iLoadRequestGroups = false;
+	private Query iStudentQuery = null;
     
     private Progress iProgress = null;
     
@@ -187,6 +190,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	} else {
         		iProgress.info("Projected demands: None");
         	}
+        }
+        
+        String query = model.getProperties().getProperty("Load.StudentQuery", null);
+        if (query != null && !query.isEmpty()) {
+        	iStudentQuery = new Query(query);
+        	iProgress.info("Student filter: " + iStudentQuery); 
         }
 
         iProjections = "Projection".equals(model.getProperties().getProperty("StudentSctBasic.Mode", "Initial"));
@@ -641,7 +650,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	// Check for nobatch sectioning status
         if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) {
         	skipStudent(s, courseTable, classTable);
-        	
+        	return null;
+        }
+        
+        // Check student query, if present
+        if (iStudentQuery != null && !iStudentQuery.match(new DbStudentMatcher(s))) {
+        	skipStudent(s, courseTable, classTable);
         	return null;
         }
         

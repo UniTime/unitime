@@ -21,10 +21,12 @@ package org.unitime.timetable.form;
 
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -67,9 +69,15 @@ public class StudentSolverForm extends ActionForm {
         if(iSetting==null || iSetting.intValue()<0)
             errors.add("setting", new ActionMessage("errors.lookup.config.required", ""));
         
+        Set<Long> emptyIds = new HashSet<Long>(SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
+        		"select s.uniqueId from SolverParameterDef s where s.group.name = :group and s.visible = true and s.type = :type")
+        		.setString("group", "StudentSctBasic")
+        		.setString("type", "text").setCacheable(true).list());
+        
         for (Iterator i=iParamValues.entrySet().iterator();i.hasNext();) {
         	Map.Entry entry = (Map.Entry)i.next();
          	Long parm = (Long)entry.getKey();
+         	if (emptyIds.contains(parm)) continue;
         	String val = (String)entry.getValue();
         	if (val==null || val.trim().length()==0)
         		errors.add("parameterValue["+parm+"]", new ActionMessage("errors.required", ""));

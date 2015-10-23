@@ -33,6 +33,7 @@ import java.util.Set;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
@@ -62,7 +63,6 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction.FindStudentInfoMatcher;
@@ -935,6 +935,12 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 			iStudent = student;
 			iDefaultStatus = defaultStatus;
 			iFormat = format;
+		}
+		
+		public DbStudentMatcher(Student student) {
+			iStudent = student;
+			iDefaultStatus = (student.getSession().getDefaultSectioningStatus() == null ? null : student.getSession().getDefaultSectioningStatus().getReference());
+			iFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
 		}
 
 		public Student student() { return iStudent; }

@@ -255,6 +255,36 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Filter</name>
+			<description>
+				<line>Added ability to filter what student will get loaded into the batch student scheduling solver using a boolean query.</line>
+				<line>Solver parameter Load.StudentQuery, when set each student must match the query to be loaded in.
+					<line>Students not matching the query would only count agains the limits, just like with the no-batch status.</line>
+					<line>The parameter could be used together with the no-batch student status (both filters will apply in such a case).</line>
+				</line>
+				<line>Available query terms (similar to the Filter of the Student Dashboard):
+					<line>status (reference of the student status)</line>
+					<line>area (abbreviation of the academic area)</line>
+					<line>major (code of the academic major)</line>
+					<line>clasf or classification (code of the academic classification)</line>
+					<line>group (code of the student group)</line>
+					<line>accommodation (code of the student accomodation)</line>
+					<line>student (external id of the student)</line>
+				</line>
+				<line>Examples:
+					<line>group:G1 or group:G2
+						<line>Only students of groups G1 and G2 will get loaded in.</line>
+					</line>
+					<line>area:A and (major:M1 or major:M2)
+						<line>Only student of area A and major M1 or M2 will get loaded in.</line>
+					</line>
+					<line>status:Batch
+						<line>Only students of Batch status will get loaded in.</line>
+					</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
