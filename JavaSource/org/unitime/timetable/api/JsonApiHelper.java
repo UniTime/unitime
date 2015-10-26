@@ -118,4 +118,34 @@ public class JsonApiHelper extends AbstractApiHelper {
 			writer.close();
 		}
 	}
+	
+	@Override
+	public void sendError(int code, String message) throws IOException {
+		try {
+			iResponse.setStatus(code);
+			setResponse(new ErrorMessage(code, message, this));
+		} catch (Throwable t) {
+			iResponse.sendError(code, message);
+		}
+	}
+	
+	@Override
+	public void sendError(int code) throws IOException {
+		try {
+			iResponse.setStatus(code);
+			setResponse(new ErrorMessage(code, this));
+		} catch (Throwable t) {
+			iResponse.sendError(code);
+		}
+	}
+	
+	@Override
+	public void sendError(int code, Throwable error) throws IOException {
+		try {
+			iResponse.setStatus(code);
+			setResponse(new ErrorMessage(code, error, this));
+		} catch (Throwable t) {
+			iResponse.sendError(code, error.getMessage());
+		}
+	}
 }

@@ -60,21 +60,21 @@ public class ApiServlet extends HttpServlet {
 	protected void checkError(HttpServletRequest request, HttpServletResponse response, Throwable t) throws IOException {
 		if (t instanceof NoSuchBeanDefinitionException) {
 			sLog.info("Service " + getReference(request) + " not known.");
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Service " + getReference(request) + " not known, please check the request path.");
+			sendError(request, response, HttpServletResponse.SC_BAD_REQUEST, t);
 		} else if (t instanceof IllegalArgumentException) {
 			sLog.info(t.getMessage());
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, t.getMessage());
+			sendError(request, response, HttpServletResponse.SC_BAD_REQUEST, t);
 		} else if (t instanceof PageAccessException || t instanceof AccessDeniedException) {
 			sLog.info(t.getMessage());
 			if (!getSessionContext().isAuthenticated() || getSessionContext().getUser() instanceof AnonymousUserContext) {
 				response.setHeader("WWW-Authenticate", "Basic");
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, t.getMessage());
+				sendError(request, response, HttpServletResponse.SC_UNAUTHORIZED, t);
 			} else {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, t.getMessage());	
+				sendError(request, response, HttpServletResponse.SC_FORBIDDEN, t);	
 			}
 		} else {
 			sLog.warn(t.getMessage(), t);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getMessage());
+			sendError(request, response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t);
 		}
 	}
 
@@ -111,6 +111,25 @@ public class ApiServlet extends HttpServlet {
 			getConnector(request).doDelete(request, response);
 		} catch (Throwable t) {
 			checkError(request, response, t);
+		}
+	}
+	
+	protected void sendError(HttpServletRequest request, HttpServletResponse response, int code, String message) throws IOException {
+		try {
+			getConnector(request).createHelper(request, response).sendError(code, message);
+		} catch (Throwable t) {
+			response.sendError(code, message);
+		}
+	}
+	
+	protected void sendError(HttpServletRequest request, HttpServletResponse response, int code, Throwable error) throws IOException {
+		try {
+			if (error instanceof NoSuchBeanDefinitionException)
+				new JsonApiHelper(request, response, getSessionContext(), null).sendError(code, "Service " + getReference(request) + " not known, please check the request path.");
+			else
+				getConnector(request).createHelper(request, response).sendError(code, error);
+		} catch (Throwable t) {
+			response.sendError(code, error.getMessage());
 		}
 	}
 }

@@ -58,6 +58,11 @@ public abstract class AbstractApiHelper implements ApiHelper {
 	public void sendError(int code) throws IOException {
 		iResponse.sendError(code);
 	}
+	
+	@Override
+	public void sendError(int code, Throwable error) throws IOException {
+		iResponse.sendError(code, error.getMessage());
+	}
 
 	protected Long guessAcademicSessionId() {
 		Long sessionId = null;

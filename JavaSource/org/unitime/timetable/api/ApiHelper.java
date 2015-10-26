@@ -41,6 +41,8 @@ public interface ApiHelper {
 	
 	public void sendError(int code, String message) throws IOException;
 	
+	public void sendError(int code, Throwable error) throws IOException;
+	
 	public String getParameter(String name);
 	
 	public String[] getParameterValues(String name);
