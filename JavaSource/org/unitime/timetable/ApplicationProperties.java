@@ -27,8 +27,11 @@ import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
@@ -38,7 +41,6 @@ import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.SessionConfig;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.Formats;
 
 
 /**
@@ -47,8 +49,7 @@ import org.unitime.timetable.util.Formats;
  * @author Heston Fernandes, Tomas Muller
  */
 public class ApplicationProperties {
-	private static Formats.Format<Date> sDF_file = Formats.getDateFormat("dd-MMM-yy_HHmmssSSS");
-	
+	private static DateFormat sTempFileDateFormat = new SimpleDateFormat("yy-MM-dd_HHmmssSSS", Locale.US);
 	private static Properties props = new Properties();
     private static long appPropertiesLastModified = -1, custPropertiesLastModified = -1;  
     private static PropertyFileChangeListener pfc=null;
@@ -353,13 +354,14 @@ public class ApplicationProperties {
 		return dir;
 	}
 	
-	public static File getTempFile(String prefix, String ext) {
+	public static synchronized File getTempFile(String prefix, String ext) {
 		File file = null;
+		String ts = sTempFileDateFormat.format(new Date());
 		try {
-			file = File.createTempFile(prefix+"_"+sDF_file.format(new Date()),"."+ext,getTempFolder());
+			file = File.createTempFile(prefix + "_" + ts, "." + ext, getTempFolder());
 		} catch (IOException e) {
 			Debug.error(e);
-			file = new File(getTempFolder(), prefix+"_"+sDF_file.format(new Date())+"."+ext);
+			file = new File(getTempFolder(), prefix + "_" + ts + "." + ext);
 		}
 		file.deleteOnExit();
 		return file;
