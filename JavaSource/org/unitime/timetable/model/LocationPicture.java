@@ -38,6 +38,8 @@ public abstract class LocationPicture extends BaseLocationPicture implements Com
 			((NonUniversityLocationPicture)this).setLocation((NonUniversityLocation)location);
 	}
 	
+	public abstract Location getLocation();
+	
 	public int compareTo(LocationPicture other) {
 		if (isImage() != other.isImage()) return isImage() ? -1 : 1;
 		if (getType() == null) {

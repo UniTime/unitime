@@ -21,31 +21,60 @@ package org.unitime.timetable.api.connectors;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+
+import javax.management.RuntimeErrorException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
+import org.unitime.timetable.api.BinaryFileApiHelper;
+import org.unitime.timetable.api.BinaryFileApiHelper.BinaryFile;
 import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
+import org.unitime.timetable.model.AttachementType;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.LocationPicture;
+import org.unitime.timetable.model.NonUniversityLocation;
+import org.unitime.timetable.model.NonUniversityLocationPicture;
+import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomPicture;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.LocationPictureDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.rooms.RoomDetailsBackend;
+import org.unitime.timetable.server.rooms.RoomPicturesBackend;
 
 /**
  * @author Tomas Muller
  */
 @Service("/api/rooms")
 public class RoomsConnector extends ApiConnector {
-	
 	@Override
 	public void doGet(ApiHelper helper) throws IOException {
+		Long pictureId = helper.getOptinalParameterLong("pictureId", null);
+		if (pictureId != null) {
+			LocationPicture picture = LocationPictureDAO.getInstance().get(pictureId);
+			if (picture == null)
+				throw new IllegalArgumentException("Room picture of the given id does not exist.");
+			
+			helper.getSessionContext().checkPermissionAnyAuthority(picture.getLocation().getSession(), Right.ApiRetrieveRooms);
+			
+			helper.setResponse(new BinaryFile(picture.getDataFile(), picture.getContentType(), picture.getFileName()));
+			return;
+		}
+
 		Long sessionId = helper.getAcademicSessionId();
 		if (sessionId == null)
 			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
@@ -82,6 +111,91 @@ public class RoomsConnector extends ApiConnector {
     	}
     	
     	helper.setResponse(rooms);
+	}
+	
+	public void doPut(ApiHelper helper) throws IOException {
+		Long sessionId = helper.getAcademicSessionId();
+		if (sessionId == null)
+			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
+		
+		helper.getSessionContext().checkPermissionAnyAuthority(sessionId, "Session", Right.ApiRoomPictureUpload);
+		
+		String room = helper.getRequiredParameter("room");
+		Location location = Location.findByName(helper.getHibSession(), sessionId, room);
+		if (location == null)
+			throw new IllegalArgumentException("Room " + helper.getRequiredParameter("room") + " does not exist.");
+		
+		BinaryFile file = helper.getRequest(BinaryFile.class);
+		updatePicture(helper, location, file);
+		
+		if (helper.getOptinalParameterBoolean("future", false)) {
+			List<Location> futureLocations = LocationDAO.getInstance().getSession().createQuery(
+					"select l from Location l, Session s where " +
+					"l.permanentId = :permanentId and s.uniqueId = :sessionId and s.sessionBeginDateTime < l.session.sessionBeginDateTime " + 
+					"order by l.session.sessionBeginDateTime")
+					.setLong("permanentId", location.getPermanentId()).setLong("sessionId", sessionId).list();
+			for (Location loc: futureLocations)
+				updatePicture(helper, loc, file);
+		}
+	}
+	
+	@Override
+	public void doDelete(ApiHelper helper) throws IOException {
+		Long pictureId = helper.getOptinalParameterLong("pictureId", null);
+		if (pictureId != null) {
+			LocationPicture picture = LocationPictureDAO.getInstance().get(pictureId);
+			if (picture == null)
+				throw new IllegalArgumentException("Room picture of the given id does not exist.");
+			
+			helper.getSessionContext().checkPermissionAnyAuthority(picture.getLocation().getSession(), Right.ApiRoomPictureUpload);
+			
+			picture.getLocation().getPictures().remove(picture);
+			helper.getHibSession().delete(picture);
+			helper.getHibSession().flush();
+			
+			helper.setResponse(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), RoomPicturesBackend.getPictureType(picture.getType())));
+			return;
+		}
+	}
+	
+	protected void updatePicture(ApiHelper helper, Location location, BinaryFile file) throws IOException {
+		String name = helper.getOptinalParameter("name", file.getFileName());
+		if (name == null) throw new IllegalArgumentException("Parameter 'name' was not provided.");
+		String type = helper.getOptinalParameter("contentType", file.getContentType());
+		if (type == null) throw new IllegalArgumentException("Parameter 'contentType' was not provided.");
+		String reference = helper.getOptinalParameter("type", null);
+		
+		System.out.println("Uploaded file " + name + " of type " + type + " and size " + file.getBytes().length);
+		
+		LocationPicture picture = null;
+		for (LocationPicture p: location.getPictures()) {
+			if (p.getFileName().equals(name)) { picture = p; break; }
+		}
+		if (picture == null) {
+			if (location instanceof Room) {
+				picture = new RoomPicture();
+				picture.setFileName(name);
+				picture.setLocation(location);
+				((Room)location).getPictures().add((RoomPicture)picture);
+			} else {
+				picture = new NonUniversityLocationPicture();
+				picture.setFileName(name);
+				picture.setLocation(location);
+				((NonUniversityLocation)location).getPictures().add((NonUniversityLocationPicture)picture);
+			}
+		}
+		if (type != null) picture.setContentType(type);
+		if (reference != null) picture.setType(AttachementType.findByReference(helper.getHibSession(), reference));
+		picture.setTimeStamp(new Date());
+		picture.setDataFile(file.getBytes());
+		helper.getHibSession().saveOrUpdate(picture);
+		helper.getHibSession().flush();
+		helper.setResponse(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), RoomPicturesBackend.getPictureType(picture.getType())));
+	}
+	
+	@Override
+	protected ApiHelper createHelper(HttpServletRequest request, HttpServletResponse response) {
+		return new BinaryFileApiHelper(request, response, sessionContext, getCacheMode());
 	}
 	
 	@Override

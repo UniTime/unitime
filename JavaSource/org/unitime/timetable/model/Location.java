@@ -1070,4 +1070,16 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public abstract Set<? extends LocationPicture> getPictures();
+    
+    public static Location findByName(org.hibernate.Session hibSession, Long sessionId, String name) {
+    	Room room = (Room)hibSession.createQuery(
+    			"from Room r where r.session.uniqueId = :sessionId and (r.buildingAbbv || ' ' || r.roomNumber) = :name"
+    			).setLong("sessionId", sessionId).setString("name", name)
+    			.setMaxResults(1).setCacheable(true).uniqueResult();
+    	if (room != null) return room;
+    	return (NonUniversityLocation)hibSession.createQuery(
+    			"from NonUniversityLocation l where l.session.uniqueId = :sessionId and l.name = :name"
+    			).setLong("sessionId", sessionId).setString("name", name)
+    			.setMaxResults(1).setCacheable(true).uniqueResult();
+    }
 }

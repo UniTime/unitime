@@ -72,4 +72,12 @@ public class AttachementType extends BaseAttachementType implements Comparable<A
 		}
 		return listTypes(flag);
 	}
+	
+	public static AttachementType findByReference(org.hibernate.Session hibSession, String reference) {
+		if (reference == null) return null;
+		return (AttachementType)hibSession.createQuery(
+				"from AttachementType t where t.reference = :reference")
+				.setString("reference", reference)
+				.setMaxResults(1).setCacheable(true).uniqueResult();
+	}
 }

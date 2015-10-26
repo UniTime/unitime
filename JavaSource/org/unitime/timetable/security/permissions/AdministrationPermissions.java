@@ -484,6 +484,9 @@ public class AdministrationPermissions {
 	@PermissionForRight(Right.ApiRetrieveRooms)
 	public static class ApiRetrieveRooms extends SimpleSessionPermission {}
 	
+	@PermissionForRight(Right.ApiRoomPictureUpload)
+	public static class ApiRoomPictureUpload extends SimpleSessionPermission {}
+	
 	@PermissionForRight(Right.ApiRetrieveEvents)
 	public static class ApiRetrieveEvents extends SimpleSessionPermission {}
 	
