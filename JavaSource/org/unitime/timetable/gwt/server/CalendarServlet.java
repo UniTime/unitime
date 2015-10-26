@@ -83,11 +83,11 @@ import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
-import biweekly.Biweekly;
 import biweekly.ICalVersion;
 import biweekly.ICalendar;
 import biweekly.component.VEvent;
 import biweekly.component.VFreeBusy;
+import biweekly.io.text.ICalWriter;
 import biweekly.parameter.Role;
 import biweekly.property.Attendee;
 import biweekly.property.CalendarScale;
@@ -273,11 +273,15 @@ public class CalendarServlet extends HttpServlet {
         }
 		
 		PrintWriter out = response.getWriter();
+        ICalWriter writer = new ICalWriter(out, ICalVersion.V2_0);
 		try {
-            Biweekly.write(ical).go(out);
+	    	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+        	writer.write(ical);
+        	writer.flush();
         	out.flush();
 		} finally {
 			out.close();
+			writer.close();
 		}
 	}
 

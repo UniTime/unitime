@@ -59,10 +59,10 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 
-import biweekly.Biweekly;
 import biweekly.ICalVersion;
 import biweekly.ICalendar;
 import biweekly.component.VEvent;
+import biweekly.io.text.ICalWriter;
 import biweekly.parameter.Role;
 import biweekly.property.Attendee;
 import biweekly.property.CalendarScale;
@@ -104,7 +104,14 @@ public class EventsExportEventsToICal extends EventsExporter {
         for (EventInterface event: events)
 			print(ical, event);
 		
-        Biweekly.write(ical).go(helper.getWriter());
+        ICalWriter writer = new ICalWriter(helper.getWriter(), ICalVersion.V2_0);
+    	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+        try {
+        	writer.write(ical);
+        	writer.flush();
+        } finally {
+        	writer.close();
+        }
 	}
 	
 	public boolean print(ICalendar ical, EventInterface event) throws IOException {

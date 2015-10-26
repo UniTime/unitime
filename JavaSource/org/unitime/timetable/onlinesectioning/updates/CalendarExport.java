@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.updates;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -47,11 +48,11 @@ import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.server.CourseDetailsBackend;
 import org.unitime.timetable.util.Constants;
 
-import biweekly.Biweekly;
 import biweekly.ICalVersion;
 import biweekly.ICalendar;
 import biweekly.component.VEvent;
 import biweekly.component.VFreeBusy;
+import biweekly.io.text.ICalWriter;
 import biweekly.parameter.Role;
 import biweekly.property.Attendee;
 import biweekly.property.CalendarScale;
@@ -112,7 +113,16 @@ public class CalendarExport implements OnlineSectioningAction<String>{
         		}
         	}
 			
-			return Biweekly.write(ical).go();
+			StringWriter ret = new StringWriter();
+	        ICalWriter writer = new ICalWriter(ret, ICalVersion.V2_0);
+	    	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+	        try {
+	        	writer.write(ical);
+	        	writer.flush();
+	        } finally {
+	        	writer.close();
+	        }
+	        return ret.toString();
 		} catch (IOException e) {
 			throw new SectioningException(e.getMessage(), e);
 		}
@@ -144,8 +154,18 @@ public class CalendarExport implements OnlineSectioningAction<String>{
 						DayCode.toString(ft.getTime().getDays()), ft.getTime().getSlot(), ft.getTime().getLength(), ical);
 			}
 		}
+		
+		StringWriter ret = new StringWriter();
+        ICalWriter writer = new ICalWriter(ret, ICalVersion.V2_0);
+    	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+        try {
+        	writer.write(ical);
+        	writer.flush();
+        } finally {
+        	writer.close();
+        }
 
-		return Biweekly.write(ical).go();		
+        return ret.toString();		
 	}
 	
 	private static void printSection(OnlineSectioningServer server, XCourse course, XSection section, ICalendar ical) throws IOException {

@@ -68,9 +68,9 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.NameFormat;
 
-import biweekly.Biweekly;
 import biweekly.ICalVersion;
 import biweekly.ICalendar;
+import biweekly.io.text.ICalWriter;
 import biweekly.property.CalendarScale;
 import biweekly.property.Method;
 import biweekly.property.Status;
@@ -340,8 +340,21 @@ public class EventEmail {
         		ical,
         		response().hasEventWithId() && response().getEvent().hasMeetings() ? response().getEvent() : request().getEvent(),
         		response().hasEventWithId() && response().getEvent().hasMeetings() ? null : Status.cancelled());
-
-		return (exp ? Biweekly.write(ical).go() : null);		
+        
+        if (exp) {
+        	StringWriter ret = new StringWriter();
+	        ICalWriter writer = new ICalWriter(ret, ICalVersion.V2_0);
+	    	writer.getTimezoneInfo().setDefaultTimeZone(TimeZone.getDefault());
+	        try {
+	        	writer.write(ical);
+	        	writer.flush();
+	        } finally {
+	        	writer.close();
+	        }
+	        return ret.toString();
+        } else {
+        	return null;
+        }
 	}
 	
 	public static void eventExpired(Event cancelledEvent, Set<Meeting> cancelledMeetings) throws Exception {
