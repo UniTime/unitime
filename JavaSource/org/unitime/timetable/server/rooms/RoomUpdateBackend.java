@@ -49,6 +49,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomException;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingOption;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomUpdateRpcRequest;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
@@ -119,7 +120,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 				break;
 			case UPDATE:
-				location = update(request.getRoom(), context, false, FutureOperation.getFlagAllEnabled());
+				location = update(request.getRoom(), context, false, request.getFutureFlag(0l, FutureOperation.getFlagAllEnabled()));
 				if (location != null && request.hasFutureFlags()) {
 					List<Location> futureLocations = LocationDAO.getInstance().getSession().createQuery(
 							"select l from Location l, Session s where " +
@@ -136,7 +137,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 				break;
 			case CREATE:
-				location = create(request.getRoom(), context, null, null, FutureOperation.getFlagAllEnabled());
+				location = create(request.getRoom(), context, null, null, request.getFutureFlag(0l, FutureOperation.getFlagAllEnabled()));
 				if (location != null && request.hasFutureFlags()) {
 					List<Long> futureSessionIds = LocationDAO.getInstance().getSession().createQuery(
 							"select f.uniqueId from Session f, Session s where " +
@@ -314,7 +315,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			}
 			
 			if (canEdit && context.hasPermission(location, Right.RoomEditChangeType) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
-				RoomType type = (room.getRoomType() == null ? null : RoomTypeDAO.getInstance().get(room.getRoomType().getId(), hibSession));
+				RoomType type = lookupRoomType(hibSession, room.getRoomType());
 				if (type != null && ((type.isRoom() && location instanceof Room) || !(type.isRoom() && location instanceof NonUniversityLocation)))
 					location.setRoomType(type);
 			}
@@ -336,7 +337,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				boolean examTypesChanged = false;
 				List<ExamType> types = ExamType.findAll(hibSession);
 				for (ExamType type: types) {
-					if ((room.getExamType(type.getUniqueId()) != null) != location.getExamTypes().contains(type)) {
+					if ((room.getExamType(type.getUniqueId(), type.getReference()) != null) != location.getExamTypes().contains(type)) {
 						examTypesChanged = true;
 						break;
 					}
@@ -348,7 +349,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 	            		hibSession.update(location); hibSession.flush();
 	            	}
 	            	for (ExamType type: types) {
-	            		if (room.getExamType(type.getUniqueId()) != null)
+	            		if (room.getExamType(type.getUniqueId(), type.getReference()) != null)
 	            			location.getExamTypes().add(type);
 	            	}
 	            }
@@ -370,100 +371,138 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditAvailability) && room.hasRoomSharingModel() && FutureOperation.ROOM_SHARING.in(flags)) {
-				Map<Long, Character> dept2char = new HashMap<Long, Character>();
-				dept2char.put(-1l, org.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
-				dept2char.put(-2l, org.cpsolver.coursett.model.RoomSharingModel.sNotAvailablePrefChar);
-				String managerIds = ""; char pref = '0';
-				Set<Department> add = new HashSet<Department>();
-				Map<Long, Department> id2dept = new HashMap<Long, Department>();
-				for (RoomSharingOption option: room.getRoomSharingModel().getOptions()) {
-					if (option.getId() >= 0) {
-						Department d = lookuDepartment(hibSession, option.getId(), future, location.getSession().getUniqueId());
-						if (d != null) {
-							id2dept.put(option.getId(), d);
-							managerIds += (managerIds.isEmpty() ? "" : ",") + d.getUniqueId();
-							dept2char.put(option.getId(), new Character(pref++));
-							add.add(d);
-						} else {
-							dept2char.put(option.getId(), org.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
+			if (context.hasPermission(location, Right.RoomEditAvailability) && FutureOperation.ROOM_SHARING.in(flags)) {
+				if (room.hasRoomSharingModel()) {
+					Map<Long, Character> dept2char = new HashMap<Long, Character>();
+					dept2char.put(-1l, org.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
+					dept2char.put(-2l, org.cpsolver.coursett.model.RoomSharingModel.sNotAvailablePrefChar);
+					String managerIds = ""; char pref = '0';
+					Set<Department> add = new HashSet<Department>();
+					Map<Long, Department> id2dept = new HashMap<Long, Department>();
+					for (RoomSharingOption option: room.getRoomSharingModel().getOptions()) {
+						if (option.getId() >= 0) {
+							Department d = lookuDepartment(hibSession, option.getId(), future, location.getSession().getUniqueId());
+							if (d != null) {
+								id2dept.put(option.getId(), d);
+								managerIds += (managerIds.isEmpty() ? "" : ",") + d.getUniqueId();
+								dept2char.put(option.getId(), new Character(pref++));
+								add.add(d);
+							} else {
+								dept2char.put(option.getId(), org.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
+							}
 						}
 					}
-				}
-				
-				String pattern = "";
-				for (int d = 0; d < 7; d++)
-					for (int s = 0; s < 288; s ++) {
-						RoomSharingOption option = room.getRoomSharingModel().getOption(d, s);
-						pattern += dept2char.get(option.getId());
-					}
-				
-				location.setManagerIds(managerIds);
-				location.setPattern(pattern);
 					
-				for (Iterator<RoomDept> i = location.getRoomDepts().iterator(); i.hasNext(); ) {
-					RoomDept rd = (RoomDept)i.next();
-					if (!add.remove(rd.getDepartment())) {
+					String pattern = "";
+					for (int d = 0; d < 7; d++)
+						for (int s = 0; s < 288; s ++) {
+							RoomSharingOption option = room.getRoomSharingModel().getOption(d, s);
+							pattern += dept2char.get(option.getId());
+						}
+					
+					location.setManagerIds(managerIds);
+					location.setPattern(pattern);
+						
+					for (Iterator<RoomDept> i = location.getRoomDepts().iterator(); i.hasNext(); ) {
+						RoomDept rd = (RoomDept)i.next();
+						if (!add.remove(rd.getDepartment())) {
+							rd.getDepartment().getRoomDepts().remove(rd);
+							i.remove();
+							hibSession.delete(rd);
+						}
+					}
+					for (Department d: add) {
+						RoomDept rd = new RoomDept();
+						rd.setControl(false);
+						rd.setDepartment(d);
+						rd.getDepartment().getRoomDepts().add(rd);
+						rd.setRoom(location);
+						location.getRoomDepts().add(rd);
+						hibSession.saveOrUpdate(rd);
+					}
+					
+					if (room.getRoomSharingModel().isNoteEditable()) {
+						if (room.getRoomSharingModel().hasNote())
+							location.setShareNote(room.getRoomSharingModel().getNote().length() > 2048 ? room.getRoomSharingModel().getNote().substring(0, 2048) : room.getRoomSharingModel().getNote());
+						else
+							location.setShareNote(null);
+					}					
+				} else if (room.hasDepartments()) {
+					Map<Long, RoomDept> rds = new HashMap<Long, RoomDept>();
+					for (RoomDept rd: location.getRoomDepts())
+						rds.put(rd.getDepartment().getUniqueId(), rd);
+					for (DepartmentInterface department: room.getDepartments()) {
+						Department d = lookuDepartment(hibSession, department, future, location.getSession().getUniqueId());
+						if (d != null && rds.remove(d.getUniqueId()) == null) {
+							RoomDept rd = new RoomDept();
+							rd.setControl(false);
+							rd.setDepartment(d);
+							rd.getDepartment().getRoomDepts().add(rd);
+							rd.setRoom(location);
+							location.getRoomDepts().add(rd);
+							hibSession.saveOrUpdate(rd);
+						}
+					}
+					for (RoomDept rd: rds.values()) {
 						rd.getDepartment().getRoomDepts().remove(rd);
-						i.remove();
+						location.getRoomDepts().remove(rd);
 						hibSession.delete(rd);
 					}
-				}
-				for (Department d: add) {
-					RoomDept rd = new RoomDept();
-					rd.setControl(false);
-					rd.setDepartment(d);
-					rd.getDepartment().getRoomDepts().add(rd);
-					rd.setRoom(location);
-					location.getRoomDepts().add(rd);
-					hibSession.saveOrUpdate(rd);
-				}
-				
-				if (room.getRoomSharingModel().isNoteEditable()) {
-					if (room.getRoomSharingModel().hasNote())
-						location.setShareNote(room.getRoomSharingModel().getNote().length() > 2048 ? room.getRoomSharingModel().getNote().substring(0, 2048) : room.getRoomSharingModel().getNote());
-					else
-						location.setShareNote(null);
+					location.setShareNote(room.getRoomSharingNote());
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditPreference) && room.hasRoomSharingModel() && FutureOperation.ROOM_SHARING.in(flags)) {
-				Map<Long, PreferenceLevel> dept2pref = new HashMap<Long, PreferenceLevel>();
-				for (RoomSharingOption option: room.getRoomSharingModel().getOptions()) {
-					if (option.getId() >= 0 && option.isEditable() && option.hasPreference()) {
-						Department d = lookuDepartment(hibSession, option.getId(), future, location.getSession().getUniqueId());
-						if (d != null)
-							dept2pref.put(d.getUniqueId(), PreferenceLevelDAO.getInstance().get(option.getPreference()));
-					}
-				}
-				for (RoomDept rd: location.getRoomDepts()) {
-					PreferenceLevel pref = dept2pref.get(rd.getDepartment().getUniqueId());
-					
-					RoomPref rp = null;
-					for (RoomPref x: (Set<RoomPref>)rd.getDepartment().getRoomPreferences()) {
-						if (x.getRoom().equals(location)) {
-							rp = x; break;
+			if (context.hasPermission(location, Right.RoomEditPreference) && FutureOperation.ROOM_SHARING.in(flags)) {
+				Map<Long, PreferenceLevel> dept2pref = null;
+				if (room.hasRoomSharingModel()) {
+					dept2pref = new HashMap<Long, PreferenceLevel>();
+					for (RoomSharingOption option: room.getRoomSharingModel().getOptions()) {
+						if (option.getId() >= 0 && option.isEditable() && option.hasPreference()) {
+							Department d = lookuDepartment(hibSession, option.getId(), future, location.getSession().getUniqueId());
+							if (d != null)
+								dept2pref.put(d.getUniqueId(), PreferenceLevelDAO.getInstance().get(option.getPreference()));
 						}
 					}
-					
-					if (rp == null && pref != null && !pref.getPrefProlog().equals(PreferenceLevel.sNeutral)) {
-						rp = new RoomPref();
-						rp.setRoom(location);
-						rp.setPrefLevel(pref);
-						rp.setOwner(rd.getDepartment());
-						rd.getDepartment().getPreferences().add(rp);
-						rd.setPreference(pref);
-						hibSession.saveOrUpdate(rp);
-						hibSession.saveOrUpdate(rd.getDepartment());
-					} else if (rp != null && (pref == null || pref.getPrefProlog().equals(PreferenceLevel.sNeutral))) {
-						rd.getDepartment().getPreferences().remove(rp);
-						rd.setPreference(null);
-						hibSession.delete(rp);
-						hibSession.saveOrUpdate(rd.getDepartment());
-					} else if (rp != null && !rp.getPrefLevel().equals(pref)) {
-						rp.setPrefLevel(pref);
-						rd.setPreference(pref);
-						hibSession.saveOrUpdate(rp);
+				} else if (room.hasDepartments()) {
+					dept2pref = new HashMap<Long, PreferenceLevel>();
+					for (DepartmentInterface department: room.getDepartments()) {
+						if (department.getPreference() == null) continue;
+						Department d = lookuDepartment(hibSession, department, future, location.getSession().getUniqueId());
+						if (d != null) {
+							dept2pref.put(d.getUniqueId(), lookupPreferenceLevel(hibSession, department.getPreference()));
+						}
+					}
+				}
+				if (dept2pref != null) {
+					for (RoomDept rd: location.getRoomDepts()) {
+						PreferenceLevel pref = dept2pref.get(rd.getDepartment().getUniqueId());
+						
+						RoomPref rp = null;
+						for (RoomPref x: (Set<RoomPref>)rd.getDepartment().getRoomPreferences()) {
+							if (x.getRoom().equals(location)) {
+								rp = x; break;
+							}
+						}
+						
+						if (rp == null && pref != null && !pref.getPrefProlog().equals(PreferenceLevel.sNeutral)) {
+							rp = new RoomPref();
+							rp.setRoom(location);
+							rp.setPrefLevel(pref);
+							rp.setOwner(rd.getDepartment());
+							rd.getDepartment().getPreferences().add(rp);
+							rd.setPreference(pref);
+							hibSession.saveOrUpdate(rp);
+							hibSession.saveOrUpdate(rd.getDepartment());
+						} else if (rp != null && (pref == null || pref.getPrefProlog().equals(PreferenceLevel.sNeutral))) {
+							rd.getDepartment().getPreferences().remove(rp);
+							rd.setPreference(null);
+							hibSession.delete(rp);
+							hibSession.saveOrUpdate(rd.getDepartment());
+						} else if (rp != null && !rp.getPrefLevel().equals(pref)) {
+							rp.setPrefLevel(pref);
+							rd.setPreference(pref);
+							hibSession.saveOrUpdate(rp);
+						}
 					}
 				}
 			}
@@ -719,7 +758,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			location.setRoomDepts(new HashSet<RoomDept>());
 			location.setRoomGroups(new HashSet<RoomGroup>());
 			location.setFeatures(new HashSet<RoomFeature>());
-			location.setRoomType(room.getRoomType() == null ? null : RoomTypeDAO.getInstance().get(room.getRoomType().getId(), hibSession));
+			location.setRoomType(lookupRoomType(hibSession, room.getRoomType()));
 			
 			if (permId == null)
 				LocationPermIdGenerator.setPermanentId(location);
@@ -773,6 +812,20 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 					else
 						location.setShareNote(null);
 				}
+			} else if (room.hasDepartments()) {
+				Department control =  (room.getControlDepartment() == null ? null : lookuDepartment(hibSession, room.getControlDepartment(), future, session.getUniqueId()));
+				for (DepartmentInterface department: room.getDepartments()) {
+					Department d = lookuDepartment(hibSession, department, future, location.getSession().getUniqueId());
+					if (d != null) {
+						RoomDept rd = new RoomDept();
+						rd.setControl(d.equals(control));
+						rd.setDepartment(d);
+						rd.getDepartment().getRoomDepts().add(rd);
+						rd.setRoom(location);
+						location.getRoomDepts().add(rd);
+					}
+				}
+				location.setShareNote(room.getRoomSharingNote());
 			} else if (room.getControlDepartment() != null) {
 				Department dept = lookuDepartment(hibSession, room.getControlDepartment(), future, session.getUniqueId());
 				if (dept != null) {
@@ -806,7 +859,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				location.setExamCapacity(room.getExamCapacity());
 				List<ExamType> types = ExamType.findAll(hibSession);
             	for (ExamType type: types) {
-            		if (room.getExamType(type.getUniqueId()) != null)
+            		if (room.getExamType(type.getUniqueId(), type.getReference()) != null)
             			location.getExamTypes().add(type);
             	}
 			}
@@ -827,27 +880,41 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 				}
 			}
 			
-			if (context.hasPermission(location, Right.RoomEditPreference) && room.hasRoomSharingModel() && FutureOperation.ROOM_SHARING.in(flags)) {
-				Map<Long, PreferenceLevel> dept2pref = new HashMap<Long, PreferenceLevel>();
-				for (RoomSharingOption option: room.getRoomSharingModel().getOptions()) {
-					if (option.getId() >= 0 && option.isEditable() && option.hasPreference()) {
-						Department d = lookuDepartment(hibSession, option.getId(), future, location.getSession().getUniqueId());
-						if (d != null)
-							dept2pref.put(d.getUniqueId(), PreferenceLevelDAO.getInstance().get(option.getPreference()));
+			if (context.hasPermission(location, Right.RoomEditPreference) && FutureOperation.ROOM_SHARING.in(flags)) {
+				Map<Long, PreferenceLevel> dept2pref = null;
+				if (room.hasRoomSharingModel()) {
+					dept2pref = new HashMap<Long, PreferenceLevel>();
+					for (RoomSharingOption option: room.getRoomSharingModel().getOptions()) {
+						if (option.getId() >= 0 && option.isEditable() && option.hasPreference()) {
+							Department d = lookuDepartment(hibSession, option.getId(), future, location.getSession().getUniqueId());
+							if (d != null)
+								dept2pref.put(d.getUniqueId(), PreferenceLevelDAO.getInstance().get(option.getPreference()));
+						}
+					}
+				} else if (room.hasDepartments()) {
+					dept2pref = new HashMap<Long, PreferenceLevel>();
+					for (DepartmentInterface department: room.getDepartments()) {
+						if (department.getPreference() == null) continue;
+						Department d = lookuDepartment(hibSession, department, future, location.getSession().getUniqueId());
+						if (d != null) {
+							dept2pref.put(d.getUniqueId(), lookupPreferenceLevel(hibSession, department.getPreference()));
+						}
 					}
 				}
-				for (RoomDept rd: location.getRoomDepts()) {
-					PreferenceLevel pref = dept2pref.get(rd.getDepartment().getUniqueId());
-					
-					if (pref != null && !pref.getPrefProlog().equals(PreferenceLevel.sNeutral)) {
-						RoomPref rp = new RoomPref();
-						rp.setRoom(location);
-						rp.setPrefLevel(pref);
-						rp.setOwner(rd.getDepartment());
-						rd.getDepartment().getPreferences().add(rp);
-						rd.setPreference(pref);
-						hibSession.saveOrUpdate(rp);
-						hibSession.saveOrUpdate(rd.getDepartment());
+				if (dept2pref != null) {
+					for (RoomDept rd: location.getRoomDepts()) {
+						PreferenceLevel pref = dept2pref.get(rd.getDepartment().getUniqueId());
+						
+						if (pref != null && !pref.getPrefProlog().equals(PreferenceLevel.sNeutral)) {
+							RoomPref rp = new RoomPref();
+							rp.setRoom(location);
+							rp.setPrefLevel(pref);
+							rp.setOwner(rd.getDepartment());
+							rd.getDepartment().getPreferences().add(rp);
+							rd.setPreference(pref);
+							hibSession.saveOrUpdate(rp);
+							hibSession.saveOrUpdate(rd.getDepartment());
+						}
 					}
 				}
 			}
@@ -1032,9 +1099,27 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			return p2.getType() != null && p1.getPictureType().getId().equals(p2.getType().getUniqueId());
 	}
 	
+	protected RoomType lookupRoomType(org.hibernate.Session hibSession, RoomTypeInterface original) {
+		if (original == null) return null;
+		if (original.getId() != null)
+			return RoomTypeDAO.getInstance().get(original.getId(), hibSession);
+		else
+			return (RoomType)hibSession.createQuery(
+					"select t from RoomType t where t.reference = :reference")
+					.setString("reference", original.getReference()).setCacheable(true).setMaxResults(1).uniqueResult();
+	}
+	
+	protected PreferenceLevel lookupPreferenceLevel(org.hibernate.Session hibSession, PreferenceInterface original) {
+		if (original == null) return null;
+		if (original.getId() != null)
+			return PreferenceLevelDAO.getInstance().get(original.getId(), hibSession);
+		else
+			return PreferenceLevel.getPreferenceLevel(original.getCode());
+	}
+	
 	protected Building lookupBuilding(org.hibernate.Session hibSession, BuildingInterface original, boolean future, Long sessionId) {
 		if (original == null) return null;
-		if (future) {
+		if (future || original.getId() == null) {
 			return (Building)hibSession.createQuery(
 					"select b from Building b where b.abbreviation = :abbreviation and b.session.uniqueId = :sessionId")
 					.setLong("sessionId", sessionId).setString("abbreviation", original.getAbbreviation()).setCacheable(true).setMaxResults(1).uniqueResult();
@@ -1045,7 +1130,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 	
 	protected Department lookuDepartment(org.hibernate.Session hibSession, DepartmentInterface original, boolean future, Long sessionId) {
 		if (original == null) return null;
-		if (future) {
+		if (future || original.getId() == null) {
 			return Department.findByDeptCode(original.getDeptCode(), sessionId, hibSession);
 		} else {
 			return DepartmentDAO.getInstance().get(original.getId(), hibSession);
@@ -1054,7 +1139,16 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 	
 	protected RoomFeature lookupFeature(org.hibernate.Session hibSession, FeatureInterface original, boolean future, Long sessionId) {
 		if (original == null) return null;
-		if (future) {
+		if (original.getId() == null) {
+			if (original.isDepartmental())
+				return (DepartmentRoomFeature)hibSession.createQuery(
+					"select f from DepartmentRoomFeature f where f.department.session.uniqueId = :sessionId and f.abbv = :abbv and f.department.deptCode = :deptCode")
+					.setLong("sessionId", sessionId).setString("abbv", original.getAbbreviation()).setString("deptCode", original.getDepartment().getDeptCode()).setCacheable(true).setMaxResults(1).uniqueResult();
+			else
+				return (GlobalRoomFeature)hibSession.createQuery(
+					"select f from GlobalRoomFeature f where f.session.uniqueId = :sessionId and f.abbv = :abbv")
+					.setLong("sessionId", sessionId).setString("abbv", original.getAbbreviation()).setCacheable(true).setMaxResults(1).uniqueResult();
+		} else if (future) {
 			if (original.isDepartmental())
 				return (DepartmentRoomFeature)hibSession.createQuery(
 					"select f from DepartmentRoomFeature f, DepartmentRoomFeature o where o.uniqueId = :originalId and f.department.session.uniqueId = :sessionId " +
@@ -1072,7 +1166,16 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 	
 	protected RoomGroup lookupGroup(org.hibernate.Session hibSession, GroupInterface original, boolean future, Long sessionId) {
 		if (original == null) return null;
-		if (future) {
+		if (original.getId() == null) {
+			if (original.isDepartmental())
+				return (RoomGroup)hibSession.createQuery(
+					"select g from RoomGroup g where g.department.session.uniqueId = :sessionId and g.abbv = :abbv and g.department.deptCode = :deptCode and g.global = false")
+					.setLong("sessionId", sessionId).setString("abbv", original.getAbbreviation()).setString("deptCode", original.getDepartment().getDeptCode()).setCacheable(true).setMaxResults(1).uniqueResult();
+			else
+				return (RoomGroup)hibSession.createQuery(
+					"select g from RoomGroup g where g.session.uniqueId = :sessionId and g.abbv = :abbv and g.global = true")
+					.setLong("sessionId", sessionId).setString("abbv", original.getAbbreviation()).setCacheable(true).setMaxResults(1).uniqueResult();
+		} else if (future) {
 			if (original.isDepartmental())
 				return (RoomGroup)hibSession.createQuery(
 					"select g from RoomGroup g, RoomGroup o where o.uniqueId = :originalId and g.department.session.uniqueId = :sessionId " +

@@ -670,18 +670,22 @@ public class RoomInterface implements IsSerializable {
 	
 	public static class RoomTypeInterface implements GwtRpcResponse {
 		private Long iId;
+		private String iReference;
 		private String iLabel;
 		private boolean iRoom = false;
 		private Integer iOrder = null;
 		
 		public RoomTypeInterface() {}
 		
-		public RoomTypeInterface(Long id, String label, boolean room, Integer ord) {
-			iId = id; iLabel = label; iRoom = room; iOrder = ord;
+		public RoomTypeInterface(Long id, String reference, String label, boolean room, Integer ord) {
+			iId = id; iReference = reference; iLabel = label; iRoom = room; iOrder = ord;
 		}
 		
 		public Long getId() { return iId; }
 		public void setId(Long id) { iId = id; }
+		
+		public String getReference() { return iReference; }
+		public void setReference(String reference) { iReference = reference; }
 		
 		public String getLabel() { return iLabel; }
 		public void setLabel(String label) { iLabel = label; }
@@ -1159,7 +1163,7 @@ public class RoomInterface implements IsSerializable {
 			setName(entity.getName());
 			String roomType = entity.getProperty("type", null);
 			if (roomType != null)
-				setRoomType(new RoomTypeInterface(-1l, roomType, true, null));
+				setRoomType(new RoomTypeInterface(-1l, null, roomType, true, null));
 			String capacity = entity.getProperty("capacity", null);
 			if (capacity != null)
 				setCapacity(Integer.valueOf(capacity));
@@ -1294,12 +1298,15 @@ public class RoomInterface implements IsSerializable {
 		public boolean hasExamTypes() { return iExamTypes != null && !iExamTypes.isEmpty(); }
 		public List<ExamTypeInterface> getExamTypes() { return iExamTypes; }
 		public void addExamRype(ExamTypeInterface type) { iExamTypes.add(type); }
-		public ExamTypeInterface getExamType(Long typeId) {
+		public ExamTypeInterface getExamType(Long typeId, String typeRef) {
 			if (iExamTypes == null || typeId == null) return null;
 			for (ExamTypeInterface type: iExamTypes) {
-				if (typeId.equals(type.getId())) return type;
+				if (typeId.equals(type.getId()) || (type.getId() == null && typeRef != null && typeRef.equals(type.getReference()))) return type;
 			}
 			return null;
+		}
+		public ExamTypeInterface getExamType(Long typeId) {
+			return getExamType(typeId, null);
 		}
 		
 		public String getPeriodPreference() { return iPeriodPreference; }
@@ -2116,6 +2123,10 @@ public class RoomInterface implements IsSerializable {
 		}
 		public Map<Long, Integer> getFutureFlags() {
 			return iFutureFlags;
+		}
+		public int getFutureFlag(Long id, int defaultValue) {
+			Integer flags = (iFutureFlags == null ? null : iFutureFlags.get(id));
+			return flags == null ? defaultValue : flags;
 		}
 		
 		@Override

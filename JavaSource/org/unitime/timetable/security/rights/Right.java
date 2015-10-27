@@ -573,6 +573,7 @@ public enum Right {
     ApiRetrieveEvents(Session.class),
     ApiRetrieveRooms(Session.class),
     ApiRoomPictureUpload(Session.class),
+    ApiRoomEdit(Session.class),
     ApiRetrieveRoles,
     ApiRetrieveEnrollments(Session.class),
     ApiRetrieveInstructorSchedule(Session.class),
