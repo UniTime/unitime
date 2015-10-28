@@ -376,7 +376,9 @@
 					<line>/api/class-info?classId=&lt;id&gt; returns information about a class (including assinged instructors and coordinators)</line>
 				</line>
 				<line>Following conntectors are only available in UniTime 4.1:
-					<line>/api/rooms: ability to retrieve rooms (using RoomDetailInterface class converted to JSON, example GET UniTime/api/rooms?r:building=EDUC)</line>
+					<line>/api/rooms: ability to retrieve rooms (using RoomDetailInterface class converted to JSON, example GET UniTime/api/rooms?r:building=EDUC)
+						<line>The rooms API can be also used to create, update and delete rooms and to retrieve, upload and delete room pictures.</line>
+					</line>
 					<line>/api/sectioning: online student scheduling api (covering all functionality of the SectioningService)
 						<line>The SectioningService is used by the Online Student Scheduling Assistant and the Online Student Scheduling Dashboard pages.</line>
 						<line>Example: POST UniTime/api/sectioning?term=Fal2010&amp;studentId=1001&amp;operation=section (with the payload containing course requests and optionally the previous student schedule).</line>
