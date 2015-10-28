@@ -35,6 +35,12 @@
 				<line>Fixed an issue that sometimes happens on Windows that could cause UniTime to fail to start (could not instantiate bean SpringConfigurationProperties).</line>
 			</description>
 		</item>
+		<item>
+			<name>GWT updated to version 2.7.0 (was 2.5.0)</name>
+			<description>
+				<line>This fixes the URL hash issue with Firefox 41.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

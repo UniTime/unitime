@@ -10,7 +10,7 @@
 	<packaging>jar</packaging>
 	
 	<name>UniTime</name>
-	<url>http://code.google.com/p/unitime</url>
+	<url>http://www.unitime.org</url>
 	
 	<organization>
 		<name>UniTime LLC</name>
@@ -58,9 +58,9 @@
 	</developers>	
 
 	<scm>
-		<url>scm:svn:http://code.google.com/p/unitime/source</url>
-		<connection>scm:svn:http://unitime.googlecode.com/svn/trunk/</connection>
-		<developerConnection>scm:svn:https://unitime.googlecode.com/svn/trunk/</developerConnection>
+		<url>https://github.com/UniTime/unitime</url>
+		<connection>scm:git:git://github.com/UniTime/unitime.git</connection>
+		<developerConnection>scm:git:git@github.com:UniTime/unitime.git</developerConnection>
 	</scm>
 	
 	<dependencies>
@@ -131,6 +131,12 @@
 		<dependency>
 			<groupId>com.google.gwt</groupId>
 			<artifactId>gwt-user</artifactId>
+			<version>${gwt.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-dev</artifactId>
 			<version>${gwt.version}</version>
 			<scope>provided</scope>
 		</dependency>
@@ -336,6 +342,11 @@
 			<groupId>cglib</groupId>
 			<artifactId>cglib</artifactId>
 			<version>${cglib.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>${asm.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>jstl</groupId>
@@ -561,7 +572,7 @@
 		<struts.version>1.3.10</struts.version>
 		<layot.version>1.3</layot.version>
 		<protobuf.version>2.4.1</protobuf.version>
-		<gwt.version>2.5.0</gwt.version>
+		<gwt.version>2.7.0</gwt.version>
 		<spring.version>3.1.0.RELEASE</spring.version>
 		<spring-integration.version>2.2.3.RELEASE</spring-integration.version>
 		<servlet.version>2.5</servlet.version>
@@ -578,7 +589,8 @@
 		<log4j.version>1.2.16</log4j.version>
 		<javaassist.version>3.15.0-GA</javaassist.version>
 		<mysql.version>5.1.20</mysql.version>
-		<cglib.version>2.2.2</cglib.version>
+		<cglib.version>3.1</cglib.version>
+		<asm.version>5.0.3</asm.version>
 		<jstl.version>1.2</jstl.version>
 		<freemaker.version>2.3.19</freemaker.version>
 		<oracle.version>10.2.0.4.0</oracle.version>
