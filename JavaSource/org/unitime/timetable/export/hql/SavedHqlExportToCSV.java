@@ -49,6 +49,7 @@ import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -66,7 +67,7 @@ public class SavedHqlExportToCSV implements Exporter {
 	@Override
 	public void export(ExportHelper helper) throws IOException {
 		// Check rights
-		// FIXME: helper.getSessionContext().checkPermission(Right.???);
+		helper.getSessionContext().checkPermission(Right.HQLReports);
 		
 		// Retrive report
 		String report = helper.getParameter("report");

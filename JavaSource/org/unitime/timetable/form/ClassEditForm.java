@@ -99,10 +99,8 @@ public class ClassEditForm extends PreferencesForm {
     private Integer minRoomLimit;
     private Boolean unlimitedEnroll;
     private Integer enrollment;
-    //TODO Reservations Bypass - to be removed later
     private Boolean isCrosslisted;
     private String accommodation;
-    //End Bypass
     
     // --------------------------------------------------------- Classes
 
@@ -267,9 +265,7 @@ public class ClassEditForm extends PreferencesForm {
         maxExpectedCapacity = null;
         roomRatio = null;
         unlimitedEnroll = null;
-	    //TODO Reservations Bypass - to be removed later
         isCrosslisted = null;
-        // End Bypass
 
         instructors = DynamicList.getInstance(new ArrayList(), factoryInstructors);
         instrPctShare= DynamicList.getInstance(new ArrayList(), factoryInstructors);
@@ -612,14 +608,12 @@ public class ClassEditForm extends PreferencesForm {
         this.unlimitedEnroll = unlimitedEnroll;
     }
     
-    //TODO Reservations Bypass - to be removed later
     public Boolean getIsCrosslisted() {
         return isCrosslisted;
     }
     public void setIsCrosslisted(Boolean isCrosslisted) {
         this.isCrosslisted = isCrosslisted;
     }
-    // End Bypass
     
     /**
      * @param date

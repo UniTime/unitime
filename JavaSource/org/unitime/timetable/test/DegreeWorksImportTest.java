@@ -82,7 +82,6 @@ public class DegreeWorksImportTest {
 	}
 	
 	public static int guessEnrollmentFromReal(org.hibernate.Session hibSession, CourseOffering co, String area, String major, String classification) {
-		if (true) return 0;
 		return ((Number)hibSession.createQuery(
 				"select count(distinct e.student) from StudentClassEnrollment e inner join e.student.academicAreaClassifications aac " +
 				"inner join e.student.posMajors m where e.courseOffering.uniqueId = :courseId and " +

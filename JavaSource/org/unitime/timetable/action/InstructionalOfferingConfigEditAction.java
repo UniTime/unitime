@@ -443,7 +443,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	    frm.setConfigCount(new Integer (configs.size()));
 
 	    // Catalog Link
-        String linkLookupClass = ApplicationProperty.CourseCatalogLinkProvider.value();
+        @SuppressWarnings("deprecation")
+		String linkLookupClass = ApplicationProperty.CourseCatalogLinkProvider.value();
         if (linkLookupClass!=null && linkLookupClass.trim().length()>0) {
         	ExternalLinkLookup lookup = (ExternalLinkLookup) (Class.forName(linkLookupClass).newInstance());
        		Map results = lookup.getLink(io);

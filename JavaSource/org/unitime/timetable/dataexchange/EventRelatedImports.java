@@ -57,7 +57,6 @@ public abstract class EventRelatedImports extends BaseImport {
 	 * 
 	 */
 	public EventRelatedImports() {
-		// TODO Auto-generated constructor stub
 	}
 
 	protected void addNote(String note){

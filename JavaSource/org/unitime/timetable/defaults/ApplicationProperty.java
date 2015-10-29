@@ -646,14 +646,6 @@ public enum ApplicationProperty {
 	@Description("Classes: class naming helper class (implementing ExternalClassNameHelperInterface)")
 	ClassNamingHelper("tmtbl.class.naming.helper"),
 
-	@Description("Classes: text of a blue message on the top of the page")
-	@Deprecated
-	ClassesMessage("tmtbl.classes.message"),
-
-	@Description("Examinations: text of a blue message on the top of the page")
-	@Deprecated
-	ExamsMessage("tmtbl.exams.message"),
-
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Instructional Offering Detail: make not offered stays on the detail page")

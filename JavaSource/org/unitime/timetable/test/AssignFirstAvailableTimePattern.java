@@ -74,7 +74,7 @@ public class AssignFirstAvailableTimePattern {
             		"select distinct s from SchedulingSubpart s inner join s.instrOfferingConfig.instructionalOffering.courseOfferings co where " +
             		"co.subjectArea.department.session.uniqueId = :sessionId").setLong("sessionId", session.getUniqueId()).list()) {
             	if (s.getTimePreferences().isEmpty()) {
-            		List<TimePattern> patterns = TimePattern.findByMinPerWeek(session, false, false, false, s.getMinutesPerWk(), null);
+            		List<TimePattern> patterns = TimePattern.findApplicable(session, false, false, false, s.getMinutesPerWk(), s.effectiveDatePattern(), s.getInstrOfferingConfig().getDurationModel(), null);
             		if (patterns.isEmpty()) continue;
             		TimePattern pattern = patterns.get(0);
             		TimePref tp = new TimePref();

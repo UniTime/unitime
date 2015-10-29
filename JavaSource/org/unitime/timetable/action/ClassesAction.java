@@ -180,10 +180,6 @@ public class ClassesAction extends Action {
             }
         }
         
-        String msg = ApplicationProperty.ClassesMessage.value(); 
-        if (msg!=null && msg.length()>0)
-            request.setAttribute(Constants.REQUEST_MSSG, msg);
-		
         return mapping.findForward("show");
 	}
 	

@@ -165,10 +165,6 @@ public class ExamsAction extends Action {
             }
         }
 		
-        String msg = ApplicationProperty.ExamsMessage.value();
-        if (msg!=null && msg.length()>0)
-            request.setAttribute(Constants.REQUEST_MSSG, msg);
-        
         LookupTables.setupExamTypes(request, null);
 
         return mapping.findForward("show");

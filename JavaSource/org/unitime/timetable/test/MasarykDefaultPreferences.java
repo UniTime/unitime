@@ -284,7 +284,7 @@ public class MasarykDefaultPreferences {
             		c.getPreferences().clear();
             		// Strongly preferred room
             		TimePattern pattern = null; 
-            		patterns: for (TimePattern p: TimePattern.findByMinPerWeek(session.getUniqueId(), false, false, false, c.getSchedulingSubpart().getMinutesPerWk(), null)) {
+            		patterns: for (TimePattern p: TimePattern.findApplicable(session.getUniqueId(), false, false, false, c.getSchedulingSubpart().getMinutesPerWk(), c.effectiveDatePattern(), c.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel(), null)) {
             			for (TimePatternDays d: p.getDays())
             				if (a.getDays().equals(d.getDayCode()))
                 				for (TimePatternTime t: p.getTimes()) {

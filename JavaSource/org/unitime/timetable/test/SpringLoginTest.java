@@ -21,7 +21,6 @@ package org.unitime.timetable.test;
 
 
 import org.cpsolver.ifs.util.ToolBox;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -51,7 +50,7 @@ public class SpringLoginTest {
 			HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 			
 			// Setup application context
-			ApplicationContext context = new ClassPathXmlApplicationContext("/applicationContext.xml", "/securityContext.xml");
+			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("/applicationContext.xml", "/securityContext.xml");
 			
 			// Get username and password
 			String username = System.console().readLine("[%s]", "Username:");
@@ -72,9 +71,11 @@ public class SpringLoginTest {
 			// Print user name and his/her authorities
 			System.out.println("User name:" + user.getName());
 			System.out.println("Authorities:" + user.getAuthorities());
+			
+			context.close();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}
 	}
 
 }

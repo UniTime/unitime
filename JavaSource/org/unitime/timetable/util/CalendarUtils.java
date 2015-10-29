@@ -47,7 +47,6 @@ public class CalendarUtils {
 	 * @return null if not a valid date
 	 * Use {@link Formats.Format.parse(String)} instead.
 	 */
-	@Deprecated
 	public static Date getDate(String date, String dateFormat) {
 		try {
 			return Formats.getDateFormat(dateFormat).parse(date);
