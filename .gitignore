@@ -8,3 +8,6 @@
 .DS_Store
 /.zanata-cache
 /Documentation/Translations
+/gwt-unitCache
+/WebContent/unitime
+/WebContent/WEB-INF/deploy
