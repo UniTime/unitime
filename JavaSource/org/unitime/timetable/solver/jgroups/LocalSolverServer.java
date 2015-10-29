@@ -185,6 +185,10 @@ public class LocalSolverServer extends AbstractSolverServer {
 		}
 		
 		public synchronized void checkForNewServers() {
+			if (!SessionDAO.isConfigured()) {
+				iLog.info("Hibernate is not yet configured, waiting...");
+				return;
+			}
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
 				Set<String> solvers = new HashSet<String>(iOnlineStudentSchedulingContainer.getSolvers());
