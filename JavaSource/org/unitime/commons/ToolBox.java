@@ -180,19 +180,10 @@ public class ToolBox {
 	 */
 	public static boolean diff(String a, String b) {
 
-		boolean ret =
-			!(a == null
-				? b == null
-				? true
-				: false : b == null
-				? false
-				: a.equals(b));
-
-		if (ret) {
-			Debug.log("  diff: '" + a + "' with '" + b + "'");
-		}
-
-		return ret;
+		if (a == null ? b == null : a.equals(b))
+			return false;
+		Debug.log("  diff: '" + a + "' with '" + b + "'");
+		return true;
 	}
 
 	/**
