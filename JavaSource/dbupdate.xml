@@ -10267,4 +10267,414 @@
 		<mysql>alter table %SCHEMA%.curriculum add multiple_majors int(1) not null default 0</mysql>
 		<plsql>alter table %SCHEMA%.curriculum add multiple_majors number(1) default 0 constraint nn_curriculum_mmajors not null</plsql>
 	</update>
+	<update version="154" date="30-Oct'2016" comment="New Solver Parameters">
+		<mysql into="GBAS">select uniqueid from %SCHEMA%.solver_parameter_group where name='StudentSctBasic'</mysql>
+		<mysql into="OBAS">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GBAS%</mysql>
+		<mysql into="GGEN">select uniqueid from %SCHEMA%.solver_parameter_group where name='StudentSct'</mysql>
+		<mysql into="OGEN">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GGEN%</mysql>
+		<mysql into="GSW">select uniqueid from %SCHEMA%.solver_parameter_group where name='StudentSctWeights'</mysql>
+		<mysql into="OSW">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GSW%</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql into="ORD">select max(ord)+1 from %SCHEMA%.solver_parameter_group</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, ord, param_type) values
+			(%ID% + 0, 'StudentSctOnline', 'Online Student Scheduling', %ORD%, 2)
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID% +  1, 'Load.StudentQuery', '', 'Student Filter', 'text', %OBAS% + 1, 1, %GBAS%),
+			(%ID% +  2, 'Interactive.UpdateCourseRequests', 'true', 'Update course requests', 'boolean', %OGEN% + 1, 1, %GGEN%),
+			(%ID% +  3, 'Load.RequestGroups', 'false', 'Load request groups', 'boolean', %OGEN% + 2, 1, %GGEN%),
+			(%ID% +  4, 'StudentWeights.SameGroup', '0.1000', 'Same request group', 'double', %OSW% + 1, 1, %GSW%),
+			(%ID% +  5, 'Sectioning.KeepInitialAssignments', 'false', 'MPP: Initial enrollment must be assigned', 'boolean', %OGEN% + 3, 1, %GGEN%), 
+			(%ID% +  6, 'StudentWeights.Perturbation', '0.1000', 'MPP: Perturbation weight', 'double', %OSW% + 2, 1, %GSW%),
+			(%ID% +  7, 'StudentWeights.SameChoice', '0.900', 'MPP: Different section, but same time and instructor', 'double', %OSW% + 3, 1, %GSW%),
+			(%ID% +  8, 'StudentWeights.SameTime', '0.700', 'MPP: Different section, but same time', 'double', %OSW% + 4, 1, %GSW%),
+			(%ID% +  9, 'Load.CheckEnabledForScheduling', 'true', 'Check enabled for scheduling toggle', 'boolean', %OGEN% + 3, 1, %GGEN%),
+			(%ID% + 10, 'Load.CheckForNoBatchStatus', 'true', 'Check no-batch student status', 'boolean', %OGEN% + 4, 1, %GGEN%),
+			(%ID% + 11, 'StudentWeights.NoTimeFactor', '0.050', 'Additional Weights: Section with no time', 'double', 0, 1, %ID%),
+			(%ID% + 12, 'StudentWeights.SelectionFactor', '0.125', 'Additional Weights: Section selected', 'double', 1, 1, %ID%),
+			(%ID% + 13, 'StudentWeights.PenaltyFactor', '0.250', 'Additional Weights: Section over-expected', 'double', 2, 1, %ID%),
+			(%ID% + 14, 'StudentWeights.AvgPenaltyFactor', '0.001', 'Additional Weights: Average penalty', 'double', 3, 1, %ID%),
+			(%ID% + 15, 'StudentWeights.AvailabilityFactor', '0.050', 'Additional Weights: Section availability', 'double', 4, 1, %ID%),
+			(%ID% + 16, 'StudentWeights.Class', 'org.cpsolver.studentsct.online.selection.StudentSchedulingAssistantWeights', 'Student weights model', 'text', 5, 0, %ID%),
+			(%ID% + 17, 'OverExpectedCriterion.Class', 'org.cpsolver.studentsct.online.expectations.AvoidUnbalancedWhenNoExpectations', 'Over-expected criterion', 'text', 6, 0, %ID%),
+			(%ID% + 18, 'Suggestions.Timeout', '1000', 'Suggestions: Time limit in milliseconds', 'integer', 7, 1, %ID%),
+			(%ID% + 19, 'Suggestions.MaxDepth', '4', 'Suggestions: Maximal search depth', 'integer', 8, 1, %ID%),
+			(%ID% + 20, 'Suggestions.MaxSuggestions', '20', 'Suggestions: Number of results', 'integer', 9, 1, %ID%),
+			(%ID% + 21, 'StudentWeights.MultiCriteria', 'true', 'Use multi-criterion selection', 'boolean', 10, 1, %ID%),
+			(%ID% + 22, 'OverExpected.Disbalance', '0.100', 'Expectations: Allowed dis-balance', 'double', 11, 1, %ID%),
+			(%ID% + 23, 'General.BalanceUnlimited', 'false', 'Expectations: Balance unlimited sections', 'boolean', 12, 1, %ID%),
+			(%ID% + 24, 'OverExpected.Percentage', '1.000', 'Expectations: Expectation multiplicator', 'double', 13, 1, %ID%),
+			(%ID% + 25, 'OverExpected.Rounding', 'ROUND', 'Expectations: rounding', 'enum(NONE,CEIL,FLOOR,ROUND)', 14 , 1, %ID%),
+			(%ID% + 26, 'OnlineStudentSectioning.TimesToAvoidHeuristics', 'true', 'Online Selection: avoid times needed by other courses', 'boolean', 15, 1, %ID%),
+			(%ID% + 27, 'StudentWeights.SameChoiceFactor', '0.125', 'Resectioning: Same choice (time and instructor)', 'double', 16, 1, %ID%),
+			(%ID% + 28, 'StudentWeights.SameRoomsFactor', '0.007', 'Resectioning: Same room', 'double', 17, 1, %ID%),
+			(%ID% + 29, 'StudentWeights.SameTimeFactor', '0.070', 'Resectioning: Same time', 'double', 18, 1, %ID%),
+			(%ID% + 30, 'StudentWeights.SameNameFactor', '0.014', 'Resectioning: Same section name', 'double', 19, 1, %ID%),
+			(%ID% + 31, 'StudentWeights.PreferenceFactor', '0.500', 'Suggestions: Preferred section', 'double', 20, 1, %ID%),
+			(%ID% + 32, 'Enrollment.CanKeepCancelledClass', 'false', 'Can a student keep cancelled class', 'boolean', 21, 1, %ID%) 
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, condition, ord, param_type) values
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'StudentSctOnline', 'Online Student Scheduling', -1, 2)
+		</plsql>
+		<plsql>
+			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x ) where g.name='StudentSctOnline'
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Load.StudentQuery' as name,
+				'' as default_value,
+				'Student Filter' as description,
+				'text' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctBasic') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctBasic')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Interactive.UpdateCourseRequests' as name,
+				'true' as default_value,
+				'Update course requests' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Load.RequestGroups' as name,
+				'false' as default_value,
+				'Load request groups' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.SameGroup' as name,
+				'0.1000' as default_value,
+				'Same request group' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctWeights') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Sectioning.KeepInitialAssignments' as name,
+				'false' as default_value,
+				'MPP: Initial enrollment must be assigned' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.Perturbation' as name,
+				'0.1000' as default_value,
+				'MPP: Perturbation weight' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctWeights') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.SameChoice' as name,
+				'0.900' as default_value,
+				'MPP: Different section, but same time and instructor' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctWeights') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.SameTime' as name,
+				'0.700' as default_value,
+				'MPP: Different section, but same time' as description,
+				'double' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSctWeights') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctWeights')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Load.CheckEnabledForScheduling' as name,
+				'true' as default_value,
+				'Check enabled for scheduling toggle' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Load.CheckForNoBatchStatus' as name,
+				'true' as default_value,
+				'Check no-batch student status' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'StudentSct') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSct')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.NoTimeFactor' as name,
+				'0.050' as default_value,
+				'Additional Weights: Section with no time' as description,
+				'double' as type,
+				0 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.SelectionFactor' as name,
+				'0.125' as default_value,
+				'Additional Weights: Section selected' as description,
+				'double' as type,
+				1 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.PenaltyFactor' as name,
+				'0.250' as default_value,
+				'Additional Weights: Section over-expected' as description,
+				'double' as type,
+				2 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.AvgPenaltyFactor' as name,
+				'0.001' as default_value,
+				'Additional Weights: Average penalty' as description,
+				'double' as type,
+				3 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.AvailabilityFactor' as name,
+				'0.050' as default_value,
+				'Additional Weights: Section availability' as description,
+				'double' as type,
+				4 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.Class' as name,
+				'org.cpsolver.studentsct.online.selection.StudentSchedulingAssistantWeights' as default_value,
+				'Student weights model' as description,
+				'text' as type,
+				5 as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'OverExpectedCriterion.Class' as name,
+				'org.cpsolver.studentsct.online.expectations.AvoidUnbalancedWhenNoExpectations' as default_value,
+				'Over-expected criterion' as description,
+				'text' as type,
+				6 as ord,
+				0 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Suggestions.Timeout' as name,
+				'1000' as default_value,
+				'Suggestions: Time limit in milliseconds' as description,
+				'integer' as type,
+				7 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Suggestions.MaxDepth' as name,
+				'4' as default_value,
+				'Suggestions: Maximal search depth' as description,
+				'integer' as type,
+				8 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Suggestions.MaxSuggestions' as name,
+				'20' as default_value,
+				'Suggestions: Number of results' as description,
+				'integer' as type,
+				9 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.MultiCriteria' as name,
+				'true' as default_value,
+				'Use multi-criterion selection' as description,
+				'boolean' as type,
+				10 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'OverExpected.Disbalance' as name,
+				'0.100' as default_value,
+				'Expectations: Allowed dis-balance' as description,
+				'double' as type,
+				11 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.BalanceUnlimited' as name,
+				'false' as default_value,
+				'Expectations: Balance unlimited sections' as description,
+				'boolean' as type,
+				12 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'OverExpected.Percentage' as name,
+				'1.000' as default_value,
+				'Expectations: Expectation multiplicator' as description,
+				'double' as type,
+				13 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'OverExpected.Rounding' as name,
+				'ROUND' as default_value,
+				'Expectations: rounding' as description,
+				'enum(NONE,CEIL,FLOOR,ROUND)' as type,
+				14 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'OnlineStudentSectioning.TimesToAvoidHeuristics' as name,
+				'true' as default_value,
+				'Online Selection: avoid times needed by other courses' as description,
+				'boolean' as type,
+				15 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.SameChoiceFactor' as name,
+				'0.125' as default_value,
+				'Resectioning: Same choice (time and instructor)' as description,
+				'double' as type,
+				16 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.SameRoomsFactor' as name,
+				'0.007' as default_value,
+				'Resectioning: Same room' as description,
+				'double' as type,
+				17 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.SameTimeFactor' as name,
+				'0.070' as default_value,
+				'Resectioning: Same time' as description,
+				'double' as type,
+				18 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.SameNameFactor' as name,
+				'0.014' as default_value,
+				'Resectioning: Same section name' as description,
+				'double' as type,
+				19 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'StudentWeights.PreferenceFactor' as name,
+				'0.500' as default_value,
+				'Suggestions: Preferred section' as description,
+				'double' as type,
+				20 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Enrollment.CanKeepCancelledClass' as name,
+				'false' as default_value,
+				'Can a student keep cancelled class' as description,
+				'boolean' as type,
+				21 as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
+		</plsql>
+	</update>
 </dbupdate>
