@@ -501,4 +501,7 @@ public class AdministrationPermissions {
 	
 	@PermissionForRight(Right.ApiRetrieveClassInfo)
 	public static class ApiRetrieveClassInfo extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.ApiOnlineStudentScheduliung)
+	public static class ApiOnlineStudentScheduliung extends SimpleSessionPermission {}
 }
