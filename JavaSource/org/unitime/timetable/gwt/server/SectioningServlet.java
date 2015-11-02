@@ -1481,9 +1481,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null)
 					throw new SectioningException(MSG.exceptionBadSession());
 				
-				if (getSessionContext().isAuthenticated())
-					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
-				
 				if (server instanceof DatabaseServer) {
 					return server.execute(server.createAction(DbFindEnrollmentInfoAction.class).withParams(
 							query,
@@ -1506,9 +1503,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				if (getSessionContext().isAuthenticated())
-					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
-				
 				return server.execute(server.createAction(FindEnrollmentInfoAction.class).withParams(query, courseId, null, null).withFilter(filter), currentUser());
 			}
 		} catch (PageAccessException e) {
@@ -1529,9 +1523,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				OnlineSectioningServer server = getServerInstance(sessionId, true);
 				if (server == null)
 					throw new SectioningException(MSG.exceptionBadSession());
-				
-				if (getSessionContext().isAuthenticated())
-					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
 				if (server instanceof DatabaseServer) {
 					return server.execute(server.createAction(DbFindStudentInfoAction.class).withParams(
@@ -1559,9 +1550,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				if (getSessionContext().isAuthenticated())
-					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
-				
 				return server.execute(server.createAction(FindStudentInfoAction.class).withParams(query, null, null,
 						sessionContext.hasPermission(Right.EnrollmentsShowExternalId), false, true).withFilter(filter), currentUser());
 			}
@@ -1657,15 +1645,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		}
-	}
-
-	@Override
-	public String lastStatusQuery() throws SectioningException, PageAccessException {
-		UserContext user = getSessionContext().getUser();
-		if (user == null) throw new PageAccessException(
-				getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
-		
-		return user.getProperty("SectioningStatus.LastStatusQuery");
 	}
 
 	@Override
@@ -2081,11 +2060,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		SectioningProperties properties = new SectioningProperties();
 		properties.setAdmin(getSessionContext().hasPermission(Right.StudentSchedulingAdmin));
 		properties.setAdvisor(getSessionContext().hasPermission(Right.StudentSchedulingAdvisor));
-		properties.setChangeLog(properties.isAdmin() && getServerInstance(sessionId, false) != null);
 		if (sessionId == null && getSessionContext().getUser() != null)
 			sessionId = getSessionContext().getUser().getCurrentAcademicSessionId();
 		properties.setSessionId(sessionId);
 		if (sessionId != null) {
+			properties.setChangeLog(properties.isAdmin() && getServerInstance(sessionId, false) != null);
 			properties.setMassCancel(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingMassCancel));
 			properties.setEmail(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingEmailStudent));
 			properties.setChangeStatus(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingChangeStudentStatus));

@@ -167,7 +167,7 @@ public class SectioningStatusPage extends Composite {
 		iSearch.setAccessKey('s');
 		iSearch.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iSearch);		
-		iFilterPanel.setCellVerticalAlignment(iSearch, HasVerticalAlignment.ALIGN_MIDDLE);
+		iFilterPanel.setCellVerticalAlignment(iSearch, HasVerticalAlignment.ALIGN_TOP);
 		
 		iLoadingImage = new Image(RESOURCES.loading_small());
 		iLoadingImage.setVisible(false);
@@ -534,22 +534,11 @@ public class SectioningStatusPage extends Composite {
 				}
 			}
 		} else {
-			iSectioningService.lastStatusQuery(new AsyncCallback<String>() {
-				@Override
-				public void onFailure(Throwable caught) {
-					iError.setHTML(caught.getMessage());
-					iError.setVisible(true);
-					ToolBox.checkAccess(caught);
-				}
-
-				@Override
-				public void onSuccess(String result) {
-					if (result != null) {
-						iFilter.setValue(result, true);
-						loadData();
-					}
-				}
-			});
+			String q = SectioningStatusCookie.getInstance().getQuery(iOnline);
+			if (q != null) iFilter.setValue(q);
+			int t = SectioningStatusCookie.getInstance().getTab(iOnline);
+			if (t >= 0 && t < iTabPanel.getTabCount())
+				iTabPanel.selectTab(t, false);
 		}
 	}
 	
@@ -569,6 +558,7 @@ public class SectioningStatusPage extends Composite {
 		iCourseFilter = iFilter.getValue();
 		iCourseFilterRequest = iFilter.getElementsRequest();
 		History.newItem(iCourseFilter + (iTabIndex == 1 ? "@" : iTabIndex == 2 ? "$" : ""), false);
+		SectioningStatusCookie.getInstance().setQueryTab(iOnline, iFilter.getValue(), iTabIndex);
 		
 		if (iFilter.isFilterPopupShowing()) iFilter.hideFilterPopup();
 		
@@ -760,219 +750,49 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hOperations = new UniTimeTableHeader("");
 		header.add(hOperations);
 
-		final UniTimeTableHeader hSubject = new UniTimeTableHeader(MESSAGES.colSubject() + "<br>&nbsp;&nbsp;" + MESSAGES.colSubpart());
+		UniTimeTableHeader hSubject = new UniTimeTableHeader(MESSAGES.colSubject() + "<br>&nbsp;&nbsp;" + MESSAGES.colSubpart());
 		header.add(hSubject);
-		hSubject.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iCourseTable.sort(hSubject, new EnrollmentComparator(EnrollmentComparator.SortBy.SUBJECT));
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colSubject());
-			}
-		});
+		addSortOperation(hSubject, EnrollmentComparator.SortBy.SUBJECT, MESSAGES.colSubject());
 		
-		final UniTimeTableHeader hCourse = new UniTimeTableHeader(MESSAGES.colCourse() + "<br>" + MESSAGES.colClass());
+		UniTimeTableHeader hCourse = new UniTimeTableHeader(MESSAGES.colCourse() + "<br>" + MESSAGES.colClass());
 		header.add(hCourse);
-		hCourse.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iCourseTable.sort(hCourse, new EnrollmentComparator(EnrollmentComparator.SortBy.COURSE));
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colCourse());
-			}
-		});
+		addSortOperation(hCourse, EnrollmentComparator.SortBy.COURSE, MESSAGES.colCourse());
 
-		final UniTimeTableHeader hTitleSubpart = new UniTimeTableHeader(MESSAGES.colTitle() + "<br>" + MESSAGES.colTime());
+		UniTimeTableHeader hTitleSubpart = new UniTimeTableHeader(MESSAGES.colTitle() + "<br>" + MESSAGES.colTime());
 		header.add(hTitleSubpart);
-		hTitleSubpart.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iCourseTable.sort(hTitleSubpart, new EnrollmentComparator(EnrollmentComparator.SortBy.TITLE));
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colTitle());
-			}
-		});
+		addSortOperation(hTitleSubpart, EnrollmentComparator.SortBy.TITLE, MESSAGES.colTitle());
 
 		UniTimeTableHeader hStart = new UniTimeTableHeader("<br>" + MESSAGES.colDate());
 		header.add(hStart);
 
-		final UniTimeTableHeader hRoom = new UniTimeTableHeader(MESSAGES.colConsent() + "<br>" + MESSAGES.colRoom());
+		UniTimeTableHeader hRoom = new UniTimeTableHeader(MESSAGES.colConsent() + "<br>" + MESSAGES.colRoom());
 		header.add(hRoom);
-		hRoom.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iCourseTable.sort(hRoom, new EnrollmentComparator(EnrollmentComparator.SortBy.CONSENT));
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colConsent());
-			}
-		});
+		addSortOperation(hRoom, EnrollmentComparator.SortBy.CONSENT, MESSAGES.colConsent());
 
-
-		final UniTimeTableHeader hLimit = new UniTimeTableHeader(MESSAGES.colAvailable());
+		UniTimeTableHeader hLimit = new UniTimeTableHeader(MESSAGES.colAvailable());
 		header.add(hLimit);
-		hLimit.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iCourseTable.sort(hLimit, new EnrollmentComparator(EnrollmentComparator.SortBy.LIMIT));
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colAvailable());
-			}
-		});
+		addSortOperation(hLimit, EnrollmentComparator.SortBy.LIMIT, MESSAGES.colAvailable());
 
-		final UniTimeTableHeader hProjection = new UniTimeTableHeader(MESSAGES.colProjection());
+		UniTimeTableHeader hProjection = new UniTimeTableHeader(MESSAGES.colProjection());
 		header.add(hProjection);
-		hProjection.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iCourseTable.sort(hProjection, new EnrollmentComparator(EnrollmentComparator.SortBy.PROJECTION));
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colProjection());
-			}
-		});
+		addSortOperation(hProjection, EnrollmentComparator.SortBy.PROJECTION, MESSAGES.colProjection());
 
-		final UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
+		UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
 		header.add(hEnrollment);
-		hEnrollment.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iCourseTable.sort(hEnrollment, new EnrollmentComparator(EnrollmentComparator.SortBy.ENROLLMENT));
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colEnrollment());
-			}
-		});
+		addSortOperation(hEnrollment, EnrollmentComparator.SortBy.ENROLLMENT, MESSAGES.colEnrollment());
 
-		final UniTimeTableHeader hWaitListed = new UniTimeTableHeader(MESSAGES.colWaitListed());
+		UniTimeTableHeader hWaitListed = new UniTimeTableHeader(MESSAGES.colWaitListed());
 		header.add(hWaitListed);
-		hWaitListed.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iCourseTable.sort(hWaitListed, new EnrollmentComparator(EnrollmentComparator.SortBy.WAITLIST));
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colWaitListed());
-			}
-		});
-		
-		final UniTimeTableHeader hReserved = new UniTimeTableHeader(MESSAGES.colReserved());
-		header.add(hReserved);
-		hReserved.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iCourseTable.sort(hReserved, new EnrollmentComparator(EnrollmentComparator.SortBy.RESERVATION));
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colReserved());
-			}
-		});
+		addSortOperation(hWaitListed, EnrollmentComparator.SortBy.WAITLIST, MESSAGES.colWaitListed());
 
-		final UniTimeTableHeader hConsent = new UniTimeTableHeader(MESSAGES.colNeedConsent());
+		
+		UniTimeTableHeader hReserved = new UniTimeTableHeader(MESSAGES.colReserved());
+		header.add(hReserved);
+		addSortOperation(hReserved, EnrollmentComparator.SortBy.RESERVATION, MESSAGES.colReserved());
+
+		UniTimeTableHeader hConsent = new UniTimeTableHeader(MESSAGES.colNeedConsent());
 		header.add(hConsent);
-		hConsent.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iCourseTable.sort(hConsent, new EnrollmentComparator(EnrollmentComparator.SortBy.NEED_CONSENT));
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colNeedConsent().replace("<br>", " "));
-			}
-		});
+		addSortOperation(hConsent, EnrollmentComparator.SortBy.NEED_CONSENT, MESSAGES.colNeedConsent().replace("<br>", " "));
 
 		iCourseTable.addRow(null, header);
 		
@@ -991,6 +811,33 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		iCourseTableHint.setVisible(hasReservation);
+		
+		if (SectioningStatusCookie.getInstance().getSortBy(iOnline, 0) != 0) {
+			boolean asc = (SectioningStatusCookie.getInstance().getSortBy(iOnline, 0) > 0);
+			EnrollmentComparator.SortBy sort = EnrollmentComparator.SortBy.values()[Math.abs(SectioningStatusCookie.getInstance().getSortBy(iOnline, 0)) - 1];
+			switch (sort) {
+			case COURSE:
+				iCourseTable.sort(hCourse, new EnrollmentComparator(sort), asc); break;
+			case SUBJECT:
+				iCourseTable.sort(hSubject, new EnrollmentComparator(sort), asc); break;
+			case TITLE:
+				iCourseTable.sort(hTitleSubpart, new EnrollmentComparator(sort), asc); break;
+			case CONSENT:
+				iCourseTable.sort(hRoom, new EnrollmentComparator(sort), asc); break;
+			case LIMIT:
+				iCourseTable.sort(hLimit, new EnrollmentComparator(sort), asc); break;
+			case PROJECTION:
+				iCourseTable.sort(hProjection, new EnrollmentComparator(sort), asc); break;
+			case ENROLLMENT:
+				iCourseTable.sort(hEnrollment, new EnrollmentComparator(sort), asc); break;
+			case NEED_CONSENT:
+				iCourseTable.sort(hConsent, new EnrollmentComparator(sort), asc); break;
+			case RESERVATION:
+				iCourseTable.sort(hReserved, new EnrollmentComparator(sort), asc); break;
+			case WAITLIST:
+				iCourseTable.sort(hWaitListed, new EnrollmentComparator(sort), asc); break;
+			}
+		}
 	}
 	
 	public void populateStudentTable(List<StudentInfo> result) {
@@ -1266,69 +1113,16 @@ public class SectioningStatusPage extends Composite {
 			if (e.getStudent() != null && e.getStudent().isCanShowExternalId()) { hasExtId = true; break; }
 		}
 		
+		UniTimeTableHeader hExtId = null;
 		if (hasExtId) {
-			final UniTimeTableHeader hExtId = new UniTimeTableHeader(MESSAGES.colStudentExternalId());
+			hExtId = new UniTimeTableHeader(MESSAGES.colStudentExternalId());
 			header.add(hExtId);
-			hExtId.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hExtId, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = (e1.getStudent().isCanShowExternalId() ? e1.getStudent().getExternalId() : "").compareTo(e2.getStudent().isCanShowExternalId() ? e2.getStudent().getExternalId() : "");
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colStudentExternalId());
-				}
-			});
+			addSortOperation(hExtId, StudentComparator.SortBy.EXTERNAL_ID, MESSAGES.colStudentExternalId());
 		}
 		
-		final UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
+		UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
 		header.add(hStudent);
-		hStudent.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iStudentTable.sort(hStudent, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-					@Override
-					public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-						if (e1.getStudent() == null) return 1;
-						if (e2.getStudent() == null) return -1;
-						int cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-						if (cmp != 0) return cmp;
-						return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-					}
-				});
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colStudent());
-			}
-		});
+		addSortOperation(hStudent, StudentComparator.SortBy.STUDENT, MESSAGES.colStudent());
 		
 		UniTimeTableHeader hTotal = new UniTimeTableHeader("&nbsp;");
 		header.add(hTotal);
@@ -1352,514 +1146,103 @@ public class SectioningStatusPage extends Composite {
 			if (e.hasTotalCredit()) hasCredit = true;
 		}
 		
+		UniTimeTableHeader hArea = null, hClasf = null;
 		if (hasArea) {
-			final UniTimeTableHeader hArea = new UniTimeTableHeader(MESSAGES.colArea());
+			hArea = new UniTimeTableHeader(MESSAGES.colArea());
 			//hArea.setWidth("100px");
 			header.add(hArea);
-			hArea.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hArea, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getMajor("|").compareTo(e2.getStudent().getMajor("|"));
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colArea());
-				}
-			});
+			addSortOperation(hArea, StudentComparator.SortBy.AREA, MESSAGES.colArea());
 			
-			final UniTimeTableHeader hClasf = new UniTimeTableHeader(MESSAGES.colClassification());
+			hClasf = new UniTimeTableHeader(MESSAGES.colClassification());
 			//hClasf.setWidth("100px");
 			header.add(hClasf);
-			hClasf.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hClasf, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = e1.getStudent().getClassification("|").compareTo(e2.getStudent().getClassification("|"));
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getArea("|").compareTo(e2.getStudent().getArea("|"));
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getMajor("|").compareTo(e2.getStudent().getMajor("|"));
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colClassification());
-				}
-			});
+			addSortOperation(hClasf, StudentComparator.SortBy.CLASSIFICATION, MESSAGES.colClassification());
 		}
 
+		UniTimeTableHeader hMajor = null;
 		if (hasMajor) {
-			final UniTimeTableHeader hMajor = new UniTimeTableHeader(MESSAGES.colMajor());
+			hMajor = new UniTimeTableHeader(MESSAGES.colMajor());
 			//hMajor.setWidth("100px");
 			header.add(hMajor);
-			hMajor.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hMajor, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = e1.getStudent().getMajor("|").compareTo(e2.getStudent().getMajor("|"));
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colMajor());
-				}
-			});
+			addSortOperation(hMajor, StudentComparator.SortBy.MAJOR, MESSAGES.colMajor());
 		}
 		
+		UniTimeTableHeader hGroup = null;
 		if (hasGroup) {
-			final UniTimeTableHeader hGroup = new UniTimeTableHeader(MESSAGES.colGroup());
+			hGroup = new UniTimeTableHeader(MESSAGES.colGroup());
 			//hGroup.setWidth("100px");
 			header.add(hGroup);
-			hGroup.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hGroup, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = e1.getStudent().getGroup("|").compareTo(e2.getStudent().getGroup("|"));
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colGroup());
-				}
-			});
+			addSortOperation(hMajor, StudentComparator.SortBy.GROUP, MESSAGES.colGroup());
 		}
 		
+		UniTimeTableHeader hAcmd = null;
 		if (hasAcmd) {
-			final UniTimeTableHeader hAcmd = new UniTimeTableHeader(MESSAGES.colAccommodation());
+			hAcmd = new UniTimeTableHeader(MESSAGES.colAccommodation());
 			//hGroup.setWidth("100px");
 			header.add(hAcmd);
-			hAcmd.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hAcmd, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = e1.getStudent().getAccommodation("|").compareTo(e2.getStudent().getAccommodation("|"));
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colAccommodation());
-				}
-			});
+			addSortOperation(hMajor, StudentComparator.SortBy.ACCOMODATION, MESSAGES.colAccommodation());
 		}
 		
 		iStatusColumn = header.size() - 1;
-		final UniTimeTableHeader hStatus = new UniTimeTableHeader(MESSAGES.colStatus());
+		UniTimeTableHeader hStatus = new UniTimeTableHeader(MESSAGES.colStatus());
 		//hMajor.setWidth("100px");
 		header.add(hStatus);
-		hStatus.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iStudentTable.sort(hStatus, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-					@Override
-					public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-						if (e1.getStudent() == null) return 1;
-						if (e2.getStudent() == null) return -1;
-						int cmp = (e1.getStatus() == null ? "" : e1.getStatus()).compareToIgnoreCase(e2.getStatus() == null ? "" : e2.getStatus());
-						if (cmp != 0) return cmp;
-						cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-						if (cmp != 0) return cmp;
-						return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-					}
-				});
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colStatus());
-			}
-		});
+		addSortOperation(hStatus, StudentComparator.SortBy.STATUS, MESSAGES.colStatus());
 		
+		UniTimeTableHeader hEnrollment = null;
 		if (hasEnrollment) {
-			final UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
+			hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
 			header.add(hEnrollment);
-			hEnrollment.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hEnrollment, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = (e1.getEnrollment() == null ? new Integer(0) : e1.getEnrollment()).compareTo(e2.getEnrollment() == null ? 0 : e2.getEnrollment());
-							if (cmp != 0) return - cmp;
-							cmp = (e1.getTotalEnrollment() == null ? new Integer(0) : e1.getTotalEnrollment()).compareTo(e2.getTotalEnrollment() == null ? 0 : e2.getTotalEnrollment());
-							if (cmp != 0) return - cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colEnrollment());
-				}
-			});			
+			addSortOperation(hEnrollment, StudentComparator.SortBy.ENROLLMENT, MESSAGES.colEnrollment());
 		}
 		
+		UniTimeTableHeader hWaitlist = null;
 		if (hasWaitList) {
-			final UniTimeTableHeader hWaitlist = new UniTimeTableHeader(MESSAGES.colWaitListed());
+			hWaitlist = new UniTimeTableHeader(MESSAGES.colWaitListed());
 			header.add(hWaitlist);
-			hWaitlist.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hWaitlist, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = (e1.getUnassigned() == null ? new Integer(0) : e1.getUnassigned()).compareTo(e2.getUnassigned() == null ? 0 : e2.getUnassigned());
-							if (cmp != 0) return - cmp;
-							cmp = (e1.getWaitlist() == null ? new Integer(0) : e1.getWaitlist()).compareTo(e2.getWaitlist() == null ? 0 : e2.getWaitlist());
-							if (cmp != 0) return - cmp;
-							cmp = (e1.getTotalUnassigned() == null ? new Integer(0) : e1.getTotalUnassigned()).compareTo(e2.getTotalUnassigned() == null ? 0 : e2.getTotalUnassigned());
-							if (cmp != 0) return - cmp;
-							cmp = (e1.getTotalWaitlist() == null ? new Integer(0) : e1.getTotalWaitlist()).compareTo(e2.getTotalWaitlist() == null ? 0 : e2.getTotalWaitlist());
-							if (cmp != 0) return - cmp;
-							cmp = (e1.getTopWaitingPriority() == null ? new Integer(Integer.MAX_VALUE) : e1.getTopWaitingPriority()).compareTo(e2.getTopWaitingPriority() == null ? Integer.MAX_VALUE : e2.getTopWaitingPriority());
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colWaitListed());
-				}
-			});
+			addSortOperation(hWaitlist, StudentComparator.SortBy.WAITLIST, MESSAGES.colWaitListed());
 		}
 		
+		UniTimeTableHeader hReservation = null;
 		if (hasReservation) {
-			final UniTimeTableHeader hReservation = new UniTimeTableHeader(MESSAGES.colReservation());
+			hReservation = new UniTimeTableHeader(MESSAGES.colReservation());
 			header.add(hReservation);
-			hReservation.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hReservation, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = (e1.getReservation() == null ? new Integer(0) : e1.getReservation()).compareTo(e2.getReservation() == null ? 0 : e2.getReservation());
-							if (cmp != 0) return - cmp;
-							cmp = (e1.getTotalReservation() == null ? new Integer(0) : e1.getTotalReservation()).compareTo(e2.getTotalReservation() == null ? 0 : e2.getTotalReservation());
-							if (cmp != 0) return - cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colReservation());
-				}
-			});
+			addSortOperation(hReservation, StudentComparator.SortBy.RESERVATION, MESSAGES.colReservation());
 		}
 		
+		UniTimeTableHeader hConsent = null;
 		if (hasConsent) {
-			final UniTimeTableHeader hConsent = new UniTimeTableHeader(MESSAGES.colConsent());
+			hConsent = new UniTimeTableHeader(MESSAGES.colConsent());
 			header.add(hConsent);
-			hConsent.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hConsent, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = (e1.getConsentNeeded() == null ? new Integer(0) : e1.getConsentNeeded()).compareTo(e2.getConsentNeeded() == null ? 0 : e2.getConsentNeeded());
-							if (cmp != 0) return - cmp;
-							cmp = (e1.getTotalConsentNeeded() == null ? new Integer(0) : e1.getTotalConsentNeeded()).compareTo(e2.getTotalConsentNeeded() == null ? 0 : e2.getTotalConsentNeeded());
-							if (cmp != 0) return - cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colConsent());
-				}
-			});			
+			addSortOperation(hConsent, StudentComparator.SortBy.CONSENT, MESSAGES.colConsent());
 		}
 
+		UniTimeTableHeader hCredit = null;
 		if (hasCredit) {
-			final UniTimeTableHeader hCredit = new UniTimeTableHeader(MESSAGES.colCredit());
+			hCredit = new UniTimeTableHeader(MESSAGES.colCredit());
 			header.add(hCredit);
-			hCredit.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hCredit, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = (e1.hasCredit() ? e1.getCredit() : new Float(0f)).compareTo(e2.hasCredit() ? e2.getCredit() : new Float(0f));
-							if (cmp != 0) return - cmp;
-							cmp = (e1.hasTotalCredit() ? e1.getTotalCredit() : new Float(0f)).compareTo(e2.hasTotalCredit() ? e2.getTotalCredit() : new Float(0f));
-							if (cmp != 0) return - cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colCredit());
-				}
-			});			
+			addSortOperation(hCredit, StudentComparator.SortBy.CREDIT, MESSAGES.colCredit());
 		}
 		
+		UniTimeTableHeader hRequestTS = null;
 		if (hasRequestedDate) {
-			final UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colRequestTimeStamp());
-			//hTimeStamp.setWidth("100px");
-			hTimeStamp.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hTimeStamp, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = (e1.getRequestedDate() == null ? new Date(0) : e1.getRequestedDate()).compareTo(e2.getRequestedDate() == null ? new Date(0) : e2.getRequestedDate());
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colRequestTimeStamp());
-				}
-			});
-			header.add(hTimeStamp);			
+			hRequestTS = new UniTimeTableHeader(MESSAGES.colRequestTimeStamp());
+			header.add(hRequestTS);
+			addSortOperation(hRequestTS, StudentComparator.SortBy.REQUEST_TS, MESSAGES.colRequestTimeStamp());
 		}
 		
+		UniTimeTableHeader hEnrolledTS = null;
 		if (hasEnrolledDate) {
-			final UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colEnrollmentTimeStamp());
-			//hTimeStamp.setWidth("100px");
-			hTimeStamp.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hTimeStamp, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = (e1.getEnrolledDate() == null ? new Date(0) : e1.getEnrolledDate()).compareTo(e2.getEnrolledDate() == null ? new Date(0) : e2.getEnrolledDate());
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colEnrollmentTimeStamp());
-				}
-			});
-			header.add(hTimeStamp);			
+			hEnrolledTS = new UniTimeTableHeader(MESSAGES.colEnrollmentTimeStamp());
+			header.add(hEnrolledTS);
+			addSortOperation(hEnrolledTS, StudentComparator.SortBy.ENROLLMENT_TS, MESSAGES.colEnrollmentTimeStamp());
 		}
 		
+		UniTimeTableHeader hEmailTS = null;
 		if (iOnline) {
-			final UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colEmailTimeStamp());
-			//hTimeStamp.setWidth("100px");
-			hTimeStamp.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iStudentTable.sort(hTimeStamp, new Comparator<ClassAssignmentInterface.StudentInfo>() {
-						@Override
-						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
-							if (e1.getStudent() == null) return 1;
-							if (e2.getStudent() == null) return -1;
-							int cmp = (e1.getEmailDate() == null ? new Date(0) : e1.getEmailDate()).compareTo(e2.getEmailDate() == null ? new Date(0) : e2.getEmailDate());
-							if (cmp != 0) return cmp;
-							cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colEmailTimeStamp());
-				}
-			});
-			header.add(hTimeStamp);
+			hEmailTS = new UniTimeTableHeader(MESSAGES.colEmailTimeStamp());
+			header.add(hEmailTS);
+			addSortOperation(hEmailTS, StudentComparator.SortBy.EMAIL_TS, MESSAGES.colEmailTimeStamp());
 		}
 		
 		iStudentTable.addRow(null, header);
@@ -1968,176 +1351,60 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		iStudentTableHint.setVisible(hasWaitList);
+		
+		if (SectioningStatusCookie.getInstance().getSortBy(iOnline, 1) != 0) {
+			boolean asc = (SectioningStatusCookie.getInstance().getSortBy(iOnline, 1) > 0);
+			StudentComparator.SortBy sort = StudentComparator.SortBy.values()[Math.abs(SectioningStatusCookie.getInstance().getSortBy(iOnline, 1)) - 1];
+			UniTimeTableHeader h = null;
+			switch (sort) {
+			case ACCOMODATION: h = hAcmd; break;
+			case AREA: h = hArea; break;
+			case CLASSIFICATION: h = hClasf; break;
+			case CONSENT: h = hConsent; break;
+			case CREDIT: h = hCredit; break;
+			case EMAIL_TS: h = hEmailTS; break;
+			case ENROLLMENT: h = hEnrollment; break;
+			case ENROLLMENT_TS: h = hEnrolledTS; break;
+			case EXTERNAL_ID: h = hExtId; break;
+			case GROUP: h = hGroup; break;
+			case MAJOR: h = hMajor; break;
+			case REQUEST_TS: h = hRequestTS; break;
+			case RESERVATION: h = hReservation; break;
+			case STATUS: h = hStatus; break;
+			case STUDENT: h = hStudent; break;
+			case WAITLIST: h = hWaitlist; break;
+			}
+			if (h != null)
+				iStudentTable.sort(h, new StudentComparator(sort), asc);
+		}
 	}
 	
 	public void populateChangeLog(List<SectioningAction> result) {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
-		final UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
+		UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
 		header.add(hStudent);
-		hStudent.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iLogTable.sort(hStudent, new Comparator<SectioningAction>() {
-					@Override
-					public int compare(SectioningAction e1, SectioningAction e2) {
-						int cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-						if (cmp != 0) return cmp;
-						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
-					}
-				});
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colStudent());
-			}
-		});
+		addSortOperation(hStudent, ChangeLogComparator.SortBy.STUDENT, MESSAGES.colStudent());
 		
-		final UniTimeTableHeader hOp = new UniTimeTableHeader(MESSAGES.colOperation());
+		UniTimeTableHeader hOp = new UniTimeTableHeader(MESSAGES.colOperation());
 		header.add(hOp);
-		hOp.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iLogTable.sort(hOp, new Comparator<SectioningAction>() {
-					@Override
-					public int compare(SectioningAction e1, SectioningAction e2) {
-						int cmp = e1.getOperation().compareTo(e2.getOperation());
-						if (cmp != 0) return cmp;
-						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
-					}
-				});
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colOperation());
-			}
-		});
+		addSortOperation(hOp, ChangeLogComparator.SortBy.OPERATION, MESSAGES.colOperation());
 		
-		final UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colTimeStamp());
+		UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colTimeStamp());
 		header.add(hTimeStamp);
-		hTimeStamp.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iLogTable.sort(hTimeStamp, new Comparator<SectioningAction>() {
-					@Override
-					public int compare(SectioningAction e1, SectioningAction e2) {
-						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
-					}
-				});
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colTimeStamp());
-			}
-		});
+		addSortOperation(hTimeStamp, ChangeLogComparator.SortBy.TIME_STAMP, MESSAGES.colTimeStamp());
 		
-		final UniTimeTableHeader hResult = new UniTimeTableHeader(MESSAGES.colResult());
+		UniTimeTableHeader hResult = new UniTimeTableHeader(MESSAGES.colResult());
 		header.add(hResult);
-		hResult.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iLogTable.sort(hResult, new Comparator<SectioningAction>() {
-					@Override
-					public int compare(SectioningAction e1, SectioningAction e2) {
-						int cmp = (e1.getResult() == null ? "" : e1.getResult()).compareTo(e2.getResult() == null ? "" : e2.getResult());
-						if (cmp != 0) return cmp;
-						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
-					}
-				});
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colResult());
-			}
-		});
+		addSortOperation(hResult, ChangeLogComparator.SortBy.RESULT, MESSAGES.colResult());
 		
-		final UniTimeTableHeader hUser = new UniTimeTableHeader(MESSAGES.colUser());
+		UniTimeTableHeader hUser = new UniTimeTableHeader(MESSAGES.colUser());
 		header.add(hUser);
-		hUser.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iLogTable.sort(hUser, new Comparator<SectioningAction>() {
-					@Override
-					public int compare(SectioningAction e1, SectioningAction e2) {
-						int cmp = (e1.getUser() == null ? "" : e1.getUser()).compareTo(e2.getUser() == null ? "" : e2.getUser());
-						if (cmp != 0) return cmp;
-						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
-					}
-				});
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colUser());
-			}
-		});
+		addSortOperation(hUser, ChangeLogComparator.SortBy.USER, MESSAGES.colUser());
 		
 		final UniTimeTableHeader hMessage = new UniTimeTableHeader(MESSAGES.colMessage());
 		header.add(hMessage);
-		hMessage.addOperation(new Operation() {
-			@Override
-			public void execute() {
-				iLogTable.sort(hMessage, new Comparator<SectioningAction>() {
-					@Override
-					public int compare(SectioningAction e1, SectioningAction e2) {
-						int cmp = (e1.getMessage() == null ? "" : e1.getMessage()).compareTo(e2.getMessage() == null ? "" : e2.getMessage());
-						if (cmp != 0) return cmp;
-						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
-					}
-				});
-			}
-			@Override
-			public boolean isApplicable() {
-				return true;
-			}
-			@Override
-			public boolean hasSeparator() {
-				return false;
-			}
-			@Override
-			public String getName() {
-				return MESSAGES.sortBy(MESSAGES.colMessage());
-			}
-		});
+		addSortOperation(hMessage, ChangeLogComparator.SortBy.MESSAGE, MESSAGES.colMessage());
 		
 		iLogTable.addRow(null, header);
 		
@@ -2151,6 +1418,66 @@ public class SectioningStatusPage extends Composite {
 					new HTML(log.getMessage() == null ? "" : log.getMessage())
 			);
 		}
+		
+		if (SectioningStatusCookie.getInstance().getSortBy(iOnline, 2) != 0) {
+			boolean asc = (SectioningStatusCookie.getInstance().getSortBy(iOnline, 2) > 0);
+			ChangeLogComparator.SortBy sort = ChangeLogComparator.SortBy.values()[Math.abs(SectioningStatusCookie.getInstance().getSortBy(iOnline, 2)) - 1];
+			UniTimeTableHeader h = null;
+			switch (sort) {
+			case MESSAGE: h = hMessage; break;
+			case OPERATION: h = hOp; break;
+			case RESULT: h = hResult; break;
+			case STUDENT: h = hStudent; break;
+			case TIME_STAMP: h = hTimeStamp; break;
+			case USER: h = hUser; break;
+			}
+			if (h != null)
+				iLogTable.sort(h, new ChangeLogComparator(sort), asc);
+		}
+	}
+	
+	protected void addSortOperation(final UniTimeTableHeader header, final EnrollmentComparator.SortBy sort, final String column) {
+		header.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iCourseTable.sort(header, new EnrollmentComparator(sort));
+				SectioningStatusCookie.getInstance().setSortBy(iOnline, 0, header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal());
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.sortBy(column);
+			}
+		});
+	}
+	
+	protected void addSortOperation(final UniTimeTableHeader header, final StudentComparator.SortBy sort, final String column) {
+		header.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iStudentTable.sort(header, new StudentComparator(sort));
+				SectioningStatusCookie.getInstance().setSortBy(iOnline, 1, header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal());
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.sortBy(column);
+			}
+		});
 	}
 	
 	public static class SimpleSuggestion implements Suggestion {
@@ -2172,6 +1499,28 @@ public class SectioningStatusPage extends Composite {
 		public String getReplacementString() {
 			return iReplace;
 		}
+	}
+	
+	protected void addSortOperation(final UniTimeTableHeader header, final ChangeLogComparator.SortBy sort, final String column) {
+		header.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				iLogTable.sort(header, new ChangeLogComparator(sort));
+				SectioningStatusCookie.getInstance().setSortBy(iOnline, 2, header.getOrder() ? 1 + sort.ordinal() : -1 - sort.ordinal());
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.sortBy(column);
+			}
+		});
 	}
 	
 	public class SuggestCallback implements AsyncCallback<List<String[]>> {
@@ -2435,6 +1784,155 @@ public class SectioningStatusPage extends Composite {
 			return 0;
 		}
 
+	}
+	
+	public static class StudentComparator implements Comparator<StudentInfo> {
+		public enum SortBy {
+			EXTERNAL_ID,
+			STUDENT,
+			AREA,
+			CLASSIFICATION,
+			MAJOR,
+			GROUP,
+			ACCOMODATION,
+			STATUS,
+			ENROLLMENT,
+			WAITLIST,
+			RESERVATION,
+			CONSENT,
+			CREDIT,
+			REQUEST_TS,
+			ENROLLMENT_TS,
+			EMAIL_TS,
+			;
+		}
+		
+		private SortBy iSortBy;
+		
+		public StudentComparator(SortBy sortBy) {
+			iSortBy = sortBy;
+		}
+		
+		protected int doCompare(StudentInfo e1, StudentInfo e2) {
+			int cmp;
+			switch (iSortBy) {
+			case EXTERNAL_ID:
+				return (e1.getStudent().isCanShowExternalId() ? e1.getStudent().getExternalId() : "").compareTo(e2.getStudent().isCanShowExternalId() ? e2.getStudent().getExternalId() : "");
+			case STUDENT:
+				return e1.getStudent().getName().compareTo(e2.getStudent().getName());
+			case AREA:
+				cmp = e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+				if (cmp != 0) return cmp;
+				return e1.getStudent().getMajor("|").compareTo(e2.getStudent().getMajor("|"));
+			case CLASSIFICATION:
+				cmp = e1.getStudent().getClassification("|").compareTo(e2.getStudent().getClassification("|"));
+				if (cmp != 0) return cmp;
+				cmp = e1.getStudent().getArea("|").compareTo(e2.getStudent().getArea("|"));
+				if (cmp != 0) return cmp;
+				return e1.getStudent().getMajor("|").compareTo(e2.getStudent().getMajor("|"));
+			case MAJOR:
+				cmp = e1.getStudent().getMajor("|").compareTo(e2.getStudent().getMajor("|"));
+				if (cmp != 0) return cmp;
+				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+			case GROUP:
+				cmp = e1.getStudent().getGroup("|").compareTo(e2.getStudent().getGroup("|"));
+				if (cmp != 0) return cmp;
+				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+			case ACCOMODATION:
+				cmp = e1.getStudent().getAccommodation("|").compareTo(e2.getStudent().getAccommodation("|"));
+				if (cmp != 0) return cmp;
+				return e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
+			case STATUS:
+				return (e1.getStatus() == null ? "" : e1.getStatus()).compareToIgnoreCase(e2.getStatus() == null ? "" : e2.getStatus());
+			case ENROLLMENT:
+				cmp = (e1.getEnrollment() == null ? new Integer(0) : e1.getEnrollment()).compareTo(e2.getEnrollment() == null ? 0 : e2.getEnrollment());
+				if (cmp != 0) return - cmp;
+				return (e1.getTotalEnrollment() == null ? new Integer(0) : e1.getTotalEnrollment()).compareTo(e2.getTotalEnrollment() == null ? 0 : e2.getTotalEnrollment());
+			case WAITLIST:
+				cmp = (e1.getUnassigned() == null ? new Integer(0) : e1.getUnassigned()).compareTo(e2.getUnassigned() == null ? 0 : e2.getUnassigned());
+				if (cmp != 0) return - cmp;
+				cmp = (e1.getWaitlist() == null ? new Integer(0) : e1.getWaitlist()).compareTo(e2.getWaitlist() == null ? 0 : e2.getWaitlist());
+				if (cmp != 0) return - cmp;
+				cmp = (e1.getTotalUnassigned() == null ? new Integer(0) : e1.getTotalUnassigned()).compareTo(e2.getTotalUnassigned() == null ? 0 : e2.getTotalUnassigned());
+				if (cmp != 0) return - cmp;
+				cmp = (e1.getTotalWaitlist() == null ? new Integer(0) : e1.getTotalWaitlist()).compareTo(e2.getTotalWaitlist() == null ? 0 : e2.getTotalWaitlist());
+				if (cmp != 0) return - cmp;
+				return (e1.getTopWaitingPriority() == null ? new Integer(Integer.MAX_VALUE) : e1.getTopWaitingPriority()).compareTo(e2.getTopWaitingPriority() == null ? Integer.MAX_VALUE : e2.getTopWaitingPriority());
+			case RESERVATION:
+				cmp = (e1.getReservation() == null ? new Integer(0) : e1.getReservation()).compareTo(e2.getReservation() == null ? 0 : e2.getReservation());
+				if (cmp != 0) return - cmp;
+				return (e1.getTotalReservation() == null ? new Integer(0) : e1.getTotalReservation()).compareTo(e2.getTotalReservation() == null ? 0 : e2.getTotalReservation());
+			case CONSENT:
+				cmp = (e1.getConsentNeeded() == null ? new Integer(0) : e1.getConsentNeeded()).compareTo(e2.getConsentNeeded() == null ? 0 : e2.getConsentNeeded());
+				if (cmp != 0) return - cmp;
+				return (e1.getTotalConsentNeeded() == null ? new Integer(0) : e1.getTotalConsentNeeded()).compareTo(e2.getTotalConsentNeeded() == null ? 0 : e2.getTotalConsentNeeded());
+			case CREDIT:
+				cmp = (e1.hasCredit() ? e1.getCredit() : new Float(0f)).compareTo(e2.hasCredit() ? e2.getCredit() : new Float(0f));
+				if (cmp != 0) return - cmp;
+				return (e1.hasTotalCredit() ? e1.getTotalCredit() : new Float(0f)).compareTo(e2.hasTotalCredit() ? e2.getTotalCredit() : new Float(0f));
+			case REQUEST_TS:
+				return (e1.getRequestedDate() == null ? new Date(0) : e1.getRequestedDate()).compareTo(e2.getRequestedDate() == null ? new Date(0) : e2.getRequestedDate());
+			case ENROLLMENT_TS:
+				return (e1.getEnrolledDate() == null ? new Date(0) : e1.getEnrolledDate()).compareTo(e2.getEnrolledDate() == null ? new Date(0) : e2.getEnrolledDate());
+			case EMAIL_TS:
+				return (e1.getEmailDate() == null ? new Date(0) : e1.getEmailDate()).compareTo(e2.getEmailDate() == null ? new Date(0) : e2.getEmailDate());
+			default:
+				return 0;
+			}
+		}
+
+		@Override
+		public int compare(StudentInfo e1, StudentInfo e2) {
+			if (e1.getStudent() == null) return 1;
+			if (e2.getStudent() == null) return -1;
+			int cmp = doCompare(e1, e2);
+			if (cmp != 0) return cmp;
+			cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+			if (cmp != 0) return cmp;
+			return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
+		}
+	}
+	
+	public static class ChangeLogComparator implements Comparator<SectioningAction> {
+		public enum SortBy {
+			STUDENT,
+			OPERATION,
+			TIME_STAMP,
+			RESULT,
+			USER,
+			MESSAGE,
+			;
+		}
+		
+		private SortBy iSortBy;
+		
+		public ChangeLogComparator(SortBy sortBy) {
+			iSortBy = sortBy;
+		}
+		
+		public int doCompare(SectioningAction e1, SectioningAction e2) {
+			switch (iSortBy) {
+			case STUDENT:
+				return e1.getStudent().getName().compareTo(e2.getStudent().getName());
+			case OPERATION:
+				return e1.getOperation().compareTo(e2.getOperation());
+			case TIME_STAMP:
+				return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
+			case RESULT:
+				return (e1.getResult() == null ? "" : e1.getResult()).compareTo(e2.getResult() == null ? "" : e2.getResult());
+			case MESSAGE:
+				return (e1.getMessage() == null ? "" : e1.getMessage()).compareTo(e2.getMessage() == null ? "" : e2.getMessage());
+			default:
+				return 0;
+			}
+		}
+
+		@Override
+		public int compare(SectioningAction e1, SectioningAction e2) {
+			int cmp = doCompare(e1, e2);
+			if (cmp != 0) return cmp;
+			return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
+		}
 	}
 	
 	private void sendEmail(final Iterator<Long> studentIds, final String subject, final String message, final String cc, final int fails) {
