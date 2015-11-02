@@ -222,7 +222,6 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 						if (a.isPinned() && !getSelection().equals(a)) 
 							requiredSections.add(section);
 						preferredSections.add(section);
-						cr.getSelectedChoices().add(section.getChoice());
 						rq.addSection(OnlineSectioningHelper.toProto(section, cr.getCourse(a.getCourseId())).setPreference(
 								getSelection().equals(a) ? OnlineSectioningLog.Section.Preference.SELECTED :
 								a.isPinned() ? OnlineSectioningLog.Section.Preference.REQUIRED : OnlineSectioningLog.Section.Preference.PREFERRED));
