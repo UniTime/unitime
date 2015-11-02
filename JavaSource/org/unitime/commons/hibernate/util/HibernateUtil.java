@@ -41,8 +41,10 @@ import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.dialect.Oracle8iDialect;
 import org.hibernate.dialect.function.SQLFunctionTemplate;
 import org.hibernate.dialect.function.StandardSQLFunction;
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.internal.util.ConfigHelper;
 import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
@@ -50,6 +52,7 @@ import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.IntegerType;
+import org.springframework.beans.factory.DisposableBean;
 import org.unitime.commons.LocalContext;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.ApplicationProperties;
@@ -273,6 +276,16 @@ public class HibernateUtil {
     
     public static void closeHibernate() {
 		if (sSessionFactory!=null) {
+			if (sSessionFactory instanceof SessionFactoryImpl) {
+				ConnectionProvider cp = ((SessionFactoryImpl)sSessionFactory).getConnectionProvider();
+				if (cp instanceof DisposableBean) {
+					try {
+						((DisposableBean)cp).destroy();
+					} catch (Exception e) {
+						sLog.error("Failed to destroy connection provider: " + e.getMessage());
+					}
+				}
+			}
 			sSessionFactory.close();
 			sSessionFactory=null;
 		}

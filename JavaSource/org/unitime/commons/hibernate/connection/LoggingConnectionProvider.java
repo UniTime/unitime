@@ -31,11 +31,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.springframework.beans.factory.DisposableBean;
 
 /**
  * @author Tomas Muller
  */
-public class LoggingConnectionProvider implements ConnectionProvider {
+public class LoggingConnectionProvider implements ConnectionProvider, DisposableBean {
 	private static final long serialVersionUID = 1L;
 	private List<Lease> iLeases = new ArrayList<Lease>();
 	private LeasedConnectionsLogger iLogger = null;
@@ -71,6 +72,11 @@ public class LoggingConnectionProvider implements ConnectionProvider {
 	@Override
 	public boolean supportsAggressiveRelease() {
 		return iConnectionProvider.supportsAggressiveRelease();
+	}
+	
+	@Override
+	public void destroy() {
+		iLogger.interrupt();
 	}
 	
 	public static class Lease {

@@ -35,6 +35,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.PageNames;
 import org.unitime.timetable.ApplicationProperties;
@@ -64,6 +65,7 @@ import org.xml.sax.InputSource;
  * @author Tomas Muller
  */
 @GwtRpcImplements(MenuRpcRequest.class)
+@DependsOn({"startupService"})
 public class MenuBackend implements GwtRpcImplementation<MenuRpcRequest, GwtRpcResponseList<MenuInterface>>, InitializingBean {
 	private static Logger sLog = Logger.getLogger(MenuBackend.class);
     protected Element iRoot = null;

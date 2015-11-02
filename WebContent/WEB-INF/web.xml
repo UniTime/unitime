@@ -49,15 +49,6 @@
         <session-timeout>45</session-timeout>
     </session-config>
 
-	<!-- App Servlets -->
-	<servlet>
-		<servlet-name>InitServlet</servlet-name>
-		<servlet-class>
-			org.unitime.timetable.InitServlet
-		</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-	
 	<!-- Struts Action Servlet -->
 	<servlet>
 		<servlet-name>action</servlet-name>
@@ -83,7 +74,7 @@
 	<servlet>
 		<servlet-name>gwt-dispatcher</servlet-name>
 		<servlet-class>org.unitime.timetable.spring.gwt.GwtDispatcherServlet</servlet-class>
-		<load-on-startup>2</load-on-startup>
+		<load-on-startup>1</load-on-startup>
 	</servlet>
 
 	<servlet>

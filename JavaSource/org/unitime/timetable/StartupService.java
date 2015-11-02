@@ -19,51 +19,38 @@
 */
 package org.unitime.timetable;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-
-import net.sf.ehcache.CacheManager;
-
-import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
+import org.hibernate.SessionFactory;
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.internal.SessionFactoryImpl;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.events.EventExpirationService;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.SolverInfo;
+import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LogCleaner;
+import org.unitime.timetable.util.MessageLogAppender;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.util.queue.QueueProcessor;
 
-
 /**
- * Application Initialization Servlet
- * @version 1.0
- * @author Heston Fernandes, Tomas Muller
+ * @author Tomas Muller
  */
-
-public class InitServlet extends HttpServlet implements Servlet {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3258415014804142137L;
-
-	private static Exception sInitializationException = null;
+@Service("startupService")
+public class StartupService implements InitializingBean, DisposableBean {
+	private Exception iInitializationException = null;
+	private MessageLogAppender iMessageLogAppender = null;
 	
-	/**
-	* Initializes the application
-	*/
-	public void init() throws ServletException {
-
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		Debug.info("******* UniTime " + Constants.getVersion() +
 				" build on " + Constants.getReleaseDate() + " is starting up *******");
 
-		super.init();
-        
 		try {
 			
 			Debug.info(" - Initializing Logging ... ");
@@ -74,6 +61,10 @@ public class InitServlet extends HttpServlet implements Servlet {
 			
 			// Update logging according to the changes recorded in the application config
 			ApplicationConfig.configureLogging();
+			
+	         Debug.info(" - Creating Message Log Appender ... ");
+	         iMessageLogAppender = new MessageLogAppender();
+	         Logger.getRootLogger().addAppender(iMessageLogAppender);
 			
 			if (RoomAvailability.getInstance()!=null) {
 			    Debug.info(" - Initializing Room Availability Service ... ");
@@ -91,23 +82,23 @@ public class InitServlet extends HttpServlet implements Servlet {
 
 		} catch (Exception e) {
 			Debug.error("UniTime Initialization Failed : " + e.getMessage(), e);
-			sInitializationException = e;
+			iInitializationException = e;
 		} finally {
 			_RootDAO.closeCurrentThreadSessions();
-		}
+		}		
+	}
+	
+	public Exception getInitializationException() {
+		return iInitializationException;
 	}
 
-	/**
-	* Terminates the application
-	*/
-	public void destroy() {
+	@Override
+	public void destroy() throws Exception {
 		try {
-		
+			
 			Debug.info("******* UniTime " + Constants.getVersion() +
 					" build on " + Constants.getReleaseDate() + " is going down *******");
 		
-			super.destroy();
-			
 			Debug.info(" - Stopping Event Expiration Service ...");
 			EventExpirationService.getInstance().interrupt();
 			
@@ -123,15 +114,29 @@ public class InitServlet extends HttpServlet implements Servlet {
 	         QueueProcessor.stopProcessor();
 	         
 	         Debug.info(" - Removing Message Log Appender ... ");
-	         Appender mlog = Logger.getRootLogger().getAppender("mlog");
-	         if (mlog != null) {
-	        	 Logger.getRootLogger().removeAppender("mlog");
-	        	 mlog.close();
-	         }
+	         Logger.getRootLogger().removeAppender(iMessageLogAppender);
+	         iMessageLogAppender.close();
 	         
 	         Debug.info(" - Closing Hibernate ... ");
-	         HibernateUtil.closeHibernate();
-	         CacheManager.getInstance().shutdown();
+	         (new _BaseRootDAO() {
+		    		void closeHibernate() {
+		    			SessionFactory sf = sSessionFactory;
+		    			if (sf != null) {
+		    				sSessionFactory = null;
+		    				if (sf instanceof SessionFactoryImpl) {
+		    					ConnectionProvider cp = ((SessionFactoryImpl)sf).getConnectionProvider();
+		    					if (cp instanceof DisposableBean) {
+		    						try {
+		    							((DisposableBean)cp).destroy();
+		    						} catch (Exception e) {}
+		    					}
+		    				}
+		    				sf.close();
+		    			}
+		    		}
+		    		protected Class getReferenceClass() { return null; }
+		    	}).closeHibernate();
+	         // CacheManager.getInstance().shutdown();
 	         
 	         Debug.info("******* UniTime " + Constants.getVersion() +
 						" shut down successfully *******");
@@ -143,14 +148,4 @@ public class InitServlet extends HttpServlet implements Servlet {
 				throw new RuntimeException("UniTime Shutdown Failed : " + e.getMessage(), e);
 		}
 	}
-
-	/**
-	 * Gets servlet information
-	 * @return String containing servlet info 
-	 */
-	public String getServletInfo() {
-		return "UniTime " + Constants.getVersion() + " Initialization Servlet";
-	}
-	
-	public static Exception getInitializationException() { return sInitializationException; }
 }

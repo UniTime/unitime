@@ -30,6 +30,7 @@ import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.jgroups.UniTimeChannelLookup;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -50,6 +51,7 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
  * @author Tomas Muller
  */
 @Service("solverServerService")
+@DependsOn({"startupService"})
 public class SolverServerService implements InitializingBean, DisposableBean {
 	private static Log sLog = LogFactory.getLog(SolverServerService.class);
 	private JChannel iChannel = null;

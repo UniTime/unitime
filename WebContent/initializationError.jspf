@@ -17,13 +17,15 @@
  * limitations under the License.
  * 
 --%>
-<%@page import="org.unitime.timetable.InitServlet"%>
+<%@page import="org.unitime.timetable.StartupService"%>
+<%@page import="org.unitime.timetable.spring.SpringApplicationContextHolder"%>
 <%@page import="org.unitime.timetable.util.Constants"%>
-<% if (InitServlet.getInitializationException() != null) { %>
+<% StartupService service = (StartupService)SpringApplicationContextHolder.getBean("startupService"); %>
+<% if (service.getInitializationException() != null) { %>
 <div class='unitime-InitializationError'>
 	UniTime <%=Constants.getVersion()%> failed to start up properly, please check the application log for more details.<br/>
 	<%
-	Throwable t = InitServlet.getInitializationException();
+	Throwable t = service.getInitializationException();
 	while (t != null) {
 		String clazz = t.getClass().getName();
 		if (clazz.indexOf('.') >= 0) clazz = clazz.substring(1 + clazz.lastIndexOf('.'));
