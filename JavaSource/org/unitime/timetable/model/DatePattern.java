@@ -546,22 +546,18 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     	if (dp.getType().intValue() == sTypePatternSet) {
     		// compare just by name
     	} else if (dp.getType().intValue()==sTypeStandard) {
-    		if (Math.abs(dp.size()-size())>5) {
-    			cmp = Double.compare(dp.size(),size());
-    			if (cmp!=0) return cmp;
-    		}
-        	cmp = getStartDate().compareTo(dp.getStartDate());
-        	if (cmp!=0) return cmp;
+    		cmp = Float.compare(dp.getEffectiveNumberOfWeeks(), getEffectiveNumberOfWeeks());
+    		if (cmp != 0) return cmp;
+    		cmp = dp.getOffset().compareTo(getOffset());
+        	if (cmp != 0) return cmp;
     	} else {
-        	cmp = getStartDate().compareTo(dp.getStartDate());
-        	if (cmp!=0) return cmp;
-    		if (Math.abs(dp.size()-size())>5) {
-    			cmp = -Double.compare(dp.size(),size());
-    			if (cmp!=0) return cmp;
-    		}
+    		cmp = dp.getOffset().compareTo(getOffset());
+        	if (cmp != 0) return cmp;
+        	cmp = Float.compare(getEffectiveNumberOfWeeks(), dp.getEffectiveNumberOfWeeks());
+    		if (cmp != 0) return cmp;
     	}
     	cmp = getName().compareTo(dp.getName());
-    	if (cmp!=0) return cmp;
+    	if (cmp != 0) return cmp;
     	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(dp.getUniqueId() == null ? -1 : dp.getUniqueId());
     }
 	
