@@ -354,7 +354,10 @@ public class DummySolverServer extends AbstractSolverServer implements MessageLi
 					return dispatch(address, sessionId, method, args);
 				}
 			} catch (InvocationTargetException e) {
-				throw (Exception)e.getTargetException();
+				if (e.getTargetException() != null && e.getTargetException() instanceof Exception)
+					throw (Exception)e.getTargetException();
+				else
+					throw e;
 			}
 		}
 

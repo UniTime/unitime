@@ -67,7 +67,10 @@ public class ExaminationSolverContainerRemote extends ExaminationSolverContainer
 				throw new Exception("Solver " + user + " does not exist.");
 			return solver.getClass().getMethod(method, types).invoke(solver, args);
 		} catch (InvocationTargetException e) {
-			throw (Exception)e.getTargetException();
+			if (e.getTargetException() != null && e.getTargetException() instanceof Exception)
+				throw (Exception)e.getTargetException();
+			else
+				throw e;
 		} finally {
 			_RootDAO.closeCurrentThreadSessions();
 		}
@@ -78,7 +81,10 @@ public class ExaminationSolverContainerRemote extends ExaminationSolverContainer
 		try {
 			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), user, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, SolverServerImplementation.sFirstResponse);
 		} catch (InvocationTargetException e) {
-			throw (Exception)e.getTargetException();
+			if (e.getTargetException() != null && e.getTargetException() instanceof Exception)
+				throw (Exception)e.getTargetException();
+			else
+				throw e;
 		} catch (Exception e) {
 			if ("exists".equals(method.getName()) && e instanceof SuspectedException) return false;
 			sLog.error("Excution of " + method.getName() + " on solver " + user + " failed: " + e.getMessage(), e);

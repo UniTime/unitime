@@ -128,7 +128,10 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 				throw new Exception("Server " + sessionId + " does not exist.");
 			return solver.getClass().getMethod(method, types).invoke(solver, args);
 		} catch (InvocationTargetException e) {
-			throw (Exception)e.getTargetException();
+			if (e.getTargetException() != null && e.getTargetException() instanceof Exception)
+				throw (Exception)e.getTargetException();
+			else
+				throw e;
 		} finally {
 			_RootDAO.closeCurrentThreadSessions();
 		}
@@ -139,7 +142,10 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 		try {
 			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), sessionId, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, SolverServerImplementation.sFirstResponse);
 		} catch (InvocationTargetException e) {
-			throw (Exception)e.getTargetException();
+			if (e.getTargetException() != null && e.getTargetException() instanceof Exception)
+				throw (Exception)e.getTargetException();
+			else
+				throw e;
 		} catch (Exception e) {
 			if ("exists".equals(method.getName()) && e instanceof SuspectedException) return false;
 			sLog.debug("Excution of " + method.getName() + " on server " + sessionId + " failed: " + e.getMessage(), e);
@@ -178,7 +184,10 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 				return dispatch(address, sessionId, method, args);
 			}
 		} catch (InvocationTargetException e) {
-			throw (Exception)e.getTargetException();
+			if (e.getTargetException() != null && e.getTargetException() instanceof Exception)
+				throw (Exception)e.getTargetException();
+			else
+				throw e;
 		}
 	}
 	
