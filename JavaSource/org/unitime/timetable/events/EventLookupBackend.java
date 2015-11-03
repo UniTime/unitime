@@ -1585,7 +1585,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						meeting.setLocation(location);
 					}
 					if (request.getEventFilter().hasOptions("flag") && request.getEventFilter().getOptions("flag").contains("Conflicts")) {
-						if (m.getLocation().getEventAvailability() != null && m.getLocation().getEventAvailability().length() == Constants.SLOTS_PER_DAY * Constants.DAY_CODES.length) {
+						if (m.getLocation() != null && m.getLocation().getEventAvailability() != null && m.getLocation().getEventAvailability().length() == Constants.SLOTS_PER_DAY * Constants.DAY_CODES.length) {
 							check: for (int slot = meeting.getStartSlot(); slot < meeting.getEndSlot(); slot++) {
 								if (m.getLocation().getEventAvailability().charAt(meeting.getDayOfWeek() * Constants.SLOTS_PER_DAY + slot) == '1') {
 									Set<Location> locations = unavailableLocations.get(event.getId());
