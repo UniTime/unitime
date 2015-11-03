@@ -10319,7 +10319,7 @@
 		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
 		<plsql>
 			insert into %SCHEMA%.solver_parameter_group (uniqueid, name, description, condition, ord, param_type) values
-			(%SCHEMA%.solver_parameter_group_seq.nextval, 'StudentSctOnline', 'Online Student Scheduling', -1, 2)
+			(%SCHEMA%.solver_parameter_group_seq.nextval, 'StudentSctOnline', 'Online Student Scheduling', '', -1, 2)
 		</plsql>
 		<plsql>
 			update %SCHEMA%.solver_parameter_group g set g.ord = ( select max(x.ord)+1 from %SCHEMA%.solver_parameter_group x ) where g.name='StudentSctOnline'

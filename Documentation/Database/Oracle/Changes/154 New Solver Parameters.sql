@@ -19,7 +19,7 @@
 */
 
 insert into solver_parameter_group (uniqueid, name, description, condition, ord, param_type) values
-	(solver_parameter_group_seq.nextval, 'StudentSctOnline', 'Online Student Scheduling', -1, 2);
+	(solver_parameter_group_seq.nextval, 'StudentSctOnline', 'Online Student Scheduling', '', -1, 2);
 update solver_parameter_group g set g.ord = ( select max(x.ord)+1 from solver_parameter_group x ) where g.name='StudentSctOnline';
 
 insert into solver_parameter_def
