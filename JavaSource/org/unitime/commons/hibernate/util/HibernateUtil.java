@@ -52,8 +52,8 @@ import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.IntegerType;
-import org.springframework.beans.factory.DisposableBean;
 import org.unitime.commons.LocalContext;
+import org.unitime.commons.hibernate.connection.DisposableConnectionProvider;
 import org.unitime.commons.hibernate.id.UniqueIdGenerator;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -278,9 +278,9 @@ public class HibernateUtil {
 		if (sSessionFactory!=null) {
 			if (sSessionFactory instanceof SessionFactoryImpl) {
 				ConnectionProvider cp = ((SessionFactoryImpl)sSessionFactory).getConnectionProvider();
-				if (cp instanceof DisposableBean) {
+				if (cp instanceof DisposableConnectionProvider) {
 					try {
-						((DisposableBean)cp).destroy();
+						((DisposableConnectionProvider)cp).destroy();
 					} catch (Exception e) {
 						sLog.error("Failed to destroy connection provider: " + e.getMessage());
 					}

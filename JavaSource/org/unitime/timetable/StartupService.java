@@ -27,6 +27,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
+import org.unitime.commons.hibernate.connection.DisposableConnectionProvider;
 import org.unitime.timetable.events.EventExpirationService;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.SolverInfo;
@@ -125,9 +126,9 @@ public class StartupService implements InitializingBean, DisposableBean {
 		    				sSessionFactory = null;
 		    				if (sf instanceof SessionFactoryImpl) {
 		    					ConnectionProvider cp = ((SessionFactoryImpl)sf).getConnectionProvider();
-		    					if (cp instanceof DisposableBean) {
+		    					if (cp instanceof DisposableConnectionProvider) {
 		    						try {
-		    							((DisposableBean)cp).destroy();
+		    							((DisposableConnectionProvider)cp).destroy();
 		    						} catch (Exception e) {}
 		    					}
 		    				}

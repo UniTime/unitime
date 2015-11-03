@@ -31,12 +31,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
-import org.springframework.beans.factory.DisposableBean;
 
 /**
  * @author Tomas Muller
  */
-public class LoggingConnectionProvider implements ConnectionProvider, DisposableBean {
+public class LoggingConnectionProvider implements DisposableConnectionProvider {
 	private static final long serialVersionUID = 1L;
 	private List<Lease> iLeases = new ArrayList<Lease>();
 	private LeasedConnectionsLogger iLogger = null;

@@ -28,8 +28,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.Environment;
-import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
-import org.springframework.beans.factory.DisposableBean;
 import org.unitime.timetable.model.base._BaseRootDAO;
 
 /**
@@ -71,7 +69,7 @@ import org.unitime.timetable.model.base._BaseRootDAO;
  * @see org.hibernate.connection.ConnectionProvider
  * @author Dirk Verbeeck
  */
-public class DBCPConnectionProvider implements ConnectionProvider, DisposableBean {
+public class DBCPConnectionProvider implements DisposableConnectionProvider {
 	private static final long serialVersionUID = 1L;
 	
 	private static final Log log = LogFactory.getLog(DBCPConnectionProvider.class);
