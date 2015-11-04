@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
@@ -533,22 +534,18 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     	if (dp.getType().intValue() == sTypePatternSet) {
     		// compare just by name
     	} else if (dp.getType().intValue()==sTypeStandard) {
-    		if (Math.abs(dp.size()-size())>5) {
-    			cmp = Double.compare(dp.size(),size());
-    			if (cmp!=0) return cmp;
-    		}
-        	cmp = getStartDate().compareTo(dp.getStartDate());
-        	if (cmp!=0) return cmp;
+    		cmp = dp.getNumberOfWeeks().compareTo(getNumberOfWeeks());
+    		if (cmp != 0) return cmp;
+    		cmp = dp.getOffset().compareTo(getOffset());
+        	if (cmp != 0) return cmp;
     	} else {
-        	cmp = getStartDate().compareTo(dp.getStartDate());
-        	if (cmp!=0) return cmp;
-    		if (Math.abs(dp.size()-size())>5) {
-    			cmp = -Double.compare(dp.size(),size());
-    			if (cmp!=0) return cmp;
-    		}
+    		cmp = dp.getOffset().compareTo(getOffset());
+        	if (cmp != 0) return cmp;
+        	cmp = getNumberOfWeeks().compareTo(dp.getNumberOfWeeks());
+    		if (cmp != 0) return cmp;
     	}
     	cmp = getName().compareTo(dp.getName());
-    	if (cmp!=0) return cmp;
+    	if (cmp != 0) return cmp;
     	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(dp.getUniqueId() == null ? -1 : dp.getUniqueId());
     }
 	
@@ -667,5 +664,19 @@ public class DatePattern extends BaseDatePattern implements Comparable {
         endDateCal.set(Calendar.SECOND, 59);
         return new Date[] { startDateCal.getTime(), endDateCal.getTime()};
 	}
-
+	
+	public Integer getNumberOfWeeks() {
+		if (getType() != null && getType() == sTypePatternSet) {
+			for (DatePattern dp: findChildren())
+				return dp.getNumberOfWeeks();
+		}
+		int daysInWeek[] = new int[7];
+		for (int i = 0; i < 7; i++) daysInWeek[i] = 0;
+		for (int i = 0; i < getPattern().length(); i++) {
+			if (getPattern().charAt(i) == '1')
+				daysInWeek[i % 7]++;
+		}
+		Arrays.sort(daysInWeek);
+		return daysInWeek[2];
+	}
 }
