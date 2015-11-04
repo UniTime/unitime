@@ -61,6 +61,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Management</name>
+			<description>
+				<line>Fixed a NullPointerException error when there is Display Conflicts in the event filter with nothing in the room filter and the query returns a meeting that has no room.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
