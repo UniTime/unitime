@@ -56,6 +56,9 @@
 				<line>Week Number: Corrected computation of the week number to folow the formal definition in ISO 8601.
 					<line>Week 1 is the week with the year's first Thursday in it.</line>
 				</line>
+				<line>Comparison: Compare date patterns using numbers of weeks and offsets instead of sizes and start dates.
+					<line>This also fixes the transitivity of the comparison (IllegalArgumentException: Comparison method violates its general contract).</line>
+				</line>
 			</description>
 		</item>
 	</category>
