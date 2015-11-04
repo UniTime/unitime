@@ -6,3 +6,8 @@
 /WebContent/WEB-INF/classes/
 /.tern-project
 .DS_Store
+/.zanata-cache
+/Documentation/Translations
+/gwt-unitCache
+/WebContent/unitime
+/WebContent/WEB-INF/deploy
