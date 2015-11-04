@@ -259,14 +259,19 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (getSessionContext().hasPermission(Right.StudentSchedulingAdvisor)) {
 			allCourseTypes = true;
 		} else {
-			Long studentId = getStudentId(sessionId);
-			Student student = (studentId == null ? null : StudentDAO.getInstance().get(studentId));
-			StudentSectioningStatus status = (student == null ? null : student.getSectioningStatus());
-			if (status == null) status = SessionDAO.getInstance().get(sessionId).getDefaultSectioningStatus();
-			if (status != null) {
-				for (CourseType type: status.getTypes())
-					allowedCourseTypes.add(type.getReference());
-				noCourseType = !status.hasOption(Option.notype);
+			org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+			try {
+				Long studentId = getStudentId(sessionId);
+				Student student = (studentId == null ? null : StudentDAO.getInstance().get(studentId, hibSession));
+				StudentSectioningStatus status = (student == null ? null : student.getSectioningStatus());
+				if (status == null) status = SessionDAO.getInstance().get(sessionId, hibSession).getDefaultSectioningStatus();
+				if (status != null) {
+					for (CourseType type: status.getTypes())
+						allowedCourseTypes.add(type.getReference());
+					noCourseType = !status.hasOption(Option.notype);
+				}
+			} finally {
+				hibSession.close();
 			}
 		}
 		return new CourseMatcher(allCourseTypes, noCourseType, allowedCourseTypes);
