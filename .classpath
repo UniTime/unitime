@@ -2,7 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="JavaSource"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="com.genuitec.eclipse.j2eedt.core.J2EE14_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/activation-1.1.jar" sourcepath="3rd_party/sources/activation-1.1-sources.jar"/>
