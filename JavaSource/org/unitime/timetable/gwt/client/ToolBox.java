@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -255,8 +254,11 @@ public class ToolBox {
 	public static void checkAccess(Throwable t) {
 		if (t != null && t instanceof GwtRpcException && t.getCause() != null) t = t.getCause();
 		if (t != null && t instanceof PageAccessException) {
+			open(GWT.getHostPageBaseURL() + "login.do?menu=hide&m=" + URL.encodeQueryString(t.getMessage())+"&target=" + URL.encodeQueryString(Window.Location.getHref()));
+			/*
 			UniTimeFrameDialog.openDialog("UniTime " + CONSTANTS.version() + "| Log In", "login.do?menu=hide&m=" + URL.encodeQueryString(t.getMessage())
 					+"&target=" + URL.encodeQueryString(Window.Location.getHref()), "700px", "420px");
+			*/
 		}
 	}
 	
