@@ -19,12 +19,16 @@
 */
 package org.unitime.timetable.gwt.client.reservations;
 
+import java.util.List;
+
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit.EditFinishedEvent;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.ReservationService;
@@ -39,7 +43,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -59,7 +62,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class ReservationsPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
+	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
 
 	private ReservationFilterBox iFilter = null;
@@ -157,22 +161,18 @@ public class ReservationsPage extends Composite {
 			iFilter.setValue(Window.Location.getParameter("q"), true);
 			loadReservations();
 		} else {
-			LoadingWidget.getInstance().show(MESSAGES.waitLoadingReservations());
 			iReservationService.lastReservationFilter(new AsyncCallback<String>() {
 				
 				@Override
 				public void onSuccess(String result) {
 					if (iFilter.getValue().isEmpty()) {
 						iFilter.setValue(result, true);
-						loadReservations();
+						if (CONSTANTS.searchWhenPageIsLoaded()) loadReservations();
 					}
-					LoadingWidget.getInstance().hide();
 				}
 				
 				@Override
 				public void onFailure(Throwable caught) {
-					iReservationTable.setErrorMessage(MESSAGES.failedToLoadReservations(caught.getMessage()));
-					LoadingWidget.getInstance().hide();
 					ToolBox.checkAccess(caught);
 				}
 				
@@ -293,9 +293,11 @@ public class ReservationsPage extends Composite {
 		if (newEnabled)
 			iNew.setEnabled(false);
 		History.newItem(iFilter.getValue(), false);
-		iReservationTable.query(iFilter.getElementsRequest(), new Command() {
+		LoadingWidget.getInstance().show(MESSAGES.waitLoadingReservations());
+		iReservationTable.query(iFilter.getElementsRequest(), new AsyncCallback<List<ReservationInterface>>() {
 			@Override
-			public void execute() {
+			public void onSuccess(List<ReservationInterface> result) {
+				LoadingWidget.getInstance().hide();
 				iSearch.setEnabled(true);
 				iPrint.setEnabled(true);
 				if (newEnabled)
@@ -304,6 +306,14 @@ public class ReservationsPage extends Composite {
 					iReservationTable.select(iLastReservationId);
 					iReservationTable.scrollIntoView(iLastReservationId);
 				}
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				iReservationTable.setErrorMessage(MESSAGES.failedToLoadReservations(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToLoadReservations(caught.getMessage()), caught);
+				ToolBox.checkAccess(caught);
 			}
 		});
 	}

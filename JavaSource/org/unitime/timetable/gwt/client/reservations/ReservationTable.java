@@ -60,7 +60,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.Composite;
@@ -480,7 +479,7 @@ public class ReservationTable extends Composite {
 		iReservationClickHandlers.add(h);
 	}
 
-	public void query(ReservationFilterRpcRequest filter, final Command next) {
+	public void query(ReservationFilterRpcRequest filter, final AsyncCallback<List<ReservationInterface>> callback) {
 		iLastQuery = filter;
 		clear(true);
 		iReservationService.findReservations(filter, new AsyncCallback<List<ReservationInterface>>() {
@@ -489,16 +488,16 @@ public class ReservationTable extends Composite {
 			public void onSuccess(List<ReservationInterface> result) {
 				populate(result);
 				iHeader.clearMessage();
-				if (next != null)
-					next.execute();
+				if (callback != null)
+					callback.onSuccess(result);
 			}
 			
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(MESSAGES.failedToLoadReservations(caught.getMessage()));
 				ToolBox.checkAccess(caught);
-				if (next != null)
-					next.execute();
+				if (callback != null)
+					callback.onFailure(caught);
 			}
 		});
 	}
