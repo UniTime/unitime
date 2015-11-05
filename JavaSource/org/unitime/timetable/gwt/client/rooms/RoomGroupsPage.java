@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -90,6 +91,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class RoomGroupsPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private AcademicSessionProvider iSession = null;
@@ -268,7 +270,7 @@ public class RoomGroupsPage extends Composite {
 				protected void onInitializationSuccess(List<AcademicSession> sessions) {
 					UniTimePageHeader.getInstance().getRight().setVisible(false);
 					UniTimePageHeader.getInstance().getRight().setPreventDefault(true);
-					setup(getAcademicSessionId());
+					setup(getAcademicSessionId(), CONSTANTS.searchWhenPageIsLoaded() && iHistoryToken.hasParameter("q"));
 				}
 				
 				@Override
@@ -279,7 +281,7 @@ public class RoomGroupsPage extends Composite {
 			iSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
 				@Override
 				public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
-					setup(event.getNewAcademicSessionId());					
+					setup(event.getNewAcademicSessionId(), iDepartmentalGroupsTable.getRowCount() > 1 || iGlobalGroupsTable.getRowCount() > 1);					
 				}
 			});;
 			iGroupsPanel.addRow(MESSAGES.propAcademicSession(), (Widget)iSession);
@@ -324,7 +326,7 @@ public class RoomGroupsPage extends Composite {
 			int filterRow = iGroupsPanel.addRow(iFilterPanel);
 			iGroupsPanel.getCellFormatter().setHorizontalAlignment(filterRow, 0, HasHorizontalAlignment.ALIGN_CENTER);
 			
-			setup(null);
+			setup(null, CONSTANTS.searchWhenPageIsLoaded() && iHistoryToken.hasParameter("q"));
 		}
 		
 		iGlobalGroupsHeader = new UniTimeHeaderPanel(MESSAGES.headerGlobalRoomGroups());
@@ -425,7 +427,7 @@ public class RoomGroupsPage extends Composite {
 	}
 	
 	private boolean iInitialized = false;
-	protected void setup(final Long sessionId) {
+	protected void setup(final Long sessionId, final boolean search) {
 		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
 		RPC.execute(new RoomPropertiesRequest(sessionId), new AsyncCallback<RoomPropertiesInterface>() {
 			@Override
@@ -433,6 +435,7 @@ public class RoomGroupsPage extends Composite {
 				LoadingWidget.getInstance().hide();
 				iFilter.setErrorHint(MESSAGES.failedToInitialize(caught.getMessage()));
 				UniTimeNotifications.error(MESSAGES.failedToInitialize(caught.getMessage()), caught);
+				ToolBox.checkAccess(caught);
 			}
 
 			@Override
@@ -443,8 +446,6 @@ public class RoomGroupsPage extends Composite {
 				
 				if (iSession instanceof Session)
 					((Session)iSession).fireChange();
-				
-				boolean search = iDepartmentalGroupsTable.getRowCount() > 1 || iGlobalGroupsTable.getRowCount() > 1;
 				
 				if (iNew != null) iNew.setEnabled(iProperties.isCanAddDepartmentalRoomGroup() || iProperties.isCanAddGlobalRoomGroup());
 				if (iHeaderPanel != null) iHeaderPanel.setEnabled("new", iProperties.isCanAddDepartmentalRoomGroup() || iProperties.isCanAddGlobalRoomGroup());

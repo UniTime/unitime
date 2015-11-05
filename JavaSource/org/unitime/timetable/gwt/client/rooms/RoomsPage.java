@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.HasColumnName
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -93,7 +94,8 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class RoomsPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
+	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private AcademicSessionProvider iSession = null;
@@ -368,7 +370,7 @@ public class RoomsPage extends Composite {
 					iFilterForm.setVisible(sessions != null && !sessions.isEmpty());
 					UniTimePageHeader.getInstance().getRight().setVisible(false);
 					UniTimePageHeader.getInstance().getRight().setPreventDefault(true);
-					setup(getAcademicSessionId());
+					setup(getAcademicSessionId(), CONSTANTS.searchWhenPageIsLoaded() && (iHistoryToken.hasParameter("id") || iHistoryToken.hasParameter("q")));
 				}
 				
 				@Override
@@ -379,7 +381,7 @@ public class RoomsPage extends Composite {
 			iSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
 				@Override
 				public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
-					setup(event.getNewAcademicSessionId());					
+					setup(event.getNewAcademicSessionId(), iRoomsTable != null && iRoomsTable.isVisible() && iRoomsTable.getRowCount() > 1);					
 				}
 			});;
 			iFilterForm.addRow(MESSAGES.propAcademicSession(), (Widget)iSession);
@@ -435,7 +437,7 @@ public class RoomsPage extends Composite {
 			iRoomsPanel.add(iFilterPanel);
 			iRoomsPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 			
-			setup(null);
+			setup(null, CONSTANTS.searchWhenPageIsLoaded() && (iHistoryToken.hasParameter("id") || iHistoryToken.hasParameter("q")));
 		}
 		
 		iRoomsTable = new RoomsTable(iMode);
@@ -624,7 +626,7 @@ public class RoomsPage extends Composite {
 	}
 	
 	private boolean iInitialized = false;
-	protected void setup(final Long sessionId) {
+	protected void setup(final Long sessionId, final boolean search) {
 		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
 		RPC.execute(new RoomPropertiesRequest(sessionId), new AsyncCallback<RoomPropertiesInterface>() {
 			@Override
@@ -632,6 +634,7 @@ public class RoomsPage extends Composite {
 				LoadingWidget.getInstance().hide();
 				iFilter.setErrorHint(MESSAGES.failedToInitialize(caught.getMessage()));
 				UniTimeNotifications.error(MESSAGES.failedToInitialize(caught.getMessage()), caught);
+				ToolBox.checkAccess(caught);
 			}
 
 			@Override
@@ -639,7 +642,6 @@ public class RoomsPage extends Composite {
 				LoadingWidget.getInstance().hide();
 				
 				iProperties = result;
-				boolean search = iRoomsTable.isVisible();
 				
 				if (!RoomCookie.getInstance().hasOrientation())
 					RoomCookie.getInstance().setOrientation(iProperties.isGridAsText(), iProperties.isHorizontal());

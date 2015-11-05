@@ -207,7 +207,7 @@ public class TravelTimes extends Composite {
 			}
 		});
 		hp.add(iShow);
-		hp.setCellVerticalAlignment(iShow, HasVerticalAlignment.ALIGN_MIDDLE);
+		hp.setCellVerticalAlignment(iShow, HasVerticalAlignment.ALIGN_TOP);
 		iShow.setWidth("75px");
 		iForm.addRow(hp);
 

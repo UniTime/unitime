@@ -270,4 +270,8 @@ public interface GwtConstants extends Constants {
 	@DefaultBooleanValue(false)
 	@DoNotTranslate
 	boolean timeGridStudentGroupDoesNotOverlap();
+	
+	@DefaultBooleanValue(false)
+	@DoNotTranslate
+	boolean searchWhenPageIsLoaded();
 }
