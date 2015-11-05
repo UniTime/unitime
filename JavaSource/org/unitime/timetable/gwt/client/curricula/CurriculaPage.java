@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedEve
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
@@ -48,7 +49,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -66,6 +66,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class CurriculaPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 
 	private CurriculumFilterBox iFilter = null;
 	private AriaButton iSearch = null;
@@ -127,6 +128,7 @@ public class CurriculaPage extends Composite {
 		iCurriculaTable.getElement().getStyle().setMarginTop(10, Unit.PX);
 		iFilterPanel.add(iCurriculaTable.getOperations());
 		iCurriculaTable.getOperations().setEnabled(false);
+		iCurriculaTable.setVisible(false);
 		
 		iCurriculaPanel.add(iCurriculaTable);
 		
@@ -187,23 +189,19 @@ public class CurriculaPage extends Composite {
 			iFilter.setValue(Window.Location.getParameter("q"), true);
 			loadCurricula();
 		} else {
-			showLoading(MESSAGES.waitLoadingCurricula());
 			iService.lastCurriculaFilter(new AsyncCallback<String>() {
 				
 				@Override
 				public void onSuccess(String result) {
 					if (iFilter.getValue().isEmpty()) {
 						iFilter.setValue(result, true);
-						loadCurricula();
+						if (CONSTANTS.searchWhenPageIsLoaded())
+							loadCurricula();
 					}
-					hideLoading();
 				}
 				
 				@Override
 				public void onFailure(Throwable caught) {
-					iCurriculaTable.setError(MESSAGES.failedToLoadCurricula(caught.getMessage()));
-					UniTimeNotifications.error(MESSAGES.failedToLoadCurricula(caught.getMessage()), caught);
-					hideLoading();
 					ToolBox.checkAccess(caught);
 				}
 				
@@ -387,9 +385,20 @@ public class CurriculaPage extends Composite {
 		if (newEnabled)
 			iNew.setEnabled(false);
 		History.newItem(iFilter.getValue(), false);
-		iCurriculaTable.query(iFilter.getElementsRequest(), new Command() {
+		showLoading(MESSAGES.waitLoadingCurricula());
+		iCurriculaTable.query(iFilter.getElementsRequest(), new AsyncCallback<TreeSet<CurriculumInterface>>() {
 			@Override
-			public void execute() {
+			public void onFailure(Throwable caught) {
+				hideLoading();
+				iCurriculaTable.setError(MESSAGES.failedToLoadCurricula(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToLoadCurricula(caught.getMessage()), caught);
+				ToolBox.checkAccess(caught);
+			}
+
+			@Override
+			public void onSuccess(TreeSet<CurriculumInterface> result) {
+				hideLoading();
+				iCurriculaTable.setVisible(true);
 				iSearch.setEnabled(true);
 				iPrint.setEnabled(true);
 				iCurriculaTable.getOperations().setEnabled(true);

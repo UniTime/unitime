@@ -54,7 +54,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -134,6 +133,7 @@ public class CurriculaTable extends Composite {
 
 		iErrorLabel = new Label(MESSAGES.errorNoData());
 		iErrorLabel.setStyleName("unitime-Message");
+		
 		iPanel.add(iErrorLabel);
 		iErrorLabel.setVisible(true);
 		
@@ -444,7 +444,7 @@ public class CurriculaTable extends Composite {
 		iTable.setColumnVisible(iTable.getCellCount(0) - 1, CurriculumCookie.getInstance().isShowRequested());
 	}
 
-	public void query(CurriculumFilterRpcRequest filter, final Command next) {
+	public void query(CurriculumFilterRpcRequest filter, final AsyncCallback<TreeSet<CurriculumInterface>> callback) {
 		iLastQuery = filter;
 		iTable.clearTable(1);
 		setMessage(null);
@@ -455,8 +455,8 @@ public class CurriculaTable extends Composite {
 			public void onSuccess(TreeSet<CurriculumInterface> result) {
 				iLoadingImage.setVisible(false);
 				populate(result, true);
-				if (next != null)
-					next.execute();
+				if (callback != null)
+					callback.onSuccess(result);
 			}
 			
 			@Override
@@ -465,8 +465,8 @@ public class CurriculaTable extends Composite {
 				setError(MESSAGES.failedToLoadCurricula(caught.getMessage()));
 				UniTimeNotifications.error(MESSAGES.failedToLoadCurricula(caught.getMessage()), caught);
 				ToolBox.checkAccess(caught);
-				if (next != null)
-					next.execute();
+				if (callback != null)
+					callback.onFailure(caught);
 			}
 		});
 	}
