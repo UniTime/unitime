@@ -47,6 +47,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -109,6 +110,7 @@ public class SectioningStatusPage extends Composite {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
+	public static final GwtConstants GWT_CONSTANTS = GWT.create(GwtConstants.class);
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
 	private static DateTimeFormat sTSF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 
@@ -539,6 +541,8 @@ public class SectioningStatusPage extends Composite {
 			int t = SectioningStatusCookie.getInstance().getTab(iOnline);
 			if (t >= 0 && t < iTabPanel.getTabCount())
 				iTabPanel.selectTab(t, false);
+			if (GWT_CONSTANTS.searchWhenPageIsLoaded() && q != null && !q.isEmpty())
+				loadData();
 		}
 	}
 	
