@@ -22,8 +22,10 @@ package org.unitime.timetable.onlinesectioning.basic;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -42,6 +44,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
  */
 public class GetRequest implements OnlineSectioningAction<CourseRequestInterface> {
 	protected static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
+	protected static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static final long serialVersionUID = 1L;
 	
 	private Long iStudentId;
@@ -53,6 +56,14 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 
 	@Override
 	public CourseRequestInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		if (iStudentId == null) {
+			if (CustomCourseRequestsHolder.hasProvider()) {
+				CourseRequestInterface request = CustomCourseRequestsHolder.getProvider().getCourseRequests(
+						server, helper, new XStudent(null, helper.getStudentExternalId(), helper.getUser().getName()));
+				if (request != null) return request;
+			}
+			throw new SectioningException(MSG.exceptionNoStudent());
+		}
 		Lock lock = server.readLock();
 		try {
 			OnlineSectioningLog.Action.Builder action = helper.getAction();

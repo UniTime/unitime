@@ -789,4 +789,11 @@ public class OnlineSectioningHelper {
 				if ("pin".equals(p.getKey())) return p.getValue();
 		return null;
 	}
+	
+	public String getStudentExternalId() {
+		if (getUser().getParameterCount() > 0)
+			for (OnlineSectioningLog.Property p: getUser().getParameterList())
+				if ("student".equals(p.getKey())) return p.getValue();
+		return getUser().getExternalId();
+	}
 }

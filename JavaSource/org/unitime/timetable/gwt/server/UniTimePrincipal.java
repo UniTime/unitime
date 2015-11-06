@@ -37,10 +37,12 @@ public class UniTimePrincipal implements Principal, Serializable {
 	private String iExternalId;
 	private String iName;
 	private HashMap<Long, Long> iStudentId = new HashMap<Long, Long>();
+	private String iStudentExternalId;
 	
-	public UniTimePrincipal(String externalId, String name) {
+	public UniTimePrincipal(String externalId, String studentExternalId, String name) {
 		if (externalId == null) throw new NullPointerException();
 		iExternalId = externalId;
+		iStudentExternalId = studentExternalId;
 		iName = name;
 		
 		org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
@@ -60,6 +62,9 @@ public class UniTimePrincipal implements Principal, Serializable {
 	
 	public String getExternalId() { return iExternalId; }
 	public void setExternalId(String externalId) { iExternalId = externalId; }
+	
+	public String getStudentExternalId() { return iStudentExternalId; }
+	public void setStudentExternalId(String externalId) { iStudentExternalId = externalId; }
 	
 	public String getName() { return iName; }
 	public void setName(String name) { iName = name; }

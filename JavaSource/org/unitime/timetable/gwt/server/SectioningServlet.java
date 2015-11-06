@@ -653,7 +653,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid").setString("uid", password).list();
 				if (!student.isEmpty()) {
 					UserContext user = getSessionContext().getUser();
-					UniTimePrincipal principal = new UniTimePrincipal(user.getExternalUserId(), user.getName());
+					UniTimePrincipal principal = new UniTimePrincipal(user.getExternalUserId(), password, user.getName());
 					for (Student s: student) {
 						principal.addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
 						principal.setName(NameFormat.defaultFormat().format(s));
@@ -677,7 +677,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (student == null)
 					throw new SectioningException(MSG.exceptionLoginFailed());
 				UserContext user = getSessionContext().getUser();
-				UniTimePrincipal principal = new UniTimePrincipal(user.getExternalUserId(), user.getName());
+				UniTimePrincipal principal = new UniTimePrincipal(user.getExternalUserId(), student.getExternalUniqueId(), user.getName());
 				principal.addStudentId(student.getSession().getUniqueId(), student.getUniqueId());
 				principal.setName(NameFormat.defaultFormat().format(student));
 				getSessionContext().setAttribute("user", principal);
@@ -797,8 +797,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (request != null && request.getCourses().isEmpty() && request.getAlternatives().isEmpty()) request = null;
 		if (request == null) {
 			Long studentId = getStudentId(sessionId);
-			if (studentId == null) throw new SectioningException(MSG.exceptionNoStudent());
 			request = savedRequest(online, sessionId, studentId);
+			if (request == null && studentId == null) throw new SectioningException(MSG.exceptionNoStudent());
 		}
 		if (request == null)
 			throw new SectioningException(MSG.exceptionBadStudentId());
@@ -1712,6 +1712,11 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public CourseRequestInterface savedRequest(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException {
 		if (studentId == null) {
 			studentId = getStudentId(sessionId);
+			if (studentId == null && sessionId != null && online && CustomCourseRequestsHolder.hasProvider()) {
+				OnlineSectioningServer server = getServerInstance(sessionId, false);
+				if (server != null)
+					return server.execute(server.createAction(GetRequest.class), currentUser());
+			}
 			if (studentId == null) throw new SectioningException(MSG.exceptionNoStudent());
 		}
 		if (!online) {
@@ -1914,6 +1919,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					.setType(getSessionContext().hasPermission(Right.StudentSchedulingAdvisor) ?
 							OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT);
 			if (pin != null) entity.addParameterBuilder().setKey("pin").setValue(pin);
+			if (principal != null && principal.getStudentExternalId() != null) entity.addParameterBuilder().setKey("student").setValue(principal.getStudentExternalId());
 			return entity.build();
 		} else if (principal != null) {
 			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()

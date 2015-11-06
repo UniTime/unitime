@@ -101,7 +101,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid").setString("uid", studentId).setCacheable(true).list();
 				if (!student.isEmpty()) {
 					UserContext user = helper.getSessionContext().getUser();
-					principal = new UniTimePrincipal(user.getExternalUserId(), user.getName());
+					principal = new UniTimePrincipal(user.getExternalUserId(), studentId, user.getName());
 					for (Student s: student) {
 						principal.addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
 						principal.setName(NameFormat.defaultFormat().format(s));
