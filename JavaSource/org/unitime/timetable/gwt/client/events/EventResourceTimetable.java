@@ -1124,7 +1124,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			if (iHistoryToken.hasParameter("term") && iHistoryToken.isChanged("term", iSession.getAcademicSessionAbbreviation())) {
 				iSession.selectSession(iHistoryToken.getParameter("term"), null);
 			} else if (reload && iProperties != null) {
-				resourceTypeChanged(isShowingResults() || !isDefault);
+				resourceTypeChanged(isShowingResults() || (!isDefault && CONSTANTS.searchWhenPageIsLoaded()));
 			}
 		}
 		if (fireWeekPanel)

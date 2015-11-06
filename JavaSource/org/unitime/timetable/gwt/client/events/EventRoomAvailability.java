@@ -719,7 +719,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			if (iHistoryToken.hasParameter("term") && iHistoryToken.isChanged("term", iSession.getAcademicSessionAbbreviation())) {
 				iSession.selectSession(iHistoryToken.getParameter("term"), null);
 			} else if (reload && iProperties != null) {
-				reload(isShowingResults() || !isDefault);
+				reload(isShowingResults() || (!isDefault && CONSTANTS.searchWhenPageIsLoaded()));
 			}
 		}
 	}
