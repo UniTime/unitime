@@ -42,6 +42,7 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -114,7 +115,9 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 			int nrUnassignedCourses = 0, nrAssignedAlt = 0;
 			OnlineSectioningLog.Enrollment.Builder stored = OnlineSectioningLog.Enrollment.newBuilder();
 			stored.setType(OnlineSectioningLog.Enrollment.EnrollmentType.STORED);
-			
+			boolean setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnly.isTrue();
+			if (!setReadOnly && helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER)
+				setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue();
 			for (XRequest request: student.getRequests()) {
 				action.addRequest(OnlineSectioningHelper.toProto(request));
 				ClassAssignmentInterface.CourseAssignment ca = new ClassAssignmentInterface.CourseAssignment();
@@ -448,6 +451,8 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							order++;
 							}
 						r.setWaitList(((XCourseRequest)cd).isWaitlist());
+						if (setReadOnly)
+							r.setReadOnly(((XCourseRequest)cd).getEnrollment() != null);
 						if (r.hasRequestedCourse()) {
 							if (cd.isAlternative())
 								request.getAlternatives().add(r);

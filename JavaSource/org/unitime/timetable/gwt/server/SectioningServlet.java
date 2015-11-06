@@ -2008,6 +2008,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				check.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, true);
 				check.setFlag(EligibilityFlag.CAN_ENROLL, true);
 				check.setFlag(EligibilityFlag.CAN_WAITLIST, true);
+				check.setFlag(EligibilityFlag.CAN_RESET, true);
+				check.setFlag(EligibilityFlag.CONFIRM_DROP, false);
 				return check;
 			}
 			
@@ -2041,6 +2043,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			check.setFlag(EligibilityFlag.IS_ADMIN, getSessionContext().hasPermission(Right.StudentSchedulingAdmin));
 			check.setFlag(EligibilityFlag.IS_ADVISOR, getSessionContext().hasPermission(Right.StudentSchedulingAdvisor));
 			check.setFlag(EligibilityFlag.IS_GUEST, user instanceof AnonymousUserContext);
+			check.setFlag(EligibilityFlag.CAN_RESET, ApplicationProperty.OnlineSchedulingAllowScheduleReset.isTrue());
+			if (!check.hasFlag(EligibilityFlag.CAN_RESET) && (check.hasFlag(EligibilityFlag.IS_ADMIN) || check.hasFlag(EligibilityFlag.IS_ADVISOR)))
+				check.setFlag(EligibilityFlag.CAN_RESET, ApplicationProperty.OnlineSchedulingAllowScheduleResetIfAdmin.isTrue());
+			check.setFlag(EligibilityFlag.CONFIRM_DROP, ApplicationProperty.OnlineSchedulingConfirmCourseDrop.isTrue());
 			check.setSessionId(sessionId);
 			check.setStudentId(studentId);
 			

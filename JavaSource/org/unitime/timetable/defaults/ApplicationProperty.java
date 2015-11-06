@@ -1944,6 +1944,36 @@ public enum ApplicationProperty {
 	OnlineSchedulingEmailCarbonCopy("unitime.enrollment.email.cc"),
 	
 	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: allow Rearrange Schedule button")
+	@Since(4.1)
+	OnlineSchedulingAllowScheduleReset("unitime.enrollment.allowScheduleReset"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: allow Rearrange Schedule button (when administrator or advisor)")
+	@Since(4.1)
+	OnlineSchedulingAllowScheduleResetIfAdmin("unitime.enrollment.allowScheduleReset.manager"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: confirm course drop")
+	@Since(4.1)
+	OnlineSchedulingConfirmCourseDrop("unitime.enrollment.confirmCourseDrop"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: make enrolled course demands not editable (they can still be deleted, but it is harder to accidentally drop a course)")
+	@Since(4.1)
+	OnlineSchedulingMakeAssignedRequestReadOnly("unitime.enrollment.disableAssignedRequests"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: make saved and assigned course requests not editable (when administrator or advisor)")
+	@Since(4.1)
+	OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin("unitime.enrollment.disableAssignedRequests.manager"),
+	
+	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Distribution Preferences: show class suffix (external id) next to the class section number")
 	@Since(4.1)

@@ -89,7 +89,7 @@
 			</description>
 		</item>
 		<item>
-			<name>Conficting Classes</name>
+			<name>Conflicting Classes</name>
 			<description>
 				<line>Class Detail: Display conflicting classes.
 					<line>There is a new table called Conflicting Classes, just below the Timetable section.</line>
@@ -300,6 +300,28 @@
 			<description>
 				<line>Added ability to use automated wait-listing together with the student enrollment provider interface.</line>
 				<line>Added ability to load course requests from an external system when there are none in UniTime (for a student).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Assisstant</name>
+			<description>
+				<line>Added ability to hide Rearrange Schedule button.
+					<line>By setting unitime.enrollment.allowScheduleReset to false, defaults to true.</line>
+					<line>If made hidden, it is possible to show the button for advisors by setting unitime.enrollment.allowScheduleReset.manager to true.</line>
+				</line>
+				<line>Added ability to make enrolled course demands not editable (they can still be deleted, but it is harder to accidentally drop a course).
+					<line>By setting unitime.enrollment.disableAssignedRequests to true, defaults to false.</line>
+					<line>If enrolled demands are made read-only, it is possible to make them editable for advisors by setting unitime.enrollment.disableAssignedRequests.manager to false.</line>
+				</line>
+				<line>Added ability to display a confirmation message when dropping a course.
+					<line>By setting unitime.enrollment.confirmCourseDrop to true, defaults to false</line>
+					<line>Message: Together with other registration changes, the course {0} will be dropped. Do you want to proceed?</line>
+					<line>Where {0} is the course or courses that are to be dropped.</line>
+				</line>
+				<line>When there is an Arrange Hours class in the schedule, the following message is displayed at the top of the Time Grid tab.
+					<line>This schedule only displays classes with assigned time. To see your full list of classes, please open the List of classes tab.</line>
+					<line>The message has light blue background, same as other info messages.</line>
+				</line>
 			</description>
 		</item>
 	</category>

@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
@@ -29,6 +30,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
@@ -112,6 +114,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private SuggestionsBox iSuggestionsBox;
 	private CheckBox iShowUnassignments;
 	private Label iTotalCredit;
+	private P iGridMessage;
 	
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iLastResult;
 	private ClassAssignmentInterface iLastAssignment, iSavedAssignment = null;
@@ -185,7 +188,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iReset.setVisible(false);
 		iReset.setEnabled(false);
 		iReset.getElement().getStyle().setMarginLeft(4, Unit.PX);
-		iReset.getElement().getStyle().setMarginRight(4, Unit.PX);
 		leftFooterPanel.add(iReset);
 		iFooter.add(leftFooterPanel);
 
@@ -199,6 +201,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			leftFooterPanel.add(iStartOver);
 		iStartOver.setVisible(false);
 		iStartOver.setEnabled(false);
+		iStartOver.getElement().getStyle().setMarginLeft(4, Unit.PX);
 
 		iSchedule = new AriaButton(MESSAGES.buttonSchedule());
 		iSchedule.setTitle(MESSAGES.hintSchedule());
@@ -332,7 +335,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iAssignmentPanel.selectTab(0);
 		
 		iAssignmentGrid = new TimeGrid();
-		iAssignmentPanel.add(iAssignmentGrid, MESSAGES.tabTimetable(), true);
+		iGridMessage = new P("unitime-TimeGridMessage"); iGridMessage.setVisible(false);
+		P gridPanel = new P("unitime-TimeGridPanel");
+		gridPanel.add(iGridMessage);
+		gridPanel.add(iAssignmentGrid);
+		iAssignmentPanel.add(gridPanel, MESSAGES.tabTimetable(), true);
 		iAssignmentPanel.addSelectionHandler(new SelectionHandler<Integer>() {
 			public void onSelection(SelectionEvent<Integer> event) {
 				iAssignmentTab = event.getSelectedItem();
@@ -493,6 +500,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		iEnroll.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
+				if (!confirmEnrollment()) return;
 				clearMessage();
 				LoadingWidget.getInstance().show(MESSAGES.waitEnroll());
 				iSectioningService.enroll(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
@@ -1081,13 +1089,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			for (WebTable.Row row: rows) rowArray[idx++] = row;
 			iAssignmentGrid.shrink();
 			iAssignmentPanel.setWidth(iAssignmentGrid.getWidth() + "px");
+			if (hasNotAssignedClass(result)) {
+				iGridMessage.setText(MESSAGES.timeGridNotAssignedTimes());
+				iGridMessage.setVisible(true);
+			} else {
+				iGridMessage.setVisible(false);
+			}
 			iAssignments.setData(rowArray);
 			if (LoadingWidget.getInstance().isShowing())
 				LoadingWidget.getInstance().hide();
 			iPanel.remove(iCourseRequests);
 			iPanel.insert(iAssignmentPanelWithFocus, 0);
 			iRequests.setVisible(true); iRequests.setEnabled(true);
-			iReset.setVisible(true); iReset.setEnabled(true);
+			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET)) { iReset.setVisible(true); iReset.setEnabled(true); }
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			if (iEligibilityCheck != null && iEligibilityCheck.hasCheckboxMessage()) {
 				if (iCustomCheckbox == null) {
@@ -1622,5 +1636,41 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iCustomCheckbox.setEnabled(false);
 			}
 		}
+	}
+	
+	public boolean hasNotAssignedClass(ClassAssignmentInterface result) {
+		for (final ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
+			if (course.isAssigned() && !course.isFreeTime()) {
+				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+					if (!clazz.isAssigned()) return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public List<String> getCoursesToDrop() {
+		if (iLastAssignment != null && iSavedAssignment != null) {
+			List<String> ret = new ArrayList<String>();
+			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+				if (!course.isAssigned() || course.isFreeTime()) continue;
+				for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
+					if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
+						continue courses;
+				ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
+			}
+			return ret;
+		}
+		return null;
+	}
+	
+	protected boolean confirmEnrollment() {
+		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_DROP)) {
+			List<String> drops = getCoursesToDrop();
+			if (drops != null && !drops.isEmpty()) {
+				return Window.confirm(MESSAGES.confirmEnrollmentCourseDrop(ToolBox.toString(drops)));
+			}
+		}
+		return true;
 	}
 }

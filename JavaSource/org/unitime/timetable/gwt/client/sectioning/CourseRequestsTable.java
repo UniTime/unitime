@@ -790,6 +790,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			req.setFirstAlternative(course[1].getValue());
 			req.setSecondAlternative(course[2].getValue());
 			req.setWaitList(course[0].getWaitList());
+			req.setReadOnly(!course[0].isEnabled());
 			cr.getCourses().add(req);
 		}
 	}
@@ -800,6 +801,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			req.setRequestedCourse(course[0].getValue());
 			req.setFirstAlternative(course[1].getValue());
 			req.setSecondAlternative(course[2].getValue());
+			req.setReadOnly(!course[0].isEnabled());
 			cr.getAlternatives().add(req);
 		}
 	}
@@ -813,18 +815,30 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 	}
 	
 	public void setRequest(CourseRequestInterface request) {
+		clear();
 		while (iCourses.size() < request.getCourses().size()) addCourseLine();
 		for (int idx = 0; idx < request.getCourses().size(); idx++) {
 			iCourses.get(idx)[0].setValue(request.getCourses().get(idx).getRequestedCourse(), true);
 			iCourses.get(idx)[1].setValue(request.getCourses().get(idx).getFirstAlternative(), true);
 			iCourses.get(idx)[2].setValue(request.getCourses().get(idx).getSecondAlternative(), true);
 			iCourses.get(idx)[0].setWaitList(request.getCourses().get(idx).isWaitList());
+			if (request.getCourses().get(idx).isReadOnly()) {
+				iCourses.get(idx)[0].setEnabled(false);
+				iCourses.get(idx)[1].setEnabled(false); iCourses.get(idx)[1].setHint("");
+				iCourses.get(idx)[2].setEnabled(false); iCourses.get(idx)[2].setHint("");
+				iCourses.get(idx)[0].setWaitListEnabled(false);
+			}
 		}
 		while (iAlternatives.size() < request.getAlternatives().size()) addAlternativeLine();
 		for (int idx = 0; idx < request.getAlternatives().size(); idx++) {
 			iAlternatives.get(idx)[0].setValue(request.getAlternatives().get(idx).getRequestedCourse(), true);
 			iAlternatives.get(idx)[1].setValue(request.getAlternatives().get(idx).getFirstAlternative(), true);
 			iAlternatives.get(idx)[2].setValue(request.getAlternatives().get(idx).getSecondAlternative(), true);
+			if (request.getAlternatives().get(idx).isReadOnly()) {
+				iAlternatives.get(idx)[0].setEnabled(false);
+				iAlternatives.get(idx)[1].setEnabled(false); iAlternatives.get(idx)[1].setHint("");
+				iAlternatives.get(idx)[2].setEnabled(false); iAlternatives.get(idx)[2].setHint("");
+			}
 		}
 	}
 	
@@ -851,9 +865,12 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 				if (i>0) {
 					c[i].setEnabled(false);
 					c[i].setHint("");
+				} else {
+					c[i].setEnabled(true);
 				}
 			}
 			c[0].setWaitList(false);
+			c[0].setWaitListEnabled(true);
 		}
 		for (CourseSelectionBox[] c: iAlternatives) {
 			for (int i=0;i<3;i++) {
@@ -861,6 +878,8 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 				if (i>0) {
 					c[i].setEnabled(false);
 					c[i].setHint("");
+				} else {
+					c[i].setEnabled(true);
 				}
 			}
 		}

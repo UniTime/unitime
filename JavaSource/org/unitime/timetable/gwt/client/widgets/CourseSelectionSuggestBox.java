@@ -191,15 +191,17 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 			public void onBlur(BlurEvent event) {
 				if (iSuggest.getText().isEmpty()) {
 					if (iError.isVisible()) iError.setVisible(false);
-					if (iHint!=null) iSuggest.setText(iHint);
-					iSuggest.setStyleName("unitime-TextBoxHint");
+					if (!iHint.isEmpty()) {
+						iSuggest.setText(iHint);
+						iSuggest.setStyleName("unitime-TextBoxHint");
+					}
 				}
 			}
 		});
 		iSuggest.getValueBox().addFocusHandler(new FocusHandler() {
 			public void onFocus(FocusEvent event) {
 				iSuggest.setStyleName("gwt-SuggestBox");
-				if (iSuggest.getText().equals(iHint)) iSuggest.setText("");
+				if (!iHint.isEmpty() && iSuggest.getText().equals(iHint)) iSuggest.setText("");
 				if (!iError.getText().isEmpty())
 					AriaStatus.getInstance().setText(iError.getText());
 			}
@@ -240,12 +242,18 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 			iSuggest.setText(iHint);
 			if (!iHint.isEmpty())
 				iSuggest.setStyleName("unitime-TextBoxHint");
+			else
+				iSuggest.setStyleName("gwt-SuggestBox");
 			setError(null);
 		} else {
 			iSuggest.setText(value);
 			if (iSuggest.getText().isEmpty()) {
-				if (iHint!=null) iSuggest.setText(iHint);
-				iSuggest.setStyleName("unitime-TextBoxHint");
+				if (!iHint.isEmpty()) {
+					iSuggest.setText(iHint);
+					iSuggest.setStyleName("unitime-TextBoxHint");
+				} else {
+					iSuggest.setStyleName("gwt-SuggestBox");
+				}
 			} else {
 				iSuggest.setStyleName("gwt-SuggestBox");
 			}
@@ -263,7 +271,8 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 	public void setHint(String hint) {
 		if (iSuggest.getText().equals(iHint)) {
 			iSuggest.setText(hint);
-			iSuggest.setStyleName("unitime-TextBoxHint");
+			if (!hint.isEmpty())
+				iSuggest.setStyleName("unitime-TextBoxHint");
 		}
 		iHint = hint;
 	}

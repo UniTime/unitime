@@ -1016,6 +1016,16 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	overflow-x: hidden;
 }
 
+.unitime-TimeGridPanel{
+	display: block;
+}
+
+.unitime-TimeGridMessage {
+	background: #dfe7f2;
+	padding: 1px 10px 1px 10px;
+	margin: 0px 0px 1px 0px;'
+}
+
 .blue {
 	border: 1px solid #2952A3;
 	background: #668CD9;

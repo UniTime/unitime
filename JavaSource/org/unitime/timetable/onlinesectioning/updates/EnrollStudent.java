@@ -37,6 +37,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -796,6 +797,14 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 			}
 		} finally {
 			lock.release();
+		}
+		
+		if (!includeRequestInTheReturnMessage) {
+			if (ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnly.isTrue())
+				includeRequestInTheReturnMessage = true;
+			else if (helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER &&
+				ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue())
+				includeRequestInTheReturnMessage = true;
 		}
 		
 		return server.execute(server.createAction(GetAssignment.class).forStudent(getStudentId()).withMessages(failures).withRequest(includeRequestInTheReturnMessage), helper.getUser());

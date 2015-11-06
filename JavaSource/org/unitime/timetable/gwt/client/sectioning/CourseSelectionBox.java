@@ -127,6 +127,7 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 	
 	public void setWaitList(boolean waitList) { if (iWaitList != null) iWaitList.setValue(waitList); }
 	public Boolean getWaitList() { return iWaitList == null ? null : iWaitList.getValue(); }
+	public void setWaitListEnabled(boolean enabled) { if (iWaitList != null) iWaitList.setEnabled(enabled); }
 	
 	private void swapWith(CourseSelectionBox other) {
 		hideSuggestionList();

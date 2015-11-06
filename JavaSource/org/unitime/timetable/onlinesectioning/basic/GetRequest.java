@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.basic;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
@@ -72,6 +73,9 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 			request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
 			CourseRequestInterface.Request lastRequest = null;
 			int lastRequestPriority = -1;
+			boolean setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnly.isTrue();
+			if (!setReadOnly && helper.getUser() != null && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER)
+				setReadOnly = ApplicationProperty.OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin.isTrue();
 			for (XRequest cd: student.getRequests()) {
 				CourseRequestInterface.Request r = null;
 				if (cd instanceof XFreeTimeRequest) {
@@ -113,6 +117,8 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						order++;
 						}
 					r.setWaitList(((XCourseRequest)cd).isWaitlist());
+					if (setReadOnly)
+						r.setReadOnly(((XCourseRequest)cd).getEnrollment() != null);
 					if (r.hasRequestedCourse()) {
 						if (cd.isAlternative())
 							request.getAlternatives().add(r);

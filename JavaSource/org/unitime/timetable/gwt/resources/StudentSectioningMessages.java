@@ -1214,4 +1214,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("The selected offering has no {0} students.")
 	String offeringHasNoEnrollmentsOfType(String type);
+	
+	@DefaultMessage("This schedule only displays classes with assigned time. To see your full list of classes, please open the List of classes tab.")
+	String timeGridNotAssignedTimes();
+	
+	@DefaultMessage("Together with other registration changes, the course {0} will be dropped. Do you want to proceed?")
+	String confirmEnrollmentCourseDrop(String course);
 }
