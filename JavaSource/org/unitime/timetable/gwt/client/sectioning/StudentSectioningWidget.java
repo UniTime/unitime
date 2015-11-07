@@ -150,14 +150,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
 						if (!course.isAssigned() || course.isFreeTime()) continue;
 						for (CourseRequestInterface.Request r: event.getValue().getCourses()) {
-							if (r.hasRequestedCourse()  && course.getCourseName().equalsIgnoreCase(r.getRequestedCourse())) continue courses;
-							if (r.hasFirstAlternative()  && course.getCourseName().equalsIgnoreCase(r.getFirstAlternative())) continue courses;
-							if (r.hasSecondAlternative()  && course.getCourseName().equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+							if (r.hasRequestedCourse()  && course.equalsIgnoreCase(r.getRequestedCourse())) continue courses;
+							if (r.hasFirstAlternative()  && course.equalsIgnoreCase(r.getFirstAlternative())) continue courses;
+							if (r.hasSecondAlternative()  && course.equalsIgnoreCase(r.getSecondAlternative())) continue courses;
 						}
 						for (CourseRequestInterface.Request r: event.getValue().getAlternatives()) {
-							if (r.hasRequestedCourse()  && course.getCourseName().equalsIgnoreCase(r.getRequestedCourse())) continue courses;
-							if (r.hasFirstAlternative()  && course.getCourseName().equalsIgnoreCase(r.getFirstAlternative())) continue courses;
-							if (r.hasSecondAlternative()  && course.getCourseName().equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+							if (r.hasRequestedCourse()  && course.equalsIgnoreCase(r.getRequestedCourse())) continue courses;
+							if (r.hasFirstAlternative()  && course.equalsIgnoreCase(r.getFirstAlternative())) continue courses;
+							if (r.hasSecondAlternative()  && course.equalsIgnoreCase(r.getSecondAlternative())) continue courses;
 						}
 						iScheduleChanged = true;
 						setWarning(MESSAGES.warnScheduleChanged(), false);
@@ -1504,14 +1504,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
 			if (!course.isAssigned() || course.isFreeTime()) continue;
 			for (CourseRequestInterface.Request r: request.getCourses()) {
-				if (r.hasRequestedCourse()  && course.getCourseName().equalsIgnoreCase(r.getRequestedCourse())) continue courses;
-				if (r.hasFirstAlternative()  && course.getCourseName().equalsIgnoreCase(r.getFirstAlternative())) continue courses;
-				if (r.hasSecondAlternative()  && course.getCourseName().equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+				if (r.hasRequestedCourse()  && course.equalsIgnoreCase(r.getRequestedCourse())) continue courses;
+				if (r.hasFirstAlternative()  && course.equalsIgnoreCase(r.getFirstAlternative())) continue courses;
+				if (r.hasSecondAlternative()  && course.equalsIgnoreCase(r.getSecondAlternative())) continue courses;
 			}
 			for (CourseRequestInterface.Request r: request.getAlternatives()) {
-				if (r.hasRequestedCourse()  && course.getCourseName().equalsIgnoreCase(r.getRequestedCourse())) continue courses;
-				if (r.hasFirstAlternative()  && course.getCourseName().equalsIgnoreCase(r.getFirstAlternative())) continue courses;
-				if (r.hasSecondAlternative()  && course.getCourseName().equalsIgnoreCase(r.getSecondAlternative())) continue courses;
+				if (r.hasRequestedCourse()  && course.equalsIgnoreCase(r.getRequestedCourse())) continue courses;
+				if (r.hasFirstAlternative()  && course.equalsIgnoreCase(r.getFirstAlternative())) continue courses;
+				if (r.hasSecondAlternative()  && course.equalsIgnoreCase(r.getSecondAlternative())) continue courses;
 			}
 			iScheduleChanged = true;
 			iEnroll.addStyleName("unitime-EnrollButton");

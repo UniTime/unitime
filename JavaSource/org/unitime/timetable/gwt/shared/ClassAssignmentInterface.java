@@ -114,6 +114,14 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			return isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr();
 		}
 
+		public String getCourseNameWithTitle() {
+			return isFreeTime() ? "Free Time" : hasTitle() ? getSubject() + " " + getCourseNbr() + " - " + getTitle() : getSubject() + " " + getCourseNbr();
+		}
+
+		public boolean equalsIgnoreCase(String requestedCourse) {
+			return getCourseName().equalsIgnoreCase(requestedCourse) || getCourseNameWithTitle().equalsIgnoreCase(requestedCourse);
+		}
+
 		public String getTitle() { return iTitle; }
 		public void setTitle(String title) { iTitle = title; }
 		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
