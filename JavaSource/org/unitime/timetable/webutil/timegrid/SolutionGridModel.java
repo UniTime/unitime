@@ -36,10 +36,12 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExactTimeMins;
@@ -226,28 +228,59 @@ public class SolutionGridModel extends TimetableGridModel {
 		}
 		List commitedAssignments = null;
 		
-		if (instructor.getExternalUniqueId()!=null && instructor.getExternalUniqueId().length()>0) {
-			Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.instructors as i where a.solution.uniqueId in ("+solutionIdsStr+") and i.externalUniqueId=:puid");
-			q.setString("puid", instructor.getExternalUniqueId());
-			q.setCacheable(true);
-			init(q.list(),hibSession,firstDay,bgMode);
-			q = hibSession.createQuery("select distinct a from DepartmentalInstructor i inner join i.assignments as a "+
-					"where i.externalUniqueId=:puid and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
-			q.setString("puid",instructor.getExternalUniqueId());
-            q.setLong("sessionId", instructor.getDepartment().getSession().getUniqueId().longValue());
-			q.setCacheable(true);
-			commitedAssignments = q.list();
+		if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
+			String check = "";
+			if (ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isTrue())
+				check += " and i.lead = true";
+			if (ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue())
+				check += " and i.classInstructing.displayInstructor = true";
+			if (instructor.getExternalUniqueId() != null && !instructor.getExternalUniqueId().isEmpty()) {
+				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.classInstructors as i where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.externalUniqueId = :extId" + check);
+				q.setString("extId", instructor.getExternalUniqueId());
+				q.setCacheable(true);
+				init(q.list(), hibSession, firstDay, bgMode);
+				q = hibSession.createQuery("select distinct a from ClassInstructor i inner join i.classInstructing.assignments as a "+
+						"where i.instructor.externalUniqueId = :extId and a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId and a.solution.owner.uniqueId not in (" + ownerIds + ")" + check);
+				q.setString("extId",instructor.getExternalUniqueId());
+	            q.setLong("sessionId", instructor.getDepartment().getSession().getUniqueId().longValue());
+				q.setCacheable(true);
+				commitedAssignments = q.list();
+			} else {
+				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.classInstructors as i where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.uniqueId = :instructorId" + check);
+				q.setLong("instructorId", instructor.getUniqueId());
+				q.setCacheable(true);
+				init(q.list(),hibSession,firstDay,bgMode);
+				q = hibSession.createQuery("select distinct a from ClassInstructor i inner join i.classInstructing.assignments as a "+
+						"where i.instructor.uniqueId = :instructorId and a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId and a.solution.owner.uniqueId not in (" + ownerIds + ")" + check);
+				q.setLong("instructorId",instructor.getUniqueId());
+	            q.setLong("sessionId", instructor.getDepartment().getSession().getUniqueId().longValue());
+				q.setCacheable(true);
+				commitedAssignments = q.list();
+			}
 		} else {
-			Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.instructors as i where a.solution.uniqueId in ("+solutionIdsStr+") and i.uniqueId=:resourceId");
-			q.setLong("resourceId", instructor.getUniqueId());
-			q.setCacheable(true);
-			init(q.list(),hibSession,firstDay,bgMode);
-			q = hibSession.createQuery("select distinct a from DepartmentalInstructor i inner join i.assignments as a "+
-					"where i.uniqueId=:instructorId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
-			q.setLong("instructorId",instructor.getUniqueId());
-            q.setLong("sessionId", instructor.getDepartment().getSession().getUniqueId().longValue());
-			q.setCacheable(true);
-			commitedAssignments = q.list();
+			if (instructor.getExternalUniqueId()!=null && instructor.getExternalUniqueId().length()>0) {
+				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.instructors as i where a.solution.uniqueId in ("+solutionIdsStr+") and i.externalUniqueId=:puid");
+				q.setString("puid", instructor.getExternalUniqueId());
+				q.setCacheable(true);
+				init(q.list(),hibSession,firstDay,bgMode);
+				q = hibSession.createQuery("select distinct a from DepartmentalInstructor i inner join i.assignments as a "+
+						"where i.externalUniqueId=:puid and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
+				q.setString("puid",instructor.getExternalUniqueId());
+	            q.setLong("sessionId", instructor.getDepartment().getSession().getUniqueId().longValue());
+				q.setCacheable(true);
+				commitedAssignments = q.list();
+			} else {
+				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.instructors as i where a.solution.uniqueId in ("+solutionIdsStr+") and i.uniqueId=:resourceId");
+				q.setLong("resourceId", instructor.getUniqueId());
+				q.setCacheable(true);
+				init(q.list(),hibSession,firstDay,bgMode);
+				q = hibSession.createQuery("select distinct a from DepartmentalInstructor i inner join i.assignments as a "+
+						"where i.uniqueId=:instructorId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
+				q.setLong("instructorId",instructor.getUniqueId());
+	            q.setLong("sessionId", instructor.getDepartment().getSession().getUniqueId().longValue());
+				q.setCacheable(true);
+				commitedAssignments = q.list();
+			}
 		}
 		
 		for (Iterator x=commitedAssignments.iterator();x.hasNext();) {
@@ -552,14 +585,30 @@ public class SolutionGridModel extends TimetableGridModel {
 		}
 		
 		String instructors = null;
-		for (Iterator i=assignment.getInstructors().iterator(); i.hasNext();) {
-			DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
-			if (instructors==null) {
-				instructors = "";
-			} else {
-				instructors += ", ";
+		if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
+			if (!ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue() || assignment.getClazz().isDisplayInstructor()) {
+				for (Iterator<ClassInstructor> i = assignment.getClazz().getClassInstructors().iterator(); i.hasNext();) {
+					ClassInstructor instructor = i.next();
+					if (!instructor.isLead() && ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isTrue())
+						continue;
+					if (instructors==null) {
+						instructors = "";
+					} else {
+						instructors += ", ";
+					}
+					instructors += instructor.getInstructor().getName(DepartmentalInstructor.sNameFormatShort);
+				}
 			}
-			instructors += instructor.getName(DepartmentalInstructor.sNameFormatShort);
+		} else {
+			for (Iterator i=assignment.getInstructors().iterator(); i.hasNext();) {
+				DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
+				if (instructors==null) {
+					instructors = "";
+				} else {
+					instructors += ", ";
+				}
+				instructors += instructor.getName(DepartmentalInstructor.sNameFormatShort);
+			}
 		}
 		
 		String time = Constants.toTime(assignment.getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN) +

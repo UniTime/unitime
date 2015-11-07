@@ -855,10 +855,18 @@ public class TimetableGridTable {
 		            RoomAvailability.setAvailabilityWarning(request, acadSession, true, true);
 				}
                 String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
-				Query q = hibSession.createQuery(
-						"select distinct i from "+
-						"DepartmentalInstructor as i inner join i.assignments as a where "+
-						"a.solution.uniqueId in ("+solutionIdsStr+")");
+				Query q = null;
+				if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
+					q = hibSession.createQuery(
+							"select distinct i.instructor from "+
+							"ClassInstructor as i inner join i.classInstructing.assignments as a where "+
+							"a.solution.uniqueId in ("+solutionIdsStr+")");
+				} else {
+					q = hibSession.createQuery(
+							"select distinct i from "+
+							"DepartmentalInstructor as i inner join i.assignments as a where "+
+							"a.solution.uniqueId in ("+solutionIdsStr+")");
+				}
 				q.setCacheable(true);
 				HashSet puids = new HashSet();
 				for (Iterator i=q.list().iterator();i.hasNext();) {

@@ -1666,6 +1666,23 @@ public enum ApplicationProperty {
 	@Description("Timetable Grid: max cell width (vertical layout)")
 	TimetableGridMaxCellWidthVertical("tmtbl.timeGrid.maxCellWidthVertical"),
 
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Timetable Grid: Use class instructors instead of solution instructors (when set to true).")
+	TimetableGridUseClassInstructors("tmtbl.timeGrid.useClassInstructors"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Timetable Grid: When class instructors are used (instead of solution instructors), consider Display Instructors flag on the class." +
+			" That is, hide instructors on classes that does not show instructors when set to true.")
+	TimetableGridUseClassInstructorsCheckClassDisplayInstructors("tmtbl.timeGrid.useClassInstructors.checkDisplayInstructor"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Timetable Grid: When class instructors are used (instead of solution instructors), display only instructors with the Check Conflicts toggle set." +
+			" That is, show all instructors that are assigned on a class (including those that are not checked for conflicts in course timetabling) when set to false.")
+	TimetableGridUseClassInstructorsCheckLead("tmtbl.timeGrid.useClassInstructors.checkConflicts"),
+
 	@Description("Contact Us: address")
 	ContactUsAddress("tmtbl.contact.address"),
 

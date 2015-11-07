@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.cpsolver.coursett.constraint.FlexibleConstraint;
@@ -49,9 +50,11 @@ import org.cpsolver.ifs.solver.Solver;
 import org.hibernate.Session;
 import org.unitime.commons.Debug;
 import org.unitime.commons.NaturalOrderComparator;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.ConstraintInfo;
 import org.unitime.timetable.model.DatePattern;
@@ -283,10 +286,22 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			int min = Constants.SLOT_LENGTH_MIN*length-breakTime;
 			DatePattern datePattern = assignment.getDatePattern();
 			iTime = new TimeInfo(assignment.getDays().intValue(),assignment.getStartSlot().intValue(),iAssignmentInfo.getTimePreference(),min,(datePattern==null?"not set":datePattern.getName()),assignment.getTimePattern().getUniqueId(),(datePattern==null?null:datePattern.getUniqueId()),iAssignmentInfo.getDatePatternPref());
-			if (!assignment.getInstructors().isEmpty()) {
-				iInstructor = new InstructorInfo[assignment.getInstructors().size()];
+			TreeSet<DepartmentalInstructor> instructors = new TreeSet<DepartmentalInstructor>();
+			if (ApplicationProperty.TimetableGridUseClassInstructors.isTrue()) {
+				if (!ApplicationProperty.TimetableGridUseClassInstructorsCheckClassDisplayInstructors.isTrue() || assignment.getClazz().isDisplayInstructor()) {
+					for (Iterator<ClassInstructor> i = assignment.getClazz().getClassInstructors().iterator(); i.hasNext();) {
+						ClassInstructor instructor = i.next();
+						if (instructor.isLead() || !ApplicationProperty.TimetableGridUseClassInstructorsCheckLead.isTrue())
+							instructors.add(instructor.getInstructor());
+					}
+				}
+			} else {
+				instructors.addAll(assignment.getInstructors());
+			}
+			if (instructors != null && !instructors.isEmpty()) {
+				iInstructor = new InstructorInfo[instructors.size()];
 				int idx = 0;
-				for (Iterator i=assignment.getInstructors().iterator();i.hasNext();idx++) {
+				for (Iterator i=instructors.iterator();i.hasNext();idx++) {
 					DepartmentalInstructor di = (DepartmentalInstructor)i.next(); 
 					iInstructor[idx] = new InstructorInfo(di.getName(instructorNameFormat),di.getUniqueId());
 				}
