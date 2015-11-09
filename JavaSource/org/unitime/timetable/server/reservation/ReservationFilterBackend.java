@@ -265,7 +265,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		if (request.hasText())
 			request.setOption("course", request.getText());
 		
-		String fetch = "inner join fetch r.instructionalOffering io inner join fetch io.courseOfferings co " +
+		String fetch = "inner join fetch r.instructionalOffering io inner join io.courseOfferings co " +
 				"left join fetch r.classes xclz left join fetch r.configurations xcfg " +
 				"left join fetch r.area xarea left join fetch r.majors xmjr left join fetch r.classifications xclf " +
 				"left join fetch r.course xcrs left join fetch r.students xstd left join fetch r.group xgrp";
