@@ -1185,8 +1185,11 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("OK")
 	String buttonConfirmOK();
 	
-	@DefaultMessage("Cancel")
-	String buttonConfirmCancel();
+	@DefaultMessage("Yes")
+	String buttonConfirmYes();
+
+	@DefaultMessage("No")
+	String buttonConfirmNo();
 
 	@DefaultMessage("Filter")
 	String sectFilter();

@@ -3970,10 +3970,24 @@ unitime-RoomSharingWidget .legend .blank {
 	padding: 3px 10px 3px 10px;
 }
 
+.unitime-ConfirmationPanel .body-panel {
+	display: table;
+}
+
+.unitime-ConfirmationPanel .icon-panel {
+	display: table-cell;
+	vertical-align: middle;
+	padding-right: 5px;
+}
+
+.unitime-ConfirmationPanel .content-panel {
+	display: table-cell;
+}
+
 .unitime-ConfirmationPanel .message-panel {
 	display: block;
 	font-weight: bold;
-	font-size: medium;
+	font-size: small;
 	padding: 3px;
 }
 

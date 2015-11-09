@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.GwtResources;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -31,12 +32,14 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.ui.Image;
 
 /**
  * @author Tomas Muller
  */
 public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	protected static GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	protected static GwtResources RESOURCES = GWT.create(GwtResources.class);
 	
 	private String iAnswer = null;
 	private UniTimeTextBox iTextBox = null;
@@ -59,16 +62,25 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 			}
 		});
 		
+		P bd = new P("body-panel");
+		panel.add(bd);
+
+		P ic = new P("icon-panel");
+		bd.add(ic);
+		ic.add(new Image(alert ? RESOURCES.alert() : RESOURCES.confirm()));
+
+		P cp = new P("content-panel");
+		bd.add(cp);
 		if (message != null && !message.isEmpty()) {
 			P mp = new P("message-panel");
-			panel.add(mp);
+			cp.add(mp);
 			P m = new P("message"); m.setText(message);
 			mp.add(m);
 		}
 		
 		if (question != null) {
 			P qp = new P("question-panel");
-			panel.add(qp);
+			cp.add(qp);
 			
 			P q = new P("question");
 			q.setText(question);
@@ -89,13 +101,13 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 		
 		if (iError != null) {
 			P ep = new P("error-panel");
-			panel.add(ep);
+			cp.add(ep);
 			ep.add(iError);
 		}
 		
 		P bp = new P("buttons-panel");
 		panel.add(bp);
-		iYes = new AriaButton(MESSAGES.buttonConfirmOK());
+		iYes = new AriaButton(alert ? MESSAGES.buttonConfirmOK() : MESSAGES.buttonConfirmYes());
 		iYes.addStyleName("yes");
 		bp.add(iYes);
 		iYes.addClickHandler(new ClickHandler() {
@@ -106,7 +118,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 		});
 		
 		if (!alert) {
-			iNo = new AriaButton(MESSAGES.buttonConfirmCancel());
+			iNo = new AriaButton(MESSAGES.buttonConfirmNo());
 			iNo.addStyleName("no");
 			bp.add(iNo);
 			iNo.addClickHandler(new ClickHandler() {
