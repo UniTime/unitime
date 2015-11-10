@@ -761,7 +761,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public void setLastRequest(CourseRequestInterface request) {
 		if (request == null || request.getAcademicSessionId() == null)
 			getSessionContext().removeAttribute("request");
-		else
+		else if (request.isUpdateLastRequest())
 			getSessionContext().setAttribute("request", request);
 	}
 	

@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 
@@ -49,6 +50,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -729,8 +731,12 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 		for (int i = 0; i < iCourses.size(); i++)
 			iGrid.getCellFormatter().setVisible(1 + i, 4, iCanWaitList);
 	}
-	
+
 	public void validate(final AsyncCallback<Boolean> callback) {
+		validate(null, callback);
+	}
+
+	public void validate(Boolean updateLastRequest, final AsyncCallback<Boolean> callback) {
 		try {
 			String failed = null;
 			LoadingWidget.getInstance().show(MESSAGES.courseRequestsValidating());
@@ -745,6 +751,8 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			if (cr.getAcademicSessionId() == null)
 				throw new SectioningException(MESSAGES.sessionSelectorNoSession());
 			fillInCourses(cr); fillInAlternatives(cr);
+			if (updateLastRequest != null)
+				cr.setUpdateLastRequest(updateLastRequest);
 			final boolean success = (failed == null);
 			iSectioningService.checkCourses(iOnline, cr,
 					new AsyncCallback<Collection<String>>() {
@@ -919,5 +927,126 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 		setRequest(value);
 		if (fireEvents)
 			ValueChangeEvent.fire(this, value);
+	}
+
+	protected void clear(CourseSelectionBox[] c) {
+		for (int i=0;i<3;i++) {
+			c[i].setValue("");
+			if (i>0) {
+				c[i].setEnabled(false);
+				c[i].setHint("");
+			} else {
+				c[i].setEnabled(true);
+			}
+		}
+		c[0].setWaitList(false);
+		c[0].setWaitListEnabled(true);
+	}
+
+	protected void clearErrors() {
+		for (CourseSelectionBox[] c: iCourses) {
+			for (int i=0;i<3;i++)
+				c[i].setError(null);
+		}
+		for (CourseSelectionBox[] c: iAlternatives) {
+			for (int i=0;i<3;i++)
+				c[i].setError(null);
+		}
+	}
+
+	public Command addCourse(String text) {
+		for (final CourseSelectionBox[] course: iCourses) {
+			if (course[0].getValue().isEmpty()) {
+				clear(course);
+				course[0].setValue(text, true);
+				return new Command() {
+					@Override
+					public void execute() {
+						course[0].setValue(null, true);
+						clearErrors();
+					}
+				};
+			}
+		}
+		addCourseLine();
+		final CourseSelectionBox[] course = iCourses.get(iCourses.size() - 1);
+		course[0].setValue(text, true);
+		return new Command() {
+			@Override
+			public void execute() {
+				course[0].setValue(null, true);
+				clearErrors();
+			}
+		};
+	}
+
+	public boolean hasCourse(String text) {
+		for (final CourseSelectionBox[] course: iCourses) {
+			if (text.equalsIgnoreCase(course[0].getValue()) || text.equalsIgnoreCase(course[1].getValue()) || text.equalsIgnoreCase(course[2].getValue()))
+				return true;
+		}
+		for (final CourseSelectionBox[] course: iAlternatives) {
+			if (text.equalsIgnoreCase(course[0].getValue()) || text.equalsIgnoreCase(course[1].getValue()) || text.equalsIgnoreCase(course[2].getValue()))
+				return true;
+		}
+		return false;
+	}
+
+	public void dropCourse(String text) {
+		for (final CourseSelectionBox[] course: iCourses) {
+			if (text.equalsIgnoreCase(course[0].getValue()) || text.equalsIgnoreCase(course[1].getValue()) || text.equalsIgnoreCase(course[2].getValue())) {
+				course[0].remove();
+				return;
+			}
+		}
+		for (final CourseSelectionBox[] course: iAlternatives) {
+			if (text.equalsIgnoreCase(course[0].getValue()) || text.equalsIgnoreCase(course[1].getValue()) || text.equalsIgnoreCase(course[2].getValue())) {
+				course[0].remove();
+				return;
+			}
+		}
+	}
+
+	public void dropCourse(ClassAssignmentInterface.ClassAssignment assignment) {
+		if (assignment.isFreeTime()) {
+			String free = assignment.getTimeString(new String[] {"M","T","W","R","F","S","X"}, true, "");
+			for (final CourseSelectionBox[] course: iCourses) {
+				try {
+					boolean changed = false;
+					String text = null;
+					if (course[0].getFreeTimes() != null)
+						for (CourseRequestInterface.FreeTime ft: course[0].getFreeTimes().parseFreeTime(course[0].getValue()))
+							if (free.equals(ft.toString(new String[] {"M","T","W","R","F","S","X"}, true))) {
+								changed = true;
+							} else {
+								if (text == null)
+									text = CONSTANTS.freePrefix() + ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
+								else
+									text += ", " + ft.toString(CONSTANTS.shortDays(), CONSTANTS.useAmPm());
+							}
+					if (changed) {
+						if (text == null) {
+							course[0].remove();
+						} else {
+							course[0].setValue(text, true);
+						}
+						return;
+					}
+				} catch (Exception e) {}
+			}
+		} else {
+			for (final CourseSelectionBox[] course: iCourses) {
+				if (assignment.equalsIgnoreCase(course[0].getValue()) || assignment.equalsIgnoreCase(course[1].getValue()) || assignment.equalsIgnoreCase(course[2].getValue())) {
+					course[0].remove();
+					return;
+				}
+			}
+			for (final CourseSelectionBox[] course: iAlternatives) {
+				if (assignment.equalsIgnoreCase(course[0].getValue()) || assignment.equalsIgnoreCase(course[1].getValue()) || assignment.equalsIgnoreCase(course[2].getValue())) {
+					course[0].remove();
+					return;
+				}
+			}
+		}
 	}
 }

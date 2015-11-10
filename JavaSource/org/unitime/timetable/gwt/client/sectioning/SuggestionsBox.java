@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
@@ -59,7 +60,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -87,6 +87,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iCurrent = null;
 	private ArrayList<ClassAssignmentInterface> iResult = null;
 	private ArrayList<SuggestionSelectedHandler> iSuggestionSelectedHandlers = new ArrayList<SuggestionSelectedHandler>();
+	private ArrayList<QuickDropHandler> iQuickDropHandlers = new ArrayList<QuickDropHandler>();
 	
 	private WebTable iSuggestions;
 	private HTML iMessages;
@@ -97,8 +98,9 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private int iIndex;
 	private CourseRequestInterface iRequest;
 	private HorizontalPanelWithHint iFilterPanel;
-	private Button iSearch;
+	private AriaButton iSearch;
 	private boolean iOnline;
+	private AriaButton iQuickDrop;
 	
 	private TimeGrid iGrid;
 	private PopupPanel iHint;
@@ -138,11 +140,25 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iFilterPanel.add(ariaDescription);
 		Roles.getTextboxRole().setAriaDescribedbyProperty(iFilter.getElement(), Id.of(ariaDescription.getElement()));
 		
-		iSearch = new Button(MESSAGES.buttonSearch());
-		iSearch.setAccessKey('s');
-		iSearch.addStyleName("unitime-NoPrint");
+		iSearch = new AriaButton(MESSAGES.buttonSearch());
 		iFilterPanel.add(iSearch);
 		iFilterPanel.setCellVerticalAlignment(iSearch, HasVerticalAlignment.ALIGN_MIDDLE);
+
+		iQuickDrop = new AriaButton();
+		iFilterPanel.add(iQuickDrop);
+		iFilterPanel.setCellVerticalAlignment(iQuickDrop, HasVerticalAlignment.ALIGN_MIDDLE);
+		iQuickDrop.setVisible(false);
+		iQuickDrop.setEnabled(false);
+		iQuickDrop.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (!iAssignment.isFreeTime() && !Window.confirm(MESSAGES.confirmQuickDrop(MESSAGES.course(iAssignment.getSubject(), iAssignment.getCourseNbr())))) return;
+				QuickDropEvent e = new QuickDropEvent(iAssignment);
+				for (QuickDropHandler h: iQuickDropHandlers)
+					h.onQuickDrop(e);
+				hide();
+			}
+		});
 
 		suggestionPanel.add(iFilterPanel);
 		suggestionPanel.setCellHorizontalAlignment(iFilter, HasHorizontalAlignment.ALIGN_CENTER);
@@ -622,6 +638,15 @@ public class SuggestionsBox extends UniTimeDialogBox {
 				: MESSAGES.suggestionsLegendOnCourse(MESSAGES.course(row.getSubject(), row.getCourseNbr())));
 		iMessages.setHTML("");
 		iFilter.setText("");
+		if (iQuickDropHandlers.isEmpty()) {
+			iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
+		} else {
+			if (iAssignment.isFreeTime())
+				iQuickDrop.setHTML(MESSAGES.buttonQuickDrop(MESSAGES.freeTime(row.getDaysString(CONSTANTS.shortDays()), row.getStartString(CONSTANTS.useAmPm()), row.getEndString(CONSTANTS.useAmPm()))));
+			else
+				iQuickDrop.setHTML(MESSAGES.buttonQuickDrop(MESSAGES.course(row.getSubject(), row.getCourseNbr())));
+			iQuickDrop.setVisible(true); iQuickDrop.setEnabled(true);
+		}
 		iSectioningService.computeSuggestions(iOnline, request, rows, index, iFilter.getText(), iCallback);
 	}
 
@@ -742,5 +767,21 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	
 	public void addSuggestionSelectedHandler(SuggestionSelectedHandler h) {
 		iSuggestionSelectedHandlers.add(h);
+	}
+
+	public interface QuickDropHandler {
+		public void onQuickDrop(QuickDropEvent event);
+	}
+
+	public class QuickDropEvent {
+		private ClassAssignmentInterface.ClassAssignment iAssignment;
+		private QuickDropEvent(ClassAssignmentInterface.ClassAssignment assignment) {
+			iAssignment = assignment;
+		}
+		public ClassAssignmentInterface.ClassAssignment getAssignment() { return iAssignment; }
+	}
+
+	public void addQuickDropHandler(QuickDropHandler h) {
+		iQuickDropHandlers.add(h);
 	}
 }

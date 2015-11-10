@@ -34,6 +34,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private ArrayList<Request> iAlternatives = new ArrayList<Request>();
 	private boolean iSaved = false;
 	private boolean iNoChange = false;
+	private Boolean iUpdateLastRequest = null;
 	
 	public CourseRequestInterface() {}
 
@@ -52,6 +53,9 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	public boolean isNoChange() { return iNoChange; }
 	public void setNoChange(boolean noChange) { iNoChange = noChange; }
 	
+	public boolean isUpdateLastRequest() { return iUpdateLastRequest == null || iUpdateLastRequest.booleanValue(); }
+	public void setUpdateLastRequest(boolean updateLastRequest) { iUpdateLastRequest = updateLastRequest; }
+
 	public static class FreeTime implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private ArrayList<Integer> iDays = new ArrayList<Integer>();

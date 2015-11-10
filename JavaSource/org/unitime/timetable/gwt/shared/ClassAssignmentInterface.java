@@ -109,7 +109,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public String getCourseNbr(boolean includeTitle) {
 			return getCourseNbr() + (includeTitle & hasTitle() ? " - " + getTitle() : "");
 		}
-		
+
 		public String getCourseName() {
 			return isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr();
 		}
@@ -547,6 +547,17 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			return 0f;
 		}
 
+		public String getCourseName() {
+			return isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr();
+		}
+
+		public String getCourseNameWithTitle() {
+			return isFreeTime() ? "Free Time" : hasTitle() ? getSubject() + " " + getCourseNbr() + " - " + getTitle() : getSubject() + " " + getCourseNbr();
+		}
+
+		public boolean equalsIgnoreCase(String requestedCourse) {
+			return getCourseName().equalsIgnoreCase(requestedCourse) || getCourseNameWithTitle().equalsIgnoreCase(requestedCourse);
+		}
 	}
 	
 	public static class Student implements IsSerializable, Serializable {

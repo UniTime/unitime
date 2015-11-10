@@ -1220,4 +1220,22 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Together with other registration changes, the course {0} will be dropped. Do you want to proceed?")
 	String confirmEnrollmentCourseDrop(String course);
+
+	@DefaultMessage("Quick <u>A</u>dd / Drop")
+	String buttonQuickAdd();
+
+	@DefaultMessage("Select a new course to add to the schedulue, or an existing course to drop from the schedule")
+	String dialogQuickAdd();
+
+	@DefaultMessage("Quick add failed.")
+	String quickAddFailed();
+
+	@DefaultMessage("Quick add failed: {0}")
+	String quickAddFailedWithMessage(String message);
+
+	@DefaultMessage("<u>D</u>rop {0}")
+	String buttonQuickDrop(String course);
+
+	@DefaultMessage("Do you want to drop {0} from your schedule?")
+	String confirmQuickDrop(String course);
 }

@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -28,6 +29,12 @@ import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
+import org.unitime.timetable.gwt.client.widgets.CourseFinder;
+import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
+import org.unitime.timetable.gwt.client.widgets.CourseFinderCourses;
+import org.unitime.timetable.gwt.client.widgets.CourseFinderDetails;
+import org.unitime.timetable.gwt.client.widgets.CourseFinderDialog;
+import org.unitime.timetable.gwt.client.widgets.DataProvider;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -44,6 +51,8 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
@@ -69,6 +78,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -128,6 +138,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private PinDialog iPinDialog = null;
 	private boolean iScheduleChanged = false;
 	private HTML iMessage = null;
+	private AriaButton iQuickAdd;
+	private CourseFinder iQuickAddFinder = null;
 	
 	private CheckBox iCustomCheckbox = null;
 
@@ -247,6 +259,16 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		iLastResult = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 		
+		iQuickAdd = new AriaButton(MESSAGES.buttonQuickAdd());
+		iQuickAdd.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				getQuickAddFinder().setValue("");
+				getQuickAddFinder().findCourse();
+			}
+		});
+		iQuickAdd.getElement().getStyle().setMarginTop(3, Unit.PX);
+
 		initWidget(iPanel);
 		
 		init();
@@ -315,16 +337,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		FlexTable vp = new FlexTable();
 		vp.setCellPadding(0); vp.setCellSpacing(0);
 		vp.setWidget(0, 0, iAssignments);
-		vp.getFlexCellFormatter().setColSpan(0, 0, 2);
+		vp.getFlexCellFormatter().setColSpan(0, 0, 3);
 		
 		iTotalCredit = new Label();
 		iTotalCredit.getElement().getStyle().setMarginTop(2, Unit.PX);
-		vp.setWidget(1, 0, iTotalCredit);
-
+		vp.setWidget(1, 0, iQuickAdd);
+		vp.setWidget(1, 1, iTotalCredit);
 		iShowUnassignments = new CheckBox(MESSAGES.showUnassignments());
 		iShowUnassignments.getElement().getStyle().setMarginTop(2, Unit.PX);
-		vp.setWidget(1, 1, iShowUnassignments);
-		vp.getFlexCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+		vp.setWidget(1, 2, iShowUnassignments);
+		vp.getFlexCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_CENTER);
+		vp.getFlexCellFormatter().setHorizontalAlignment(1, 2, HasHorizontalAlignment.ALIGN_RIGHT);
+		for (int i = 0; i < 3; i++)
+			vp.getFlexCellFormatter().getElement(1, 0).getStyle().setWidth(33, Unit.PCT);
 		iShowUnassignments.setVisible(false);		
 		String showUnassignments = Cookies.getCookie("UniTime:Unassignments");
 		iShowUnassignments.setValue(showUnassignments == null || "1".equals(showUnassignments));
@@ -687,7 +712,27 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					addHistory();
 				}
 			});
-		}		
+
+			iSuggestionsBox.addQuickDropHandler(new SuggestionsBox.QuickDropHandler() {
+				@Override
+				public void onQuickDrop(SuggestionsBox.QuickDropEvent event) {
+					final CourseRequestInterface undo = iCourseRequests.getRequest();
+					iCourseRequests.dropCourse(event.getAssignment());
+					LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+					iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							setError(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
+							iCourseRequests.setRequest(undo);
+						}
+						public void onSuccess(ClassAssignmentInterface result) {
+							fillIn(result);
+							addHistory();
+						}
+					});
+				}
+			});
+		}
 		iAssignments.setSelectedRow(rowIndex);
 		clearMessage();
 		iSuggestionsBox.open(iCourseRequests.getRequest(), iLastResult, rowIndex);
@@ -1672,5 +1717,86 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		}
 		return true;
+	}
+
+	protected CourseFinder getQuickAddFinder() {
+		if (iQuickAddFinder == null) {
+			iQuickAddFinder = new CourseFinderDialog();
+			((CourseFinderDialog)iQuickAddFinder).setText(MESSAGES.dialogQuickAdd());
+			CourseFinderCourses courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty());
+			courses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
+				@Override
+				public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
+					iSectioningService.listCourseOfferings(iSessionSelector.getAcademicSessionId(), source, null, callback);
+				}
+			});
+			CourseFinderDetails details = new CourseFinderDetails();
+			details.setDataProvider(new DataProvider<String, String>() {
+				@Override
+				public void getData(String source, AsyncCallback<String> callback) {
+					iSectioningService.retrieveCourseDetails(iSessionSelector.getAcademicSessionId(), source, callback);
+				}
+			});
+			CourseFinderClasses classes = new CourseFinderClasses();
+			classes.setDataProvider(new DataProvider<String, Collection<ClassAssignment>>() {
+				@Override
+				public void getData(String source, AsyncCallback<Collection<ClassAssignment>> callback) {
+					iSectioningService.listClasses(iSessionSelector.getAcademicSessionId(), source, callback);
+				}
+			});
+			courses.setCourseDetails(details, classes);
+			iQuickAddFinder.setTabs(courses);
+			iQuickAddFinder.addSelectionHandler(new SelectionHandler<String>() {
+				@Override
+				public void onSelection(SelectionEvent<String> event) {
+					if (iCourseRequests.hasCourse(event.getSelectedItem())) {
+						if (!Window.confirm(MESSAGES.confirmQuickDrop(event.getSelectedItem()))) return;
+						final CourseRequestInterface undo = iCourseRequests.getRequest();
+						iCourseRequests.dropCourse(event.getSelectedItem());
+						LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+						iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+							public void onFailure(Throwable caught) {
+								LoadingWidget.getInstance().hide();
+								setError(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
+								iCourseRequests.setRequest(undo);
+							}
+							public void onSuccess(ClassAssignmentInterface result) {
+								fillIn(result);
+								addHistory();
+							}
+						});
+					} else {
+						final Command undo = iCourseRequests.addCourse(event.getSelectedItem());
+						iCourseRequests.validate(false, new AsyncCallback<Boolean>() {
+							public void onSuccess(Boolean result) {
+								if (result) {
+									LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+									iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+										public void onFailure(Throwable caught) {
+											undo.execute();
+											LoadingWidget.getInstance().hide();
+											setError(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
+										}
+										public void onSuccess(ClassAssignmentInterface result) {
+											fillIn(result);
+											addHistory();
+										}
+									});
+								} else {
+									String error = iCourseRequests.getFirstError();
+									undo.execute();
+									setError(error == null ? MESSAGES.quickAddFailed() : MESSAGES.quickAddFailedWithMessage(error));
+								}
+							}
+							public void onFailure(Throwable caught) {
+								undo.execute();
+								setError(MESSAGES.quickAddFailedWithMessage(caught.getMessage()), caught);
+							}
+						});
+					}
+				}
+			});
+		}
+		return iQuickAddFinder;
 	}
 }

@@ -159,7 +159,7 @@ public class CourseFinderCourses extends VerticalPanel implements CourseFinder.C
 
 	@Override
 	public String getValue() {
-		if (iCourses.getSelectedRow() < 0) {
+		if (iCourses.getSelectedRow() < 0 || iCourses.getRowsCount() == 0) {
 			return null;
 		} else {
 			WebTable.Row row = iCourses.getRows()[iCourses.getSelectedRow()];
