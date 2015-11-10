@@ -56,8 +56,10 @@ public class HorizontalPanelWithHint extends HorizontalPanel {
 	}
 	
 	public void hideHint() {
-		if (iHint.isShowing())
+		iShowHint.cancel();
+		if (iHint.isShowing()) {
 			iHint.hide();
+		}
 	}
 	
 	public void onBrowserEvent(Event event) {

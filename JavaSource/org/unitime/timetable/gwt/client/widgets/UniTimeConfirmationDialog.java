@@ -58,6 +58,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 		setEnterToSubmit(new Command() {
 			@Override
 			public void execute() {
+				if (iNo != null && iNo.isFocused()) return;
 				submit();
 			}
 		});

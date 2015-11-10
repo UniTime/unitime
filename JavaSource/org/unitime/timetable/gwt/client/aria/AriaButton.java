@@ -23,12 +23,17 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 
 import com.google.gwt.aria.client.Roles;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.user.client.ui.Button;
 
 /**
  * @author Tomas Muller
  */
 public class AriaButton extends Button implements HasAriaLabel {
+	private boolean iFocused = false;
 	
 	public AriaButton() {
 		super();
@@ -41,6 +46,18 @@ public class AriaButton extends Button implements HasAriaLabel {
 		if (accessKey != null)
 			setAccessKey(accessKey);
 		ToolBox.setMinWidth(getElement().getStyle(), "75px");
+		addFocusHandler(new FocusHandler() {
+			@Override
+			public void onFocus(FocusEvent event) {
+				iFocused = true;
+			}
+		});
+		addBlurHandler(new BlurHandler() {
+			@Override
+			public void onBlur(BlurEvent event) {
+				iFocused = false;
+			}
+		});
 	}
 	
 	@Override
@@ -63,5 +80,9 @@ public class AriaButton extends Button implements HasAriaLabel {
 	@Override
 	public String getAriaLabel() {
 		return Roles.getButtonRole().getAriaLabelProperty(getElement());
+	}
+
+	public boolean isFocused() {
+		return iFocused;
 	}
 }

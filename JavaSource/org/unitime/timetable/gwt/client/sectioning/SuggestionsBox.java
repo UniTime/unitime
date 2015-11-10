@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowClickEvent;
@@ -54,6 +55,7 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
@@ -152,11 +154,22 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iQuickDrop.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (!iAssignment.isFreeTime() && !Window.confirm(MESSAGES.confirmQuickDrop(MESSAGES.course(iAssignment.getSubject(), iAssignment.getCourseNbr())))) return;
+				hide();
+				if (iAssignment.isFreeTime()) {
+					fireQuickDropEvent();
+				} else {
+					UniTimeConfirmationDialog.confirm(MESSAGES.confirmQuickDrop(MESSAGES.course(iAssignment.getSubject(), iAssignment.getCourseNbr())), new Command() {
+						@Override
+						public void execute() {
+							fireQuickDropEvent();
+						}
+					});
+				}
+			}
+			protected void fireQuickDropEvent() {
 				QuickDropEvent e = new QuickDropEvent(iAssignment);
 				for (QuickDropHandler h: iQuickDropHandlers)
 					h.onQuickDrop(e);
-				hide();
 			}
 		});
 

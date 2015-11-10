@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.client.widgets.DataProvider;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
@@ -81,7 +82,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -525,72 +525,78 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		iEnroll.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				if (!confirmEnrollment()) return;
-				clearMessage();
-				LoadingWidget.getInstance().show(MESSAGES.waitEnroll());
-				iSectioningService.enroll(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
-					public void onSuccess(ClassAssignmentInterface result) {
-						LoadingWidget.getInstance().hide();
-						iSavedAssignment = result;
-						fillIn(result);
-						if (result.hasRequest())
-							iCourseRequests.setRequest(result.getRequest());
-						if (!result.hasMessages())
-							setMessage(MESSAGES.enrollOK());
-						updateHistory();
-						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.RECHECK_AFTER_ENROLLMENT)) {
-							iSectioningService.checkEligibility(iOnline, iSessionSelector.getAcademicSessionId(),
-									iEligibilityCheck.getStudentId(), (String)null,
-									new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
-										@Override
-										public void onFailure(Throwable caught) {
-										}
+				Command enroll = new Command() {
+					@Override
+					public void execute() {
+						clearMessage();
+						LoadingWidget.getInstance().show(MESSAGES.waitEnroll());
+						iSectioningService.enroll(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+							public void onSuccess(ClassAssignmentInterface result) {
+								LoadingWidget.getInstance().hide();
+								iSavedAssignment = result;
+								fillIn(result);
+								if (result.hasRequest())
+									iCourseRequests.setRequest(result.getRequest());
+								if (!result.hasMessages())
+									setMessage(MESSAGES.enrollOK());
+								updateHistory();
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.RECHECK_AFTER_ENROLLMENT)) {
+									iSectioningService.checkEligibility(iOnline, iSessionSelector.getAcademicSessionId(),
+											iEligibilityCheck.getStudentId(), (String)null,
+											new AsyncCallback<OnlineSectioningInterface.EligibilityCheck>() {
+												@Override
+												public void onFailure(Throwable caught) {
+												}
 
-										@Override
-										public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
-											setElibibilityCheckDuringEnrollment(result);
-										}
-									});
-						}
-					}
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().hide();
-						setError(MESSAGES.enrollFailed(caught.getMessage()), caught);
-						updateHistory();
-						if (caught instanceof SectioningException) {
-							EligibilityCheck check = ((SectioningException)caught).getEligibilityCheck();
-							if (check != null) {
-								setElibibilityCheckDuringEnrollment(check);
-								if (check.hasFlag(EligibilityFlag.PIN_REQUIRED)) {
-									if (iPinDialog == null) iPinDialog = new PinDialog();
-									PinDialog.PinCallback callback = new PinDialog.PinCallback() {
-										@Override
-										public void onFailure(Throwable caught) {
-											setError(MESSAGES.exceptionFailedEligibilityCheck(caught.getMessage()), caught);
-										}
-										@Override
-										public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
-											setElibibilityCheckDuringEnrollment(result);
-											if (result.hasFlag(EligibilityFlag.CAN_ENROLL) && !result.hasFlag(EligibilityFlag.RECHECK_BEFORE_ENROLLMENT))
-												iEnroll.click();
-										}
-										@Override
-										public void onMessage(OnlineSectioningInterface.EligibilityCheck result) {
-											if (result.hasMessage()) {
-												setError(result.getMessage());
-											} else if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
-												setWarning(MESSAGES.exceptionAuthenticationPinRequired());
-											} else {
-												clearMessage(false);
-											}
-										}
-									};
-									iPinDialog.checkEligibility(iOnline, iSessionSelector.getAcademicSessionId(), null, callback);
+												@Override
+												public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
+													setElibibilityCheckDuringEnrollment(result);
+												}
+											});
 								}
 							}
-						}
+							public void onFailure(Throwable caught) {
+								LoadingWidget.getInstance().hide();
+								setError(MESSAGES.enrollFailed(caught.getMessage()), caught);
+								updateHistory();
+								if (caught instanceof SectioningException) {
+									EligibilityCheck check = ((SectioningException)caught).getEligibilityCheck();
+									if (check != null) {
+										setElibibilityCheckDuringEnrollment(check);
+										if (check.hasFlag(EligibilityFlag.PIN_REQUIRED)) {
+											if (iPinDialog == null) iPinDialog = new PinDialog();
+											PinDialog.PinCallback callback = new PinDialog.PinCallback() {
+												@Override
+												public void onFailure(Throwable caught) {
+													setError(MESSAGES.exceptionFailedEligibilityCheck(caught.getMessage()), caught);
+												}
+												@Override
+												public void onSuccess(OnlineSectioningInterface.EligibilityCheck result) {
+													setElibibilityCheckDuringEnrollment(result);
+													if (result.hasFlag(EligibilityFlag.CAN_ENROLL) && !result.hasFlag(EligibilityFlag.RECHECK_BEFORE_ENROLLMENT))
+														iEnroll.click();
+												}
+												@Override
+												public void onMessage(OnlineSectioningInterface.EligibilityCheck result) {
+													if (result.hasMessage()) {
+														setError(result.getMessage());
+													} else if (result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.PIN_REQUIRED)) {
+														setWarning(MESSAGES.exceptionAuthenticationPinRequired());
+													} else {
+														clearMessage(false);
+													}
+												}
+											};
+											iPinDialog.checkEligibility(iOnline, iSessionSelector.getAcademicSessionId(), null, callback);
+										}
+									}
+								}
+							}
+						});
 					}
-				});
+				};
+				enroll = confirmEnrollment(enroll);
+				enroll.execute();
 			}
 		});
 		
@@ -629,9 +635,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (item < 0) item = 0;
 						if (item >= iHistory.size()) item = iHistory.size() - 1;
 						if (item >= 0) iHistory.get(item).restore();
-					} else if (isChanged() && Window.confirm(MESSAGES.queryLeaveChanges())) {
-						iCourseRequests.clear();
-						if (!iSchedule.isVisible()) prev();
+					} else if (isChanged()) {
+						UniTimeConfirmationDialog.confirm(MESSAGES.queryLeaveChanges(), new Command() {
+							@Override
+							public void execute() {
+								iCourseRequests.clear();
+								if (!iSchedule.isVisible()) prev();
+							}
+						});
 					}
 				}
 			});
@@ -1428,8 +1439,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 		
 		public void restore() {
-			if (isChanged() && ((iUser != null && !iUser.equals(iUserAuthentication.getUser())) || (iSessionId != null && !iSessionId.equals(iSessionSelector.getAcademicSessionId()))) && !Window.confirm(MESSAGES.queryLeaveChanges()))
-				return;
+			if (isChanged() && ((iUser != null && !iUser.equals(iUserAuthentication.getUser())) || (iSessionId != null && !iSessionId.equals(iSessionSelector.getAcademicSessionId())))) {
+				UniTimeConfirmationDialog.confirm(MESSAGES.queryLeaveChanges(), new Command() {
+					@Override
+					public void execute() {
+						doRestore();
+					}
+				});
+			} else {
+				doRestore();
+			}
+		}
+
+		protected void doRestore() {
 			iInRestore = true;
 			iUserAuthentication.setUser(iUser, new AsyncCallback<Boolean>() {
 				public void onSuccess(Boolean result) {
@@ -1709,14 +1731,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		return null;
 	}
 	
-	protected boolean confirmEnrollment() {
+	protected Command confirmEnrollment(final Command callback) {
 		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_DROP)) {
-			List<String> drops = getCoursesToDrop();
+			final List<String> drops = getCoursesToDrop();
 			if (drops != null && !drops.isEmpty()) {
-				return Window.confirm(MESSAGES.confirmEnrollmentCourseDrop(ToolBox.toString(drops)));
+				return new Command() {
+					@Override
+					public void execute() {
+						UniTimeConfirmationDialog.confirm(MESSAGES.confirmEnrollmentCourseDrop(ToolBox.toString(drops)), callback);
+					}
+				};
 			}
 		}
-		return true;
+		return callback;
 	}
 
 	protected CourseFinder getQuickAddFinder() {
@@ -1748,21 +1775,25 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iQuickAddFinder.setTabs(courses);
 			iQuickAddFinder.addSelectionHandler(new SelectionHandler<String>() {
 				@Override
-				public void onSelection(SelectionEvent<String> event) {
+				public void onSelection(final SelectionEvent<String> event) {
 					if (iCourseRequests.hasCourse(event.getSelectedItem())) {
-						if (!Window.confirm(MESSAGES.confirmQuickDrop(event.getSelectedItem()))) return;
-						final CourseRequestInterface undo = iCourseRequests.getRequest();
-						iCourseRequests.dropCourse(event.getSelectedItem());
-						LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-						iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
-							public void onFailure(Throwable caught) {
-								LoadingWidget.getInstance().hide();
-								setError(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
-								iCourseRequests.setRequest(undo);
-							}
-							public void onSuccess(ClassAssignmentInterface result) {
-								fillIn(result);
-								addHistory();
+						UniTimeConfirmationDialog.confirm(MESSAGES.confirmQuickDrop(event.getSelectedItem()), new Command() {
+							@Override
+							public void execute() {
+								final CourseRequestInterface undo = iCourseRequests.getRequest();
+								iCourseRequests.dropCourse(event.getSelectedItem());
+								LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
+								iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+										setError(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
+										iCourseRequests.setRequest(undo);
+									}
+									public void onSuccess(ClassAssignmentInterface result) {
+										fillIn(result);
+										addHistory();
+									}
+								});
 							}
 						});
 					} else {
