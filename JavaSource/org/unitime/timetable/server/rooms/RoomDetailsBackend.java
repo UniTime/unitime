@@ -89,8 +89,8 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 	protected boolean showRoomFeature(RoomFeatureType type) { return true; }
 	
 	@Override
-	public RoomQuery getQuery(Long sessionId, Map<String, Set<String>> options) {
-		RoomQuery query = super.getQuery(sessionId, options);
+	public RoomQuery getQuery(Long sessionId, Map<String, Set<String>> options, EventContext context) {
+		RoomQuery query = super.getQuery(sessionId, options, context);
 		
 		Set<String> flags = (options == null ? null : options.get("flag"));
 		boolean fetch = (flags != null && flags.contains("fetch"));
@@ -124,7 +124,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
     	boolean editPermissions = request.hasOption("id");
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null)) {
+		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null, context)) {
 			Double dist = distances.get(location.getUniqueId());
 			RoomDetailInterface e = load(location, department, html, context, filterDepartments, types, courses, exams, events, editPermissions);
 			if (editPermissions) {

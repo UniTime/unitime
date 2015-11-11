@@ -188,7 +188,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					locationMap = new HashMap<Long, Location>();
 					if (context.isAuthenticated())
 						request.getRoomFilter().setOption("user", context.getUser().getExternalUserId());
-					for (Location location: new RoomFilterBackend().locations(request.getSessionId(), request.getRoomFilter(), 1000, distances)) {
+					for (Location location: new RoomFilterBackend().locations(request.getSessionId(), request.getRoomFilter(), 1000, distances, context)) {
 						request.getEventFilter().addOption("room", location.getUniqueId().toString());
 						locationMap.put(location.getPermanentId(), location);
 					}
@@ -2320,7 +2320,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				
 				// Retrieve room unavailabilities
 				if (request.getResourceType() == ResourceType.ROOM) {
-					for (Location location: new RoomFilterBackend().locations(request.getSessionId(), request.getRoomFilter(), 1000, distances)) {
+					for (Location location: new RoomFilterBackend().locations(request.getSessionId(), request.getRoomFilter(), 1000, distances, context)) {
 						EventInterface unavailability = generateUnavailabilityEvent(location, null);
 						if (unavailability != null)
 							ret.add(unavailability);

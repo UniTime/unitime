@@ -98,7 +98,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		fixRoomFeatureTypes(request);
 		
 		Map<Long, Entity> types = new HashMap<Long, Entity>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "type")) {
+		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "type", context)) {
 			Entity type = types.get(location.getRoomType().getUniqueId());
 			if (type == null) {
 				type = new Entity(location.getRoomType().getUniqueId(), location.getRoomType().getReference(), location.getRoomType().getLabel(), "order", sNF.format(location.getRoomType().getOrd()));
@@ -109,7 +109,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		response.add("type", new TreeSet<Entity>(types.values()));
 		
 		Map<String, Map<Long, Entity>> featuresByType = new HashMap<String, Map<Long, Entity>>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, null)) {
+		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, null, context)) {
 			for (RoomFeature rf: location.getFeatures()) {
 				if (rf instanceof GlobalRoomFeature || (rf instanceof DepartmentRoomFeature && departments != null && departments.contains(((DepartmentRoomFeature)rf).getDepartment().getDeptCode()))) {
 					if (showRoomFeature(rf.getFeatureType())) {
@@ -134,7 +134,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		}
 		
 		Map<Long, Entity> groups = new HashMap<Long, Entity>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "group")) {
+		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "group", context)) {
 			for (RoomGroup rg: location.getRoomGroups()) {
 				if (rg.isGlobal() || (departments != null && departments.contains(rg.getDepartment().getDeptCode()))) {
 					Entity group = groups.get(rg.getUniqueId());
@@ -149,7 +149,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		response.add("group", new TreeSet<Entity>(groups.values()));
 		
 		Map<Long, Entity> buildings = new HashMap<Long, Entity>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "building")) {
+		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "building", context)) {
 			if (location instanceof Room) {
 				Room room = (Room)location;
 				Entity building = buildings.get(room.getBuilding().getUniqueId());
@@ -175,7 +175,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		boolean eventRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("event") || request.getOptions("flag").contains("Event")));
 		boolean allRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("all") || request.getOptions("flag").contains("All")));
 		boolean deptIndep = context.hasPermission(Right.DepartmentIndependent); 
-		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "department")) {
+		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "department", context)) {
 			Department evtDept = (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() ? location.getEventDepartment() : null);
 			boolean isManaged = false;
 			if (eventRooms) {
@@ -185,7 +185,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					depts.put(department.getUniqueId(), department);
 				}
 				department.incCount();
-				if (userDepts != null && userDepts.contains(location.getEventDepartment().getUniqueId())) isManaged = true;
+				if (deptIndep || (userDepts != null && userDepts.contains(location.getEventDepartment().getUniqueId()))) isManaged = true;
 			} else {
 				for (RoomDept rd: location.getRoomDepts()) {
 					if (!deptIndep && !allRooms && (userDepts == null || !(userDepts.contains(rd.getDepartment().getUniqueId())))) continue;
@@ -197,7 +197,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 						depts.put(department.getUniqueId(), department);
 					}
 					department.incCount();
-					if (userDepts != null && userDepts.contains(rd.getDepartment().getUniqueId())) isManaged = true;
+					if (deptIndep || (userDepts != null && userDepts.contains(rd.getDepartment().getUniqueId()))) isManaged = true;
 				}
 				if (evtDept != null && allRooms) {
 					Entity department = depts.get(evtDept.getUniqueId());
@@ -206,6 +206,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 								evtDept.getDeptCode() + " - " + evtDept.getName() + (evtDept.isExternalManager() ? " (" + evtDept.getExternalMgrLabel() + ")" : ""));
 						depts.put(department.getUniqueId(), department);
 					}
+					if (deptIndep || (userDepts != null && userDepts.contains(evtDept.getUniqueId()))) isManaged = true;
 					department.incCount();					
 				}
 			}
@@ -234,15 +235,15 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					request.addOption("feature", option);
 	}
 	
-	public List<Location> locations(Long sessionId, RoomFilterRpcRequest filter, int limit, Map<Long, Double> room2distance) {
+	public List<Location> locations(Long sessionId, RoomFilterRpcRequest filter, int limit, Map<Long, Double> room2distance, EventContext context) {
 		fixRoomFeatureTypes(filter);
-		return locations(sessionId, filter.getOptions(), new Query(filter.getText()), limit, room2distance, null);
+		return locations(sessionId, filter.getOptions(), new Query(filter.getText()), limit, room2distance, null, context);
 	}
 	
-	protected List<Location> locations(Long sessionId, Map<String, Set<String>> options, Query query, int limit, Map<Long, Double> room2distance, String ignoreCommand) {
+	protected List<Location> locations(Long sessionId, Map<String, Set<String>> options, Query query, int limit, Map<Long, Double> room2distance, String ignoreCommand, EventContext context) {
 		org.hibernate.Session hibSession = RoomDAO.getInstance().getSession();
 
-		RoomQuery rq = getQuery(sessionId, options);
+		RoomQuery rq = getQuery(sessionId, options, context);
 		org.hibernate.Query q = rq.select().exclude(ignoreCommand).query(hibSession);
 		List<Location> locations = q.setCacheable(true).list();
 		
@@ -332,7 +333,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		fixRoomFeatureTypes(request);
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(suggestionQuery(request.getText())), 20, distances, null)) {
+		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(suggestionQuery(request.getText())), 20, distances, null, context)) {
 			String hint = location.getRoomTypeLabel() + ", " + location.getCapacity() + " seats";
 			Double dist = distances.get(location.getUniqueId());
 			if (dist != null) hint += ", " + Math.round(dist) + " m";
@@ -345,7 +346,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		fixRoomFeatureTypes(request);
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null)) {
+		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null, context)) {
 			Double dist = distances.get(location.getUniqueId());
 			response.addResult(new Entity(
 					location.getUniqueId(),
@@ -537,7 +538,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		return type == null || type.isShowInEventManagement(); 
 	}
 	
-	public RoomQuery getQuery(Long sessionId, Map<String, Set<String>> options) {
+	public RoomQuery getQuery(Long sessionId, Map<String, Set<String>> options, EventContext context) {
 		RoomQuery query = new RoomQuery(sessionId);
 		
 		Set<String> types = (options == null ? null : options.get("type"));
@@ -659,19 +660,36 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			Set<String> users = (options == null ? null : options.get("user"));
 			String user = (users == null || users.isEmpty() ? null : users.iterator().next());
 			if ("Managed".equalsIgnoreCase(department) && user != null) {
-				query.addFrom("department", (eventRooms ? "inner join l.eventDepartment.timetableManagers m" : "inner join l.roomDepts rd inner join rd.department.timetableManagers m"));
-				query.addWhere("department", "m.externalUniqueId = :Xu");
-				query.addParameter("department", "Xu", user);
+				if (context.hasPermission(Right.DepartmentIndependent)) {
+					if (eventRooms)
+						query.addWhere("department", "l.eventDepartment is not null");
+					else if (!allRooms)
+						query.addFrom("department", "inner join l.roomDepts rd");
+				} else {
+					if (eventRooms) {
+						query.addFrom("department", "inner join l.eventDepartment.timetableManagers m");
+						query.addWhere("department", "m.externalUniqueId = :Xu");
+					} else if (allRooms) {
+						query.addFrom("department", "left outer join l.eventDepartment.timetableManagers m1 left outer join l.roomDepts rd left outer join rd.department.timetableManagers m2");
+						query.addWhere("department", "m1.externalUniqueId = :Xu or m2.externalUniqueId = :Xu");
+					} else {
+						query.addFrom("department", "inner join l.roomDepts rd inner join rd.department.timetableManagers m");
+						query.addWhere("department", "m.externalUniqueId = :Xu");
+					}
+					query.addParameter("department", "Xu", user);
+				}
 			} else {
-				query.addFrom("department", "left outer join l.examTypes x " + (eventRooms ? "" : "left outer join l.roomDepts rd"));
-				query.addParameter("department", "Xd", department);
 				if (eventRooms) {
+					query.addFrom("department", "left outer join l.examTypes x");
 					query.addWhere("department", "l.eventDepartment.deptCode = :Xd or x.reference = :Xd");
 				} else if (allRooms) {
-					query.addWhere("department", "rd.department.deptCode = :Xd or l.eventDepartment.deptCode = :Xd or x.reference = :Xd");
+					query.addFrom("department", "left outer join l.examTypes x left outer join l.roomDepts rd left outer join rd.department rdd left outer join l.eventDepartment ed");
+					query.addWhere("department", "rdd.deptCode = :Xd or ed.deptCode = :Xd or x.reference = :Xd");
 				} else {
+					query.addFrom("department", "left outer join l.examTypes x left outer join l.roomDepts rd");
 					query.addWhere("department", "rd.department.deptCode = :Xd or x.reference = :Xd");
 				}
+				query.addParameter("department", "Xd", department);
 			}
 		}
 		
@@ -805,7 +823,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			}
 			
 			public org.hibernate.Query query(org.hibernate.Session hibSession) {
-				//System.out.println("Q: " + query());
+				// System.out.println("Q: " + query());
 				org.hibernate.Query query = setParams(hibSession.createQuery(query()), iExclude).setLong("sessionId", iSessionId).setCacheable(true);
 				for (Map.Entry<String, Object> param: iParams.entrySet()) {
 					if (param.getValue() instanceof Integer) {
