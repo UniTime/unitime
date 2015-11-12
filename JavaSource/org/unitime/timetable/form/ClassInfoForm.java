@@ -49,7 +49,7 @@ public class ClassInfoForm extends ActionForm {
     private String iRoomFilter = null;
     private boolean iAllowRoomConflict = false;
     private String iRoomOrder = null;
-    private boolean iAllRooms = false;
+    private RoomBase iRoomBase = RoomBase.Departmental;
     private boolean iKeepConflictingAssignments = false;
     public static String sRoomOrdNameAsc = "Name [asc]";
     public static String sRoomOrdNameDesc = "Name [desc]";
@@ -62,6 +62,19 @@ public class ClassInfoForm extends ActionForm {
 	private Long iSessionId = null;
     
     private String iFilter = null;
+    
+    public static enum RoomBase {
+    	Departmental("Departmental"),
+    	Timetabling("Timetabling"),
+    	All("All"),
+    	;
+    	
+    	private String iLabel;
+    	RoomBase(String label) { iLabel = label; }
+    	
+    	public String getValue() { return name(); }
+    	public String getLabel() { return iLabel; }
+    }
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -76,7 +89,7 @@ public class ClassInfoForm extends ActionForm {
         iMaxRoomSize = null;
         iRoomFilter = null;
         iAllowRoomConflict = false;
-        iAllRooms = false;
+        iRoomBase = RoomBase.Departmental;
         iRoomOrder = sRoomOrdNameAsc;
         iFilter = null;
         iKeepConflictingAssignments = false;
@@ -92,7 +105,11 @@ public class ClassInfoForm extends ActionForm {
         iMaxRoomSize = (String)session.getAttribute("ClassInfo.MaxRoomSize");
         iRoomFilter = (String)session.getAttribute("ClassInfo.RoomFilter");
         iAllowRoomConflict = "true".equals(session.getAttribute("ClassInfo.AllowRoomConflict"));
-        iAllRooms = "true".equals(session.getAttribute("ClassInfo.AllRooms"));
+        String base = (String)session.getAttribute("ClassInfo.RoomBase");
+        if (base == null || base.isEmpty())
+        	iRoomBase = RoomBase.Departmental;
+        else
+        	iRoomBase = RoomBase.valueOf(base);
         iFilter = (String)session.getAttribute("ClassInfo.Filter");
         iKeepConflictingAssignments = "true".equals(session.getAttribute("ClassInfo.KeepConflictingAssignments"));
         iRoomTypes = (Long[]) session.getAttribute("ClassInfo.RoomTypes");
@@ -118,7 +135,7 @@ public class ClassInfoForm extends ActionForm {
         else
             session.setAttribute("ClassInfo.RoomFilter", iRoomFilter);
         session.setAttribute("ClassInfo.AllowRoomConflict", (iAllowRoomConflict?"true":"false"));
-        session.setAttribute("ClassInfo.AllRooms", (iAllRooms?"true":"false"));
+        session.setAttribute("ClassInfo.RoomBase", iRoomBase == null ? RoomBase.Departmental.name() : iRoomBase.name());
         if (!iKeepConflictingAssignments)
         	session.removeAttribute("ClassInfo.KeepConflictingAssignments");
         else
@@ -158,8 +175,10 @@ public class ClassInfoForm extends ActionForm {
     public void setRoomFilter(String roomFilter) { iRoomFilter = roomFilter; }
     public boolean getAllowRoomConflict() { return iAllowRoomConflict; }
     public void setAllowRoomConflict(boolean allowRoomConflict) { iAllowRoomConflict = allowRoomConflict; }
-    public boolean getAllRooms() { return iAllRooms; }
-    public void setAllRooms(boolean allRooms) { iAllRooms = allRooms; }
+    public String getRoomBase() { return iRoomBase == null ? RoomBase.Departmental.name() : iRoomBase.name(); }
+    public RoomBase getRoomBaseEnum() { return iRoomBase == null ? RoomBase.Departmental : iRoomBase; }
+    public RoomBase[] getRoomBases() { return RoomBase.values(); }
+    public void setRoomBase(String base) { iRoomBase = (base == null || base.isEmpty() ? RoomBase.Departmental : RoomBase.valueOf(base)); }
     public String getRoomOrder() { return iRoomOrder; }
     public void setRoomOrder(String ord) { iRoomOrder = ord; }
     public String[] getRoomOrders() { return sRoomOrds; }
