@@ -43,6 +43,7 @@ import org.unitime.timetable.util.Constants;
  */
 public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
 	private static final long serialVersionUID = -342155197631035341L;
+    private Long iClassId;
 
 	private int iStartSlot;
     
@@ -62,7 +63,8 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     
     private List<Date> iDates = null;
 
-    public ClassTimeInfo(int dayCode, int startTime, int length, int minsPerMtg, int pref, TimePattern timePattern, ClassDateInfo date, int breakTime, List<Date> dates) {
+    public ClassTimeInfo(Long classId, int dayCode, int startTime, int length, int minsPerMtg, int pref, TimePattern timePattern, ClassDateInfo date, int breakTime, List<Date> dates) {
+        iClassId = classId;
         iPreference = pref;
         iStartSlot = startTime;
         iDayCode = dayCode;
@@ -82,7 +84,8 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     }
     
     public ClassTimeInfo(Assignment assignment, int preference, int datePreference) {
-		this(assignment.getDays().intValue(),
+		this(assignment.getClassId(),
+				assignment.getDays().intValue(),
 				assignment.getStartSlot().intValue(),
 				assignment.getSlotPerMtg(),
 				assignment.getMinutesPerMeeting(),
@@ -95,6 +98,7 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     }
     
     public ClassTimeInfo(ClassTimeInfo time, ClassDateInfo date, List<Date> dates) {
+    	iClassId = time.iClassId;
     	iPreference = time.getPreference();
     	iStartSlot = time.getStartSlot();
     	iDayCode = time.getDayCode();
@@ -180,14 +184,16 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     
     public String getNameHtml() {
         return
-            "<span title='"+PreferenceLevel.int2string(getPreference())+" "+getLongName()+"' style='color:"+PreferenceLevel.int2color(getPreference())+";'>"+
+            "<span onmouseover=\"showGwtTimeHint(this, '" + iClassId + "," + iDayCode + "," + iStartSlot + "');\" onmouseout=\"hideGwtTimeHint();\"" +
+            " style='color:" + PreferenceLevel.int2color(getPreference()) + ";'>" +
             getName()+
             "</span>";
     }
 
     public String getLongNameHtml() {
         return
-            "<span title='"+PreferenceLevel.int2string(getPreference())+" "+getLongName()+"' style='color:"+PreferenceLevel.int2color(getPreference())+";'>"+
+            "<span onmouseover=\"showGwtTimeHint(this, '" + iClassId + "," + iDayCode + "," + iStartSlot + "');\" onmouseout=\"hideGwtTimeHint();\"" +
+            " style='color:" + PreferenceLevel.int2color(getPreference()) + ";'>" +
             getDayHeader()+" "+getStartTimeHeader()+" - "+getEndTimeHeader()+
             "</span>";
     }

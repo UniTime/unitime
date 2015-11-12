@@ -61,6 +61,7 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 				(info == null ? 0 : info.getDatePatternPref()));
 		DurationModel dm = assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 		iTime = new ClassTimeInfo(
+				assignment.getClassId(),
 				assignment.getDays().intValue(),
 				assignment.getStartSlot().intValue(),
 				assignment.getSlotPerMtg(),

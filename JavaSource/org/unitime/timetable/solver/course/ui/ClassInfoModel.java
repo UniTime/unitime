@@ -894,7 +894,7 @@ public class ClassInfoModel implements Serializable {
         		int length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
         		int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting); 
         		List<Date> dates = dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getExactDays(), minsPerMeeting);
-        		ClassTimeInfo time = new ClassTimeInfo(pattern.getExactDays(),pattern.getExactStartSlot(),length,minsPerMeeting,PreferenceLevel.sIntLevelNeutral,timePref.getTimePattern(),date,breakTime,dates);
+        		ClassTimeInfo time = new ClassTimeInfo(clazz.getUniqueId(), pattern.getExactDays(),pattern.getExactStartSlot(),length,minsPerMeeting,PreferenceLevel.sIntLevelNeutral,timePref.getTimePattern(),date,breakTime,dates);
         		if (iShowStudentConflicts)
         			times.add(new ClassAssignmentInfo(clazz, time, date, null, (iChange==null?null:iChange.getAssignmentTable())));
         		else
@@ -912,6 +912,7 @@ public class ClassInfoModel implements Serializable {
                     }
                     List<Date> dates = dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getDayCode(day), timePref.getTimePattern().getMinPerMtg());
                     ClassTimeInfo loc = new ClassTimeInfo(
+                            clazz.getUniqueId(),
                             pattern.getDayCode(day),
                             pattern.getStartSlot(time),
                             pattern.getSlotsPerMtg(),
