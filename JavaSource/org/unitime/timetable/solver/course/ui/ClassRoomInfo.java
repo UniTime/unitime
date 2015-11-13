@@ -45,7 +45,6 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     private transient Location iLocation = null;
     private String iNote = null;
     private boolean iIgnoreRoomChecks;
-    private String iRoomType = null;
     private transient static DistanceMetric sDistanceMetric = null;
     
     public ClassRoomInfo(Location location, int preference) {
@@ -58,7 +57,6 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
         iY = location.getCoordinateY();
         iIgnoreTooFar = location.isIgnoreTooFar().booleanValue();
         iIgnoreRoomChecks = location.isIgnoreRoomCheck();
-        iRoomType = location.getRoomTypeLabel();
     }
     
     public ClassRoomInfo(Location location, int preference, String note) {
@@ -91,8 +89,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     		pref-=5000;
     	}
         return "<span style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(pref))+";' " +
-        		"title='"+PreferenceLevel.prolog2string(PreferenceLevel.int2prolog(pref))+" "+getName()+
-        		" ("+(hasNote()?getNote()+", ":"")+getCapacity()+" seats, " + iRoomType + ")'>"+
+        		"onmouseover=\"showGwtRoomHint(this, '" + iId + "', '" + PreferenceLevel.prolog2string(PreferenceLevel.int2prolog(pref)) + "'" + (hasNote() ? ", null, '" + getNote().replace("'", "\\'") + "'": "") + ");\" onmouseout=\"hideGwtRoomHint();\">"+
         		(s?"<s>":"")+
         		getName()+
         		(s?"</s>":"")+
@@ -129,9 +126,7 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     
     public String getNameHtml() {
         return
-            "<span title='"+PreferenceLevel.int2string(getPreference())+" "+getName()+
-            " ("+getCapacity()+" seats)' style='color:"+
-            PreferenceLevel.int2color(getPreference())+";'>"+
+        	"<span onmouseover=\"showGwtRoomHint(this, '" + iId + "', '" + PreferenceLevel.int2string(getPreference()) + "'" + ");\" onmouseout=\"hideGwtRoomHint();\">" +
             getName()+
             "</span>";
     }

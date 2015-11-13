@@ -59,6 +59,7 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 				assignment.getDatePattern().getPatternBitSet(),
 				(info == null ? 0 : info.getDatePatternPref()));
 		iTime = new ClassTimeInfo(
+				assignment.getClassId(),
 				assignment.getDays().intValue(),
 				assignment.getStartSlot().intValue(),
 				assignment.getSlotPerMtg(),

@@ -128,11 +128,15 @@ public class RoomHint {
 	}
 	
 	/** Never use from GWT code */
-	public static void _showRoomHint(JavaScriptObject source, String locationId, String prefix, String distance) {
-		showHint((Element) source.cast(), Long.valueOf(locationId), prefix, distance, true);
+	public static void _showRoomHint(JavaScriptObject source, String locationId, String prefix, String distance, String note) {
+		showHint((Element) source.cast(), Long.valueOf(locationId), prefix, distance, note, true);
 	}
-	
+
 	public static void showHint(final Element relativeObject, final long locationId, final String prefix, final String distance, final boolean showRelativeToTheObject) {
+		showHint(relativeObject, locationId, prefix, distance, null, showRelativeToTheObject);
+	}
+
+	public static void showHint(final Element relativeObject, final long locationId, final String prefix, final String distance, final String note, final boolean showRelativeToTheObject) {
 		sLastLocationId = locationId;
 		sShowHint = true;
 		RPC.execute(RoomInterface.RoomHintRequest.load(locationId), new AsyncCallback<RoomInterface.RoomHintResponse>() {
@@ -142,8 +146,10 @@ public class RoomHint {
 			
 			@Override
 			public void onSuccess(RoomInterface.RoomHintResponse result) {
-				if (result != null && locationId == sLastLocationId && sShowHint)
+				if (result != null && locationId == sLastLocationId && sShowHint) {
+					if (note != null) result.setNote(note);
 					GwtHint.showHint(relativeObject, content(result, prefix, distance), showRelativeToTheObject);
+				}
 			}
 		});
 	}
@@ -157,8 +163,8 @@ public class RoomHint {
 	}
 		
 	public static native void createTriggers()/*-{
-	$wnd.showGwtRoomHint = function(source, content, prefix, distance) {
-		@org.unitime.timetable.gwt.client.rooms.RoomHint::_showRoomHint(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)(source, content, prefix, distance);
+	$wnd.showGwtRoomHint = function(source, content, prefix, distance, note) {
+		@org.unitime.timetable.gwt.client.rooms.RoomHint::_showRoomHint(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)(source, content, prefix, distance, note);
 	};
 	$wnd.hideGwtRoomHint = function() {
 		@org.unitime.timetable.gwt.client.rooms.RoomHint::hideHint()();
