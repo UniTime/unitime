@@ -85,6 +85,13 @@
 				<line>API Permission Checks: Check any authority instead of the current (default) one.</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Assignment</name>
+			<description>
+				<line>Rooms: display the GWT-based room tool tip on mouse over. It also contains the room preference, and the conflicting class (if there is a conflict) as a note.</line>
+				<line>Times: display the GWT-based time tool tip on mouse over. It shows time pattern grid with the time preferences and the selected time highlighted.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
