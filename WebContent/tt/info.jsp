@@ -153,8 +153,10 @@
 						Allow conflicts:
 							<html:checkbox property="allowRoomConflict"/>
 					</td><td valign="top" nowrap>
-						All rooms:
-							<html:checkbox property="allRooms"/>
+						Rooms:
+							<html:select property="roomBase">
+								<html:optionsCollection property="roomBases" label="label" value="value"/>
+							</html:select>
 					</td><td valign="top" nowrap>
 						Order:
 							<html:select property="roomOrder">

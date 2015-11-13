@@ -52,6 +52,7 @@ import org.cpsolver.coursett.preference.SumPreferenceCombination;
 import org.hibernate.LazyInitializationException;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ClassInfoForm;
+import org.unitime.timetable.form.ClassInfoForm.RoomBase;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
@@ -950,7 +951,7 @@ public class ClassInfoModel implements Serializable {
     	return (PreferenceLevel)roomPreferencesThisDept.get(locationId);
     }
     
-    protected List findAllRooms(Long sessionId) {
+    protected List findAllRooms(Long sessionId, boolean roomDepts) {
 		String a = "", b = "";
 		if (iForm.getRoomFeatures()!=null && iForm.getRoomFeatures().length>0) {
 			for (int i=0;i<iForm.getRoomFeatures().length;i++) {
@@ -974,12 +975,17 @@ public class ClassInfoModel implements Serializable {
                 b+= iForm.getRoomTypes()[i];
             }
             b+=")";
-        }    	
-        String query = "select r from Location r " + a + " where r.session.uniqueId=:sessionId " + b;
+        }
+        String query = null;
+        if (roomDepts) {
+        	query = "select distinct r from Location r inner join r.roomDepts rd " + a + " where r.session.uniqueId = :sessionId " + b;
+        } else {
+        	query = "select r from Location r " + a + " where r.session.uniqueId = :sessionId " + b;
+        }
         return LocationDAO.getInstance().getSession().createQuery(query).setLong("sessionId", sessionId).setCacheable(true).list();
     }
     
-    protected Vector<ClassRoomInfo> findRooms(ClassTimeInfo period, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts, boolean showAllRooms) {
+    protected Vector<ClassRoomInfo> findRooms(ClassTimeInfo period, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts, RoomBase showAllRooms) {
     	Vector<ClassRoomInfo> rooms = new Vector<ClassRoomInfo>();
         
         Class_ clazz = getClazz().getClazz(Class_DAO.getInstance().getSession());
@@ -1037,9 +1043,9 @@ public class ClassInfoModel implements Serializable {
         	}
  			
  			Set allRooms = availRooms;
- 			if (showAllRooms) {
+ 			if (showAllRooms != RoomBase.Departmental) {
  				allRooms = new TreeSet(availRooms);
- 				allRooms.addAll(findAllRooms(getClazz().getClazz().getSessionId()));
+ 				allRooms.addAll(findAllRooms(getClazz().getClazz().getSessionId(), showAllRooms == RoomBase.Timetabling));
  			}
  			
  			Long departmentId = getClazz().getClazz().getManagingDept().getUniqueId();
@@ -1057,7 +1063,7 @@ public class ClassInfoModel implements Serializable {
         		
         		PreferenceCombination pref = new SumPreferenceCombination();
         		
-        		if (showAllRooms && !availRooms.contains(room)) pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+        		if (showAllRooms != RoomBase.Departmental && !availRooms.contains(room)) pref.addPreferenceProlog(PreferenceLevel.sProhibited);
         		
         		RoomSharingModel sharingModel = room.getRoomSharingModel();
                 if (sharingModel!=null) {
@@ -1068,7 +1074,7 @@ public class ClassInfoModel implements Serializable {
                 		for (int t = startTime; t<=endTime; t++) {
                 			Long px = Long.valueOf(sharingModel.getPreference(d,t));
                 			if (px.equals(RoomSharingModel.sNotAvailablePref)) {
-                				if (showAllRooms) {
+                				if (showAllRooms != RoomBase.Departmental) {
                 					pref.addPreferenceProlog(PreferenceLevel.sProhibited);
                 					break sharing;
                 				} else {
@@ -1078,7 +1084,7 @@ public class ClassInfoModel implements Serializable {
                 			}
                 			if (px.equals(RoomSharingModel.sFreeForAllPref)) continue;
                 			if (departmentId!=null && !departmentId.equals(px)) {
-                				if (showAllRooms) {
+                				if (showAllRooms != RoomBase.Departmental) {
                 					pref.addPreferenceProlog(PreferenceLevel.sProhibited);
                 					break sharing;
                 				} else {
@@ -1428,7 +1434,7 @@ public class ClassInfoModel implements Serializable {
         try {
             if (getSelectedAssignment()==null && !isClassAssigned()) return null;
             if (iRooms==null) {
-                iRooms = findRooms(time, minRoomSize, maxRoomSize, iForm.getRoomFilter(), iForm.getAllowRoomConflict(), iForm.getAllRooms());
+                iRooms = findRooms(time, minRoomSize, maxRoomSize, iForm.getRoomFilter(), iForm.getAllowRoomConflict(), iForm.getRoomBaseEnum());
             }
             return iRooms;
         } catch (Exception e) {
