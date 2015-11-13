@@ -460,7 +460,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				for (XEInterface.Registration reg: original.registrations) {
 					if (reg.isRegistered()) {
 						registered.put(reg.courseReferenceNumber, reg);
-						if (!reg.canDrop())
+						if (!reg.canDrop(true))
 							nodrop.add(reg.courseReferenceNumber);
 					} else {
 						notregistered.add(reg.courseReferenceNumber);
@@ -859,7 +859,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				for (XEInterface.Registration reg: original.registrations) {
 					if (reg.isRegistered()) {
 						if (idsToDrop.contains(reg.courseReferenceNumber)) {
-							if (!reg.canDrop())
+							if (!reg.canDrop(true))
 								throw new SectioningException("Section " + reg.courseReferenceNumber + " is not available for student scheduling.");
 							req.drop(reg.courseReferenceNumber);
 							changed = true;

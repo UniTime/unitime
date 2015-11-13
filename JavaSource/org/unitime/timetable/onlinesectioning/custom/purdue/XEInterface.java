@@ -107,8 +107,8 @@ public class XEInterface {
 			return false;
 		}
 
-		public boolean canDrop() {
-			return can("DW");
+		public boolean canDrop(boolean admin) {
+			return can(admin ? "DDD" : "DW");
 		}
 		
 		public boolean canAdd(boolean admin) {
@@ -178,6 +178,7 @@ public class XEInterface {
 		public String selectedGradingMode;
 		public String selectedStudyPath;
 		public String selectedCreditHour;
+		public Boolean remove;
 		
 		public RegisterAction(String action, String crn) {
 			selectedAction = action;
@@ -199,7 +200,7 @@ public class XEInterface {
 		
 		public RegisterRequest drop(String crn) {
 			if (actionsAndOptions == null) actionsAndOptions = new ArrayList<RegisterAction>();
-			actionsAndOptions.add(new RegisterAction("DW", crn));
+			actionsAndOptions.add(new RegisterAction("SB".equals(systemIn) ? "DDD" : "DW", crn));
 			return this;
 		}
 		
