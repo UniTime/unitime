@@ -89,6 +89,9 @@
 			<description>
 				<line>Rooms: display the GWT-based room tool tip on mouse over. It also contains the room preference, and the conflicting class (if there is a conflict) as a note.</line>
 				<line>Times: display the GWT-based time tool tip on mouse over. It shows time pattern grid with the time preferences and the selected time highlighted.</line>
+				<line>Rooms: added ability to select between departmental, timetabling, and all rooms.
+					<line>Timetabling rooms are all the rooms that have at least one department in the room sharing, i.e., rooms that can be used for course timetabling by at least one department.</line>
+				</line>
 			</description>
 		</item>
 	</category>
