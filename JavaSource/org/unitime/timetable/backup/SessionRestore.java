@@ -85,6 +85,7 @@ import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
@@ -540,6 +541,10 @@ public class SessionRestore implements SessionRestoreInterface {
 			if (getObject() instanceof Curriculum) {
 				Curriculum curriculum = (Curriculum)getObject();
 				if (curriculum.isMultipleMajors() == null) curriculum.setMultipleMajors(false);
+			}
+			if (getObject() instanceof ExamType) {
+				ExamType type = (ExamType)getObject();
+				if (type.getHighlightInEvents() == null) type.setHighlightInEvents(type.getType() == ExamType.sExamTypeFinal);
 			}
 			if (getObject() instanceof SolverInfo) {
 				SolverInfo info = (SolverInfo)getObject();
