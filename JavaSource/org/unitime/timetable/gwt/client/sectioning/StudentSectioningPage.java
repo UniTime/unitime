@@ -130,7 +130,7 @@ public class StudentSectioningPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (widget.isChanged()) {
-					UniTimeConfirmationDialog.confirm(MESSAGES.queryLeaveChanges(), new Command() {
+					UniTimeConfirmationDialog.confirm(widget.useDefaultConfirmDialog(), MESSAGES.queryLeaveChanges(), new Command() {
 						@Override
 						public void execute() {
 							sessionSelector.selectSession();
@@ -146,7 +146,7 @@ public class StudentSectioningPage extends Composite {
 			public void onClick(ClickEvent event) {
 				if (CONSTANTS.allowUserLogin()) {
 					if (widget.isChanged()) {
-						UniTimeConfirmationDialog.confirm(MESSAGES.queryLeaveChanges(), new Command() {
+						UniTimeConfirmationDialog.confirm(widget.useDefaultConfirmDialog(), MESSAGES.queryLeaveChanges(), new Command() {
 							@Override
 							public void execute() {
 								if (userAuthentication.isLoggedIn())

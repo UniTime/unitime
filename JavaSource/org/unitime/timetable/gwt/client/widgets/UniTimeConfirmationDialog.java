@@ -32,6 +32,7 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Image;
 
 /**
@@ -166,15 +167,32 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	public static void alert(String message) {
 		new UniTimeConfirmationDialog(true, message, null, null, null).center();
 	}
-	
+
+	public static void alert(boolean useDefault, String message) {
+		if (useDefault) {
+			Window.alert(message);
+		} else {
+			alert(message);
+		}
+	}
+
 	public static void confirm(String message, Command callback) {
 		new UniTimeConfirmationDialog(false, message, null, null, callback).center();
 	}
-	
+
+	public static void confirm(boolean useDefault, String message, Command callback) {
+		if (useDefault) {
+			if (Window.confirm(message))
+				callback.execute();
+		} else {
+			confirm(message, callback);
+		}
+	}
+
 	public static void confirm(String message, String question, String answer, Command callback) {
 		new UniTimeConfirmationDialog(false, message, question, answer, callback).center();
 	}
-	
+
 	public static native void fireCallback(JavaScriptObject callback)/*-{
 		callback();
 	}-*/;

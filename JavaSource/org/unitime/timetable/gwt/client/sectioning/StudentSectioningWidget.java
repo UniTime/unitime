@@ -268,6 +268,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		});
 		iQuickAdd.getElement().getStyle().setMarginTop(3, Unit.PX);
+		iQuickAdd.setEnabled(false);
+		iQuickAdd.setVisible(false);
 
 		initWidget(iPanel);
 		
@@ -349,11 +351,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		vp.getFlexCellFormatter().setHorizontalAlignment(1, 1, HasHorizontalAlignment.ALIGN_CENTER);
 		vp.getFlexCellFormatter().setHorizontalAlignment(1, 2, HasHorizontalAlignment.ALIGN_RIGHT);
 		for (int i = 0; i < 3; i++)
-			vp.getFlexCellFormatter().getElement(1, 0).getStyle().setWidth(33, Unit.PCT);
-		iShowUnassignments.setVisible(false);		
+			vp.getFlexCellFormatter().getElement(1, i).getStyle().setWidth(33, Unit.PCT);
+		iShowUnassignments.setVisible(false);
 		String showUnassignments = Cookies.getCookie("UniTime:Unassignments");
 		iShowUnassignments.setValue(showUnassignments == null || "1".equals(showUnassignments));
-				
 		
 		iAssignmentPanel = new UniTimeTabPanel();
 		iAssignmentPanel.add(vp, MESSAGES.tabClasses(), true);
@@ -636,7 +637,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (item >= iHistory.size()) item = iHistory.size() - 1;
 						if (item >= 0) iHistory.get(item).restore();
 					} else if (isChanged()) {
-						UniTimeConfirmationDialog.confirm(MESSAGES.queryLeaveChanges(), new Command() {
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.queryLeaveChanges(), new Command() {
 							@Override
 							public void execute() {
 								iCourseRequests.clear();
@@ -746,7 +747,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 		iAssignments.setSelectedRow(rowIndex);
 		clearMessage();
-		iSuggestionsBox.open(iCourseRequests.getRequest(), iLastResult, rowIndex);
+		iSuggestionsBox.open(iCourseRequests.getRequest(), iLastResult, rowIndex, iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.ALTERNATIVES_DROP), useDefaultConfirmDialog());
 	}
 	
 	private void fillIn(ClassAssignmentInterface result) {
@@ -1158,6 +1159,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iPanel.insert(iAssignmentPanelWithFocus, 0);
 			iRequests.setVisible(true); iRequests.setEnabled(true);
 			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET)) { iReset.setVisible(true); iReset.setEnabled(true); }
+			if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.QUICK_ADD_DROP)) { iQuickAdd.setVisible(true); iQuickAdd.setEnabled(true); }
 			iEnroll.setVisible(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			if (iEligibilityCheck != null && iEligibilityCheck.hasCheckboxMessage()) {
 				if (iCustomCheckbox == null) {
@@ -1228,6 +1230,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iPanel.insert(iCourseRequests, 0);
 		iRequests.setVisible(false); iRequests.setEnabled(false);
 		iReset.setVisible(false); iReset.setEnabled(false);
+		iQuickAdd.setVisible(false); iQuickAdd.setEnabled(false);
 		iEnroll.setVisible(false); iEnroll.setEnabled(false);
 		if (iCustomCheckbox != null) {
 			iCustomCheckbox.setVisible(false); iCustomCheckbox.setEnabled(false);
@@ -1440,7 +1443,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		public void restore() {
 			if (isChanged() && ((iUser != null && !iUser.equals(iUserAuthentication.getUser())) || (iSessionId != null && !iSessionId.equals(iSessionSelector.getAcademicSessionId())))) {
-				UniTimeConfirmationDialog.confirm(MESSAGES.queryLeaveChanges(), new Command() {
+				UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.queryLeaveChanges(), new Command() {
 					@Override
 					public void execute() {
 						doRestore();
@@ -1731,6 +1734,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		return null;
 	}
 	
+	public boolean useDefaultConfirmDialog() {
+		return iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.GWT_CONFIRMATIONS);
+	}
+
 	protected Command confirmEnrollment(final Command callback) {
 		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_DROP)) {
 			final List<String> drops = getCoursesToDrop();
@@ -1738,7 +1745,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				return new Command() {
 					@Override
 					public void execute() {
-						UniTimeConfirmationDialog.confirm(MESSAGES.confirmEnrollmentCourseDrop(ToolBox.toString(drops)), callback);
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmEnrollmentCourseDrop(ToolBox.toString(drops)), callback);
 					}
 				};
 			}
@@ -1777,7 +1784,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				@Override
 				public void onSelection(final SelectionEvent<String> event) {
 					if (iCourseRequests.hasCourse(event.getSelectedItem())) {
-						UniTimeConfirmationDialog.confirm(MESSAGES.confirmQuickDrop(event.getSelectedItem()), new Command() {
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmQuickDrop(event.getSelectedItem()), new Command() {
 							@Override
 							public void execute() {
 								final CourseRequestInterface undo = iCourseRequests.getRequest();

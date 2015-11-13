@@ -1989,7 +1989,25 @@ public enum ApplicationProperty {
 	@Description("Online Student Scheduling: make saved and assigned course requests not editable (when administrator or advisor)")
 	@Since(4.1)
 	OnlineSchedulingMakeAssignedRequestReadOnlyIfAdmin("unitime.enrollment.disableAssignedRequests.manager"),
-	
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: enable Quick Add/Drop button")
+	@Since(4.1)
+	OnlineSchedulingQuickAddDrop("unitime.enrollment.quickAddDrop"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: enable Drop Course button in the Alternatives dialog")
+	@Since(4.1)
+	OnlineSchedulingAlternativesDrop("unitime.enrollment.alternativesDrop"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: use GWT-based confirmation dialog (instead of the default one)")
+	@Since(4.1)
+	OnlineSchedulingGWTConfirmations("unitime.enrollment.gwtConfirmations"),
+
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Distribution Preferences: show class suffix (external id) next to the class section number")

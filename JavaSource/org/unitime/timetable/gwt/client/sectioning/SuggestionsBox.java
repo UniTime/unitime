@@ -108,6 +108,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private PopupPanel iHint;
 	private String iHintId = null;
 	private Timer iHideHint;
+	private boolean iUseGwtConfirmations = false;
 	
 	public SuggestionsBox(TimeGrid.ColorProvider color, boolean online) {
 		super(true, false);
@@ -158,7 +159,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 				if (iAssignment.isFreeTime()) {
 					fireQuickDropEvent();
 				} else {
-					UniTimeConfirmationDialog.confirm(MESSAGES.confirmQuickDrop(MESSAGES.course(iAssignment.getSubject(), iAssignment.getCourseNbr())), new Command() {
+					UniTimeConfirmationDialog.confirm(iUseGwtConfirmations, MESSAGES.confirmQuickDrop(MESSAGES.course(iAssignment.getSubject(), iAssignment.getCourseNbr())), new Command() {
 						@Override
 						public void execute() {
 							fireQuickDropEvent();
@@ -624,7 +625,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		}
 	}
 	
-	public void open(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, int index) {
+	public void open(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, int index, boolean quickDrop, boolean useGwtConfirmations) {
 		LoadingWidget.getInstance().show(MESSAGES.suggestionsLoading());
 		ClassAssignmentInterface.ClassAssignment row = rows.get(index);
 		iAssignment = row;
@@ -633,6 +634,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iRequest = request;
 		iIndex = index;
 		iHintId = null;
+		iUseGwtConfirmations = useGwtConfirmations;
 		if (row.isFreeTime()) {
 			iSource = MESSAGES.freeTime(row.getDaysString(CONSTANTS.shortDays()), row.getStartString(CONSTANTS.useAmPm()), row.getEndString(CONSTANTS.useAmPm()));
 		} else {
@@ -651,14 +653,14 @@ public class SuggestionsBox extends UniTimeDialogBox {
 				: MESSAGES.suggestionsLegendOnCourse(MESSAGES.course(row.getSubject(), row.getCourseNbr())));
 		iMessages.setHTML("");
 		iFilter.setText("");
-		if (iQuickDropHandlers.isEmpty()) {
-			iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
-		} else {
+		if (quickDrop && !iQuickDropHandlers.isEmpty()) {
 			if (iAssignment.isFreeTime())
 				iQuickDrop.setHTML(MESSAGES.buttonQuickDrop(MESSAGES.freeTime(row.getDaysString(CONSTANTS.shortDays()), row.getStartString(CONSTANTS.useAmPm()), row.getEndString(CONSTANTS.useAmPm()))));
 			else
 				iQuickDrop.setHTML(MESSAGES.buttonQuickDrop(MESSAGES.course(row.getSubject(), row.getCourseNbr())));
 			iQuickDrop.setVisible(true); iQuickDrop.setEnabled(true);
+		} else {
+			iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
 		}
 		iSectioningService.computeSuggestions(iOnline, request, rows, index, iFilter.getText(), iCallback);
 	}
