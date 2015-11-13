@@ -254,8 +254,10 @@ public class CheckAssignmentAction implements OnlineSectioningAction<List<Enroll
 			List<XSection> sections = request.getSections();
 			XSubpart subpart = offering.getSubpart(sections.get(0).getSubpartId());
 			XConfig config = offering.getConfig(subpart.getConfigId());
-			if (sections.size() != config.getSubparts().size()) {
+			if (sections.size() < config.getSubparts().size()) {
 				throw new SectioningException(MSG.exceptionEnrollmentIncomplete(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
+			} else if (sections.size() > config.getSubparts().size()) {
+				throw new SectioningException(MSG.exceptionEnrollmentInvalid(MSG.courseName(course.getSubjectArea(), course.getCourseNumber())));
 			}
 			for (XSection s1: sections) {
 				for (XSection s2: sections) {
