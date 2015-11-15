@@ -180,7 +180,7 @@ public class RoomAvailabilityAction extends Action {
                 String exclude = (form.getIncludeExams()?
                         null :
                         (ExamTypeDAO.getInstance().get(form.getExamType()).getType()==ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
-                Collection<TimeBlock> events = ra.getRoomAvailability(location, bounds[0], bounds[1], exclude);
+                Collection<TimeBlock> events = ra.getRoomAvailability(location.getUniqueId(), bounds[0], bounds[1], exclude);
                 if (events==null) continue;
                 if (ts==null) ts = ra.getTimeStamp(bounds[0], bounds[1], exclude);
                 for (TimeBlock event : events) {
@@ -255,7 +255,7 @@ public class RoomAvailabilityAction extends Action {
             for (Iterator i=Location.findAllExamLocations(sessionId, form.getExamType()).iterator();i.hasNext();) {
                 Location location = (Location)i.next();
                 if (!match(form, location.getLabel())) continue;
-                Collection<TimeBlock> events = ra.getRoomAvailability(location, bounds[0], bounds[1], null);
+                Collection<TimeBlock> events = ra.getRoomAvailability(location.getUniqueId(), bounds[0], bounds[1], null);
                 if (ts==null) ts = ra.getTimeStamp(bounds[0], bounds[1], null);
                 TreeSet<ExamAssignment> exams = null;
                 if (examAssignment!=null)

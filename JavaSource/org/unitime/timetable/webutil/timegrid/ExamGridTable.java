@@ -1070,7 +1070,7 @@ public class ExamGridTable {
 	        iExamPrefs = location.getExamPreferences(iForm.getExamType());
 	        if (RoomAvailability.getInstance()!=null) {
 	            iUnavailabilities = RoomAvailability.getInstance().getRoomAvailability(
-	                    location, 
+	                    location.getUniqueId(), 
 	                    bounds[0], bounds[1], 
                         (ExamTypeDAO.getInstance().get(iForm.getExamType()).getType()==ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
 	        }
