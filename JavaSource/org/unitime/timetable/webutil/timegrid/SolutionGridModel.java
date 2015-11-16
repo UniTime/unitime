@@ -140,7 +140,7 @@ public class SolutionGridModel extends TimetableGridModel {
 	        endDateCal.set(Calendar.HOUR_OF_DAY, 23);
 	        endDateCal.set(Calendar.MINUTE, 59);
 	        endDateCal.set(Calendar.SECOND, 59);
-			Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(room, startDateCal.getTime(), endDateCal.getTime(), RoomAvailabilityInterface.sClassType);
+			Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(room.getUniqueId(), startDateCal.getTime(), endDateCal.getTime(), RoomAvailabilityInterface.sClassType);
 			if (times != null) {
 				int sessionYear = room.getSession().getSessionStartYear();
 		        int firstDOY = room.getSession().getDayOfYear(1, room.getSession().getPatternStartMonth());
@@ -280,7 +280,7 @@ public class SolutionGridModel extends TimetableGridModel {
 	        endDateCal.set(Calendar.HOUR_OF_DAY, 23);
 	        endDateCal.set(Calendar.MINUTE, 59);
 	        endDateCal.set(Calendar.SECOND, 59);
-			Collection<TimeBlock> times = RoomAvailability.getInstance().getInstructorAvailability(instructor, startDateCal.getTime(), endDateCal.getTime(), RoomAvailabilityInterface.sClassType);
+			Collection<TimeBlock> times = RoomAvailability.getInstance().getInstructorAvailability(instructor.getUniqueId(), startDateCal.getTime(), endDateCal.getTime(), RoomAvailabilityInterface.sClassType);
 			if (times != null) {
 				int sessionYear = session.getSessionStartYear();
 		        int firstDOY = session.getDayOfYear(1, session.getPatternStartMonth());

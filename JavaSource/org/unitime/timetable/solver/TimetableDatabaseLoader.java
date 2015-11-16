@@ -112,8 +112,6 @@ import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
-import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
@@ -3415,9 +3413,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         Collection<TimeBlock> ret = null;
         String ts = null;
         try {
-            ret = availability.getRoomAvailability(
-            		LocationDAO.getInstance().get(room.getResourceId()), startTime, endTime,
-                    RoomAvailabilityInterface.sClassType);
+            ret = availability.getRoomAvailability(room.getResourceId(), startTime, endTime, RoomAvailabilityInterface.sClassType);
             if (!iRoomAvailabilityTimeStampIsSet) ts = availability.getTimeStamp(startTime, endTime, RoomAvailabilityInterface.sClassType);
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
@@ -3494,9 +3490,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         Collection<TimeBlock> ret = null;
         String ts = null;
         try {
-            ret = availability.getInstructorAvailability(
-            		DepartmentalInstructorDAO.getInstance().get(instructor.getResourceId()),
-            		startTime, endTime, RoomAvailabilityInterface.sClassType);
+            ret = availability.getInstructorAvailability(instructor.getResourceId(), startTime, endTime, RoomAvailabilityInterface.sClassType);
             if (!iRoomAvailabilityTimeStampIsSet) ts = availability.getTimeStamp(startTime, endTime, RoomAvailabilityInterface.sClassType);
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);

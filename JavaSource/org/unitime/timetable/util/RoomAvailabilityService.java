@@ -46,9 +46,8 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
-import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.RoomDAO;
 
 /**
  * @author Tomas Muller, Stephanie Schluttenhofer
@@ -73,17 +72,15 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
     public RoomAvailabilityService() {
     }
     
-    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String excludeType) {
-        if (location instanceof org.unitime.timetable.model.Room) {
-            org.unitime.timetable.model.Room room = (org.unitime.timetable.model.Room)location;
+    public Collection<TimeBlock> getRoomAvailability(Long locationId, Date startTime, Date endTime, String excludeType) {
+    	org.unitime.timetable.model.Room room = RoomDAO.getInstance().get(locationId);
+    	if (room != null)
             return getRoomAvailability(
                     room.getExternalUniqueId(),
                     room.getBuildingAbbv(),
                     room.getRoomNumber(),
                     startTime, endTime, excludeType);
-        }
         return null;
-        
     }
     
     public Collection<TimeBlock> getRoomAvailability(String roomExternalId, String buildingAbbv, String roomNbr, Date startTime, Date endTime, String excludeType) {
@@ -474,7 +471,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
     }
 
 	@Override
-	public Collection<TimeBlock> getInstructorAvailability(DepartmentalInstructor instructor, Date startTime, Date endTime, String excludeType) {
+	public Collection<TimeBlock> getInstructorAvailability(Long instructorId, Date startTime, Date endTime, String excludeType) {
 		return null;
 	}
 }

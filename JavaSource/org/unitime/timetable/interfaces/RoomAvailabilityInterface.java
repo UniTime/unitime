@@ -24,8 +24,6 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 
 /**
@@ -37,8 +35,8 @@ public interface RoomAvailabilityInterface {
     public static final String sClassType = ApplicationProperty.RoomAvailabilityClassType.value();
 
     public String getTimeStamp(Date startTime, Date endTime, String excludeType);
-    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String excludeType);
-    public Collection<TimeBlock> getInstructorAvailability(DepartmentalInstructor instructor, Date startTime, Date endTime, String excludeType);
+    public Collection<TimeBlock> getRoomAvailability(Long locationId, Date startTime, Date endTime, String excludeType);
+    public Collection<TimeBlock> getInstructorAvailability(Long instructorId, Date startTime, Date endTime, String excludeType);
     public void activate(Session session, Date startTime, Date endTime, String excludeType, boolean waitForSync);
     
     public void startService();

@@ -37,6 +37,8 @@ import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 
 /**
@@ -58,8 +60,9 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         }
         return null;
     }
-    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String excludeType) {
-        if (location.getPermanentId()==null) return null;
+    public Collection<TimeBlock> getRoomAvailability(Long locationId, Date startTime, Date endTime, String excludeType) {
+    	Location location = LocationDAO.getInstance().get(locationId);
+        if (location == null || location.getPermanentId() == null) return null;
         EventDateMapping.Class2EventDateMap class2eventDateMap = (sClassType.equals(excludeType) ? EventDateMapping.getMapping(location.getSession().getUniqueId()) : null);
         TimeFrame time = new TimeFrame(startTime, endTime);
         synchronized(iCache) {
@@ -296,8 +299,10 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
     }
 
 	@Override
-	public Collection<TimeBlock> getInstructorAvailability(DepartmentalInstructor instructor, Date startTime, Date endTime, String excludeType) {
-        if (!iInstructorAvailabilityEnabled || instructor.getExternalUniqueId() == null) return null;
+	public Collection<TimeBlock> getInstructorAvailability(Long instructorId, Date startTime, Date endTime, String excludeType) {
+        if (!iInstructorAvailabilityEnabled) return null;
+        DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(instructorId);
+        if (instructor == null || instructor.getExternalUniqueId() == null) return null;
         EventDateMapping.Class2EventDateMap class2eventDateMap = (sClassType.equals(excludeType) ? EventDateMapping.getMapping(instructor.getDepartment().getSession().getUniqueId()) : null);
         TimeFrame time = new TimeFrame(startTime, endTime);
         synchronized(iCache) {
