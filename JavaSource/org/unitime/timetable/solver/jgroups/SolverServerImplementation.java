@@ -267,40 +267,30 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	}
 	
 	public void refreshCourseSolutionLocal(Long... solutionIds) {
-		super.refreshCourseSolution(solutionIds);
+		if (isLocal())
+			super.refreshCourseSolution(solutionIds);
 	}
 	
 	@Override
 	public void refreshCourseSolution(Long... solutionIds) {
-		if (isLocal()) {
-			refreshCourseSolutionLocal(solutionIds);
-		} else {
-			try {
-				Address local = getLocalAddress();
-				if (local != null)
-					iDispatcher.callRemoteMethod(local, "refreshCourseSolutionLocal", new Object[] { solutionIds }, new Class[] { Long[].class }, sFirstResponse);
-			} catch (Exception e) {
-				sLog.error("Failed to refresh solution: " + e.getMessage(), e);
-			}
+		try {
+			iDispatcher.callRemoteMethods(null, "refreshCourseSolutionLocal", new Object[] { solutionIds }, new Class[] { Long[].class }, sAllResponses);
+		} catch (Exception e) {
+			sLog.error("Failed to refresh solution: " + e.getMessage(), e);
 		}
 	}
 	
 	public void refreshExamSolutionLocal(Long sessionId, Long examTypeId) {
-		super.refreshExamSolution(sessionId, examTypeId);
+		if (isLocal())
+			super.refreshExamSolution(sessionId, examTypeId);
 	}
 	
 	@Override
 	public void refreshExamSolution(Long sessionId, Long examTypeId) {
-		if (isLocal()) {
-			refreshExamSolutionLocal(sessionId, examTypeId);
-		} else {
-			try {
-				Address local = getLocalAddress();
-				if (local != null)
-					iDispatcher.callRemoteMethod(local, "refreshExamSolutionLocal", new Object[] { sessionId, examTypeId }, new Class[] { Long.class, Long.class }, sFirstResponse);
-			} catch (Exception e) {
-				sLog.error("Failed to refresh solution: " + e.getMessage(), e);
-			}
+		try {
+			iDispatcher.callRemoteMethods(null, "refreshExamSolutionLocal", new Object[] { sessionId, examTypeId }, new Class[] { Long.class, Long.class }, sAllResponses);
+		} catch (Exception e) {
+			sLog.error("Failed to refresh solution: " + e.getMessage(), e);
 		}
 	}
 	

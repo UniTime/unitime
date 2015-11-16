@@ -102,6 +102,12 @@
 			 	<line>This is to avoid unnecessary serialization between the remote solver server and the web server.</line>
   			</description>
 		</item>
+		<item>
+			<name>Solver (RPC) Cluster</name>
+			<description>
+				<line>When calling refresh solution, pass the refresh to all local servers (not just the first one).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
