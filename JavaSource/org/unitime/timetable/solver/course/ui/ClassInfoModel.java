@@ -1265,7 +1265,7 @@ public class ClassInfoModel implements Serializable {
                 	}
                 } else if (RoomAvailability.getInstance()!=null) {
             		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
-                            room,
+                            room.getUniqueId(),
                             bounds[0], bounds[1], 
                             RoomAvailabilityInterface.sClassType);
             		if (times != null && !times.isEmpty()) {

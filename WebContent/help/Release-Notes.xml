@@ -95,6 +95,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Availability Interface</name>
+			<description>
+			 	<line>Room availability interface changed to pass only unique ids instead of the whole Location / DepartmentalInstructor objects.</line>
+			 	<line>This is to avoid unnecessary serialization between the remote solver server and the web server.</line>
+  			</description>
+		</item>
 	</category>
 </release>
 

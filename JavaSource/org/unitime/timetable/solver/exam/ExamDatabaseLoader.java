@@ -970,7 +970,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         Collection<TimeBlock> ret = null;
         String ts = null;
         try {
-        	ret = availability.getRoomAvailability(location, startTime, endTime, exclude);
+        	ret = availability.getRoomAvailability(location.getUniqueId(), startTime, endTime, exclude);
         	if (!iRoomAvailabilityTimeStampIsSet) ts = availability.getTimeStamp(startTime, endTime, exclude);
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
