@@ -4032,3 +4032,21 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ConfirmationPanel .buttons-panel .no {
 	margin: 1px 3px 0px 3px;
 }
+
+.unitine-DegreePlanTable {
+	min-width: 400px;
+	width: 100%;
+}
+
+.unitine-DegreePlanTable .indent {
+	margin-top: -4px;
+	margin-bottom: -4px;
+}
+
+.unitine-DegreePlanTable .placeholder {
+	font-style: italic;	
+}
+
+.unitine-DegreePlanTable .grouplabel {
+	font-style: italic;	
+}

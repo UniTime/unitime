@@ -1241,4 +1241,61 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Do you want to drop {0} from your schedule?")
 	String confirmQuickDrop(String course);
+	
+	@DefaultMessage("<u>D</u>egree Plan")
+	String buttonDegreePlan();
+	
+	@DefaultMessage("Show degree plan for the selected academic session.")
+	String hintDegreePlan();
+	
+	@DefaultMessage("There are multiple degree plans available, please select one to continue...")
+	String dialogSelectDegreePlan();
+	
+	@DefaultMessage("Degree Plan: {0}")
+	String dialogDegreePlan(String name);
+	
+	@DefaultMessage("Description")
+	String colDegreePlanName();
+	
+	@DefaultMessage("School")
+	String colDegreePlanSchool();
+	
+	@DefaultMessage("Degree")
+	String colDegreePlanDegree();
+	
+	@DefaultMessage("Status")
+	String colDegreePlanTrackStatus();
+	
+	@DefaultMessage("Modified")
+	String colDegreePlanLastModified();
+	
+	@DefaultMessage("Course")
+	String colDegreeItemName();
+	
+	@DefaultMessage("Title")
+	String colDegreeItemDescription();
+	
+	@DefaultMessage("<u>S</u>elect")
+	String buttonDegreePlanSelect();
+	
+	@DefaultMessage("<u>C</u>ancel")
+	String buttonDegreePlanCancel();
+	
+	@DefaultMessage("<u>A</u>pply")
+	String buttonDegreePlanApply();
+	
+	@DefaultMessage("<u>C</u>lose")
+	String buttonDegreePlanClose();
+	
+	@DefaultMessage("<u>B</u>ack")
+	String buttonDegreePlanBack();
+	
+	@DefaultMessage("Retrieving degree plan...")
+	String waitListDegreePlans();
+	
+	@DefaultMessage("No degree plan is available.")
+	String failedNoDegreePlans();
+	
+	@DefaultMessage("Failed to load degree plan: {0}")
+	String failedListDegreePlans(String reason);
 }

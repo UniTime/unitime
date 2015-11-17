@@ -50,6 +50,7 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
@@ -113,7 +114,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	private VerticalPanel iPanel;
 	private HorizontalPanel iFooter;
-	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver;
+	private AriaButton iRequests, iReset, iSchedule, iEnroll, iPrint, iExport = null, iSave, iStartOver, iDegreePlan;
 	private UniTimeTabPanel iAssignmentPanel;
 	private FocusPanel iAssignmentPanelWithFocus;
 	private ImageLink iCalendar = null;
@@ -142,6 +143,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private CourseFinder iQuickAddFinder = null;
 	
 	private CheckBox iCustomCheckbox = null;
+	private DegreePlansSelectionDialog iDegreePlansSelectionDialog = null;
+	private DegreePlanDialog iDegreePlanDialog = null;
 
 	public StudentSectioningWidget(boolean online, AcademicSessionProvider sessionSelector, UserAuthenticationProvider userAuthentication, StudentSectioningPage.Mode mode, boolean history) {
 		iMode = mode;
@@ -189,6 +192,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iFooter.setWidth("100%");
 		
 		HorizontalPanel leftFooterPanel = new HorizontalPanel();
+		iDegreePlan = new AriaButton(MESSAGES.buttonDegreePlan());
+		iDegreePlan.setTitle(MESSAGES.hintDegreePlan());
+		iDegreePlan.setVisible(false);
+		iDegreePlan.setEnabled(false);
+		leftFooterPanel.add(iDegreePlan);
+		
 		iRequests = new AriaButton(MESSAGES.buttonRequests());
 		iRequests.setTitle(MESSAGES.hintRequests());
 		iRequests.setVisible(false);
@@ -270,6 +279,46 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iQuickAdd.getElement().getStyle().setMarginTop(3, Unit.PX);
 		iQuickAdd.setEnabled(false);
 		iQuickAdd.setVisible(false);
+		
+		iDegreePlan.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				LoadingWidget.getInstance().show(MESSAGES.waitListDegreePlans());
+				iSectioningService.listDegreePlans(iOnline, iSessionSelector.getAcademicSessionId(), null, new AsyncCallback<List<DegreePlanInterface>>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						setError(MESSAGES.failedListDegreePlans(caught.getMessage()), caught);
+					}
+					@Override
+					public void onSuccess(List<DegreePlanInterface> result) {
+						LoadingWidget.getInstance().hide();
+						if (result == null || result.isEmpty()) {
+							setMessage(MESSAGES.failedNoDegreePlans());
+						} else if (result.size() == 1) {
+							if (iDegreePlanDialog == null) {
+								iDegreePlanDialog = new DegreePlanDialog();
+							}
+							iDegreePlanDialog.open(result.get(0));
+						} else {
+							if (iDegreePlanDialog == null) {
+								iDegreePlanDialog = new DegreePlanDialog();
+							}
+							if (iDegreePlansSelectionDialog == null) {
+								iDegreePlansSelectionDialog = new DegreePlansSelectionDialog() {
+									public void onSubmit(DegreePlanInterface plan) {
+										super.onSubmit(plan);
+										iDegreePlanDialog.open(plan);
+									}
+								};
+							}
+							iDegreePlansSelectionDialog.open(result);
+						}
+					}
+				});
+				
+			}
+		});
 
 		initWidget(iPanel);
 		
@@ -1186,6 +1235,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iExport.setVisible(true); iExport.setEnabled(true);
 			}
 			iSchedule.setVisible(false); iSchedule.setEnabled(false);
+			iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
 			iAssignmentGrid.scrollDown();
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
@@ -1241,6 +1291,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iExport.setVisible(false); iExport.setEnabled(false);
 		}
 		iSchedule.setVisible(true); iSchedule.setEnabled(true);
+		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
+			iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
+		}
 		clearMessage();
 		ResizeEvent.fire(this, getOffsetWidth(), getOffsetHeight());
 		AriaStatus.getInstance().setHTML(ARIA.courseRequests());
@@ -1286,6 +1339,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							public void onFailure(Throwable caught) {
 								setError(MESSAGES.exceptionFailedEligibilityCheck(caught.getMessage()), caught);
 								iSchedule.setVisible(true); iSchedule.setEnabled(true);
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
+									iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
+								}
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
@@ -1294,6 +1350,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								iCourseRequests.setCanWaitList(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 								iEligibilityCheck = result;
 								iSchedule.setVisible(true); iSchedule.setEnabled(true);
+								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
+									iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
+								}
 								lastRequest(sessionId, studentId, saved);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
@@ -1311,6 +1370,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						iPinDialog.checkEligibility(iOnline, sessionId, null, callback);
 					} else {
 						iSchedule.setVisible(true); iSchedule.setEnabled(true);
+						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
+							iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
+						}
 						lastRequest(sessionId, studentId, saved);
 						if (ret != null) ret.onSuccess(iEligibilityCheck);
 					}
@@ -1321,6 +1383,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						setError(result.getMessage());
 					}
 					iSchedule.setVisible(false);  iSchedule.setEnabled(false);
+					iDegreePlan.setVisible(false); iDegreePlan.setEnabled(false);
 					if (ret != null) ret.onFailure(new SectioningException(result.getMessage()));
 				}
 			}

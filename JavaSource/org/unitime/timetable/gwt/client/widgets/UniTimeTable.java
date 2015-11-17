@@ -64,7 +64,7 @@ public class UniTimeTable<T> extends FlexTable {
 	
 	private int iLastHoverRow = -1;
 	private Map<Integer,String> iLastHoverBackgroundColor = new HashMap<Integer, String>();
-	private boolean iAllowSelection = false;
+	private boolean iAllowSelection = false, iAllowMultiSelect= true;
 	
 	public UniTimeTable() {
 		setCellPadding(2);
@@ -81,6 +81,9 @@ public class UniTimeTable<T> extends FlexTable {
 	
 	public void setAllowSelection(boolean allow) { iAllowSelection = allow; }
 	public boolean isAllowSelection() { return iAllowSelection; }
+	
+	public void setAllowMultiSelect(boolean allow) { iAllowMultiSelect = allow; }
+	public boolean isAllowMultiSelect() { return iAllowMultiSelect; }
 
 	public void clearTable(int headerRows) {
 		for (int row = getRowCount() - 1; row >= headerRows; row--)
@@ -569,10 +572,18 @@ public class UniTimeTable<T> extends FlexTable {
 				Element element = DOM.eventGetTarget(event);
 				while (element.getPropertyString("tagName").equalsIgnoreCase("div"))
 					element = DOM.getParent(element);
-				if (element.getPropertyString("tagName").equalsIgnoreCase("td")) {
+				if (isAllowMultiSelect()) {
+					if (element.getPropertyString("tagName").equalsIgnoreCase("td")) {
+						boolean hover = ("unitime-TableRowHover".equals(style) || "unitime-TableRowSelectedHover".equals(style));
+						boolean selected = !("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
+						getRowFormatter().setStyleName(row, "unitime-TableRow" + (selected ? "Selected" : "") + (hover ? "Hover" : ""));
+					}
+				} else {
+					int old = getSelectedRow();
+					if (old != row && old >= 0)
+						setSelected(old, false);
 					boolean hover = ("unitime-TableRowHover".equals(style) || "unitime-TableRowSelectedHover".equals(style));
-					boolean selected = !("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
-					getRowFormatter().setStyleName(row, "unitime-TableRow" + (selected ? "Selected" : "") + (hover ? "Hover" : ""));
+					getRowFormatter().setStyleName(row, "unitime-TableRowSelected" + (hover ? "Hover" : ""));
 				}
 			}
 			if (iHintPanel != null && iHintPanel.isShowing())
@@ -683,6 +694,10 @@ public class UniTimeTable<T> extends FlexTable {
 	}
 	
 	public void setSelected(int row, boolean selected) {
+		if (isAllowSelection() && !isAllowMultiSelect() && selected) {
+			int old = getSelectedRow();
+			if (old >= 0 && old != row) setSelected(old, false);
+		}
 		if (isAllowSelection()) {
 			String style = getRowFormatter().getStyleName(row);
 			boolean hover = ("unitime-TableRowHover".equals(style) || "unitime-TableRowSelectedHover".equals(style));

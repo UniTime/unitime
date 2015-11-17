@@ -124,4 +124,19 @@ public interface StudentSectioningResources extends ClientBundle {
 
 	@Source("org/unitime/timetable/gwt/resources/icons/delete_Over.png")
 	ImageResource delete_Over();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/indent-top-line.png")
+	ImageResource indentTopLine();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/indent-middle-line.png")
+	ImageResource indentMiddleLine();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/indent-bottom-line.png")
+	ImageResource indentLastLine();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/indent-top-space.png")
+	ImageResource indentTopSpace();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/indent-blank-space.png")
+	ImageResource indentBlankSpace();
 }

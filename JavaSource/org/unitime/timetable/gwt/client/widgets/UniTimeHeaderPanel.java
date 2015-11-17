@@ -325,6 +325,17 @@ public class UniTimeHeaderPanel extends Composite {
 		return (op == null ? null : isEnabled(op));
 	}
 	
+	public void setFocus(int button, boolean focus) {
+		Button b = (Button)iButtons.getWidget(button);
+		b.setFocus(focus);
+	}
+	
+	public void setFocus(String operation, boolean focus) {
+		Integer op = iOperations.get(operation);
+		if (op != null)
+			setFocus(iOperations.get(operation), focus);
+	}
+	
 	public UniTimeHeaderPanel clonePanel(String newTitle) {
 		UniTimeHeaderPanel clone = new UniTimeHeaderPanel(newTitle == null ? "&nbsp;" : newTitle);
 		iClones.add(clone);
