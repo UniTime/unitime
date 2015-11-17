@@ -33,12 +33,14 @@ import org.restlet.resource.ResourceException;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsProvider;
+import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.PlaceHolder;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -50,13 +52,8 @@ import com.google.gson.GsonBuilder;
 /**
  * @author Tomas Muller
  */
-public class DegreeWorksCourseRequests implements CourseRequestsProvider {
+public class DegreeWorksCourseRequests implements CourseRequestsProvider, DegreePlansProvider {
 	private static Logger sLog = Logger.getLogger(DegreeWorksCourseRequests.class);
-	
-	private String iDegreeWorksApiUrl = ApplicationProperties.getProperty("banner.dgw.site");
-	private String iDegreeWorksApiUser = ApplicationProperties.getProperty("banner.dgw.user");
-	private String iDegreeWorksApiPassword = ApplicationProperties.getProperty("banner.dgw.password");
-	private String iDegreeWorksApiEffectiveOnly = ApplicationProperties.getProperty("banner.dgw.effectiveOnly");
 
 	private Client iClient;
 	private ExternalTermProvider iExternalTermProvider;
@@ -76,6 +73,22 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider {
 			sLog.error("Failed to create external term provider, using the default one instead.", e);
 			iExternalTermProvider = new BannerTermProvider();
 		}
+	}
+	
+	protected String getDegreeWorksApiSite() {
+		return ApplicationProperties.getProperty("banner.dgw.site");
+	}
+	
+	protected String getDegreeWorksApiUser() {
+		return ApplicationProperties.getProperty("banner.dgw.user");
+	}
+	
+	protected String getDegreeWorksApiPassword() {
+		return ApplicationProperties.getProperty("banner.dgw.password");
+	}
+	
+	protected String getDegreeWorksApiEffectiveOnly() {
+		return ApplicationProperties.getProperty("banner.dgw.effectiveOnly", "false");
 	}
 	
 	protected String getBannerId(XStudent student) {
@@ -206,17 +219,18 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider {
 			if (helper.isDebugEnabled())
 				helper.debug("Retrieving student plan for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + ")");
 			
-			resource = new ClientResource(iDegreeWorksApiUrl);
+			resource = new ClientResource(getDegreeWorksApiSite());
 			resource.setNext(iClient);
 			resource.addQueryParameter("terms", term);
 			resource.addQueryParameter("studentId", getBannerId(student));
 			helper.getAction().addOptionBuilder().setKey("terms").setValue(term);
 			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
-			if (iDegreeWorksApiEffectiveOnly != null) {
-				resource.addQueryParameter("effectiveOnly", iDegreeWorksApiEffectiveOnly);
-				helper.getAction().addOptionBuilder().setKey("effectiveOnly").setValue(iDegreeWorksApiEffectiveOnly);
+			String effectiveOnly = getDegreeWorksApiEffectiveOnly();
+			if (effectiveOnly != null) {
+				resource.addQueryParameter("effectiveOnly", effectiveOnly);
+				helper.getAction().addOptionBuilder().setKey("effectiveOnly").setValue(effectiveOnly);
 			}
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, iDegreeWorksApiUser, iDegreeWorksApiPassword);
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getDegreeWorksApiUser(), getDegreeWorksApiPassword());
 			Gson gson = getGson(helper);
 			
 			try {
@@ -243,34 +257,44 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider {
 			}
 			
 			List<XEInterface.DegreePlan> current = new GsonRepresentation<List<XEInterface.DegreePlan>>(resource.getResponseEntity(), XEInterface.DegreePlan.TYPE_LIST).getObject();
-			XEInterface.DegreePlan plan = (current.isEmpty() ? null : current.get(0));
 			
-			if (plan != null) {
-				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(plan));
-				if (helper.isDebugEnabled())
-					helper.debug("Current degree plan: " + gson.toJson(plan));
-			}
-			
-			if (plan == null || plan.years.isEmpty() || plan.years.get(0).terms.isEmpty() || plan.years.get(0).terms.get(0).group == null) {
-				if (helper.isDebugEnabled()) helper.debug("No degree plan has been returned.");
-				return null;
-			}
-
-			CourseRequestInterface request = new CourseRequestInterface();
-			request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
-			request.setStudentId(student.getStudentId());
-			fillInRequests(server, helper, request, plan.years.get(0).terms.get(0).group);
-			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.includePlaceHolders", "true")))
-				for (PlaceHolder ph: plan.years.get(0).terms.get(0).group.plannedPlaceholders) {
-					CourseRequestInterface.Request r = new CourseRequestInterface.Request();
-					r.setRequestedCourse(ph.placeholderValue.trim());
-					request.getCourses().add(r);
+			if (current != null && !current.isEmpty()) {
+				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
+				for (XEInterface.DegreePlan plan: current) {
+					// skip in-active plans
+					if (plan.isActive == null || !plan.isActive.value) continue;
+					if (plan.years != null) {
+						for (XEInterface.Year y: plan.years) {
+							if (y.terms != null) {
+								for (XEInterface.Term t: y.terms) {
+									if (t.term != null && term.equals(t.term.code) && t.group != null) {
+										if (helper.isDebugEnabled())
+											helper.debug("Current degree plan: " + gson.toJson(t.group));
+										CourseRequestInterface request = new CourseRequestInterface();
+										request.setAcademicSessionId(server.getAcademicSession().getUniqueId());
+										request.setStudentId(student.getStudentId());
+										fillInRequests(server, helper, request, t.group);
+										if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.includePlaceHolders", "true")))
+											for (PlaceHolder ph: t.group.plannedPlaceholders) {
+												CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+												r.setRequestedCourse(ph.placeholderValue.trim());
+												request.getCourses().add(r);
+											}
+										
+										if (helper.isDebugEnabled())
+											helper.debug("Course Requests: " + request);
+										
+										return request;
+									}
+								}
+							}
+						}
+					}
 				}
+			}
 			
-			if (helper.isDebugEnabled())
-				helper.debug("Course Requests: " + request);
-			
-			return request;
+			if (helper.isDebugEnabled()) helper.debug("No degree plan has been returned.");
+			return null;
 		} catch (SectioningException e) {
 			helper.info("Failed to retrieve degree plan: " + e.getMessage());
 			throw e;
@@ -292,6 +316,135 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider {
 			iClient.stop();
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
+		}
+	}
+	
+	protected DegreePlanInterface.DegreeGroupInterface toGroup(OnlineSectioningServer server, XEInterface.Group g) {
+		DegreePlanInterface.DegreeGroupInterface group = new DegreePlanInterface.DegreeGroupInterface();
+		group.setChoice(g.groupType != null && "CH".equals(g.groupType.code));
+		group.setDescription(g.summaryDescription);
+		if (g.plannedClasses != null)
+			for (XEInterface.Course c: g.plannedClasses) {
+				DegreePlanInterface.DegreeCourseInterface course = new DegreePlanInterface.DegreeCourseInterface();
+				if (group.isChoice())
+					course.setSelected(c.isGroupSelection);
+				course.setSubject(c.courseDiscipline);
+				course.setCourse(c.courseNumber);
+				course.setTitle(c.title);
+				XCourseId xc = getCourse(server, c);
+				if (xc != null) {
+					course.setName(xc.getCourseName());
+					course.setCourseId(xc.getCourseId());
+				}
+				group.addCourse(course);
+			}
+		if (g.plannedPlaceholders != null)
+			for (XEInterface.PlaceHolder ph: g.plannedPlaceholders) {
+				DegreePlanInterface.DegreePlaceHolderInterface placeHolder = new DegreePlanInterface.DegreePlaceHolderInterface();
+				placeHolder.setType(ph.placeholderType == null ? null : ph.placeholderType.description);
+				placeHolder.setName(ph.placeholderValue);
+				group.addPlaceHolder(placeHolder);
+			}
+		if (g.groups != null)
+			for (XEInterface.Group ch: g.groups) {
+				DegreePlanInterface.DegreeGroupInterface childGroup = toGroup(server, ch);
+				if (group.isChoice())
+					childGroup.setSelected(hasSelection(ch));
+				group.addGroup(childGroup);
+			}
+		return group;
+	}
+
+	@Override
+	public List<DegreePlanInterface> getDegreePlans(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
+		ClientResource resource = null;
+		try {
+			AcademicSessionInfo session = server.getAcademicSession();
+			String term = getBannerTerm(session);
+			if (helper.isDebugEnabled())
+				helper.debug("Retrieving degree plans for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + ")");
+			
+			resource = new ClientResource(getDegreeWorksApiSite());
+			resource.setNext(iClient);
+			resource.addQueryParameter("terms", term);
+			resource.addQueryParameter("studentId", getBannerId(student));
+			helper.getAction().addOptionBuilder().setKey("terms").setValue(term);
+			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+			String effectiveOnly = getDegreeWorksApiEffectiveOnly();
+			if (effectiveOnly != null) {
+				resource.addQueryParameter("effectiveOnly", effectiveOnly);
+				helper.getAction().addOptionBuilder().setKey("effectiveOnly").setValue(effectiveOnly);
+			}
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getDegreeWorksApiUser(), getDegreeWorksApiPassword());
+			Gson gson = getGson(helper);
+			
+			try {
+				resource.get(MediaType.APPLICATION_JSON);
+			} catch (ResourceException exception) {
+				try {
+					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject(); 
+					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
+					XEInterface.Error error = response.getError();
+					if (error != null && error.message != null) {
+						throw new SectioningException(error.message);
+					} else if (error != null && error.description != null) {
+						throw new SectioningException(error.description);
+					} else if (error != null && error.errorMessage != null) {
+						throw new SectioningException(error.errorMessage);
+					} else {
+						throw exception;
+					}
+				} catch (SectioningException e) {
+					throw e;
+				} catch (Throwable t) {
+					throw exception;
+				}
+			}
+			
+			List<XEInterface.DegreePlan> current = new GsonRepresentation<List<XEInterface.DegreePlan>>(resource.getResponseEntity(), XEInterface.DegreePlan.TYPE_LIST).getObject();
+			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
+			if (helper.isDebugEnabled())
+				helper.debug("Current degree plans: " + gson.toJson(current));
+
+			List<DegreePlanInterface> plans = new ArrayList<DegreePlanInterface>();
+			for (XEInterface.DegreePlan p: current) {
+				if (p.isActive == null || !p.isActive.value) continue;
+				DegreePlanInterface plan = new DegreePlanInterface();
+				plan.setSessionId(server.getAcademicSession().getUniqueId());
+				plan.setStudentId(student.getStudentId());
+				plan.setId(p.id);
+				plan.setDegree(p.degree == null ? null : p.degree.description);
+				plan.setName(p.description);
+				plan.setSchool(p.school == null ? null : p.school.description);
+				plan.setLastModified(p.modifyDate);
+				plan.setTrackingStatus(p.officialTrackingStatus == null ? null : p.officialTrackingStatus.description);
+				
+				if (p.years != null)
+					for (XEInterface.Year y: p.years) {
+						if (y.terms != null)
+							for (XEInterface.Term t: y.terms) {
+								if (t.term != null && term.equals(t.term.code) && t.group != null) {
+									plan.setGroup(toGroup(server, t.group));
+								}
+							}
+					}
+								
+				if (plan.getGroup() != null)
+					plans.add(plan);
+			}
+			
+			return plans;
+		} catch (SectioningException e) {
+			helper.info("Failed to retrieve degree plans: " + e.getMessage());
+			throw e;
+		} catch (Exception e) {
+			helper.warn("Failed to retrieve degree plans: " + e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
 		}
 	}
 }

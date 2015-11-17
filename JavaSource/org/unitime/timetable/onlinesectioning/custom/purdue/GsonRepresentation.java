@@ -22,6 +22,9 @@ package org.unitime.timetable.onlinesectioning.custom.purdue;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -80,6 +83,22 @@ public class GsonRepresentation<T> extends WriterRepresentation {
     			@Override
     			public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
     				return new DateTime(json.getAsJsonPrimitive().getAsString(), DateTimeZone.UTC);
+    			}
+    		})
+        	.registerTypeAdapter(Date.class, new JsonSerializer<Date>() {
+    			@Override
+    			public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
+    				return new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(src));
+    			}
+    		})
+    		.registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
+    			@Override
+    			public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    				try {
+    					return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(json.getAsJsonPrimitive().getAsString());
+    				} catch (ParseException e) {
+    					throw new JsonParseException(e.getMessage(), e);
+    				}
     			}
     		});
         }

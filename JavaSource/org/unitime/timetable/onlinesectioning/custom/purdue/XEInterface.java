@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.joda.time.DateTime;
@@ -239,13 +240,15 @@ public class XEInterface {
 	public static class DegreePlan {
 		public static final Type TYPE_LIST = new TypeToken<ArrayList<DegreePlan>>() {}.getType();
 		public String id;
+		public ValueDescription isActive, isLocked;
 		public String description;
 		public Student student;
 		public CodeDescription degree;
 		public CodeDescription school;
+		public CodeDescription officialTrackingStatus;
+		public Date createDate, modifyDate;
 		
 		public List<Year> years;
-		
 	}
 	
 	public static class Student {
@@ -255,6 +258,11 @@ public class XEInterface {
 	
 	public static class CodeDescription {
 		public String code;
+		public String description;
+	}
+	
+	public static class ValueDescription {
+		public boolean value;
 		public String description;
 	}
 	
