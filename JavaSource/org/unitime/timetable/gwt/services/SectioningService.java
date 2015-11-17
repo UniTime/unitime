@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.Sec
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -78,4 +79,5 @@ public interface SectioningService extends RemoteService {
 	List<ClassAssignmentInterface.SectioningAction> changeLog(String query) throws SectioningException, PageAccessException;
 	Boolean massCancel(List<Long> studentIds, String status, String subject, String message, String cc) throws SectioningException, PageAccessException;
 	Boolean requestStudentUpdate(List<Long> studentIds) throws SectioningException, PageAccessException;
+	List<DegreePlanInterface> listDegreePlans(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException;
 }

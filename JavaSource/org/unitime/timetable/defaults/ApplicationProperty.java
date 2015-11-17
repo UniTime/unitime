@@ -57,6 +57,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
+import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.SectionLimitProvider;
@@ -1061,6 +1062,11 @@ public enum ApplicationProperty {
 	@Implements(CourseRequestsProvider.class)
 	@Description("Customization: student course requests provider (interface CourseRequestsProvider, used by Student Scheduling Assistant when there are no course requests stored within UniTime)")
 	CustomizationCourseRequests("unitime.custom.CourseRequestsProvider"),
+	
+	@Type(Class.class)
+	@Implements(DegreePlansProvider.class)
+	@Description("Customization: student degree plans provider (interface DegreePlansProvider, used by Student Scheduling Assistant to retrieve degree plans)")
+	CustomizationDegreePlans("unitime.custom.DegreePlansProvider"),
 	
 	@Type(Class.class)
 	@Implements(ExternalTermProvider.class)

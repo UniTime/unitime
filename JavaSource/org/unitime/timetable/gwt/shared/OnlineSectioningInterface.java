@@ -49,6 +49,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			QUICK_ADD_DROP,
 			ALTERNATIVES_DROP,
 			GWT_CONFIRMATIONS,
+			DEGREE_PLANS,
 			;
 			
 			public int flag() { return 1 << ordinal(); }

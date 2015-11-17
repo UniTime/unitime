@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.Sec
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -77,4 +78,5 @@ public interface SectioningServiceAsync {
 	void changeLog(String query, AsyncCallback<List<ClassAssignmentInterface.SectioningAction>> callback) throws SectioningException, PageAccessException;
 	void massCancel(List<Long> studentIds, String status, String subject, String message, String cc, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void requestStudentUpdate(List<Long> studentIds, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+	void listDegreePlans(boolean online, Long sessionId, Long studentId, AsyncCallback<List<DegreePlanInterface>> callback) throws SectioningException, PageAccessException;
 }

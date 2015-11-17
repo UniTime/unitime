@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -106,6 +107,10 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 						principal.addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
 						principal.setName(NameFormat.defaultFormat().format(s));
 					}
+					helper.getSessionContext().setAttribute("user", principal);
+				} else {
+					UserContext user = helper.getSessionContext().getUser();
+					principal = new UniTimePrincipal(user.getExternalUserId(), studentId, user.getName());
 					helper.getSessionContext().setAttribute("user", principal);
 				}
 			} finally {
@@ -448,6 +453,12 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 				return service.requestStudentUpdate(request.studentIds);
 			}
 		}, Flag.GET, Flag.POST),
+		listDegreePlans(new OpExecution<List<DegreePlanInterface>>() {
+			@Override
+			public List<DegreePlanInterface> execute(SectioningService service, ApiHelper helper, Flag type, Long sessionId, Long studentId) throws IOException {
+				return service.listDegreePlans(helper.getOptinalParameterBoolean("online", true), sessionId, studentId);
+			}
+		}, Flag.GET),
 		;
 		
 		int iFlags = 0;

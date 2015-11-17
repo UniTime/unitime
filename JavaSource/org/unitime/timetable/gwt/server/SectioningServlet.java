@@ -56,6 +56,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
@@ -101,6 +102,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.CheckCourses;
 import org.unitime.timetable.onlinesectioning.basic.CheckEligibility;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
+import org.unitime.timetable.onlinesectioning.basic.GetDegreePlans;
 import org.unitime.timetable.onlinesectioning.basic.GetRequest;
 import org.unitime.timetable.onlinesectioning.basic.ListClasses;
 import org.unitime.timetable.onlinesectioning.basic.ListCourseOfferings;
@@ -108,6 +110,7 @@ import org.unitime.timetable.onlinesectioning.basic.ListEnrollments;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseRequestsHolder;
+import org.unitime.timetable.onlinesectioning.custom.CustomDegreePlansHolder;
 import org.unitime.timetable.onlinesectioning.custom.CustomStudentEnrollmentHolder;
 import org.unitime.timetable.onlinesectioning.custom.DefaultCourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.RequestStudentUpdates;
@@ -2019,6 +2022,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				check.setFlag(EligibilityFlag.QUICK_ADD_DROP, ApplicationProperty.OnlineSchedulingQuickAddDrop.isTrue());
 				check.setFlag(EligibilityFlag.ALTERNATIVES_DROP, ApplicationProperty.OnlineSchedulingAlternativesDrop.isTrue());
 				check.setFlag(EligibilityFlag.GWT_CONFIRMATIONS, ApplicationProperty.OnlineSchedulingGWTConfirmations.isTrue());
+				check.setFlag(EligibilityFlag.DEGREE_PLANS, CustomDegreePlansHolder.hasProvider());
 				return check;
 			}
 			
@@ -2059,6 +2063,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			check.setFlag(EligibilityFlag.QUICK_ADD_DROP, ApplicationProperty.OnlineSchedulingQuickAddDrop.isTrue());
 			check.setFlag(EligibilityFlag.ALTERNATIVES_DROP, ApplicationProperty.OnlineSchedulingAlternativesDrop.isTrue());
 			check.setFlag(EligibilityFlag.GWT_CONFIRMATIONS, ApplicationProperty.OnlineSchedulingGWTConfirmations.isTrue());
+			check.setFlag(EligibilityFlag.DEGREE_PLANS, CustomDegreePlansHolder.hasProvider());
 			check.setSessionId(sessionId);
 			check.setStudentId(studentId);
 			
@@ -2076,6 +2081,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	public void destroy() throws Exception {
 		CustomStudentEnrollmentHolder.release();
 		CustomCourseRequestsHolder.release();
+		CustomDegreePlansHolder.release();
 	}
 
 	@Override
@@ -2104,5 +2110,28 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingRequestStudentUpdate);
 		
 		return server.execute(server.createAction(RequestStudentUpdates.class).forStudents(studentIds), currentUser());
+	}
+
+	@Override
+	public List<DegreePlanInterface> listDegreePlans(boolean online, Long sessionId, Long studentId) throws SectioningException, PageAccessException {
+		if (sessionId == null)
+			sessionId = getLastSessionId();
+		if (studentId == null)
+			studentId = getStudentId(sessionId);
+		else if (!studentId.equals(getStudentId(sessionId)))
+			getSessionContext().checkPermission(Right.StudentSchedulingAdvisor);
+		
+		OnlineSectioningServer server = null;
+		if (!online) {
+			server = getStudentSolver();
+			if (server == null) 
+				throw new SectioningException(MSG.exceptionNoSolver());
+		} else {
+			server = getServerInstance(sessionId, true);
+			if (server == null)
+				throw new SectioningException(MSG.exceptionNoServerForSession());
+		}
+		
+		return server.execute(server.createAction(GetDegreePlans.class).forStudent(studentId), currentUser());
 	}
 }
