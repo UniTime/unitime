@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,7 +29,8 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 /**
  * @author Tomas Muller
  */
-public class DegreePlanInterface implements IsSerializable {
+public class DegreePlanInterface implements IsSerializable, Serializable {
+	private static final long serialVersionUID = 1L;
 	private Long iStudentId, iSessionId;
 	
 	private String iId, iName, iDegree, iSchool, iTrack;
@@ -60,10 +62,12 @@ public class DegreePlanInterface implements IsSerializable {
 	@Override
 	public String toString() { return iName + ": " + iGroup; }
 	
-	public static abstract class DegreeItemInterface implements IsSerializable {
+	public static abstract class DegreeItemInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
 	}
 	
 	public static class DegreeGroupInterface extends DegreeItemInterface {
+		private static final long serialVersionUID = 1L;
 		private boolean iChoice = false;
 		List<DegreeCourseInterface> iCourses = null;
 		List<DegreeGroupInterface> iGroups = null;
@@ -126,6 +130,7 @@ public class DegreePlanInterface implements IsSerializable {
 	}
 
 	public static class DegreeCourseInterface extends DegreeItemInterface {
+		private static final long serialVersionUID = 1L;
 		private Long iCourseId = null;
 		private String iSubject, iCourse, iTitle, iName;
 		private Boolean iSelected = null;
@@ -151,6 +156,7 @@ public class DegreePlanInterface implements IsSerializable {
 	}
 	
 	public static class DegreePlaceHolderInterface extends DegreeItemInterface {
+		private static final long serialVersionUID = 1L;
 		private String iType;
 		private String iName;
 		
