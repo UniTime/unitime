@@ -332,7 +332,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				course.setCourse(c.courseNumber);
 				course.setTitle(c.title);
 				XCourseId xc = getCourse(server, c);
-				if (xc != null) {
+				if (xc != null && xc.getCourseId() != null) {
 					course.setName(xc.getCourseName());
 					course.setCourseId(xc.getCourseId());
 				}

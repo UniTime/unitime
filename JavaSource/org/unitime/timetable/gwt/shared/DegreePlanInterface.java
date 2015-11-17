@@ -149,7 +149,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public String getName() { return iName == null ? iSubject + " " + iCourse : iName; }
 		public void setName(String name) { iName = name; }
 		public Long getCourseId() { return iCourseId; }
-		public void setCourseId(long courseId) { iCourseId = courseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
 		
 		@Override
 		public String toString() { return iSubject + " " + iCourse; }
