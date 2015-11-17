@@ -37,7 +37,7 @@ public class CustomCourseRequestsHolder {
 			try {
 				sProvider = ((CourseRequestsProvider)Class.forName(ApplicationProperty.CustomizationCourseRequests.value()).newInstance());
 			} catch (Exception e) {
-				throw new SectioningException(MSG.exceptionStudentEnrollmentProvider(e.getMessage()), e);
+				throw new SectioningException(MSG.exceptionCourseRequestProvider(e.getMessage()), e);
 			}
 		}
 		return sProvider;
