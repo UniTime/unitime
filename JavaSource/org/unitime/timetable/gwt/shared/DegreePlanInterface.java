@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -33,9 +35,11 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 	private static final long serialVersionUID = 1L;
 	private Long iStudentId, iSessionId;
 	
-	private String iId, iName, iDegree, iSchool, iTrack;
+	private String iId, iName, iDegree, iSchool, iTrack, iModifiedWho;
 	private Date iModified;
 	private DegreeGroupInterface iGroup;
+	
+	private boolean iLocked = false, iActive = false;
 	
 	public DegreePlanInterface() {
 	}
@@ -56,14 +60,24 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 	public void setTrackingStatus(String track) { iTrack = track; }
 	public Date getLastModified() { return iModified; }
 	public void setLastModified(Date modified) { iModified = modified; }
+	public String getModifiedWho() { return iModifiedWho; }
+	public void setModifiedWho(String name) { iModifiedWho = name; }
 	public DegreeGroupInterface getGroup() { return iGroup; }
 	public void setGroup(DegreeGroupInterface group) { iGroup = group; }
+	public boolean isActive() { return iActive; }
+	public void setActive(boolean active) { iActive = active; }
+	public boolean isLocked() { return iLocked; }
+	public void setLocked(boolean locked) { iLocked = locked; }
 	
 	@Override
 	public String toString() { return iName + ": " + iGroup; }
 	
 	public static abstract class DegreeItemInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
+		private String iId = null;
+		
+		public String getId() { return iId; }
+		public void setId(String id) { iId = id; }
 	}
 	
 	public static class DegreeGroupInterface extends DegreeItemInterface {
@@ -80,6 +94,12 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public boolean isChoice() { return iChoice; }
 		public void setChoice(boolean choice) { iChoice = choice; }
 		public boolean hasCourses() { return iCourses != null && !iCourses.isEmpty(); }
+		public boolean hasMultipleCourses() { 
+			if (iCourses == null) return false;
+			for (DegreeCourseInterface course: iCourses)
+				if (course.hasMultipleCourses()) return true;
+			return false;
+		}
 		public List<DegreeCourseInterface> getCourses() { return iCourses; }
 		public void addCourse(DegreeCourseInterface course) {
 			if (iCourses == null) iCourses = new ArrayList<DegreeCourseInterface>();
@@ -105,7 +125,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public void setDescription(String description) { iDescription = description; }
 		
 		public int getMaxDepth() {
-			if (iGroups == null || iGroups.isEmpty()) return 1;
+			if (iGroups == null || iGroups.isEmpty()) return (!isChoice() && hasMultipleCourses() ? 2 : 1);
 			int ret = 0;
 			for (DegreeGroupInterface g: iGroups)
 				if (ret < g.getMaxDepth())
@@ -134,6 +154,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		private Long iCourseId = null;
 		private String iSubject, iCourse, iTitle, iName;
 		private Boolean iSelected = null;
+		private List<CourseAssignment> iCourses;
 		
 		public DegreeCourseInterface() {}
 		
@@ -141,6 +162,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public void setSubject(String subject) { iSubject = subject; }
 		public String getCourse() { return iCourse; }
 		public void setCourse(String course) { iCourse = course; }
+		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
 		public String getTitle() { return iTitle; }
 		public void setTitle(String title) { iTitle = title; }
 		public boolean hasSelected() { return iSelected != null; }
@@ -150,6 +172,14 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public void setName(String name) { iName = name; }
 		public Long getCourseId() { return iCourseId; }
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		
+		public boolean hasCourses() { return iCourses != null || !iCourses.isEmpty(); }
+		public boolean hasMultipleCourses() { return iCourses != null && iCourses.size() > 1; }
+		public List<CourseAssignment> getCourses() { return iCourses; }
+		public void addCourse(CourseAssignment course) {
+			if (iCourses == null) iCourses = new ArrayList<CourseAssignment>();
+			iCourses.add(course);
+		}
 		
 		@Override
 		public String toString() { return iSubject + " " + iCourse; }

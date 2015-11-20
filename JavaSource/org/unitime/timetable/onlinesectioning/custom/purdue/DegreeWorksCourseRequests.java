@@ -22,7 +22,10 @@ package org.unitime.timetable.onlinesectioning.custom.purdue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.restlet.Client;
 import org.restlet.data.ChallengeScheme;
@@ -35,6 +38,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -43,7 +47,9 @@ import org.unitime.timetable.onlinesectioning.custom.CourseRequestsProvider;
 import org.unitime.timetable.onlinesectioning.custom.DegreePlansProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.XEInterface.PlaceHolder;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 
 import com.google.gson.Gson;
@@ -89,6 +95,14 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 	
 	protected String getDegreeWorksApiEffectiveOnly() {
 		return ApplicationProperties.getProperty("banner.dgw.effectiveOnly", "false");
+	}
+	
+	protected String getDegreeWorksErrorPattern() {
+		return ApplicationProperties.getProperty("banner.dgw.errorPattern", "<div class=\"exceptionMessage\">\n(.*)\n\n</div>");
+	}
+	
+	protected boolean getDegreeWorksActiveOnly() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.activeOnly", "true"));
 	}
 	
 	protected String getBannerId(XStudent student) {
@@ -237,23 +251,17 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
 				try {
-					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject(); 
-					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
-					XEInterface.Error error = response.getError();
-					if (error != null && error.message != null) {
-						throw new SectioningException(error.message);
-					} else if (error != null && error.description != null) {
-						throw new SectioningException(error.description);
-					} else if (error != null && error.errorMessage != null) {
-						throw new SectioningException(error.errorMessage);
-					} else {
-						throw exception;
-					}
+					String response = IOUtils.toString(resource.getResponseEntity().getReader());
+					Pattern pattern = Pattern.compile(getDegreeWorksErrorPattern(), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
+					Matcher match = pattern.matcher(response);
+					if (match.find())
+						throw new SectioningException(match.group(1));
 				} catch (SectioningException e) {
 					throw e;
 				} catch (Throwable t) {
 					throw exception;
 				}
+				throw exception;
 			}
 			
 			List<XEInterface.DegreePlan> current = new GsonRepresentation<List<XEInterface.DegreePlan>>(resource.getResponseEntity(), XEInterface.DegreePlan.TYPE_LIST).getObject();
@@ -323,6 +331,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		DegreePlanInterface.DegreeGroupInterface group = new DegreePlanInterface.DegreeGroupInterface();
 		group.setChoice(g.groupType != null && "CH".equals(g.groupType.code));
 		group.setDescription(g.summaryDescription);
+		group.setId(g.id);
 		if (g.plannedClasses != null)
 			for (XEInterface.Course c: g.plannedClasses) {
 				DegreePlanInterface.DegreeCourseInterface course = new DegreePlanInterface.DegreeCourseInterface();
@@ -331,10 +340,45 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				course.setSubject(c.courseDiscipline);
 				course.setCourse(c.courseNumber);
 				course.setTitle(c.title);
-				XCourseId xc = getCourse(server, c);
-				if (xc != null && xc.getCourseId() != null) {
-					course.setName(xc.getCourseName());
-					course.setCourseId(xc.getCourseId());
+				course.setId(c.id);
+				Collection<? extends XCourseId> ids = server.findCourses(c.courseDiscipline + " " + c.courseNumber, -1, null);
+				if (ids != null) {
+					for (XCourseId id: ids) {
+						XCourse xc = (id instanceof XCourse ? (XCourse) id : server.getCourse(id.getCourseId()));
+						if (xc == null) continue;
+						CourseAssignment ca = new CourseAssignment();
+						ca.setCourseId(xc.getCourseId());
+						ca.setSubject(xc.getSubjectArea());
+						ca.setCourseNbr(xc.getCourseNumber());
+						ca.setTitle(xc.getTitle());
+						ca.setNote(xc.getNote());
+						ca.setCreditAbbv(xc.getCreditAbbv());
+						ca.setCreditText(xc.getCreditText());
+						ca.setTitle(xc.getTitle());
+						ca.setHasUniqueName(xc.hasUniqueName());
+						ca.setLimit(xc.getLimit());
+						Collection<XCourseRequest> requests = server.getRequests(id.getOfferingId());
+						if (requests != null) {
+							int enrl = 0;
+							for (XCourseRequest r: requests)
+								if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(id.getCourseId()))
+									enrl ++;
+							ca.setEnrollment(enrl);
+						}
+						course.addCourse(ca);
+					}
+				}
+				if (course.hasCourses()) {
+					for (CourseAssignment ca: course.getCourses()) {
+						if (ca.getSubject().equals(course.getSubject()) && ca.getCourseNbr().equals(course.getCourse())) {
+							course.setCourseId(ca.getCourseId());
+							course.setName(ca.getCourseName());
+						}
+					}
+					if (course.getCourseId() == null) {
+						course.setCourseId(course.getCourses().get(0).getCourseId());
+						course.setName(course.getCourses().get(0).getCourseName());
+					}
 				}
 				group.addCourse(course);
 			}
@@ -343,6 +387,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				DegreePlanInterface.DegreePlaceHolderInterface placeHolder = new DegreePlanInterface.DegreePlaceHolderInterface();
 				placeHolder.setType(ph.placeholderType == null ? null : ph.placeholderType.description);
 				placeHolder.setName(ph.placeholderValue);
+				placeHolder.setId(ph.id);
 				group.addPlaceHolder(placeHolder);
 			}
 		if (g.groups != null)
@@ -382,23 +427,17 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
 				try {
-					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject(); 
-					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
-					XEInterface.Error error = response.getError();
-					if (error != null && error.message != null) {
-						throw new SectioningException(error.message);
-					} else if (error != null && error.description != null) {
-						throw new SectioningException(error.description);
-					} else if (error != null && error.errorMessage != null) {
-						throw new SectioningException(error.errorMessage);
-					} else {
-						throw exception;
-					}
+					String response = IOUtils.toString(resource.getResponseEntity().getReader());
+					Pattern pattern = Pattern.compile(getDegreeWorksErrorPattern(), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
+					Matcher match = pattern.matcher(response);
+					if (match.find())
+						throw new SectioningException(match.group(1));
 				} catch (SectioningException e) {
 					throw e;
 				} catch (Throwable t) {
 					throw exception;
 				}
+				throw exception;
 			}
 			
 			List<XEInterface.DegreePlan> current = new GsonRepresentation<List<XEInterface.DegreePlan>>(resource.getResponseEntity(), XEInterface.DegreePlan.TYPE_LIST).getObject();
@@ -408,7 +447,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 
 			List<DegreePlanInterface> plans = new ArrayList<DegreePlanInterface>();
 			for (XEInterface.DegreePlan p: current) {
-				if (p.isActive == null || !p.isActive.value) continue;
+				if (getDegreeWorksActiveOnly() && (p.isActive == null || !p.isActive.value)) continue;
 				DegreePlanInterface plan = new DegreePlanInterface();
 				plan.setSessionId(server.getAcademicSession().getUniqueId());
 				plan.setStudentId(student.getStudentId());
@@ -417,8 +456,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				plan.setName(p.description);
 				plan.setSchool(p.school == null ? null : p.school.description);
 				plan.setLastModified(p.modifyDate);
+				plan.setModifiedWho(p.modifyWho == null ? null : p.modifyWho.name);
 				plan.setTrackingStatus(p.officialTrackingStatus == null ? null : p.officialTrackingStatus.description);
-				
+				plan.setActive(p.isActive != null && p.isActive.value);
+				plan.setLocked(p.isLocked != null && p.isLocked.value);
 				if (p.years != null)
 					for (XEInterface.Year y: p.years) {
 						if (y.terms != null)

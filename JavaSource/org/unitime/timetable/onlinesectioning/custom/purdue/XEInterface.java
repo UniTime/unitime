@@ -242,16 +242,17 @@ public class XEInterface {
 		public String id;
 		public ValueDescription isActive, isLocked;
 		public String description;
-		public Student student;
+		public Person student;
 		public CodeDescription degree;
 		public CodeDescription school;
 		public CodeDescription officialTrackingStatus;
 		public Date createDate, modifyDate;
+		public Person createdWho, modifyWho;
 		
 		public List<Year> years;
 	}
 	
-	public static class Student {
+	public static class Person {
 		public String id;
 		public String name;
 	}
@@ -278,6 +279,7 @@ public class XEInterface {
 	}
 	
 	public static class Group {
+		public String id;
 		public CodeDescription groupType;
 		public List<Course> plannedClasses;
 		public List<Group> groups;
