@@ -129,7 +129,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					} else {
 						row.add(new CourseLabel(MESSAGES.course(course.getSubject(), course.getCourse()), false));
 					}
-					row.add(new Label(course.getTitle() == null ? "" : course.getTitle(), false));
+					row.add(new TitleLabel(course.getTitle() == null ? "" : course.getTitle()));
 					row.add(new Label());
 					row.add(new Label());
 					row.add(new Label());
@@ -176,7 +176,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 						} else {
 							row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), false));
 						}
-						row.add(new Label(ca.getTitle() == null ? "" : ca.getTitle(), false));
+						row.add(new TitleLabel(ca.getTitle() == null ? "" : ca.getTitle()));
 						row.add(new HTML(ca.getLimit() == null || ca.getLimit() == 0 || ca.getEnrollment() == null ? "" : ca.getLimit() < 0 ? "&infin;" : (ca.getLimit() - ca.getEnrollment()) + " / " + ca.getLimit(), false));
 						row.add(new Label(ca.hasCredit() ? ca.getCreditAbbv() : "", false));
 						row.add(new NoteCell(ca.getNote()));
@@ -216,6 +216,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			super(label, false);
 			addStyleName("grouplabel");
 			iHasChoice = hasChoice;
+			setTitle(label);
 		}
 
 		@Override
@@ -235,14 +236,23 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		public int getColSpan() { return (iHasChoice ? 1 : 2); }
 	}
 	
+	public static class TitleLabel extends Label {
+		
+		public TitleLabel(String label) {
+			super(label, false);
+			addStyleName("title");
+		}
+	}
+	
 	public static class PlaceHolderCell extends Label implements UniTimeTable.HasColSpan {
 		public PlaceHolderCell(String label) {
 			super(label, false);
 			addStyleName("placeholder");
+			setTitle(label);
 		}
 
 		@Override
-		public int getColSpan() { return 5; }
+		public int getColSpan() { return 6; }
 	}
 	
 	public static class ChoiceButton extends RadioButton {

@@ -57,8 +57,6 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 		
 		iDegreePlanTable = new DegreePlanTable();
 		iDegreePlanPanel = new ScrollPanel(iDegreePlanTable);
-		iDegreePlanPanel.getElement().getStyle().setWidth(780, Unit.PX);
-		iDegreePlanPanel.getElement().getStyle().setHeight(300, Unit.PX);
 		iDegreePlanPanel.setStyleName("unitime-ScrollPanel");
 		iDegreePlanPanel.addStyleName("plan");
 		iForm.addRow(iDegreePlanPanel);

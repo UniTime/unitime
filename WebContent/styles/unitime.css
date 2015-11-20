@@ -4033,6 +4033,11 @@ unitime-RoomSharingWidget .legend .blank {
 	margin: 1px 3px 0px 3px;
 }
 
+.unitime-DegreePlanDialog .plan {
+	width: 790px;
+	height: 300px;
+}
+
 .unitine-DegreePlanTable {
 }
 
@@ -4044,15 +4049,30 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitine-DegreePlanTable .placeholder {
 	font-style: italic;	
+	max-width: 750px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .unitine-DegreePlanTable .grouplabel {
 	font-style: italic;	
+	max-width: 750px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .unitine-DegreePlanTable input[type="radio"] {
 	margin-top: 1px;
 	margin-bottom: 1px;
+}
+
+.unitine-DegreePlanTable .title {
+	max-width: 250px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .unitine-DegreePlanTable .note {
