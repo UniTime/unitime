@@ -1257,9 +1257,6 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Description")
 	String colDegreePlanName();
 	
-	@DefaultMessage("School")
-	String colDegreePlanSchool();
-	
 	@DefaultMessage("Degree")
 	String colDegreePlanDegree();
 	
@@ -1268,6 +1265,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Modified")
 	String colDegreePlanLastModified();
+	
+	@DefaultMessage("Modified By")
+	String colDegreePlanModifiedBy();
 	
 	@DefaultMessage("Course")
 	String colDegreeItemName();
@@ -1298,4 +1298,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Failed to load degree plan: {0}")
 	String failedListDegreePlans(String reason);
+	
+	@DefaultMessage("This plan is locked.")
+	String hintLockedPlan();
+	
+	@DefaultMessage("This plan is active.")
+	String hintActivePlan();
 }

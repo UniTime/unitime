@@ -19,43 +19,57 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
-
-/**
- * @author Tomas Muller
- */
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.ScrollPanel;
+
+/**
+ * @author Tomas Muller
+ */
 public class DegreePlanDialog extends UniTimeDialogBox {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private SimpleForm iForm;
-	private DegreePlanTable iTable;
+	private DegreePlanTable iDegreePlanTable;
+	private ScrollPanel iDegreePlanPanel;
+	private Button iBack;
 	private UniTimeHeaderPanel iFooter;
 	
 	public DegreePlanDialog() {
 		super(true, false);
 		setEscapeToHide(true);
+		addStyleName("unitime-DegreePlanDialog");
 		
 		iForm = new SimpleForm();
 		
-		iTable = new DegreePlanTable();
-		iForm.addRow(iTable);
+		iDegreePlanTable = new DegreePlanTable();
+		iDegreePlanPanel = new ScrollPanel(iDegreePlanTable);
+		iDegreePlanPanel.getElement().getStyle().setWidth(780, Unit.PX);
+		iDegreePlanPanel.getElement().getStyle().setHeight(300, Unit.PX);
+		iDegreePlanPanel.setStyleName("unitime-ScrollPanel");
+		iDegreePlanPanel.addStyleName("plan");
+		iForm.addRow(iDegreePlanPanel);
 		
 		iFooter = new UniTimeHeaderPanel();
 		iFooter.addButton("apply", MESSAGES.buttonDegreePlanApply(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				doApply();
 			}
 		});
-		iFooter.setEnabled("apply", false);
 		
 		iFooter.addButton("close", MESSAGES.buttonDegreePlanClose(), new ClickHandler() {
 			@Override
@@ -64,13 +78,34 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 			}
 		});
 		
+		iBack = new Button(MESSAGES.buttonDegreePlanBack(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				doBack();
+			}
+		});
+		Character backAck = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonDegreePlanBack());
+		if (backAck != null)
+			iBack.setAccessKey(backAck);
+		ToolBox.setWhiteSpace(iBack.getElement().getStyle(), "nowrap");
+		iFooter.getPanel().insert(iBack, 0);
+		
 		iForm.addBottomRow(iFooter);
 		setWidget(iForm);
 	}
 	
-	public void open(DegreePlanInterface plan) {
-		iTable.setValue(plan);
+	public void open(DegreePlanInterface plan, boolean hasBack) {
+		iDegreePlanTable.setValue(plan);
 		setText(MESSAGES.dialogDegreePlan(plan.getName()));
+		iBack.setVisible(hasBack); iBack.setEnabled(hasBack);
 		center();
+	}
+
+	protected void doBack() {
+		hide();
+	}
+	
+	protected void doApply() {
+		hide();
 	}
 }

@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -28,21 +29,27 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeCourseInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeGroupInterface;
-import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeItemInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreePlaceHolderInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.TakesValue;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
  */
-public class DegreePlanTable extends UniTimeTable<DegreeItemInterface> implements TakesValue<DegreePlanInterface>{
+public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<DegreePlanInterface>{
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	
@@ -50,10 +57,16 @@ public class DegreePlanTable extends UniTimeTable<DegreeItemInterface> implement
 	
 	public DegreePlanTable() {
 		addStyleName("unitine-DegreePlanTable");
+		setAllowSelection(true);
+		setAllowMultiSelect(false);
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
+		header.add(new UniTimeTableHeader(""));
 		header.add(new UniTimeTableHeader(""));
 		header.add(new UniTimeTableHeader(MESSAGES.colDegreeItemName()));
 		header.add(new UniTimeTableHeader(MESSAGES.colDegreeItemDescription()));
+		header.add(new UniTimeTableHeader(MESSAGES.colLimit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colCredit()));
+		header.add(new UniTimeTableHeader(MESSAGES.colNote()));
 		addRow(null, header);
 	}
 
@@ -67,10 +80,10 @@ public class DegreePlanTable extends UniTimeTable<DegreeItemInterface> implement
 		iPlan = plan;
 		clearTable(1);
 		if (plan.getGroup() != null)
-			addGroup(1, plan.getGroup().getMaxDepth(), plan.getGroup());
+			addGroup(1, plan.getGroup().getMaxDepth(), plan.getGroup(), null);
 	}
 	
-	protected void addGroup(int depth, int maxDepth, DegreeGroupInterface group) {
+	protected void addGroup(int depth, int maxDepth, DegreeGroupInterface group, DegreeGroupInterface parent) {
 		if (depth > 1) {
 			List<Widget> row = new ArrayList<Widget>();
 			P indent = new P("indent");
@@ -80,26 +93,93 @@ public class DegreePlanTable extends UniTimeTable<DegreeItemInterface> implement
 			for (int d = depth + 1; d <= maxDepth; d++)
 				indent.add(new Image(RESOURCES.indentTopSpace()));
 			row.add(indent);
+			if (parent != null && parent.isChoice()) {
+				row.add(new ChoiceButton(parent, group));
+			} else {
+				row.add(new Label());
+			}
 			row.add(new GroupTitleCell(group.getDescription()));
+			row.add(new Label());
+			row.add(new Label());
+			row.add(new Label());
 			addRow(group, row);
 		}
 		if (group.hasCourses()) {
 			for (DegreeCourseInterface course: group.getCourses()) {
-				List<Widget> row = new ArrayList<Widget>();
-				P indent = new P("indent");
-				for (int d = 1; d < depth; d++)
-					indent.add(new Image(RESOURCES.indentMiddleLine()));
-				for (int d = depth + 1; d <= maxDepth; d++)
-					indent.add(new Image(RESOURCES.indentBlankSpace()));
-				row.add(indent);
-				row.add(new Label(course.getName()));
-				row.add(new Label(course.getTitle() == null ? "" : course.getTitle()));
-				addRow(course, row);
+				if (!course.hasCourses()) {
+					List<Widget> row = new ArrayList<Widget>();
+					P indent = new P("indent");
+					for (int d = 1; d < depth; d++)
+						indent.add(new Image(RESOURCES.indentMiddleLine()));
+					for (int d = depth + 1; d <= maxDepth; d++)
+						indent.add(new Image(RESOURCES.indentTopSpace()));
+					row.add(indent);
+					if (group.isChoice()) {
+						row.add(new ChoiceButton(group, course));
+					} else {
+						row.add(new Label());
+					}
+					row.add(new Label(MESSAGES.course(course.getSubject(), course.getCourse()), false));
+					row.add(new Label(course.getTitle() == null ? "" : course.getTitle(), false));
+					row.add(new Label());
+					row.add(new Label());
+					row.add(new Label());
+					addRow(course, row);
+				} else if (course.getCourses().size() > 1 && !group.isChoice()) {
+					List<Widget> row = new ArrayList<Widget>();
+					P indent = new P("indent");
+					for (int d = 1; d < depth; d++)
+						indent.add(new Image(RESOURCES.indentMiddleLine()));
+					indent.add(new Image(RESOURCES.indentTopLine()));
+					for (int d = depth + 2; d <= maxDepth; d++)
+						indent.add(new Image(RESOURCES.indentTopSpace()));
+					row.add(indent);
+					if (group.isChoice() && !course.hasCourses()) {
+						row.add(new ChoiceButton(group, course));
+					} else {
+						row.add(new Label());
+					}
+					row.add(new GroupTitleCell(course.hasTitle() ? MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourse(), course.getTitle()) : MESSAGES.course(course.getSubject(), course.getCourse())));
+					row.add(new Label());
+					row.add(new Label());
+					row.add(new Label());
+					addRow(course, row);
+				}
+				if (course.hasCourses()) {
+					for (Iterator<CourseAssignment> i = course.getCourses().iterator(); i.hasNext(); ) {
+						CourseAssignment ca = i.next();
+						List<Widget> row = new ArrayList<Widget>();
+						P indent = new P("indent");
+						for (int d = 1; d < depth; d++)
+							indent.add(new Image(RESOURCES.indentMiddleLine()));
+						if (course.getCourses().size() == 1 || group.isChoice())
+							indent.add(new Image(RESOURCES.indentBlankSpace()));
+						else if (i.hasNext())
+							indent.add(new Image(RESOURCES.indentMiddleLine()));
+						else
+							indent.add(new Image(RESOURCES.indentLastLine()));
+						for (int d = depth + 2; d <= maxDepth; d++)
+							indent.add(new Image(RESOURCES.indentBlankSpace()));
+						row.add(indent);
+						if (group.isChoice())
+							row.add(new ChoiceButton(group, course, ca));
+						else if (course.hasMultipleCourses())
+							row.add(new ChoiceButton(course, ca));
+						else
+							row.add(new Label());
+						row.add(new Label(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), false));
+						row.add(new Label(ca.getTitle() == null ? "" : ca.getTitle(), false));
+						row.add(new HTML(ca.getLimit() == null || ca.getLimit() == 0 || ca.getEnrollment() == null ? "" : ca.getLimit() < 0 ? "&infin;" : (ca.getLimit() - ca.getEnrollment()) + " / " + ca.getLimit(), false));
+						row.add(new Label(ca.hasCredit() ? ca.getCreditAbbv() : "", false));
+						row.add(new NoteCell(ca.getNote()));
+						addRow(ca, row);
+					}
+				}
 			}
 		}
 		if (group.hasGroups()) {
 			for (DegreeGroupInterface g: group.getGroups())
-				addGroup(depth + 1, maxDepth, g);
+				addGroup(depth + 1, maxDepth, g, group);
 		}
 		if (group.hasPlaceHolders()) {
 			for (DegreePlaceHolderInterface p: group.getPlaceHolders()) {
@@ -109,8 +189,12 @@ public class DegreePlanTable extends UniTimeTable<DegreeItemInterface> implement
 					indent.add(new Image(RESOURCES.indentMiddleLine()));
 				for (int d = depth + 1; d <= maxDepth; d++)
 					indent.add(new Image(RESOURCES.indentBlankSpace()));
+				row.add(new Label());
 				row.add(indent);
 				row.add(new PlaceHolderCell(p.getName()));
+				row.add(new Label());
+				row.add(new Label());
+				row.add(new Label());
 				addRow(p, row);
 			}
 		}
@@ -123,7 +207,7 @@ public class DegreePlanTable extends UniTimeTable<DegreeItemInterface> implement
 	
 	public static class GroupTitleCell extends Label implements UniTimeTable.HasColSpan {
 		public GroupTitleCell(String label) {
-			super(label);
+			super(label, false);
 			addStyleName("grouplabel");
 		}
 
@@ -133,12 +217,124 @@ public class DegreePlanTable extends UniTimeTable<DegreeItemInterface> implement
 	
 	public static class PlaceHolderCell extends Label implements UniTimeTable.HasColSpan {
 		public PlaceHolderCell(String label) {
-			super(label);
+			super(label, false);
 			addStyleName("placeholder");
 		}
 
 		@Override
 		public int getColSpan() { return 2; }
+	}
+	
+	public static class ChoiceButton extends RadioButton {
+		public ChoiceButton(final DegreeGroupInterface parent, final DegreeCourseInterface course) {
+			super(parent.getId(), "");
+			setValue(course.isSelected());
+			addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
+				}
+			});
+			addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					if (parent.hasCourses()) {
+						for (DegreeCourseInterface c: parent.getCourses())
+							c.setSelected(course.getId().equals(c.getId()) ? event.getValue() : false);
+					}
+					if (parent.hasGroups()) {
+						for (DegreeGroupInterface g: parent.getGroups()) {
+							g.setSelected(false);
+						}
+					}
+				}
+			});
+		}
+		
+		public ChoiceButton(final DegreeGroupInterface parent, final DegreeGroupInterface group) {
+			super(parent.getId(), "");
+			setValue(group.isSelected());
+			addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
+				}
+			});
+			addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					if (parent.hasCourses()) {
+						for (DegreeCourseInterface c: parent.getCourses())
+							c.setSelected(false);
+					}
+					if (parent.hasGroups()) {
+						for (DegreeGroupInterface g: parent.getGroups()) {
+							g.setSelected(group.getId().equals(g.getId()) ? event.getValue() : false);
+						}
+					}
+				}
+			});
+		}
+		
+		public ChoiceButton(final DegreeCourseInterface parent, final CourseAssignment course) {
+			super(parent.getId(), "");
+			setValue(course.getCourseId().equals(parent.getCourseId()));
+			addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
+				}
+			});
+			addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					if (event.getValue()) {
+						parent.setCourseId(course.getCourseId());
+						parent.setName(course.getCourseName());
+					} else {
+						parent.setCourseId(null);
+						parent.setName(null);
+					}
+				}
+			});
+		}
+		
+		public ChoiceButton(final DegreeGroupInterface group, final DegreeCourseInterface parent, final CourseAssignment course) {
+			super(group.getId(), "");
+			setValue(course.getCourseId().equals(parent.getCourseId()) && parent.isSelected());
+			addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
+				}
+			});
+			addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					if (event.getValue()) {
+						parent.setCourseId(course.getCourseId());
+						parent.setName(course.getCourseName());
+					} else {
+						parent.setCourseId(null);
+						parent.setName(null);
+					}
+					if (group.hasCourses()) {
+						for (DegreeCourseInterface c: group.getCourses())
+							c.setSelected(parent.getId().equals(c.getId()) ? event.getValue() : false);
+					}
+					if (group.hasGroups()) {
+						for (DegreeGroupInterface g: group.getGroups()) {
+							g.setSelected(false);
+						}
+					}
+				}
+			});
+		}
+	}
+	
+	public static class NoteCell extends Label {
+		public NoteCell(String label) {
+			super(label == null ? "" : label, false);
+			if (label != null && !label.isEmpty())
+				setTitle(label);
+			addStyleName("note");
+		}
 	}
 
 }

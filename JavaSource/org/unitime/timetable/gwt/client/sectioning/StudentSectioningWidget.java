@@ -295,24 +295,27 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						LoadingWidget.getInstance().hide();
 						if (result == null || result.isEmpty()) {
 							setMessage(MESSAGES.failedNoDegreePlans());
-						} else if (result.size() == 1) {
-							if (iDegreePlanDialog == null) {
-								iDegreePlanDialog = new DegreePlanDialog();
-							}
-							iDegreePlanDialog.open(result.get(0));
 						} else {
 							if (iDegreePlanDialog == null) {
-								iDegreePlanDialog = new DegreePlanDialog();
-							}
-							if (iDegreePlansSelectionDialog == null) {
-								iDegreePlansSelectionDialog = new DegreePlansSelectionDialog() {
-									public void onSubmit(DegreePlanInterface plan) {
-										super.onSubmit(plan);
-										iDegreePlanDialog.open(plan);
+								iDegreePlanDialog = new DegreePlanDialog() {
+									protected void doBack() {
+										super.doBack();
+										iDegreePlansSelectionDialog.show();
 									}
 								};
 							}
-							iDegreePlansSelectionDialog.open(result);
+							if (iDegreePlansSelectionDialog == null) {
+								iDegreePlansSelectionDialog = new DegreePlansSelectionDialog() {
+									public void doSubmit(DegreePlanInterface plan) {
+										super.doSubmit(plan);
+										iDegreePlanDialog.open(plan, true);
+									}
+								};
+							}
+							if (result.size() == 1)
+								iDegreePlanDialog.open(result.get(0), false);
+							else
+								iDegreePlansSelectionDialog.open(result);
 						}
 					}
 				});

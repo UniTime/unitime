@@ -173,7 +173,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public Long getCourseId() { return iCourseId; }
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
 		
-		public boolean hasCourses() { return iCourses != null || !iCourses.isEmpty(); }
+		public boolean hasCourses() { return iCourses != null && !iCourses.isEmpty(); }
 		public boolean hasMultipleCourses() { return iCourses != null && iCourses.size() > 1; }
 		public List<CourseAssignment> getCourses() { return iCourses; }
 		public void addCourse(CourseAssignment course) {

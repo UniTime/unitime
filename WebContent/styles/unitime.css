@@ -4041,6 +4041,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitine-DegreePlanTable .indent {
 	margin-top: -4px;
 	margin-bottom: -4px;
+	white-space: nowrap;
 }
 
 .unitine-DegreePlanTable .placeholder {
@@ -4049,4 +4050,16 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitine-DegreePlanTable .grouplabel {
 	font-style: italic;	
+}
+
+.unitine-DegreePlanTable input[type="radio"] {
+	margin-top: 1px;
+	margin-bottom: 1px;
+}
+
+.unitine-DegreePlanTable .note {
+	max-width: 250px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }

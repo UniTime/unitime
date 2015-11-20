@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -30,6 +31,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 
 import com.google.gwt.core.client.GWT;
@@ -42,6 +44,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -51,6 +54,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
+	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	private static DateTimeFormat sModifiedDateFormat = ServerDateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	
 	private SimpleForm iForm;
@@ -65,7 +69,7 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 			@Override
 			public void execute() {
 				if (iTable.getSelectedRow() > 0)
-					onSubmit(iTable.getData(iTable.getSelectedRow()));
+					doSubmit(iTable.getData(iTable.getSelectedRow()));
 			}
 		});
 		setText(MESSAGES.dialogSelectDegreePlan());
@@ -85,18 +89,19 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 		setWidget(iForm);
 
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
+		header.add(new UniTimeTableHeader(""));
 		header.add(new UniTimeTableHeader(MESSAGES.colDegreePlanName()));
-		header.add(new UniTimeTableHeader(MESSAGES.colDegreePlanSchool()));
 		header.add(new UniTimeTableHeader(MESSAGES.colDegreePlanDegree()));
 		header.add(new UniTimeTableHeader(MESSAGES.colDegreePlanTrackStatus()));
 		header.add(new UniTimeTableHeader(MESSAGES.colDegreePlanLastModified()));
+		header.add(new UniTimeTableHeader(MESSAGES.colDegreePlanModifiedBy()));
 		iTable.addRow(null, header);
 		
 		iFooter.addButton("select", MESSAGES.buttonDegreePlanSelect(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iTable.getSelectedRow() > 0)
-					onSubmit(iTable.getData(iTable.getSelectedRow()));
+					doSubmit(iTable.getData(iTable.getSelectedRow()));
 			}
 		});
 		
@@ -111,27 +116,40 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 			@Override
 			public void onMouseClick(UniTimeTable.TableEvent<DegreePlanInterface> event) {
 				if (event.getData() != null)
-					onSubmit(event.getData());
+					doSubmit(event.getData());
 			}
 		});
 	}
 	
 	public void open(List<DegreePlanInterface> plans) {
 		iTable.clearTable(1);
-		int select = 1;
+		int select = -1;
 		for (DegreePlanInterface plan: plans) {
 			List<Widget> row = new ArrayList<Widget>();
+			P p = new P("icons");
+			if (plan.isLocked()) {
+				Image lock = new Image(RESOURCES.locked());
+				lock.setTitle(MESSAGES.hintLockedPlan());
+				p.add(lock);
+			} else if (plan.isActive()) {
+				Image active = new Image(RESOURCES.activePlan());
+				active.setTitle(MESSAGES.hintActivePlan());
+				p.add(active);
+			}
+			row.add(p);
 			row.add(new Label(plan.getName() == null ? "" : plan.getName()));
-			row.add(new Label(plan.getSchool() == null ? "" : plan.getSchool()));
 			row.add(new Label(plan.getDegree() == null ? "" : plan.getDegree()));
 			row.add(new Label(plan.getTrackingStatus() == null ? "" : plan.getTrackingStatus()));
 			row.add(new Label(plan.getLastModified() == null ? "" : sModifiedDateFormat.format(plan.getLastModified())));
+			row.add(new Label(plan.getModifiedWho() == null ? "" : plan.getModifiedWho()));
 			if (plan.getId().equals(iLastSubmit))
+				select = iTable.getRowCount();
+			else if (select < 0 && plan.isActive())
 				select = iTable.getRowCount();
 			iTable.addRow(plan, row);
 			
 		}
-		iTable.setSelected(select, true);
+		iTable.setSelected(select < 0 ? 1 : select, true);
 		center();
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
@@ -141,7 +159,7 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 		});
 	}
 	
-	public void onSubmit(DegreePlanInterface plan) {
+	public void doSubmit(DegreePlanInterface plan) {
 		iLastSubmit = plan.getId();
 		hide();
 	}
