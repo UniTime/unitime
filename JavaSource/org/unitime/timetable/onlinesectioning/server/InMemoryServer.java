@@ -300,11 +300,30 @@ public class InMemoryServer extends AbstractLockingServer {
 	public void clearAll() {
 		Lock lock = writeLock();
 		try {
-			iStudentTable.clear();
-			iOfferingTable.clear();
-			iCourseForId.clear();
-			iCourseForName.clear();
-			iOfferingRequests.clear();
+			if (iStudentTable == null)
+				iStudentTable = new Hashtable<Long, XStudent>();
+			else
+				iStudentTable.clear();
+			if (iOfferingTable == null)
+				iOfferingTable = new Hashtable<Long, XOffering>();
+			else
+				iOfferingTable.clear();
+			if (iOfferingRequests == null)
+				iOfferingRequests = new Hashtable<Long, List<XCourseRequest>>();
+			else
+				iOfferingRequests.clear();
+			if (iExpectations == null)
+				iExpectations = new Hashtable<Long, XExpectations>();
+			else
+				iExpectations.clear();
+			if (iCourseForId == null)
+				iCourseForId = new Hashtable<Long, XCourseId>();
+			else
+				iCourseForId.clear();
+			if (iCourseForName == null)
+				iCourseForName = new Hashtable<String, TreeSet<XCourseId>>();
+			else
+				iCourseForName.clear();
 		} finally {
 			lock.release();
 		}
