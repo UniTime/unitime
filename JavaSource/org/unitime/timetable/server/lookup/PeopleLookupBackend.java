@@ -110,6 +110,8 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 			cx.setLimit(ApplicationProperty.PeopleLookupLimit.intValue());
 			cx.setQuery(request.getQuery().trim().toLowerCase());
 			if (cx.getQueryTokens().isEmpty()) return new GwtRpcResponseList<PersonInterface>();
+			if (context != null)
+				cx.setAdmin(context.hasPermission(Right.IsAdmin));
 			
 			boolean displayWithoutId = true;
 			String[] sources = null;
@@ -282,7 +284,8 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 	"or lower(s.middleName) like '% ' || :t" + idx + " || '%' " +
                 	"or lower(s.lastName) like :t" + idx + " || '%' " +
                 	"or lower(s.lastName) like '% ' || :t" + idx + " || '%' " +
-                	"or lower(s.email) like :t" + idx + " || '%')";
+                	"or lower(s.email) like :t" + idx + " || '%'" +
+                	(context.isAdmin() ? "or s.externalUniqueId = :t" + idx : "") + ")";
         }
         q += " order by s.lastName, s.firstName, s.middleName";
         Query hq = StudentDAO.getInstance().getSession().createQuery(q);
@@ -421,6 +424,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 		private Long iSessionId = null;
 		private String iQuery = null;
 		private List<String> iTokens = null;
+		private boolean iAdmin = false;
 		
 		SearchContext() {}
 		
@@ -429,6 +433,9 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 		
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public Long getSessionId() { return iSessionId; }
+		
+		public void setAdmin(boolean admin) { iAdmin = admin; }
+		public boolean isAdmin() { return iAdmin; }
 		
 		public void setQuery(String query) {
 			iQuery = query;
