@@ -4034,8 +4034,6 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitine-DegreePlanTable {
-	min-width: 400px;
-	width: 100%;
 }
 
 .unitine-DegreePlanTable .indent {
@@ -4062,4 +4060,8 @@ unitime-RoomSharingWidget .legend .blank {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
+}
+
+.unitine-DegreePlanTable .course {
+	min-width: 100px;
 }

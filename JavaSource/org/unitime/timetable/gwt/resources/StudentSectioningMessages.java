@@ -1304,4 +1304,25 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("This plan is active.")
 	String hintActivePlan();
+	
+	@DefaultMessage("{0}, {1}")
+	String courseSeparatorMiddle(String list, String item);
+	
+	@DefaultMessage("{0}, and {1}")
+	String courseSeparatorLast(String list, String item);
+	
+	@DefaultMessage("{0} and {1}")
+	String courseSeparatorPair(String firstItem, String lastItem);
+	
+	@DefaultMessage("{0}, {1}")
+	String choiceSeparatorMiddle(String list, String item);
+	
+	@DefaultMessage("{0}, or {1}")
+	String choiceSeparatorLast(String list, String item);
+	
+	@DefaultMessage("{0} or {1}")
+	String choiceSeparatorPair(String firstItem, String lastItem);
+	
+	@DefaultMessage("({0})")
+	String surroundWithBrackets(String group);
 }

@@ -60,13 +60,24 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		setAllowSelection(true);
 		setAllowMultiSelect(false);
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
-		header.add(new UniTimeTableHeader(""));
-		header.add(new UniTimeTableHeader(""));
-		header.add(new UniTimeTableHeader(MESSAGES.colDegreeItemName()));
-		header.add(new UniTimeTableHeader(MESSAGES.colDegreeItemDescription()));
-		header.add(new UniTimeTableHeader(MESSAGES.colLimit()));
-		header.add(new UniTimeTableHeader(MESSAGES.colCredit()));
-		header.add(new UniTimeTableHeader(MESSAGES.colNote()));
+		UniTimeTableHeader hIndent = new UniTimeTableHeader("");
+		hIndent.setWidth("16px");
+		header.add(hIndent);
+		UniTimeTableHeader hName = new UniTimeTableHeader(MESSAGES.colDegreeItemName(), 2);
+		hName.setWidth("120px");
+		header.add(hName);
+		UniTimeTableHeader hTitle = new UniTimeTableHeader(MESSAGES.colDegreeItemDescription());
+		hTitle.setWidth("250px");
+		header.add(hTitle);
+		UniTimeTableHeader hLimit = new UniTimeTableHeader(MESSAGES.colLimit());
+		hLimit.setWidth("70px");
+		header.add(hLimit);
+		UniTimeTableHeader hCredit = new UniTimeTableHeader(MESSAGES.colCredit());
+		hCredit.setWidth("50px");
+		header.add(hCredit);
+		UniTimeTableHeader hNote = new UniTimeTableHeader(MESSAGES.colNote());
+		hNote.setWidth("250px");
+		header.add(hNote);
 		addRow(null, header);
 	}
 
@@ -84,7 +95,8 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	}
 	
 	protected void addGroup(int depth, int maxDepth, DegreeGroupInterface group, DegreeGroupInterface parent) {
-		if (depth > 1) {
+		boolean noChoice = group.isChoiceGroupWithNoChoice();
+		if (depth > 1 && !noChoice) {
 			List<Widget> row = new ArrayList<Widget>();
 			P indent = new P("indent");
 			for (int d = 1; d < depth - 1; d++)
@@ -95,13 +107,10 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			row.add(indent);
 			if (parent != null && parent.isChoice()) {
 				row.add(new ChoiceButton(parent, group));
+				row.add(new GroupTitleCell(group.toString(MESSAGES), true));
 			} else {
-				row.add(new Label());
+				row.add(new GroupTitleCell(group.toString(MESSAGES), false));
 			}
-			row.add(new GroupTitleCell(group.getDescription()));
-			row.add(new Label());
-			row.add(new Label());
-			row.add(new Label());
 			addRow(group, row);
 		}
 		if (group.hasCourses()) {
@@ -112,14 +121,14 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					for (int d = 1; d < depth; d++)
 						indent.add(new Image(RESOURCES.indentMiddleLine()));
 					for (int d = depth + 1; d <= maxDepth; d++)
-						indent.add(new Image(RESOURCES.indentTopSpace()));
+						indent.add(new Image(RESOURCES.indentBlankSpace()));
 					row.add(indent);
 					if (group.isChoice()) {
 						row.add(new ChoiceButton(group, course));
+						row.add(new CourseLabel(MESSAGES.course(course.getSubject(), course.getCourse()), true));
 					} else {
-						row.add(new Label());
+						row.add(new CourseLabel(MESSAGES.course(course.getSubject(), course.getCourse()), false));
 					}
-					row.add(new Label(MESSAGES.course(course.getSubject(), course.getCourse()), false));
 					row.add(new Label(course.getTitle() == null ? "" : course.getTitle(), false));
 					row.add(new Label());
 					row.add(new Label());
@@ -136,13 +145,10 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					row.add(indent);
 					if (group.isChoice() && !course.hasCourses()) {
 						row.add(new ChoiceButton(group, course));
+						row.add(new GroupTitleCell(course.hasTitle() ? MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourse(), course.getTitle()) : MESSAGES.course(course.getSubject(), course.getCourse()), true));
 					} else {
-						row.add(new Label());
+						row.add(new GroupTitleCell(course.hasTitle() ? MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourse(), course.getTitle()) : MESSAGES.course(course.getSubject(), course.getCourse()), false));
 					}
-					row.add(new GroupTitleCell(course.hasTitle() ? MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourse(), course.getTitle()) : MESSAGES.course(course.getSubject(), course.getCourse())));
-					row.add(new Label());
-					row.add(new Label());
-					row.add(new Label());
 					addRow(course, row);
 				}
 				if (course.hasCourses()) {
@@ -161,13 +167,15 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 						for (int d = depth + 2; d <= maxDepth; d++)
 							indent.add(new Image(RESOURCES.indentBlankSpace()));
 						row.add(indent);
-						if (group.isChoice())
+						if (group.isChoice()) {
 							row.add(new ChoiceButton(group, course, ca));
-						else if (course.hasMultipleCourses())
+							row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), true));
+						} else if (course.hasMultipleCourses()) {
 							row.add(new ChoiceButton(course, ca));
-						else
-							row.add(new Label());
-						row.add(new Label(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), false));
+							row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), true));
+						} else {
+							row.add(new CourseLabel(MESSAGES.course(ca.getSubject(), ca.getCourseNbr()), false));
+						}
 						row.add(new Label(ca.getTitle() == null ? "" : ca.getTitle(), false));
 						row.add(new HTML(ca.getLimit() == null || ca.getLimit() == 0 || ca.getEnrollment() == null ? "" : ca.getLimit() < 0 ? "&infin;" : (ca.getLimit() - ca.getEnrollment()) + " / " + ca.getLimit(), false));
 						row.add(new Label(ca.hasCredit() ? ca.getCreditAbbv() : "", false));
@@ -179,7 +187,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 		if (group.hasGroups()) {
 			for (DegreeGroupInterface g: group.getGroups())
-				addGroup(depth + 1, maxDepth, g, group);
+				addGroup(depth + (noChoice ? 0 : 1), maxDepth, g, group);
 		}
 		if (group.hasPlaceHolders()) {
 			for (DegreePlaceHolderInterface p: group.getPlaceHolders()) {
@@ -189,16 +197,12 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					indent.add(new Image(RESOURCES.indentMiddleLine()));
 				for (int d = depth + 1; d <= maxDepth; d++)
 					indent.add(new Image(RESOURCES.indentBlankSpace()));
-				row.add(new Label());
 				row.add(indent);
 				row.add(new PlaceHolderCell(p.getName()));
-				row.add(new Label());
-				row.add(new Label());
-				row.add(new Label());
 				addRow(p, row);
 			}
 		}
-		if (depth > 1 && getRowCount() > 1) {
+		if (depth > 1 && getRowCount() > 1 && !noChoice) {
 			P indent = (P)getWidget(getRowCount() - 1, 0);
 			indent.remove(depth - 2);
 			indent.insert(new Image(RESOURCES.indentLastLine()), depth - 2);
@@ -206,13 +210,29 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	}
 	
 	public static class GroupTitleCell extends Label implements UniTimeTable.HasColSpan {
-		public GroupTitleCell(String label) {
+		private boolean iHasChoice;
+		
+		public GroupTitleCell(String label, boolean hasChoice) {
 			super(label, false);
 			addStyleName("grouplabel");
+			iHasChoice = hasChoice;
 		}
 
 		@Override
-		public int getColSpan() { return 2; }
+		public int getColSpan() { return (iHasChoice ? 5 : 6); }
+	}
+	
+	public static class CourseLabel extends Label implements UniTimeTable.HasColSpan {
+		private boolean iHasChoice;
+		
+		public CourseLabel(String label, boolean hasChoice) {
+			super(label, false);
+			addStyleName("course");
+			iHasChoice = hasChoice;
+		}
+
+		@Override
+		public int getColSpan() { return (iHasChoice ? 1 : 2); }
 	}
 	
 	public static class PlaceHolderCell extends Label implements UniTimeTable.HasColSpan {
@@ -222,7 +242,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 
 		@Override
-		public int getColSpan() { return 2; }
+		public int getColSpan() { return 5; }
 	}
 	
 	public static class ChoiceButton extends RadioButton {

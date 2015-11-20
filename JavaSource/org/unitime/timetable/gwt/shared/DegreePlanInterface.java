@@ -22,8 +22,10 @@ package org.unitime.timetable.gwt.shared;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -124,12 +126,21 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public String getDescription() { return hasDescription() ? iDescription : toString(); }
 		public void setDescription(String description) { iDescription = description; }
 		
+		public boolean isChoiceGroupWithNoChoice() {
+			if (!isChoice()) return false;
+			int nrChoices = (hasPlaceHolders() ? getPlaceHolders().size() : 0) +
+					(hasGroups() ? getGroups().size() : 0) +
+					(hasCourses() ? getCourses().size() : 0);
+			return nrChoices == 1;
+		}
+		
 		public int getMaxDepth() {
 			if (iGroups == null || iGroups.isEmpty()) return (!isChoice() && hasMultipleCourses() ? 2 : 1);
 			int ret = 0;
 			for (DegreeGroupInterface g: iGroups)
 				if (ret < g.getMaxDepth())
 					ret = g.getMaxDepth();
+			if (isChoiceGroupWithNoChoice()) ret --;
 			return 1 + ret;
 		}
 		
@@ -146,6 +157,42 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 				for (DegreePlaceHolderInterface ph: iPlaceHolders)
 					ret += (ret.isEmpty() ? "" : iChoice ? " and " : " or ") + ph;
 			return ret;
+		}
+		
+		public String toString(StudentSectioningMessages MESSAGES) {
+			List<String> items = new ArrayList<String>();
+			if (iCourses != null)
+				for (DegreeCourseInterface course: iCourses)
+					items.add(MESSAGES.course(course.getSubject(), course.getCourse()));
+			if (iGroups != null)
+				for (DegreeGroupInterface group: iGroups)
+					items.add(group.isChoiceGroupWithNoChoice() ? group.toString(MESSAGES) : MESSAGES.surroundWithBrackets(group.toString(MESSAGES)));
+			if (iPlaceHolders != null)
+				for (DegreePlaceHolderInterface ph: iPlaceHolders)
+					items.add(ph.getType());
+			switch (items.size()) {
+			case 0:
+				return "";
+			case 1:
+				return items.get(0);
+			case 2:
+				return (isChoice() ? MESSAGES.choiceSeparatorPair(items.get(0), items.get(1)) : MESSAGES.courseSeparatorPair(items.get(0), items.get(1)));
+			default:
+				String ret = null;
+				for (Iterator<String> i = items.iterator(); i.hasNext(); ) {
+					String item = i.next();
+					if (ret == null)
+						ret = item;
+					else {
+						if (i.hasNext()) {
+							ret = (isChoice() ? MESSAGES.choiceSeparatorMiddle(ret, item) : MESSAGES.courseSeparatorMiddle(ret, item));
+						} else {
+							ret = (isChoice() ? MESSAGES.choiceSeparatorLast(ret, item) : MESSAGES.courseSeparatorLast(ret, item));
+						}
+					}
+				}
+				return ret;
+			}
 		}
 	}
 
