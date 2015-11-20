@@ -19,15 +19,22 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.cpsolver.ifs.util.CSVFile;
+import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.locking.LockService;
@@ -39,6 +46,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.reports.OnlineSectioningReport.Counter;
 import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
 import org.unitime.timetable.solver.jgroups.DummySolverServer;
@@ -50,15 +58,17 @@ import org.unitime.timetable.solver.jgroups.SolverServer;
 public abstract class OnlineSectioningTestFwk { 
 	protected static Logger sLog = Logger.getLogger(OnlineSectioningTestFwk.class);
 	protected static DecimalFormat sDF = new DecimalFormat("0.000");
-	private OnlineSectioningServer iServer = null;
+	protected OnlineSectioningServer iServer = null;
 	private Pool iTasks;
 	private List<Runner> iRunners;
-	private Counter iFinished = new Counter(), iExec = new Counter(), iQuality = new Counter();
+	private SynchronizedCounter iFinished = new SynchronizedCounter(), iExec = new SynchronizedCounter(), iQuality = new SynchronizedCounter();
 	private double iT0 = 0;
 	private double iRunTime = 0.0;
 	private JChannel iChannel = null;
-	private SolverServer iSolverServer = null;
-	private Long iSessionId = null;
+	protected SolverServer iSolverServer = null;
+	protected Long iSessionId = null;
+	private Map<String, Counter> iCounters = new Hashtable<String, Counter>();
+	private Map<String, Map<String, Map<String, Counter>>> iReports = new Hashtable<String, Map<String,Map<String,Counter>>>();
     
 	protected void configureLogging() {
         Properties props = new Properties();
@@ -218,7 +228,7 @@ public abstract class OnlineSectioningTestFwk {
 		}
 	}
 	
-	public static class Counter {
+	public static class SynchronizedCounter {
 		private double iValue = 0;
 		private int iCount = 0;
 		
@@ -287,6 +297,7 @@ public abstract class OnlineSectioningTestFwk {
 				break;
 			}
 			sLog.info(toString());
+			logCounters();
 		} while (nrFinished() < operations.size());
 		sLog.info("All " + toString());
 	}
@@ -316,6 +327,10 @@ public abstract class OnlineSectioningTestFwk {
 				run(nrTasks <= 0 || operations.size() <= nrTasks ? operations : operations.subList(0, nrTasks), c);
 			}
 			
+			logCounters();
+			
+			writeReports();
+			
 			stopServer();
 		} catch (Exception e) {
 			sLog.fatal("Test failed: " + e.getMessage(), e);
@@ -323,5 +338,80 @@ public abstract class OnlineSectioningTestFwk {
 			close();
 		}
 	}
-
+	
+	public double inc(String counter, double value) {
+		synchronized (iCounters) {
+			Counter cnt = iCounters.get(counter);
+			if (cnt == null) {
+				cnt = new Counter();
+				iCounters.put(counter, cnt);
+			}
+			cnt.inc(value);
+			return cnt.sum();
+		}
+	}
+	
+	public void inc(String report, String record, String property, double value) {
+		synchronized (iReports) {
+			Map<String, Map<String, Counter>> table = iReports.get(report);
+			if (table == null) {
+				table = new Hashtable<String, Map<String,Counter>>();
+				iReports.put(report, table);
+			}
+			Map<String, Counter> line = table.get(record);
+			if (line == null) {
+				line = new Hashtable<String, Counter>();
+				table.put(record, line);
+			}
+			Counter counter = line.get(property);
+			if (counter == null) {
+				counter = new Counter();
+				line.put(property, counter);
+			}
+			counter.inc(value);
+		}
+	}
+	
+	protected void logCounters() {
+		synchronized (iCounters) {
+			for (String name: new TreeSet<String>(iCounters.keySet())) {
+				sLog.info("  " + name + ": " + iCounters.get(name));
+			}
+		}
+	}
+		
+	protected void writeReports() {
+		synchronized (iReports) {
+			for (Map.Entry<String, Map<String, Map<String, Counter>>> report: iReports.entrySet()) {
+				TreeSet<String> rows = new TreeSet<String>(report.getValue().keySet());
+				TreeSet<String> cols = new TreeSet<String>();
+				CSVFile csv = new CSVFile();
+				for (Map.Entry<String, Map<String, Counter>> record: report.getValue().entrySet()) {
+					cols.addAll(record.getValue().keySet());
+				}
+				List<CSVField> header = new ArrayList<CSVField>();
+				header.add(new CSVField(report.getKey()));
+				for (String col: cols)
+					header.add(new CSVField(col));
+				csv.setHeader(header);
+				for (String row: rows) {
+					List<CSVField> line = new ArrayList<CSVField>();
+					line.add(new CSVField(row));
+					Map<String, Counter> table = report.getValue().get(row);
+					for (String col: cols) {
+						Counter counter = table.get(col);
+						line.add(new CSVField(counter == null ? "" : String.valueOf(counter.sum())));
+					}
+					csv.addLine(line);
+				}
+				try {
+					File output = new File(report.getKey() + ".csv");
+					sLog.info("Writing " + output + " ...");
+					csv.save(output);
+				} catch (IOException e) {
+					sLog.error("Unable to write report " + report.getKey() + ": " + e.getMessage(), e);
+				}
+			}			
+		}
+	}
 }
