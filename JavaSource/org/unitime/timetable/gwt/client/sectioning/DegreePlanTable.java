@@ -378,5 +378,19 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			addStyleName("note");
 		}
 	}
+	
+	public boolean canChoose(int row) {
+		if (row <= 1 || row >= getRowCount()) return false;
+		Widget w = getWidget(row, 1);
+		return (w != null && w instanceof ChoiceButton);
+	}
+	
+	public void chooseRow(int row, boolean value) {
+		if (row <= 1 || row >= getRowCount()) return;
+		Widget w = getWidget(row, 1);
+		if (w != null && w instanceof ChoiceButton) {
+			((ChoiceButton)w).setValue(value, true);
+		}
+	}
 
 }

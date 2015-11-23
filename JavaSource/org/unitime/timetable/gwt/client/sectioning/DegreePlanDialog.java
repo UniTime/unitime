@@ -19,18 +19,35 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
+import org.unitime.timetable.gwt.client.widgets.CourseFinder.CourseFinderCourseDetails;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.event.dom.client.DoubleClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ScrollPanel;
 
@@ -44,10 +61,13 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	private SimpleForm iForm;
 	private DegreePlanTable iDegreePlanTable;
 	private ScrollPanel iDegreePlanPanel;
+	private CourseFinderCourseDetails[] iDetails = null;
+	private UniTimeTabPanel iCourseDetailsTabPanel = null;
 	private Button iBack;
 	private UniTimeHeaderPanel iFooter;
+	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	
-	public DegreePlanDialog() {
+	public DegreePlanDialog(CourseFinderCourseDetails... details) {
 		super(true, false);
 		setEscapeToHide(true);
 		addStyleName("unitime-DegreePlanDialog");
@@ -59,6 +79,43 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 		iDegreePlanPanel.setStyleName("unitime-ScrollPanel");
 		iDegreePlanPanel.addStyleName("plan");
 		iForm.addRow(iDegreePlanPanel);
+		iDegreePlanTable.addMouseClickListener(new UniTimeTable.MouseClickListener<Object>() {
+			@Override
+			public void onMouseClick(TableEvent<Object> event) {
+				updateCourseDetails(event.getData());
+			}
+		});
+		iDegreePlanTable.addDoubleClickHandler(new DoubleClickHandler() {
+			@Override
+			public void onDoubleClick(DoubleClickEvent event) {
+				if (iDegreePlanTable.canChoose(iDegreePlanTable.getSelectedRow()))
+					iDegreePlanTable.chooseRow(iDegreePlanTable.getSelectedRow(), true);
+			}
+		});
+		
+		iCourseDetailsTabPanel = new UniTimeTabPanel();
+		iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
+		iCourseDetailsTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
+			@Override
+			public void onSelection(SelectionEvent<Integer> event) {
+				Cookies.setCookie("UniTime:CourseFinderCourses", String.valueOf(event.getSelectedItem()));
+			}
+		});
+		iForm.addRow(iCourseDetailsTabPanel);
+		iDetails = details;
+		int tabIndex = 0;
+		for (CourseFinderCourseDetails detail: iDetails) {
+			ScrollPanel panel = new ScrollPanel(detail.asWidget());
+			panel.setStyleName("unitime-ScrollPanel-inner");
+			panel.getElement().getStyle().setWidth(786, Unit.PX);
+			panel.getElement().getStyle().setHeight(200, Unit.PX);
+			iCourseDetailsTabPanel.add(panel, detail.getName(), true);
+			Character ch = UniTimeHeaderPanel.guessAccessKey(detail.getName());
+			if (ch != null)
+				iTabAccessKeys.put(ch, tabIndex);
+			tabIndex++;
+		}
+		selectLastTab();
 		
 		iFooter = new UniTimeHeaderPanel();
 		iFooter.addButton("apply", MESSAGES.buttonDegreePlanApply(), new ClickHandler() {
@@ -97,6 +154,18 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 		iBack.setVisible(hasBack); iBack.setEnabled(hasBack);
 		center();
 	}
+	
+	private void selectLastTab() {
+		try {
+			int tab = Integer.valueOf(Cookies.getCookie("UniTime:CourseFinderCourses"));
+			if (tab >= 0 || tab < iCourseDetailsTabPanel.getTabCount() && tab != iCourseDetailsTabPanel.getSelectedTab())
+				iCourseDetailsTabPanel.selectTab(tab);
+			else
+				iCourseDetailsTabPanel.selectTab(0);
+		} catch (Exception e) {
+			iCourseDetailsTabPanel.selectTab(0);
+		}
+	}
 
 	protected void doBack() {
 		hide();
@@ -104,5 +173,57 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	
 	protected void doApply() {
 		hide();
+	}
+	
+    @Override
+	protected void onPreviewNativeEvent(NativePreviewEvent event) {
+		super.onPreviewNativeEvent(event);
+		if (event.getTypeInt() == Event.ONKEYUP && (event.getNativeEvent().getAltKey() || event.getNativeEvent().getCtrlKey())) {
+			for (Map.Entry<Character, Integer> entry: iTabAccessKeys.entrySet())
+				if (event.getNativeEvent().getKeyCode() == Character.toLowerCase(entry.getKey()) || event.getNativeEvent().getKeyCode()  == Character.toUpperCase(entry.getKey())) {
+					iCourseDetailsTabPanel.selectTab(entry.getValue());
+				}
+		}
+		if (event.getTypeInt() == Event.ONKEYDOWN) {
+			if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_UP) {
+				int row = iDegreePlanTable.getSelectedRow();
+				if (row >= 0)
+					iDegreePlanTable.setSelected(row, false);
+				row --;
+				if (row <= 0) row = iDegreePlanTable.getRowCount() - 1;
+				iDegreePlanTable.setSelected(row, true);
+				updateCourseDetails(iDegreePlanTable.getData(row));
+			} else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN) {
+				int row = iDegreePlanTable.getSelectedRow();
+				if (row >= 0)
+					iDegreePlanTable.setSelected(row, false);
+				else
+					row = 0;
+				row ++;
+				if (row >= iDegreePlanTable.getRowCount()) row = 1;
+				iDegreePlanTable.setSelected(row, true);
+				updateCourseDetails(iDegreePlanTable.getData(row));
+			}
+		}
+		if (event.getTypeInt() == Event.ONKEYUP && (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_SPACE || event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER)) {
+			if (iDegreePlanTable.canChoose(iDegreePlanTable.getSelectedRow()))
+				iDegreePlanTable.chooseRow(iDegreePlanTable.getSelectedRow(), true);
+		}
+	}
+    
+	protected void updateCourseDetails(Object data) {
+		if (data == null || !(data instanceof CourseAssignment)) {
+			if (iDetails != null)
+				for (CourseFinderCourseDetails detail: iDetails) {
+					detail.setValue(null);
+				}
+		} else {
+			CourseAssignment course = (CourseAssignment)data;
+			String courseName = MESSAGES.courseName(course.getSubject(), course.getCourseNbr());
+			if (CONSTANTS.showCourseTitle() && course.hasTitle())
+				courseName = MESSAGES.courseNameWithTitle(course.getSubject(), course.getCourseNbr(), course.getTitle());
+			for (CourseFinderCourseDetails detail: iDetails)
+				detail.setValue(courseName);
+		}
 	}
 }

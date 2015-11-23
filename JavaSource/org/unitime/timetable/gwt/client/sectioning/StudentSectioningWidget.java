@@ -296,8 +296,22 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (result == null || result.isEmpty()) {
 							setMessage(MESSAGES.failedNoDegreePlans());
 						} else {
+							CourseFinderDetails details = new CourseFinderDetails();
+							details.setDataProvider(new DataProvider<String, String>() {
+								@Override
+								public void getData(String source, AsyncCallback<String> callback) {
+									iSectioningService.retrieveCourseDetails(iSessionSelector.getAcademicSessionId(), source, callback);
+								}
+							});
+							CourseFinderClasses classes = new CourseFinderClasses();
+							classes.setDataProvider(new DataProvider<String, Collection<ClassAssignment>>() {
+								@Override
+								public void getData(String source, AsyncCallback<Collection<ClassAssignment>> callback) {
+									iSectioningService.listClasses(iSessionSelector.getAcademicSessionId(), source, callback);
+								}
+							});
 							if (iDegreePlanDialog == null) {
-								iDegreePlanDialog = new DegreePlanDialog() {
+								iDegreePlanDialog = new DegreePlanDialog(details, classes) {
 									protected void doBack() {
 										super.doBack();
 										iDegreePlansSelectionDialog.show();
