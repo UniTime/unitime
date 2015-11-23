@@ -140,6 +140,6 @@ public interface StudentSectioningResources extends ClientBundle {
 	@Source("org/unitime/timetable/gwt/resources/icons/indent-blank-space.png")
 	ImageResource indentBlankSpace();
 	
-	@Source("org/unitime/timetable/gwt/resources/icons/black_star.png")
+	@Source("org/unitime/timetable/gwt/resources/icons/star.png")
 	ImageResource activePlan();
 }

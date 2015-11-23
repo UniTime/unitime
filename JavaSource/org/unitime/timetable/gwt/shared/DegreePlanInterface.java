@@ -113,6 +113,21 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 			if (iGroups == null) iGroups = new ArrayList<DegreeGroupInterface>();
 			iGroups.add(group);
 		}
+		public void merge(DegreeGroupInterface group) {
+			if (group.hasCourses())
+				for (DegreeCourseInterface course: group.getCourses())
+					addCourse(course);
+			if (group.hasPlaceHolders())
+				for (DegreePlaceHolderInterface ph: group.getPlaceHolders())
+					addPlaceHolder(ph);
+			if (group.hasGroups())
+				for (DegreeGroupInterface g: group.getGroups()) {
+					if (isChoice() == g.isChoice())
+						merge(g);
+					else
+						addGroup(g);
+				}
+		}
 		public boolean hasPlaceHolders() { return iPlaceHolders != null && !iPlaceHolders.isEmpty(); }
 		public List<DegreePlaceHolderInterface> getPlaceHolders() { return iPlaceHolders; }
 		public void addPlaceHolder(DegreePlaceHolderInterface placeHolder) {
@@ -126,8 +141,12 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public String getDescription() { return hasDescription() ? iDescription : toString(); }
 		public void setDescription(String description) { iDescription = description; }
 		
-		public boolean isChoiceGroupWithNoChoice() {
-			if (!isChoice()) return false;
+		public int countItems() {
+			return (hasPlaceHolders() ? getPlaceHolders().size() : 0) + (hasGroups() ? getGroups().size() : 0) + (hasCourses() ? getCourses().size() : 0);
+		}
+
+		public boolean isUnionGroupWithOneChoice() {
+			if (isChoice()) return false;
 			int nrChoices = (hasPlaceHolders() ? getPlaceHolders().size() : 0) +
 					(hasGroups() ? getGroups().size() : 0) +
 					(hasCourses() ? getCourses().size() : 0);
@@ -140,7 +159,6 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 			for (DegreeGroupInterface g: iGroups)
 				if (ret < g.getMaxDepth())
 					ret = g.getMaxDepth();
-			if (isChoiceGroupWithNoChoice()) ret --;
 			return 1 + ret;
 		}
 		
@@ -166,7 +184,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 					items.add(MESSAGES.course(course.getSubject(), course.getCourse()));
 			if (iGroups != null)
 				for (DegreeGroupInterface group: iGroups)
-					items.add(group.isChoiceGroupWithNoChoice() ? group.toString(MESSAGES) : MESSAGES.surroundWithBrackets(group.toString(MESSAGES)));
+					items.add(MESSAGES.surroundWithBrackets(group.toString(MESSAGES)));
 			if (iPlaceHolders != null)
 				for (DegreePlaceHolderInterface ph: iPlaceHolders)
 					items.add(ph.getType());

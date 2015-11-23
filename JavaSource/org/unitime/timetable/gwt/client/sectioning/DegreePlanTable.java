@@ -95,8 +95,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	}
 	
 	protected void addGroup(int depth, int maxDepth, DegreeGroupInterface group, DegreeGroupInterface parent) {
-		boolean noChoice = group.isChoiceGroupWithNoChoice();
-		if (depth > 1 && !noChoice) {
+		if (depth > 1) {
 			List<Widget> row = new ArrayList<Widget>();
 			P indent = new P("indent");
 			for (int d = 1; d < depth - 1; d++)
@@ -130,9 +129,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 						row.add(new CourseLabel(MESSAGES.course(course.getSubject(), course.getCourse()), false));
 					}
 					row.add(new TitleLabel(course.getTitle() == null ? "" : course.getTitle()));
-					row.add(new Label());
-					row.add(new Label());
-					row.add(new Label());
+					row.add(new CourseNotOfferedLabel(MESSAGES.plannedCourseNotOffered(MESSAGES.course(course.getSubject(), course.getCourse()))));
 					addRow(course, row);
 				} else if (course.getCourses().size() > 1 && !group.isChoice()) {
 					List<Widget> row = new ArrayList<Widget>();
@@ -187,7 +184,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 		if (group.hasGroups()) {
 			for (DegreeGroupInterface g: group.getGroups())
-				addGroup(depth + (noChoice ? 0 : 1), maxDepth, g, group);
+				addGroup(depth + 1, maxDepth, g, group);
 		}
 		if (group.hasPlaceHolders()) {
 			for (DegreePlaceHolderInterface p: group.getPlaceHolders()) {
@@ -202,7 +199,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 				addRow(p, row);
 			}
 		}
-		if (depth > 1 && getRowCount() > 1 && !noChoice) {
+		if (depth > 1 && getRowCount() > 1) {
 			P indent = (P)getWidget(getRowCount() - 1, 0);
 			indent.remove(depth - 2);
 			indent.insert(new Image(RESOURCES.indentLastLine()), depth - 2);
@@ -236,6 +233,17 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		public int getColSpan() { return (iHasChoice ? 1 : 2); }
 	}
 	
+	public static class CourseNotOfferedLabel extends Label implements UniTimeTable.HasColSpan {
+
+		public CourseNotOfferedLabel(String label) {
+			super(label, false);
+			addStyleName("error");
+		}
+
+		@Override
+		public int getColSpan() { return 3; }
+	}
+	
 	public static class TitleLabel extends Label {
 		
 		public TitleLabel(String label) {
@@ -259,6 +267,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		public ChoiceButton(final DegreeGroupInterface parent, final DegreeCourseInterface course) {
 			super(parent.getId(), "");
 			setValue(course.isSelected());
+			setTitle(MESSAGES.hintChoiceGroupSelection(MESSAGES.course(course.getSubject(), course.getCourse())));
 			addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
 					event.stopPropagation();
@@ -283,6 +292,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		public ChoiceButton(final DegreeGroupInterface parent, final DegreeGroupInterface group) {
 			super(parent.getId(), "");
 			setValue(group.isSelected());
+			setTitle(MESSAGES.hintChoiceGroupSelection(group.toString(MESSAGES)));
 			addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
 					event.stopPropagation();
@@ -306,6 +316,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		
 		public ChoiceButton(final DegreeCourseInterface parent, final CourseAssignment course) {
 			super(parent.getId(), "");
+			setTitle(MESSAGES.hintChoiceGroupSelection(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
 			setValue(course.getCourseId().equals(parent.getCourseId()));
 			addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
@@ -328,6 +339,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		
 		public ChoiceButton(final DegreeGroupInterface group, final DegreeCourseInterface parent, final CourseAssignment course) {
 			super(group.getId(), "");
+			setTitle(MESSAGES.hintChoiceGroupSelection(MESSAGES.course(course.getSubject(), course.getCourseNbr())));
 			setValue(course.getCourseId().equals(parent.getCourseId()) && parent.isSelected());
 			addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {

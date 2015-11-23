@@ -334,6 +334,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		group.setId(g.id);
 		if (g.plannedClasses != null)
 			for (XEInterface.Course c: g.plannedClasses) {
+				if (c.courseDiscipline == null || c.courseNumber == null) continue;
 				DegreePlanInterface.DegreeCourseInterface course = new DegreePlanInterface.DegreeCourseInterface();
 				if (group.isChoice())
 					course.setSelected(c.isGroupSelection);
@@ -393,9 +394,13 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		if (g.groups != null)
 			for (XEInterface.Group ch: g.groups) {
 				DegreePlanInterface.DegreeGroupInterface childGroup = toGroup(server, ch);
-				if (group.isChoice())
-					childGroup.setSelected(hasSelection(ch));
-				group.addGroup(childGroup);
+				if (childGroup.countItems() <= 1 || childGroup.isChoice() == group.isChoice()) {
+					group.merge(childGroup);
+				} else {
+					if (group.isChoice())
+						childGroup.setSelected(hasSelection(ch));
+					group.addGroup(childGroup);
+				}
 			}
 		return group;
 	}

@@ -1325,4 +1325,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("({0})")
 	String surroundWithBrackets(String group);
+	
+	@DefaultMessage("Course {0} is not offered.")
+	String plannedCourseNotOffered(String course);
+	
+	@DefaultMessage("Select {0}")
+	String hintChoiceGroupSelection(String courseOrGroup);
 }

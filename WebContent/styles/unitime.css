@@ -4048,7 +4048,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitine-DegreePlanTable .placeholder {
-	font-style: italic;	
+	font-style: italic;
 	max-width: 750px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
@@ -4084,4 +4084,14 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitine-DegreePlanTable .course {
 	min-width: 100px;
+}
+
+.unitine-DegreePlanTable .error {
+	max-width: 370px;
+	font-style: italic;
+	color: red;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	text-align: center;
 }
