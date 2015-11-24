@@ -539,8 +539,10 @@ public class SectioningStatusPage extends Composite {
 			String q = SectioningStatusCookie.getInstance().getQuery(iOnline);
 			if (q != null) iFilter.setValue(q);
 			int t = SectioningStatusCookie.getInstance().getTab(iOnline);
-			if (t >= 0 && t < iTabPanel.getTabCount())
+			if (t >= 0 && t < iTabPanel.getTabCount()) {
 				iTabPanel.selectTab(t, false);
+				iTabIndex = -1;
+			}
 			if (GWT_CONSTANTS.searchWhenPageIsLoaded() && q != null && !q.isEmpty())
 				loadData();
 		}
@@ -559,6 +561,11 @@ public class SectioningStatusPage extends Composite {
 	}
 	
 	private void loadDataIfNeeded() {
+		if (iTabIndex < 0) {
+			iTabPanel.selectTab(SectioningStatusCookie.getInstance().getTab(iOnline));
+			return;
+		}
+		
 		iCourseFilter = iFilter.getValue();
 		iCourseFilterRequest = iFilter.getElementsRequest();
 		History.newItem(iCourseFilter + (iTabIndex == 1 ? "@" : iTabIndex == 2 ? "$" : ""), false);
