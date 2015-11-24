@@ -41,20 +41,20 @@
 					<line>Name of the default duration type is used in the column headers (Classes, Instructional Offerings), abbreviation is used to suffix durations that are using a non-default duration type.</line>
 				</line>
 				<line>Following class duration types have been implemented:
-					<line>Minutes per Week (default): this is the existing behaviour (minutes per week == number of meetings x minutes per meeting)</line>
-					<line>Average Weekly Mintes: average number of minutes a class takes during a week (weekly minutes = number of meetings x minutes per meeting x number of weeks of the data pattern / number of weeks in the term)
-						<line>Paramter: number of weeks in the term (defaults to the number of weeks of the default date pattern)</line>
+					<line>Minutes per Week (default): this is the existing behavior (minutes per week == number of meetings x minutes per meeting)</line>
+					<line>Average Weekly Minutes: average number of minutes a class takes during a week (weekly minutes = number of meetings x minutes per meeting x number of weeks of the data pattern / number of weeks in the term)
+						<line>Parameter: number of weeks in the term (defaults to the number of weeks of the default date pattern)</line>
 					</line>
 					<line>Semester Minutes: number of minutes in the semester (semester minutes == number of meetings x minutes per meeting x number of weeks of the data pattern)</line>
 					<line>Semester Hours: number of hours in the semester (semester hours == number of meetings x minutes per meeting x number of weeks of the data pattern / minutes in an hour)
-						<line>Paramter: number of minutes in an hour (defaults to 50)</line>
+						<line>Parameter: number of minutes in an hour (defaults to 50)</line>
 					</line>
 					<line>Meetings Minutes: number of minutes of all the meetings, excluding vacations (meeting minutes == number of meetings based on the date pattern x minutes per meeting)
 						<line>Parameters: allowed variation of the meeting minutes, expressed as lower and upper bound (defaults to 0.95,1.10 -- meaning a class can have 5% less time, combinations with 10% more time will be also considered).</line>
 						<line>If the number of meetings based on the date pattern exceeds the desired number of meeting minutes, only meetings covering the given number of meeting minutes are created.</line>
 					</line>
 					<line>Meeting Hours: just like meeting minutes, but with hours (semester hours == number of meetings based on the date pattern x minutes per meeting / minutes in an hour)
-						<line>Paramters: number of minutes in an hour and the allowed variation of the meeting minutes (defaults to 50,0.95,1.10 -- 50 minutes in an hour, 5% less time allowed, combinations with up to 10% excess time are considered).</line>
+						<line>Parameters: number of minutes in an hour and the allowed variation of the meeting minutes (defaults to 50,0.95,1.10 -- 50 minutes in an hour, 5% less time allowed, combinations with up to 10% excess time are considered).</line>
 					</line>
 				</line>
 				<line>It is possible to hide class duration types that are not to be used by the users.
@@ -66,7 +66,7 @@
 			<name>Cancelled Classes</name>
 			<description>
 				<line>Added ability to cancel a class.</line>
-				<line>Multiple Class Setup page: class with enrolments cannot be deleted, but it could be cancelled instead.</line>
+				<line>Multiple Class Setup page: class with enrollments cannot be deleted, but it could be cancelled instead.</line>
 				<line>Cancelled classes retain their committed assignment, but the appropriate class event is cancelled.</line>
 				<line>Cancelled classes are not loaded into the course timetabling solver.</line>
 				<line>Cancelled classes cannot be edited or re-assigned and they do not block the room or instructor.</line>
@@ -97,7 +97,7 @@
 					<line>The same checking as on the Class Assignment page is used.</line>
 				</line>
 				<line>Instructional Offering Detail: Highlight conflicting classes with light red background.
-					<line>Conflicting classes are listed in the tooltip (more details are provided on the Class Detail page, see above).</line>
+					<line>Conflicting classes are listed in the tool-tip (more details are provided on the Class Detail page, see above).</line>
 				</line>
 				<line>Conflict checking: avoid showing conflicts between classes that can overlap because of the Can Share Room or the Meet Together distribution.</line>
 			</description>
@@ -260,7 +260,7 @@
 			<description>
 				<line>Added ability to filter what student will get loaded into the batch student scheduling solver using a boolean query.</line>
 				<line>Solver parameter Load.StudentQuery, when set each student must match the query to be loaded in.
-					<line>Students not matching the query would only count agains the limits, just like with the no-batch status.</line>
+					<line>Students not matching the query would only count against the limits, just like with the no-batch status.</line>
 					<line>The parameter could be used together with the no-batch student status (both filters will apply in such a case).</line>
 				</line>
 				<line>Available query terms (similar to the Filter of the Student Dashboard):
@@ -269,7 +269,7 @@
 					<line>major (code of the academic major)</line>
 					<line>clasf or classification (code of the academic classification)</line>
 					<line>group (code of the student group)</line>
-					<line>accommodation (code of the student accomodation)</line>
+					<line>accommodation (code of the student accommodation)</line>
 					<line>student (external id of the student)</line>
 				</line>
 				<line>Examples:
@@ -300,10 +300,11 @@
 			<description>
 				<line>Added ability to use automated wait-listing together with the student enrollment provider interface.</line>
 				<line>Added ability to load course requests from an external system when there are none in UniTime (for a student).</line>
+				<line>Added ability to display degree plans from an external system.</line>
 			</description>
 		</item>
 		<item>
-			<name>Student Scheduling Assisstant</name>
+			<name>Student Scheduling Assistant</name>
 			<description>
 				<line>Added ability to hide Rearrange Schedule button.
 					<line>By setting unitime.enrollment.allowScheduleReset to false, defaults to true.</line>
@@ -360,7 +361,7 @@
 			</description>
 		</item>
 		<item>
-			<name>Poeple Lookup dialog</name>
+			<name>People Lookup dialog</name>
 			<description>
 				<line>Added individual lookup permissions to be able to filter what sources can be searched (by a user of the given role).</line>
 				<line>The following permissions were added:
@@ -375,7 +376,7 @@
 				<line>On the personal schedule (event management), if another person is looked up, the new permissions are also used to filter the role:
 					<line>Can Lookup Students is needed for the Student role (person is enrolled in a class, an exam, or a course related event as a student).</line>
 					<line>Can Lookup Instructors is needed for the Instructor and Coordinator roles (person is assigned to a class or an exam as an instructor or coordinator).</line>
-					<line>Can Lookup Event Contacts is needd for the Contact role (person is listed among contacts of the event).</line>
+					<line>Can Lookup Event Contacts is needed for the Contact role (person is listed among contacts of the event).</line>
 				</line>
 			</description>
 		</item>
@@ -384,7 +385,7 @@
 			<description>
 				<line>UniTime now offers a number of RESTful APIs (many of which have been merged back to UniTime 3.5 and 4.0), using JSON messages.</line>
 				<line>Most APIs are for getting data out of UniTime, but there are a few exceptions.</line>
-				<line>Following conntectors have been created so far: (including UniTime 3.5 and 4.0)
+				<line>Following connectors have been created so far: (including UniTime 3.5 and 4.0)
 					<line>/api/events: ability to retrieve events (using the EventInterface class converted to JSON, example: GET UniTime/api/events?type=PERSON&amp;ext=1001&amp;term=Fal2010)</line>
 					<line>/api/json: JSON interface for GWT calls (that implement the GwtRpcRequest interface)</line>
 					<line>/api/exchange: to export/import UniTime's data exchange XML files
@@ -395,9 +396,9 @@
 					<line>/api/enrollments?eventId=&lt;id&gt; returns student enrollments for an event, a class (when classId parameter is used instead),
 						 an exam (examId), a course offering (courseId), an instructional offering (offeringId), or instructional offering configuration (configId)</line>
 					<line>/api/instructor-schedule?id=&lt;externalId&gt;&amp;term=&lt;term&gt; returns classes, courses, and examinations assigned to an instructor.</line>
-					<line>/api/class-info?classId=&lt;id&gt; returns information about a class (including assinged instructors and coordinators)</line>
+					<line>/api/class-info?classId=&lt;id&gt; returns information about a class (including assigned instructors and coordinators)</line>
 				</line>
-				<line>Following conntectors are only available in UniTime 4.1:
+				<line>Following connectors are only available in UniTime 4.1:
 					<line>/api/rooms: ability to retrieve rooms (using RoomDetailInterface class converted to JSON, example GET UniTime/api/rooms?r:building=EDUC)
 						<line>The rooms API can be also used to create, update and delete rooms and to retrieve, upload and delete room pictures.</line>
 					</line>
