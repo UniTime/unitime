@@ -4033,6 +4033,10 @@ unitime-RoomSharingWidget .legend .blank {
 	margin: 1px 3px 0px 3px;
 }
 
+.unitime-SelectDegreePlan .plans-table {
+	min-width: 450px;
+}
+
 .unitime-DegreePlanDialog .plan {
 	width: 790px;
 	height: 300px;

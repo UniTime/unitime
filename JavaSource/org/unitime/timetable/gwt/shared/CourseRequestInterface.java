@@ -230,15 +230,15 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public String toString() {
 			if (iAlternative) {
 				switch (iChoice) {
-				case 0: return iPriority + ".";
-				case 1: return iPriority + "A.";
-				default: return iPriority + "B.";
+				case 0: return "Alt " + iPriority + ".";
+				case 1: return "Alt " + iPriority + "A.";
+				default: return "Alt " + iPriority + "B.";
 				}
 			} else {
 				switch (iChoice) {
-				case 0: return "Alt " + iPriority + ".";
-				case 1: return "Alt " + iPriority + "A.";
-				default: return"Alt " + iPriority + "B.";
+				case 0: return iPriority + ".";
+				case 1: return iPriority + "A.";
+				default: return iPriority + "B.";
 				}
 			}
 		}
@@ -246,15 +246,15 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public String toString(StudentSectioningMessages MESSAGES) {
 			if (iAlternative) {
 				switch (iChoice) {
-				case 0: return MESSAGES.degreeRequestedCourse(iPriority);
-				case 1: return MESSAGES.degreeRequestedCourseFirstAlt(iPriority);
-				default: return MESSAGES.degreeRequestedCourseSecondAlt(iPriority);
-				}
-			} else {
-				switch (iChoice) {
 				case 0: return MESSAGES.degreeRequestedAlternative(iPriority);
 				case 1: return MESSAGES.degreeRequestedAlternativeFirstAlt(iPriority);
 				default: return MESSAGES.degreeRequestedAlternativeSecondAlt(iPriority);
+				}
+			} else {
+				switch (iChoice) {
+				case 0: return MESSAGES.degreeRequestedCourse(iPriority);
+				case 1: return MESSAGES.degreeRequestedCourseFirstAlt(iPriority);
+				default: return MESSAGES.degreeRequestedCourseSecondAlt(iPriority);
 				}
 			}
 			
