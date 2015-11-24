@@ -70,11 +70,13 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	private Button iBack;
 	private UniTimeHeaderPanel iFooter;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
+	private TakesValue<CourseRequestInterface> iRequests;
 	
 	public DegreePlanDialog(TakesValue<CourseRequestInterface> requests, AssignmentProvider assignments, CourseFinderCourseDetails... details) {
 		super(true, false);
 		setEscapeToHide(true);
 		addStyleName("unitime-DegreePlanDialog");
+		iRequests = requests;
 		
 		iForm = new SimpleForm();
 		
@@ -177,6 +179,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	
 	protected void doApply() {
 		hide();
+		iRequests.setValue(iDegreePlanTable.createRequests());
 	}
 	
     @Override

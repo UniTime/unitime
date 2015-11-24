@@ -71,6 +71,22 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 	public boolean isLocked() { return iLocked; }
 	public void setLocked(boolean locked) { iLocked = locked; }
 	
+	public List<DegreeCourseInterface> listSelected() {
+		List<DegreeCourseInterface> ret = new ArrayList<DegreeCourseInterface>();
+		if (iGroup != null) iGroup.listSelected(ret);
+		return ret;
+	}
+	
+	public boolean hasCourse(String course) {
+		if (iGroup != null) return iGroup.hasCourse(course);
+		return false;
+	}
+	
+	public boolean isCourseSelected(String course) {
+		if (iGroup != null) return iGroup.isCourseSelected(course);
+		return false;
+	}
+	
 	@Override
 	public String toString() { return iName + ": " + iGroup; }
 	
@@ -212,6 +228,48 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 				return ret;
 			}
 		}
+		
+		protected void listSelected(List<DegreeCourseInterface> requested) {
+			if (hasCourses())
+				for (DegreeCourseInterface course: getCourses())
+					if (!isChoice() || course.isSelected()) requested.add(course);
+			if (hasGroups())
+				for (DegreeGroupInterface g: getGroups())
+					if (!isChoice() || g.isSelected()) g.listSelected(requested);
+		}
+		
+		protected boolean hasCourse(String name) {
+			if (iCourses != null)
+				for (DegreeCourseInterface course: iCourses) {
+					if (course.hasCourses()) {
+						for (CourseAssignment ca: course.getCourses())
+							if (name.equalsIgnoreCase(ca.getCourseName()) || name.equalsIgnoreCase(ca.getCourseNameWithTitle())) return true;
+					}
+					if (name.equals(course.getCourseName()) || name.equalsIgnoreCase(course.getCourseNameWithTitle())) return true;
+				}
+			if (iGroups != null)
+				for (DegreeGroupInterface g: iGroups)
+					if (g.hasCourse(name)) return true;
+			return false;
+		}
+		
+		protected boolean isCourseSelected(String name) {
+			if (iCourses != null)
+				for (DegreeCourseInterface course: iCourses) {
+					if (isChoice() && !course.isSelected()) continue;
+					if (course.hasCourses() && course.getCourseId() != null) {
+						for (CourseAssignment ca: course.getCourses())
+							if (course.getCourseId().equals(ca.getCourseId()) && (name.equalsIgnoreCase(ca.getCourseName()) || name.equalsIgnoreCase(ca.getCourseNameWithTitle()))) return true;
+					} else {
+						if (name.equals(course.getCourseName()) || name.equalsIgnoreCase(course.getCourseNameWithTitle())) return true;
+					}
+				}
+			if (iGroups != null)
+				for (DegreeGroupInterface g: iGroups) {
+					if ((!isChoice() || g.isSelected()) && g.hasCourse(name)) return true;
+				}
+			return false;
+		}
 	}
 
 	public static class DegreeCourseInterface extends DegreeItemInterface {
@@ -236,6 +294,13 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public Long getCourseId() { return iCourseId; }
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
 		
+		public String getCourseName() {
+			return getSubject() + " " + getCourse();
+		}
+		public String getCourseNameWithTitle() {
+			return hasTitle() ? getSubject() + " " + getCourse() + " - " + getTitle() : getSubject() + " " + getCourse();
+		}
+		
 		public boolean hasCourses() { return iCourses != null && !iCourses.isEmpty(); }
 		public boolean hasMultipleCourses() { return iCourses != null && iCourses.size() > 1; }
 		public List<CourseAssignment> getCourses() { return iCourses; }
@@ -244,8 +309,19 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 			iCourses.add(course);
 		}
 		
+		public CourseAssignment getSelectedCourse() {
+			if (iCourses != null && iCourseId != null)
+				for (CourseAssignment course: iCourses)
+					if (iCourseId.equals(course.getCourseId())) return course;
+			return null;
+		}
+		
 		@Override
-		public String toString() { return iSubject + " " + iCourse; }
+		public String toString() {
+			CourseAssignment ca = getSelectedCourse();
+			if (ca != null) return ca.getCourseName();
+			return getCourseName();
+		}
 	}
 	
 	public static class DegreePlaceHolderInterface extends DegreeItemInterface {

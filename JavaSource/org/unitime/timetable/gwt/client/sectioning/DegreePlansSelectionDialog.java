@@ -92,7 +92,6 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 		header.add(new UniTimeTableHeader(""));
 		header.add(new UniTimeTableHeader(MESSAGES.colDegreePlanName()));
 		header.add(new UniTimeTableHeader(MESSAGES.colDegreePlanDegree()));
-		header.add(new UniTimeTableHeader(MESSAGES.colDegreePlanTrackStatus()));
 		header.add(new UniTimeTableHeader(MESSAGES.colDegreePlanLastModified()));
 		header.add(new UniTimeTableHeader(MESSAGES.colDegreePlanModifiedBy()));
 		iTable.addRow(null, header);
@@ -139,7 +138,6 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 			row.add(p);
 			row.add(new Label(plan.getName() == null ? "" : plan.getName()));
 			row.add(new Label(plan.getDegree() == null ? "" : plan.getDegree()));
-			row.add(new Label(plan.getTrackingStatus() == null ? "" : plan.getTrackingStatus()));
 			row.add(new Label(plan.getLastModified() == null ? "" : sModifiedDateFormat.format(plan.getLastModified())));
 			row.add(new Label(plan.getModifiedWho() == null ? "" : plan.getModifiedWho()));
 			if (plan.getId().equals(iLastSubmit))

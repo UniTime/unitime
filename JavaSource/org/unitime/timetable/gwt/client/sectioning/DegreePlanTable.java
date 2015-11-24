@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.client.sectioning.DegreePlanDialog.AssignmentPr
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -55,6 +56,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<DegreePlanInterface>{
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
+	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	
 	private DegreePlanInterface iPlan;
 	private TakesValue<CourseRequestInterface> iRequests;
@@ -106,50 +108,11 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 	}
 	
-	public int getSelectionScore(CourseRequestInterface requests, CourseAssignment assignment) {
-		int priority = 3 * (1 + requests.getCourses().size() + requests.getAlternatives().size());
-		String course = MESSAGES.course(assignment.getSubject(), assignment.getCourseNbr());
-		String courseWithTitle = MESSAGES.courseNameWithTitle(assignment.getSubject(), assignment.getCourseNbr(), assignment.getTitle());
-		for (CourseRequestInterface.Request r: requests.getCourses()) {
-			if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse())) return priority;
-			priority --;
-			if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative())) return priority;
-			priority --;
-			if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative())) return priority;
-			priority --;
-		}
-		for (CourseRequestInterface.Request r: requests.getAlternatives()) {
-			if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse())) return priority;
-			priority --;
-			if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative())) return priority;
-			priority --;
-			if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative())) return priority;
-			priority --;
-		}
-		return 0;
-	}
-	
-	public int getSelectionScore(CourseRequestInterface requests, DegreeCourseInterface c) {
-		int priority = 3 * (1 + requests.getCourses().size() + requests.getAlternatives().size());
-		String course = MESSAGES.course(c.getSubject(), c.getCourse());
-		String courseWithTitle = MESSAGES.courseNameWithTitle(c.getSubject(), c.getCourse(), c.getTitle());
-		for (CourseRequestInterface.Request r: requests.getCourses()) {
-			if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse())) return priority;
-			priority --;
-			if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative())) return priority;
-			priority --;
-			if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative())) return priority;
-			priority --;
-		}
-		for (CourseRequestInterface.Request r: requests.getAlternatives()) {
-			if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse())) return priority;
-			priority --;
-			if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative())) return priority;
-			priority --;
-			if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative())) return priority;
-			priority --;
-		}
-		return 0;
+	private int toScore(CourseRequestInterface requests, CourseRequestInterface.RequestPriority priority) {
+		if (priority == null) return 0;
+		int size = requests.getCourses().size() + requests.getAlternatives().size();
+		int index = priority.getPriority() - 1 + (priority.isAlternative() ? requests.getCourses().size() : 0);
+		return 3 * (size + index) - priority.getChoice();
 	}
 	
 	protected int getSelectionScore(CourseRequestInterface requests, DegreeCourseInterface course, CourseAssignment assignment) {
@@ -157,12 +120,18 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		if (course.isSelected())
 			ret += 1;
 		if (assignment != null) {
-			ret += getSelectionScore(requests, assignment);
+			CourseRequestInterface.RequestPriority priority = requests.getRequestPriority(assignment.getCourseName());
+			if (priority == null && assignment.hasTitle())
+				priority = requests.getRequestPriority(assignment.getCourseNameWithTitle());
+			ret += toScore(requests, priority);
 			if (isSaved(assignment)) {
 				if (isLast(assignment)) ret += 1000;
 			} else if (isLast(assignment)) ret += 100;
 		} else {
-			ret += getSelectionScore(requests, course);
+			CourseRequestInterface.RequestPriority priority = requests.getRequestPriority(course.getCourseName());
+			if (priority == null && course.hasTitle())
+				priority = requests.getRequestPriority(course.getCourseNameWithTitle());
+			ret += toScore(requests, priority);
 		}
 		return ret;
 	}
@@ -238,7 +207,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 						CourseAssignment bestCA = null;
 						if (course.hasCourses()) {
 							for (CourseAssignment ca: course.getCourses()) {
-								int selection = getSelectionScore(requests, ca);
+								int selection = getSelectionScore(requests, course, ca);
 								if (selection > bestSelection) {
 									bestSelection = selection; bestCA = ca;
 								}
@@ -252,11 +221,11 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 				}
 		} else if (group.hasCourses()) {
 			for (DegreeCourseInterface course: group.getCourses()) {
-				int bestSelection = 0;
+				int bestSelection = -1;
 				CourseAssignment bestCA = null;
 				if (course.hasCourses()) {
 					for (CourseAssignment ca: course.getCourses()) {
-						int selection = getSelectionScore(requests, ca);
+						int selection = getSelectionScore(requests, course, ca);
 						if (selection > bestSelection) {
 							bestSelection = selection; bestCA = ca;
 						}
@@ -574,35 +543,11 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	public static class RequestPriorityCell extends Label {
 		
 		public RequestPriorityCell(CourseRequestInterface requests, CourseAssignment assignment) {
-			setText(getRequestPriority(requests, assignment));
+			CourseRequestInterface.RequestPriority rp = requests.getRequestPriority(assignment.getCourseName());
+			if (rp == null && assignment.hasTitle()) rp = requests.getRequestPriority(assignment.getCourseNameWithTitle()); 
+			setText(rp == null ? "" : rp.toString(MESSAGES));
 			setWordWrap(false);
 			addStyleName("request");
-		}
-		
-		protected static String getRequestPriority(CourseRequestInterface requests, CourseAssignment assignment) {
-			int priority = 1;
-			String course = MESSAGES.course(assignment.getSubject(), assignment.getCourseNbr());
-			String courseWithTitle = MESSAGES.courseNameWithTitle(assignment.getSubject(), assignment.getCourseNbr(), assignment.getTitle());
-			for (CourseRequestInterface.Request r: requests.getCourses()) {
-				if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse()))
-					return MESSAGES.degreeRequestedCourse(priority);
-				if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative()))
-					return MESSAGES.degreeRequestedCourseFirstAlt(priority);
-				if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative()))
-					return MESSAGES.degreeRequestedCourseSecondAlt(priority);
-				priority ++;
-			}
-			priority = 1;
-			for (CourseRequestInterface.Request r: requests.getAlternatives()) {
-				if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse()))
-					return MESSAGES.degreeRequestedAlternative(priority);
-				if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative()))
-					return MESSAGES.degreeRequestedAlternativeFirstAlt(priority);
-				if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative()))
-					return MESSAGES.degreeRequestedAlternativeSecondAlt(priority);
-				priority ++;
-			}
-			return "";
 		}
 	}
 	
@@ -636,5 +581,91 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					 return true;
 		}
 		return false;
+	}
+	
+	protected boolean isLast(String course) {
+		if (course == null || course.isEmpty()) return false;
+		if (iAssignments.getLastAssignment() != null) {
+			for (ClassAssignmentInterface.CourseAssignment c: iAssignments.getLastAssignment().getCourseAssignments())
+				if ((course.equalsIgnoreCase(c.getCourseName()) || course.equalsIgnoreCase(c.getCourseNameWithTitle())) && c.isAssigned())
+					return true;
+		}
+		return false;
+	}
+	
+	protected boolean isSaved(String course) {
+		if (course == null || course.isEmpty()) return false;
+		if (iAssignments.getSavedAssignment() != null) {
+			 for (ClassAssignmentInterface.CourseAssignment c: iAssignments.getSavedAssignment().getCourseAssignments())
+				 if ((course.equalsIgnoreCase(c.getCourseName()) || course.equalsIgnoreCase(c.getCourseNameWithTitle())) && c.isAssigned())
+					 return true;
+		}
+		return false;
+	}
+	
+	public CourseRequestInterface createRequests() {
+		CourseRequestInterface requests = iRequests.getValue();
+		// 1. delete all requests that are not assigned
+		for (Iterator<CourseRequestInterface.Request> i = requests.getCourses().iterator(); i.hasNext(); ) {
+			CourseRequestInterface.Request request = i.next();
+			if (isLast(request.getRequestedCourse()) || isLast(request.getFirstAlternative()) || isLast(request.getSecondAlternative())) {
+				if (!isLast(request.getSecondAlternative()) && iPlan.hasCourse(request.getSecondAlternative())) {
+					request.setSecondAlternative(null);
+				}
+				if (!isLast(request.getFirstAlternative()) && iPlan.hasCourse(request.getFirstAlternative())) {
+					request.setFirstAlternative(request.getSecondAlternative());
+					request.setSecondAlternative(null);
+				}
+				if (!isLast(request.getRequestedCourse()) && iPlan.hasCourse(request.getRequestedCourse())) {
+					request.setRequestedCourse(request.getFirstAlternative());
+					request.setFirstAlternative(request.getSecondAlternative());
+					request.setSecondAlternative(null);
+				}
+				// Only drop the request if the student selected a different course (from a choice)
+				if (isLast(request.getRequestedCourse()) && iPlan.hasCourse(request.getRequestedCourse()) && !iPlan.isCourseSelected(request.getRequestedCourse())) {
+					i.remove();
+				} else if (isLast(request.getFirstAlternative()) && iPlan.hasCourse(request.getFirstAlternative()) && !iPlan.isCourseSelected(request.getFirstAlternative())) {
+					i.remove();
+				} else if (isLast(request.getSecondAlternative()) && iPlan.hasCourse(request.getSecondAlternative()) && !iPlan.isCourseSelected(request.getSecondAlternative())) {
+					i.remove();
+				}
+			} else {
+				i.remove();
+			}
+		}
+		// 2. move all assigned alternate requests up into the requests table
+		for (Iterator<CourseRequestInterface.Request> i = requests.getAlternatives().iterator(); i.hasNext(); ) {
+			CourseRequestInterface.Request request = i.next();
+			if (isLast(request.getRequestedCourse()) || isLast(request.getFirstAlternative()) || isLast(request.getSecondAlternative())) {
+				if (!isLast(request.getSecondAlternative()) && iPlan.hasCourse(request.getSecondAlternative())) {
+					request.setSecondAlternative(null);
+				}
+				if (!isLast(request.getFirstAlternative()) && iPlan.hasCourse(request.getFirstAlternative())) {
+					request.setFirstAlternative(request.getSecondAlternative());
+					request.setSecondAlternative(null);
+				}
+				if (!isLast(request.getRequestedCourse()) && iPlan.hasCourse(request.getRequestedCourse())) {
+					request.setRequestedCourse(request.getFirstAlternative());
+					request.setFirstAlternative(request.getSecondAlternative());
+					request.setSecondAlternative(null);
+				}
+				requests.getCourses().add(request);
+			}
+			i.remove();
+		}
+		// 3. put in all selected courses, skip those that are already in there
+		for (DegreeCourseInterface course: iPlan.listSelected()) {
+			CourseAssignment ca = course.getSelectedCourse();
+			if (ca != null) {
+				CourseRequestInterface.RequestPriority p = requests.getRequestPriority(ca.getCourseName());
+				if (p == null && ca.hasTitle()) p = requests.getRequestPriority(ca.getCourseNameWithTitle());
+				if (p != null) continue;
+				CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+				r.setRequestedCourse(CONSTANTS.showCourseTitle() ? MESSAGES.courseNameWithTitle(ca.getSubject(), ca.getCourseNbr(), ca.getTitle()) : MESSAGES.course(ca.getSubject(), ca.getCourseNbr()));
+				requests.getCourses().add(r);
+			}
+		}
+		
+		return requests;
 	}
 }

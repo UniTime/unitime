@@ -22,6 +22,8 @@ package org.unitime.timetable.gwt.shared;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -55,6 +57,31 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	
 	public boolean isUpdateLastRequest() { return iUpdateLastRequest == null || iUpdateLastRequest.booleanValue(); }
 	public void setUpdateLastRequest(boolean updateLastRequest) { iUpdateLastRequest = updateLastRequest; }
+	
+	public RequestPriority getRequestPriority(String course) {
+		if (course == null || course.isEmpty()) return null;
+		int priority = 1;
+		for (CourseRequestInterface.Request r: getCourses()) {
+			if (course.equalsIgnoreCase(r.getRequestedCourse()))
+				return new RequestPriority(false, priority, 0, r);
+			if (course.equalsIgnoreCase(r.getFirstAlternative()))
+				return new RequestPriority(false, priority, 1, r);
+			if (course.equalsIgnoreCase(r.getSecondAlternative()))
+				return new RequestPriority(false, priority, 2, r);
+			priority ++;
+		}
+		priority = 1;
+		for (CourseRequestInterface.Request r: getAlternatives()) {
+			if (course.equalsIgnoreCase(r.getRequestedCourse()))
+				return new RequestPriority(true, priority, 0, r);
+			if (course.equalsIgnoreCase(r.getFirstAlternative()))
+				return new RequestPriority(true, priority, 1, r);
+			if (course.equalsIgnoreCase(r.getSecondAlternative()))
+				return new RequestPriority(true, priority, 2, r);
+			priority ++;
+		}
+		return null;
+	}
 
 	public static class FreeTime implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
@@ -180,5 +207,57 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 			ret += "\n  A" + (idx++) + ". " + r;
 		return ret + "\n})";
 		
+	}
+	
+	public static class RequestPriority implements IsSerializable {
+		private boolean iAlternative = false;
+		private int iPriority = 0;
+		private int iChoice = 0;
+		private CourseRequestInterface.Request iRequest;
+		
+		RequestPriority(boolean alternative, int priority, int choice, CourseRequestInterface.Request request) {
+			iAlternative = alternative;
+			iPriority = priority;
+			iChoice = choice;
+			iRequest = request;
+		}
+		
+		public boolean isAlternative() { return iAlternative; }
+		public int getPriority() { return iPriority; }
+		public int getChoice() { return iChoice; }
+		public CourseRequestInterface.Request getRequest() { return iRequest; }
+		
+		public String toString() {
+			if (iAlternative) {
+				switch (iChoice) {
+				case 0: return iPriority + ".";
+				case 1: return iPriority + "A.";
+				default: return iPriority + "B.";
+				}
+			} else {
+				switch (iChoice) {
+				case 0: return "Alt " + iPriority + ".";
+				case 1: return "Alt " + iPriority + "A.";
+				default: return"Alt " + iPriority + "B.";
+				}
+			}
+		}
+		
+		public String toString(StudentSectioningMessages MESSAGES) {
+			if (iAlternative) {
+				switch (iChoice) {
+				case 0: return MESSAGES.degreeRequestedCourse(iPriority);
+				case 1: return MESSAGES.degreeRequestedCourseFirstAlt(iPriority);
+				default: return MESSAGES.degreeRequestedCourseSecondAlt(iPriority);
+				}
+			} else {
+				switch (iChoice) {
+				case 0: return MESSAGES.degreeRequestedAlternative(iPriority);
+				case 1: return MESSAGES.degreeRequestedAlternativeFirstAlt(iPriority);
+				default: return MESSAGES.degreeRequestedAlternativeSecondAlt(iPriority);
+				}
+			}
+			
+		}
 	}
 }

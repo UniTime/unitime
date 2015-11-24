@@ -1260,9 +1260,6 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Degree")
 	String colDegreePlanDegree();
 	
-	@DefaultMessage("Status")
-	String colDegreePlanTrackStatus();
-	
 	@DefaultMessage("Modified")
 	String colDegreePlanLastModified();
 	
