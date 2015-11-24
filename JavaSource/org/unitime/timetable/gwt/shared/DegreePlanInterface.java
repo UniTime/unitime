@@ -217,7 +217,7 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 	public static class DegreeCourseInterface extends DegreeItemInterface {
 		private static final long serialVersionUID = 1L;
 		private Long iCourseId = null;
-		private String iSubject, iCourse, iTitle, iName;
+		private String iSubject, iCourse, iTitle;
 		private Boolean iSelected = null;
 		private List<CourseAssignment> iCourses;
 		
@@ -233,8 +233,6 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 		public boolean hasSelected() { return iSelected != null; }
 		public boolean isSelected() { return iSelected == null || iSelected.booleanValue(); }
 		public void setSelected(boolean selected) { iSelected = selected; }
-		public String getName() { return iName == null ? iSubject + " " + iCourse : iName; }
-		public void setName(String name) { iName = name; }
 		public Long getCourseId() { return iCourseId; }
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
 		

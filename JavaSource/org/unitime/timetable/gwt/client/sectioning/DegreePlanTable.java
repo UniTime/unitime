@@ -23,11 +23,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.sectioning.DegreePlanDialog.AssignmentProvider;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeCourseInterface;
@@ -54,8 +57,12 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	
 	private DegreePlanInterface iPlan;
+	private TakesValue<CourseRequestInterface> iRequests;
+	private AssignmentProvider iAssignments;
 	
-	public DegreePlanTable() {
+	public DegreePlanTable(TakesValue<CourseRequestInterface> requests, AssignmentProvider assignments) {
+		iRequests = requests;
+		iAssignments = assignments;
 		addStyleName("unitine-DegreePlanTable");
 		setAllowSelection(true);
 		setAllowMultiSelect(false);
@@ -67,7 +74,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		hName.setWidth("120px");
 		header.add(hName);
 		UniTimeTableHeader hTitle = new UniTimeTableHeader(MESSAGES.colDegreeItemDescription());
-		hTitle.setWidth("250px");
+		hTitle.setWidth("200px");
 		header.add(hTitle);
 		UniTimeTableHeader hLimit = new UniTimeTableHeader(MESSAGES.colLimit());
 		hLimit.setWidth("70px");
@@ -76,8 +83,11 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		hCredit.setWidth("50px");
 		header.add(hCredit);
 		UniTimeTableHeader hNote = new UniTimeTableHeader(MESSAGES.colNote());
-		hNote.setWidth("250px");
+		hNote.setWidth("220px");
 		header.add(hNote);
+		UniTimeTableHeader hReq = new UniTimeTableHeader(MESSAGES.colRequestPriority(), 2);
+		hReq.setWidth("70px");
+		header.add(hReq);
 		addRow(null, header);
 	}
 
@@ -90,11 +100,178 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 	public void setValue(DegreePlanInterface plan) {
 		iPlan = plan;
 		clearTable(1);
-		if (plan.getGroup() != null)
-			addGroup(1, plan.getGroup().getMaxDepth(), plan.getGroup(), null);
+		if (plan.getGroup() != null) {
+			fixSelection(iRequests.getValue(), plan.getGroup(), null);
+			addGroup(1, plan.getGroup().getMaxDepth(), iRequests.getValue(), plan.getGroup(), null);
+		}
 	}
 	
-	protected void addGroup(int depth, int maxDepth, DegreeGroupInterface group, DegreeGroupInterface parent) {
+	public int getSelectionScore(CourseRequestInterface requests, CourseAssignment assignment) {
+		int priority = 3 * (1 + requests.getCourses().size() + requests.getAlternatives().size());
+		String course = MESSAGES.course(assignment.getSubject(), assignment.getCourseNbr());
+		String courseWithTitle = MESSAGES.courseNameWithTitle(assignment.getSubject(), assignment.getCourseNbr(), assignment.getTitle());
+		for (CourseRequestInterface.Request r: requests.getCourses()) {
+			if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse())) return priority;
+			priority --;
+			if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative())) return priority;
+			priority --;
+			if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative())) return priority;
+			priority --;
+		}
+		for (CourseRequestInterface.Request r: requests.getAlternatives()) {
+			if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse())) return priority;
+			priority --;
+			if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative())) return priority;
+			priority --;
+			if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative())) return priority;
+			priority --;
+		}
+		return 0;
+	}
+	
+	public int getSelectionScore(CourseRequestInterface requests, DegreeCourseInterface c) {
+		int priority = 3 * (1 + requests.getCourses().size() + requests.getAlternatives().size());
+		String course = MESSAGES.course(c.getSubject(), c.getCourse());
+		String courseWithTitle = MESSAGES.courseNameWithTitle(c.getSubject(), c.getCourse(), c.getTitle());
+		for (CourseRequestInterface.Request r: requests.getCourses()) {
+			if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse())) return priority;
+			priority --;
+			if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative())) return priority;
+			priority --;
+			if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative())) return priority;
+			priority --;
+		}
+		for (CourseRequestInterface.Request r: requests.getAlternatives()) {
+			if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse())) return priority;
+			priority --;
+			if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative())) return priority;
+			priority --;
+			if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative())) return priority;
+			priority --;
+		}
+		return 0;
+	}
+	
+	protected int getSelectionScore(CourseRequestInterface requests, DegreeCourseInterface course, CourseAssignment assignment) {
+		int ret = 0;
+		if (course.isSelected())
+			ret += 1;
+		if (assignment != null) {
+			ret += getSelectionScore(requests, assignment);
+			if (isSaved(assignment)) {
+				if (isLast(assignment)) ret += 1000;
+			} else if (isLast(assignment)) ret += 100;
+		} else {
+			ret += getSelectionScore(requests, course);
+		}
+		return ret;
+	}
+	
+	protected int getSelectionScore(CourseRequestInterface requests, DegreeGroupInterface unionGroup) {
+		int ret = 0;
+		if (unionGroup.isSelected())
+			ret += 1;
+		if (unionGroup.hasCourses()) {
+			int sum = 0;
+			for (DegreeCourseInterface course: unionGroup.getCourses()) {
+				if (course.hasCourses()) {
+					double max = 0;
+					for (CourseAssignment ca: course.getCourses())
+						max = Math.max(max, getSelectionScore(requests, course, ca));
+					sum += max;
+				} else {
+					sum += getSelectionScore(requests, course, null);
+				}
+			}
+			ret += Math.round((1.0 / unionGroup.getCourses().size()) * sum);
+		}
+		return ret;
+	}
+	
+	protected void fixSelection(CourseRequestInterface requests, DegreeGroupInterface group, DegreeGroupInterface parent) {
+		if (group.isChoice()) {
+			int bestSelection = 0;
+			DegreeGroupInterface bestGroup = null;
+			DegreeCourseInterface bestCourse = null;
+			CourseAssignment bestCA = null;
+			if (group.hasCourses()) {
+				for (DegreeCourseInterface course: group.getCourses()) {
+					if (course.hasCourses()) {
+						for (CourseAssignment ca: course.getCourses()) {
+							int selection = getSelectionScore(requests, course, ca);
+							if (selection > bestSelection) {
+								bestSelection = selection;
+								bestGroup = null; bestCourse = course; bestCA =ca;
+							}
+						}
+					} else {
+						int selection = getSelectionScore(requests, course, null);
+						if (selection > bestSelection) {
+							bestSelection = selection;
+							bestGroup = null; bestCourse = course; bestCA = null;
+						}
+					}
+					course.setCourseId(null);
+					course.setSelected(false);
+				}
+			}
+			if (group.hasGroups()) {
+				for (DegreeGroupInterface ug: group.getGroups()) {
+					int selection = getSelectionScore(requests, ug);
+					if (selection > bestSelection) {
+						bestSelection = selection;
+						bestGroup = ug; bestCourse = null; bestCA = null;
+					}
+				}
+			}
+			if (bestGroup != null) {
+				bestGroup.setSelected(true);
+			} else if (bestCourse != null) {
+				bestCourse.setSelected(true);
+				bestCourse.setCourseId(bestCA == null ? null : bestCA.getCourseId());
+			}
+		} else if (parent != null && parent.isChoice()) {
+			if (group.hasCourses())
+				for (DegreeCourseInterface course: group.getCourses()) {
+					if (parent.isSelected()) {
+						int bestSelection = 0;
+						CourseAssignment bestCA = null;
+						if (course.hasCourses()) {
+							for (CourseAssignment ca: course.getCourses()) {
+								int selection = getSelectionScore(requests, ca);
+								if (selection > bestSelection) {
+									bestSelection = selection; bestCA = ca;
+								}
+							}
+						}
+						course.setSelected(true);
+						course.setCourseId(bestCA == null ? null : bestCA.getCourseId());
+					} else {
+						course.setSelected(false); course.setCourseId(null);
+					}
+				}
+		} else if (group.hasCourses()) {
+			for (DegreeCourseInterface course: group.getCourses()) {
+				int bestSelection = 0;
+				CourseAssignment bestCA = null;
+				if (course.hasCourses()) {
+					for (CourseAssignment ca: course.getCourses()) {
+						int selection = getSelectionScore(requests, ca);
+						if (selection > bestSelection) {
+							bestSelection = selection; bestCA = ca;
+						}
+					}
+				}
+				course.setSelected(true);
+				course.setCourseId(bestCA == null ? null : bestCA.getCourseId());
+			}
+		}
+		if (group.hasGroups())
+			for (DegreeGroupInterface g: group.getGroups())
+				fixSelection(requests, g, group);
+	}
+	
+	protected void addGroup(int depth, int maxDepth, CourseRequestInterface requests, DegreeGroupInterface group, DegreeGroupInterface parent) {
 		if (depth > 1) {
 			List<Widget> row = new ArrayList<Widget>();
 			P indent = new P("indent");
@@ -177,6 +354,25 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 						row.add(new HTML(ca.getLimit() == null || ca.getLimit() == 0 || ca.getEnrollment() == null ? "" : ca.getLimit() < 0 ? "&infin;" : (ca.getLimit() - ca.getEnrollment()) + " / " + ca.getLimit(), false));
 						row.add(new Label(ca.hasCredit() ? ca.getCreditAbbv() : "", false));
 						row.add(new NoteCell(ca.getNote()));
+						row.add(new RequestPriorityCell(requests, ca));
+						Image icon = null;
+						if (isSaved(ca)) {
+							if (isLast(ca)) {
+								icon = new Image(RESOURCES.saved());
+								icon.setTitle(MESSAGES.saved(MESSAGES.course(ca.getSubject(), ca.getCourseNbr())));
+							} else {
+								icon = new Image(RESOURCES.unassignment());
+								icon.setTitle(MESSAGES.unassignment(MESSAGES.course(ca.getSubject(), ca.getCourseNbr())));
+							}
+						} else if (isLast(ca)) {
+							icon = new Image(RESOURCES.assignment());
+							icon.setTitle(MESSAGES.assignment(MESSAGES.course(ca.getSubject(), ca.getCourseNbr())));
+						}
+						if (icon != null) {
+							icon.addStyleName("icon");
+							row.add(icon);
+						} else
+							row.add(new Label());
 						addRow(ca, row);
 					}
 				}
@@ -184,7 +380,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 		if (group.hasGroups()) {
 			for (DegreeGroupInterface g: group.getGroups())
-				addGroup(depth + 1, maxDepth, g, group);
+				addGroup(depth + 1, maxDepth, requests, g, group);
 		}
 		if (group.hasPlaceHolders()) {
 			for (DegreePlaceHolderInterface p: group.getPlaceHolders()) {
@@ -217,7 +413,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 
 		@Override
-		public int getColSpan() { return (iHasChoice ? 5 : 6); }
+		public int getColSpan() { return (iHasChoice ? 7 : 8); }
 	}
 	
 	public static class CourseLabel extends Label implements UniTimeTable.HasColSpan {
@@ -241,7 +437,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 
 		@Override
-		public int getColSpan() { return 3; }
+		public int getColSpan() { return 5; }
 	}
 	
 	public static class TitleLabel extends Label {
@@ -260,7 +456,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 
 		@Override
-		public int getColSpan() { return 6; }
+		public int getColSpan() { return 8; }
 	}
 	
 	public static class ChoiceButton extends RadioButton {
@@ -328,10 +524,8 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 				public void onValueChange(ValueChangeEvent<Boolean> event) {
 					if (event.getValue()) {
 						parent.setCourseId(course.getCourseId());
-						parent.setName(course.getCourseName());
 					} else {
 						parent.setCourseId(null);
-						parent.setName(null);
 					}
 				}
 			});
@@ -351,10 +545,8 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 				public void onValueChange(ValueChangeEvent<Boolean> event) {
 					if (event.getValue()) {
 						parent.setCourseId(course.getCourseId());
-						parent.setName(course.getCourseName());
 					} else {
 						parent.setCourseId(null);
-						parent.setName(null);
 					}
 					if (group.hasCourses()) {
 						for (DegreeCourseInterface c: group.getCourses())
@@ -379,6 +571,41 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 	}
 	
+	public static class RequestPriorityCell extends Label {
+		
+		public RequestPriorityCell(CourseRequestInterface requests, CourseAssignment assignment) {
+			setText(getRequestPriority(requests, assignment));
+			setWordWrap(false);
+			addStyleName("request");
+		}
+		
+		protected static String getRequestPriority(CourseRequestInterface requests, CourseAssignment assignment) {
+			int priority = 1;
+			String course = MESSAGES.course(assignment.getSubject(), assignment.getCourseNbr());
+			String courseWithTitle = MESSAGES.courseNameWithTitle(assignment.getSubject(), assignment.getCourseNbr(), assignment.getTitle());
+			for (CourseRequestInterface.Request r: requests.getCourses()) {
+				if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse()))
+					return MESSAGES.degreeRequestedCourse(priority);
+				if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative()))
+					return MESSAGES.degreeRequestedCourseFirstAlt(priority);
+				if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative()))
+					return MESSAGES.degreeRequestedCourseSecondAlt(priority);
+				priority ++;
+			}
+			priority = 1;
+			for (CourseRequestInterface.Request r: requests.getAlternatives()) {
+				if (course.equalsIgnoreCase(r.getRequestedCourse()) || courseWithTitle.equalsIgnoreCase(r.getRequestedCourse()))
+					return MESSAGES.degreeRequestedAlternative(priority);
+				if (course.equalsIgnoreCase(r.getFirstAlternative()) || courseWithTitle.equalsIgnoreCase(r.getFirstAlternative()))
+					return MESSAGES.degreeRequestedAlternativeFirstAlt(priority);
+				if (course.equalsIgnoreCase(r.getSecondAlternative()) || courseWithTitle.equalsIgnoreCase(r.getSecondAlternative()))
+					return MESSAGES.degreeRequestedAlternativeSecondAlt(priority);
+				priority ++;
+			}
+			return "";
+		}
+	}
+	
 	public boolean canChoose(int row) {
 		if (row <= 1 || row >= getRowCount()) return false;
 		Widget w = getWidget(row, 1);
@@ -392,5 +619,22 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			((ChoiceButton)w).setValue(value, true);
 		}
 	}
-
+	
+	public boolean isLast(CourseAssignment course) {
+		if (iAssignments.getLastAssignment() != null) {
+			for (ClassAssignmentInterface.CourseAssignment c: iAssignments.getLastAssignment().getCourseAssignments())
+				if (course.getCourseId().equals(c.getCourseId()) && c.isAssigned())
+					return true;
+		}
+		return false;
+	}
+	
+	public boolean isSaved(CourseAssignment course) {
+		if (iAssignments.getSavedAssignment() != null) {
+			 for (ClassAssignmentInterface.CourseAssignment c: iAssignments.getSavedAssignment().getCourseAssignments())
+				 if (course.getCourseId().equals(c.getCourseId()) && c.isAssigned())
+					 return true;
+		}
+		return false;
+	}
 }

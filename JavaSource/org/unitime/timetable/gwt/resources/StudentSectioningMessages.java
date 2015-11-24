@@ -1275,6 +1275,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Title")
 	String colDegreeItemDescription();
 	
+	@DefaultMessage("Request")
+	String colRequestPriority();
+	
 	@DefaultMessage("<u>S</u>elect")
 	String buttonDegreePlanSelect();
 	
@@ -1331,4 +1334,22 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Select {0}")
 	String hintChoiceGroupSelection(String courseOrGroup);
+	
+	@DefaultMessage("{0}.")
+	String degreeRequestedCourse(int priority);
+	
+	@DefaultMessage("{0}A.")
+	String degreeRequestedCourseFirstAlt(int priority);
+	
+	@DefaultMessage("{0}B.")
+	String degreeRequestedCourseSecondAlt(int priority);
+	
+	@DefaultMessage("Alt {0}.")
+	String degreeRequestedAlternative(int priority);
+	
+	@DefaultMessage("Alt {0}A.")
+	String degreeRequestedAlternativeFirstAlt(int priority);
+	
+	@DefaultMessage("Alt {0}B.")
+	String degreeRequestedAlternativeSecondAlt(int priority);
 }

@@ -311,7 +311,16 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								}
 							});
 							if (iDegreePlanDialog == null) {
-								iDegreePlanDialog = new DegreePlanDialog(details, classes) {
+								iDegreePlanDialog = new DegreePlanDialog(iCourseRequests, new DegreePlanDialog.AssignmentProvider() {
+									@Override
+									public ClassAssignmentInterface getSavedAssignment() {
+										return iSavedAssignment;
+									}
+									@Override
+									public ClassAssignmentInterface getLastAssignment() {
+										return iLastAssignment;
+									}
+								}, details, classes) {
 									protected void doBack() {
 										super.doBack();
 										iDegreePlansSelectionDialog.show();

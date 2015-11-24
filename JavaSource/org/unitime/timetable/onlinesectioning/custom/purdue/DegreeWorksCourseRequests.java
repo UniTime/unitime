@@ -370,16 +370,9 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					}
 				}
 				if (course.hasCourses()) {
-					for (CourseAssignment ca: course.getCourses()) {
-						if (ca.getSubject().equals(course.getSubject()) && ca.getCourseNbr().equals(course.getCourse())) {
+					for (CourseAssignment ca: course.getCourses())
+						if (ca.getSubject().equals(course.getSubject()) && ca.getCourseNbr().equals(course.getCourse()))
 							course.setCourseId(ca.getCourseId());
-							course.setName(ca.getCourseName());
-						}
-					}
-					if (course.getCourseId() == null) {
-						course.setCourseId(course.getCourses().get(0).getCourseId());
-						course.setName(course.getCourses().get(0).getCourseName());
-					}
 				}
 				group.addCourse(course);
 			}

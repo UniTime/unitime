@@ -33,10 +33,13 @@ import org.unitime.timetable.gwt.client.widgets.CourseFinder.CourseFinderCourseD
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -47,6 +50,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -67,14 +71,14 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	private UniTimeHeaderPanel iFooter;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	
-	public DegreePlanDialog(CourseFinderCourseDetails... details) {
+	public DegreePlanDialog(TakesValue<CourseRequestInterface> requests, AssignmentProvider assignments, CourseFinderCourseDetails... details) {
 		super(true, false);
 		setEscapeToHide(true);
 		addStyleName("unitime-DegreePlanDialog");
 		
 		iForm = new SimpleForm();
 		
-		iDegreePlanTable = new DegreePlanTable();
+		iDegreePlanTable = new DegreePlanTable(requests, assignments);
 		iDegreePlanPanel = new ScrollPanel(iDegreePlanTable);
 		iDegreePlanPanel.setStyleName("unitime-ScrollPanel");
 		iDegreePlanPanel.addStyleName("plan");
@@ -193,6 +197,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 				if (row <= 0) row = iDegreePlanTable.getRowCount() - 1;
 				iDegreePlanTable.setSelected(row, true);
 				updateCourseDetails(iDegreePlanTable.getData(row));
+				scrollToSelectedRow();
 			} else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN) {
 				int row = iDegreePlanTable.getSelectedRow();
 				if (row >= 0)
@@ -203,6 +208,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 				if (row >= iDegreePlanTable.getRowCount()) row = 1;
 				iDegreePlanTable.setSelected(row, true);
 				updateCourseDetails(iDegreePlanTable.getData(row));
+				scrollToSelectedRow();
 			}
 		}
 		if (event.getTypeInt() == Event.ONKEYUP && (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_SPACE || event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER)) {
@@ -225,5 +231,27 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 			for (CourseFinderCourseDetails detail: iDetails)
 				detail.setValue(courseName);
 		}
+	}
+	
+	public static interface AssignmentProvider {
+		ClassAssignmentInterface getLastAssignment();
+		ClassAssignmentInterface getSavedAssignment();
+	}
+	
+	protected void scrollToSelectedRow() {
+		if (iDegreePlanTable.getSelectedRow() < 0) return;
+		
+		Element scroll = iDegreePlanPanel.getElement();
+		
+		com.google.gwt.dom.client.Element item = iDegreePlanTable.getRowFormatter().getElement(iDegreePlanTable.getSelectedRow());
+		if (item == null) return;
+		
+		int realOffset = 0;
+		while (item !=null && !item.equals(scroll)) {
+			realOffset += item.getOffsetTop();
+			item = item.getOffsetParent();
+		}
+		
+		scroll.setScrollTop(realOffset - scroll.getOffsetHeight() / 2);
 	}
 }

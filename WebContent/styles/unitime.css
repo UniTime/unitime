@@ -4069,14 +4069,14 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitine-DegreePlanTable .title {
-	max-width: 250px;
+	max-width: 200px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
 
 .unitine-DegreePlanTable .note {
-	max-width: 250px;
+	max-width: 220px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
@@ -4094,4 +4094,14 @@ unitime-RoomSharingWidget .legend .blank {
 	text-overflow: ellipsis;
 	overflow: hidden;
 	text-align: center;
+}
+
+.unitine-DegreePlanTable .request {
+	width: 50px;
+	text-align: center;
+}
+
+.unitine-DegreePlanTable .icon {
+	margin-top: -1px;
+	margin-bottom: -1px;
 }
