@@ -224,6 +224,9 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
 	                if(nc<=0)
 	                    errors.add("subparts"+indx, new ActionMessage("errors.integerGt", "Number of classes" + lblSubpart, "0" ));
 	                
+	                if(nc>ApplicationProperty.SubpartMaxNumClasses.intValue())
+	                    errors.add("subparts"+indx, new ActionMessage("errors.integerLtEq", "Number of classes" + lblSubpart, ApplicationProperty.SubpartMaxNumClasses.value() ));
+
 	                // Check no. of rooms
 	                if(nr<0)
 	                    errors.add("subparts"+indx, new ActionMessage("errors.integerGtEq", "Number of rooms" + lblSubpart, "0" ));
@@ -246,6 +249,9 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
             if(nc<=0)
                 errors.add("subparts"+indx, new ActionMessage("errors.integerGt", "Number of classes" + lblSubpart, "0" ));
         	
+            if(nc>ApplicationProperty.SubpartMaxNumClasses.intValue())
+                errors.add("subparts"+indx, new ActionMessage("errors.integerLtEq", "Number of classes" + lblSubpart, ApplicationProperty.SubpartMaxNumClasses.value() ));
+
             if(mpw<0)
                 errors.add("subparts"+indx, new ActionMessage("errors.integerGtEq", "Minutes per week" + lblSubpart, "0" ));
         }

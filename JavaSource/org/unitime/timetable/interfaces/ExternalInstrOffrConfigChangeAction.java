@@ -27,5 +27,6 @@ import org.unitime.timetable.model.InstructionalOffering;
  *
  */
 public interface ExternalInstrOffrConfigChangeAction {
+	public boolean validateConfigChangeCanOccur(InstructionalOffering instructionalOffering, Session hibSession);
 	public void performExternalInstrOffrConfigChangeAction(InstructionalOffering instructionalOffering, Session hibSession);
 }
