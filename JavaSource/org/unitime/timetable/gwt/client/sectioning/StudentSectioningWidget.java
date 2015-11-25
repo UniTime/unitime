@@ -325,12 +325,16 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										super.doBack();
 										iDegreePlansSelectionDialog.show();
 									}
+									protected void doApply() {
+										updateHistory();
+										super.doApply();
+										addHistory();
+									}
 								};
 							}
 							if (iDegreePlansSelectionDialog == null) {
 								iDegreePlansSelectionDialog = new DegreePlansSelectionDialog() {
 									public void doSubmit(DegreePlanInterface plan) {
-										addHistory();
 										super.doSubmit(plan);
 										iDegreePlanDialog.open(plan, true);
 									}
