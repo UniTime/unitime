@@ -922,4 +922,19 @@ public class UniTimeTable<T> extends FlexTable {
 		}
 
 	}
+	
+	public void setBackGroundColor(int row, String color) {
+		String style = getRowFormatter().getStyleName(row);
+		if (style != null && !style.isEmpty()) {
+			if (color == null || color.isEmpty())
+				iLastHoverBackgroundColor.remove(row);
+			else
+				iLastHoverBackgroundColor.put(row, color);
+		} else {
+			if (color == null || color.isEmpty())
+				getRowFormatter().getElement(row).getStyle().clearBackgroundColor();
+			else
+				getRowFormatter().getElement(row).getStyle().setBackgroundColor(color);
+		}
+	}
 }

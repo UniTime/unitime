@@ -20,8 +20,10 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.sectioning.DegreePlanDialog.AssignmentProvider;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -34,6 +36,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeCourseInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeGroupInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreePlaceHolderInterface;
@@ -106,6 +109,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 			fixSelection(iRequests.getValue(), plan.getGroup(), null);
 			addGroup(1, plan.getGroup().getMaxDepth(), iRequests.getValue(), plan.getGroup(), null);
 		}
+		updateBackground();
 	}
 	
 	private int toScore(CourseRequestInterface requests, CourseRequestInterface.RequestPriority priority) {
@@ -428,7 +432,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		public int getColSpan() { return 8; }
 	}
 	
-	public static class ChoiceButton extends RadioButton {
+	public class ChoiceButton extends RadioButton {
 		public ChoiceButton(final DegreeGroupInterface parent, final DegreeCourseInterface course) {
 			super(parent.getId(), "");
 			setValue(course.isSelected());
@@ -450,6 +454,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 							g.setSelected(false);
 						}
 					}
+					updateBackground();
 				}
 			});
 		}
@@ -475,6 +480,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 							g.setSelected(group.getId().equals(g.getId()) ? event.getValue() : false);
 						}
 					}
+					updateBackground();
 				}
 			});
 		}
@@ -496,6 +502,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 					} else {
 						parent.setCourseId(null);
 					}
+					updateBackground();
 				}
 			});
 		}
@@ -526,6 +533,7 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 							g.setSelected(false);
 						}
 					}
+					updateBackground();
 				}
 			});
 		}
@@ -667,5 +675,50 @@ public class DegreePlanTable extends UniTimeTable<Object> implements TakesValue<
 		}
 		
 		return requests;
+	}
+	
+	public void updateBackground() {
+		CourseRequestInterface requests = iRequests.getValue();
+		Set<String> selectedCourses = new HashSet<String>();
+		Set<Long> selectedCourseIds = new HashSet<Long>();
+		for (DegreeCourseInterface course: iPlan.listSelected()) {
+			if (course.getId() != null) selectedCourses.add(course.getId());
+			if (course.getCourseId() != null) selectedCourseIds.add(course.getCourseId());
+		}
+		for (int row = 1; row < getRowCount(); row++) {
+			Object data = getData(row);
+			if (data != null && data instanceof CourseAssignment) {
+				CourseAssignment course = (CourseAssignment) data;
+				RequestPriority rp = requests.getRequestPriority(course.getCourseName());
+				if (rp == null && course.hasTitle())
+					rp = requests.getRequestPriority(course.getCourseNameWithTitle());
+				
+				boolean requested = (rp != null);
+				boolean selected = selectedCourseIds.contains(course.getCourseId());
+				String color = null;
+				if (selected) {
+					if (!requested)
+						color = "#D7FFD7"; // will be added if Apply is used
+				} else {
+					if (requested)
+						color = "#FFD7D7"; // will be removed, not enrolled
+				}
+				setBackGroundColor(row, color);
+			} else if (data != null && data instanceof DegreeGroupInterface) {
+				DegreeGroupInterface group = (DegreeGroupInterface)data;
+				if (group.isChoice()) {
+					String color = null;
+					if (!group.hasSelection())
+						color = "#FFF0AB";
+					setBackGroundColor(row, color);
+				}
+			} else if (data != null && data instanceof DegreeCourseInterface) {
+				DegreeCourseInterface course = (DegreeCourseInterface)data;
+				String color = null;
+				if (course.getId() != null && selectedCourses.contains(course.getId()) && course.getCourseId() == null)
+					color = "#FFF0AB";
+				setBackGroundColor(row, color);
+			}
+		}
 	}
 }

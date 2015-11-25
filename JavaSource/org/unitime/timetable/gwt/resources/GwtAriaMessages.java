@@ -442,7 +442,7 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("There are {0, number} degree plans available. Use up and down arrows to navigate. To select a plan press Enter. Press Escape to hide plans.")
 	String showingDegreePlans(@PluralCount int nbrDegreePlans);
 	
-	@DefaultMessage("Degree plan {0, number} of {1, number}. {2} of {3}. Last modified {4,date,MMMM dd} by {5}")
+	@DefaultMessage("Degree plan {0, number} of {1, number}. {2} of {3}. Last modified {4,localdatetime,MMMM dd} by {5}")
 	String showingDegreePlan(@PluralCount int index, @PluralCount int nbrAlternatives, String description, String degree, Date modifiedDate, String modifedWho);
 
 	@DefaultMessage("Selected degree plan {0} of {1}.")

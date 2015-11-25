@@ -330,6 +330,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							if (iDegreePlansSelectionDialog == null) {
 								iDegreePlansSelectionDialog = new DegreePlansSelectionDialog() {
 									public void doSubmit(DegreePlanInterface plan) {
+										addHistory();
 										super.doSubmit(plan);
 										iDegreePlanDialog.open(plan, true);
 									}

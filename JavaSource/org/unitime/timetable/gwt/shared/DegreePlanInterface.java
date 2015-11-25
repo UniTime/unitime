@@ -238,6 +238,16 @@ public class DegreePlanInterface implements IsSerializable, Serializable {
 					if (!isChoice() || g.isSelected()) g.listSelected(requested);
 		}
 		
+		public boolean hasSelection() {
+			if (hasCourses())
+				for (DegreeCourseInterface course: getCourses())
+					if (!isChoice() || course.isSelected()) return true;
+			if (hasGroups())
+				for (DegreeGroupInterface g: getGroups())
+					if (!isChoice() || g.isSelected()) return true;
+			return false;
+		}
+		
 		protected boolean hasCourse(String name) {
 			if (iCourses != null)
 				for (DegreeCourseInterface course: iCourses) {
