@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.resources;
 
+import java.util.Date;
+
 import com.google.gwt.i18n.client.Messages;
 
 /**
@@ -436,4 +438,43 @@ public interface GwtAriaMessages extends Messages {
 
 	@DefaultMessage("People lookup. Enter name, use arrows to navigate through suggested people, enter to select.")
 	String peopleLookupName();
+	
+	@DefaultMessage("There are {0, number} degree plans available. Use up and down arrows to navigate. To select a plan press Enter. Press Escape to hide plans.")
+	String showingDegreePlans(@PluralCount int nbrDegreePlans);
+	
+	@DefaultMessage("Degree plan {0, number} of {1, number}. {2} of {3}. Last modified {4,date,MMMM dd} by {5}")
+	String showingDegreePlan(@PluralCount int index, @PluralCount int nbrAlternatives, String description, String degree, Date modifiedDate, String modifedWho);
+
+	@DefaultMessage("Selected degree plan {0} of {1}.")
+	String selectedDegreePlan(String description, String degree);
+	
+	@DefaultMessage("Line {0} of {1}.")
+	String selectedLine(@PluralCount int index, @PluralCount int nbrAlternatives);
+	
+	@DefaultMessage("Placeholder {0}.")
+	String degreePlaceholder(String description);
+	
+	@DefaultMessage("Chioce group. {0}")
+	String degreeChoiceGroup(String description);
+	
+	@DefaultMessage("Union group. {0}")
+	String degreeUnionGroup(String description);
+	
+	@DefaultMessage("Course {0}, {1}. Course {0} is not offered.")
+	String degreeCourseNotOffered(String course, String description);
+	
+	@DefaultMessage("Course {0}, {1}. There are {2} matching courses are available.")
+	String degreeCourseWithChoice(String course, String description, @PluralCount int courses);
+	
+	@DefaultMessage("Course {0}, {1}.")
+	String degreeCourse(String course, String description);
+	
+	@DefaultMessage("Course {0}, {1}. Note {2}")
+	String degreeCourseWithNote(String course, String description, String note);
+	
+	@DefaultMessage("Press Space to select choice {0}.")
+	String degreeSpaceToSelectCourse(String name);
+
+	@DefaultMessage("Choice {0} is selected.")
+	String degreeCourseSelected(String name);
 }

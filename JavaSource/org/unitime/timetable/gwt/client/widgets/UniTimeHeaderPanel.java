@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
 import com.google.gwt.core.client.GWT;
@@ -285,7 +286,8 @@ public class UniTimeHeaderPanel extends Composite {
 	}
 
 	private Button addButton(String operation, String name, Character accessKey, String width, ClickHandler clickHandler) {
-		Button button = new Button(name, clickHandler);
+		Button button = new AriaButton(name);
+		button.addClickHandler(clickHandler);
 		ToolBox.setWhiteSpace(button.getElement().getStyle(), "nowrap");
 		if (accessKey != null)
 			button.setAccessKey(accessKey);

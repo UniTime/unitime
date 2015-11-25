@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -29,6 +30,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -55,6 +57,7 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static DateTimeFormat sModifiedDateFormat = ServerDateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	
 	private SimpleForm iForm;
@@ -155,9 +158,18 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 				iFooter.setFocus("select", true);
 			}
 		});
+		updateAriaStatus(true);
+	}
+	
+	@Override
+	public void show() {
+		super.show();
+		updateAriaStatus(true);
 	}
 	
 	public void doSubmit(DegreePlanInterface plan) {
+		if (plan != null)
+			AriaStatus.getInstance().setText(ARIA.selectedDegreePlan(plan.getName(), plan.getDegree()));
 		iLastSubmit = plan.getId();
 		hide();
 	}
@@ -173,6 +185,7 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 				row --;
 				if (row <= 0) row = iTable.getRowCount() - 1;
 				iTable.setSelected(row, true);
+				updateAriaStatus(false);
 			} else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN) {
 				int row = iTable.getSelectedRow();
 				if (row >= 0)
@@ -180,8 +193,20 @@ public class DegreePlansSelectionDialog extends UniTimeDialogBox {
 				row ++;
 				if (row >= iTable.getRowCount()) row = 1;
 				iTable.setSelected(row, true);
+				updateAriaStatus(false);
 			}
 		}
 	}
-
+	
+	protected void updateAriaStatus(boolean justOpened) {
+		String text = "";
+		if (justOpened)
+			text = ARIA.showingDegreePlans(iTable.getRowCount() - 1);
+		int row = iTable.getSelectedRow();
+		DegreePlanInterface plan = iTable.getData(row);
+		if (row >= 0 && plan != null) {
+			text += (text.isEmpty() ? "" : " ") + ARIA.showingDegreePlan(row, iTable.getRowCount() - 1, plan.getName(), plan.getDegree(), plan.getLastModified(), plan.getModifiedWho());
+		}
+		AriaStatus.getInstance().setText(text);
+	}
 }

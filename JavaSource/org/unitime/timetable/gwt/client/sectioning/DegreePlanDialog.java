@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -37,14 +39,15 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeCourseInterface;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreeGroupInterface;
+import org.unitime.timetable.gwt.shared.DegreePlanInterface.DegreePlaceHolderInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DoubleClickEvent;
-import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -53,7 +56,9 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
@@ -88,14 +93,8 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 		iDegreePlanTable.addMouseClickListener(new UniTimeTable.MouseClickListener<Object>() {
 			@Override
 			public void onMouseClick(TableEvent<Object> event) {
+				updateAriaStatus();
 				updateCourseDetails(event.getData());
-			}
-		});
-		iDegreePlanTable.addDoubleClickHandler(new DoubleClickHandler() {
-			@Override
-			public void onDoubleClick(DoubleClickEvent event) {
-				if (iDegreePlanTable.canChoose(iDegreePlanTable.getSelectedRow()))
-					iDegreePlanTable.chooseRow(iDegreePlanTable.getSelectedRow(), true);
 			}
 		});
 		
@@ -138,7 +137,8 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 			}
 		});
 		
-		iBack = new Button(MESSAGES.buttonDegreePlanBack(), new ClickHandler() {
+		iBack = new AriaButton(MESSAGES.buttonDegreePlanBack());
+		iBack.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				doBack();
@@ -201,6 +201,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 				iDegreePlanTable.setSelected(row, true);
 				updateCourseDetails(iDegreePlanTable.getData(row));
 				scrollToSelectedRow();
+				updateAriaStatus();
 			} else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN) {
 				int row = iDegreePlanTable.getSelectedRow();
 				if (row >= 0)
@@ -212,6 +213,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 				iDegreePlanTable.setSelected(row, true);
 				updateCourseDetails(iDegreePlanTable.getData(row));
 				scrollToSelectedRow();
+				updateAriaStatus();
 			}
 		}
 		if (event.getTypeInt() == Event.ONKEYUP && (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_SPACE || event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER)) {
@@ -256,5 +258,50 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 		}
 		
 		scroll.setScrollTop(realOffset - scroll.getOffsetHeight() / 2);
+	}
+	
+	protected void updateAriaStatus() {
+		int row = iDegreePlanTable.getSelectedRow();
+		Object data = iDegreePlanTable.getData(row);
+		String status = null;
+		String name = null;
+		if (data instanceof DegreePlaceHolderInterface) {
+			DegreePlaceHolderInterface ph = (DegreePlaceHolderInterface)data;
+			status = ARIA.degreePlaceholder(ph.getName());
+			name = ph.getType();
+		} else if (data instanceof DegreeGroupInterface) {
+			DegreeGroupInterface group = (DegreeGroupInterface)data;
+			if (group.isChoice())
+				status = ARIA.degreeChoiceGroup(group.toString(MESSAGES));
+			else
+				status = ARIA.degreeUnionGroup(group.toString(MESSAGES));
+			name = group.toString(MESSAGES);
+		} else if (data instanceof DegreeCourseInterface) {
+			DegreeCourseInterface course = (DegreeCourseInterface)data;
+			if (course.hasCourses())
+				status = ARIA.degreeCourseWithChoice(course.getCourseName(), course.getTitle(), course.getCourses().size());
+			else
+				status = ARIA.degreeCourseNotOffered(course.getCourseName(), course.getTitle());
+			name = course.getCourseName();
+		} else if (data instanceof CourseAssignment) {
+			CourseAssignment course = (CourseAssignment)data;
+			if (course.getNote() == null || course.getNote().isEmpty())
+				status = ARIA.degreeCourse(course.getCourseName(), course.getTitle());
+			else
+				status = ARIA.degreeCourseWithNote(course.getCourseName(), course.getTitle(), course.getNote());
+			name = course.getCourseName();
+		}
+		if (name != null) {
+			Widget w = iDegreePlanTable.getWidget(row, 1);
+			if (w != null && w instanceof RadioButton) {
+				RadioButton radio = (RadioButton)w;
+				if (radio.getValue())
+					status += " " + ARIA.degreeCourseSelected(name);
+				else
+					status += " " + ARIA.degreeSpaceToSelectCourse(name);
+			}
+		}
+		if (status != null)
+			AriaStatus.getInstance().setText(ARIA.selectedLine(row, iDegreePlanTable.getRowCount() - 1) + " " + status);
 	}
 }
