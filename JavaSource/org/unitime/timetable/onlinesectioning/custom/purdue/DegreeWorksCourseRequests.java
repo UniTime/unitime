@@ -19,13 +19,14 @@
 */
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.restlet.Client;
 import org.restlet.data.ChallengeScheme;
@@ -224,6 +225,17 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		}
 	}
 	
+	protected String toString(Reader reader) throws IOException {
+		char[] buffer = new char[8192];
+		StringBuilder out = new StringBuilder();
+		int read = 0;
+		while ((read = reader.read(buffer, 0, buffer.length)) > 0) {
+			out.append(buffer, 0, read);
+		}
+		reader.close();
+		return out.toString();
+	}
+	
 	@Override
 	public CourseRequestInterface getCourseRequests(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
 		ClientResource resource = null;
@@ -251,7 +263,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
 				try {
-					String response = IOUtils.toString(resource.getResponseEntity().getReader());
+					String response = toString(resource.getResponseEntity().getReader());
 					Pattern pattern = Pattern.compile(getDegreeWorksErrorPattern(), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
 					Matcher match = pattern.matcher(response);
 					if (match.find())
@@ -425,7 +437,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
 				try {
-					String response = IOUtils.toString(resource.getResponseEntity().getReader());
+					String response = toString(resource.getResponseEntity().getReader());
 					Pattern pattern = Pattern.compile(getDegreeWorksErrorPattern(), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
 					Matcher match = pattern.matcher(response);
 					if (match.find())
