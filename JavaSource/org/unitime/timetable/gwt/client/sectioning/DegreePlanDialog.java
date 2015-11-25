@@ -157,6 +157,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	public void open(DegreePlanInterface plan, boolean hasBack) {
 		iDegreePlanTable.setValue(plan);
 		setText(MESSAGES.dialogDegreePlan(plan.getName()));
+		updateCourseDetails(iDegreePlanTable.getData(iDegreePlanTable.getSelectedRow()));
 		iBack.setVisible(hasBack); iBack.setEnabled(hasBack);
 		center();
 	}

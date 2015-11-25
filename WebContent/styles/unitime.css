@@ -4043,6 +4043,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitine-DegreePlanTable {
+	width: 100%;
 }
 
 .unitine-DegreePlanTable .indent {
