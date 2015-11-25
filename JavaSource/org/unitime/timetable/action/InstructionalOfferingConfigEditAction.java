@@ -813,15 +813,22 @@ public class InstructionalOfferingConfigEditAction extends Action {
             //hibSession.delete(ioc);
 	        hibSession.saveOrUpdate(io);
 
+	        String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
+	        ExternalInstrOffrConfigChangeAction configChangeAction = null;
+        	if (className != null && className.trim().length() > 0){
+	        	configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
+	        	if (!configChangeAction.validateConfigChangeCanOccur(io, hibSession)){
+	        		throw new Exception("Configuration change violates rules for Add On, rolling back the change.");
+	        	}
+        	}
+
 	        hibSession.flush();
             tx.commit();
             
             hibSession.refresh(io);
 
-        	String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
-        	if (className != null && className.trim().length() > 0){
-	        	ExternalInstrOffrConfigChangeAction configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
-	       		configChangeAction.performExternalInstrOffrConfigChangeAction(io, hibSession);
+        	if (configChangeAction != null){
+	        	configChangeAction.performExternalInstrOffrConfigChangeAction(io, hibSession);
         	}
 
         }
@@ -918,6 +925,15 @@ public class InstructionalOfferingConfigEditAction extends Action {
             hibSession.saveOrUpdate(ioc);
             hibSession.saveOrUpdate(io);
 
+	        String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
+	        ExternalInstrOffrConfigChangeAction configChangeAction = null;
+        	if (className != null && className.trim().length() > 0){
+	        	configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
+	        	if (!configChangeAction.validateConfigChangeCanOccur(io, hibSession)){
+	        		throw new Exception("Configuration change violates rules for Add On, rolling back the change.");
+	        	}
+        	}
+
             io.computeLabels(hibSession);
 
             ChangeLog.addChange(
@@ -936,11 +952,10 @@ public class InstructionalOfferingConfigEditAction extends Action {
             hibSession.refresh(ioc);
             hibSession.refresh(io);
             
-        	String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
-        	if (className != null && className.trim().length() > 0){
-	        	ExternalInstrOffrConfigChangeAction configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
-	       		configChangeAction.performExternalInstrOffrConfigChangeAction(io, hibSession);
+        	if (configChangeAction != null){
+	        	configChangeAction.performExternalInstrOffrConfigChangeAction(io, hibSession);
         	}
+
         }
         catch (Exception e) {
             try {

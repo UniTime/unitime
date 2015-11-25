@@ -380,7 +380,16 @@ public class InstructionalOfferingModifyAction extends Action {
 	        // Delete all classes in the original classes that are no longer in the modified classes
 	        deleteClasses(frm, ioc, hibSession, tmpClassIdsToClasses);
 
-	        ioc.getInstructionalOffering().computeLabels(hibSession);
+	        String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
+	        ExternalInstrOffrConfigChangeAction configChangeAction = null;
+        	if (className != null && className.trim().length() > 0){
+	        	configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
+	        	if (!configChangeAction.validateConfigChangeCanOccur(ioc.getInstructionalOffering(), hibSession)){
+	        		throw new Exception("Configuration change violates rules for Add On, rolling back the change.");
+	        	}
+        	}
+
+        	ioc.getInstructionalOffering().computeLabels(hibSession);
 
             ChangeLog.addChange(
                     hibSession,
@@ -395,10 +404,8 @@ public class InstructionalOfferingModifyAction extends Action {
 	        hibSession.flush();
 	        hibSession.refresh(ioc);
 	        hibSession.refresh(ioc.getInstructionalOffering());
-        	String className = ApplicationProperty.ExternalActionInstrOffrConfigChange.value();
-        	if (className != null && className.trim().length() > 0){
-	        	ExternalInstrOffrConfigChangeAction configChangeAction = (ExternalInstrOffrConfigChangeAction) (Class.forName(className).newInstance());
-	       		configChangeAction.performExternalInstrOffrConfigChangeAction(ioc.getInstructionalOffering(), hibSession);
+	    	if (configChangeAction != null){
+	        	configChangeAction.performExternalInstrOffrConfigChangeAction(ioc.getInstructionalOffering(), hibSession);
         	}
 
         }

@@ -1884,6 +1884,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Online Student Scheduling: call custom eligibility check before enrollment")
 	OnlineSchedulingCustomEligibilityRecheck("unitime.enrollment.recheckCustomEligibility"),
+	
+	@Type(Integer.class)
+	@DefaultValue("998")
+	@Description("Maximum number of classes a scheduling subpart can contain.  Defaults to 998.")
+	SubpartMaxNumClasses("unitime.subpart.max_num_classes"),
 	;
 
 	String iKey;
