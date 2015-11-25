@@ -2047,6 +2047,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Legacy: switch the user interface back to the old (Struts-based) rooms pages")
 	LegacyRooms("unitime.legacy.rooms"),
+		
+	@Type(Integer.class)
+	@DefaultValue("998")
+	@Description("Maximum number of classes a scheduling subpart can contain.  Defaults to 998.")
+	SubpartMaxNumClasses("unitime.subpart.max_num_classes"),
 	;
 
 	String iKey;
