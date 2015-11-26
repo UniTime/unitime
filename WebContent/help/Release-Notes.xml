@@ -107,6 +107,14 @@
 				<line>When calling refresh solution, pass the refresh to all local servers (not just the first one).</line>
 			</description>
 		</item>
+		<item>
+			<name>Config Edit</name>
+			<description>
+				<line>Added the ability to configure a maximum number of classes allowed to be created for a scheduling subpart.
+					<line>The property unitime.subpart.max_num_classes determines the maximum number of classes that can be created for a scheduling subpart using the Config Edit page.  The property defaults to 998 classes.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
