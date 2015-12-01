@@ -59,7 +59,7 @@ public class CurriculumFilterBox extends UniTimeFilterBox<CurriculumInterface.Cu
 		iDepartments.setMultipleSelect(false);
 		iDepartments.setWidth("100%");
 		
-		addFilter(new FilterBox.CustomFilter("department", iDepartments) {
+		addFilter(new FilterBox.CustomFilter("department", MESSAGES.tagDepartment(), iDepartments) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -68,7 +68,7 @@ public class CurriculumFilterBox extends UniTimeFilterBox<CurriculumInterface.Cu
 					Chip oldChip = getChip("department");
 					List<Suggestion> suggestions = new ArrayList<Suggestion>();
 					for (int i = 0; i < iDepartments.getItemCount(); i++) {
-						Chip chip = new Chip("department", iDepartments.getValue(i));
+						Chip chip = new Chip("department", iDepartments.getValue(i)).withTranslatedCommand(MESSAGES.tagDepartment());
 						String name = iDepartments.getItemText(i);
 						if (iDepartments.getValue(i).toLowerCase().startsWith(text.toLowerCase())) {
 							suggestions.add(new Suggestion(name, chip, oldChip));
@@ -84,7 +84,7 @@ public class CurriculumFilterBox extends UniTimeFilterBox<CurriculumInterface.Cu
 			@Override
 			public void onChange(ChangeEvent event) {
 				Chip oldChip = getChip("department");
-				Chip newChip = (iDepartments.getSelectedIndex() <= 0 ? null : new Chip("department", iDepartments.getValue(iDepartments.getSelectedIndex())));
+				Chip newChip = (iDepartments.getSelectedIndex() <= 0 ? null : new Chip("department", iDepartments.getValue(iDepartments.getSelectedIndex())).withTranslatedCommand(MESSAGES.tagDepartment()));
 				if (oldChip != null) {
 					if (newChip == null) {
 						removeChip(oldChip, true);
@@ -101,16 +101,16 @@ public class CurriculumFilterBox extends UniTimeFilterBox<CurriculumInterface.Cu
 			}
 		});
 		
-		addFilter(new FilterBox.StaticSimpleFilter("area"));
-		addFilter(new FilterBox.StaticSimpleFilter("major"));
-		addFilter(new FilterBox.StaticSimpleFilter("classification"));
-		addFilter(new FilterBox.StaticSimpleFilter("curriculum"));
+		addFilter(new FilterBox.StaticSimpleFilter("area", MESSAGES.tagAcademicArea()));
+		addFilter(new FilterBox.StaticSimpleFilter("major", MESSAGES.tagMajor()));
+		addFilter(new FilterBox.StaticSimpleFilter("classification", MESSAGES.tagClassification()));
+		addFilter(new FilterBox.StaticSimpleFilter("curriculum", MESSAGES.tagCurriculum()));
 		
 		final TextBox curriculum = new TextBox();
 		curriculum.setStyleName("unitime-TextArea");
 		curriculum.setMaxLength(100); curriculum.setWidth("200px");
 		
-		iOther = new FilterBox.CustomFilter("other", new Label(MESSAGES.propCurriculum()), curriculum);
+		iOther = new FilterBox.CustomFilter("other",MESSAGES.tagOther(), new Label(MESSAGES.propCurriculum()), curriculum);
 		addFilter(iOther);
 		
 		curriculum.addChangeHandler(new ChangeHandler() {
@@ -121,7 +121,7 @@ public class CurriculumFilterBox extends UniTimeFilterBox<CurriculumInterface.Cu
 					if (removed)
 						fireValueChangeEvent();
 				} else {
-					addChip(new Chip("curriculum", curriculum.getText()), true);
+					addChip(new Chip("curriculum", curriculum.getText()).withTranslatedCommand(MESSAGES.tagCurriculum()), true);
 				}
 			}
 		});
@@ -178,7 +178,11 @@ public class CurriculumFilterBox extends UniTimeFilterBox<CurriculumInterface.Cu
 			List<FilterBox.Chip> chips = new ArrayList<FilterBox.Chip>();
 			if (entities != null) {
 				for (FilterRpcResponse.Entity entity: entities)
-					chips.add(new FilterBox.Chip(filter.getCommand(), entity.getAbbreviation(), entity.getName(), entity.getCount() <= 0 ? null : "(" + entity.getCount() + ")"));
+					chips.add(new FilterBox.Chip(filter.getCommand(), entity.getAbbreviation())
+							.withLabel(entity.getName())
+							.withCount(entity.getCount())
+							.withTranslatedCommand(filter.getLabel())
+							.withTranslatedValue(entity.getProperty("translated-value", null)));
 			}
 			simple.setValues(chips);
 			return true;

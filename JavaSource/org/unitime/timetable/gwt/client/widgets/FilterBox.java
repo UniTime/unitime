@@ -352,7 +352,11 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			filter.getPopupWidget(this, new AsyncCallback<Widget>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					if (filter.getCommand().length() > 0) {
+					if (filter.getLabel() != null && !filter.getLabel().isEmpty()) {
+						Label label = new Label(filter.getLabel(), false);
+						label.addStyleName("command");
+						filterPanel.add(label);
+					} else if (filter.getCommand().length() > 0) {
 						Label label = new Label(filter.getCommand().replace('_', ' '), false);
 						label.addStyleName("command");
 						filterPanel.add(label);
@@ -585,7 +589,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			iChip = chip;
 			setStyleName("chip");
 			addStyleName(color);
-			iLabel = new Label(chip.getValue());
+			iLabel = new Label(chip.getTranslatedValue());
 			iLabel.setStyleName("text");
 			add(iLabel);
 			iButton = new HTML("&times;");
@@ -688,45 +692,98 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	}
 	
 	public static class Chip implements IsSerializable {
-		private String iCommand, iName, iValue, iHint;
+		private String iCommand, iValue, iLabel, iHint;
+		private String iTranslatedCommand, iTranslatedValue;
 		private Integer iCount;
 		public Chip() {}
-		public Chip(String command, String value, String name, String hint) {
-			iCommand = command; iValue = value; iName = name; iHint = hint;
-		}
-		public Chip(String command, String value, int count) {
-			iCommand = command; iValue = value; iCount = count;
-		}
-		public Chip(String command, String value, String hint) {
-			this(command, value, null, hint);
-		}
+		
 		public Chip(String command, String value) {
-			this(command, value, null, null);
+			iCommand = command; iValue = value;
 		}
+		
+		public Chip withCount(Integer count) {
+			iCount = count;
+			if (iCount != null && iCount <= 0) iCount = null;
+			return this;
+		}
+		
+		public Chip withTranslatedCommand(String translation) {
+			iTranslatedCommand = translation; return this;
+		}
+		
+		public Chip withTranslatedValue(String translation) {
+			iTranslatedValue = translation; return this;
+		}
+		
+		public Chip withToolTip(String hint) {
+			iHint = hint; return this;
+		}
+		
+		public Chip withLabel(String label) {
+			iLabel = label; return this;
+		}
+
 		public String getCommand() { return iCommand; }
+		public String getTranslatedCommand() { return iTranslatedCommand == null || iTranslatedCommand.isEmpty() ? iCommand.replace('_', ' '): iTranslatedCommand; }
+		
 		public String getValue() { return iValue; }
-		public String getHint() { return iHint; }
-		public String getName() { return iName == null ? iValue : iName; }
+		public String getTranslatedValue() { return iTranslatedValue == null || iTranslatedValue.isEmpty() ? iValue : iTranslatedValue; }
+		public String getLabel() { return iLabel == null || iLabel.isEmpty() ? iTranslatedValue == null || iTranslatedValue.isEmpty() ? iValue : iTranslatedValue : iLabel; }
+		
+		public boolean hasToolTip() { return iHint != null && !iHint.isEmpty(); }
+		public String getToolTip() { return iHint; }
+
 		public boolean hasCount() { return iCount != null && iCount > 0; }
 		public Integer getCount() { return iCount; }
-		public void setHint(String hint) { iHint = hint; }
+		
 		@Override
 		public boolean equals(Object other) {
 			if (other == null || !(other instanceof Chip)) return false;
 			Chip chip = (Chip)other;
 			return (chip.getCommand() == null || chip.getCommand().equalsIgnoreCase(getCommand())) && (chip.getValue() == null || chip.getValue().equalsIgnoreCase(getValue()));
 		}
+		
 		@Override
 		public String toString() {
 			return getCommand() + ":" + (getValue().contains(" ") ? "\"" + getValue() + "\"" : getValue());
 		}
+		
 		public String toAriaString() {
-			return getCommand().replace('_', ' ') + " " + getValue();
+			return getTranslatedCommand() + " " + getTranslatedValue();
+		}
+		
+		public boolean startsWith(String text) {
+			String t = text.toLowerCase();
+			if (iValue != null && iValue.toLowerCase().startsWith(t)) return true;
+			if (iLabel != null && iLabel.toLowerCase().startsWith(t)) return true;
+			if (iTranslatedValue != null && iTranslatedValue.toLowerCase().startsWith(t)) return true;
+			if (iCommand != null && t.startsWith(iCommand.toLowerCase() + " ")) {
+				if (iValue != null && (iCommand + " " + iValue).toLowerCase().startsWith(t)) return true;
+				if (iLabel != null && (iCommand + " " + iLabel).toLowerCase().startsWith(t)) return true;
+				if (iTranslatedValue != null && (iCommand + " " + iTranslatedValue).toLowerCase().startsWith(t)) return true;
+			}
+			if (iCommand != null && t.startsWith(iCommand.toLowerCase() + ":")) {
+				if (iValue != null && (iCommand + ":" + iValue).toLowerCase().startsWith(t)) return true;
+				if (iLabel != null && (iCommand + ":" + iLabel).toLowerCase().startsWith(t)) return true;
+				if (iTranslatedValue != null && (iCommand + ":" + iTranslatedValue).toLowerCase().startsWith(t)) return true;
+			}
+			if (iTranslatedCommand != null && t.startsWith(iTranslatedCommand.toLowerCase() + " ")) {
+				if (iValue != null && (iTranslatedCommand + " " + iValue).toLowerCase().startsWith(t)) return true;
+				if (iLabel != null && (iTranslatedCommand + " " + iLabel).toLowerCase().startsWith(t)) return true;
+				if (iTranslatedValue != null && (iTranslatedCommand + " " + iTranslatedValue).toLowerCase().startsWith(t)) return true;
+			}
+			if (iTranslatedCommand != null && t.startsWith(iTranslatedCommand.toLowerCase() + ":")) {
+				if (iValue != null && (iTranslatedCommand + ":" + iValue).toLowerCase().startsWith(t)) return true;
+				if (iLabel != null && (iTranslatedCommand + ":" + iLabel).toLowerCase().startsWith(t)) return true;
+				if (iTranslatedValue != null && (iTranslatedCommand + ":" + iTranslatedValue).toLowerCase().startsWith(t)) return true;
+			}
+			return false;
 		}
 	}
 	
 	public interface Filter {
 		public String getCommand();
+		public String getLabel();
 		public void validate(String text, AsyncCallback<Chip> callback);
 		public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback);
 		public void getPopupWidget(FilterBox box, AsyncCallback<Widget> callback);
@@ -805,10 +862,12 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public static abstract class SimpleFilter implements Filter {
 		private String iCommand;
+		private String iLabel;
 		private boolean iMultiple = true;
 		
-		public SimpleFilter(String command) {
+		public SimpleFilter(String command, String label) {
 			iCommand = command;
+			iLabel = label;
 		}
 		
 		public boolean isMultipleSelection() { return iMultiple; }
@@ -817,6 +876,11 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		@Override
 		public String getCommand() {
 			return iCommand;
+		}
+		
+		@Override
+		public String getLabel() {
+			return iLabel == null || iLabel.isEmpty() ? iCommand.replace('_', ' ') : iLabel;
 		}
 		
 		public abstract void getValues(List<Chip> chips, String text, AsyncCallback<Collection<Chip>> callback);
@@ -836,7 +900,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					@Override
 					public void onSuccess(Collection<Chip> result) {
 						List<Suggestion> ret = new ArrayList<FilterBox.Suggestion>();
-						if (getCommand().toLowerCase().startsWith(text)) {
+						if (getCommand().toLowerCase().startsWith(text) || getLabel().toLowerCase().startsWith(text)) {
 							for (Chip chip: result)
 								if (chips.contains(chip)) { // already in there -- remove
 									ret.add(new Suggestion(chip));
@@ -847,10 +911,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 								}
 						} else {
 							for (Chip chip: result)
-								if (chip.getValue().toLowerCase().startsWith(text.toLowerCase()) ||
-									chip.getName().toLowerCase().startsWith(text.toLowerCase()) ||
-									(getCommand() + " " + chip.getValue()).toLowerCase().startsWith(text.toLowerCase()) ||
-									(getCommand() + ":" + chip.getValue()).toLowerCase().startsWith(text.toLowerCase())) {
+								if (chip.startsWith(text)) {
 									if (chips.contains(chip)) { // already in there -- remove
 										ret.add(new Suggestion(chip));
 									} else {
@@ -882,13 +943,19 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 						return;
 					}
 					AbsolutePanel popup = new AbsolutePanel();
-					Label label = new Label(getCommand().replace('_', ' '), false);
-					label.addStyleName("command");
-					popup.add(label);
+					if (getLabel() != null && !getLabel().isEmpty()) {
+						Label label = new Label(getLabel(), false);
+						label.addStyleName("command");
+						popup.add(label);
+					} else {
+						Label label = new Label(getCommand().replace('_', ' '), false);
+						label.addStyleName("command");
+						popup.add(label);
+					}
 					for (final Chip value: values) {
-						String html = SafeHtmlUtils.htmlEscape(value.getName());
-						if (value.getHint() != null)
-							html += "<span class='item-hint'>" + value.getHint() + "</span>";
+						String html = SafeHtmlUtils.htmlEscape(value.getLabel());
+						if (value.hasToolTip())
+							html += "<span class='item-hint'>" + value.getToolTip() + "</span>";
 						else if (value.hasCount())
 							html += "<span class='item-hint'>(" + value.getCount() + ")</span>";
 						HTML item = new HTML(html, false);
@@ -925,26 +992,26 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		private List<Chip> iValues = new ArrayList<Chip>();
 		private boolean iValidate;
 		
-		public StaticSimpleFilter(String command, boolean validate, String... values) {
-			super(command);
+		public StaticSimpleFilter(String command, String label, boolean validate, String... values) {
+			super(command, label);
 			iValidate = validate;
 			for (String value: values)
-				iValues.add(new Chip(command, value));
+				iValues.add(new Chip(command, value).withLabel(label));
 		}
 		
-		public StaticSimpleFilter(String command, String... values) {
-			this(command, values.length > 0, values);
+		public StaticSimpleFilter(String command, String label, String... values) {
+			this(command, label, values.length > 0, values);
 		}
 		
-		public StaticSimpleFilter(String command, boolean validate, Collection<Chip> chips) {
-			super(command);
+		public StaticSimpleFilter(String command, String label, boolean validate, Collection<Chip> chips) {
+			super(command, label);
 			iValidate = validate;
 			if (chips != null)
 				iValues.addAll(chips);
 		}
 		
-		public StaticSimpleFilter(String command, Collection<Chip> chips) {
-			this(command, chips != null && !chips.isEmpty(), chips);
+		public StaticSimpleFilter(String command, String label, Collection<Chip> chips) {
+			this(command, label, chips != null && !chips.isEmpty(), chips);
 		}
 
 		@Override
@@ -964,19 +1031,21 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					}
 				callback.onFailure(new Exception("Unknown value " + text + "."));
 			} else {
-				callback.onSuccess(new Chip(getCommand(), text));
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()));
 			}
 		}
 	}
 	
 	public static class CustomFilter implements Filter {
 		private String iCommand;
+		private String iLabel;
 		private AbsolutePanel iPanel = null;
 		private Widget[] iWidgets;
 		private boolean iVisible = true;
 		
-		public CustomFilter(String command, Widget... popupWidgets) {
+		public CustomFilter(String command, String label, Widget... popupWidgets) {
 			iCommand = command;
+			iLabel = label;
 			iWidgets = popupWidgets;
 		}
 
@@ -986,8 +1055,13 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		}
 		
 		@Override
+		public String getLabel() {
+			return iLabel == null || iLabel.isEmpty() ? iCommand.replace('_', ' ') : iLabel;
+		}
+		
+		@Override
 		public void validate(String value, AsyncCallback<Chip> callback) {
-			callback.onSuccess(new Chip(getCommand(), value));
+			callback.onSuccess(new Chip(getCommand(), value).withTranslatedCommand(getLabel()));
 		}
 		
 		public boolean isVisible() { return iVisible; }
@@ -1017,7 +1091,11 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			if (iPanel == null) {
 				iPanel = new AbsolutePanel();
 				iPanel.addStyleName("filter");
-				if (getCommand() != null && !getCommand().isEmpty()) {
+				if (getLabel() != null && !getLabel().isEmpty()) {
+					Label label = new Label(getLabel(), false);
+					label.addStyleName("command");
+					iPanel.add(label);
+				} else if (getCommand() != null && !getCommand().isEmpty()) {
 					Label label = new Label(getCommand().replace('_', ' '), false);
 					label.addStyleName("command");
 					iPanel.add(label);
@@ -1153,35 +1231,35 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 
 		public Suggestion(Chip chip) {
 			iAdd = chip; iReplacement = ""; 
-			if (chip.getHint() != null) {
-				iDisplay = chip.getName();
-				iHint = " <span class='item-hint'>" + chip.getHint() + "</span>";
+			if (chip.hasToolTip()) {
+				iDisplay = chip.getLabel();
+				iHint = " <span class='item-hint'>" + chip.getToolTip() + "</span>";
 			}
 		}
 		
 		public Suggestion(Chip add, Chip remove) {
 			iAdd = add; iRemove = remove; iReplacement = ""; 
-			if ((add != null ? add : remove).getHint() != null) {
-				iDisplay = (add != null ? add : remove).getName();
-				iHint = " <span class='item-hint'>" + (add != null ? add : remove).getHint() + "</span>";
+			if ((add != null ? add : remove).hasToolTip()) {
+				iDisplay = (add != null ? add : remove).getLabel();
+				iHint = " <span class='item-hint'>" + (add != null ? add : remove).getToolTip() + "</span>";
 			}
 		}
 		
 		public Suggestion(String displayString, Chip add) {
 			iDisplay = displayString; iReplacement = ""; iAdd = add;
-			if (add.getHint() != null) {
-				iHint = " <span class='item-hint'>" + add.getHint() + "</span>";
+			if (add.hasToolTip()) {
+				iHint = " <span class='item-hint'>" + add.getToolTip() + "</span>";
 			} else {
-				iHint = "<span class='item-command'>" + add.getCommand().replace('_', ' ') + "</span>";
+				iHint = "<span class='item-command'>" + add.getTranslatedCommand() + "</span>";
 			}
 		}
 		
 		public Suggestion(String displayString, Chip add, Chip remove) {
 			iDisplay = displayString; iReplacement = ""; iAdd = add; iRemove = remove;
-			if ((add != null ? add : remove).getHint() != null) {
-				iHint = " <span class='item-hint'>" + (add != null ? add : remove).getHint() + "</span>";
+			if ((add != null ? add : remove).hasToolTip()) {
+				iHint = " <span class='item-hint'>" + (add != null ? add : remove).getToolTip() + "</span>";
 			} else {
-				iHint = "<span class='item-command'>" + (add != null ? add : remove).getCommand().replace('_', ' ') + "</span>";
+				iHint = "<span class='item-command'>" + (add != null ? add : remove).getTranslatedCommand() + "</span>";
 			}
 		}
 		
@@ -1215,15 +1293,15 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		public String toAriaString(FilterBox box) {
 			if (getChipToAdd() != null) {
 				if (getChipToRemove() != null)
-					return ARIA.chipReplace(getChipToAdd().getCommand().replace('_', ' '), getChipToAdd().getName());
+					return ARIA.chipReplace(getChipToAdd().getTranslatedCommand(), getChipToAdd().getLabel());
 				else {
 					if (box.hasChip(getChipToAdd()))
-						return ARIA.chipDelete(getChipToAdd().getCommand().replace('_', ' '), getChipToAdd().getName());
+						return ARIA.chipDelete(getChipToAdd().getTranslatedCommand(), getChipToAdd().getLabel());
 					else
-						return ARIA.chipAdd(getChipToAdd().getCommand().replace('_', ' '), getChipToAdd().getName());
+						return ARIA.chipAdd(getChipToAdd().getTranslatedCommand(), getChipToAdd().getLabel());
 				}
 			} else if (getChipToRemove() != null) {
-				return ARIA.chipDelete(getChipToRemove().getCommand().replace('_', ' '), getChipToRemove().getName());
+				return ARIA.chipDelete(getChipToRemove().getTranslatedCommand(), getChipToRemove().getLabel());
 			}
 			return SafeHtmlUtils.htmlEscape(getDisplayString()) + (getHint() == null ? "" : " " + getHint());
 		}
@@ -1318,7 +1396,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		
 		private SuggestionMenuItem(final Suggestion suggestion) {
 			super(suggestion.getDisplayString() == null
-					? suggestion.getChip().getName() + " <span class='item-command'>" + suggestion.getChip().getCommand().replace('_', ' ') + "</span>"
+					? suggestion.getChip().getLabel() + " <span class='item-command'>" + suggestion.getChip().getTranslatedCommand() + "</span>"
 					: SafeHtmlUtils.htmlEscape(suggestion.getDisplayString()) + (suggestion.getHint() == null ? "" : " " + suggestion.getHint()),
 				true,
 				new Command() {

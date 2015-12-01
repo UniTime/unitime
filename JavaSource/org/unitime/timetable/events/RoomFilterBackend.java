@@ -162,7 +162,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		}
 		response.add("building", new TreeSet<Entity>(buildings.values()));
 
-		Entity managed = new Entity(0l, "Managed", "Managed Rooms");
+		Entity managed = new Entity(0l, "Managed", MESSAGES.labelDepartmentManagedRooms(), "translated-value", MESSAGES.attrDepartmentManagedRooms());
 		Map<Long, Entity> exams = null;
 		if (context.hasPermission(request.getSessionId(), Right.Examinations) || context.hasPermission(request.getSessionId(), Right.ExaminationSchedule)) {
 			exams = new HashMap<Long, Entity>();

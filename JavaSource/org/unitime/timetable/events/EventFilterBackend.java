@@ -37,6 +37,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
@@ -63,6 +64,7 @@ import org.unitime.timetable.util.Formats;
 @GwtRpcImplements(EventFilterRpcRequest.class)
 public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> {
 	public static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	public static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Override
 	public void load(EventFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
@@ -83,7 +85,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			type2count.put(type, count);
 		}
 		for (int i = 0; i < Event.sEventTypesAbbv.length; i++) {
-			Entity e = new Entity(new Long(i), Event.sEventTypesAbbv[i], Event.sEventTypesAbbv[i]);
+			Entity e = new Entity(new Long(i), Event.sEventTypesAbbv[i], CONSTANTS.eventTypeAbbv()[i], "translated-value", CONSTANTS.eventTypeShort()[i]);
 			Integer count = type2count.get(i);
 			e.setCount(count == null ? 0 : count);
 			response.add("type", e);
@@ -110,32 +112,32 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			case Constants.DAY_SAT: type = 7; break;
 			}
 			Integer count = day2count.get(type);
-			Entity e = new Entity(new Long(type), day, day);
+			Entity e = new Entity(new Long(type), day, CONSTANTS.longDays()[i], "translated-value", CONSTANTS.longDays()[i]);
 			e.setCount(count == null ? 0 : count);
 			response.add("day", e);
 		}
 		
-		Entity all = new Entity(0l, "All", "All Events");
+		Entity all = new Entity(0l, "All", CONSTANTS.eventModeLabel()[0], "translated-value", CONSTANTS.eventModeAbbv()[0]);
 		all.setCount(((Number)query.select("count(distinct e)").exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue());
 		response.add("mode", all);
 		if (context.isAuthenticated() && context.getUser().getCurrentAuthority() != null) {
 			int myCnt = ((Number)query.select("count(distinct e)").where("e.mainContact.externalUniqueId = :user and e.class not in (ClassEvent, FinalExamEvent, MidtermExamEvent)").set("user", context.getUser().getExternalUserId())
 					.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-			Entity my = new Entity(1l, "My", "My Events"); my.setCount(myCnt);
+			Entity my = new Entity(1l, "My", CONSTANTS.eventModeLabel()[1], "translated-value", CONSTANTS.eventModeAbbv()[1]); my.setCount(myCnt);
 			response.add("mode", my);
 			
 			if (context.hasPermission(Right.HasRole)) {
 				int approvedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 1")
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue(); 
-				Entity approved = new Entity(2l, "Approved", "Approved Events"); approved.setCount(approvedCnt);
+				Entity approved = new Entity(2l, "Approved", CONSTANTS.eventModeLabel()[2], "translated-value", CONSTANTS.eventModeAbbv()[2]); approved.setCount(approvedCnt);
 				response.add("mode", approved);
 				
 				int notApprovedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0")
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-				Entity notApproved = new Entity(3l, "Unapproved", "Not Approved Events"); notApproved.setCount(notApprovedCnt);
+				Entity notApproved = new Entity(3l, "Unapproved", CONSTANTS.eventModeLabel()[3], "translated-value", CONSTANTS.eventModeAbbv()[3]); notApproved.setCount(notApprovedCnt);
 				response.add("mode", notApproved);
 
-				Entity conflicting = new Entity(5l, "Conflicting", "Conflicting Events");
+				Entity conflicting = new Entity(5l, "Conflicting", CONSTANTS.eventModeLabel()[5], "translated-value", CONSTANTS.eventModeAbbv()[5]);
 				if (ApplicationProperty.EventFilterSkipConflictCounts.isFalse()) {
 					int conflictingCnt = ((Number)query.select("count(distinct e)").from("Meeting mx").joinWithLocation()
 							.where("mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId and m.approvalStatus <= 1 and mx.approvalStatus <= 1 and l.ignoreRoomCheck = false")
@@ -147,27 +149,27 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
 					int awaitingCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0 and m.meetingDate >= :today").set("today", today)
 							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-					Entity awaiting = new Entity(4l, "Awaiting", "Awaiting Events"); awaiting.setCount(awaitingCnt);
+					Entity awaiting = new Entity(4l, "Awaiting", CONSTANTS.eventModeLabel()[4], "translated-value", CONSTANTS.eventModeAbbv()[4]); awaiting.setCount(awaitingCnt);
 					response.add("mode", awaiting);
 
 					if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
 						int myApprovalCnt = ((Number)query.select("count(distinct e)").joinWithLocation().from("inner join l.eventDepartment.timetableManagers g")
 								.where("m.approvalStatus = 0 and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", context.getUser().getExternalUserId())
 								.set("today", today).exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-						Entity myAwaiting = new Entity(6l, "My Awaiting", "Awaiting My Approval"); myAwaiting.setCount(myApprovalCnt);
+						Entity myAwaiting = new Entity(6l, "My Awaiting", CONSTANTS.eventModeLabel()[6], "translated-value", CONSTANTS.eventModeAbbv()[6]); myAwaiting.setCount(myApprovalCnt);
 						response.add("mode", myAwaiting);
 					}
 					
 					int rejectedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus >= 2")
 							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-					Entity rejected = new Entity(7l, "Cancelled", "Cancelled / Rejected"); rejected.setCount(rejectedCnt);
+					Entity rejected = new Entity(7l, "Cancelled", CONSTANTS.eventModeLabel()[7], "translated-value", CONSTANTS.eventModeAbbv()[7]); rejected.setCount(rejectedCnt);
 					response.add("mode", rejected);
 				}
 				
 				if (context.getUser().getCurrentAuthority().hasRight(Right.EventSetExpiration)) {
 					int expiringCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0 and e.expirationDate is not null")
 							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-					Entity expiring = new Entity(8l, "Expiring", "Expiring Events"); expiring.setCount(expiringCnt);
+					Entity expiring = new Entity(8l, "Expiring", CONSTANTS.eventModeLabel()[8]); expiring.setCount(expiringCnt);
 					response.add("mode", expiring);
 				}
 			}
@@ -184,13 +186,13 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		
 		if (context.hasPermission(Right.EventLookupSchedule)) {
 			if (context.hasPermission(Right.CanLookupStudents))
-				response.add("role", new Entity(1l, "Student", "Student"));
+				response.add("role", new Entity(1l, "Student", CONSTANTS.eventRole()[1], "translated-value", CONSTANTS.eventRole()[1]));
 			if (context.hasPermission(Right.CanLookupInstructors)) {
-				response.add("role", new Entity(2l, "Instructor", "Instructor"));
-				response.add("role", new Entity(3l, "Coordinator", "Coordinator"));
+				response.add("role", new Entity(2l, "Instructor", CONSTANTS.eventRole()[2], "translated-value", CONSTANTS.eventRole()[2]));
+				response.add("role", new Entity(3l, "Coordinator", CONSTANTS.eventRole()[3], "translated-value", CONSTANTS.eventRole()[3]));
 			}
 			if (context.hasPermission(Right.CanLookupEventContacts))
-				response.add("role", new Entity(4l, "Contact", "Contact"));
+				response.add("role", new Entity(4l, "Contact", CONSTANTS.eventRole()[4], "translated-value", CONSTANTS.eventRole()[4]));
 		}
 	}
 	
@@ -259,14 +261,14 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		
 		Integer after = null;
 		if (request.hasOption("after")) {
-			after = TimeSelector.TimeUtils.parseTime(CONSTANTS, request.getOption("after"), null);
+			after = TimeSelector.TimeUtils.parseTime2(CONSTANTS, request.getOption("after"), null);
 			if (after != null) {
 				query.addWhere("after", "m.stopPeriod > :Xafter");
 				query.addParameter("after", "Xafter", after);
 			}
 		}
 		if (request.hasOption("before")) {
-			Integer before = TimeSelector.TimeUtils.parseTime(CONSTANTS, request.getOption("before"), after);
+			Integer before = TimeSelector.TimeUtils.parseTime2(CONSTANTS, request.getOption("before"), after);
 			if (before != null) {
 				query.addWhere("before", "m.startPeriod < :Xbefore");
 				query.addParameter("before", "Xbefore", before);
@@ -303,7 +305,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				date = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
 			} catch (NumberFormatException f) {
 				try {
-					date = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).parse(request.getOption("from"));
+					date = Formats.getDateFormat(Formats.Pattern.FILTER_DATE).parse(request.getOption("from"));
 				} catch (ParseException p) {}
 			}
 			if (date != null) {
@@ -318,7 +320,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				last = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
 			} catch (NumberFormatException f) {
 				try {
-					last = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).parse(request.getOption("to"));
+					last = Formats.getDateFormat(Formats.Pattern.FILTER_DATE).parse(request.getOption("to"));
 				} catch (ParseException p) {}
 				
 			}
@@ -337,7 +339,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 					date = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
 				} catch (NumberFormatException f) {
 					try {
-						date = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).parse(d);
+						date = Formats.getDateFormat(Formats.Pattern.FILTER_DATE).parse(d);
 					} catch (ParseException p) {}
 				}
 				if (date != null) {

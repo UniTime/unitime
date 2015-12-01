@@ -95,6 +95,9 @@ public class Formats {
 		DATE_ENTRY_FORMAT(new PatternHolder() {
 			public String getPattern() { return GWT_CONSTANTS.dateEntryFormat(); }
 		}),
+		FILTER_DATE(new PatternHolder() {
+			public String getPattern() { return GWT_CONSTANTS.filterDateFormat(); }
+		}),
 		;
 		
 		

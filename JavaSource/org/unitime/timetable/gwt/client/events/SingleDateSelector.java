@@ -886,4 +886,9 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 		panel.add(selector);
 		return selector;
 	}
+	
+	public void setFormat(DateTimeFormat format) {
+		iFormat = format; 
+		if (iHint) setHint(iFormat.getPattern().toUpperCase());
+	}
 }

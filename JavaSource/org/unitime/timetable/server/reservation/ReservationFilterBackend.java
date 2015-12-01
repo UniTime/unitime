@@ -37,6 +37,7 @@ import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
@@ -71,6 +72,7 @@ import org.unitime.timetable.util.Formats;
 @GwtRpcImplements(ReservationFilterRpcRequest.class)
 public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilterRpcRequest> {
 	public static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	public static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 
 	@Override
 	public FilterRpcResponse execute(ReservationFilterRpcRequest request, SessionContext context) {
@@ -97,26 +99,26 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			int count = ((Number)o[1]).intValue();
 			type2count.put(type, count);
 		}
-		Entity individualType = new Entity(new Long(0), "Individual", "Individual");
+		Entity individualType = new Entity(new Long(0), "Individual", MESSAGES.reservationIndividualAbbv(), "translated-value", MESSAGES.reservationIndividualAbbv());
 		Integer individualCnt = type2count.get(0);
 		if (individualCnt != null)
 			individualType.setCount(individualCnt);
 		response.add("type", individualType);
-		Entity groupType = new Entity(new Long(0), "Group", "Student Group");
+		Entity groupType = new Entity(new Long(0), "Group", MESSAGES.reservationStudentGroupAbbv(), "translated-value", MESSAGES.reservationStudentGroupAbbv());
 		Integer groupCnt = type2count.get(1);
 		if (groupCnt != null)
 			groupType.setCount(groupCnt);
 		response.add("type", groupType);
-		Entity curriculumType = new Entity(new Long(0), "Curriculum", "Curriculum");
+		Entity curriculumType = new Entity(new Long(0), "Curriculum", MESSAGES.reservationCurriculumAbbv(), "translated-value", MESSAGES.reservationCurriculumAbbv());
 		Integer curriculumCnt = type2count.get(2);
 		if (curriculumCnt != null)
 			curriculumType.setCount(curriculumCnt);
 		response.add("type", curriculumType);
-		Entity courseType = new Entity(new Long(0), "Course", "Course");
+		Entity courseType = new Entity(new Long(0), "Course", MESSAGES.reservationCourseAbbv(), "translated-value", MESSAGES.reservationCourseAbbv());
 		Integer courseCnt = type2count.get(3);
 		if (courseCnt != null)
 			courseType.setCount(courseCnt);
-		Entity overrideType = new Entity(new Long(0), "Override", "Override");
+		Entity overrideType = new Entity(new Long(0), "Override", MESSAGES.reservationOverrideAbbv(), "translated-value", MESSAGES.reservationOverrideAbbv());
 		Integer overrideCnt = type2count.get(4);
 		if (overrideCnt != null)
 			overrideType.setCount(overrideCnt);
@@ -154,13 +156,13 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		}
 		response.add("subject", subjects);
 		
-		Entity all = new Entity(0l, "All", "All Reservations");
+		Entity all = new Entity(0l, "All", CONSTANTS.reservationModeLabel()[0], "translated-value", CONSTANTS.reservationModeAbbv()[0]);
 		all.setCount(((Number)query.select("count(distinct r)").exclude("mode").query(hibSession).uniqueResult()).intValue());
 		response.add("mode", all);
-		Entity expired = new Entity(0l, "Expired", "Expired");
+		Entity expired = new Entity(1l, "Expired", CONSTANTS.reservationModeLabel()[1], "translated-value", CONSTANTS.reservationModeAbbv()[1]);
 		expired.setCount(((Number)query.select("count(distinct r)").exclude("mode").where("r.expirationDate < :today").set("today", today).query(hibSession).uniqueResult()).intValue());
 		response.add("mode", expired);
-		Entity notExpired = new Entity(0l, "Not Expired", "Not Expired");
+		Entity notExpired = new Entity(2l, "Not Expired", CONSTANTS.reservationModeLabel()[2], "translated-value", CONSTANTS.reservationModeAbbv()[2]);
 		notExpired.setCount(all.getCount() - expired.getCount());
 		response.add("mode", notExpired);
 		
@@ -357,7 +359,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 					date = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
 				} catch (NumberFormatException f) {
 					try {
-						date = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).parse(request.getOption("before"));
+						date = Formats.getDateFormat(Formats.Pattern.FILTER_DATE).parse(request.getOption("before"));
 					} catch (ParseException p) {}
 				}
 			}
@@ -376,7 +378,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 					date = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
 				} catch (NumberFormatException f) {
 					try {
-						date = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).parse(request.getOption("after"));
+						date = Formats.getDateFormat(Formats.Pattern.FILTER_DATE).parse(request.getOption("after"));
 					} catch (ParseException p) {}
 				}
 			}
@@ -597,13 +599,13 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		
 		private String format(Date date) {
 			if (iDateFormat == null)
-				iDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
+				iDateFormat = Formats.getDateFormat(Formats.Pattern.FILTER_DATE);
 			return iDateFormat.format(date);
 		}
 		
 		private Date parse(String date) throws ParseException {
 			if (iDateFormat == null)
-				iDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
+				iDateFormat = Formats.getDateFormat(Formats.Pattern.FILTER_DATE);
 			return iDateFormat.parse(date);
 		}
 		

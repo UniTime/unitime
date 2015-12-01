@@ -159,4 +159,30 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultBooleanValue(false)
 	@DoNotTranslate
 	boolean courseFinderSuggestWhenEmpty();
+	
+	@DefaultStringArrayValue({
+		"Assigned",
+		"Reserved",
+		"Not Assigned",
+		"Wait-Listed",
+	})
+	String[] assignmentType();
+	
+	@DefaultStringArrayValue({
+		"Consent",
+		"No Consent",
+		"Waiting",
+		"Approved",
+		"To Do",
+	})
+	String[] consentTypeAbbv();
+	
+	@DefaultStringArrayValue({
+		"Any Consent Needed",
+		"Consent Not Needed",
+		"Consent Waiting Approval",
+		"Consent Approved",
+		"Waiting My Approval",
+	})
+	String[] consentTypeLabel();
 }

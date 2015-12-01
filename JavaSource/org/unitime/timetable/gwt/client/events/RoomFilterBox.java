@@ -75,7 +75,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		iDepartments.setMultipleSelect(false);
 		iDepartments.setWidth("100%");
 		
-		addFilter(new FilterBox.CustomFilter("department", iDepartments) {
+		addFilter(new FilterBox.CustomFilter("department", MESSAGES.tagDepartment(), iDepartments) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -84,7 +84,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 					Chip oldChip = getChip("department");
 					List<Suggestion> suggestions = new ArrayList<Suggestion>();
 					for (int i = 0; i < iDepartments.getItemCount(); i++) {
-						Chip chip = new Chip("department", iDepartments.getValue(i));
+						Chip chip = new Chip("department", iDepartments.getValue(i)).withTranslatedCommand(MESSAGES.tagDepartment());
 						String name = iDepartments.getItemText(i);
 						if (iDepartments.getValue(i).toLowerCase().startsWith(text.toLowerCase())) {
 							suggestions.add(new Suggestion(name, chip, oldChip));
@@ -94,7 +94,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 					}
 					if ("department".startsWith(text.toLowerCase()) && text.toLowerCase().length() >= 5) {
 						for (int i = 0; i < iDepartments.getItemCount(); i++) {
-							Chip chip = new Chip("department", iDepartments.getValue(i));
+							Chip chip = new Chip("department", iDepartments.getValue(i)).withTranslatedCommand(MESSAGES.tagDepartment());
 							String name = iDepartments.getItemText(i);
 							if (!chip.equals(oldChip))
 								suggestions.add(new Suggestion(name, chip, oldChip));
@@ -103,12 +103,20 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 					callback.onSuccess(suggestions);
 				}
 			}
+			
+			@Override
+			public void validate(String value, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				if ("managed".equalsIgnoreCase(value))
+					translatedValue = MESSAGES.attrDepartmentManagedRooms();
+				callback.onSuccess(new Chip(getCommand(), value).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
 		});
 		iDepartments.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
 				Chip oldChip = getChip("department");
-				Chip newChip = (iDepartments.getSelectedIndex() <= 0 ? null : new Chip("department", iDepartments.getValue(iDepartments.getSelectedIndex())));
+				Chip newChip = (iDepartments.getSelectedIndex() <= 0 ? null : new Chip("department", iDepartments.getValue(iDepartments.getSelectedIndex())).withTranslatedCommand(MESSAGES.tagDepartment()));
 				if (oldChip != null) {
 					if (newChip == null) {
 						removeChip(oldChip, true);
@@ -125,17 +133,29 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 			}
 		});
 		
-		addFilter(new FilterBox.StaticSimpleFilter("type"));
-		addFilter(new FilterBox.StaticSimpleFilter("feature"));
-		addFilter(new FilterBox.StaticSimpleFilter("group"));
-		addFilter(new FilterBox.StaticSimpleFilter("size"));
-		addFilter(new FilterBox.StaticSimpleFilter("flag"));
+		addFilter(new FilterBox.StaticSimpleFilter("type", MESSAGES.tagRoomType()));
+		addFilter(new FilterBox.StaticSimpleFilter("feature", MESSAGES.tagRoomFeature()));
+		addFilter(new FilterBox.StaticSimpleFilter("group", MESSAGES.tagRoomGroup()));
+		addFilter(new FilterBox.StaticSimpleFilter("size", MESSAGES.tagRoomSize()));
+		addFilter(new FilterBox.StaticSimpleFilter("flag", MESSAGES.tagRoomFlag()) {
+			@Override
+			public void validate(String text, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				if ("all".equalsIgnoreCase(text))
+					translatedValue = MESSAGES.attrFlagAllRooms();
+				else if ("event".equalsIgnoreCase(text))
+					translatedValue = MESSAGES.attrFlagEventRooms();
+				else if ("nearby".equalsIgnoreCase(text))
+					translatedValue = MESSAGES.attrFlagNearbyRooms();
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
 		
 		iBuildings = new ListBox();
 		iBuildings.setMultipleSelect(true);
 		iBuildings.setWidth("100%"); iBuildings.setVisibleItemCount(3);
 		
-		addFilter(new FilterBox.CustomFilter("building", iBuildings) {
+		addFilter(new FilterBox.CustomFilter("building", MESSAGES.tagBuilding(), iBuildings) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -143,7 +163,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 				} else {
 					List<Suggestion> suggestions = new ArrayList<Suggestion>();
 					for (int i = 0; i < iBuildings.getItemCount(); i++) {
-						Chip chip = new Chip("building", iBuildings.getValue(i));
+						Chip chip = new Chip("building", iBuildings.getValue(i)).withTranslatedCommand(MESSAGES.tagBuilding());
 						String name = iBuildings.getItemText(i);
 						if (iBuildings.getValue(i).toLowerCase().startsWith(text.toLowerCase())) {
 							suggestions.add(new Suggestion(name, chip));
@@ -153,7 +173,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 					}
 					if ("building".startsWith(text.toLowerCase()) && text.toLowerCase().length() >= 5) {
 						for (int i = 0; i < iBuildings.getItemCount(); i++) {
-							Chip chip = new Chip("building", iBuildings.getValue(i));
+							Chip chip = new Chip("building", iBuildings.getValue(i)).withTranslatedCommand(MESSAGES.tagBuilding());
 							String name = iBuildings.getItemText(i);
 							suggestions.add(new Suggestion(name, chip));
 						}
@@ -171,7 +191,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 			public void onChange(ChangeEvent event) {
 				boolean changed = false;
 				for (int i = 0; i < iBuildings.getItemCount(); i++) {
-					Chip chip = new Chip("building", iBuildings.getValue(i));
+					Chip chip = new Chip("building", iBuildings.getValue(i)).withTranslatedCommand(MESSAGES.tagBuilding());
 					if (iBuildings.isItemSelected(i)) {
 						if (!hasChip(chip)) {
 							addChip(chip, false); changed = true;
@@ -206,19 +226,25 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		final CheckBox nearby = new CheckBox(MESSAGES.checkIncludeNearby());
 		nearby.getElement().getStyle().setMarginLeft(10, Unit.PX);
 		
-		addFilter(new FilterBox.CustomFilter("other", l1, iMin, l2, iMax, events, nearby) {
+		addFilter(new FilterBox.CustomFilter("other", MESSAGES.tagOther(), l1, iMin, l2, iMax, events, nearby) {
 			@Override
 			public void getSuggestions(final List<Chip> chips, final String text, AsyncCallback<Collection<FilterBox.Suggestion>> callback) {
 				if (text.isEmpty()) {
 					callback.onSuccess(null);
 				} else {
 					List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
-					if ("nearby".startsWith(text.toLowerCase()) || MESSAGES.checkIncludeNearby().toLowerCase().startsWith(text.toLowerCase())) {
-						suggestions.add(new Suggestion(MESSAGES.checkIncludeNearby(), new Chip("flag", "Nearby")));
-					} else if ("all".startsWith(text.toLowerCase()) || MESSAGES.checkAllLocations().toLowerCase().startsWith(text.toLowerCase())) {
-						suggestions.add(new Suggestion(MESSAGES.checkAllLocations(), new Chip("flag", "All"), new Chip("flag", "Event")));
-					} else if ("event".startsWith(text.toLowerCase()) || MESSAGES.checkOnlyEventLocations().toLowerCase().startsWith(text.toLowerCase())) {
-						suggestions.add(new Suggestion(MESSAGES.checkOnlyEventLocations(), new Chip("flag", "Event"), new Chip("flag", "All")));
+					if (MESSAGES.attrFlagNearbyRooms().toLowerCase().startsWith(text.toLowerCase()) || "nearby".startsWith(text.toLowerCase()) || MESSAGES.checkIncludeNearby().toLowerCase().startsWith(text.toLowerCase())) {
+						suggestions.add(new Suggestion(MESSAGES.checkIncludeNearby(), new Chip("flag", "Nearby").withTranslatedCommand(MESSAGES.tagRoomFlag()).withTranslatedValue(MESSAGES.attrFlagNearbyRooms())));
+					} else if (MESSAGES.attrFlagAllRooms().toLowerCase().startsWith(text.toLowerCase()) || "all".startsWith(text.toLowerCase()) || MESSAGES.checkAllLocations().toLowerCase().startsWith(text.toLowerCase())) {
+						suggestions.add(new Suggestion(MESSAGES.checkAllLocations(),
+								new Chip("flag", "All").withTranslatedCommand(MESSAGES.tagRoomFlag()).withTranslatedValue(MESSAGES.attrFlagAllRooms()),
+								new Chip("flag", "Event").withTranslatedCommand(MESSAGES.tagRoomFlag()).withTranslatedValue(MESSAGES.attrFlagEventRooms())
+								));
+					} else if (MESSAGES.attrFlagEventRooms().toLowerCase().startsWith(text.toLowerCase()) || "event".startsWith(text.toLowerCase()) || MESSAGES.checkOnlyEventLocations().toLowerCase().startsWith(text.toLowerCase())) {
+						suggestions.add(new Suggestion(MESSAGES.checkOnlyEventLocations(),
+								new Chip("flag", "Event").withTranslatedCommand(MESSAGES.tagRoomFlag()).withTranslatedValue(MESSAGES.attrFlagEventRooms()),
+								new Chip("flag", "All").withTranslatedCommand(MESSAGES.tagRoomFlag()).withTranslatedValue(MESSAGES.attrFlagAllRooms())
+								));
 					} else {
 						Chip old = null;
 						for (Chip c: chips) { if (c.getCommand().equals("size")) { old = c; break; } }
@@ -228,10 +254,10 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 							if (text.startsWith("<=") || text.startsWith(">=")) { number = number.substring(2); prefix = text.substring(0, 2); }
 							else if (text.startsWith("<") || text.startsWith(">")) { number = number.substring(1); prefix = text.substring(0, 1); }
 							Integer.parseInt(number);
-							suggestions.add(new Suggestion(new Chip("size", text), old));
+							suggestions.add(new Suggestion(new Chip("size", text).withTranslatedCommand(MESSAGES.tagRoomSize()), old));
 							if (prefix.isEmpty()) {
-								suggestions.add(new Suggestion(new Chip("size", "<=" + text), old));
-								suggestions.add(new Suggestion(new Chip("size", ">=" + text), old));
+								suggestions.add(new Suggestion(new Chip("size", "<=" + text).withTranslatedCommand(MESSAGES.tagRoomSize()), old));
+								suggestions.add(new Suggestion(new Chip("size", ">=" + text).withTranslatedCommand(MESSAGES.tagRoomSize()), old));
 							}
 						} catch (Exception e) {}
 						if (text.contains("..")) {
@@ -239,7 +265,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 								String first = text.substring(0, text.indexOf('.'));
 								String second = text.substring(text.indexOf("..") + 2);
 								Integer.parseInt(first); Integer.parseInt(second);
-								suggestions.add(new Suggestion(new Chip("size", text), old));
+								suggestions.add(new Suggestion(new Chip("size", text).withTranslatedCommand(MESSAGES.tagRoomSize()), old));
 							} catch (Exception e) {}
 						}
 					}
@@ -325,7 +351,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		nearby.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				Chip chip = new Chip("flag", "Nearby");
+				Chip chip = new Chip("flag", "Nearby").withTranslatedCommand(MESSAGES.tagRoomFlag()).withTranslatedValue(MESSAGES.attrFlagNearbyRooms());
 				if (event.getValue()) {
 					if (!hasChip(chip)) addChip(chip, true);
 				} else {
@@ -344,8 +370,8 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		events.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				Chip eventChip = new Chip("flag", "Event");
-				Chip allChip = new Chip("flag", "All");
+				Chip eventChip = new Chip("flag", "Event").withTranslatedCommand(MESSAGES.tagRoomFlag()).withTranslatedValue(MESSAGES.attrFlagEventRooms());
+				Chip allChip = new Chip("flag", "All").withTranslatedCommand(MESSAGES.tagRoomFlag()).withTranslatedValue(MESSAGES.attrFlagAllRooms());
 				if (event.getValue()) {
 					if (!hasChip(eventChip)) addChip(eventChip, true);
 					if (hasChip(allChip)) removeChip(allChip, true);
@@ -368,8 +394,8 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 			public void onValueChange(ValueChangeEvent<String> event) {
 				iLastSize = getChip("size");
 				if (!isFilterPopupShowing()) {
-					nearby.setValue(hasChip(new Chip("flag", "Nearby")));
-					events.setValue(hasChip(new Chip("flag", "Event")));
+					nearby.setValue(hasChip(new Chip("flag", "Nearby").withTranslatedCommand(MESSAGES.tagRoomFlag()).withTranslatedValue(MESSAGES.attrFlagNearbyRooms())));
+					events.setValue(hasChip(new Chip("flag", "Event").withTranslatedCommand(MESSAGES.tagRoomFlag()).withTranslatedValue(MESSAGES.attrFlagEventRooms())));
 					Chip size = getChip("size");
 					if (size != null) {
 						if (size.getValue().startsWith("<=")) {
@@ -394,12 +420,12 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 					}
 					for (int i = 0; i < iBuildings.getItemCount(); i++) {
 						String value = iBuildings.getValue(i);
-						iBuildings.setItemSelected(i, hasChip(new Chip("building", value)));
+						iBuildings.setItemSelected(i, hasChip(new Chip("building", value).withTranslatedCommand(MESSAGES.tagBuilding())));
 					}
 					iDepartments.setSelectedIndex(0);
 					for (int i = 1; i < iDepartments.getItemCount(); i++) {
 						String value = iDepartments.getValue(i);
-						if (hasChip(new Chip("department", value))) {
+						if (hasChip(new Chip("department", value).withTranslatedCommand(MESSAGES.tagDepartment()))) {
 							iDepartments.setSelectedIndex(i);
 							break;
 						}
@@ -433,7 +459,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 			for (FilterBox.Filter filter: iFilter.getWidget().getFilters()) {
 				if (filter.getCommand().equals(type)) continue types;
 			}
-			iFilter.getWidget().getFilters().add(iFilter.getWidget().getFilters().size() - 5, new FilterBox.StaticSimpleFilter(type));
+			iFilter.getWidget().getFilters().add(iFilter.getWidget().getFilters().size() - 5, new FilterBox.StaticSimpleFilter(type, null));
 			added = true;
 		}
 		if (added) setValue(getValue(), false);
@@ -478,7 +504,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 				removeChip(oldChip, fireChange);
 			}
 		} else {
-			Chip newChip = new Chip("size", iMin.getText().isEmpty() ? "<=" + iMax.getText() : iMax.getText().isEmpty() ? ">=" + iMin.getText() : iMin.getText() + ".." + iMax.getText());
+			Chip newChip = new Chip("size", iMin.getText().isEmpty() ? "<=" + iMax.getText() : iMax.getText().isEmpty() ? ">=" + iMin.getText() : iMin.getText() + ".." + iMax.getText()).withTranslatedCommand(MESSAGES.tagRoomSize());
 			if (newChip.equals(oldChip)) {
 				if (fireChange && !newChip.equals(iLastSize)) fireValueChangeEvent();
 				return;

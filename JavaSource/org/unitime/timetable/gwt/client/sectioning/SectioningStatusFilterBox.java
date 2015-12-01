@@ -28,6 +28,8 @@ import org.unitime.timetable.gwt.client.events.UniTimeFilterBox;
 import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Suggestion;
+import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
@@ -60,6 +62,8 @@ import com.google.gwt.user.client.ui.TextBox;
  */
 public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatusFilterBox.SectioningStatusFilterRpcRequest> {
 	private static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
+	private static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
+	private static final GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
 	
 	private boolean iOnline;
 	
@@ -74,27 +78,57 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		
 		iOnline = online;
 
-		FilterBox.StaticSimpleFilter mode = new FilterBox.StaticSimpleFilter("mode");
+		FilterBox.StaticSimpleFilter mode = new FilterBox.StaticSimpleFilter("mode", GWT_MESSAGES.tagSectioningMode());
 		mode.setMultipleSelection(false);
 		addFilter(mode);
 		
-		addFilter(new FilterBox.StaticSimpleFilter("type"));
+		addFilter(new FilterBox.StaticSimpleFilter("type", GWT_MESSAGES.tagSectioningType()));
 		
-		addFilter(new FilterBox.StaticSimpleFilter("status"));
-		addFilter(new FilterBox.StaticSimpleFilter("approver"));
+		addFilter(new FilterBox.StaticSimpleFilter("status", GWT_MESSAGES.tagSectioningStatus()));
+		addFilter(new FilterBox.StaticSimpleFilter("approver", GWT_MESSAGES.tagApprover()));
 
 		
-		addFilter(new FilterBox.StaticSimpleFilter("area"));
-		addFilter(new FilterBox.StaticSimpleFilter("major"));
-		addFilter(new FilterBox.StaticSimpleFilter("classification"));
-		addFilter(new FilterBox.StaticSimpleFilter("group"));
-		addFilter(new FilterBox.StaticSimpleFilter("accommodation"));
+		addFilter(new FilterBox.StaticSimpleFilter("area", GWT_MESSAGES.tagAcademicArea()));
+		addFilter(new FilterBox.StaticSimpleFilter("major", GWT_MESSAGES.tagMajor()));
+		addFilter(new FilterBox.StaticSimpleFilter("classification", GWT_MESSAGES.tagClassification()));
+		addFilter(new FilterBox.StaticSimpleFilter("group", GWT_MESSAGES.tagStudentGroup()));
+		addFilter(new FilterBox.StaticSimpleFilter("accommodation", GWT_MESSAGES.tagStudentAccommodation()));
 		
-		addFilter(new FilterBox.StaticSimpleFilter("assignment"));
+		addFilter(new FilterBox.StaticSimpleFilter("assignment", GWT_MESSAGES.tagSectioningAssignment()) {
+			@Override
+			public void validate(String text, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				if ("assigned".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.assignmentType()[0];
+				else if ("reserved".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.assignmentType()[1];
+				else if ("not assigned".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.assignmentType()[2];
+				else if ("wait-listed".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.assignmentType()[3];
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
 		
-		addFilter(new FilterBox.StaticSimpleFilter("consent"));
+		addFilter(new FilterBox.StaticSimpleFilter("consent", GWT_MESSAGES.tagSectioningConsent()) {
+			@Override
+			public void validate(String text, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				if ("consent".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.consentTypeAbbv()[0];
+				else if ("no consent".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.consentTypeAbbv()[1];
+				else if ("waiting".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.consentTypeAbbv()[2];
+				else if ("approved".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.consentTypeAbbv()[3];
+				else if ("to do".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.consentTypeAbbv()[3];
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
 		
-		FilterBox.StaticSimpleFilter op = new FilterBox.StaticSimpleFilter("operation");
+		FilterBox.StaticSimpleFilter op = new FilterBox.StaticSimpleFilter("operation", GWT_MESSAGES.tagSectioningOperation());
 		op.setMultipleSelection(true);
 		addFilter(op);
 
@@ -110,7 +144,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 					if (removed)
 						fireValueChangeEvent();
 				} else {
-					addChip(new Chip("curriculum", curriculum.getText()), true);
+					addChip(new Chip("curriculum", curriculum.getText()).withTranslatedCommand(GWT_MESSAGES.tagCurriculum()), true);
 				}
 			}
 		});
@@ -119,7 +153,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		iCourse = new AriaSuggestBox(new CourseOracle());
 		iCourse.setStyleName("unitime-TextArea");
 		iCourse.setWidth("200px");
-		addFilter(new FilterBox.StaticSimpleFilter("course"));
+		addFilter(new FilterBox.StaticSimpleFilter("course", GWT_MESSAGES.tagCourse()));
 		iCourse.getValueBox().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -168,7 +202,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		iStudent = new AriaSuggestBox(new StudentOracle());
 		iStudent.setStyleName("unitime-TextArea");
 		iStudent.setWidth("200px");
-		addFilter(new FilterBox.StaticSimpleFilter("student"));
+		addFilter(new FilterBox.StaticSimpleFilter("student", GWT_MESSAGES.tagStudent()));
 		iStudent.getValueBox().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -211,7 +245,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 			}
 		});
 		
-		addFilter(new FilterBox.CustomFilter("Other", courseLab, iCourse, studentLab, iStudent) {
+		addFilter(new FilterBox.CustomFilter("Other", GWT_MESSAGES.tagOther(), courseLab, iCourse, studentLab, iStudent) {
 			@Override
 			public void getSuggestions(final List<Chip> chips, final String text, AsyncCallback<Collection<FilterBox.Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -222,7 +256,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 					for (Chip c: chips) { if (c.getCommand().equals("limit")) { old = c; break; } }
 					try {
 						Integer.parseInt(text);
-						suggestions.add(new Suggestion(new Chip("limit", text), old));
+						suggestions.add(new Suggestion(new Chip("limit", text).withTranslatedCommand(GWT_MESSAGES.tagLimit()), old));
 					} catch (NumberFormatException e) {}
 					callback.onSuccess(suggestions);
 				}
@@ -272,7 +306,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 			if (oldChip != null)
 				removeChip(oldChip, fireChange);
 		} else {
-			Chip newChip = new Chip("course", iCourse.getText());
+			Chip newChip = new Chip("course", iCourse.getText()).withTranslatedCommand(GWT_MESSAGES.tagCourse());
 			if (oldChip != null) {
 				if (newChip.equals(oldChip)) {
 					if (fireChange && !newChip.equals(iLastCourse)) fireValueChangeEvent();
@@ -290,7 +324,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 			if (oldChip != null)
 				removeChip(oldChip, fireChange);
 		} else {
-			Chip newChip = new Chip("student", iStudent.getText());
+			Chip newChip = new Chip("student", iStudent.getText()).withTranslatedCommand(GWT_MESSAGES.tagStudent());
 			if (oldChip != null) {
 				if (newChip.equals(oldChip)) {
 					if (fireChange && !newChip.equals(iLastStudent)) fireValueChangeEvent();
@@ -309,7 +343,11 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 			List<FilterBox.Chip> chips = new ArrayList<FilterBox.Chip>();
 			if (entities != null) {
 				for (FilterRpcResponse.Entity entity: entities)
-					chips.add(new FilterBox.Chip(filter.getCommand(), entity.getAbbreviation(), entity.getName(), entity.getCount() <= 0 ? null : "(" + entity.getCount() + ")"));
+					chips.add(new FilterBox.Chip(filter.getCommand(), entity.getAbbreviation())
+							.withLabel(entity.getName())
+							.withCount(entity.getCount())
+							.withTranslatedCommand(filter.getLabel())
+							.withTranslatedValue(entity.getProperty("translated-value", null)));
 			}
 			simple.setValues(chips);
 			return true;
@@ -340,7 +378,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 
 		@Override
 		public String getDisplayString() {
-			return iSuggestion.getChipToAdd().getName() + " <span class='item-hint'>" + iSuggestion.getChipToAdd().getHint() + "</span>";
+			return iSuggestion.getChipToAdd().getLabel() + (iSuggestion.getChipToAdd().hasToolTip() ? " <span class='item-hint'>" + iSuggestion.getChipToAdd().getToolTip() + "</span>" : "");
 		}
 
 		@Override
@@ -390,7 +428,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 
 		@Override
 		public String getDisplayString() {
-			return iSuggestion.getChipToAdd().getName();
+			return iSuggestion.getChipToAdd().getLabel();
 		}
 
 		@Override

@@ -84,7 +84,8 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
-	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.filterDateFormat());
+	private static DateTimeFormat sLocalDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private FilterBox.CustomFilter iOther = null;
 	private AriaSuggestBox iRequested;
 	private Chip iLastRequested = null;
@@ -92,13 +93,31 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 	public EventFilterBox(AcademicSessionProvider session) {
 		super(session);
 		
-		addFilter(new FilterBox.StaticSimpleFilter("type"));
+		addFilter(new FilterBox.StaticSimpleFilter("type", MESSAGES.tagEventType()) {
+			@Override
+			public void validate(String text, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				if ("class".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventTypeShort()[0];
+				else if ("final exam".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventTypeShort()[1];
+				else if ("midterm exam".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventTypeShort()[2];
+				else if ("course".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventTypeShort()[3];
+				else if ("special".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventTypeShort()[4];
+				else if ("not available".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventTypeShort()[5];
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
 		
 		iSponsors = new ListBox();
 		iSponsors.setMultipleSelect(true);
 		iSponsors.setWidth("100%"); iSponsors.setVisibleItemCount(3);
 		
-		addFilter(new FilterBox.CustomFilter("sponsor", iSponsors) {
+		addFilter(new FilterBox.CustomFilter("sponsor", MESSAGES.tagSponsor(), iSponsors) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -106,7 +125,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 				} else {
 					List<Suggestion> suggestions = new ArrayList<Suggestion>();
 					for (int i = 0; i < iSponsors.getItemCount(); i++) {
-						Chip chip = new Chip("sponsor", iSponsors.getValue(i));
+						Chip chip = new Chip("sponsor", iSponsors.getValue(i)).withTranslatedCommand(MESSAGES.tagSponsor());
 						String name = iSponsors.getItemText(i);
 						if (iSponsors.getValue(i).toLowerCase().startsWith(text.toLowerCase())) {
 							suggestions.add(new Suggestion(name, chip));
@@ -127,7 +146,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 			public void onChange(ChangeEvent event) {
 				boolean changed = false;
 				for (int i = 0; i < iSponsors.getItemCount(); i++) {
-					Chip chip = new Chip("sponsor", iSponsors.getValue(i));
+					Chip chip = new Chip("sponsor", iSponsors.getValue(i)).withTranslatedCommand(MESSAGES.tagSponsor());
 					if (iSponsors.isItemSelected(i)) {
 						if (!hasChip(chip)) {
 							addChip(chip, false); changed = true;
@@ -143,14 +162,53 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 			}
 		});
 		
-		FilterBox.StaticSimpleFilter mode = new FilterBox.StaticSimpleFilter("mode");
+		FilterBox.StaticSimpleFilter mode = new FilterBox.StaticSimpleFilter("mode", MESSAGES.tagEventMode()) {
+			@Override
+			public void validate(String text, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				if ("all".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventModeAbbv()[0];
+				else if ("my".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventModeAbbv()[1];
+				else if ("approved".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventModeAbbv()[2];
+				else if ("unapproved".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventModeAbbv()[3];
+				else if ("awaiting".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventModeAbbv()[4];
+				else if ("conflicting".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventModeAbbv()[5];
+				else if ("my awaiting".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventModeAbbv()[6];
+				else if ("cancelled".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventModeAbbv()[7];
+				else if ("expiring".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventModeAbbv()[8];
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		};
 		mode.setMultipleSelection(false);
 		addFilter(mode);
 		
-		addFilter(new FilterBox.StaticSimpleFilter("role") {
+		addFilter(new FilterBox.StaticSimpleFilter("role", MESSAGES.tagEventRole()) {
 			@Override
 			public void getPopupWidget(final FilterBox box, final AsyncCallback<Widget> callback) {
 				callback.onSuccess(null);
+			}
+			@Override
+			public void validate(String text, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				if ("all".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventRole()[0];
+				else if ("student".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventRole()[1];
+				else if ("instructor".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventRole()[2];
+				else if ("coordinator".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventRole()[3];
+				else if ("contact".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.eventRole()[4];
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
 			}
 		});
 		
@@ -166,7 +224,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		final CheckBox sessions = new CheckBox(MESSAGES.checkSpanMultipleSessions());
 		sessions.getElement().getStyle().setMarginLeft(10, Unit.PX);
 		
-		iOther = new FilterBox.CustomFilter("other", reqLab, iRequested, conflicts, sessions) {
+		iOther = new FilterBox.CustomFilter("other", MESSAGES.tagOther(), reqLab, iRequested, conflicts, sessions) {
 			@Override
 			public void getSuggestions(final List<Chip> chips, final String text, AsyncCallback<Collection<FilterBox.Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -174,10 +232,10 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 				} else {
 					List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
 					if ("conflicts".startsWith(text.toLowerCase()) || MESSAGES.checkDisplayConflicts().toLowerCase().startsWith(text.toLowerCase())) {
-						suggestions.add(new Suggestion(MESSAGES.checkDisplayConflicts(), new Chip("flag", "Conflicts")));
+						suggestions.add(new Suggestion(MESSAGES.checkDisplayConflicts(), new Chip("flag", "Conflicts").withTranslatedCommand(MESSAGES.tagEventFlag()).withTranslatedValue(MESSAGES.attrFlagShowConflicts())));
 					}
 					if ("sessinons".startsWith(text.toLowerCase()) || MESSAGES.checkSpanMultipleSessions().toLowerCase().startsWith(text.toLowerCase())) {
-						suggestions.add(new Suggestion(MESSAGES.checkSpanMultipleSessions(), new Chip("flag", "All Sessions")));
+						suggestions.add(new Suggestion(MESSAGES.checkSpanMultipleSessions(), new Chip("flag", "All Sessions").withTranslatedCommand(MESSAGES.tagEventFlag()).withTranslatedValue(MESSAGES.attrFlagAllSessions())));
 					}
 					callback.onSuccess(suggestions);
 				}
@@ -185,8 +243,18 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		};
 		addFilter(iOther);
 		
-		addFilter(new FilterBox.StaticSimpleFilter("requested"));
-		addFilter(new FilterBox.StaticSimpleFilter("flag"));
+		addFilter(new FilterBox.StaticSimpleFilter("requested", MESSAGES.tagRequested()));
+		addFilter(new FilterBox.StaticSimpleFilter("flag", MESSAGES.tagEventFlag()){
+			@Override
+			public void validate(String text, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				if ("conflicts".equalsIgnoreCase(text))
+					translatedValue = MESSAGES.attrFlagShowConflicts();
+				else if ("all sessions".equalsIgnoreCase(text))
+					translatedValue = MESSAGES.attrFlagAllSessions();
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
 
 		iRequested.getValueBox().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -232,7 +300,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		conflicts.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				Chip chip = new Chip("flag", "Conflicts");
+				Chip chip = new Chip("flag", "Conflicts").withTranslatedCommand(MESSAGES.tagEventFlag()).withTranslatedValue(MESSAGES.attrFlagShowConflicts());
 				if (event.getValue()) {
 					if (!hasChip(chip)) addChip(chip, true);
 				} else {
@@ -251,7 +319,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		sessions.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				Chip chip = new Chip("flag", "All Sessions");
+				Chip chip = new Chip("flag", "All Sessions").withTranslatedCommand(MESSAGES.tagEventFlag()).withTranslatedValue(MESSAGES.attrFlagAllSessions());
 				if (event.getValue()) {
 					if (!hasChip(chip)) addChip(chip, true);
 				} else {
@@ -269,13 +337,13 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		
 		AbsolutePanel m = new AbsolutePanel();
 		m.setStyleName("unitime-DateSelector");
-		final SingleDateSelector.SingleMonth m1 = new SingleDateSelector.SingleMonth("From");
+		final SingleDateSelector.SingleMonth m1 = new SingleDateSelector.SingleMonth(MESSAGES.tagDateFrom());
 		m1.setAllowDeselect(true);
 		m.add(m1);
-		final SingleDateSelector.SingleMonth m2 = new SingleDateSelector.SingleMonth("To");
+		final SingleDateSelector.SingleMonth m2 = new SingleDateSelector.SingleMonth(MESSAGES.tagDateTo());
 		m2.setAllowDeselect(true);
 		m.add(m2);
-		addFilter(new FilterBox.CustomFilter("date", m) {
+		addFilter(new FilterBox.CustomFilter("date", MESSAGES.tagDate(), m) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
 				List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
@@ -286,45 +354,63 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("MM/dd").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateFrom()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateTo()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("dd.MM").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateFrom()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateTo()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("MM/dd/yy").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateFrom()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateTo()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("dd.MM.yy").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateFrom()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateTo()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("MMM dd").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateFrom()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateTo()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("MMM dd yy").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("from", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateFrom()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("to", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateTo()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				callback.onSuccess(suggestions);
-			}			
+			}
 		});
-		addFilter(new FilterBox.StaticSimpleFilter("from"));
-		addFilter(new FilterBox.StaticSimpleFilter("to"));
+		addFilter(new FilterBox.StaticSimpleFilter("from", MESSAGES.tagDateFrom()) {
+			@Override
+			public void validate(String value, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				try {
+					translatedValue = sLocalDateFormat.format(sDateFormat.parse(value));
+				} catch (IllegalArgumentException e) {}
+				callback.onSuccess(new Chip(getCommand(), value).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
+		addFilter(new FilterBox.StaticSimpleFilter("to", MESSAGES.tagDateTo()) {
+			@Override
+			public void validate(String value, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				try {
+					translatedValue = sLocalDateFormat.format(sDateFormat.parse(value));
+				} catch (IllegalArgumentException e) {}
+				callback.onSuccess(new Chip(getCommand(), value).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
 
 		session.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
 			@Override
@@ -350,15 +436,15 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 			@Override
 			public void onValueChange(ValueChangeEvent<Date> event) {
 				Chip ch = getChip("from");
-				if (event.getValue() == null) {
+				Date value = event.getValue();
+				if (value == null) {
 					if (ch != null) removeChip(ch, true);	
 				} else {
-					String text = m1.toString();
 					if (ch != null) {
-						if (ch.getCommand().equals(text)) return;
+						if (ch.getValue().equals(sDateFormat.format(value))) return;
 						removeChip(ch, false);
 					}
-					addChip(new Chip("from", text), true);
+					addChip(new Chip("from", sDateFormat.format(value)).withTranslatedCommand(MESSAGES.tagDateFrom()).withTranslatedValue(sLocalDateFormat.format(value)), true);
 				}
 			}
 		});
@@ -366,26 +452,34 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 			@Override
 			public void onValueChange(ValueChangeEvent<Date> event) {
 				Chip ch = getChip("to");
-				if (event.getValue() == null) {
+				Date value = event.getValue();
+				if (value == null) {
 					if (ch != null) removeChip(ch, true);	
 				} else {
-					String text = m2.toString();
 					if (ch != null) {
-						if (ch.getCommand().equals(text)) return;
+						if (ch.getValue().equals(sDateFormat.format(value))) return;
 						removeChip(ch, false);
 					}
-					addChip(new Chip("to", text), true);
+					addChip(new Chip("to", sDateFormat.format(value)).withTranslatedCommand(MESSAGES.tagDateTo()).withTranslatedValue(sLocalDateFormat.format(value)), true);
 				}
 			}
 		});
 		
-		addFilter(new FilterBox.StaticSimpleFilter("day", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"));
+		List<Chip> days = new ArrayList<Chip>();
+		days.add(new Chip("day", "Monday").withTranslatedCommand(MESSAGES.tagDayOfWeek()).withTranslatedValue(CONSTANTS.longDays()[0]));
+		days.add(new Chip("day", "Tuesday").withTranslatedCommand(MESSAGES.tagDayOfWeek()).withTranslatedValue(CONSTANTS.longDays()[1]));
+		days.add(new Chip("day", "Wednesday").withTranslatedCommand(MESSAGES.tagDayOfWeek()).withTranslatedValue(CONSTANTS.longDays()[2]));
+		days.add(new Chip("day", "Thursday").withTranslatedCommand(MESSAGES.tagDayOfWeek()).withTranslatedValue(CONSTANTS.longDays()[3]));
+		days.add(new Chip("day", "Friday").withTranslatedCommand(MESSAGES.tagDayOfWeek()).withTranslatedValue(CONSTANTS.longDays()[4]));
+		days.add(new Chip("day", "Saturday").withTranslatedCommand(MESSAGES.tagDayOfWeek()).withTranslatedValue(CONSTANTS.longDays()[5]));
+		days.add(new Chip("day", "Sunday").withTranslatedCommand(MESSAGES.tagDayOfWeek()).withTranslatedValue(CONSTANTS.longDays()[6]));
+		addFilter(new FilterBox.StaticSimpleFilter("day", MESSAGES.tagDayOfWeek(), days));
 		
 		final TimeSelector st = new TimeSelector(null);
 		final TimeSelector et = new TimeSelector(st);
 		st.setStyleName("unitime-TextArea"); st.addStyleName("unitime-TimeSelector");
 		et.setStyleName("unitime-TextArea"); et.addStyleName("unitime-TimeSelector");
-		addFilter(new FilterBox.CustomFilter("time", new Label(MESSAGES.propAfter()), st, new Label(" " + MESSAGES.propBefore()), et) {
+		addFilter(new FilterBox.CustomFilter("time", MESSAGES.tagTime(), new Label(MESSAGES.propAfter()), st, new Label(" " + MESSAGES.propBefore()), et) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
 				List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
@@ -395,32 +489,64 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 					if (c.getCommand().equals("before")) chStop = c;
 				}
 				Integer start = TimeSelector.TimeUtils.parseTime(CONSTANTS, text, null);
-				Integer stop = TimeSelector.TimeUtils.parseTime(CONSTANTS, text, chStart == null ? null : TimeSelector.TimeUtils.parseTime(CONSTANTS, chStart.getValue(), null));
+				Integer stop = TimeSelector.TimeUtils.parseTime(CONSTANTS, text, chStart == null ? null : TimeSelector.TimeUtils.parseMilitary(chStart.getValue()));
 				if (chStart == null) {
 					if (start != null) {
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+3)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+6)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+9)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2military(start))
+								.withTranslatedCommand(MESSAGES.tagTimeAfter())
+								.withTranslatedValue(TimeUtils.slot2time(start)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2military(start+3))
+								.withTranslatedCommand(MESSAGES.tagTimeAfter())
+								.withTranslatedValue(TimeUtils.slot2time(start+3)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2military(start+6))
+								.withTranslatedCommand(MESSAGES.tagTimeAfter())
+								.withTranslatedValue(TimeUtils.slot2time(start+6)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2military(start+9))
+								.withTranslatedCommand(MESSAGES.tagTimeAfter())
+								.withTranslatedValue(TimeUtils.slot2time(start+9)), chStart));
 					}
 					if (stop != null) {
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+3)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+6)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+9)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2military(stop))
+								.withTranslatedCommand(MESSAGES.tagTimeBefore())
+								.withTranslatedValue(TimeUtils.slot2time(stop)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2military(stop+3))
+								.withTranslatedCommand(MESSAGES.tagTimeBefore())
+								.withTranslatedValue(TimeUtils.slot2time(stop+3)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2military(stop+6))
+								.withTranslatedCommand(MESSAGES.tagTimeBefore())
+								.withTranslatedValue(TimeUtils.slot2time(stop+6)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2military(stop+9))
+								.withTranslatedCommand(MESSAGES.tagTimeBefore())
+								.withTranslatedValue(TimeUtils.slot2time(stop+9)), chStop));
 					}					
 				} else {
 					if (stop != null) {
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+3)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+6)), chStop));
-						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2time(stop+9)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2military(stop))
+								.withTranslatedCommand(MESSAGES.tagTimeBefore())
+								.withTranslatedValue(TimeUtils.slot2time(stop)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2military(stop+3))
+								.withTranslatedCommand(MESSAGES.tagTimeBefore())
+								.withTranslatedValue(TimeUtils.slot2time(stop+3)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2military(stop+6))
+								.withTranslatedCommand(MESSAGES.tagTimeBefore())
+								.withTranslatedValue(TimeUtils.slot2time(stop+6)), chStop));
+						suggestions.add(new FilterBox.Suggestion(new Chip("before", TimeUtils.slot2military(stop+9))
+								.withTranslatedCommand(MESSAGES.tagTimeBefore())
+								.withTranslatedValue(TimeUtils.slot2time(stop+9)), chStop));
 					}					
 					if (start != null) {
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+3)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+6)), chStart));
-						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start+9)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after",TimeUtils.slot2military(start))
+								.withTranslatedCommand(MESSAGES.tagTimeAfter())
+								.withTranslatedValue(TimeUtils.slot2time(start)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2military(start+3))
+								.withTranslatedCommand(MESSAGES.tagTimeAfter())
+								.withTranslatedValue(TimeUtils.slot2time(start+3)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2military(start+6))
+								.withTranslatedCommand(MESSAGES.tagTimeAfter())
+								.withTranslatedValue(TimeUtils.slot2time(start+6)), chStart));
+						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2military(start+9))
+								.withTranslatedCommand(MESSAGES.tagTimeAfter())
+								.withTranslatedValue(TimeUtils.slot2time(start+9)), chStart));
 					}
 				}
 				callback.onSuccess(suggestions);
@@ -430,48 +556,66 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 			@Override
 			public void onValueChange(ValueChangeEvent<Integer> event) {
 				Chip ch = getChip("after");
-				if (event.getValue() == null) {
+				Integer start = event.getValue();
+				if (start == null) {
 					if (ch != null) removeChip(ch, true);
 				} else {
-					String text = TimeUtils.slot2time(event.getValue());
 					if (ch != null) {
-						if (ch.getCommand().equals(text)) return;
+						if (ch.getCommand().equals(TimeUtils.slot2military(start))) return;
 						removeChip(ch, false);
 					}
-					addChip(new Chip("after", text), true);
+					addChip(new Chip("after", TimeUtils.slot2military(start)).withTranslatedCommand(MESSAGES.tagTimeAfter()).withTranslatedValue(TimeUtils.slot2time(start)), true);
 				}
 				Chip ch2 = getChip("before");
-				if (et.getValue() == null) {
+				Integer stop = et.getValue();
+				if (stop == null) {
 					if (ch2 != null) removeChip(ch2, true);
 				} else {
-					String text = TimeUtils.slot2time(et.getValue());
 					if (ch2 != null) {
-						if (ch2.getCommand().equals(text)) return;
+						if (ch2.getCommand().equals(TimeUtils.slot2military(stop))) return;
 						removeChip(ch2, false);
 					}
-					addChip(new Chip("before", text), true);
-				}	
+					addChip(new Chip("before", TimeUtils.slot2military(stop)).withTranslatedCommand(MESSAGES.tagTimeBefore()).withTranslatedValue(TimeUtils.slot2time(stop)), true);
+				}
 			}
 		});
 		et.addValueChangeHandler(new ValueChangeHandler<Integer>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Integer> event) {
 				Chip ch = getChip("before");
-				if (event.getValue() == null) {
+				Integer stop = event.getValue();
+				if (stop == null) {
 					if (ch != null) removeChip(ch, true);
 				} else {
-					String text = TimeUtils.slot2time(event.getValue());
 					if (ch != null) {
-						if (ch.getCommand().equals(text)) return;
+						if (ch.getCommand().equals(TimeUtils.slot2military(stop))) return;
 						removeChip(ch, false);
 					}
-					addChip(new Chip("before", text), true);
+					addChip(new Chip("before", TimeUtils.slot2military(stop)).withTranslatedCommand(MESSAGES.tagTimeBefore()).withTranslatedValue(TimeUtils.slot2time(stop)), true);
 				}
 			}
 		});
 		
-		addFilter(new FilterBox.StaticSimpleFilter("after"));
-		addFilter(new FilterBox.StaticSimpleFilter("before"));
+		addFilter(new FilterBox.StaticSimpleFilter("after", MESSAGES.tagTimeAfter()) {
+			@Override
+			public void validate(String text, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				Integer slot = TimeUtils.parseTime2(CONSTANTS, text, null);
+				if (slot != null)
+					translatedValue = TimeUtils.slot2time(slot);
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
+		addFilter(new FilterBox.StaticSimpleFilter("before", MESSAGES.tagTimeBefore()) {
+			@Override
+			public void validate(String text, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				Integer slot = TimeUtils.parseTime2(CONSTANTS, text, null);
+				if (slot != null)
+					translatedValue = TimeUtils.slot2time(slot);
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
 		
 		addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
@@ -501,12 +645,12 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 						m2.clearSelection();
 					Chip chStart = getChip("after");
 					if (chStart != null)
-						st.setValue(TimeSelector.TimeUtils.parseTime(CONSTANTS, chStart.getValue(), null));
+						st.setValue(TimeSelector.TimeUtils.parseMilitary(chStart.getValue()));
 					else
 						st.setValue(null);
 					Chip chStop = getChip("before");
 					if (chStop != null)
-						et.setValue(TimeSelector.TimeUtils.parseTime(CONSTANTS, chStop.getValue(), st.getValue()));
+						et.setValue(TimeSelector.TimeUtils.parseMilitary(chStop.getValue()));
 					else
 						et.setValue(null);
 				}
@@ -553,7 +697,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 			if (oldChip != null)
 				removeChip(oldChip, fireChange);
 		} else {
-			Chip newChip = new Chip("requested", iRequested.getText());
+			Chip newChip = new Chip("requested", iRequested.getText()).withTranslatedCommand(MESSAGES.tagRequested());
 			if (oldChip != null) {
 				if (newChip.equals(oldChip)) {
 					if (fireChange && !newChip.equals(iLastRequested)) fireValueChangeEvent();
@@ -607,12 +751,12 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 
 		@Override
 		public String getDisplayString() {
-			return iSuggestion.getChipToAdd().getName();
+			return iSuggestion.getChipToAdd().getLabel();
 		}
 
 		@Override
 		public String getReplacementString() {
-			return iSuggestion.getChipToAdd().getName();
+			return iSuggestion.getChipToAdd().getLabel();
 		}
 	}
 }

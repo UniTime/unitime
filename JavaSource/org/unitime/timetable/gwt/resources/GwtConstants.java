@@ -274,4 +274,59 @@ public interface GwtConstants extends Constants {
 	@DefaultBooleanValue(false)
 	@DoNotTranslate
 	boolean searchWhenPageIsLoaded();
+	
+	@DoNotTranslate
+	@DefaultStringValue("MM/dd/yyyy")
+	String filterDateFormat();
+	
+	@DefaultStringArrayValue({
+		"All",
+		"My",
+		"Approved",
+		"Unapproved",
+		"Awaiting",
+		"Conflicting",
+		"My Awaiting",
+		"Cancelled",
+		"Expiring",
+	})
+	String[] eventModeAbbv();
+	
+	@DefaultStringArrayValue({
+		"All Events",
+		"My Events",
+		"Approved Events",
+		"Not Approved Events",
+		"Awaiting Events",
+		"Conflicting Events",
+		"Awaiting My Approval",
+		"Cancelled / Rejected",
+		"Expiring Events",
+	})
+	String[] eventModeLabel();
+	
+	@DefaultStringArrayValue({
+		"All",
+		"Student",
+		"Instructor",
+		"Coordinator",
+		"Contact",
+	})
+	String[] eventRole();
+	
+	@DefaultStringArrayValue({
+		"All",
+		"Expired",
+		"Not Expired",
+	})
+	String[] reservationModeAbbv();
+	
+	
+	@DefaultStringArrayValue({
+		"All Reservations",
+		"Expired",
+		"Not Expired",
+		
+	})
+	String[] reservationModeLabel();
 }

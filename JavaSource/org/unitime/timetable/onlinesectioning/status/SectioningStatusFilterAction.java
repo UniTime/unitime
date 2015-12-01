@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
@@ -54,6 +56,7 @@ import org.unitime.timetable.util.Constants;
  */
 public class SectioningStatusFilterAction implements OnlineSectioningAction<FilterRpcResponse> {
 	private static final long serialVersionUID = 1L;
+	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	
 	private FilterRpcRequest iRequest = null;
 	
@@ -179,20 +182,20 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			response.add("status", states);
 		
 		List<Entity> assignment = new ArrayList<Entity>();
-		assignment.add(new Entity(0l, "Assigned", "Assigned"));
-		assignment.add(new Entity(1l, "Reserved", "Reserved"));
-		assignment.add(new Entity(2l, "Not Assigned", "Not Assigned"));
-		assignment.add(new Entity(3l, "Wait-Listed", "Wait-Listed"));
+		assignment.add(new Entity(0l, "Assigned", CONSTANTS.assignmentType()[0], "translated-value", CONSTANTS.assignmentType()[0]));
+		assignment.add(new Entity(1l, "Reserved", CONSTANTS.assignmentType()[1], "translated-value", CONSTANTS.assignmentType()[1]));
+		assignment.add(new Entity(2l, "Not Assigned", CONSTANTS.assignmentType()[2], "translated-value", CONSTANTS.assignmentType()[2]));
+		assignment.add(new Entity(3l, "Wait-Listed", CONSTANTS.assignmentType()[3], "translated-value", CONSTANTS.assignmentType()[3]));
 		response.add("assignment", assignment);
 		
 		List<Entity> consent = new ArrayList<Entity>();
-		consent.add(new Entity(-1l, "Consent", "Any Consent Needed"));
+		consent.add(new Entity(-1l, "Consent", CONSTANTS.consentTypeAbbv()[0], "translated-value", CONSTANTS.consentTypeAbbv()[0]));
 		for (OfferingConsentType type: OfferingConsentType.getConsentTypeList())
 			consent.add(new Entity(type.getUniqueId(), type.getAbbv(), type.getLabel()));
-		consent.add(new Entity(-2l, "No Consent", "Consent Not Needed"));
-		consent.add(new Entity(-3l, "Waiting", "Consent Waiting Approval"));
-		consent.add(new Entity(-4l, "Approved", "Consent Approved"));
-		consent.add(new Entity(-5l, "To Do", "Waiting My Approval"));
+		consent.add(new Entity(-2l, "No Consent", CONSTANTS.consentTypeAbbv()[1], "translated-value", CONSTANTS.consentTypeAbbv()[1]));
+		consent.add(new Entity(-3l, "Waiting", CONSTANTS.consentTypeAbbv()[2], "translated-value", CONSTANTS.consentTypeAbbv()[2]));
+		consent.add(new Entity(-4l, "Approved", CONSTANTS.consentTypeAbbv()[3], "translated-value", CONSTANTS.consentTypeAbbv()[3]));
+		consent.add(new Entity(-5l, "To Do", CONSTANTS.consentTypeAbbv()[4], "translated-value", CONSTANTS.consentTypeAbbv()[4]));
 		response.add("consent", consent);
 		
 		return response;

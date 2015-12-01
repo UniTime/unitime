@@ -127,7 +127,7 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 			suggestions.add(new FilterBox.Suggestion(entity.getName(), entity.getAbbreviation(), entity.getProperty("hint", null)));
 		} else {
 			Chip old = ("true".equals(entity.getProperty("single", "true")) ? getChip(command) : null);
-			suggestions.add(new FilterBox.Suggestion(new Chip(command, entity.getAbbreviation(), entity.getName(), entity.getProperty("hint", null)), old));
+			suggestions.add(new FilterBox.Suggestion(new Chip(command, entity.getAbbreviation()).withLabel(entity.getName()).withToolTip(entity.getProperty("hint", null)), old));
 		}
 	}
 	
@@ -177,7 +177,11 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 			List<FilterBox.Chip> chips = new ArrayList<FilterBox.Chip>();
 			if (entities != null) {
 				for (FilterRpcResponse.Entity entity: entities)
-					chips.add(new FilterBox.Chip(filter.getCommand(), entity.getName(), entity.getCount()));
+					chips.add(new FilterBox.Chip(filter.getCommand(), entity.getAbbreviation())
+							.withLabel(entity.getName())
+							.withCount(entity.getCount())
+							.withTranslatedCommand(filter.getLabel())
+							.withTranslatedValue(entity.getProperty("translated-value", null)));
 			}
 			simple.setValues(chips);
 			return true;

@@ -3943,4 +3943,163 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Type in {0} to confirm the action.")
 	String confirmationWrongAnswer(String answer);
+	
+	@DefaultMessage("department")
+	String tagDepartment();
+	
+	@DefaultMessage("Managed")
+	String attrDepartmentManagedRooms();
+	
+	@DefaultMessage("Managed Rooms")
+	String labelDepartmentManagedRooms();
+	
+	@DefaultMessage("user")
+	String tagUser();
+	
+	@DefaultMessage("type")
+	String tagRoomType();
+	
+	@DefaultMessage("feature")
+	String tagRoomFeature();
+	
+	@DefaultMessage("group")
+	String tagRoomGroup();
+	
+	@DefaultMessage("room")
+	String tagRoom();
+	
+	@DefaultMessage("building")
+	String tagBuilding();
+	
+	@DefaultMessage("flag")
+	String tagRoomFlag();
+	
+	@DefaultMessage("All")
+	String attrFlagAllRooms();
+	
+	@DefaultMessage("Event")
+	String attrFlagEventRooms();
+	
+	@DefaultMessage("Nearby")
+	String attrFlagNearbyRooms();
+	
+	@DefaultMessage("size")
+	String tagRoomSize();
+	
+	@DefaultMessage("starts")
+	String tagStarts();
+	
+	@DefaultMessage("contains")
+	String tagContains();
+	
+	@DefaultMessage("other")
+	String tagOther();
+	
+	@DefaultMessage("limit")
+	String tagLimit();
+	
+	@DefaultMessage("type")
+	String tagEventType();
+	
+	@DefaultMessage("sponsor")
+	String tagSponsor();
+	
+	@DefaultMessage("mode")
+	String tagEventMode();
+	
+	@DefaultMessage("requested")
+	String tagRequested();
+	
+	@DefaultMessage("flag")
+	String tagEventFlag();
+	
+	@DefaultMessage("role")
+	String tagEventRole();
+	
+	@DefaultMessage("date")
+	String tagDate();
+	
+	@DefaultMessage("day")
+	String tagDayOfWeek();
+
+	@DefaultMessage("From")
+	String tagDateFrom();
+
+	@DefaultMessage("To")
+	String tagDateTo();
+	
+	@DefaultMessage("After")
+	String tagDateAfter();
+	
+	@DefaultMessage("Before")
+	String tagDateBefore();
+	
+	@DefaultMessage("time")
+	String tagTime();
+	
+	@DefaultMessage("After")
+	String tagTimeAfter();
+	
+	@DefaultMessage("Before")
+	String tagTimeBefore();
+	
+	@DefaultMessage("area")
+	String tagAcademicArea();
+	
+	@DefaultMessage("major")
+	String tagMajor();
+	
+	@DefaultMessage("classification")
+	String tagClassification();
+	
+	@DefaultMessage("curriculum")
+	String tagCurriculum();
+	
+	@DefaultMessage("mode")
+	String tagReservationMode();
+	
+	@DefaultMessage("type")
+	String tagReservationType();
+	
+	@DefaultMessage("subject")
+	String tagSubjectArea();
+	
+	@DefaultMessage("group")
+	String tagStudentGroup();
+	
+	@DefaultMessage("accommodation")
+	String tagStudentAccommodation();
+
+	@DefaultMessage("student")
+	String tagStudent();
+	
+	@DefaultMessage("mode")
+	String tagSectioningMode();
+	
+	@DefaultMessage("type")
+	String tagSectioningType();
+	
+	@DefaultMessage("status")
+	String tagSectioningStatus();
+	
+	@DefaultMessage("approver")
+	String tagApprover();
+	
+	@DefaultMessage("assignment")
+	String tagSectioningAssignment();
+	
+	@DefaultMessage("consent")
+	String tagSectioningConsent();
+	
+	@DefaultMessage("operation")
+	String tagSectioningOperation();
+	
+	@DefaultMessage("course")
+	String tagCourse();
+	
+	@DefaultMessage("All Sessions")
+	String attrFlagAllSessions();
+	
+	@DefaultMessage("Conflicts")
+	String attrFlagShowConflicts();
 }

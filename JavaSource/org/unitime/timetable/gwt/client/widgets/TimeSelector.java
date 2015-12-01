@@ -469,10 +469,18 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 			while (!token.isEmpty() && token.charAt(0) >= '0' && token.charAt(0) <= '9') { number += token.substring(0, 1); token = token.substring(1); }
 			if (number.isEmpty()) return null;
 			if (number.length()>2) {
-				startHour = Integer.parseInt(number) / 100;
-				startMin = Integer.parseInt(number) % 100;
+				try {
+					startHour = Integer.parseInt(number) / 100;
+					startMin = Integer.parseInt(number) % 100;
+				} catch (NumberFormatException e) {
+					return null;
+				}
 			} else {
-				startHour = Integer.parseInt(number);
+				try {
+					startHour = Integer.parseInt(number);
+				} catch (NumberFormatException e) {
+					return null;
+				}
 			}
 			while (token.startsWith(" ")) token = token.substring(1);
 			if (token.startsWith(":") || token.startsWith(".") || (!token.isEmpty() && token.charAt(0) >= '0' && token.charAt(0) <= '9')) {
@@ -480,8 +488,13 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 				while (token.startsWith(" ")) token = token.substring(1);
 				number = "";
 				while (!token.isEmpty() && token.charAt(0) >= '0' && token.charAt(0) <= '9') { number += token.substring(0, 1); token = token.substring(1); }
-				if (!number.isEmpty())
-					startMin = Integer.parseInt(number);
+				if (!number.isEmpty()) {
+					try {
+						startMin = Integer.parseInt(number);
+					} catch (NumberFormatException e) {
+						return null;
+					}
+				}
 			}
 			while (token.startsWith(" ")) token = token.substring(1);
 			boolean hasAmOrPm = false;
@@ -514,8 +527,32 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 			int slot = (60 * startHour + startMin) / 5;
 			if (start != null && slot <= start && slot <= 144 && !hasAmOrPm) slot += 144;
 			if (start != null && slot <= start) return null;
-			if (slot < 0 || slot > 288) return parseTime(constants, text + "0", start);
+			if (slot < 0 || slot > 288) {
+				if (!text.endsWith("000"))
+					return parseTime(constants, text + "0", start);
+				else
+					return null;
+			}
 			return slot;
+		}
+		
+		public static Integer parseMilitary(String text) {
+			if (text == null || text.isEmpty()) return null;
+			try {
+				int time = Integer.parseInt(text);
+				int hour = time / 100;
+				int min = time % 100;
+				int slot = (60 * hour + min) / 5;
+				return (slot < 0 || slot > 288 ? null : slot);
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		}
+		
+		public static Integer parseTime2(GwtConstants constants, String text, Integer start) {
+			Integer slot = parseMilitary(text);
+			if (slot != null) return slot;
+			return parseTime(constants, text, start);
 		}
 		
 		public static String slot2time(int slot) {
@@ -529,6 +566,12 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + " " + (h == 24 ? CONSTANTS.timeAm() : h >= 12 ? CONSTANTS.timePm() : CONSTANTS.timeAm());
 	        else
 				return h + ":" + (m < 10 ? "0" : "") + m;
+		}
+		
+		public static String slot2military(int slot) {
+			int h = slot / 12;
+	        int m = 5 * (slot % 12);
+	        return h + (m < 10 ? "0" : "") + m;
 		}
 		
 		public static String slot2short(int slot) {

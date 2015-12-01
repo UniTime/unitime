@@ -51,7 +51,8 @@ import com.google.gwt.user.client.ui.ListBox;
 public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.ReservationFilterRpcRequest> {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+	private static DateTimeFormat sLocalDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.filterDateFormat());
 	private ListBox iDepartments, iSubjects;
 	
 	public ReservationFilterBox() {
@@ -59,17 +60,45 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 		
 		setShowSuggestionsOnFocus(false);
 
-		FilterBox.StaticSimpleFilter mode = new FilterBox.StaticSimpleFilter("mode");
+		FilterBox.StaticSimpleFilter mode = new FilterBox.StaticSimpleFilter("mode", MESSAGES.tagReservationMode()) {
+			@Override
+			public void validate(String text, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				if ("all".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.reservationModeAbbv()[0];
+				else if ("expired".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.reservationModeAbbv()[1];
+				else if ("not expired".equalsIgnoreCase(text))
+					translatedValue = CONSTANTS.reservationModeAbbv()[2];
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		};
 		mode.setMultipleSelection(false);
 		addFilter(mode);
 		
-		addFilter(new FilterBox.StaticSimpleFilter("type"));
+		addFilter(new FilterBox.StaticSimpleFilter("type", MESSAGES.tagReservationType()) {
+			@Override
+			public void validate(String text, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				if ("individual".equalsIgnoreCase(text))
+					translatedValue = MESSAGES.reservationIndividualAbbv();
+				else if ("group".equalsIgnoreCase(text))
+					translatedValue = MESSAGES.reservationStudentGroupAbbv();
+				else if ("curriculum".equalsIgnoreCase(text))
+					translatedValue = MESSAGES.reservationCurriculumAbbv();
+				else if ("course".equalsIgnoreCase(text))
+					translatedValue = MESSAGES.reservationCourseAbbv();
+				else if ("override".equalsIgnoreCase(text))
+					translatedValue = MESSAGES.reservationOverrideAbbv();
+				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
 
 		iDepartments = new ListBox();
 		iDepartments.setMultipleSelect(false);
 		iDepartments.setWidth("100%");
 		
-		addFilter(new FilterBox.CustomFilter("department", iDepartments) {
+		addFilter(new FilterBox.CustomFilter("department", MESSAGES.tagDepartment(), iDepartments) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -79,7 +108,7 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 					List<Suggestion> suggestions = new ArrayList<Suggestion>();
 					for (int i = 0; i < iDepartments.getItemCount(); i++) {
 						if (iDepartments.getItemText(i).endsWith(" (0)")) continue;
-						Chip chip = new Chip("department", iDepartments.getValue(i));
+						Chip chip = new Chip("department", iDepartments.getValue(i)).withTranslatedCommand(MESSAGES.tagDepartment());
 						String name = iDepartments.getItemText(i);
 						if (iDepartments.getValue(i).toLowerCase().startsWith(text.toLowerCase())) {
 							suggestions.add(new Suggestion(name, chip, oldChip));
@@ -101,7 +130,7 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 				}
 
 				Chip oldChip = getChip("department");
-				Chip newChip = (iDepartments.getSelectedIndex() <= 0 ? null : new Chip("department", iDepartments.getValue(iDepartments.getSelectedIndex())));
+				Chip newChip = (iDepartments.getSelectedIndex() <= 0 ? null : new Chip("department", iDepartments.getValue(iDepartments.getSelectedIndex())).withTranslatedCommand(MESSAGES.tagDepartment()));
 				if (oldChip != null) {
 					if (newChip == null) {
 						removeChip(oldChip, true);
@@ -123,7 +152,7 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 		iSubjects.setMultipleSelect(true);
 		iSubjects.setWidth("100%"); iSubjects.setVisibleItemCount(3);
 		
-		addFilter(new FilterBox.CustomFilter("subject", iSubjects) {
+		addFilter(new FilterBox.CustomFilter("subject", MESSAGES.tagSubjectArea(), iSubjects) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -133,7 +162,7 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 					List<Suggestion> suggestions = new ArrayList<Suggestion>();
 					for (int i = 0; i < iSubjects.getItemCount(); i++) {
 						if (iSubjects.getItemText(i).endsWith(" (0)")) continue;
-						Chip chip = new Chip("subject", iSubjects.getValue(i));
+						Chip chip = new Chip("subject", iSubjects.getValue(i)).withTranslatedCommand(MESSAGES.tagSubjectArea());
 						String name = iSubjects.getItemText(i);
 						if (iSubjects.getValue(i).toLowerCase().startsWith(text.toLowerCase())) {
 							suggestions.add(new Suggestion(name, chip, deptChip));
@@ -151,7 +180,7 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 				boolean changed = false;
 				Chip deptChip = getChip("department");
 				for (int i = 0; i < iSubjects.getItemCount(); i++) {
-					Chip chip = new Chip("subject", iSubjects.getValue(i));
+					Chip chip = new Chip("subject", iSubjects.getValue(i)).withTranslatedCommand(MESSAGES.tagSubjectArea());
 					if (iSubjects.isItemSelected(i)) {
 						if (!hasChip(chip)) {
 							addChip(chip, false); changed = true;
@@ -172,18 +201,18 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 			}
 		});
 		
-		addFilter(new FilterBox.StaticSimpleFilter("area"));
-		addFilter(new FilterBox.StaticSimpleFilter("group"));
+		addFilter(new FilterBox.StaticSimpleFilter("area", MESSAGES.tagAcademicArea()));
+		addFilter(new FilterBox.StaticSimpleFilter("group", MESSAGES.tagStudentGroup()));
 		
 		AbsolutePanel m = new AbsolutePanel();
 		m.setStyleName("unitime-DateSelector");
-		final SingleDateSelector.SingleMonth m1 = new SingleDateSelector.SingleMonth("Before");
+		final SingleDateSelector.SingleMonth m1 = new SingleDateSelector.SingleMonth(MESSAGES.tagDateBefore());
 		m1.setAllowDeselect(true);
-		final SingleDateSelector.SingleMonth m2 = new SingleDateSelector.SingleMonth("After");
+		final SingleDateSelector.SingleMonth m2 = new SingleDateSelector.SingleMonth(MESSAGES.tagDateAfter());
 		m2.setAllowDeselect(true);
 		m.add(m2);
 		m.add(m1);
-		addFilter(new FilterBox.CustomFilter("date", m) {
+		addFilter(new FilterBox.CustomFilter("date", MESSAGES.tagDate(), m) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
 				List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
@@ -194,59 +223,77 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("MM/dd").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateBefore()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateAfter()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("dd.MM").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateBefore()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateAfter()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("MM/dd/yy").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateBefore()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateAfter()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("dd.MM.yy").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateBefore()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateAfter()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("MMM dd").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateBefore()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateAfter()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				try {
 					Date date = DateTimeFormat.getFormat("MMM dd yy").parse(text);
-					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)), chFrom));
-					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)), chTo));
+					suggestions.add(new FilterBox.Suggestion(new Chip("before", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateBefore()).withTranslatedValue(sLocalDateFormat.format(date)), chFrom));
+					suggestions.add(new FilterBox.Suggestion(new Chip("after", sDateFormat.format(date)).withTranslatedCommand(MESSAGES.tagDateAfter()).withTranslatedValue(sLocalDateFormat.format(date)), chTo));
 				} catch (Exception e) {
 				}
 				callback.onSuccess(suggestions);
 			}			
 		});
-		addFilter(new FilterBox.StaticSimpleFilter("before"));
-		addFilter(new FilterBox.StaticSimpleFilter("after"));
+		addFilter(new FilterBox.StaticSimpleFilter("before", MESSAGES.tagDateBefore()) {
+			@Override
+			public void validate(String value, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				try {
+					translatedValue = sLocalDateFormat.format(sDateFormat.parse(value));
+				} catch (IllegalArgumentException e) {}
+				callback.onSuccess(new Chip(getCommand(), value).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
+		addFilter(new FilterBox.StaticSimpleFilter("after", MESSAGES.tagDateAfter()) {
+			@Override
+			public void validate(String value, AsyncCallback<Chip> callback) {
+				String translatedValue = null;
+				try {
+					translatedValue = sLocalDateFormat.format(sDateFormat.parse(value));
+				} catch (IllegalArgumentException e) {}
+				callback.onSuccess(new Chip(getCommand(), value).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
+			}
+		});
 		
 		m1.addValueChangeHandler(new ValueChangeHandler<Date>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Date> event) {
 				Chip ch = getChip("before");
-				if (event.getValue() == null) {
+				Date value = event.getValue();
+				if (value == null) {
 					if (ch != null) removeChip(ch, true);	
 				} else {
-					String text = m1.toString();
 					if (ch != null) {
-						if (ch.getCommand().equals(text)) return;
+						if (ch.getValue().equals(sDateFormat.format(value))) return;
 						removeChip(ch, false);
 					}
-					addChip(new Chip("before", text), true);
+					addChip(new Chip("before", sDateFormat.format(value)).withTranslatedCommand(MESSAGES.tagDateBefore()).withTranslatedValue(sLocalDateFormat.format(value)), true);
 				}
 			}
 		});
@@ -254,15 +301,15 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 			@Override
 			public void onValueChange(ValueChangeEvent<Date> event) {
 				Chip ch = getChip("after");
-				if (event.getValue() == null) {
+				Date value = event.getValue();
+				if (value == null) {
 					if (ch != null) removeChip(ch, true);	
 				} else {
-					String text = m2.toString();
 					if (ch != null) {
-						if (ch.getCommand().equals(text)) return;
+						if (ch.getValue().equals(sDateFormat.format(value))) return;
 						removeChip(ch, false);
 					}
-					addChip(new Chip("after", text), true);
+					addChip(new Chip("after", sDateFormat.format(value)).withTranslatedCommand(MESSAGES.tagDateAfter()).withTranslatedValue(sLocalDateFormat.format(value)), true);
 				}
 			}
 		});
@@ -304,7 +351,7 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 			}
 		});
 		
-		addFilter(new FilterBox.StaticSimpleFilter("student"));
+		addFilter(new FilterBox.StaticSimpleFilter("student", MESSAGES.tagStudent()));
 	}
 	
 	@Override
@@ -339,7 +386,11 @@ public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.
 			List<FilterBox.Chip> chips = new ArrayList<FilterBox.Chip>();
 			if (entities != null) {
 				for (FilterRpcResponse.Entity entity: entities)
-					chips.add(new FilterBox.Chip(filter.getCommand(), entity.getAbbreviation(), entity.getName(), entity.getCount() <= 0 ? null : "(" + entity.getCount() + ")"));
+					chips.add(new FilterBox.Chip(filter.getCommand(), entity.getAbbreviation())
+							.withLabel(entity.getName())
+							.withCount(entity.getCount())
+							.withTranslatedCommand(filter.getLabel())
+							.withTranslatedValue(entity.getProperty("translated-value", null)));
 			}
 			simple.setValues(chips);
 			return true;
