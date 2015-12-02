@@ -66,6 +66,12 @@
 				<line>Fixed a NullPointerException error when there is Display Conflicts in the event filter with nothing in the room filter and the query returns a meeting that has no room.</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling</name>
+			<description>
+				<line>Course Types: Fixed an issue of ignoring course types when the online scheduling server runs in the replicated mode.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
