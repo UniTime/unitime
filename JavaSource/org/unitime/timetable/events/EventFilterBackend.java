@@ -374,28 +374,28 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		
 		if (request.hasOption("mode")) {
 			String mode = request.getOption("mode");
-			if ("My Events".equals(mode) && context.isAuthenticated()) {
+			if (("my".equalsIgnoreCase(mode) || CONSTANTS.eventModeLabel()[1].equals(mode)) && context.isAuthenticated()) {
 				query.addWhere("mode", "e.mainContact.externalUniqueId = :Xowner and e.class not in (ClassEvent, FinalExamEvent, MidtermExamEvent)");
 				query.addParameter("mode", "Xowner", context.getUser().getExternalUserId());
-			} else if ("Approved Events".equals(mode)) {
+			} else if ("approved".equalsIgnoreCase(mode) || CONSTANTS.eventModeLabel()[2].equals(mode)) {
 				query.addWhere("mode", "m.approvalStatus = 1");
-			} else if ("Not Approved Events".equals(mode)) {
+			} else if ("unapproved".equalsIgnoreCase(mode) || CONSTANTS.eventModeLabel()[3].equals(mode)) {
 				query.addWhere("mode", "m.approvalStatus = 0");
-			} else if ("Awaiting Events".equals(mode)) {
+			} else if ("awaiting".equalsIgnoreCase(mode) || CONSTANTS.eventModeLabel()[4].equals(mode)) {
 				query.addWhere("mode", "m.approvalStatus = 0 and m.meetingDate >= :Xtoday");
 				query.addParameter("mode", "Xtoday", today);
-			} else if ("Awaiting My Approval".equals(mode) && context.isAuthenticated()) {
+			} else if (("my awaiting".equalsIgnoreCase(mode) || CONSTANTS.eventModeLabel()[6].equals(mode)) && context.isAuthenticated()) {
 				query.addFrom("mode", "Location Xl inner join Xl.eventDepartment.timetableManagers Xg");
 				query.addWhere("mode", "m.approvalStatus = 0 and Xl.session.uniqueId = :sessionId and Xl.permanentId = m.locationPermanentId and Xg.externalUniqueId = :Xuser and m.meetingDate >= :Xtoday");
 				query.addParameter("mode", "Xuser", context.getUser().getExternalUserId());
 				query.addParameter("mode", "Xtoday", today);
-			} else if ("Conflicting Events".equals(mode)) {
+			} else if ("conflicting".equalsIgnoreCase(mode) || CONSTANTS.eventModeLabel()[5].equals(mode)) {
 				query.addFrom("mode", "Meeting Xm, Location Xl");
 				query.addWhere("mode", "Xm.uniqueId != m.uniqueId and m.meetingDate = Xm.meetingDate and m.startPeriod < Xm.stopPeriod and m.stopPeriod > Xm.startPeriod and m.locationPermanentId = Xm.locationPermanentId and m.approvalStatus <= 1 and Xm.approvalStatus <= 1" +
 						" and Xl.permanentId = m.locationPermanentId and Xl.session.uniqueId = :sessionId and Xl.ignoreRoomCheck = false");
-			} else if ("Cancelled / Rejected".equals(mode)) {
+			} else if ("cancelled".equalsIgnoreCase(mode) || CONSTANTS.eventModeLabel()[7].equals(mode)) {
 				query.addWhere("mode", "m.approvalStatus >= 2");
-			} else if ("Expiring Events".equals(mode)) {
+			} else if ("expiring".equalsIgnoreCase(mode) || CONSTANTS.eventModeLabel()[8].equals(mode)) {
 				query.addWhere("mode", "m.approvalStatus = 0 and e.expirationDate is not null");
 			} else {
 				query.addWhere("mode", "m.approvalStatus <= 1");

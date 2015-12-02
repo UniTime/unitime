@@ -575,6 +575,16 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		return chips;
 	}
 	
+	public void fixLabel(Chip chip) {
+		for (int i = 0; i < getWidgetCount() - 4; i++) {
+			ChipPanel panel = (ChipPanel)getWidget(i);
+			if (panel.getChip().equals(chip)) {
+				panel.setText(chip.getTranslatedValue());
+				resizeFilterIfNeeded();
+			}
+		}
+	}
+	
 	public void removeAllChips() {
 		while (getWidgetCount() > 4) remove(0);
 		resizeFilterIfNeeded();

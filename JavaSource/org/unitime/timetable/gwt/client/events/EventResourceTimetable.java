@@ -248,10 +248,10 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			@Override
 			public void onClick(ClickEvent event) {
 				// Event filter
-				iEvents.setValue(iHistoryToken.getDefaultParameter("events", ""));
+				iEvents.setValue(iHistoryToken.getDefaultParameter("events", ""), true);
 				
 				// Room filter
-				iRooms.setValue(iHistoryToken.getDefaultParameter("rooms", ""));
+				iRooms.setValue(iHistoryToken.getDefaultParameter("rooms", ""), true);
 				
 				// Resource type
 				if (!"true".equals(iHistoryToken.getParameter("fixedType", "false"))) {

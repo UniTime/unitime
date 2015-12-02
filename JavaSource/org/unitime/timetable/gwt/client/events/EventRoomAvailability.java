@@ -162,7 +162,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			public void onClick(ClickEvent event) {
 				iDates.setValue(null);
 				iTimes.setValue(null);
-				iRooms.setValue(iHistoryToken.getDefaultParameter("rooms", ""));
+				iRooms.setValue(iHistoryToken.getDefaultParameter("rooms", ""), true);
 				hideResults();
 				changeUrl();
 			}

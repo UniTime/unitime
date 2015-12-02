@@ -67,6 +67,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 	private ListBox iBuildings, iDepartments;
 	private TextBox iMin, iMax;
 	private Chip iLastSize = null;
+	private FilterBox.CustomFilter iDepartmentFilter;
 	
 	public RoomFilterBox(AcademicSessionProvider session) {
 		super(session);
@@ -75,7 +76,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		iDepartments.setMultipleSelect(false);
 		iDepartments.setWidth("100%");
 		
-		addFilter(new FilterBox.CustomFilter("department", MESSAGES.tagDepartment(), iDepartments) {
+		iDepartmentFilter = new FilterBox.CustomFilter("department", MESSAGES.tagDepartment(), iDepartments) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -111,7 +112,9 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 					translatedValue = MESSAGES.attrDepartmentManagedRooms();
 				callback.onSuccess(new Chip(getCommand(), value).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
 			}
-		});
+		};
+		iDepartmentFilter.setVisible(false);
+		addFilter(iDepartmentFilter);
 		iDepartments.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -492,6 +495,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 						iDepartments.setSelectedIndex(i);
 						break;
 					}
+			iDepartmentFilter.setVisible(iDepartments.getItemCount() > 1);
 			return true;
 		} else 
 			return super.populateFilter(filter, entities);

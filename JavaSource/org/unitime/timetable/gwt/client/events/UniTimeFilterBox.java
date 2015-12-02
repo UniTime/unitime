@@ -174,14 +174,18 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 	protected boolean populateFilter(FilterBox.Filter filter, List<FilterRpcResponse.Entity> entities) {
 		if (filter != null && filter instanceof FilterBox.StaticSimpleFilter) {
 			FilterBox.StaticSimpleFilter simple = (FilterBox.StaticSimpleFilter)filter;
-			List<FilterBox.Chip> chips = new ArrayList<FilterBox.Chip>();
+			List<Chip> chips = new ArrayList<FilterBox.Chip>();
 			if (entities != null) {
-				for (FilterRpcResponse.Entity entity: entities)
-					chips.add(new FilterBox.Chip(filter.getCommand(), entity.getAbbreviation())
+				for (FilterRpcResponse.Entity entity: entities) {
+					FilterBox.Chip chip = new FilterBox.Chip(filter.getCommand(), entity.getAbbreviation())
 							.withLabel(entity.getName())
 							.withCount(entity.getCount())
 							.withTranslatedCommand(filter.getLabel())
-							.withTranslatedValue(entity.getProperty("translated-value", null)));
+							.withTranslatedValue(entity.getProperty("translated-value", null));
+					chips.add(chip);
+					if (!chip.getValue().equals(chip.getTranslatedValue()))
+						iFilter.getWidget().fixLabel(chip);
+				}
 			}
 			simple.setValues(chips);
 			return true;

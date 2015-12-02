@@ -101,7 +101,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "type", context)) {
 			Entity type = types.get(location.getRoomType().getUniqueId());
 			if (type == null) {
-				type = new Entity(location.getRoomType().getUniqueId(), location.getRoomType().getReference(), location.getRoomType().getLabel(), "order", sNF.format(location.getRoomType().getOrd()));
+				type = new Entity(location.getRoomType().getUniqueId(), location.getRoomType().getReference(), location.getRoomType().getLabel(), "order", sNF.format(location.getRoomType().getOrd()), "translated-value", location.getRoomType().getLabel());
 				types.put(type.getUniqueId(), type);
 			}
 			type.incCount();
@@ -121,7 +121,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 						}
 						Entity feature = features.get(rf.getUniqueId());
 						if (feature == null) {
-							feature = new Entity(rf.getUniqueId(), rf.getAbbv(), rf.getLabel());
+							feature = new Entity(rf.getUniqueId(), rf.getAbbv(), rf.getLabel(), "translated-value", rf.getLabel());
 							features.put(feature.getUniqueId(), feature);
 						}
 						feature.incCount();
@@ -139,7 +139,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				if (rg.isGlobal() || (departments != null && departments.contains(rg.getDepartment().getDeptCode()))) {
 					Entity group = groups.get(rg.getUniqueId());
 					if (group == null) {
-						group = new Entity(rg.getUniqueId(), rg.getAbbv(), rg.getName());
+						group = new Entity(rg.getUniqueId(), rg.getAbbv(), rg.getName(), "translated-value", rg.getName());
 						groups.put(group.getUniqueId(), group);
 					}
 					group.incCount();
@@ -550,7 +550,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				query.addParameter("type", "Xt" + id, s);
 				id++;
 			}
-			query.addWhere("type", "l.roomType.label in (" + type + ")");
+			query.addWhere("type", "l.roomType.label in (" + type + ") or l.roomType.reference in (" + type + ")");
 		}
 		
 		Set<String> departments = (options == null ? null : options.get("department"));
@@ -563,10 +563,10 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			for (String s: features) {
 				if (department == null) {
 					from += (from.isEmpty() ? "" : " ") + "inner join l.features f" + id;
-					where += (where.isEmpty() ? "" : " and ") + " f" + id + ".label = :Xf" + id + " and f" + id + ".class = GlobalRoomFeature";
+					where += (where.isEmpty() ? "" : " and ") + " (f" + id + ".label = :Xf" + id + " or f" + id + ".abbv = :Xf" + id + ") and f" + id + ".class = GlobalRoomFeature";
 				} else {
 					from += (from.isEmpty() ? "" : " ") + "inner join l.features f" + id + " left outer join f" + id + ".department fd" + id;
-					where += (where.isEmpty() ? "" : " and ") + " f" + id + ".label = :Xf" + id + " and (f" + id + ".class = GlobalRoomFeature or fd" + id +".deptCode = :Xfd)";
+					where += (where.isEmpty() ? "" : " and ") + " (f" + id + ".label = :Xf" + id + " or f" + id + ".abbv = :Xf" + id + ") and (f" + id + ".class = GlobalRoomFeature or fd" + id +".deptCode = :Xfd)";
 				}
 				query.addParameter("feature", "Xf" + id, s);
 				id++;
@@ -588,9 +588,9 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			}
 			query.addFrom("group", "inner join l.roomGroups g left outer join g.department gd");
 			if (department == null)
-				query.addWhere("group", "g.name in (" + group + ") and g.global = true");
+				query.addWhere("group", "(g.name in (" + group + ") or g.abbv in (" + group + ")) and g.global = true");
 			else {
-				query.addWhere("group", "g.name in (" + group + ") and (g.global = true or gd.deptCode = :Xgd)");
+				query.addWhere("group", "(g.name in (" + group + ") or g.abbv in (" + group + ")) and (g.global = true or gd.deptCode = :Xgd)");
 				query.addParameter("group", "Xgd", department);
 			}
 		}
