@@ -332,7 +332,7 @@ public class ClassEditAction extends PreferencesAction {
 			initPrefs(frm, c, leadInstructors, true);
 			frm.getDatePatternPrefs().clear();
         	frm.getDatePatternPrefLevels().clear();
-			DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? c.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern()));
+			DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? c.getSchedulingSubpart().effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern()));
 			if (selectedDatePattern != null) {
 				for (DatePattern dp: selectedDatePattern.findChildren()) {
 					boolean found = false;
@@ -360,7 +360,7 @@ public class ClassEditAction extends PreferencesAction {
         frm.setAvailableTimePatterns(TimePattern.findApplicable(
         		sessionContext.getUser(),
         		c.getSchedulingSubpart().getMinutesPerWk(),
-        		(frm.getDatePattern() < 0 ? c.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern())),
+        		(frm.getDatePattern() < 0 ? c.getSchedulingSubpart().effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern())),
         		c.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel(),
         		true,
         		c.getManagingDept()));
@@ -389,7 +389,7 @@ public class ClassEditAction extends PreferencesAction {
 		super.generateTimePatternGrids(request, frm, c, 
 				c.getSchedulingSubpart().getMinutesPerWk(),
         		c.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel(),
-        		(frm.getDatePattern() < 0 ? c.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern())),
+        		(frm.getDatePattern() < 0 ? c.getSchedulingSubpart().effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern())),
 				timePatterns, op, timeVertical, true, leadInstructors);
 
 		// Instructors
@@ -672,7 +672,7 @@ public class ClassEditAction extends PreferencesAction {
      * @throws Exception 
      */
 	protected void setupChildren(ClassEditForm frm, HttpServletRequest request, Class_ c) throws Exception {
-		DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? c.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern()));
+		DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? c.getSchedulingSubpart().effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern()));
 		if (selectedDatePattern != null) {
 			List<DatePattern> v =  selectedDatePattern.findChildren();
 			request.setAttribute(DatePattern.DATE_PATTERN_CHILDREN_LIST_ATTR, v);	

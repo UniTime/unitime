@@ -934,7 +934,7 @@ public class PreferencesAction extends Action {
 		        	if (timePref.getTimePatternModel().hasNotAvailablePreference()) frm.setHasNotAvailable(true);
 		        	tps.add(timePref.getTimePattern()==null?"-1":timePref.getTimePattern().getUniqueId().toString());
 		        }
-		    } else if (tpat.size()>0) {
+		    } else if (tpat.size()>0 && editable) {
 		    	Vector x = new Vector(tpat);
 		    	Collections.sort(x);
 		    	
@@ -1042,12 +1042,12 @@ public class PreferencesAction extends Action {
 							}
 						}
 						if (matching.isEmpty())
-							name = timePattern.getName() + " <font color=\\'red\\'>No matching date pattern!</font>";
+							name = timePattern.getName() + " <font color=\\'red\\'>" + MSG.warnNoMatchingDatePattern() + "</font>";
 						else if (!allPatterns)
 							name = timePattern.getName() + " (" + matching + ")";
 					} else {
 						if (!dmod.isValidCombination(minutes, dpat, timePattern))
-							name = timePattern.getName() + " <font color=\\'red\\'>No matching date pattern!</font>";
+							name = timePattern.getName() + " <font color=\\'red\\'>" + MSG.warnNoMatchingDatePattern() + "</font>";
 					}
 				}
 				

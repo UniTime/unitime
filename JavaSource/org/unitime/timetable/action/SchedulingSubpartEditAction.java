@@ -246,7 +246,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 		frm.setAvailableTimePatterns(TimePattern.findApplicable(
         		sessionContext.getUser(),
         		ss.getMinutesPerWk(),
-        		 (frm.getDatePattern() < 0 ? ss.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern())),
+        		 (frm.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(frm.getDatePattern())),
         		ss.getInstrOfferingConfig().getDurationModel(),
         		false,
         		ss.getManagingDept()));
@@ -271,7 +271,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 			timePatterns = ss.getTimePatterns();
 			frm.getDatePatternPrefs().clear();
         	frm.getDatePatternPrefLevels().clear();
-			DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? ss.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern()));
+			DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(frm.getDatePattern()));
 			if (selectedDatePattern != null) {
 				for (DatePattern dp: selectedDatePattern.findChildren()) {
 					boolean found = false;
@@ -294,7 +294,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 		super.generateTimePatternGrids(request, frm, ss,
 				ss.getMinutesPerWk(),
         		ss.getInstrOfferingConfig().getDurationModel(),
-        		(frm.getDatePattern() < 0 ? ss.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern())),
+        		(frm.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(frm.getDatePattern())),
 				timePatterns, op, timeVertical, true, null);
 		setupChildren(frm, request, ss); // Date patterns allowed in the DDL for Date pattern preferences
 		LookupTables.setupDatePatterns(request, sessionContext.getUser(), "Default", (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()), ss.getManagingDept(), ss.effectiveDatePattern());
@@ -520,7 +520,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
     }
     
     protected void setupChildren(SchedulingSubpartEditForm frm, HttpServletRequest request, SchedulingSubpart ss) {
-		DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? ss.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern()));
+		DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? (ss.canInheritParentPreferences() ? ss.getParentSubpart().effectiveDatePattern() : ss.getSession().getDefaultDatePatternNotNull()) : DatePatternDAO.getInstance().get(frm.getDatePattern()));
 		try {
 			if (selectedDatePattern != null) {
 				List<DatePattern> v = selectedDatePattern.findChildren();
