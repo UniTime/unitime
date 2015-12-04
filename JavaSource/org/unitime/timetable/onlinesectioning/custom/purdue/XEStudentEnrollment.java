@@ -102,11 +102,19 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return ApplicationProperties.getProperty("banner.xe.site");
 	}
 	
-	protected String getBannerUser() {
+	protected String getBannerUser(boolean admin) {
+		if (admin) {
+			String user = ApplicationProperties.getProperty("banner.xe.admin.user");
+			if (user != null) return user;
+		}
 		return ApplicationProperties.getProperty("banner.xe.user");
 	}
 	
-	protected String getBannerPassword() {
+	protected String getBannerPassword(boolean admin) {
+		if (admin) {
+			String pwd = ApplicationProperties.getProperty("banner.xe.admin.password");
+			if (pwd != null) return pwd;
+		}
 		return ApplicationProperties.getProperty("banner.xe.password");
 	}
 	
@@ -165,17 +173,18 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
 			String campus = getBannerCampus(session);
+			boolean admin = isBannerAdmin() && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER;
 			if (helper.isDebugEnabled())
-				helper.debug("Checking eligility for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
+				helper.debug("Checking eligility for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + (admin ? ", admin" : pin != null ? ", pin:" + pin : "") + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(), getBannerPassword());
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(admin), getBannerPassword(admin));
 			Gson gson = getGson(helper);
 			XEInterface.RegisterResponse original = null;
 
-			if (isBannerAdmin() && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER) {
+			if (admin) {
 				// ADMIN: POST empty request with systemIn filled in
 				XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), pin, true);
 				helper.getAction().addOptionBuilder().setKey("term").setValue(req.term);
@@ -359,16 +368,16 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
 			String campus = getBannerCampus(session);
+			boolean admin = (isBannerAdmin() && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER);
 			if (helper.isDebugEnabled())
-				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + term + ", id:" + getBannerId(student) + ", pin:" + pin + ")");
+				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + term + ", id:" + getBannerId(student) + (admin ? ", admin" : pin != null ? ", pin:" + pin : "") + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(), getBannerPassword());
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(admin), getBannerPassword(admin));
 			Gson gson = getGson(helper);
 			XEInterface.RegisterResponse original = null;
-			boolean admin = (isBannerAdmin() && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER);
 			
 			if (admin) {
 				// ADMIN: POST empty request with systemIn filled in
@@ -803,7 +812,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(), getBannerPassword());
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(true), getBannerPassword(true));
 			
 			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), null, true);
 			sectioningRequest.getAction().addOptionBuilder().setKey("term").setValue(req.term);
