@@ -173,83 +173,55 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
 			String campus = getBannerCampus(session);
-			boolean admin = isBannerAdmin() && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER;
+			boolean manager = helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER;
+			boolean admin = manager & isBannerAdmin();
 			if (helper.isDebugEnabled())
 				helper.debug("Checking eligility for " + student.getName() + " (term: " + term + ", id:" + getBannerId(student) + (admin ? ", admin" : pin != null ? ", pin:" + pin : "") + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(admin), getBannerPassword(admin));
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(manager), getBannerPassword(manager));
 			Gson gson = getGson(helper);
 			XEInterface.RegisterResponse original = null;
 
+			resource.addQueryParameter("term", term);
+			resource.addQueryParameter("bannerId", getBannerId(student));
+			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+			helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 			if (admin) {
-				// ADMIN: POST empty request with systemIn filled in
-				XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), pin, true);
-				helper.getAction().addOptionBuilder().setKey("term").setValue(req.term);
-				helper.getAction().addOptionBuilder().setKey("bannerId").setValue(req.bannerId);
-				helper.getAction().addOptionBuilder().setKey("systemIn").setValue(req.systemIn);
+				resource.addQueryParameter("persona", "SB");
+				helper.getAction().addOptionBuilder().setKey("persona").setValue("SB");
+			} else if (pin != null && !pin.isEmpty()) {
+				resource.addQueryParameter("altPin", pin);
+				helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
+			}
+			try {
+				resource.get(MediaType.APPLICATION_JSON);
+			} catch (ResourceException exception) {
 				try {
-					resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req.empty()));
-				} catch (ResourceException exception) {
-					try {
-						XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
-						helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
-						XEInterface.Error error = response.getError();
-						if (error != null && error.message != null) {
-							throw new SectioningException(error.message);
-						} else if (error != null && error.description != null) {
-							throw new SectioningException(error.description);
-						} else if (error != null && error.errorMessage != null) {
-							throw new SectioningException(error.errorMessage);
-						} else {
-							throw exception;
-						}
-					} catch (SectioningException e) {
-						throw e;
-					} catch (Throwable t) {
-	 					throw exception;
-					}
-				}
-				original = new GsonRepresentation<XEInterface.RegisterResponse>(resource.getResponseEntity(), XEInterface.RegisterResponse.class).getObject();
-				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(original));
-			} else {
-				resource.addQueryParameter("term", term);
-				resource.addQueryParameter("bannerId", getBannerId(student));
-				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
-				helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
-				if (pin != null && !pin.isEmpty()) {
-					resource.addQueryParameter("altPin", pin);
-					helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
-				}
-				try {
-					resource.get(MediaType.APPLICATION_JSON);
-				} catch (ResourceException exception) {
-					try {
-						XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
-						helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
-						XEInterface.Error error = response.getError();
-						if (error != null && error.message != null) {
-							throw new SectioningException(error.message);
-						} else if (error != null && error.description != null) {
-							throw new SectioningException(error.description);
-						} else if (error != null && error.errorMessage != null) {
-							throw new SectioningException(error.errorMessage);
-						} else {
-							throw exception;
-						}
-					} catch (SectioningException e) {
-						throw e;
-					} catch (Throwable t) {
+					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
+					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
+					XEInterface.Error error = response.getError();
+					if (error != null && error.message != null) {
+						throw new SectioningException(error.message);
+					} else if (error != null && error.description != null) {
+						throw new SectioningException(error.description);
+					} else if (error != null && error.errorMessage != null) {
+						throw new SectioningException(error.errorMessage);
+					} else {
 						throw exception;
 					}
+				} catch (SectioningException e) {
+					throw e;
+				} catch (Throwable t) {
+					throw exception;
 				}
-				List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
-				helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
-				if (current != null && !current.isEmpty())
-					original = current.get(0);
 			}
+			List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
+			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
+			if (current != null && !current.isEmpty())
+				original = current.get(0);
 			
 			// Check status, memorize enrolled sections
 			if (original != null && helper.isDebugEnabled())
@@ -368,83 +340,55 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			AcademicSessionInfo session = server.getAcademicSession();
 			String term = getBannerTerm(session);
 			String campus = getBannerCampus(session);
-			boolean admin = (isBannerAdmin() && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER);
+			boolean manager = helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER;
+			boolean admin = manager & isBannerAdmin();
 			if (helper.isDebugEnabled())
 				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + term + ", id:" + getBannerId(student) + (admin ? ", admin" : pin != null ? ", pin:" + pin : "") + ")");
 			
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(admin), getBannerPassword(admin));
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(manager), getBannerPassword(manager));
 			Gson gson = getGson(helper);
 			XEInterface.RegisterResponse original = null;
 			
+			resource.addQueryParameter("term", term);
+			resource.addQueryParameter("bannerId", getBannerId(student));
+			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+			helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 			if (admin) {
-				// ADMIN: POST empty request with systemIn filled in
-				XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), pin, true);
-				helper.getAction().addOptionBuilder().setKey("term").setValue(req.term);
-				helper.getAction().addOptionBuilder().setKey("bannerId").setValue(req.bannerId);
-				helper.getAction().addOptionBuilder().setKey("systemIn").setValue(req.systemIn);
+				resource.addQueryParameter("persona", "SB");
+				helper.getAction().addOptionBuilder().setKey("persona").setValue("SB");
+			} else if (pin != null && !pin.isEmpty()) {
+				resource.addQueryParameter("altPin", pin);
+				helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
+			}
+			try {
+				resource.get(MediaType.APPLICATION_JSON);
+			} catch (ResourceException exception) {
 				try {
-					resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req.empty()));
-				} catch (ResourceException exception) {
-					try {
-						XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
-						helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
-						XEInterface.Error error = response.getError();
-						if (error != null && error.message != null) {
-							throw new SectioningException(error.message);
-						} else if (error != null && error.description != null) {
-							throw new SectioningException(error.description);
-						} else if (error != null && error.errorMessage != null) {
-							throw new SectioningException(error.errorMessage);
-						} else {
-							throw exception;
-						}
-					} catch (SectioningException e) {
-						throw e;
-					} catch (Throwable t) {
-	 					throw exception;
-					}
-				}
-				original = new GsonRepresentation<XEInterface.RegisterResponse>(resource.getResponseEntity(), XEInterface.RegisterResponse.class).getObject();
-				helper.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(original));
-			} else {
-				resource.addQueryParameter("term", term);
-				resource.addQueryParameter("bannerId", getBannerId(student));
-				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
-				helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
-				if (pin != null && !pin.isEmpty()) {
-					resource.addQueryParameter("altPin", pin);
-					helper.getAction().addOptionBuilder().setKey("pin").setValue(pin);
-				}
-				try {
-					resource.get(MediaType.APPLICATION_JSON);
-				} catch (ResourceException exception) {
-					try {
-						XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
-						helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
-						XEInterface.Error error = response.getError();
-						if (error != null && error.message != null) {
-							throw new SectioningException(error.message);
-						} else if (error != null && error.description != null) {
-							throw new SectioningException(error.description);
-						} else if (error != null && error.errorMessage != null) {
-							throw new SectioningException(error.errorMessage);
-						} else {
-							throw exception;
-						}
-					} catch (SectioningException e) {
-						throw e;
-					} catch (Throwable t) {
+					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
+					helper.getAction().addOptionBuilder().setKey("exception").setValue(gson.toJson(response));
+					XEInterface.Error error = response.getError();
+					if (error != null && error.message != null) {
+						throw new SectioningException(error.message);
+					} else if (error != null && error.description != null) {
+						throw new SectioningException(error.description);
+					} else if (error != null && error.errorMessage != null) {
+						throw new SectioningException(error.errorMessage);
+					} else {
 						throw exception;
 					}
+				} catch (SectioningException e) {
+					throw e;
+				} catch (Throwable t) {
+					throw exception;
 				}
-				List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
-				helper.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(current));
-				if (current != null && !current.isEmpty())
-					original = current.get(0);
 			}
+			List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
+			helper.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(current));
+			if (current != null && !current.isEmpty())
+				original = current.get(0);
 			
 			// Check status, memorize enrolled sections
 			if (original == null || !original.validStudent) {
@@ -483,7 +427,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			Map<String, List<XSection>> id2section = new HashMap<String, List<XSection>>();
 			Map<String, XCourse> id2course = new HashMap<String, XCourse>();
 			Set<String> added = new HashSet<String>();
-			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), pin, isBannerAdmin() && helper.getUser().getType() == OnlineSectioningLog.Entity.EntityType.MANAGER);
+			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), pin, admin);
 			List<EnrollmentFailure> fails = new ArrayList<EnrollmentFailure>();
 			Set<String> failed = new HashSet<String>();
 			Set<String> checked = new HashSet<String>();
@@ -813,15 +757,16 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
 			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(true), getBannerPassword(true));
-			
-			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), null, true);
-			sectioningRequest.getAction().addOptionBuilder().setKey("term").setValue(req.term);
-			sectioningRequest.getAction().addOptionBuilder().setKey("bannerId").setValue(req.bannerId);
-			sectioningRequest.getAction().addOptionBuilder().setKey("systemIn").setValue(req.systemIn);
+
+			resource.addQueryParameter("term", term);
+			resource.addQueryParameter("bannerId", getBannerId(student));
+			resource.addQueryParameter("persona", "SB");
+			sectioningRequest.getAction().addOptionBuilder().setKey("term").setValue(term);
+			sectioningRequest.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 			Gson gson = getGson(helper);
-			
+
 			try {
-				resource.post(new GsonRepresentation<XEInterface.RegisterRequest>(req.empty()));
+				resource.get(MediaType.APPLICATION_JSON);
 			} catch (ResourceException exception) {
 				try {
 					XEInterface.ErrorResponse response = new GsonRepresentation<XEInterface.ErrorResponse>(resource.getResponseEntity(), XEInterface.ErrorResponse.class).getObject();
@@ -842,10 +787,11 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					throw exception;
 				}
 			}
+			List<XEInterface.RegisterResponse> current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
+			sectioningRequest.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(current));
+			XEInterface.RegisterResponse original = (current != null && !current.isEmpty() ? current.get(0) : null);
 			
 			// Check status, memorize enrolled sections
-			XEInterface.RegisterResponse original = new GsonRepresentation<XEInterface.RegisterResponse>(resource.getResponseEntity(), XEInterface.RegisterResponse.class).getObject();
-			sectioningRequest.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(original));
 			if (original != null && helper.isDebugEnabled())
 				helper.debug("Current registration: " + gson.toJson(original));
 			
@@ -862,7 +808,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				throw new SectioningException(reason == null ? "Failed to check student registration status." : reason);
 			}
 			
-			req = new XEInterface.RegisterRequest(term, getBannerId(student), null, true);
+			XEInterface.RegisterRequest req = new XEInterface.RegisterRequest(term, getBannerId(student), null, true);
 			boolean changed = false;
 			if (original.registrations != null)
 				for (XEInterface.Registration reg: original.registrations) {
