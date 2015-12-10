@@ -62,6 +62,7 @@ import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.rights.Right;
 
 /**
@@ -174,7 +175,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		Map<Long, Entity> depts = new HashMap<Long, Entity>();
 		boolean eventRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("event") || request.getOptions("flag").contains("Event")));
 		boolean allRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("all") || request.getOptions("flag").contains("All")));
-		boolean deptIndep = context.hasPermission(Right.DepartmentIndependent); 
+		boolean deptIndep = context.hasPermission(Right.DepartmentIndependent);
+		UserAuthority autority = (context.getUser() == null ? null : context.getUser().getCurrentAuthority());
 		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "department", context)) {
 			Department evtDept = (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() ? location.getEventDepartment() : null);
 			boolean isManaged = false;
@@ -188,7 +190,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				if (deptIndep || (userDepts != null && userDepts.contains(location.getEventDepartment().getUniqueId()))) isManaged = true;
 			} else {
 				for (RoomDept rd: location.getRoomDepts()) {
-					if (!deptIndep && !allRooms && (userDepts == null || !(userDepts.contains(rd.getDepartment().getUniqueId())))) continue;
+					if (!deptIndep && !allRooms && (userDepts == null || !(userDepts.contains(rd.getDepartment().getUniqueId())))
+							&& (autority == null || !autority.hasQualifier(rd.getDepartment()))) continue;
 					if (evtDept != null && rd.getDepartment().equals(evtDept)) evtDept = null;
 					Entity department = depts.get(rd.getDepartment().getUniqueId());
 					if (department == null) {
