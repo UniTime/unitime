@@ -75,6 +75,10 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 				ApplicationProperties.setSessionId(getAcademicSession().getUniqueId());
 			while (iRun) {
 				try {
+					sleep(iSleepTimeInSeconds * 1000);
+				} catch (InterruptedException e) {}
+				if (!iRun) break;
+				try {
 					OnlineSectioningServer server = iContainer.getInstance(getAcademicSession().getUniqueId());
 					if (server != null) {
 						if (server.isMaster()) {
@@ -94,9 +98,6 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 				} finally {
 					_RootDAO.closeCurrentThreadSessions();
 				}
-				try {
-					sleep(iSleepTimeInSeconds * 1000);
-				} catch (InterruptedException e) {}
 			}
 			iLog.info((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater stopped.");
 		} catch (Exception e) {
