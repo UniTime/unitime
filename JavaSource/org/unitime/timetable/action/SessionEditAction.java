@@ -313,8 +313,8 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
             			.setLong("sessionId", sessn.getUniqueId()).executeUpdate();
             } else {
             	for (Assignment assignment: (List<Assignment>)hibSession.createQuery(
-            			"select a from Class_ c inner join c.committedAssignment a where c.committedAssignment.solution.owner.session.uniqueId = :sessionId" +
-            			" and (select count(e) from ClassEvent e where e.clazz = c) = 0")
+            			"select a from Class_ c inner join c.assignments a inner join a.solution s where s.commited = true and s.owner.session.uniqueId = :sessionId " +
+            			"and c.uniqueId not in (select e.clazz.uniqueId from ClassEvent e where e.clazz.controllingDept.session.uniqueId = :sessionId)")
             			.setLong("sessionId", sessn.getUniqueId()).list()) {
             		ClassEvent event = assignment.generateCommittedEvent(null,true);
             		if (event != null && !event.getMeetings().isEmpty()) {
@@ -325,8 +325,8 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
         		    	hibSession.delete(event);
             	}
             	for (Exam exam: (List<Exam>)hibSession.createQuery(
-            			"from Exam x where x.session.uniqueId = :sessionId and x.assignedPeriod != null and" +
-            			" (select count(e) from ExamEvent e where e.exam = x) = 0")
+            			"from Exam x where x.session.uniqueId = :sessionId and x.assignedPeriod != null " +
+            			"and x.uniqueId not in (select e.exam.uniqueId from ExamEvent e where e.exam.session.uniqueId = :sessionId)")
             			.setLong("sessionId", sessn.getUniqueId()).list()) {
             		ExamEvent event = exam.generateEvent(null, true);
                     if (event!=null) {
