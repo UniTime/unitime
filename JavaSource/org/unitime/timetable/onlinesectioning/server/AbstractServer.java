@@ -713,6 +713,11 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 				} catch (InterruptedException e) {
 				}
 			}
+			if (iMaster.get()) {
+				iMaster.set(false);
+				iLock.unlock();
+				iLog.info("I am no longer the master.");
+			}
 			iLog.info("No longer looking for a master.");
 		}
 		
