@@ -1123,7 +1123,7 @@ public enum ApplicationProperty {
 	EventExpirationServiceUpdateInterval("unitime.events.expiration.updateIntervalInMinutes"),
 	
 	@Type(Boolean.class)
-	@DefaultValue("false")
+	@DefaultValue("true")
 	@Description("Event Filter: do not count conflicting events (faster load, especially on MySQL)")
 	EventFilterSkipConflictCounts("unitime.events.eventFilter.skipConflictCounts"),
 
