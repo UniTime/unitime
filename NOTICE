@@ -216,7 +216,7 @@ Jasig CAS Client for Java - Core (cas-client-core-3.3.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jasig.org/cas/cas-client-core
 
-Javassist (javassist-3.18.0-GA.jar)
+Javassist (javassist-3.18.2-GA.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.javassist.org/
 

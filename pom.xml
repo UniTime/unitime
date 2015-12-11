@@ -760,7 +760,7 @@
 		<aspectj.version>1.8.7</aspectj.version>
 		<slf4j.version>1.7.12</slf4j.version>
 		<log4j.version>1.2.17</log4j.version>
-		<javaassist.version>3.18.0-GA</javaassist.version>
+		<javaassist.version>3.18.2-GA</javaassist.version>
 		<mysql.version>5.1.36</mysql.version>
 		<cglib.version>3.1</cglib.version>
 		<jstl.version>1.2</jstl.version>
