@@ -387,7 +387,7 @@
 					</table>
 				</td></tr>
 			</#if>
-			<#if link?? && sessionId?? && meetings?has_content && event.id??>
+			<#if link?? && sessionId?? && event.id??>
 				<tr><td style="width: 100%; padding-top: 10px; text-align: center;">${msg.emailOpenEventOnline(event.name, link, event.id, sessionId)}</td></tr>
 			</#if>
 		</table>

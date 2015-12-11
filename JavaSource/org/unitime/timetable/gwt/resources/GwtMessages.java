@@ -4103,6 +4103,6 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Conflicts")
 	String attrFlagShowConflicts();
 	
-	@DefaultMessage("For an up to date version of the {0} event, please visit <a href='{1}/selectPrimaryRole.do?target=gwt.jsp%3Fpage%3Devents%23event%3D{2}%26term%3D{3}' style='color: inherit; background-color : transparent;'>{1}</a>.")
+	@DefaultMessage("For an up to date version of the {0} event, please visit <a href=\"{1}/selectPrimaryRole.do?target=gwt.jsp%3Fpage%3Devents%23event%3D{2}%26term%3D{3}\" style='color: inherit; background-color : transparent;'>{1}</a>.")
 	String emailOpenEventOnline(String eventName, String uniTimeUrl, Long eventId, Long sessionId);
 }
