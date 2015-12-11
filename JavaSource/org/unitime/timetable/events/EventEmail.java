@@ -319,6 +319,8 @@ public class EventEmail {
 		}
 		input.put("version", MESSAGES.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));
 		input.put("ts", new Date());
+		input.put("link", ApplicationProperty.UniTimeUrl.value());
+		input.put("sessionId", iRequest.getSessionId());
 		
 		StringWriter s = new StringWriter();
 		template.process(input, new PrintWriter(s));
