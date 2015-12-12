@@ -148,6 +148,16 @@ public class ManageSolversAction extends Action {
         	}
         }
         
+        if ("Reload".equals(op) && request.getParameter("onlineId")!=null) {
+        	String id = request.getParameter("onlineId");
+			OnlineSectioningServer solver = solverServerService.getOnlineStudentSchedulingContainer().getSolver(id);
+			if (solver != null && solver.isMaster()) {
+				solver.setProperty("ReadyToServe", Boolean.FALSE);
+				solver.setProperty("ReloadIsNeeded", Boolean.TRUE);
+				solver.releaseMasterLockIfHeld();
+			}
+        }
+        
         if ("Unmaster".equals(op) && request.getParameter("onlineId")!=null) {
         	String id = request.getParameter("onlineId");
         	if (request.getParameter("host") != null) {
@@ -785,6 +795,12 @@ public class ManageSolversAction extends Action {
                        Date loaded = new Date(solver.getConfig().getPropertyLong("General.StartUpDate", 0));
 
                        String op = "";
+                       if (solver.isMaster() && solver.isReady()) {
+                    	   op += "<input type=\"button\" value=\"Reload\" onClick=\"" +
+                       			"if (confirm('Do you really want to reload this server?')) " +
+                       			"document.location='manageSolvers.do?op=Reload&onlineId=" + sessionId + "';" + 
+                       			" event.cancelBubble=true;\">&nbsp;&nbsp;";
+                       }
                        if (solver.isMaster() && servers.size() > 1) {
                            op += "<input type=\"button\" value=\"Shutdown All\" onClick=\"" +
                         			"if (confirm('Do you really want to shutdown this server?')) " +
