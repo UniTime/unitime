@@ -655,4 +655,9 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         return available - reserved;
     }
 
+    public boolean isAllowStudentScheduling() {
+    	for (CourseOffering course: getCourseOfferings())
+    		if (course.isAllowStudentScheduling()) return true;
+    	return false;
+    }
 }

@@ -78,6 +78,7 @@ public class DepartmentImport extends BaseImport {
                     department.setAllowReqDistribution(false);
                     department.setExternalManager(false);
                     department.setAllowEvents(false);
+                    department.setAllowStudentScheduling(true);
                     department.setInheritInstructorPreferences(true);
                     department.setDistributionPrefPriority(new Integer(0));
                 } else {

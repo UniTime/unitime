@@ -325,6 +325,23 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Exclude Some Departments from Student Scheduling</name>
+			<description>
+				<line>There is a new ability to exclude some departments completely from student scheduling.</line>
+				<line>This is controlled by a new toggle that is present on each department (named Allow Student Scheduling on the Add/Edit Department page).
+					<line>It defaults to true (student scheduling is enabled for the department).</line>
+				</line>
+				<line>When a department is excluded, all courses controlled by this department are not even loaded into the solver (both batch and online).
+					<line>Students cannot see or take courses from the excluded department(s).</line>
+				</line>
+				<line>Instructional offerings that have all courses excluded from student scheduling do not need locking.</line>
+				<line>If all departments of a solver group are excluded from student scheduling, the commit restriction during online student scheduling phase does not apply to the solutions of such a solver group.</line>
+				<line>The online student scheduling server does not get automatically reloaded when the Allow Student Scheduling toggle is changed on a particular department during the online student scheduling phase.
+					<line>It has to be reloaded manually, using the Manage Solvers page.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>

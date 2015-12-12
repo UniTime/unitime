@@ -364,6 +364,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		d.setStatusType(getStatusType());
 		d.setAllowEvents(isAllowEvents());
 		d.setInheritInstructorPreferences(isInheritInstructorPreferences());
+		d.setAllowStudentScheduling(isAllowStudentScheduling());
 		return d;
 	}
 	

@@ -88,7 +88,8 @@ public class XOffering implements Serializable, Externalizable {
     	iUniqueId = offering.getUniqueId();
     	iName = offering.getCourseName();
     	for (CourseOffering course: offering.getCourseOfferings())
-    		iCourses.add(new XCourse(course, helper));
+    		if (course.isAllowStudentScheduling())
+    			iCourses.add(new XCourse(course, helper));
     	for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
     		iConfigs.add(new XConfig(config, helper));
         for (Reservation reservation: offering.getReservations()) {

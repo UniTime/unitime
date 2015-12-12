@@ -486,6 +486,12 @@
                 not-null="true"/>
 
             <property
+                name="allowStudentScheduling"
+                column="allow_student_schd"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
                 name="inheritInstructorPreferences"
                 column="instructor_pref"
                 type="java.lang.Boolean"

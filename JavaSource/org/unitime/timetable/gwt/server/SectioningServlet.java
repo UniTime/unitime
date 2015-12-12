@@ -234,7 +234,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			org.unitime.timetable.onlinesectioning.match.CourseMatcher parent = matcher.getParentCourseMatcher();
 			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
 					"select c from CourseOffering c where " +
-					"c.subjectArea.session.uniqueId = :sessionId and (" +
+					"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and (" +
 					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like :q || '%') " +
 					(query.length()>2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ") " +
 					(matcher.isAllCourseTypes() ? "" : matcher.isNoCourseType() ? types.isEmpty() ? " and c.courseType is null " : " and (c.courseType is null or c.courseType.reference in (" + types + ")) " : " and c.courseType.reference in (" + types + ") ") +
@@ -339,7 +339,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			CourseOffering courseOffering = null;
 			for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
 					"select c from CourseOffering c where " +
-					"c.subjectArea.session.uniqueId = :sessionId and " +
+					"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and " +
 					"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) = :course)")
 					.setString("course", course.toLowerCase())
 					.setLong("sessionId", sessionId)
@@ -458,7 +458,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		setLastSessionId(sessionId);
 		OnlineSectioningServer server = getServerInstance(sessionId, false); 
 		if (server == null) {
-			CourseOffering courseOffering = SaveStudentRequests.getCourse(CourseOfferingDAO.getInstance().getSession(), sessionId, course);
+			CourseOffering courseOffering = lookupCourse(CourseOfferingDAO.getInstance().getSession(), sessionId, null, course, null);
 			if (courseOffering == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
 			return getCourseDetailsProvider().getDetails(
 					new AcademicSessionInfo(courseOffering.getSubjectArea().getSession()),
@@ -474,7 +474,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		setLastSessionId(sessionId);
 		OnlineSectioningServer server = getServerInstance(sessionId, false); 
 		if (server == null) {
-			CourseOffering courseOffering = SaveStudentRequests.getCourse(CourseOfferingDAO.getInstance().getSession(), sessionId, course);
+			CourseOffering courseOffering = lookupCourse(CourseOfferingDAO.getInstance().getSession(), sessionId, null, course, null);
 			if (courseOffering == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
 			return courseOffering.getUniqueId();
 		} else {
@@ -587,7 +587,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		for (CourseOffering co: (List<CourseOffering>)hibSession.createQuery(
 				"select c from CourseOffering c where " +
-				"c.subjectArea.session.uniqueId = :sessionId and " +
+				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and " +
 				"(lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) = :course or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) = :course)")
 				.setString("course", courseName.toLowerCase())
 				.setLong("sessionId", sessionId)
@@ -974,7 +974,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						false
 						);
 				
-				if (server == null) {
+				if (server == null || !offering.isAllowStudentScheduling()) {
 					NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
 					Map<String, String> approvedBy2name = new Hashtable<String, String>();
 					Hashtable<Long, ClassAssignmentInterface.Enrollment> student2enrollment = new Hashtable<Long, ClassAssignmentInterface.Enrollment>();
@@ -1446,7 +1446,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		HashSet<Long> courseIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.coordinators i where " +
-				"c.subjectArea.session.uniqueId = :sessionId and i.externalUniqueId = :extId")
+				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and i.externalUniqueId = :extId")
 				.setLong("sessionId", sessionId).setString("extId", user.getExternalUserId()).setCacheable(true).list());
 		
 		return courseIds;
@@ -1459,7 +1459,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 		HashSet<Long> courseIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.coordinators i where " +
-				"c.subjectArea.session.uniqueId = :sessionId and c.consentType.reference = :reference and " +
+				"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and c.consentType.reference = :reference and " +
 				"i.externalUniqueId = :extId"
 				).setLong("sessionId", sessionId).setString("reference", "IN").setString("extId", user.getExternalUserId()).setCacheable(true).list());
 		
@@ -1467,13 +1467,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		
 		if (user.getCurrentAuthority().hasRight(Right.SessionIndependent))
 			return new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
-					"select c.uniqueId from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and c.consentType is not null"
+					"select c.uniqueId from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and c.consentType is not null"
 					).setLong("sessionId", sessionId).setCacheable(true).list());
 		
 		for (Department d: Department.getUserDepartments(user)) {
 			courseIds.addAll(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"select distinct c.uniqueId from CourseOffering c where " +
-					"c.subjectArea.department.uniqueId = :departmentId and c.consentType is not null"
+					"c.subjectArea.department.uniqueId = :departmentId and c.subjectArea.department.allowStudentScheduling = true and c.consentType is not null"
 					).setLong("departmentId", d.getUniqueId()).setCacheable(true).list());
 		}
 		

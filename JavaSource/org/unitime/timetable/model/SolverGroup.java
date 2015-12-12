@@ -201,4 +201,9 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
 		return solverGroups;
 	}
 	
+    public boolean isAllowStudentScheduling() {
+    	for (Department department: getDepartments())
+    		if (department.isAllowStudentScheduling()) return true;
+    	return false;
+    }
 }

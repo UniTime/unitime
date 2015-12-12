@@ -81,6 +81,8 @@ public class DepartmentEditAction extends Action {
 	        if(rsc.getMessage("button.addDepartment").equalsIgnoreCase(op)) {
             	myForm.reset(mapping, request);
             	myForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
+            	myForm.setInheritInstructorPreferences(true);
+            	myForm.setAllowStudentScheduling(true);
         		sessionContext.checkPermission(Right.DepartmentAdd);
             	return mapping.findForward("add");
 	        }

@@ -370,6 +370,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         Offering offering = new Offering(io.getUniqueId().longValue(), courseName);
         for (Iterator<CourseOffering> i = io.getCourseOfferings().iterator(); i.hasNext(); ) {
         	CourseOffering co = i.next();
+        	if (!co.isAllowStudentScheduling()) continue;
             int projected = (co.getProjectedDemand()==null ? 0 : co.getProjectedDemand().intValue());
             boolean unlimited = false;
             int limit = 0;
@@ -1408,7 +1409,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 "left join fetch ss.classes as c "+
                 "left join fetch io.reservations as r "+
                 "where " +
-                "io.session.uniqueId = :sessionId and io.notOffered = false").
+                "io.session.uniqueId = :sessionId and io.notOffered = false and co.subjectArea.department.allowStudentScheduling = true").
                 setLong("sessionId",session.getUniqueId().longValue()).
                 setFetchSize(1000).list();
         iProgress.setPhase("Loading course offerings...", offerings.size());

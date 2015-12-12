@@ -145,8 +145,8 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 		return "save-request";
 	}
 	
-	public static CourseOffering getCourse(org.hibernate.Session hibSession, Long sessionId, String courseName) {
-		return SectioningServlet.lookupCourse(hibSession, sessionId, null, courseName, null);
+	public static CourseOffering getCourse(org.hibernate.Session hibSession, Long sessionId, Long studentId, String courseName) {
+		return SectioningServlet.lookupCourse(hibSession, sessionId, studentId, courseName, null);
 	}
 	
 	private static CourseOffering getCourse(org.hibernate.Session hibSession, long courseId) {
@@ -159,7 +159,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 		Date ts = new Date();
 		Map<Long, CourseRequest> course2request = new HashMap<Long, CourseRequest>();
 		for (CourseRequestInterface.Request r: request.getCourses()) {
-			if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && ((server == null && getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) != null) || (server != null && server.getCourse(r.getRequestedCourse()) != null)))
+			if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && ((server == null && getCourse(helper.getHibSession(), request.getAcademicSessionId(), student.getUniqueId(), r.getRequestedCourse()) != null) || (server != null && server.getCourse(r.getRequestedCourse()) != null)))
 				r.getRequestedFreeTime().clear();			
 			if (r.hasRequestedFreeTime()) {
 				for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
@@ -197,17 +197,17 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				List<CourseOffering> courses = new ArrayList<CourseOffering>();
 				if (r.hasRequestedCourse()) {
 					XCourseId c = (server == null ? null : server.getCourse(r.getRequestedCourse()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) : getCourse(helper.getHibSession(), c.getCourseId()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), student.getUniqueId(), r.getRequestedCourse()) : getCourse(helper.getHibSession(), c.getCourseId()));
 					if (co != null) courses.add(co);
 				}
 				if (r.hasFirstAlternative()) {
 					XCourseId c = (server == null ? null : server.getCourse(r.getFirstAlternative()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getFirstAlternative()) : getCourse(helper.getHibSession(), c.getCourseId()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), student.getUniqueId(), r.getFirstAlternative()) : getCourse(helper.getHibSession(), c.getCourseId()));
 					if (co != null) courses.add(co);
 				}
 				if (r.hasSecondAlternative()) {
 					XCourseId c = (server == null ? null : server.getCourse(r.getSecondAlternative()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getSecondAlternative()) : getCourse(helper.getHibSession(), c.getCourseId()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), student.getUniqueId(), r.getSecondAlternative()) : getCourse(helper.getHibSession(), c.getCourseId()));
 					if (co != null) courses.add(co);
 				}
 				if (courses.isEmpty()) continue;
@@ -266,7 +266,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 		}
 		
 		for (CourseRequestInterface.Request r: request.getAlternatives()) {
-			if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && ((server == null && getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) != null) || (server != null && server.getCourse(r.getRequestedCourse()) != null)))
+			if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && ((server == null && getCourse(helper.getHibSession(), request.getAcademicSessionId(), student.getUniqueId(), r.getRequestedCourse()) != null) || (server != null && server.getCourse(r.getRequestedCourse()) != null)))
 				r.getRequestedFreeTime().clear();			
 			if (r.hasRequestedFreeTime()) {
 				for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
@@ -304,17 +304,17 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				List<CourseOffering> courses = new ArrayList<CourseOffering>();
 				if (r.hasRequestedCourse()) {
 					XCourseId c = (server == null ? null : server.getCourse(r.getRequestedCourse()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) : getCourse(helper.getHibSession(), c.getCourseId()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), student.getUniqueId(),r.getRequestedCourse()) : getCourse(helper.getHibSession(), c.getCourseId()));
 					if (co != null) courses.add(co);
 				}
 				if (r.hasFirstAlternative()) {
 					XCourseId c = (server == null ? null : server.getCourse(r.getFirstAlternative()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getFirstAlternative()) : getCourse(helper.getHibSession(), c.getCourseId()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), student.getUniqueId(),r.getFirstAlternative()) : getCourse(helper.getHibSession(), c.getCourseId()));
 					if (co != null) courses.add(co);
 				}
 				if (r.hasSecondAlternative()) {
 					XCourseId c = (server == null ? null : server.getCourse(r.getSecondAlternative()));
-					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getSecondAlternative()) : getCourse(helper.getHibSession(), c.getCourseId()));
+					CourseOffering co = (c == null ? getCourse(helper.getHibSession(), request.getAcademicSessionId(), student.getUniqueId(),r.getSecondAlternative()) : getCourse(helper.getHibSession(), c.getCourseId()));
 					if (co != null) courses.add(co);
 				}
 				if (courses.isEmpty()) continue;

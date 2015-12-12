@@ -963,12 +963,16 @@ public class SessionRollForward {
 					toDepartment.setAbbreviation("TEMP");
 					toDepartment.setAllowReqRoom(new Boolean(false));
 					toDepartment.setAllowReqTime(new Boolean(false));
+					toDepartment.setAllowReqDistribution(new Boolean(false));
 					toDepartment.setDeptCode("TEMP");
 					toDepartment.setExternalManager(new Boolean(false));
 					toDepartment.setExternalUniqueId(null);
 					toDepartment.setName("Temp Department For New Subjects");
 					toDepartment.setSession(toSession);
 					toDepartment.setDistributionPrefPriority(new Integer(0));
+					toDepartment.setInheritInstructorPreferences(true);
+					toDepartment.setAllowEvents(false);
+					toDepartment.setAllowStudentScheduling(true);
 					toSession.addTodepartments(toDepartment);
 					DepartmentDAO.getInstance().saveOrUpdate(toDepartment);
 				}
@@ -2398,12 +2402,16 @@ public class SessionRollForward {
     					tempDept.setAbbreviation("TEMP");
     					tempDept.setAllowReqRoom(new Boolean(false));
     					tempDept.setAllowReqTime(new Boolean(false));
+    					tempDept.setAllowReqDistribution(new Boolean(false));
     					tempDept.setDeptCode("TEMP");
     					tempDept.setExternalManager(new Boolean(false));
     					tempDept.setExternalUniqueId(null);
     					tempDept.setName("Temp Department For New Curricula");
     					tempDept.setSession(toSession);
     					tempDept.setDistributionPrefPriority(new Integer(0));
+    					tempDept.setInheritInstructorPreferences(true);
+    					tempDept.setAllowEvents(false);
+    					tempDept.setAllowStudentScheduling(false);
     					toSession.addTodepartments(tempDept);
     					hibSession.save(tempDept);
     				}

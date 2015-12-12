@@ -228,7 +228,7 @@ public class CourseTimetablingPermissions {
 
 		@Override
 		public boolean check(UserContext user, SolverGroup source) {
-			if (hasInstance(user.getCurrentAcademicSessionId())) return false;
+			if (source.isAllowStudentScheduling() && hasInstance(user.getCurrentAcademicSessionId())) return false;
 			
 			for (Department department: source.getDepartments())
 				if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.Commit))

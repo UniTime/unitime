@@ -396,4 +396,8 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     		//course already contains this config so we do not need to add it again.
     	}
     }
+    
+    public boolean isAllowStudentScheduling() {
+    	return getSubjectArea().getDepartment().isAllowStudentScheduling();
+    }
 }

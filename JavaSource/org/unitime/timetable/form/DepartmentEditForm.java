@@ -58,6 +58,7 @@ public class DepartmentEditForm extends ActionForm {
     public boolean iAllowReqDist = false;
     public boolean iAllowEvents = false;
     public boolean iInheritInstructorPreferences = false;
+    public boolean iAllowStudentScheduling = false;
 	
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -127,7 +128,7 @@ public class DepartmentEditForm extends ActionForm {
 		iId = null; iSessionId = null; iName = null; iDeptCode = null; iStatusType = null; iAbbv=null; iDistPrefPriority = 0;
 		iIsExternal = false; iExtName = null; iExtAbbv = null;
         iAllowReqTime = false; iAllowReqRoom = false; iAllowReqDist = false; iAllowEvents = false;
-        iInheritInstructorPreferences = false;
+        iInheritInstructorPreferences = false; iAllowStudentScheduling = false;
 	}
 
 	public Long getId() { return iId; }
@@ -173,6 +174,8 @@ public class DepartmentEditForm extends ActionForm {
 	public void setExtAbbv(String extAbbv) { iExtAbbv = extAbbv; }
 	public String getExtName() { return iExtName; }
 	public void setExtName(String extName) { iExtName = extName; }
+    public boolean getAllowStudentScheduling() { return iAllowStudentScheduling; }
+    public void setAllowStudentScheduling(boolean allowStudentScheduling) { iAllowStudentScheduling = allowStudentScheduling; }
 	
 	public ReferenceList getStatusOptions() { 
 		ReferenceList ref = new ReferenceList();
@@ -196,6 +199,7 @@ public class DepartmentEditForm extends ActionForm {
         setAllowReqTime(department.isAllowReqTime()!=null && department.isAllowReqTime().booleanValue());
         setAllowReqDist(department.isAllowReqDistribution()!=null && department.isAllowReqDistribution().booleanValue());
         setAllowEvents(department.isAllowEvents());
+        setAllowStudentScheduling(department.isAllowStudentScheduling());
         setInheritInstructorPreferences(department.isInheritInstructorPreferences());
 	}
 
@@ -229,6 +233,7 @@ public class DepartmentEditForm extends ActionForm {
             department.setAllowReqTime(new Boolean(getAllowReqTime()));
             department.setAllowReqDistribution(new Boolean(getAllowReqDist()));
             department.setAllowEvents(getAllowEvents());
+            department.setAllowStudentScheduling(getAllowStudentScheduling());
             department.setInheritInstructorPreferences(getInheritInstructorPreferences());
 
 			dao.saveOrUpdate(department);

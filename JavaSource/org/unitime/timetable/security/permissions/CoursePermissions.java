@@ -60,7 +60,7 @@ public class CoursePermissions {
 
 		@Override
 		public boolean check(UserContext user, InstructionalOffering source) {
-			if (source.isNotOffered()) return false;
+			if (source.isNotOffered() || !source.isAllowStudentScheduling()) return false;
 			
 			if (!permissionSession.check(
 					user,
@@ -91,7 +91,7 @@ public class CoursePermissions {
 
 		@Override
 		public boolean check(UserContext user, InstructionalOffering source) {
-			if (source.isNotOffered()) return false;
+			if (source.isNotOffered() || !source.isAllowStudentScheduling()) return false;
 			
 			if (!permissionSession.check(
 					user,

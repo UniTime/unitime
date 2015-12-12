@@ -95,12 +95,12 @@ public class DepartmentListAction extends Action {
 
         if ("Export PDF".equals(request.getParameter("op"))) {
             
-            PdfWebTable webTable = new PdfWebTable((dispLastChanges ? 12 : 11), "Department List - " + sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel(),
+            PdfWebTable webTable = new PdfWebTable((dispLastChanges ? 13 : 12), "Department List - " + sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel(),
                     "departmentList.do?ord=%%",
                     (dispLastChanges ? new String[] { "Number", "Abbv", "Name", "External\nManager", "Subjects", "Rooms",
-                            "Status", "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events", "Last\nChange" } 
+                            "Status", "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events", "Student\nScheduling", "Last\nChange" } 
                     : new String[] { "Number", "Abbreviation", "Name", "External\nManager", "Subjects", "Rooms", "Status",
-                            "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events" }),
+                            "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events", "Student\nScheduling" }),
                     new String[] { "left", "left", "left", "left", "right", "right", "left", "right", "left", "left", "left", "left" },
                     new boolean[] { true, true, true, true, true, true, true, true, true, false });
             for (Iterator i=departmentListForm.getDepartments().iterator();i.hasNext();) {
@@ -148,6 +148,7 @@ public class DepartmentListAction extends Action {
                                 allowReq,
                                 d.isInheritInstructorPreferences() ? "Yes" : "No",
                                 d.isAllowEvents() ? "Yes" : "No",
+                                d.isAllowStudentScheduling() ? "Yes" : "No",
                                 lastChangeStr },
                            new Comparable[] {
                             d.getDeptCode(),
@@ -161,6 +162,7 @@ public class DepartmentListAction extends Action {
                             new Integer(allowReqOrd),
                             d.isInheritInstructorPreferences(),
                             d.isAllowEvents(),
+                            d.isAllowStudentScheduling(),
                             lastChangeCmp });
                 }
             }
@@ -172,15 +174,15 @@ public class DepartmentListAction extends Action {
             return null;
         }
         
-		WebTable webTable = new WebTable((dispLastChanges ? 12 : 11), "",
+		WebTable webTable = new WebTable((dispLastChanges ? 13 : 12), "",
 				"departmentList.do?ord=%%",
 				(dispLastChanges 
 					? new String[] { "Code", "Abbv", "Name", "External<br>Manager", 
 									 "Subjects", "Rooms", "Status", "Dist&nbsp;Pref<br>Priority", 
-									 "Allow<br>Required", "Instructor<br>Preferences", "Events", "Last<br>Change" } 
+									 "Allow<br>Required", "Instructor<br>Preferences", "Events", "Student<br>Scheduling", "Last<br>Change" } 
 					: new String[] { "Code", "Abbreviation", "Name", "External Manager",
 									 "Subjects", "Rooms", "Status", "Dist&nbsp;Pref<br>Priority", 
-									 "Allow<br>Required", "Instructor<br>Preferences", "Events" }),
+									 "Allow<br>Required", "Instructor<br>Preferences", "Events", "Student<br>Scheduling" }),
 				new String[] { "left", "left", "left", "left", "right",	"right", "left", "right", "left", "left", "left", "left" },
 				new boolean[] { true, true, true, true, true, true, true, true, true, true, true, false });
 		WebTable.setOrder(sessionContext, "DepartmentList.ord", request.getParameter("ord"), 1);
@@ -256,6 +258,7 @@ public class DepartmentListAction extends Action {
     						allowReq,
     						(d.isInheritInstructorPreferences() ? "<IMG border='0' title='Instructor preferences are to be inherited.' alt='Inherit Instructor Preferences' align='absmiddle' src='images/accept.png'>" : ""),
     						(d.isAllowEvents() ? "<IMG border='0' title='This department has event management enabled.' alt='Event Management' align='absmiddle' src='images/accept.png'>" : ""),
+    						(d.isAllowStudentScheduling() ? "<IMG border='0' title='This department has student scheduling enabled.' alt='Student Scheduling' align='absmiddle' src='images/accept.png'>" : ""),
     						lastChangeStr },
     				new Comparable[] {
     						d.getDeptCode(),
@@ -272,6 +275,7 @@ public class DepartmentListAction extends Action {
     						new Integer(allowReqOrd),
     						d.isInheritInstructorPreferences(),
     						d.isAllowEvents(),
+    						d.isAllowStudentScheduling(),
     						lastChangeCmp });
     		}
         }

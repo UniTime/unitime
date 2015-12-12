@@ -10677,4 +10677,8 @@
 				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'StudentSctOnline')
 		</plsql>
 	</update>
+	<update version="155" date="12-Dec-2015" comment="Department allow student scheduling toggle">
+		<mysql>alter table %SCHEMA%.department add allow_student_schd int(1) null default 1</mysql>
+		<plsql>alter table %SCHEMA%.department add allow_student_schd number(1) default 1</plsql>
+	</update>
 </dbupdate>

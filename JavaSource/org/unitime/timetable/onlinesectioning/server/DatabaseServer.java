@@ -196,7 +196,7 @@ public class DatabaseServer extends AbstractLockingServer {
 				"left join fetch co.creditConfigs cc " +
 				"left join fetch ss.creditConfigs sc " +
 				"where io.uniqueId = :offeringId").setLong("offeringId", offeringId).setCacheable(true).uniqueResult();
-		return o == null ? null : new XOffering(o, distributions, getCurrentHelper());
+		return o == null || !o.isAllowStudentScheduling() ? null : new XOffering(o, distributions, getCurrentHelper());
 	}
 
 	@Override

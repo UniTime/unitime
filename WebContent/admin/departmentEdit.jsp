@@ -219,6 +219,13 @@
 		</TR>
 		
 		<TR>
+			<TD nowrap>Student Scheduling:</TD>
+			<TD>
+				<html:checkbox property="allowStudentScheduling"/>
+			</TD>
+		</TR>
+
+		<TR>
 			<TD colspan="2">
 			<DIV class="WelcomeRowHeadBlank">&nbsp;</DIV>
 			</TD>
