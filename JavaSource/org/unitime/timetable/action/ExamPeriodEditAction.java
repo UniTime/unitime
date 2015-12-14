@@ -20,7 +20,10 @@
 package org.unitime.timetable.action;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,8 +43,10 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamPeriodEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamStatus;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -90,7 +95,25 @@ public class ExamPeriodEditAction extends Action {
 	            myForm.setOp("List");
 	        }
 	        
-	        request.setAttribute("examTypes", ExamType.findAll());
+	        List<ExamType> types = ExamType.findAll();
+	        if (!sessionContext.hasPermission(Right.StatusIndependent) && sessionContext.getUser().getCurrentAuthority().hasRight(Right.ExaminationSolver)) {
+	        	for (Iterator<ExamType> i = types.iterator(); i.hasNext(); ) {
+	        		ExamType t = i.next();
+	        		ExamStatus status = ExamStatus.findStatus(sessionContext.getUser().getCurrentAcademicSessionId(), t.getUniqueId());
+	            	if (status != null && !status.getManagers().isEmpty()) {
+	            		boolean hasManager = false;
+	            		for (TimetableManager m: status.getManagers()) {
+	            			if (sessionContext.getUser().getCurrentAuthority().hasQualifier(m)) {
+	            				hasManager = true;
+	            				break;
+	            			}
+	            		}
+	            		if (!hasManager) i.remove();
+	            	}
+	            }
+	        }
+	        
+	        request.setAttribute("examTypes", types);
 
 	        // Reset Form
 	        if ("Back".equals(op)) {
@@ -250,8 +273,27 @@ public class ExamPeriodEditAction extends Action {
         Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_MEETING);
         Formats.Format<Date> stf = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
 
+        Set<ExamType> types = null;
+        if (!sessionContext.hasPermission(Right.StatusIndependent) && sessionContext.getUser().getCurrentAuthority().hasRight(Right.ExaminationSolver)) {
+            types = new HashSet<ExamType>();
+            for (ExamType t: ExamType.findAll()) {
+            	ExamStatus status = ExamStatus.findStatus(sessionContext.getUser().getCurrentAcademicSessionId(), t.getUniqueId());
+            	if (status != null && !status.getManagers().isEmpty()) {
+            		for (TimetableManager m: status.getManagers()) {
+            			if (sessionContext.getUser().getCurrentAuthority().hasQualifier(m)) {
+            				types.add(t);
+            				break;
+            			}
+            		}
+            	} else {
+            		types.add(t);
+            	}
+            }
+        }
+        
         for (Iterator i=periods.iterator();i.hasNext();) {
         	ExamPeriod ep = (ExamPeriod)i.next();
+        	if (types != null && !types.contains(ep.getExamType())) continue;
         	String onClick = "onClick=\"document.location='examPeriodEdit.do?op=Edit&id=" + ep.getUniqueId() + "';\"";
         	webTable.addLine(onClick, new String[] {
         			ep.getExamType().getLabel(),

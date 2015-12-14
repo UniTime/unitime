@@ -699,9 +699,9 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	
 	public boolean canNoRoleReportExamFinal() {
 		return ((Number)new ExamDAO().getSession().
-                createQuery("select count(x) from Exam x " +
+                createQuery("select count(x) from Exam x left join x.statusType t " +
                 		"where x.session.uniqueId = :sessionId and x.assignedPeriod != null and x.examType.type = :examType and " +
-                		"((x.statusType is null and bit_and(x.session.statusType.status, :flag) > 0) or bit_and(x.statusType.status, :flag) > 0)"
+                		"((t is null and bit_and(x.session.statusType.status, :flag) > 0) or bit_and(t.status, :flag) > 0)"
                 		)
                 .setLong("sessionId", getUniqueId())
                 .setInteger("examType", ExamType.sExamTypeFinal)
@@ -711,9 +711,9 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	
 	public boolean canNoRoleReportExamMidterm() {
 		return ((Number)new ExamDAO().getSession().
-                createQuery("select count(x) from Exam x " +
+                createQuery("select count(x) from Exam x left join x.statusType t " +
                 		"where x.session.uniqueId = :sessionId and x.assignedPeriod != null and x.examType.type = :examType and " +
-                		"((x.statusType is null and bit_and(x.session.statusType.status, :flag) > 0) or bit_and(x.statusType.status, :flag) > 0)"
+                		"((t is null and bit_and(x.session.statusType.status, :flag) > 0) or bit_and(t.status, :flag) > 0)"
                 		)
                 .setLong("sessionId", getUniqueId())
                 .setInteger("examType", ExamType.sExamTypeMidterm)

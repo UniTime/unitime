@@ -108,7 +108,7 @@ public class SimpleExaminationPermission implements PermissionExamination {
 	}
 	
 	public boolean checkManager(UserAuthority authority, ExamStatus examStatus, DepartmentStatusType.Status... status) {
-		if (examStatus == null || authority.hasRight(Right.SessionIndependent) || !authority.hasRight(Right.ExaminationSolver)) return true;
+		if (examStatus == null || authority.hasRight(Right.StatusIndependent) || !authority.hasRight(Right.ExaminationSolver)) return true;
 		
 		/*
 		// skip check for view permissions

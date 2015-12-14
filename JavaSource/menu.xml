@@ -1010,6 +1010,23 @@
 				<hasPermission name="EventDefaults"/>
 			</condition>
 		</item>
+		<item name="Examination Statuses" page="admin" type="gwt">
+			<parameter name="type">examStatus</parameter>
+			<condition>
+				<not>
+					<hasPermission name="IsAdmin"/>
+				</not>
+				<hasPermission name="ExaminationStatuses"/>
+			</condition>
+		</item>
+		<item name="Examination Periods" page="examPeriodEdit.do">
+			<condition>
+				<not>
+					<hasPermission name="IsAdmin"/>
+				</not>
+				<hasPermission name="ExaminationPeriods"/>
+			</condition>
+		</item>
 	</menu>
 	<menu name="Help">
 		<condition>

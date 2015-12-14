@@ -95,11 +95,22 @@ public class ExaminationStatuses implements AdminTable {
 				);
 		data.setSortBy(0);
 		data.setAddable(false);
+		boolean independent = context.hasPermission(Right.StatusIndependent);
 		for (ExamType xtype: ExamTypeDAO.getInstance().findAll()) {
 			Record r = data.addRecord(xtype.getUniqueId(), false);
 			ExamStatus s = ExamStatus.findStatus(sessionId, xtype.getUniqueId());
+			boolean editable = true;
+			if (!independent && s != null && !s.getManagers().isEmpty()) {
+				editable = false;
+				for (TimetableManager m: s.getManagers())
+					if (context.getUser().getCurrentAuthority().hasQualifier(m)) {
+						editable = true;
+						break;
+					}
+			}			
 			r.setField(0, xtype.getLabel());
-			r.setField(1, s == null || s.getStatus() == null ? "-1" : s.getStatus().getUniqueId().toString());
+			r.setField(1, s == null || s.getStatus() == null ? "-1" : s.getStatus().getUniqueId().toString(), editable);
+			r.setField(2, null, editable && independent);
 			if (s != null)
 				for (TimetableManager m: s.getManagers())
 					r.addToField(2, m.getUniqueId().toString());
