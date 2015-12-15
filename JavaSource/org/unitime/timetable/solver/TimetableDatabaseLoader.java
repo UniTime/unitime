@@ -262,6 +262,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	iStudentCourseDemands = new LastLikeStudentCourseDemands(getModel().getProperties());
         }
         getModel().getProperties().setProperty("General.SaveStudentEnrollments", iStudentCourseDemands.isMakingUpStudents() ? "false" : "true");
+        getModel().getProperties().setProperty("General.WeightStudents", iStudentCourseDemands.isWeightStudentsToFillUpOffering() ? "true" : "false");
         
         iCommittedStudentConflictsMode = CommittedStudentConflictsMode.valueOf(getModel().getProperties().getProperty("General.CommittedStudentConflicts",
         		iCommittedStudentConflictsMode.name()));
