@@ -205,11 +205,15 @@ public class InstructorListBuilder {
 					Class_ c = ci.getClassInstructing(); 
 					String className = c.getClassLabel();
 		    		String title = className;
+		    		if (c.isCancelled())
+		    			title = MSG.classNoteCancelled(c.getClassLabel());
 		    		title += " ("+ci.getPercentShare()+"%"+(ci.isLead().booleanValue()?", " + MSG.titleCheckConflicts() :"")+")";
 		    		if (!c.isDisplayInstructor().booleanValue()){
 		    			title += " - " + MSG.titleDoNotDisplayInstructor();
 		    		}
-		    		if (ci.isLead().booleanValue()){
+		    		if (c.isCancelled()) {
+		    			classesStr +=  "<span style='color: gray; text-decoration: line-through;" + (ci.isLead() ? "font-weight:bold;" : "") + (c.isDisplayInstructor() ? "" : "font-style:italic;") + "' title='"+title+"'>";
+		    		} else if (ci.isLead().booleanValue()){
 		    			classesStr +=  "<span style='font-weight:bold;"+(c.isDisplayInstructor().booleanValue()?"":"font-style:italic;")+"' title='"+title+"'>";
 		    		} else {
 		    			classesStr += "<span title='"+title+"'>";

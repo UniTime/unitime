@@ -146,6 +146,15 @@
 			</TD>
 		</TR>
 		</logic:messagesPresent>
+		
+		<logic:equal name="<%=frmName%>" property="isCancelled" value="true">
+			<TR>
+				<TD></TD>
+				<TD style="color:red; font-weight: bold;">
+					<loc:message name="classNoteCancelled"><bean:write name="<%=frmName%>" property="courseName"/> <bean:write name="<%=frmName%>" property="itypeDesc"/> <bean:write name="<%=frmName%>" property="section"/></loc:message>
+				</TD>
+			</TR>
+		</logic:equal>
 
 		<TR>
 			<TD><loc:message name="filterManager"/></TD>

@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
@@ -205,6 +206,7 @@ public class ExamDetailAction extends PreferencesAction {
                 for (Iterator i=new TreeSet(exam.getOwners()).iterator();i.hasNext();) {
                     ExamOwner owner = (ExamOwner)i.next();
                     String onclick = null, name = null, type = null, students = String.valueOf(owner.countStudents()), limit = String.valueOf(owner.getLimit()), manager = null, assignment = null, title = null;
+                    String rowStyle = null, rowTitle = null;
                     switch (owner.getOwnerType()) {
                         case ExamOwner.sOwnerTypeClass :
                             Class_ clazz = (Class_)owner.getOwnerObject();
@@ -217,6 +219,10 @@ public class ExamDetailAction extends PreferencesAction {
                                 assignment = clazz.getCommittedAssignment().getPlacement().getLongName(CONSTANTS.useAmPm());
                             title = clazz.getSchedulePrintNote();
                             if (title==null || title.length()==0) title=clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
+                            if (clazz.isCancelled()) {
+                            	rowStyle = "color: gray; font-style: italic;";
+                            	rowTitle = MSG.classNoteCancelled(clazz.getClassLabel());
+                            }
                             break;
                         case ExamOwner.sOwnerTypeConfig :
                             InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
@@ -247,7 +253,9 @@ public class ExamDetailAction extends PreferencesAction {
                             break;
                                 
                     }
-                    table.addLine(onclick, new String[] { name, type, title, manager, students, limit, assignment}, null);
+                    WebTableLine line = table.addLine(onclick, new String[] { name, type, title, manager, students, limit, assignment}, null);
+                    if (rowStyle != null) line.setStyle(rowStyle);
+                    if (rowTitle != null) line.setTitle(rowTitle);
                 }
                 request.setAttribute("ExamDetail.table",table.printTable());
             }

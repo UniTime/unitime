@@ -101,6 +101,7 @@ public class ClassEditForm extends PreferencesForm {
     private Integer enrollment;
     private Boolean isCrosslisted;
     private String accommodation;
+    private Boolean isCancelled;
     
     // --------------------------------------------------------- Classes
 
@@ -266,6 +267,7 @@ public class ClassEditForm extends PreferencesForm {
         roomRatio = null;
         unlimitedEnroll = null;
         isCrosslisted = null;
+        isCancelled = null;
 
         instructors = DynamicList.getInstance(new ArrayList(), factoryInstructors);
         instrPctShare= DynamicList.getInstance(new ArrayList(), factoryInstructors);
@@ -614,7 +616,14 @@ public class ClassEditForm extends PreferencesForm {
     public void setIsCrosslisted(Boolean isCrosslisted) {
         this.isCrosslisted = isCrosslisted;
     }
-    
+
+    public Boolean getIsCancelled() {
+        return isCancelled;
+    }
+    public void setIsCancelled(Boolean isCancelled) {
+        this.isCancelled = isCancelled;
+    }
+
     /**
      * @param date
      * @return String representation of the date formatted as mm/dd/yyyy

@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
@@ -311,8 +312,9 @@ public class InstructorDetailAction extends PreferencesAction {
 		    		
 		    		boolean back = "PreferenceGroup".equals(backType) && c.getUniqueId().toString().equals(backId);
 			    	
+		    		WebTableLine line = null;
 					if (hasTimetable) {
-						classTable.addLine(
+						line = classTable.addLine(
 								onClick,
 								new String[] {
 									(back?"<A name=\"back\"></A>":"")+
@@ -328,7 +330,7 @@ public class InstructorDetailAction extends PreferencesAction {
 								},
 								null,null);
 					} else {
-						classTable.addLine(
+						line = classTable.addLine(
 								onClick,
 								new String[] {
 									(back?"<A name=\"back\"></A>":"")+
@@ -339,6 +341,11 @@ public class InstructorDetailAction extends PreferencesAction {
 									managingDept
 								},
 								null,null);
+					}
+					
+					if (c.isCancelled()) {
+						line.setStyle("color: gray; font-style: italic;");
+						line.setTitle(MSG.classNoteCancelled(c.getClassLabel()));
 					}
 				}
 				

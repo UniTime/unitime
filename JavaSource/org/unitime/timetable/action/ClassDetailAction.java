@@ -380,6 +380,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        frm.setCourseTitle(cco.getTitle());
 	        frm.setIsCrosslisted(new Boolean(cco.getInstructionalOffering().getCourseOfferings().size()>1));
 	        frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(c)));
+	        frm.setIsCancelled(c.isCancelled());
 
 	        // Load from class
 		    frm.setExpectedCapacity(c.getExpectedCapacity());

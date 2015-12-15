@@ -329,7 +329,15 @@ public class WebTable {
             WebTableLine wtline = (WebTableLine) iLines.elementAt(el);
             String[] line = wtline.getLine();
             String onClick = wtline.getOnClick();
+            String lineStyle = wtline.getStyle();
             String bgColor = wtline.getBgColor();
+            if (bgColor != null) {
+            	if (lineStyle == null)
+            		lineStyle = "background-color:" + bgColor + ";";
+            	else
+            		lineStyle += "background-color:" + bgColor + ";";
+            }
+            String title = wtline.getTitle();
             String style = getStyle(wtline, (el+1<iLines.size()?(WebTableLine)iLines.elementAt(el+1):null), ordCol);
             int last = iColumns - line.length + 1;
             boolean anchor = (onClick != null && onClick.startsWith("<"));
@@ -337,13 +345,14 @@ public class WebTable {
 			sb.append("\n");
             sb.append((anchor ? onClick : "") + "<tr valign='top' "
                     + (onClick == null || anchor ? "" : onClick)
-                    + (bgColor == null ? "" : " style='background-color:"+bgColor+"'")
+                    + (lineStyle == null ? "" : " style='" + lineStyle + "'")
                     + (!suppressRowHighlight ? " onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';" : "") 
                     + "this.style.cursor='"
                     + (onClick == null ? "default" : "hand") 
                     + (onClick != null ? "';this.style.cursor='pointer" : "")
                     + "';\"" 
-                    + (!suppressRowHighlight ? "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\"" : "") 
+                    + (!suppressRowHighlight ? "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\"" : "")
+                    + (title == null ? "" : " title='" + title + "'")
                     + ">");
 			if (wtline.getUniqueId()!=null) {
 				sb.append("<A name=\""+wtline.iUniqueId+"\" ></A>");
@@ -444,6 +453,8 @@ public class WebTable {
         private String iUniqueId = null;
         
         private String iBgColor = null;
+        private String iStyle = null;
+        private String iTitle = null;
         
         /** constructor */
         WebTableLine(String onClick, String[] line, Comparable[] orderby) {
@@ -534,6 +545,21 @@ public class WebTable {
             return iBgColor;
         }
 
+        public void setTitle(String title) {
+        	iTitle = title;
+        }
+        
+        public String getTitle() {
+        	return iTitle;
+        }
+        
+        public void setStyle(String style) {
+        	iStyle = style;
+        }
+        
+        public String getStyle() {
+        	return iStyle;
+        }
     }
     
 
