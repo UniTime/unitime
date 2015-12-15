@@ -101,8 +101,8 @@ public class DepartmentListAction extends Action {
                             "Status", "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events", "Student\nScheduling", "Last\nChange" } 
                     : new String[] { "Number", "Abbreviation", "Name", "External\nManager", "Subjects", "Rooms", "Status",
                             "Dist Pref\nPriority", "Allow\nRequired", "Instructor\nPref", "Events", "Student\nScheduling" }),
-                    new String[] { "left", "left", "left", "left", "right", "right", "left", "right", "left", "left", "left", "left" },
-                    new boolean[] { true, true, true, true, true, true, true, true, true, false });
+                    new String[] { "left", "left", "left", "left", "right", "right", "left", "right", "left", "left", "left", "left", "left" },
+                    new boolean[] { true, true, true, true, true, true, true, true, true, true, true, (dispLastChanges ? true: false), false });
             for (Iterator i=departmentListForm.getDepartments().iterator();i.hasNext();) {
                 Department d = (Department) i.next();
                 if (departmentListForm.getShowUnusedDepts() || !d.getSubjectAreas().isEmpty() || !d.getTimetableManagers().isEmpty() || d.isExternalManager().booleanValue()) {
@@ -183,8 +183,8 @@ public class DepartmentListAction extends Action {
 					: new String[] { "Code", "Abbreviation", "Name", "External Manager",
 									 "Subjects", "Rooms", "Status", "Dist&nbsp;Pref<br>Priority", 
 									 "Allow<br>Required", "Instructor<br>Preferences", "Events", "Student<br>Scheduling" }),
-				new String[] { "left", "left", "left", "left", "right",	"right", "left", "right", "left", "left", "left", "left" },
-				new boolean[] { true, true, true, true, true, true, true, true, true, true, true, false });
+				new String[] { "left", "left", "left", "left", "right", "right", "left", "right", "left", "left", "left", "left", "left" },
+                new boolean[] { true, true, true, true, true, true, true, true, true, true, true, (dispLastChanges ? true: false), false });
 		WebTable.setOrder(sessionContext, "DepartmentList.ord", request.getParameter("ord"), 1);
         webTable.enableHR("#9CB0CE");
         webTable.setRowStyle("white-space: nowrap");
