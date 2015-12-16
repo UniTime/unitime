@@ -58,7 +58,7 @@ public interface CurriculaService extends RemoteService {
 	public TreeSet<CurriculumInterface> findCurriculaForAnInstructionalOffering(Long offeringId) throws CurriculaException, PageAccessException;
 	public Boolean saveClassifications(List<CurriculumInterface> curricula) throws CurriculaException, PageAccessException;
 	
-	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException, PageAccessException;
+	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit, boolean includeNotOffered, boolean checkDepartment) throws CurriculaException, PageAccessException;
 	public String retrieveCourseDetails(String course) throws CurriculaException, PageAccessException;
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException, PageAccessException;
 	public String[] getApplicationProperty(String[] name) throws CurriculaException, PageAccessException;

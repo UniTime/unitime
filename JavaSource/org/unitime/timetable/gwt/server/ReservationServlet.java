@@ -152,6 +152,7 @@ public class ReservationServlet implements ReservationService {
 		offering.setName(io.getControllingCourseOffering().getTitle());
 		offering.setId(io.getUniqueId());
 		offering.setOffered(!io.isNotOffered());
+		offering.setUnlockNeeded(permissionOfferingLockNeeded != null && permissionOfferingLockNeeded.check(sessionContext.getUser(), io));
 		for (CourseOffering co: io.getCourseOfferings()) {
 			ReservationInterface.Course course = new ReservationInterface.Course();
 			course.setId(co.getUniqueId());
@@ -460,6 +461,7 @@ public class ReservationServlet implements ReservationService {
 		offering.setName(reservation.getInstructionalOffering().getControllingCourseOffering().getTitle());
 		offering.setId(reservation.getInstructionalOffering().getUniqueId());
 		offering.setOffered(!reservation.getInstructionalOffering().isNotOffered());
+		offering.setUnlockNeeded(permissionOfferingLockNeeded != null && permissionOfferingLockNeeded.check(sessionContext.getUser(), reservation.getInstructionalOffering()));
 		r.setOffering(offering);
 		for (CourseOffering co: reservation.getInstructionalOffering().getCourseOfferings()) {
 			ReservationInterface.Course course = new ReservationInterface.Course();

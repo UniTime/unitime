@@ -57,6 +57,7 @@ import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
@@ -482,6 +483,12 @@ public class InstructionalOfferingDetailAction extends Action {
             
             Event.deleteFromEvents(hibSession, io);
             Exam.deleteFromExams(hibSession, io);
+            
+            for (Iterator<Reservation> i = io.getReservations().iterator(); i.hasNext(); ) {
+            	Reservation r = i.next();
+            	hibSession.delete(r);
+            	i.remove();
+            }
             
             // Set flag to not offered
             io.setNotOffered(new Boolean(true));

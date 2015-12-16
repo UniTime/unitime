@@ -44,8 +44,12 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public class CurriculaCourseSelectionBox extends CourseSelectionSuggestBox {
 	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
-		
+	
 	public CurriculaCourseSelectionBox() {
+		this(true, false);
+	}
+		
+	protected CurriculaCourseSelectionBox(final boolean includeNotOffered, final boolean checkDepartment) {
 		setCourseFinderFactory(new CourseFinderFactory() {
 			@Override
 			public CourseFinder createCourseFinder() {
@@ -54,7 +58,7 @@ public class CurriculaCourseSelectionBox extends CourseSelectionSuggestBox {
 				courses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 					@Override
 					public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-						iCurriculaService.listCourseOfferings(source, null, callback);
+						iCurriculaService.listCourseOfferings(source, null, includeNotOffered, checkDepartment, callback);
 					}
 				});
 				CourseFinderDetails details = new CourseFinderDetails();
@@ -88,7 +92,7 @@ public class CurriculaCourseSelectionBox extends CourseSelectionSuggestBox {
 		setSuggestions(new DataProvider<String, Collection<CourseAssignment>>() {
 			@Override
 			public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-				iCurriculaService.listCourseOfferings(source, 20, callback);
+				iCurriculaService.listCourseOfferings(source, 20, includeNotOffered, checkDepartment, callback);
 			}
 		});
 	}

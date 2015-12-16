@@ -56,7 +56,7 @@ public interface CurriculaServiceAsync {
 	public void findCurriculaForAnInstructionalOffering(Long offeringId, AsyncCallback<TreeSet<CurriculumInterface>> callback) throws CurriculaException, PageAccessException;
 	public void saveClassifications(List<CurriculumInterface> curricula, AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
 	
-	public void listCourseOfferings(String query, Integer limit, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws CurriculaException, PageAccessException;
+	public void listCourseOfferings(String query, Integer limit, boolean includeNotOffered, boolean checkDepartment, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws CurriculaException, PageAccessException;
 	public void retrieveCourseDetails(String course, AsyncCallback<String> callback) throws CurriculaException, PageAccessException;
 	public void listClasses(String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws CurriculaException, PageAccessException;
 	public void getApplicationProperty(String[] name, AsyncCallback<String[]> callback) throws CurriculaException, PageAccessException;

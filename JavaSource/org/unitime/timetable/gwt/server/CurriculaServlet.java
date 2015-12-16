@@ -74,6 +74,7 @@ import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumCourseGroup;
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
@@ -93,6 +94,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.DefaultCourseDetailsProvider;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.curricula.CurriculumFilterBackend;
 import org.unitime.timetable.test.MakeCurriculaFromLastlikeDemands;
@@ -1950,7 +1952,7 @@ public class CurriculaServlet implements CurriculaService {
 		return new TreeSet<CurriculumInterface>(results);
 	}
 	
-	@PreAuthorize("checkPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView') or checkPermission('Reservations')")
 	public TreeSet<CurriculumInterface> findCurriculaForACourse(String courseName) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("getCurriculaForACourse(courseName='" + courseName + "')");
@@ -2156,8 +2158,10 @@ public class CurriculaServlet implements CurriculaService {
 		return filter;
 	}
 	
-	@PreAuthorize("checkPermission('CurriculumView')")
-	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException, PageAccessException {
+	@Autowired PermissionDepartment permissionDepartment;
+	
+	@PreAuthorize("checkPermission('CurriculumView') or checkPermission('Reservations')")
+	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit, boolean includeNotOffered, boolean checkDepartment) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("listCourseOfferings(query='" + query + "', limit=" + limit + ")");
 			Long s0 = System.currentTimeMillis();
@@ -2166,7 +2170,7 @@ public class CurriculaServlet implements CurriculaService {
 			Long sessionId = getAcademicSessionId();
 			try {
 				for (CourseOffering c: (List<CourseOffering>)hibSession.createQuery(
-						"select c from CourseOffering c where " +
+						"select c from CourseOffering c where " + (includeNotOffered ? "" : "c.instructionalOffering.notOffered = false and ") +
 						"c.subjectArea.session.uniqueId = :sessionId and (" +
 						"lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' or lower(c.courseNbr) like :q || '%' " +
 						(query.length()>2 ? "or lower(c.title) like '%' || :q || '%'" : "") + ") " +
@@ -2175,7 +2179,9 @@ public class CurriculaServlet implements CurriculaService {
 						"c.subjectArea.subjectAreaAbbreviation, c.courseNbr")
 						.setString("q", query.toLowerCase())
 						.setLong("sessionId", sessionId)
-						.setCacheable(true).setMaxResults(limit == null || limit < 0 ? Integer.MAX_VALUE : limit).list()) {
+						.setCacheable(true).setMaxResults(limit == null || limit < 0 || checkDepartment? Integer.MAX_VALUE : limit).list()) {
+					if (checkDepartment && !permissionDepartment.check(sessionContext.getUser(), c.getDepartment(), DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit))
+						continue;
 					CourseAssignment course = new CourseAssignment();
 					course.setCourseId(c.getUniqueId());
 					course.setSubject(c.getSubjectAreaAbbv());
@@ -2218,7 +2224,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("checkPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView') or checkPermission('Reservations')")
 	public String retrieveCourseDetails(String course) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("retrieveCourseDetails(course='" + course + "')");
@@ -2245,7 +2251,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("checkPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView') or checkPermission('Reservations')")
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("listClasses(course='" + course + "')");

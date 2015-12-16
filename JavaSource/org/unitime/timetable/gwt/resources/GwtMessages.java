@@ -2085,6 +2085,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("The selected offering has no reservations.")
 	String hintOfferingHasNoReservations();
 	
+	@DefaultMessage("{0} is locked, it must be unlocked first.")
+	String hintOfferingIsLocked(String course);
+	
 	@DefaultMessage("Configuration {0} ({1})")
 	String selectionConfiguration(String name, String limit);
 	

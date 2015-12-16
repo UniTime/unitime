@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.curricula.CurriculaCourseSelectionBox;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
@@ -109,7 +108,7 @@ public class ReservationEdit extends Composite {
 	private UniTimeWidget<ListBox> iType, iArea, iCourse, iGroup, iCurriculum;
 	private UniTimeWidget<TextArea> iStudents;
 	private ReservationInterface iReservation;
-	private CurriculaCourseSelectionBox iCourseBox;
+	private ReservationCourseSelectionBox iCourseBox;
 	private Lookup iLookup;
 	private DefaultExpirationDates iExpirations = null;
 	
@@ -326,7 +325,7 @@ public class ReservationEdit extends Composite {
 		
 		iPanel.addHeaderRow(iTitleAndButtons);
 		
-		iCourseBox = new CurriculaCourseSelectionBox();
+		iCourseBox = new ReservationCourseSelectionBox();
 		iCourseBox.setWidth("130px");
 		iPanel.addRow(MESSAGES.propInstructionalOffering(), iCourseBox);
 		iPanel.getCellFormatter().getElement(iPanel.getRowCount() - 1, 0).getStyle().setWidth(100, Unit.PX);
@@ -626,6 +625,7 @@ public class ReservationEdit extends Composite {
 		iTitleAndButtons.setEnabled("delete", iReservation != null);
 		iTitleAndButtons.clearMessage();
 		iLimit.clearHint();
+		iType.clearHint();
 		
 		Long offeringId = (iReservation == null ? null : iReservation.getOffering().getId());
 		if (offeringId == null) {
@@ -637,6 +637,7 @@ public class ReservationEdit extends Composite {
 			iOffering = null;
 			iCourseBox.setEnabled(true);
 			iCourseBox.setValue("", false);
+			iCourseBox.setError(null);
 			iLimit.getWidget().setValue("", true);
 			iExpirationDate.getWidget().setValue(null);
 			iStructure.clear(); iClasses.clear(); iConfigs.clear();
@@ -685,7 +686,12 @@ public class ReservationEdit extends Composite {
 	
 	public void setOffering(Offering offering) {
 		iOffering = offering;
+		iCourseBox.setError(null);
+		
 		if (iOffering == null) return;
+		
+		if (iOffering.isUnlockNeeded())
+			iCourseBox.setError(MESSAGES.hintOfferingIsLocked(iOffering.getAbbv()));
 
 		if (!iCourseBox.isEnabled())
 			iCourseBox.setValue(iOffering.getAbbv(), false);
@@ -1029,6 +1035,9 @@ public class ReservationEdit extends Composite {
 				}
 				((ReservationInterface.CurriculumReservation) r).setCurriculum(curriculum);
 			}
+		} else if ("".equals(type)) {
+			iType.setErrorHint(MESSAGES.hintReservationTypeNotSelected());
+			return null;
 		} else {
 			iType.setErrorHint(MESSAGES.hintReservationTypeNotSupported(type));
 			return null;
@@ -1057,6 +1066,9 @@ public class ReservationEdit extends Composite {
 		Offering o = new Offering();
 		if (iOffering == null) {
 			iCourseBox.setError(MESSAGES.hintOfferingNotProvided());
+			ok = false;
+		} else if (iOffering.isUnlockNeeded()) {
+			iCourseBox.setError(MESSAGES.hintOfferingIsLocked(iOffering.getAbbv()));
 			ok = false;
 		} else {
 			o.setId(iOffering.getId());
