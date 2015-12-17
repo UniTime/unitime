@@ -209,6 +209,10 @@ public class TimetableGridTable {
 		setResourceType(Integer.parseInt(user.getProperty("TimetableGridTable.resourceType",String.valueOf(getResourceType()))));
 		setShowUselessTimes("1".equals(user.getProperty("TimetableGridTable.showUselessTimes",getShowUselessTimes() ? "1" : "0")));
 		setWeek(Integer.parseInt(user.getProperty("TimetableGridTable.week",String.valueOf(getWeek()))));
+		setShowInstructors("1".equals(user.getProperty("TimetableGridTable.showInstructors",getShowInstructors() ? "1" : "0")));
+		setShowComments("1".equals(user.getProperty("TimetableGridTable.showComments",getShowComments() ? "1" : "0")));
+		setShowEvents("1".equals(user.getProperty("TimetableGridTable.showEvets",getShowEvents() ? "1" : "0")));
+		setShowTimes("1".equals(user.getProperty("TimetableGridTable.showTimes",getShowTimes() ? "1" : "0")));
 	}
 	
 	public void save(UserContext user) {
@@ -221,6 +225,10 @@ public class TimetableGridTable {
 		user.setProperty("TimetableGridTable.resourceType",String.valueOf(getResourceType()));
 		user.setProperty("TimetableGridTable.showUselessTimes",getShowUselessTimes() ? "1" : "0");
 		user.setProperty("TimetableGridTable.week",String.valueOf(getWeek()));
+		user.setProperty("TimetableGridTable.showInstructors",getShowInstructors() ? "1" : "0");
+		user.setProperty("TimetableGridTable.showComments",getShowComments() ? "1" : "0");
+		user.setProperty("TimetableGridTable.showEvets",getShowEvents() ? "1" : "0");
+		user.setProperty("TimetableGridTable.showTimes",getShowTimes() ? "1" : "0");
 	}
 
 	public void printToHtml(JspWriter jsp) {

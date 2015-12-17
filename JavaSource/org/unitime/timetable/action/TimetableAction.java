@@ -66,7 +66,8 @@ public class TimetableAction extends Action {
         
         load(myForm);
         
-        TimetableGridTable table = (TimetableGridTable)request.getSession().getAttribute("Timetable.table");
+        TimetableGridTable table = load(myForm);
+        request.setAttribute("table", table);
         
         if ("Show".equals(op)) {
         	table.setFindString(request.getParameter("filter"));
@@ -90,13 +91,9 @@ public class TimetableAction extends Action {
         return mapping.findForward("showTimetable");
 	}
 	
-	private void load(TimetableForm form) throws Exception {
-		TimetableGridTable table = (TimetableGridTable)sessionContext.getAttribute("Timetable.table");
-		if (table==null) {
-			table = new TimetableGridTable();
-			table.load(sessionContext.getUser());
-			sessionContext.setAttribute("Timetable.table",table);
-		}
+	private TimetableGridTable load(TimetableForm form) throws Exception {
+		TimetableGridTable table = new TimetableGridTable();
+		table.load(sessionContext.getUser());
 		form.setResource(TimetableGridModel.sResourceTypes[table.getResourceType()]);
 		form.setDay(TimetableGridTable.sDays[table.getDays()]);
 		form.setDayMode(TimetableGridTable.sDayMode[table.getDayMode()]);
@@ -111,14 +108,11 @@ public class TimetableAction extends Action {
 		form.setShowEvents(table.getShowEvents());
 		form.setShowComments(table.getShowComments());
 		form.setShowTimes(table.getShowTimes());
+		return table;
 	}
 	
 	public void save(TimetableForm form) throws Exception {
-		TimetableGridTable table = (TimetableGridTable)sessionContext.getAttribute("Timetable.table");
-		if (table==null) {
-			table = new TimetableGridTable();
-			sessionContext.setAttribute("Timetable.table",table);
-		}
+		TimetableGridTable table = new TimetableGridTable();
 		table.setResourceType(form.getResourceInt());
 		table.setDays(form.getDayInt());
 		table.setDayMode(form.getDayModeInt());

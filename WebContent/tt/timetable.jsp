@@ -174,7 +174,7 @@ try {
 		</logic:equal>
 		<logic:equal name="timetableForm" property="loaded" value="true">	
 <%
-			TimetableGridTable table = (TimetableGridTable)session.getAttribute("Timetable.table");
+			TimetableGridTable table = (TimetableGridTable)request.getAttribute("table");
 			if (table.models().isEmpty()) { 
 %>
 				<TR>

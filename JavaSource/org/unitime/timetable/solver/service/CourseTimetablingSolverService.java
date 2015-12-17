@@ -134,7 +134,6 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 		try {
 			sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
 			sessionContext.removeAttribute("Suggestions.model");
-			sessionContext.removeAttribute("Timetable.table");
 			SolverProxy solver = getSolverNoSessionCheck();
 			if (solver != null) {
 				solver.interrupt();
