@@ -556,6 +556,10 @@ public class SessionRestore implements SessionRestoreInterface {
 					e.printStackTrace();
 				}
 			}
+			if (getObject() instanceof Department) {
+				Department dept = (Department)getObject();
+				if (dept.isAllowStudentScheduling() == null) dept.setAllowStudentScheduling(true);
+			}
 		}
 		
 		public void fixRelations() {
