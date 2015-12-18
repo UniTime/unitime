@@ -299,14 +299,23 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Waiting for alternatives ...")
 	String suggestionsLoading();
 	
+	@DefaultMessage("Waiting for choices ...")
+	String suggestionsLoadingChoices();
+	
 	@DefaultMessage("Alternatives for {0}")
 	String suggestionsAlternatives(String source);
+	
+	@DefaultMessage("Choices for {0}")
+	String suggestionsChoices(String source);
 
 	@DefaultMessage("There are no alternatives for {0}.")
 	String suggestionsNoAlternative(String source);
 
 	@DefaultMessage("There are no alternatives for {0} matching {1}.")
 	String suggestionsNoAlternativeWithFilter(String source, String filter);
+
+	@DefaultMessage("{0} is not available.")
+	String suggestionsNoChoices(String source);
 
 	@DefaultMessage("Free Time {0} {1} - {2}")
 	String freeTime(String days, String start, String end);
@@ -859,6 +868,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Changes to the selected course {0} are in <font color='blue'>blue</font>, classes to be removed from the schedule are in <font color='red'>red</font>. Changes to other courses or free times are in <font color='black'>black</font>.")
 	String suggestionsLegendOnCourse(String course);
+	
+	@DefaultMessage("Choices for the new course {0} are in <font color='blue'>blue</font>. Courses to be removed from the schedule are in <font color='red'>red</font>. Changes to other courses or free times are in <font color='black'>black</font>.")
+	String suggestionsLegendOnNewCourse(String course);
 
 	@DefaultMessage("<u>S</u>earch")
 	String buttonSearch();
@@ -1224,7 +1236,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Together with other registration changes, the course {0} will be dropped. Do you want to proceed?")
 	String confirmEnrollmentCourseDrop(String course);
 
-	@DefaultMessage("Quick <u>A</u>dd / Drop")
+	@DefaultMessage("<u>N</u>ew Course")
 	String buttonQuickAdd();
 
 	@DefaultMessage("Select a new course to add to the schedulue, or an existing course to drop from the schedule")

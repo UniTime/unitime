@@ -606,7 +606,15 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					throw new SectioningException(MSG.exceptionNoSolver());
 				
 				request.setStudentId(getStudentId(request.getAcademicSessionId()));
-				ClassAssignmentInterface.ClassAssignment selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
+				ClassAssignmentInterface.ClassAssignment selectedAssignment = null;
+				if (selectedAssignmentIndex >= 0) {
+					selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
+				} else {
+					XCourseId course = server.getCourse(request.getLastCourse());
+					if (course == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(request.getLastCourse()));
+					selectedAssignment = new ClassAssignmentInterface.ClassAssignment();
+					selectedAssignment.setCourseId(course.getCourseId());
+				}
 				
 				Collection<ClassAssignmentInterface> ret = server.execute(server.createAction(ComputeSuggestionsAction.class).forRequest(request).withAssignment(currentAssignment).withSelection(selectedAssignment).withFilter(filter), currentUser());
 				if (ret != null) {
@@ -618,11 +626,20 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 			
 			setLastSessionId(request.getAcademicSessionId());
-			setLastRequest(request);
+			if (selectedAssignmentIndex >= 0)
+				setLastRequest(request);
 			request.setStudentId(getStudentId(request.getAcademicSessionId()));
-			ClassAssignmentInterface.ClassAssignment selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
 			OnlineSectioningServer server = getServerInstance(request.getAcademicSessionId(), true);
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+			ClassAssignmentInterface.ClassAssignment selectedAssignment = null;
+			if (selectedAssignmentIndex >= 0) {
+				selectedAssignment = ((List<ClassAssignmentInterface.ClassAssignment>)currentAssignment).get(selectedAssignmentIndex);
+			} else {
+				XCourseId course = server.getCourse(request.getLastCourse());
+				if (course == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(request.getLastCourse()));
+				selectedAssignment = new ClassAssignmentInterface.ClassAssignment();
+				selectedAssignment.setCourseId(course.getCourseId());
+			}
 			Collection<ClassAssignmentInterface> ret = server.execute(server.createAction(ComputeSuggestionsAction.class).forRequest(request).withAssignment(currentAssignment).withSelection(selectedAssignment).withFilter(filter), currentUser());
 			if (ret != null) {
 				boolean canEnroll = server.getAcademicSession().isSectioningEnabled();

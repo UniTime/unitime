@@ -37,6 +37,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	private boolean iSaved = false;
 	private boolean iNoChange = false;
 	private Boolean iUpdateLastRequest = null;
+	private String iLastCourse = null;
 	
 	public CourseRequestInterface() {}
 
@@ -57,6 +58,25 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	
 	public boolean isUpdateLastRequest() { return iUpdateLastRequest == null || iUpdateLastRequest.booleanValue(); }
 	public void setUpdateLastRequest(boolean updateLastRequest) { iUpdateLastRequest = updateLastRequest; }
+	
+	public boolean addCourse(String course) {
+		iLastCourse = course;
+		if (getRequestPriority(course) != null) return false;
+		for (CourseRequestInterface.Request r: getCourses()) {
+			if (!r.hasRequestedFreeTime() && !r.hasRequestedCourse()) {
+				r.setRequestedCourse(course);
+				return true;
+			}
+		}
+		CourseRequestInterface.Request r = new CourseRequestInterface.Request();
+		r.setRequestedCourse(course);
+		getCourses().add(r);
+		return true;
+	}
+	
+	public boolean hasLastCourse() { return iLastCourse != null; }
+	
+	public String getLastCourse() { return iLastCourse; }
 	
 	public RequestPriority getRequestPriority(String course) {
 		if (course == null || course.isEmpty()) return null;

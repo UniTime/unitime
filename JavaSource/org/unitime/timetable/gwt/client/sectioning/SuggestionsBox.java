@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.SectioningException;
 
 import com.google.gwt.aria.client.Id;
 import com.google.gwt.aria.client.Roles;
@@ -85,6 +86,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 
 	private ClassAssignmentInterface.ClassAssignment iAssignment;
 	private AsyncCallback<Collection<ClassAssignmentInterface>> iCallback = null;
+	private AsyncCallback<ClassAssignmentInterface> iCustomCallback = null;
 	
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iCurrent = null;
 	private ArrayList<ClassAssignmentInterface> iResult = null;
@@ -156,7 +158,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
-				if (iAssignment.isFreeTime()) {
+				if (iAssignment == null || iAssignment.isFreeTime()) {
 					fireQuickDropEvent();
 				} else {
 					UniTimeConfirmationDialog.confirm(iUseGwtConfirmations, MESSAGES.confirmQuickDrop(MESSAGES.course(iAssignment.getSubject(), iAssignment.getCourseNbr())), new Command() {
@@ -260,16 +262,16 @@ public class SuggestionsBox extends UniTimeDialogBox {
 								}
 							}
 							boolean selected = false;
-							if (iAssignment.isFreeTime() && course.isFreeTime() &&
+							if (iAssignment != null && iAssignment.isFreeTime() && course.isFreeTime() &&
 								course.getClassAssignments().get(0).getDaysString(CONSTANTS.shortDays()).equals(iAssignment.getDaysString(CONSTANTS.shortDays())) &&
 								course.getClassAssignments().get(0).getStart() == iAssignment.getStart() &&
 								course.getClassAssignments().get(0).getLength() == iAssignment.getLength()) selected = true;
-							if (!iAssignment.isFreeTime() && !iAssignment.isAssigned() && iAssignment.getCourseId().equals(course.getCourseId())) selected = true;
+							if (iAssignment != null && !iAssignment.isFreeTime() && !iAssignment.isAssigned() && iAssignment.getCourseId().equals(course.getCourseId())) selected = true;
 							if (course.isAssigned()) {
 								int clazzIdx = 0;
 								Long selectClassId = null;
 								String selectSubpart = null;
-								if (iAssignment.getSubpartId() != null && iAssignment.getCourseId().equals(course.getCourseId())) {
+								if (iAssignment != null && iAssignment.getSubpartId() != null && iAssignment.getCourseId().equals(course.getCourseId())) {
 									for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 										if (iAssignment.getSubpartId().equals(clazz.getSubpartId()))
 											selectClassId = clazz.getClassId();
@@ -280,6 +282,13 @@ public class SuggestionsBox extends UniTimeDialogBox {
 												selectSubpart = clazz.getSubpart();
 										}
 									if (selectClassId == null && selectSubpart == null) selected = true;
+								}
+								if (iAssignment == null && !course.isFreeTime()) {
+									boolean found = false;
+									for (ClassAssignmentInterface.ClassAssignment x: iCurrent) {
+										if (x != null && course.getCourseId().equals(x.getCourseId())) { found = true; break; }
+									}
+									if (!found) selected = true;
 								}
 								clazz: for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 									if (selectClassId != null) selected = selectClassId.equals(clazz.getClassId());
@@ -478,6 +487,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 				for (SuggestionSelectedHandler h: iSuggestionSelectedHandlers)
 					h.onSuggestionSelected(e);
 				hide();
+				if (iCustomCallback != null) iCustomCallback.onSuccess(suggestion);
 			}
 		});
 		
@@ -491,6 +501,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 						for (SuggestionSelectedHandler h: iSuggestionSelectedHandlers)
 							h.onSuggestionSelected(e);
 						hide();
+						if (iCustomCallback != null) iCustomCallback.onSuccess(suggestion);
 					} else {
 						LoadingWidget.getInstance().show(MESSAGES.suggestionsLoading());
 						iSectioningService.computeSuggestions(iOnline, iRequest, iCurrent, iIndex, iFilter.getText(), iCallback);
@@ -662,7 +673,57 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		} else {
 			iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
 		}
+		iCustomCallback = null;
 		iSectioningService.computeSuggestions(iOnline, request, rows, index, iFilter.getText(), iCallback);
+	}
+	
+	public void open(CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> rows, String course, boolean useGwtConfirmations, AsyncCallback<ClassAssignmentInterface> callback) {
+		LoadingWidget.getInstance().show(MESSAGES.suggestionsLoadingChoices());
+		iAssignment = null;
+		iCurrent = rows;
+		iSource = null;
+		iRequest = request;
+		iIndex = -1;
+		iHintId = null;
+		iUseGwtConfirmations = useGwtConfirmations;
+		iSource = course;
+		setText(MESSAGES.suggestionsChoices(iSource));
+		iSuggestions.setSelectedRow(-1);
+		iSuggestions.clearData(true);
+		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoadingChoices());
+		iLegend.setHTML(MESSAGES.suggestionsLegendOnNewCourse(course));
+		iMessages.setHTML("");
+		iFilter.setText("");
+		iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
+		request.addCourse(course);
+		iCustomCallback = callback;
+		iSectioningService.computeSuggestions(iOnline, request, rows, -1, iFilter.getText(), new AsyncCallback<Collection<ClassAssignmentInterface>>() {
+			@Override
+			public void onSuccess(Collection<ClassAssignmentInterface> result) {
+				if (result == null || result.isEmpty()) {
+					LoadingWidget.getInstance().hide();
+					iCustomCallback.onFailure(new SectioningException(MESSAGES.suggestionsNoChoices(iSource)));
+				} else if (result.size() == 1) {
+					ClassAssignmentInterface a = result.iterator().next();
+					if (a.getCourseAssignments().isEmpty()) {
+						LoadingWidget.getInstance().hide();	
+						if (a.hasMessages())
+							iCustomCallback.onFailure(new SectioningException(a.getMessages(", ")));
+						else
+							iCustomCallback.onFailure(new SectioningException(MESSAGES.suggestionsNoChoices(iSource)));
+					} else {
+						iCallback.onSuccess(result);
+					}
+				} else {
+					iCallback.onSuccess(result);
+				}
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				iCustomCallback.onFailure(caught);
+			}
+		});
 	}
 
 	protected void onPreviewNativeEvent(NativePreviewEvent event) {
@@ -704,6 +765,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					for (SuggestionSelectedHandler h: iSuggestionSelectedHandlers)
 						h.onSuggestionSelected(e);
 					hide();
+					if (iCustomCallback != null) iCustomCallback.onSuccess(suggestion);
 				}
 			}
 			break;

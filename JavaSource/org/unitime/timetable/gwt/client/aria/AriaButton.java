@@ -27,6 +27,7 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Button;
 
 /**
@@ -59,6 +60,13 @@ public class AriaButton extends Button implements HasAriaLabel {
 			}
 		});
 	}
+	
+	public AriaButton(ImageResource image, String html) {
+		super(html);
+		setHTML("<img src='" + image.getSafeUri().asString() + "' class='gwt-Image'></img><span class='gwt-Label'>" + html + "</span>");
+		addStyleName("unitime-ImageButton");
+	}
+	
 	
 	@Override
 	public void setHTML(String html) {

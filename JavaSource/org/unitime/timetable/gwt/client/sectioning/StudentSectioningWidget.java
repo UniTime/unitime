@@ -141,6 +141,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	private HTML iMessage = null;
 	private AriaButton iQuickAdd;
 	private CourseFinder iQuickAddFinder = null;
+	private SuggestionsBox iQuickAddSuggestions = null;
+
 	
 	private CheckBox iCustomCheckbox = null;
 	private DegreePlansSelectionDialog iDegreePlansSelectionDialog = null;
@@ -268,11 +270,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		
 		iLastResult = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 		
-		iQuickAdd = new AriaButton(MESSAGES.buttonQuickAdd());
+		iQuickAdd = new AriaButton(RESOURCES.quickAddCourse(), MESSAGES.buttonQuickAdd());
+		iQuickAdd.setStyleName("unitime-QuickAddButton");
 		iQuickAdd.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				getQuickAddFinder().setValue("");
 				getQuickAddFinder().findCourse();
 			}
 		});
@@ -1877,6 +1879,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iQuickAddFinder.addSelectionHandler(new SelectionHandler<String>() {
 				@Override
 				public void onSelection(final SelectionEvent<String> event) {
+					if (event.getSelectedItem() == null || event.getSelectedItem().isEmpty()) {
+						setWarning(MESSAGES.courseSelectionNoCourseSelected());
+						return;
+					}
 					if (iCourseRequests.hasCourse(event.getSelectedItem())) {
 						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmQuickDrop(event.getSelectedItem()), new Command() {
 							@Override
@@ -1893,36 +1899,39 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									public void onSuccess(ClassAssignmentInterface result) {
 										fillIn(result);
 										addHistory();
+										iQuickAddFinder.setValue("", true);
 									}
 								});
 							}
 						});
 					} else {
-						final Command undo = iCourseRequests.addCourse(event.getSelectedItem());
-						iCourseRequests.validate(false, new AsyncCallback<Boolean>() {
-							public void onSuccess(Boolean result) {
-								if (result) {
-									LoadingWidget.getInstance().show(MESSAGES.courseRequestsScheduling());
-									iSectioningService.section(iOnline, iCourseRequests.getRequest(), iLastResult, new AsyncCallback<ClassAssignmentInterface>() {
-										public void onFailure(Throwable caught) {
-											undo.execute();
-											LoadingWidget.getInstance().hide();
-											setError(MESSAGES.exceptionSectioningFailed(caught.getMessage()), caught);
-										}
-										public void onSuccess(ClassAssignmentInterface result) {
-											fillIn(result);
-											addHistory();
+						if (iQuickAddSuggestions == null) {
+							iQuickAddSuggestions = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iOnline);
+							iQuickAddSuggestions.addCloseHandler(new CloseHandler<PopupPanel>() {
+								public void onClose(CloseEvent<PopupPanel> event) {
+									Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+										@Override
+										public void execute() {
+											iAssignmentPanelWithFocus.setFocus(true);
 										}
 									});
-								} else {
-									String error = iCourseRequests.getFirstError();
-									undo.execute();
-									setError(error == null ? MESSAGES.quickAddFailed() : MESSAGES.quickAddFailedWithMessage(error));
 								}
+							});
+						}
+						iQuickAddSuggestions.open(iCourseRequests.getRequest(), iLastResult, event.getSelectedItem(), useDefaultConfirmDialog(), new AsyncCallback<ClassAssignmentInterface>() {
+							@Override
+							public void onSuccess(ClassAssignmentInterface result) {
+								clearMessage();
+								iCourseRequests.addCourse(event.getSelectedItem());
+								fillIn(result);
+								addHistory();
+								iQuickAddFinder.setValue("", true);
 							}
+							
+							@Override
 							public void onFailure(Throwable caught) {
-								undo.execute();
-								setError(MESSAGES.quickAddFailedWithMessage(caught.getMessage()), caught);
+								if (caught != null) setError(caught.getMessage());
+								iAssignmentPanelWithFocus.setFocus(true);
 							}
 						});
 					}
