@@ -54,7 +54,7 @@ import org.unitime.timetable.model.dao.ItypeDescDAO;
  */
 public class InstructionalOfferingRollForward extends SessionRollForward {
 	
-	InstructionalOfferingRollForward(Log log) {
+	public InstructionalOfferingRollForward(Log log) {
 		super(log);
 	}
 	
@@ -186,7 +186,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		iLog.info("Rolling " + fromInstructionalOffering.getCourseNameWithTitle());
 		Transaction trns = null;
 		try {
-			trns = hibSession.beginTransaction();
+			if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
+				trns = hibSession.beginTransaction();
 			InstructionalOffering toInstructionalOffering = findToInstructionalOffering(fromInstructionalOffering, toSession, hibSession);
 			if (toInstructionalOffering == null){
 				return;
@@ -216,7 +217,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 					hibSession.update(toInstructionalOffering);
 				}
 			}
-			if (trns.isActive()) {
+			if (trns != null && trns.isActive()) {
 				trns.commit();
 			}
 			hibSession.flush();
