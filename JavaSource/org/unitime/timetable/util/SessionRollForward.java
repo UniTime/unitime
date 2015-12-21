@@ -67,6 +67,7 @@ import org.unitime.timetable.model.ExamLocationPref;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamPeriodPref;
+import org.unitime.timetable.model.ExamStatus;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.ExternalBuilding;
 import org.unitime.timetable.model.ExternalRoom;
@@ -119,6 +120,7 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
+import org.unitime.timetable.model.dao.ExamStatusDAO;
 import org.unitime.timetable.model.dao.ExternalBuildingDAO;
 import org.unitime.timetable.model.dao.ExternalRoomDAO;
 import org.unitime.timetable.model.dao.ExternalRoomDepartmentDAO;
@@ -141,6 +143,7 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.model.dao.TravelTimeDAO;
+import org.unitime.timetable.security.rights.Right;
 
 
 /**
@@ -1631,6 +1634,35 @@ public class SessionRollForward {
 		}		
 	}
 	
+	private void rollForwardExaminationManagers(Session toSession, Session fromSession) throws Exception{
+		ExamStatusDAO dao = ExamStatusDAO.getInstance();
+		Set<TimetableManager> managers = new HashSet<TimetableManager>(dao.getSession().createQuery(
+				"select distinct m from TimetableManager m inner join m.departments d inner join m.managerRoles mr " +
+				"where d.session.uniqueId = :sessionId and mr.role.enabled = true "+
+				"and :prmExMgr in elements(mr.role.rights) and :prmAdmin not in elements(mr.role.rights) " +
+				"order by m.lastName, m.firstName")
+				.setLong("sessionId", toSession.getUniqueId())
+				.setString("prmExMgr", Right.ExaminationSolver.name())
+				.setString("prmAdmin", Right.StatusIndependent.name())
+				.list());
+		List<ExamStatus> statuses = (List<ExamStatus>)dao.getSession().createQuery("from ExamStatus s where s.session.uniqueId = :sessionId").setLong("sessionId", fromSession.getUniqueId()).list();
+		for (ExamStatus fromStatus: statuses) {
+			ExamStatus toStatus = ExamStatus.findStatus(toSession.getUniqueId(), fromStatus.getType().getUniqueId());
+			if (toStatus == null) {
+				toStatus = new ExamStatus();
+				toStatus.setSession(toSession);
+				toStatus.setType(fromStatus.getType());
+				toStatus.setManagers(new HashSet<TimetableManager>());
+			} else {
+				toStatus.getManagers().clear();
+			}
+			for (TimetableManager m: fromStatus.getManagers())
+				if (managers.contains(m))
+					toStatus.getManagers().add(m);
+			dao.saveOrUpdate(toStatus);
+		}
+	}
+	
 	private void rollForwardExam(Exam fromExam, Session toSession, String prefOption) throws Exception{
 		Exam toExam = new Exam();
 		toExam.setExamType(fromExam.getExamType());
@@ -1750,6 +1782,7 @@ public class SessionRollForward {
 		try {
 			rollForwardExamPeriods(toSession, fromSession);
 			rollForwardExamLocationPrefs(toSession, fromSession);
+			rollForwardExaminationManagers(toSession, fromSession);
 		} catch (Exception e) {
 			iLog.error("Failed to roll exam configuration forward.", e);
 			errors.add("rollForward", new ActionMessage("errors.rollForward", "Exam Configuration", fromSession.getLabel(), toSession.getLabel(), "Failed to roll exam configuration forward."));
