@@ -1087,35 +1087,33 @@ public class SimpleEditPage extends Composite {
 					}
 					break;
 				case multi:
-					final ListBox multi = new ListBox();
-					multi.setMultipleSelect(true);
-					multi.setStyleName("unitime-TextArea");
-					multi.setVisibleItemCount(5);
+					final MultiSelect<String> multi = new MultiSelect<String>();
 					for (ListItem item: field.getValues())
-						multi.addItem(item.getText(), item.getValue());
+						multi.addItem(item.getValue(), item.getText());
+					if (detail)
+						multi.getElement().getStyle().setProperty("max-height", "200px");
+					else
+						multi.getElement().getStyle().setProperty("max-height", "80px");
 					String[] vals = record.getValues(index);
 					if (vals != null) {
 						for (String val: vals) {
-							for (int i = 0; i < multi.getItemCount(); i++)
-								if (multi.getValue(i).equals(val))
-									multi.setItemSelected(i, true);
+							multi.setSelected(val, true);
 						}
 					}
-					multi.addChangeHandler(new ChangeHandler() {
+					multi.addValueChangeHandler(new ValueChangeHandler<List<String>>() {
 						@Override
-						public void onChange(ChangeEvent event) {
+						public void onValueChange(ValueChangeEvent<List<String>> event) {
 							record.setField(index, null);
-							for (int i = 0; i < multi.getItemCount(); i++ ) {
-								if (multi.isItemSelected(i)) record.addToField(index, multi.getValue(i));
-							}
+							for (String id: event.getValue())
+								record.addToField(index, id);
 							setError(null);
 						}
 					});
-					initWidget(new UniTimeWidget<ListBox>(multi));
+					initWidget(new UniTimeWidget<MultiSelect<String>>(multi));
 					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
-						multi.addChangeHandler(new ChangeHandler() {
+						multi.addValueChangeHandler(new ValueChangeHandler<List<String>>() {
 							@Override
-							public void onChange(ChangeEvent event) {
+							public void onValueChange(ValueChangeEvent<List<String>> event) {
 								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
 									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
 							}

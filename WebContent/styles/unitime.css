@@ -4142,3 +4142,23 @@ unitime-RoomSharingWidget .legend .blank {
 	cursor: pointer;
 	background-color: #d0e4f6;
 }
+
+.unitime-MultiSelect {
+	padding: 2px;
+	border: 1px solid #9CB0CE;
+	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	background-color: white;
+}
+
+.unitime-MultiSelect .content {
+}
+
+.unitime-MultiSelect .item {
+	display: block;
+}
+
+.unitime-MultiSelect .item:hover {
+	background-color: #92c1f0;
+}
