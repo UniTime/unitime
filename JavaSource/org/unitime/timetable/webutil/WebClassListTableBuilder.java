@@ -37,6 +37,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -176,6 +177,9 @@ public class WebClassListTableBuilder extends
 	        if(!isEditable){
 	        	cell.addContent("</font>");
 	        }
+	        InstructionalMethod im = aClass.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+        	if (im != null)
+        		cell.addContent(" (<span title='" + im.getLabel() + "'>" + im.getReference() + ")");
 	        return(cell);
         } else {
         	return(super.buildPrefGroupLabel(co, prefGroup,indentSpaces, isEditable, null));

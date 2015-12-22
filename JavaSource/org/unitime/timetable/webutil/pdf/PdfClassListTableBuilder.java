@@ -30,6 +30,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -154,6 +155,9 @@ public class PdfClassListTableBuilder extends PdfInstructionalOfferingTableBuild
         	}
         	PdfPCell cell = createCell();
         	addText(cell, indentSpaces+label, co.isIsControl(), false, Element.ALIGN_LEFT, color, true);
+	        InstructionalMethod im = aClass.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod();
+        	if (im != null)
+	        	addText(cell, " (" + im.getReference() + ")", false, false, Element.ALIGN_LEFT, color, false);
         	return cell;
     	} else return super.pdfBuildPrefGroupLabel(co, prefGroup, indentSpaces, isEditable, null);
     }
