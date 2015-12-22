@@ -1238,6 +1238,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("<u>N</u>ew Course")
 	String buttonQuickAdd();
+	
+	@DefaultMessage("Add a new course to the schedule or drop an existing course from the schedule without going back to the Course Requests.")
+	String hintQuickAdd();
 
 	@DefaultMessage("Select a new course to add to the schedulue, or an existing course to drop from the schedule")
 	String dialogQuickAdd();

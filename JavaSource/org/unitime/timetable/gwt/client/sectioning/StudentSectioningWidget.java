@@ -271,6 +271,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iLastResult = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 		
 		iQuickAdd = new AriaButton(RESOURCES.quickAddCourse(), MESSAGES.buttonQuickAdd());
+		iQuickAdd.setTitle(MESSAGES.hintQuickAdd());
 		iQuickAdd.setStyleName("unitime-QuickAddButton");
 		iQuickAdd.addClickHandler(new ClickHandler() {
 			@Override
