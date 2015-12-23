@@ -36,9 +36,11 @@ import org.unitime.timetable.gwt.client.rooms.RoomsTable.DeptMode;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -52,6 +54,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.SaveFilterDefaultRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
@@ -71,6 +74,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
@@ -140,7 +144,22 @@ public class RoomGroupsPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
-				MenuBar menu = new MenuBar(true);
+				MenuBar menu = new UniTimeTableHeader.MenuBarWithAccessKeys();
+				
+				if (iProperties != null && iProperties.isCanSaveFilterDefaults()) {
+					MenuItem item = new MenuItem(MESSAGES.buttonClear(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							iFilter.setValue(iHistoryToken.getDefaultParameter("q", ""), true);
+							hideResults();
+							changeUrl();
+						}
+					});
+					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(MESSAGES.buttonClear()));
+					menu.addItem(item);
+					menu.addSeparator();
+				}
 				
 				MenuBar sortItems = new MenuBar(true);
 				for (final RoomGroupsColumn column: RoomGroupsColumn.values()) {
@@ -429,7 +448,7 @@ public class RoomGroupsPage extends Composite {
 	private boolean iInitialized = false;
 	protected void setup(final Long sessionId, final boolean search) {
 		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
-		RPC.execute(new RoomPropertiesRequest(sessionId), new AsyncCallback<RoomPropertiesInterface>() {
+		RPC.execute(new RoomPropertiesRequest(sessionId, iMode.name()), new AsyncCallback<RoomPropertiesInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
@@ -443,6 +462,33 @@ public class RoomGroupsPage extends Composite {
 				LoadingWidget.getInstance().hide();
 				iProperties = result;
 				iRoomGroupEdit.setProperties(iProperties);
+				
+				if (iProperties.isCanSaveFilterDefaults()) {
+					iHistoryToken.setDefaultParameter("q", result.getFilterDefault("filter"));
+					iFilter.setDefaultValueProvider(new TakesValue<String>() {
+						@Override
+						public void setValue(final String value) {
+							RPC.execute(new SaveFilterDefaultRpcRequest(iMode.name() + ".filter", iFilter.getValue()),
+									new AsyncCallback<GwtRpcResponse>() {
+										@Override
+										public void onFailure(Throwable caught) {
+											UniTimeNotifications.error(MESSAGES.failedSaveAsDefault(caught.getMessage()), caught);
+										}
+										@Override
+										public void onSuccess(GwtRpcResponse result) {
+											iHistoryToken.setDefaultParameter("q", value);
+										}
+									});					
+						}
+
+						@Override
+						public String getValue() {
+							return iHistoryToken.getDefaultParameter("q", "");
+						}
+					});
+				} else {
+					iFilter.setDefaultValueProvider(null);
+				}
 				
 				if (iSession instanceof Session)
 					((Session)iSession).fireChange();
@@ -477,7 +523,7 @@ public class RoomGroupsPage extends Composite {
 		Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
 	}
 	
-	protected void search(final Long groupId) {
+	protected void hideResults() {
 		if (iMore != null) iMore.setEnabled(false);
 		if (iHeaderPanel != null) iHeaderPanel.setEnabled("more", false);
 		iGlobalGroupsTable.clearTable(1);
@@ -486,6 +532,10 @@ public class RoomGroupsPage extends Composite {
 		iGroupsPanel.getRowFormatter().setVisible(iGlobalGroupsRow + 1, false);
 		iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow, false);
 		iGroupsPanel.getRowFormatter().setVisible(iDepartmentalGroupsRow + 1, false);
+	}
+	
+	protected void search(final Long groupId) {
+		hideResults();
 		SearchRoomGroupsRequest request = new SearchRoomGroupsRequest(iProperties.getAcademicSessionId());
 		request.setFilter(iFilter.getElementsRequest());
 		LoadingWidget.execute(request, new AsyncCallback<GwtRpcResponseList<GroupInterface>>() {

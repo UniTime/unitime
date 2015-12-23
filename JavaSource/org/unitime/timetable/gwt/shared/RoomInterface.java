@@ -1730,16 +1730,22 @@ public class RoomInterface implements IsSerializable {
 	
 	public static class RoomPropertiesRequest implements GwtRpcRequest<RoomPropertiesInterface> {
 		private Long iSessionId = null;
+		private String iMode = null;
 		
 		public RoomPropertiesRequest() {}
 		
-		public RoomPropertiesRequest(Long sessionId) {
+		public RoomPropertiesRequest(Long sessionId, String mode) {
 			iSessionId = sessionId;
+			iMode = mode;
 		}
 		
 		public boolean hasSessionId() { return iSessionId != null; }
 		public Long getSessionId() { return iSessionId; }
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public String getMode() { return iMode; }
+		public void setMode(String mode) { iMode = mode; }
+		public boolean hasMode() { return iMode != null && !iMode.isEmpty(); }
 		
 		@Override
 		public String toString() { return (hasSessionId() ? getSessionId().toString() : ""); }
@@ -1769,6 +1775,8 @@ public class RoomInterface implements IsSerializable {
 		private List<AcademicSessionInterface> iFutureSessions = null;
 		private boolean iCanExportRoomGroups = false, iCanChangeDefaultGroup = false, iCanExportRoomFeatures = false;
 		private boolean iRoomAreaMetricUnits = false;
+		private boolean iCanSaveFilterDefaults = false;
+		private Map<String, String> iFilterDefaults = null;
 		
 		public RoomPropertiesInterface() {}
 		
@@ -1987,6 +1995,21 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean isRoomAreaInMetricUnits() { return iRoomAreaMetricUnits; }
 		public void setRoomAreaInMetricUnits(boolean roomAreaInMetricUnits) { iRoomAreaMetricUnits = roomAreaInMetricUnits; }
+
+		public void setCanSaveFilterDefaults(boolean canSaveFilterDefaults) { iCanSaveFilterDefaults = canSaveFilterDefaults; }
+		public boolean isCanSaveFilterDefaults() { return iCanSaveFilterDefaults; }
+		
+		public void setFilterDefault(String name, String value) {
+			if (value == null) return;
+			if (iFilterDefaults == null) iFilterDefaults = new HashMap<String, String>();
+			iFilterDefaults.put(name, value);
+		}
+		public boolean hasFilterDefault(String name) {
+			return iFilterDefaults != null && iFilterDefaults.get(name) != null;
+		}
+		public String getFilterDefault(String name) {
+			return (iFilterDefaults == null ? null : iFilterDefaults.get(name));
+		}
 	}
 	
 	public static enum RoomsColumn {

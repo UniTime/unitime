@@ -39,9 +39,11 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.AriaOperation;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.HasColumnName;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -55,6 +57,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.SaveFilterDefaultRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesRequest;
@@ -73,6 +76,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -152,7 +156,22 @@ public class RoomsPage extends Composite {
 				if (iRoomsTable == null) return;
 				
 				final PopupPanel popup = new PopupPanel(true);
-				MenuBar menu = new MenuBar(true);
+				MenuBar menu = new UniTimeTableHeader.MenuBarWithAccessKeys();
+				
+				if (iProperties != null && iProperties.isCanSaveFilterDefaults()) {
+					MenuItem item = new MenuItem(MESSAGES.buttonClear(), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							iFilter.setValue(iHistoryToken.getDefaultParameter("q", ""), true);
+							hideResults();
+							changeUrl();
+						}
+					});
+					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(MESSAGES.buttonClear()));
+					menu.addItem(item);
+					menu.addSeparator();
+				}
 				
 				boolean first = true;
 				List<Operation> showHide = iRoomsTable.getShowHideOperations();
@@ -628,7 +647,7 @@ public class RoomsPage extends Composite {
 	private boolean iInitialized = false;
 	protected void setup(final Long sessionId, final boolean search) {
 		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
-		RPC.execute(new RoomPropertiesRequest(sessionId), new AsyncCallback<RoomPropertiesInterface>() {
+		RPC.execute(new RoomPropertiesRequest(sessionId, iMode.name()), new AsyncCallback<RoomPropertiesInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
@@ -642,6 +661,33 @@ public class RoomsPage extends Composite {
 				LoadingWidget.getInstance().hide();
 				
 				iProperties = result;
+				
+				if (iProperties.isCanSaveFilterDefaults()) {
+					iHistoryToken.setDefaultParameter("q", result.getFilterDefault("filter"));
+					iFilter.setDefaultValueProvider(new TakesValue<String>() {
+						@Override
+						public void setValue(final String value) {
+							RPC.execute(new SaveFilterDefaultRpcRequest(iMode.name() + ".filter", iFilter.getValue()),
+									new AsyncCallback<GwtRpcResponse>() {
+										@Override
+										public void onFailure(Throwable caught) {
+											UniTimeNotifications.error(MESSAGES.failedSaveAsDefault(caught.getMessage()), caught);
+										}
+										@Override
+										public void onSuccess(GwtRpcResponse result) {
+											iHistoryToken.setDefaultParameter("q", value);
+										}
+									});					
+						}
+
+						@Override
+						public String getValue() {
+							return iHistoryToken.getDefaultParameter("q", "");
+						}
+					});
+				} else {
+					iFilter.setDefaultValueProvider(null);
+				}
 				
 				if (!RoomCookie.getInstance().hasOrientation())
 					RoomCookie.getInstance().setOrientation(iProperties.isGridAsText(), iProperties.isHorizontal());
@@ -750,11 +796,16 @@ public class RoomsPage extends Composite {
 		return query;
 	}
 	
-	protected void search(final Long roomId) {
+	protected void hideResults() {
 		if (iRoomsTable == null) return;
 		if (iMore != null) iMore.setEnabled(false);
 		if (iHeaderPanel != null) iHeaderPanel.setEnabled("more", false);
 		iRoomsTable.clearTable(1);
+	}
+	
+	protected void search(final Long roomId) {
+		if (iRoomsTable == null) return;
+		hideResults();
 		LoadingWidget.execute(iFilter.getElementsRequest(), new AsyncCallback<FilterRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -859,7 +910,7 @@ public class RoomsPage extends Composite {
 					if (idx >= 0) {
 						String key = pair.substring(0, idx);
 						if (Location.getParameter(key) == null)
-							iParams.put(key, URL.decodeQueryString(pair.substring(idx + 1)));
+							iDefaults.put(key, URL.decodeQueryString(pair.substring(idx + 1)));
 					}
 				}
 			}

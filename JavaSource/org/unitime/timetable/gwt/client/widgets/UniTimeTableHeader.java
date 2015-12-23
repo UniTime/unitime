@@ -242,8 +242,11 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 			switch (DOM.eventGetType(event)) {
 			case Event.ONKEYPRESS:
 				MenuItem item = iAccessKeys.get(Character.toLowerCase((char)event.getCharCode()));
-				if (item != null)
+				if (item != null) {
+					event.stopPropagation();
+					event.preventDefault();
 					item.getScheduledCommand().execute();
+				}
 			}
 			super.onBrowserEvent(event);
 			

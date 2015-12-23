@@ -228,6 +228,11 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		
 		response.setRoomAreaInMetricUnits(ApplicationProperty.RoomAreaUnitsMetric.isTrue());
 		
+    	response.setCanSaveFilterDefaults(context.hasPermission(Right.HasRole));
+    	if (context.isAuthenticated() && response.isCanSaveFilterDefaults() && request.hasMode()) {
+			response.setFilterDefault("filter", context.getUser().getProperty("Default[" + request.getMode() + ".filter]"));
+		}
+		
 		return response;
 	}
 
