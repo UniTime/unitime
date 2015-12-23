@@ -688,15 +688,24 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			return rc;
 		
 		case PREFERENCE:
-			boolean hasPreferences = false;
-			for (DepartmentInterface department: room.getDepartments())
-				if (department.getPreference() != null) {
-					hasPreferences = true; break;
+			if (iDepartment != null) {
+				for (DepartmentInterface department: room.getDepartments()) {
+					if (iDepartment.equals(department.getDeptCode()) && department.getPreference() != null) {
+						return new PreferenceCell(department);
+					}
 				}
-			if (hasPreferences)
-				return new PreferenceCell(room.getDepartments());
-			else
 				return null;
+			} else {
+				boolean hasPreferences = false;
+				for (DepartmentInterface department: room.getDepartments())
+					if (department.getPreference() != null) {
+						hasPreferences = true; break;
+					}
+				if (hasPreferences)
+					return new PreferenceCell(room.getDepartments());
+				else
+					return null;
+			}
 		
 		case MAP:
 			if (!room.hasMiniMapUrl()) return null;
@@ -1123,16 +1132,44 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	public static class PreferenceCell extends DepartmentCell {
 		public PreferenceCell(List<DepartmentInterface> departments) {
 			super(true);
+			boolean abbv = RoomCookie.getInstance().getDeptMode() <= 1;
 			for (DepartmentInterface department: departments) {
 				if (department.getPreference() == null) continue;
 				P p = new P("department");
-				p.setText(RoomsTable.toString(department, iExt));
+				if (abbv) {
+					String prefAbbv = CONSTANTS.preferenceAbbreviation().get(department.getPreference().getCode());
+					p.setText(MESSAGES.roomPreferenceShort(RoomsTable.toString(department, iExt), prefAbbv == null ? department.getPreference().getName() : prefAbbv));
+				} else {
+					p.setText(MESSAGES.roomPreference(RoomsTable.toString(department, iExt), department.getPreference().getName()));
+				}
 				p.setTitle(department.getPreference().getName() + " " + department.getLabel());
 				p.getElement().getStyle().setColor(department.getPreference().getColor());
 				iP.put(department, p);
 				add(p);
 			}
 		}
+		
+		public PreferenceCell(DepartmentInterface department) {
+			super(true);
+			setText(department.getPreference().getName());
+			setTitle(department.getPreference().getName() + " " + department.getLabel());
+			getElement().getStyle().setColor(department.getPreference().getColor());
+		}
+		
+		@Override
+		public void refresh() {
+			boolean abbv = RoomCookie.getInstance().getDeptMode() <= 1;
+			for (Map.Entry<DepartmentInterface, P> e: iP.entrySet()) {
+				DepartmentInterface department = e.getKey();
+				if (abbv) {
+					String prefAbbv = CONSTANTS.preferenceAbbreviation().get(department.getPreference().getCode());
+					e.getValue().setText(MESSAGES.roomPreferenceShort(RoomsTable.toString(department, iExt), prefAbbv == null ? department.getPreference().getName() : prefAbbv));
+				} else {
+					e.getValue().setText(MESSAGES.roomPreference(RoomsTable.toString(department, iExt), department.getPreference().getName()));
+				}
+			}
+		}
+
 	}
 	
 	public static class ExamTypesCell extends P {

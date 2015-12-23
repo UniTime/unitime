@@ -381,7 +381,7 @@ public class RoomDetail extends Composite {
 			for (DepartmentInterface department: departments) {
 				if (department.getPreference() == null) continue;
 				P p = new P("department");
-				p.setText(RoomDetail.toString(department));
+				p.setText(MESSAGES.roomPreference(RoomDetail.toString(department), department.getPreference().getName()));
 				p.setTitle(department.getPreference().getName() + " " + department.getExtLabelWhenExist());
 				p.getElement().getStyle().setColor(department.getPreference().getColor());
 				iP.put(department, p);
