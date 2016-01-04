@@ -75,13 +75,13 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 				course.setHasUniqueName(c.hasUniqueName());
 				course.setLimit(c.getLimit());
 				Collection<XCourseRequest> requests = server.getRequests(c.getOfferingId());
+				int enrl = 0;
 				if (requests != null) {
-					int enrl = 0;
 					for (XCourseRequest r: requests)
 						if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(course.getCourseId()))
 							enrl ++;
-					course.setEnrollment(enrl);
 				}
+				course.setEnrollment(enrl);
 				ret.add(course);
 			}
 			return ret;
