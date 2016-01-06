@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
 
@@ -699,24 +700,20 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	
 	public boolean canNoRoleReportExamFinal() {
 		return ((Number)new ExamDAO().getSession().
-                createQuery("select count(x) from Exam x left join x.statusType t " +
-                		"where x.session.uniqueId = :sessionId and x.assignedPeriod != null and x.examType.type = :examType and " +
-                		"((t is null and bit_and(x.session.statusType.status, :flag) > 0) or bit_and(t.status, :flag) > 0)"
+                createQuery("select count(e) from FinalExamEvent e inner join e.exam.session s where s.uniqueId = :sessionId and " +
+                		"((e.examStatus is null and bit_and(s.statusType.status, :flag) > 0) or bit_and(e.examStatus, :flag) > 0)"
                 		)
                 .setLong("sessionId", getUniqueId())
-                .setInteger("examType", ExamType.sExamTypeFinal)
                 .setInteger("flag", DepartmentStatusType.Status.ReportExamsFinal.toInt())
                 .setCacheable(true).uniqueResult()).longValue() > 0;
 	}
 	
 	public boolean canNoRoleReportExamMidterm() {
 		return ((Number)new ExamDAO().getSession().
-                createQuery("select count(x) from Exam x left join x.statusType t " +
-                		"where x.session.uniqueId = :sessionId and x.assignedPeriod != null and x.examType.type = :examType and " +
-                		"((t is null and bit_and(x.session.statusType.status, :flag) > 0) or bit_and(t.status, :flag) > 0)"
+                createQuery("select count(e) from MidtermExamEvent e inner join e.exam.session s where s.uniqueId = :sessionId and " +
+                		"((e.examStatus is null and bit_and(s.statusType.status, :flag) > 0) or bit_and(e.examStatus, :flag) > 0)"
                 		)
                 .setLong("sessionId", getUniqueId())
-                .setInteger("examType", ExamType.sExamTypeMidterm)
                 .setInteger("flag", DepartmentStatusType.Status.ReportExamsMidterm.toInt())
                 .setCacheable(true).uniqueResult()).longValue() > 0;
 	}
