@@ -377,7 +377,7 @@ public class LookupTables {
     }
     
     public static void setupExamTypes(HttpServletRequest request, UserContext user, DepartmentStatusType.Status... status) {
-    	request.setAttribute("examTypes", ExamType.findAllApplicable(user, status));
+    	request.setAttribute("examTypes", ExamType.findAllUsedApplicable(user, status));
     }
     
     public static void setupCourseTypes(HttpServletRequest request) {
