@@ -19,25 +19,20 @@
 */
 package org.unitime.timetable.filter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -55,6 +50,11 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.model.dao.QueryLogDAO;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.spring.gwt.GwtDispatcherServlet;
+import org.unitime.timetable.spring.gwt.GwtDispatcherServlet.GwtCallInfo;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * @author Tomas Muller
@@ -63,6 +63,7 @@ public class QueryLogFilter implements Filter {
 	private static Log sLog = LogFactory.getLog(QueryLogFilter.class);
 	private Saver iSaver;
 	private HashSet<String> iExclude = new HashSet<String>();
+	private Gson iGson = null;
 
 	public void init(FilterConfig cfg) throws ServletException {
 		iSaver = new Saver();
@@ -72,6 +73,7 @@ public class QueryLogFilter implements Filter {
 			for (String x: exclude.split(","))
 				iExclude.add(x);
 		}
+		iGson = new GsonBuilder().create();
 	}
 	
 	private UserContext getUser() {
@@ -94,15 +96,6 @@ public class QueryLogFilter implements Filter {
 					userId = user.getExternalUserId();
 			}
 		} catch (IllegalStateException e) {}
-		
-		HttpServletRequestWrapper wrapper = null;
-		if (request instanceof HttpServletRequest) {
-			HttpServletRequest r = (HttpServletRequest)request;
-			if (r.getRequestURI().endsWith(".gwt")) {
-				wrapper = new HttpServletRequestWrapper(r);
-				request = wrapper.createRequest();
-			}
-		}
 		
 		long t0 = JProf.currentTimeMillis();
 		Throwable exception = null;
@@ -145,15 +138,23 @@ public class QueryLogFilter implements Filter {
 						q.setUid(user.getExternalUserId());
 				}
 			} catch (IllegalStateException e) {}
-			if (wrapper != null && wrapper.getBody() != null) {
+			GwtCallInfo callInfo = GwtDispatcherServlet.getLastQuery();
+			if (callInfo != null) {
+				q.setQuery(callInfo.getQuery());
+				q.setUri(q.getUri() + ": " + callInfo.getTarget());
+			} else if (ApplicationProperty.QueryLogJSON.isTrue()) {
 				try {
-					String body = new String(wrapper.getBody());
-					q.setQuery(body);
-					String args[] = body.split("\\|");
-					q.setUri(q.getUri() + ": " + args[5].substring(args[5].lastIndexOf('.') + 1) + "#" + args[6]);
-				} catch (Exception e) {
-					sLog.warn("Error parsing GWT request body: " + e.getMessage());
-				}
+					Map<String, Object> params = new HashMap<String, Object>();
+					for (Map.Entry<String, String[]> e: r.getParameterMap().entrySet()) {
+						if ("password".equals(e.getKey()) || "noCacheTS".equals(e.getKey())) continue;
+						if (e.getValue() == null || e.getValue().length == 0) continue;
+						if (e.getValue().length == 1)
+							params.put(e.getKey(), e.getValue()[0]);
+						else
+							params.put(e.getKey(), e.getValue());
+					}
+					q.setQuery(iGson.toJson(params));
+				} catch (Throwable t) {}
 			} else {
 				String params = "";
 				for (Enumeration e=r.getParameterNames(); e.hasMoreElements();) {
@@ -269,64 +270,5 @@ public class QueryLogFilter implements Filter {
 			sLog.debug("Query Log Saver is down.");
 		}
 		
-	}
-	
-	private static class HttpServletRequestWrapper implements InvocationHandler {
-		private HttpServletRequest iRequest;
-		private ServletInputStream iInputStream = null;
-		private ByteArrayOutputStream iBody = null;
-		
-		public HttpServletRequestWrapper(HttpServletRequest r) {
-			iRequest = r;
-		}
-
-		public HttpServletRequest createRequest() {
-			return (HttpServletRequest)Proxy.newProxyInstance(QueryLogFilter.class.getClassLoader(), new Class[] {HttpServletRequest.class}, this);
-		}
-
-		@Override
-		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-			if ("getInputStream".equals(method.getName()) && method.getParameterTypes().length == 0)
-				return getInputStream();
-			return iRequest.getClass().getMethod(method.getName(),method.getParameterTypes()).invoke(iRequest, args);
-		}
-		
-		public ServletInputStream getInputStream() throws IOException {
-			if (iInputStream == null) {
-				iBody = new ByteArrayOutputStream();
-				iInputStream = new ServletInputStreamWrapper(iRequest.getInputStream(), iBody);
-			}
-			return iInputStream;
-		}
-		
-		public byte[] getBody() {
-			return (iBody == null ? null : iBody.toByteArray());
-		}
-
-		
-	}
-	
-	private static class ServletInputStreamWrapper extends ServletInputStream {
-		private InputStream iInputStream;
-		private OutputStream iOutputStream;
-		
-		public ServletInputStreamWrapper(InputStream in, OutputStream out) {
-			iInputStream = in;
-			iOutputStream = out;
-		}
-
-		@Override
-		public int read() throws IOException {
-			int out = iInputStream.read();
-			iOutputStream.write(out);
-			return out;
-		}
-		
-		@Override
-		public void close() throws IOException {
-			iInputStream.close();
-			iOutputStream.flush();
-			iOutputStream.close();
-		}
 	}
 }

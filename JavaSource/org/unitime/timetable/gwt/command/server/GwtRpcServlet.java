@@ -19,9 +19,14 @@
 */
 package org.unitime.timetable.gwt.command.server;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 
@@ -35,6 +40,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.filter.QueryLogFilter;
 import org.unitime.timetable.gwt.command.client.GwtRpcCancelledException;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
@@ -49,6 +55,13 @@ import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
 import org.unitime.timetable.util.Formats;
 
+import com.google.gson.FieldNamingStrategy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -61,6 +74,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 	private QueryLogFilter.Saver iSaver = null;
 	private static IdGenerator sIdGenerator = new IdGenerator();
 	private static Map<Long, Execution> sExecutions = new Hashtable<Long, Execution>();
+	private Gson iGson = null;
 	
 	protected SessionContext getSessionContext() {
 		return HttpSessionContext.getSessionContext(getServletContext());
@@ -77,6 +91,37 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 		iSaver = new QueryLogFilter.Saver();
 		iSaver.setName("GwtRpcLogSaver");
 		iSaver.start();
+		iGson = new GsonBuilder()
+				.registerTypeAdapter(java.sql.Timestamp.class, new JsonSerializer<java.sql.Timestamp>() {
+					@Override
+					public JsonElement serialize(java.sql.Timestamp src, Type typeOfSrc, JsonSerializationContext context) {
+						return new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(src));
+					}
+				})
+				.registerTypeAdapter(java.sql.Date.class, new JsonSerializer<java.sql.Date>() {
+					@Override
+					public JsonElement serialize(java.sql.Date src, Type typeOfSrc, JsonSerializationContext context) {
+						return new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src));
+					}
+				})
+				.registerTypeAdapter(Date.class, new JsonSerializer<Date>() {
+					@Override
+					public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
+						return new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(src));
+					}
+				})
+				.setFieldNamingStrategy(new FieldNamingStrategy() {
+					Pattern iPattern = Pattern.compile("i([A-Z])(.*)");
+					@Override
+					public String translateName(Field f) {
+						Matcher matcher = iPattern.matcher(f.getName());
+						if (matcher.matches())
+							return matcher.group(1).toLowerCase() + matcher.group(2);
+						else
+							return f.getName();
+					}
+				})
+				.create();
 	}
 	
 	@Override
@@ -191,7 +236,11 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			q.setTimeSpent(time);
 			q.setSessionId(context.getHttpSessionId());
 			q.setUid(context.isAuthenticated() ? context.getUser().getExternalUserId() : null);
-			q.setQuery(request.toString());
+			if (ApplicationProperty.QueryLogJSON.isTrue()) {
+				q.setQuery(iGson.toJson(request));
+			} else {
+				q.setQuery(request.toString());
+			}
 			if (exception != null) {
 				Throwable t = exception;
 				String ex = "";

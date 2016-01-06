@@ -1351,6 +1351,11 @@ public enum ApplicationProperty {
 	@DefaultValue("5000")
 	@Description("Query Log: limit on the number of queries held in memory (before persisted)")
 	QueryLogLimit("unitime.query.log.limit"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Query Log: record request object/parameters as JSON message")
+	QueryLogJSON("unitime.query.log.json"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
