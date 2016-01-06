@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeMenuBar;
 import org.unitime.timetable.gwt.client.page.UniTimeSideBar;
 import org.unitime.timetable.gwt.client.page.UniTimeVersion;
 import org.unitime.timetable.gwt.client.reservations.ReservationTable;
+import org.unitime.timetable.gwt.client.rooms.PeriodPreferencesWidget;
 import org.unitime.timetable.gwt.client.rooms.RoomNoteChanges;
 import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget;
 import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget;
@@ -69,6 +70,7 @@ public enum Components {
 	solverAllocatedMemory("UniTimeGWT:SolverAllocatedMem", true, new ComponentFactory() { public void insert(RootPanel panel) { new SolverAllocatedMemory().insert(panel); } }),
 	calendar("UniTimeGWT:Calendar", true, new ComponentFactory() { public void insert(RootPanel panel) { SingleDateSelector.insert(panel); } }),
 	courseNumberSuggestions("UniTimeGWT:CourseNumberSuggestBox", true, new ComponentFactory() { public void insert(RootPanel panel) { CourseNumbersSuggestBox.insert(panel); } }),
+	periodPreferences("UniTimeGWT:PeriodPreferences", new ComponentFactory() { public void insert(RootPanel panel) { new PeriodPreferencesWidget(true).insert(panel); } }),
 	;
 	
 	private String iId;

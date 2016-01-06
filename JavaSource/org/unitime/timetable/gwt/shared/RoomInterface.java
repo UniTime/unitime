@@ -1577,7 +1577,8 @@ public class RoomInterface implements IsSerializable {
 	public static class PeriodPreferenceModel implements IsSerializable, GwtRpcResponse {
 		private ExamTypeInterface iExamType;
 		private Long iLocationId;
-		private Long iDefaultPreference;
+		private Long iExamId;
+		private Long iDefaultPreference, iSelectedPreference;
 		private Date iFirstDate;
 		private TreeSet<Integer> iStarts = new TreeSet<Integer>();
 		private TreeSet<Integer> iDays = new TreeSet<Integer>();
@@ -1585,6 +1586,8 @@ public class RoomInterface implements IsSerializable {
 		private List<PeriodInterface> iPeriods = new ArrayList<PeriodInterface>();
 		private Map<Integer, Map<Integer, Long>> iModel;
 		private boolean iHorizontal = false;
+		private Long iAssignedPeriodId = null;
+		private boolean iReqConfirmation = false;
 		
 		public PeriodPreferenceModel() {}
 		
@@ -1593,6 +1596,9 @@ public class RoomInterface implements IsSerializable {
 		
 		public void setLocationId(Long id) { iLocationId = id; }
 		public Long getLocationId() { return iLocationId; }
+
+		public void setExamId(Long id) { iExamId = id; }
+		public Long getExamId() { return iExamId; }
 
 		public Date getFirstDate() { return iFirstDate; }
 		public void setFirstDate(Date date) { iFirstDate = date; }
@@ -1613,12 +1619,27 @@ public class RoomInterface implements IsSerializable {
 			return getPreference(iDefaultPreference);
 		}
 		
+		public void setSelectedPreference(PreferenceInterface preference) {
+			iSelectedPreference = (preference == null ? null : preference.getId());
+		}
+
+		public PreferenceInterface getSelectedPreference() {
+			return getPreference(iSelectedPreference);
+		}
+		
 		public PreferenceInterface getPreference(Long id) {
 			if (id == null) id = iDefaultPreference;
 			if (iPreferences == null || id == null) return null;
 			for (PreferenceInterface preference: iPreferences)
 				if (preference.getId().equals(id)) return preference;
 			return (!id.equals(iDefaultPreference) ? getPreference(iDefaultPreference) : null);
+		}
+		
+		public PreferenceInterface getPreference(String code) {
+			if (iPreferences == null) return null;
+			for (PreferenceInterface preference: iPreferences)
+				if (preference.getCode().equals(code)) return preference;
+			return getPreference(iDefaultPreference);
 		}
 		
 		public void addPreference(PreferenceInterface preference) {
@@ -1667,23 +1688,104 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean isDefaultHorizontal() { return iHorizontal; }
 		public void setDefaultHorizontal(boolean horizontal) { iHorizontal = horizontal; }
+		
+		public boolean isAssigned(PeriodInterface period) { return iAssignedPeriodId != null && iAssignedPeriodId.equals(period.getId()); }
+		public void setAssignment(PeriodInterface period) { iAssignedPeriodId = (period == null ? null : period.getId()); }
+		public void setAssignedPeriodId(Long periodId) { iAssignedPeriodId = periodId; }
+		
+		public boolean isReqConfirmation() { return iReqConfirmation; }
+		public void setReqConfirmation(boolean confirm) { iReqConfirmation = confirm; }
+		
+		public boolean hasRequired() {
+			if (iModel == null) return false;
+			for (Map<Integer, Long> values: iModel.values())
+				for (Long pref: values.values())
+					if (pref == 1l) return true;
+			return false;
+		}
+		
+		public boolean hasPreference() {
+			if (iModel == null) return false;
+			for (Map<Integer, Long> values: iModel.values())
+				for (Long pref: values.values())
+					if (pref != 8l && pref != 1l && pref != 4l) return true;
+			return false;
+		}
+		
+		public char id2char(Long id) {
+			if (id == null) return (iExamType.isFinal() ? '2' : 'P');
+			switch (id.intValue()) {
+			case 1: return 'R';
+			case 2: return '0';
+			case 3: return '1';
+			case 4: return '2';
+			case 5: return '3';
+			case 6: return '4';
+			case 7: return 'P';
+			case 8: return 'N';
+			default: return '2';
+			}
+		}
+		
+		public Long char2id(char ch) {
+			switch (ch) {
+			case 'R': return 1l;
+			case '0': return 2l;
+			case '1': return 3l;
+			case '2': return 4l;
+			case '3': return 5l;
+			case '4': return 6l;
+			case 'P': return 7l;
+			case 'N': return 8l;
+			default: return 4l;
+			}
+		}
+		
+		public String getPattern() {
+			String pattern = getExamType().getId() + ":" + (iAssignedPeriodId == null ? "" : iAssignedPeriodId) + ":";
+			for (PeriodInterface p: iPeriods) {
+					PreferenceInterface preference = getPreference(p.getDay(), p.getStartSlot());
+					pattern += id2char(preference == null ? null : preference.getId());
+				}
+			return pattern;
+		}
+		
+		public void setPattern(String pattern) {
+			if (pattern.indexOf(':') >= 0) {
+				String[] arr = pattern.split(":");
+				if (!iExamType.getId().equals(Long.valueOf(arr[0]))) return;
+				iAssignedPeriodId = (arr[1] == null || arr[1].isEmpty() ? null : Long.valueOf(arr[1]));
+				pattern = arr[2];
+			}
+			for (int i = 0; i < iPeriods.size(); i++) {
+				char ch = (iExamType.isFinal() ? '2' : 'P');
+				try {
+					ch = pattern.charAt(i);
+				} catch (IndexOutOfBoundsException e) {}
+				setPreference(iPeriods.get(i).getDay(), iPeriods.get(i).getStartSlot(), char2id(ch));
+			}
+		}
 	}
 	
 	public static class PeriodPreferenceRequest implements GwtRpcRequest<PeriodPreferenceModel> {
 		public static enum Operation implements IsSerializable {
 			LOAD,
-			SAVE
+			SAVE,
+			LOAD_FOR_EXAM,
 		}
 		private Operation iOperation;
-		private Long iLocationId;
+		private Long iSourceId;
 		private PeriodPreferenceModel iModel;
 		private Long iExamTypeId = null;
 		private Long iSessionId;
 		
 		public PeriodPreferenceRequest() {}
 		
-		public Long getLocationId() { return iLocationId; }
-		public void setLocationId(Long locationId) { iLocationId = locationId; }
+		public Long getLocationId() { return iSourceId; }
+		public void setLocationId(Long locationId) { iSourceId = locationId; }
+		
+		public Long getExamId() { return iSourceId; }
+		public void setExamId(Long examId) { iSourceId = examId; }
 		
 		public PeriodPreferenceModel getModel() { return iModel; }
 		public void setModel(PeriodPreferenceModel model) { iModel = model; }
@@ -1725,6 +1827,14 @@ public class RoomInterface implements IsSerializable {
 		
 		public static PeriodPreferenceRequest save(Long locationId, Long examTypeId, PeriodPreferenceModel model) {
 			return save(null, locationId, examTypeId, model);
+		}
+		
+		public static PeriodPreferenceRequest loadForExam(Long examId, Long examTypeId) {
+			PeriodPreferenceRequest request = new PeriodPreferenceRequest();
+			request.setOperation(Operation.LOAD_FOR_EXAM);
+			request.setExamTypeId(examTypeId);
+			request.setExamId(examId);
+			return request;
 		}
 	}
 	

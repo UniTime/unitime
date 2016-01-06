@@ -30,6 +30,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -51,6 +52,7 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasValue;
+import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.datepicker.client.CalendarUtil;
 
@@ -67,6 +69,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 	private PeriodPreferenceModel iModel;
 	protected boolean iEditable = true;
 	private CheckBox iHorizontal;
+	private List<Cell> iCells = new ArrayList<Cell>();
 	
 	public PeriodPreferencesWidget(boolean editable) {
 		iEditable = editable;
@@ -124,7 +127,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 		else
 			iHorizontal.setValue(model.isDefaultHorizontal());
 		
-		iPreference = iModel.getDefaultPreference();
+		iPreference = iModel.getSelectedPreference();
 		if (iPreference == null) iPreference = iModel.getPreferences().get(0);
 		render();
 	}
@@ -164,7 +167,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 		private PeriodInterface iPeriod;
 		
 		Cell(int day, int slot, Date date, PeriodInterface period) {
-			super("cell", "item", isEditable() && period != null ? "clickable" : null, period == null ? "disabled" : null);
+			super("cell", "item", isEditable() && period != null ? "clickable" : null, period == null ? "disabled" : null, period != null && iModel.isAssigned(period) ? "highlight" : null);
 			iDay = day;
 			iSlot = slot;
 			iDate = date;
@@ -189,8 +192,37 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 			}
 		}
 		
+		public PeriodInterface getPeriod() { return iPeriod; }
+		
 		public void setOption(PreferenceInterface preference) {
+			setOption(preference, true);
+		}
+		
+		public void setOption(PreferenceInterface preference, boolean fireChangeEvent) {
 			if (!isEditable() || iPeriod == null) return;
+			if (preference != null && fireChangeEvent) {
+				if (preference.getCode().equals("R")) {
+					if (iModel.hasPreference()) {
+						PreferenceInterface p = iModel.getPreference("0");
+						for (Cell cell: iCells) {
+							if (cell.getPeriod() != null) {
+								PreferenceInterface pref = iModel.getPreference(cell.getPeriod().getDay(), cell.getPeriod().getStartSlot());
+								if (pref != null) cell.setOption(p, false);
+							}
+						}
+					}
+				} else if (!preference.getCode().equals("0")) {
+					if (iModel.hasRequired()) {
+						PreferenceInterface p = iModel.getDefaultPreference();
+						for (Cell cell: iCells) {
+							if (cell.getPeriod() != null) {
+								PreferenceInterface pref = iModel.getPreference(cell.getPeriod().getDay(), cell.getPeriod().getStartSlot());
+								if (pref != null) cell.setOption(p, false);
+							}
+						}
+					}
+				}
+			}
 			iModel.setPreference(iDay, iSlot, preference);
 			if (preference == null) {
 				getElement().getStyle().clearBackgroundColor();
@@ -200,7 +232,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 				getElement().getStyle().setBackgroundColor(preference.getColor());
 				setTitle(DateTimeFormat.getFormat(CONSTANTS.examPeriodDateFormat()).format(iDate) + " " + slot2short(iSlot) + " - " + slot2short(iSlot + iPeriod.getLength()) + ": " + preference.getName());
 			}
-			ValueChangeEvent.fire(PeriodPreferencesWidget.this, getValue());
+			if (fireChangeEvent) ValueChangeEvent.fire(PeriodPreferencesWidget.this, getValue());
 		}
 	}
 	
@@ -346,6 +378,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 
 	protected void render() {
 		iPanel.clear();
+		iCells.clear();
 	
 		if (iModel.getExamType().isFinal() || !CONSTANTS.displayMidtermPeriodPreferencesAsCalendar()) {
 			iPanel.setStyleName("unitime-RoomSharingWidget");
@@ -432,6 +465,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 							thisSlot.get(slot).add(p);
 							thisPage.add(p);
 							thisDay.add(p);
+							iCells.add(p);
 						}
 						if (isEditable())
 							d.addMouseDownHandler(new MouseDownHandler() {
@@ -478,6 +512,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 							thisSlot.add(p);
 							thisPage.add(p);
 							thisDay.get(day).add(p);
+							iCells.add(p);
 						}
 						if (isEditable())
 							d.addMouseDownHandler(new MouseDownHandler() {
@@ -552,7 +587,17 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 				MouseDownHandler md = new MouseDownHandler() {
 					@Override
 					public void onMouseDown(MouseDownEvent event) {
+						if (iModel.isReqConfirmation()) {
+							if (option.getCode().equals("R")) {
+								if (iModel.hasPreference())
+									UniTimeConfirmationDialog.alert(MESSAGES.warnPreferenceUseRequired());
+							} else if (!option.getCode().equals("0")) {
+								if (iModel.hasRequired())
+									UniTimeConfirmationDialog.alert(MESSAGES.warnPreferenceUseNotRequired());
+							}
+						}
 						iPreference = option;
+						iModel.setSelectedPreference(option);
 						if (iSelectedIcon != null)
 							iSelectedIcon.removeStyleName("selected");
 						if (iSelectedTitle != null)
@@ -592,5 +637,47 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 		setModel(value);
 		if (fireEvents)
 			ValueChangeEvent.fire(this, getValue());
+	}
+	
+	public void insert(final RootPanel panel) {
+		String pattern = null;
+		if (panel.getElement().getFirstChildElement() != null) {
+			pattern = Hidden.wrap(panel.getElement().getFirstChildElement()).getValue();
+		} else {
+			pattern = panel.getElement().getInnerText().trim();
+		}
+		final Long examTypeId = Long.valueOf(pattern.substring(0, pattern.indexOf(':')));;
+		RPC.execute(RoomInterface.PeriodPreferenceRequest.loadForExam(null, examTypeId), new AsyncCallback<PeriodPreferenceModel>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				UniTimeNotifications.error(caught);
+			}
+
+			@Override
+			public void onSuccess(final PeriodPreferenceModel model) {
+				if (panel.getElement().getFirstChildElement() != null) {
+					final Hidden pattern = Hidden.wrap(panel.getElement().getFirstChildElement());
+					model.setPattern(pattern.getValue());
+				
+					addValueChangeHandler(new ValueChangeHandler<PeriodPreferenceModel>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<PeriodPreferenceModel> event) {
+							pattern.setValue(event.getValue().getPattern());
+						}
+					});
+					iEditable = true;
+				} else {
+					String pattern = panel.getElement().getInnerText().trim();
+					panel.getElement().setInnerText(null);
+					model.setPattern(pattern);
+					iEditable = false;
+				}
+				
+				setModel(model);
+
+				panel.add(PeriodPreferencesWidget.this);
+				panel.setVisible(true);				
+			}
+		});
 	}
 }

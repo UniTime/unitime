@@ -39,10 +39,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamEditForm;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.form.PreferencesForm;
+import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -54,10 +56,12 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.ExamType;
-import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -82,6 +86,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.rooms.PeriodPreferencesBackend;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
@@ -632,48 +637,48 @@ public class PreferencesAction extends Action {
         }
 
         // Period Prefs
-        /*
-        lst = frm.getPeriodPrefs();
-        lstL = frm.getPeriodPrefLevels();
-        
-        for(int i=0; i<lst.size(); i++) {
-            String id = (String)lst.get(i);
-            if (id==null || id.equals(Preference.BLANK_PREF_VALUE))
-                continue;
-            
-            String pref = (String) lstL.get(i);
-            Debug.debug("Period: " + id + ": " + pref);
-
-            ExamPeriodDAO pdao = new ExamPeriodDAO();
-            ExamPeriod period = pdao.get(new Long(id));
-            
-            ExamPeriodPref xp = new ExamPeriodPref();
-            xp.setOwner(pg);
-            xp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
-            xp.setExamPeriod(period);
-
-            s.add(xp);
-        }*/
-        if (pg instanceof Exam) { 
+        if (pg instanceof Exam) {
             Exam exam = (Exam)pg;
-            ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
-            ExamAssignment assignment = null;
-            if (solver!=null && exam!=null && exam.getUniqueId()!=null)
-                assignment = solver.getAssignment(exam.getUniqueId());
-            else if (exam.getAssignedPeriod()!=null)
-                assignment = new ExamAssignment(exam);
-            if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
-            	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType(), assignment);
-                epx.load(exam);
-                epx.load(request);
-                epx.save(s, exam);
+            if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
+                ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
+                ExamAssignment assignment = null;
+                if (solver!=null && exam!=null && exam.getUniqueId()!=null)
+                    assignment = solver.getAssignment(exam.getUniqueId());
+                else if (exam.getAssignedPeriod()!=null)
+                    assignment = new ExamAssignment(exam);
+                if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
+                	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType(), assignment);
+                    epx.load(exam);
+                    epx.load(request);
+                    epx.save(s, exam);
+                } else {
+                	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment, exam.getExamType().getUniqueId());
+                	px.load(exam);
+                	RequiredTimeTable rtt = new RequiredTimeTable(px);
+                	rtt.setName("PeriodPref");
+                	rtt.update(request);
+                	px.save(s, exam);
+                }
             } else {
-            	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), assignment, exam.getExamType().getUniqueId());
-            	px.load(exam);
-            	RequiredTimeTable rtt = new RequiredTimeTable(px);
-            	rtt.setName("PeriodPref");
-            	rtt.update(request);
-            	px.save(s, exam);
+                String pattern = request.getParameter("periodPrefs");
+                if (pattern.indexOf(':') >= 0)
+                	pattern = pattern.substring(pattern.lastIndexOf(':') + 1);
+                int idx = 0;
+                String defaultPref = (exam.getExamType().getType() == ExamType.sExamTypeMidterm ? PreferenceLevel.sProhibited : PreferenceLevel.sNeutral);
+        		for (ExamPeriod period: ExamPeriod.findAll(exam.getSession().getUniqueId(), exam.getExamType().getUniqueId())) {
+        			char ch = (exam.getExamType().getType() == ExamType.sExamTypeMidterm ? 'P' : '2');
+        			try {
+    					ch = pattern.charAt(idx++);
+    				} catch (IndexOutOfBoundsException e) {}
+        			String pref = PreferenceLevel.char2prolog(ch);
+        			if (!defaultPref.equals(pref)) {
+            			ExamPeriodPref p = new ExamPeriodPref();
+                        p.setOwner(pg);
+                        p.setExamPeriod(period);
+                        p.setPrefLevel(PreferenceLevel.getPreferenceLevel(pref));
+                        s.add(p);
+        			}
+        		}            	
             }
         }
         
@@ -872,30 +877,46 @@ public class PreferencesAction extends Action {
             Exam exam, 
             String op, 
             boolean timeVertical, boolean editable) throws Exception {
-        
-        ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
-        ExamAssignment assignment = null;
-        if (solver!=null && exam!=null)
-            assignment = solver.getAssignment(exam.getUniqueId());
-        else if (exam!=null && exam.getAssignedPeriod()!=null)
-            assignment = new ExamAssignment(exam);
-        ExamType type = (exam == null ? ExamTypeDAO.getInstance().get(((ExamEditForm)frm).getExamType()) : exam.getExamType());
-        if (ExamType.sExamTypeMidterm==type.getType()) {
-        	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam == null ? SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()) : exam.getSession(), type, assignment);
-        	if (exam!=null) epx.load(exam);
-        	frm.setHasNotAvailable(true);
-        	if (!op.equals("init")) epx.load(request);
-        	request.setAttribute("ExamPeriodGrid", epx.print(editable, (editable?0:exam.getLength())));
-        } else {
-            PeriodPreferenceModel px = new PeriodPreferenceModel(exam == null ? SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()) : exam.getSession(), assignment, type.getUniqueId());
-            if (exam!=null) px.load(exam);
-            px.setAllowHard(sessionContext.hasPermission(exam, Right.CanUseHardTimePrefs));
-            frm.setHasNotAvailable(px.hasNotAvailable());
-            RequiredTimeTable rtt = new RequiredTimeTable(px);
-            rtt.setName("PeriodPref");
-            if(!op.equals("init")) rtt.update(request);
-            request.setAttribute("ExamPeriodGrid", rtt.print(editable, timeVertical, editable, false));
-        }
+
+    	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
+            ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
+            ExamAssignment assignment = null;
+            if (solver!=null && exam!=null)
+                assignment = solver.getAssignment(exam.getUniqueId());
+            else if (exam!=null && exam.getAssignedPeriod()!=null)
+                assignment = new ExamAssignment(exam);
+            ExamType type = (exam == null ? ExamTypeDAO.getInstance().get(((ExamEditForm)frm).getExamType()) : exam.getExamType());
+            if (ExamType.sExamTypeMidterm==type.getType()) {
+            	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam == null ? SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()) : exam.getSession(), type, assignment);
+            	if (exam!=null) epx.load(exam);
+            	frm.setHasNotAvailable(true);
+            	if (!op.equals("init")) epx.load(request);
+            	request.setAttribute("ExamPeriodGrid", epx.print(editable, (editable?0:exam.getLength())));
+            } else {
+                PeriodPreferenceModel px = new PeriodPreferenceModel(exam == null ? SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()) : exam.getSession(), assignment, type.getUniqueId());
+                if (exam!=null) px.load(exam);
+                px.setAllowHard(sessionContext.hasPermission(exam, Right.CanUseHardTimePrefs));
+                frm.setHasNotAvailable(px.hasNotAvailable());
+                RequiredTimeTable rtt = new RequiredTimeTable(px);
+                rtt.setName("PeriodPref");
+                if(!op.equals("init")) rtt.update(request);
+                request.setAttribute("ExamPeriodGrid", rtt.print(editable, timeVertical, editable, false));
+            }
+    	} else {
+        	RoomInterface.PeriodPreferenceModel model = new PeriodPreferencesBackend().loadExamPeriodPreferences(
+        			WebSolver.getExamSolver(request.getSession()),
+        			exam,
+        			(exam == null ? ExamTypeDAO.getInstance().get(((ExamEditForm)frm).getExamType()) : exam.getExamType()),
+        			sessionContext);
+    		if (!op.equals("init") && request.getParameter("periodPrefs") != null)
+    			model.setPattern(request.getParameter("periodPrefs"));
+    		
+    		if (editable) {
+            	request.setAttribute("ExamPeriodGrid", "<div id='UniTimeGWT:PeriodPreferences'><input type=\"hidden\" name=\"periodPrefs\" value=\"" + model.getPattern() + "\"></div>");
+            } else {
+            	request.setAttribute("ExamPeriodGrid", "<div id='UniTimeGWT:PeriodPreferences' style='display: none;'>" + model.getPattern() + "</div>");
+            }
+    	}
     }
     
     /**

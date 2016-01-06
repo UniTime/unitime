@@ -34,7 +34,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public class PeriodPreferencesHint {
 	private static PeriodPreferencesWidget sSharing;
-	private static long sLastLocationId = -1;
+	private static Long sLastLocationId = null;
 	private static boolean sShowHint = false;
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
@@ -46,11 +46,15 @@ public class PeriodPreferencesHint {
 	}
 	
 	/** Never use from GWT code */
-	public static void _showPeriodPreferencesHint(JavaScriptObject source, Long locationId, Long examTypeId) {
-		showHint((Element) source.cast(), locationId, examTypeId);
+	public static void _showPeriodPreferencesHint(JavaScriptObject source, String locationId, String examTypeId) {
+		showHint((Element) source.cast(), toLong(locationId), toLong(examTypeId));
 	}
 	
-	public static void showHint(final Element relativeObject, final long locationId, final long examTypeId) {
+	public static void _showExamPeriodPreferencesHint(JavaScriptObject source, String examId, String periodId) {
+		showHintForExam((Element) source.cast(), toLong(examId), toLong(periodId));
+	}
+
+	public static void showHint(final Element relativeObject, final Long locationId, final Long examTypeId) {
 		sLastLocationId = locationId;
 		sShowHint = true;
 		RPC.execute(RoomInterface.PeriodPreferenceRequest.load(locationId, examTypeId), new AsyncCallback<RoomInterface.PeriodPreferenceModel>() {
@@ -60,8 +64,26 @@ public class PeriodPreferencesHint {
 			
 			@Override
 			public void onSuccess(RoomInterface.PeriodPreferenceModel result) {
-				if (locationId == sLastLocationId && sShowHint && result != null)
+				if (locationId.equals(sLastLocationId) && sShowHint && result != null)
 					GwtHint.showHint(relativeObject, content(result));
+			}
+		});
+	}
+	
+	public static void showHintForExam(final Element relativeObject, final Long examId, final Long periodId) {
+		sLastLocationId = examId;
+		sShowHint = true;
+		RPC.execute(RoomInterface.PeriodPreferenceRequest.loadForExam(examId, null), new AsyncCallback<RoomInterface.PeriodPreferenceModel>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			
+			@Override
+			public void onSuccess(RoomInterface.PeriodPreferenceModel result) {
+				if (examId.equals(sLastLocationId) && sShowHint && result != null) {
+					if (periodId != null) result.setAssignedPeriodId(periodId);
+					GwtHint.showHint(relativeObject, content(result));
+				}
 			}
 		});
 	}
@@ -73,12 +95,22 @@ public class PeriodPreferencesHint {
 	
 	public static native void createTriggers()/*-{
 	$wnd.showGwtPeriodPreferencesHint = function(source, locationId, examTypeId) {
-		@org.unitime.timetable.gwt.client.rooms.PeriodPreferencesHint::_showPeriodPreferencesHint(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/Long;Ljava/lang/Long;)(source, locationId, examTypeId);
+		@org.unitime.timetable.gwt.client.rooms.PeriodPreferencesHint::_showPeriodPreferencesHint(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;)(source, locationId, examTypeId);
+	};
+	$wnd.showGwtExamPeriodPreferencesHint = function(source, examId, periodId) {
+		@org.unitime.timetable.gwt.client.rooms.PeriodPreferencesHint::_showExamPeriodPreferencesHint(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;)(source, examId, periodId);
 	};
 	$wnd.hideGwtPeriodPreferencesHint = function() {
 		@org.unitime.timetable.gwt.client.rooms.PeriodPreferencesHint::hideHint()();
 	};
-}-*/;
+	}-*/;
 
+	private static Long toLong(String value) {
+		try {
+			return Long.valueOf(value);
+		} catch (Exception e) {
+			return null;
+		}
+	}
 
 }

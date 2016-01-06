@@ -2567,7 +2567,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Confirmation")
 	String dialogConfirmation();
 	
-	@DefaultMessage("Alert")
+	@DefaultMessage("Warning")
 	String dialogAlert();
 	
 	@DefaultMessage("Details of {0}")
@@ -4116,4 +4116,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("{1} {0}")
 	@DoNotTranslate
 	String roomPreferenceShort(String department, String preference);
+	
+	@DefaultMessage("Application of required preference will remove all not required preferences.")
+	String warnPreferenceUseRequired();
+	
+	@DefaultMessage("Application of this preference will remove all required preferences.")
+	String warnPreferenceUseNotRequired();
 }

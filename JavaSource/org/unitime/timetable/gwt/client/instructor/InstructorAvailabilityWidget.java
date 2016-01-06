@@ -112,6 +112,7 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 			case -5: return '3';
 			case -6: return '4';
 			case -7: return 'P';
+			case -8: return 'N';
 			default: return '2';
 			}
 		}
@@ -125,6 +126,7 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 			case '3': return -5l;
 			case '4': return -6l;
 			case 'P': return -7l;
+			case 'N': return -8l;
 			default: return -4l;
 			}
 		}

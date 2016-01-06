@@ -23,6 +23,7 @@ import org.unitime.timetable.gwt.client.admin.ClearHibernateCache;
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityHint;
 import org.unitime.timetable.gwt.client.page.Refresh;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.rooms.PeriodPreferencesHint;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.rooms.RoomSharingHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -92,6 +93,11 @@ public enum Triggers {
 	confirmations(new Command() {
 		public void execute() {
 			UniTimeConfirmationDialog.createTriggers();
+		}
+	}),
+	periodHint(new Command() {
+		public void execute() {
+			PeriodPreferencesHint.createTriggers();
 		}
 	}),
 	;

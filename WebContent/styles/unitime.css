@@ -2958,6 +2958,13 @@ div.gwt-MenuBarPopup {
 	overflow: hidden;
 }
 
+.unitime-RoomSharingWidget .highlight {
+	-moz-box-shadow: inset 0 0 0 2px blue;
+	-webkit-box-shadow: inset 0 0 0 2px blue;
+	box-shadow: inset 0 0 0 2px blue;
+	padding: 2px;
+}
+
 .unitime-RoomSharingWidget .corner {
 	border-right: 1px solid black;
 	border-bottom: 1px solid black;

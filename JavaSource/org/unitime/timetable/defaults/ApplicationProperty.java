@@ -2045,9 +2045,14 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Legacy: switch the user interface back to the old (Struts-based) rooms pages")
+	@Description("Rooms: switch the user interface back to the old (Struts-based) rooms pages")
 	LegacyRooms("unitime.legacy.rooms"),
 		
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Examinations: switch the user interface back to the old period preferences")
+	LegacyPeriodPreferences("unitime.legacy.periodPrefs"),
+
 	@Type(Integer.class)
 	@DefaultValue("998")
 	@Description("Maximum number of classes a scheduling subpart can contain.  Defaults to 998.")

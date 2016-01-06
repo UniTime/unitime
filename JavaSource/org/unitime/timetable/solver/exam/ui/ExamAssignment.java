@@ -50,6 +50,7 @@ import org.cpsolver.exam.model.ExamRoomPlacement;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
@@ -250,18 +251,32 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     
     public String getPeriodNameWithPref() {
         if (iPeriodPref==null) return getPeriodName();
-        return
-            "<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtTimeHint(this, '" + getExamId() + "," + getPeriodId() + "');\" onmouseout=\"hideGwtTimeHint();\">"+
-            getPeriodName()+
-            "</span>";
+        if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
+            return
+                    "<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtTimeHint(this, '" + getExamId() + "," + getPeriodId() + "');\" onmouseout=\"hideGwtTimeHint();\">"+
+                    getPeriodName()+
+                    "</span>";
+        } else {
+            return
+                    "<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtExamPeriodPreferencesHint(this,'" + getExamId() + "','" + getPeriodId() + "');\" onmouseout=\"hideGwtPeriodPreferencesHint();\">"+
+                    getPeriodName()+
+                    "</span>";
+        }
     }
     
     public String getPeriodAbbreviationWithPref() {
         if (iPeriodPref==null) return getPeriodAbbreviation();
-        return
-        	"<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtTimeHint(this, '" + getExamId() + "," + getPeriodId() + "');\" onmouseout=\"hideGwtTimeHint();\">"+
-            getPeriodAbbreviation()+
-            "</span>";
+        if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
+            return
+                	"<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtTimeHint(this, '" + getExamId() + "," + getPeriodId() + "');\" onmouseout=\"hideGwtTimeHint();\">"+
+                    getPeriodAbbreviation()+
+                    "</span>";
+        } else {
+            return
+                	"<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtExamPeriodPreferencesHint(this,'" + getExamId() + "','" + getPeriodId() + "');\" onmouseout=\"hideGwtPeriodPreferencesHint();\">"+
+                    getPeriodAbbreviation()+
+                    "</span>";
+        }
     }
     
     public String getDate(boolean pref) {

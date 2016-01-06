@@ -39,6 +39,7 @@ import org.apache.struts.action.ActionMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamListForm;
@@ -244,22 +245,37 @@ public class ExamListAction extends Action {
                 if (roomPref.length()>0 && !roomPref.endsWith(nl)) roomPref+=nl;
                 roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
                 if (roomPref.endsWith(nl)) roomPref = roomPref.substring(0, roomPref.length()-nl.length());
-                if (timeText || ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
-                	if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
-                    	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType());
-                    	epx.load(exam);
-                    	perPref+=epx.toString(true);
-                	} else {
-                		perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
-                	}
+                if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
+                    if (timeText || ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
+                    	if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
+                        	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType());
+                        	epx.load(exam);
+                        	perPref+=epx.toString(true);
+                    	} else {
+                    		perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
+                    	}
+                    } else {
+                        PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea, exam.getExamType().getUniqueId());
+                        RequiredTimeTable rtt = new RequiredTimeTable(px);
+                        px.load(exam);
+                        String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+                        perPref = "<img border='0' src='" +
+                        	"pattern?v=" + (timeVertical ? 1 : 0) + "&x="+exam.getUniqueId() + (ea == null ? "" : "&ap=" + ea.getPeriodId()) +
+                			"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
+                    }                	
                 } else {
-                    PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea, exam.getExamType().getUniqueId());
-                    RequiredTimeTable rtt = new RequiredTimeTable(px);
-                    px.load(exam);
-                    String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-                    perPref = "<img border='0' src='" +
-                    	"pattern?v=" + (timeVertical ? 1 : 0) + "&x="+exam.getUniqueId() + (ea == null ? "" : "&ap=" + ea.getPeriodId()) +
-            			"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
+                    if (timeText || ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
+                    	if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
+                        	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType());
+                        	epx.load(exam);
+                        	perPref += "<span onmouseover=\"showGwtExamPeriodPreferencesHint(this, '" + exam.getUniqueId() + "', null);\" onmouseout=\"hideGwtPeriodPreferencesHint();\">" + epx.toString(true) + "</span>";
+                    	} else {
+                    		perPref += "<span onmouseover=\"showGwtExamPeriodPreferencesHint(this, '" + exam.getUniqueId() + "', null);\" onmouseout=\"hideGwtPeriodPreferencesHint();\">" + exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class) + "</span>";
+                    	}
+                    } else {
+                        perPref = "<img border='0' src='pattern?v=" + (timeVertical ? 1 : 0) + "&x="+exam.getUniqueId() + (ea == null ? "" : "&ap=" + ea.getPeriodId()) +
+                			"' onmouseover=\"showGwtExamPeriodPreferencesHint(this, '" + exam.getUniqueId() + "', null);\" onmouseout=\"hideGwtPeriodPreferencesHint();\">";
+                    }                	
                 }
                 distPref += exam.getEffectivePrefHtmlForPrefType(DistributionPref.class);
             } else {
