@@ -1054,7 +1054,7 @@ create table `manager_settings` (
 create table `meeting` (
   `uniqueid` decimal(20,0) not null,
   `event_id` decimal(20,0) not null,
-  `meeting_date` datetime not null,
+  `meeting_date` date not null,
   `start_period` bigint(10) not null,
   `start_offset` bigint(10) default null,
   `stop_period` bigint(10) not null,

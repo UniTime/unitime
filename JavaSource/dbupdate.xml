@@ -3131,7 +3131,7 @@
 				(
   				uniqueid decimal(20,0) not null primary key,
   				reservation_type bigint(10) not null,
-  				expiration_date datetime,
+  				expiration_date date,
   				reservation_limit bigint(10),
   				offering_id decimal(20,0) not null,
   				group_id decimal(20,0),
@@ -10680,5 +10680,9 @@
 	<update version="155" date="12-Dec-2015" comment="Department allow student scheduling toggle">
 		<mysql>alter table %SCHEMA%.department add allow_student_schd int(1) null default 1</mysql>
 		<plsql>alter table %SCHEMA%.department add allow_student_schd number(1) default 1</plsql>
+	</update>
+	<update version="156" date="7-Jan-2016" comment="MySQL meeting and expiration dates fix">
+		<mysql>alter table %SCHEMA%.meeting modify meeting_date date not null</mysql>
+		<mysql>alter table %SCHEMA%.reservation modify expiration_date date</mysql>
 	</update>
 </dbupdate>
