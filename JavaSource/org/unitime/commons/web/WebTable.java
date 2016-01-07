@@ -232,7 +232,7 @@ public class WebTable {
 
     /** returns table's HTML code */
     public String printTable() {
-        return printTable(-1);
+        return printTable(0);
     }
     
     /** is column filtered? */
