@@ -1105,7 +1105,7 @@ public class Class_ extends BaseClass_ {
 		newClass.setRoomRatio(getRoomRatio());
 		newClass.setSchedulePrintNote(getSchedulePrintNote());
 		newClass.setSchedulingSubpart(getSchedulingSubpart());
-		newClass.setCancelled(isCancelled());
+		newClass.setCancelled(false);
 		return(newClass);
 	}
 	
