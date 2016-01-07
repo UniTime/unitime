@@ -51,9 +51,12 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ListSolutionsForm.InfoComparator;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.base.BaseSolution;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.DivSecAssignmentComparator;
+import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolutionInfoDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
@@ -1365,7 +1368,65 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
     }
     
 	@Override
-	public Set<Assignment> getConflicts(Class_ clazz) throws Exception {
+	public boolean hasConflicts(Long offeringId) throws Exception {
+		InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId);
+		if (offering == null || offering.isNotOffered()) return false;
+		
+		for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
+			for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+				for (Class_ clazz: subpart.getClasses()) {
+					if (clazz.isCancelled()) continue;
+					Assignment assignment = getAssignment(clazz);
+					if (assignment == null) continue;
+					if (assignment.getRooms() != null)
+						for (Location room : assignment.getRooms()) {
+							if (!room.isIgnoreRoomCheck()) {
+								for (Assignment a : room.getCommitedAssignments())
+									if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareRoom(a.getClazz()))
+										return true;
+			            	}
+			            }
+					
+					if (clazz.getClassInstructors() != null)
+						for (ClassInstructor instructor: clazz.getClassInstructors()) {
+							if (!instructor.isLead()) continue;
+							for (DepartmentalInstructor di: DepartmentalInstructor.getAllForInstructor(instructor.getInstructor())) {
+								for (ClassInstructor ci : di.getClasses()) {
+				            		if (ci.equals(instructor)) continue;
+				            		Assignment a = getAssignment(ci.getClassInstructing());
+				            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareInstructor(a.getClazz()))
+				            			return true;
+				            	}
+			            	}
+						}
+					
+			        Class_ parent = clazz.getParentClass();
+			        while (parent!=null) {
+			        	Assignment a = getAssignment(parent);
+			        	if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
+			        		return true;
+			        	parent = parent.getParentClass();
+			        }
+			        
+			        for (Iterator<SchedulingSubpart> i = clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts().iterator(); i.hasNext();) {
+			        	SchedulingSubpart ss = i.next();
+			        	if (ss.getClasses().size() == 1) {
+			        		Class_ child = ss.getClasses().iterator().next();
+			        		if (clazz.equals(child)) continue;
+			        		Assignment a = getAssignment(child);
+			        		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
+			        			return true;
+			        	}
+			        }
+				}
+		
+		return false;
+	}
+    
+	@Override
+	public Set<Assignment> getConflicts(Long classId) throws Exception {
+		if (classId == null) return null;
+		Class_ clazz = Class_DAO.getInstance().get(classId);
 		if (clazz == null || clazz.isCancelled()) return null;
 		Assignment assignment = getAssignment(clazz);
 		if (assignment == null) return null;
@@ -1422,5 +1483,10 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         }
         
         return conflicts;
+	}
+	
+	@Override
+	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) throws Exception {
+		return null;
 	}
 }

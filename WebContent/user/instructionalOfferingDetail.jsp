@@ -448,6 +448,15 @@
 				</TD>
 			</TR>
 		</logic:notEmpty>
+		<logic:equal name="instructionalOfferingDetailForm" property="hasConflict" value="true">
+			<TR>
+				<TD></TD>
+				<TD>
+					<IMG src="images/warning.png" alt="WARNING" title="<%=MSG.warnOfferingHasConflictingClasses() %>" border="0">
+					<font color="#FF0000"><loc:message name="warnOfferingHasConflictingClasses"/></font>
+				</TD>
+			</TR>
+		</logic:equal>
 		
 		<sec:authorize access="hasPermission(null, 'Session', 'CurriculumView')">
 		<TR>

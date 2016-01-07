@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
@@ -48,9 +49,11 @@ import org.unitime.timetable.interfaces.ExternalInstructionalOfferingDeleteActio
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingNotOfferedAction;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingOfferedAction;
 import org.unitime.timetable.interfaces.ExternalLinkLookup;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Event;
@@ -59,12 +62,17 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.service.AssignmentService;
+import org.unitime.timetable.util.DefaultRoomAvailabilityService;
+import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
 
@@ -83,6 +91,8 @@ public class InstructionalOfferingDetailAction extends Action {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -318,6 +328,22 @@ public class InstructionalOfferingDetailAction extends Action {
             throw (e);
         }
 	}
+	
+	private boolean hasConflicts(HttpServletRequest request, InstructionalOffering io) {
+        if (RoomAvailability.getInstance()!=null && !(RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService)) {
+            Session session = io.getSession();
+            Date[] bounds = DatePattern.getBounds(session.getUniqueId());
+            RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],RoomAvailabilityInterface.sClassType, false);
+            RoomAvailability.setAvailabilityWarning(request, session, true, true);
+        }
+
+        ClassAssignmentProxy proxy = classAssignmentService.getAssignment();
+		try {
+			if (proxy != null) return proxy.hasConflicts(io.getUniqueId());
+		} catch (Exception e) {}
+		
+		return false;
+	}
 
 	/**
      * Loads the form initially
@@ -366,6 +392,7 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setWkChange(io.getLastWeekToChange() == null ? "" : io.getLastWeekToChange().toString());
         frm.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
         frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
+        frm.setHasConflict(hasConflicts(request, io));
         String coordinators = "";
         String instructorNameFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
         for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(io.getCoordinators())) {
@@ -448,8 +475,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
         String html = tbl.getDistPrefsTableForInstructionalOffering(request, sessionContext, io);
         if (html!=null && html.indexOf(MSG.noPreferencesFound())<0)
-        	request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);	    
-        
+        	request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
     }
 
     /**

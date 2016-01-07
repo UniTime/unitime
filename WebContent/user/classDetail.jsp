@@ -366,6 +366,17 @@
 		</TR>
 	</logic:notEmpty>
 
+	<logic:notEmpty name="EVENT_CONFLICTS" scope="request">
+		<TR>
+			<TD colspan="2">
+				<br>
+				<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+					<bean:write name="EVENT_CONFLICTS" scope="request" filter="false"/>
+				</TABLE>
+			</TD>
+		</TR>
+	</logic:notEmpty>
+
 <!-- Preferences -->
 		<TR>
 			<TD colspan="2" valign="middle">

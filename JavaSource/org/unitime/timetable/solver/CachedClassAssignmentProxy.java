@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.Enumeration;
 
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
@@ -152,9 +153,19 @@ public class CachedClassAssignmentProxy implements ClassAssignmentProxy {
 			iAssignmentInfoTable.put(classId, (info==null?sNULL:info));
 		}
 	}
+	
+	@Override
+	public boolean hasConflicts(Long offeringId) throws Exception {
+		return iProxy.hasConflicts(offeringId);
+	}
 
 	@Override
-	public Set<Assignment> getConflicts(Class_ clazz) throws Exception {
-		return iProxy.getConflicts(clazz);
+	public Set<Assignment> getConflicts(Long classId) throws Exception {
+		return iProxy.getConflicts(classId);
+	}
+	
+	@Override
+	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) throws Exception {
+		return iProxy.getConflictingTimeBlocks(classId);
 	}
 }

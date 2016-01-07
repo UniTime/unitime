@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -268,6 +269,19 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
         		if (dummy.overlaps(time)) return time;
         }
         return null;
+    }
+    
+    public List<TimeBlock> allOverlaps(Collection<TimeBlock> times) {
+    	if (times==null || times.isEmpty()) return null;
+        int breakTimeStart = ApplicationProperty.RoomAvailabilityClassBreakTimeStart.intValue(); 
+        int breakTimeStop = ApplicationProperty.RoomAvailabilityClassBreakTimeStop.intValue();
+        List<TimeBlock> blocks = new ArrayList<TimeBlock>();
+        for (Date date: getDates()) {
+        	DummyTimeBlock dummy = new DummyTimeBlock(date, breakTimeStart, breakTimeStop);
+        	for (TimeBlock time: times)
+        		if (dummy.overlaps(time)) blocks.add(time);
+        }
+        return blocks;
     }
 
     public class DummyTimeBlock implements TimeBlock {

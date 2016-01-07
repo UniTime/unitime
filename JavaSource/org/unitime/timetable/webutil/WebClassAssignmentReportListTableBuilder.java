@@ -157,7 +157,7 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
 		    }
 		        
             
-            this.buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, "", context, prevLabel);
+            this.buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, 0, context, prevLabel);
             prevLabel = c.getClassLabel(co);
         }  
         if(table != null)

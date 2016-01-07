@@ -21,6 +21,7 @@ package org.unitime.timetable.interfaces;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -47,5 +48,17 @@ public interface RoomAvailabilityInterface {
         public String getEventType();
         public Date getStartTime();
         public Date getEndTime();
+    }
+    
+    public static class TimeBlockComparator implements Comparator<TimeBlock> {
+    	public int compare(TimeBlock t1, TimeBlock t2) {
+    		int cmp = t1.getEventName().compareToIgnoreCase(t2.getEventName());
+    		if (cmp != 0) return cmp;
+    		cmp = t1.getEventType().compareToIgnoreCase(t2.getEventType());
+    		if (cmp != 0) return cmp;
+    		cmp = t1.getStartTime().compareTo(t2.getStartTime());
+    		if (cmp != 0) return cmp;
+    		return t1.getEndTime().compareTo(t2.getEndTime());
+    	}
     }
 }

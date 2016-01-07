@@ -267,6 +267,7 @@
 	if (frm.getInstrOfferingId() != null){
 		WebClassListTableBuilder subpartClsTableBuilder = new WebClassListTableBuilder();
 		subpartClsTableBuilder.setDisplayDistributionPrefs(false);
+		subpartClsTableBuilder.setDisplayConflicts(true);
 		subpartClsTableBuilder.htmlTableForSubpartClasses(
 									sessionContext,
 				    		        WebSolver.getClassAssignmentProxy(session),

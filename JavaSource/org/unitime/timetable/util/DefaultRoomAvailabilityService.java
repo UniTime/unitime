@@ -261,17 +261,19 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
     
     public static class MeetingTimeBlock implements TimeBlock, Comparable<TimeBlock> {
 		private static final long serialVersionUID = -5557707709984628517L;
-		Long iMeetingId;
+		Long iEventId, iMeetingId;
         String iEventName, iEventType;
         Date iStart, iEnd;
         public MeetingTimeBlock(Meeting m, EventDateMapping.Class2EventDateMap class2eventDateMap) {
+        	iEventId = m.getEvent().getUniqueId();
             iMeetingId = m.getUniqueId();
             iEventName = m.getEvent().getEventName();
-            iEventType = m.getEvent().getEventTypeLabel();
+            iEventType = m.getEvent().getEventTypeAbbv();
             iStart = m.getTrueStartTime(class2eventDateMap);
             iEnd = m.getTrueStopTime(class2eventDateMap);
         }
-        public Long getId() { return iMeetingId; }
+        public Long getEventId() { return iEventId; }
+        public Long getMeetingId() { return iMeetingId; }
         public String getEventName() { return iEventName; }
         public String getEventType() { return iEventType; }
         public Date getStartTime() { return iStart; }
@@ -284,10 +286,10 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         public boolean equals(Object o) {
             if (o==null || !(o instanceof MeetingTimeBlock)) return false;
             MeetingTimeBlock m = (MeetingTimeBlock)o;
-            return getId().equals(m.getId());
+            return getMeetingId().equals(m.getMeetingId());
         }
         public int hashCode() {
-            return getId().hashCode();
+            return getMeetingId().hashCode();
         }
         public int compareTo(TimeBlock block) {
             int cmp = getStartTime().compareTo(block.getStartTime());

@@ -144,15 +144,19 @@ public class WebClassListTableBuilder extends
 				}
 		        table = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId());
 		    }		        
-            this.buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, "", context, prevLabel);
+            this.buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, 0, context, prevLabel);
             prevLabel = c.getClassLabel(co);
         }  
         table.tableComplete();
     }
 	
-    protected TableCell buildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel){
+    protected TableCell buildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, int indentSpaces, boolean isEditable, String prevLabel){
     	if (prefGroup instanceof Class_) {
-    		TableCell cell = initNormalCell(indentSpaces, isEditable);
+    		TableCell cell = initNormalCell("", isEditable);
+        	if (indentSpaces > 0) {
+        		int pad = indentSpaces * indent;
+        		cell.setStyle("padding-left: " + pad + "px;");
+        	}
     		Class_ aClass = (Class_) prefGroup;
 	    	if(!isEditable){
 	    		cell.addContent("<font color='"+disabledColor+"'>");
@@ -182,8 +186,8 @@ public class WebClassListTableBuilder extends
         		cell.addContent(" (<span title='" + im.getLabel() + "'>" + im.getReference() + ")");
 	        return(cell);
         } else {
-        	return(super.buildPrefGroupLabel(co, prefGroup,indentSpaces, isEditable, null));
-        }     
+        	return(super.buildPrefGroupLabel(co, prefGroup,indentSpaces, isEditable, null, null));
+        }
     }
 	
     public void htmlTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, TreeSet classes, Long subjectAreaId, SessionContext context, JspWriter outputStream){
@@ -242,7 +246,7 @@ public class WebClassListTableBuilder extends
         int ct = 0;
         while (it.hasNext()){
             cls = (Class_) it.next();
-            this.buildClassRow(classAssignment, examAssignment, ++ct, table, co, cls, "", context, prevLabel);
+            this.buildClassRow(classAssignment, examAssignment, ++ct, table, co, cls, 0, context, prevLabel);
             prevLabel = cls.getClassLabel(co);
         }     
         table.tableComplete();

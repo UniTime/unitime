@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Set;
 
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
@@ -39,5 +40,8 @@ public interface ClassAssignmentProxy {
 	
 	public Hashtable getAssignmentTable(Collection classesOrClassIds) throws Exception;
 	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) throws Exception;
-	public Set<Assignment> getConflicts(Class_ clazz) throws Exception;
+	
+	public boolean hasConflicts(Long offeringId) throws Exception;
+	public Set<Assignment> getConflicts(Long classId) throws Exception;
+	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) throws Exception;
 }

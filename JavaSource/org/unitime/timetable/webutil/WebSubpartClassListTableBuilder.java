@@ -52,9 +52,13 @@ public class WebSubpartClassListTableBuilder extends WebClassListTableBuilder {
 		return(sb.toString());
 	}
 
-    protected TableCell buildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable){
+    protected TableCell buildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, int indentSpaces, boolean isEditable){
     	if (prefGroup instanceof Class_) {
-    		TableCell cell = initNormalCell(indentSpaces, isEditable);
+    		TableCell cell = initNormalCell("", isEditable);
+    		if (indentSpaces > 0) {
+        		int pad = indentSpaces * indent;
+        		cell.setStyle("padding-left: " + pad + "px;");
+        	}
         	if ("PreferenceGroup".equals(getBackType()) && prefGroup.getUniqueId().toString().equals(getBackId()))
         		cell.addContent("<A name=\"back\"></A>");
     		Class_ aClass = (Class_) prefGroup;

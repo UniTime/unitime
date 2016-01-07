@@ -80,6 +80,7 @@ import org.hibernate.Transaction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -1730,9 +1731,19 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 	public boolean hasFinalSectioning() {
 		return ((TimetableModel)currentSolution().getModel()).getStudentSectioning().hasFinalSectioning();
 	}
+	
+	@Override
+	public boolean hasConflicts(Long offeringId) throws Exception {
+		return false;
+	}
 
 	@Override
-	public Set<Assignment> getConflicts(Class_ clazz) throws Exception {
+	public Set<Assignment> getConflicts(Long classId) throws Exception {
+		return null;
+	}
+	
+	@Override
+	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) throws Exception {
 		return null;
 	}
 }

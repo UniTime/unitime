@@ -678,14 +678,14 @@ public abstract class Location extends BaseLocation implements Comparable {
     	if (solutionId.isEmpty()) return getCommitedAssignments();
     	List<Assignment> ret = new ArrayList<Assignment>(new LocationDAO().getSession().createQuery(
     			"select a from Assignment a inner join a.rooms r where " +
-    			"r.uniqueId = :locationId and a.solution.uniqueId in :solutionIds")
+    			"r.uniqueId = :locationId and a.solution.uniqueId in (:solutionIds)")
     			.setLong("locationId", getUniqueId())
     			.setParameterList("solutionIds", solutionId, new LongType())
     			.setCacheable(true).list());
     	ret.addAll(new LocationDAO().getSession().createQuery(
     			"select a from Assignment a inner join a.rooms r where " +
                 "r.uniqueId = :locationId and a.solution.commited = true and " +
-    			"a.solution.owner.uniqueId not in (select s.owner.uniqueId from Solution s where s.uniqueId in :solutionIds)")
+    			"a.solution.owner.uniqueId not in (select s.owner.uniqueId from Solution s where s.uniqueId in (:solutionIds))")
     			.setLong("locationId", getUniqueId())
     			.setParameterList("solutionIds", solutionId, new LongType())
                 .setCacheable(true).list());

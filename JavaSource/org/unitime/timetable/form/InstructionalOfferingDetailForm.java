@@ -79,6 +79,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private String wkEnroll, wkChange, wkDrop;
     private String weekStartDayOfWeek;
     private String accommodation;
+    private boolean hasConflict;
 
 
     // --------------------------------------------------------- Classes
@@ -136,6 +137,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         wkEnroll = null; wkChange = null; wkDrop = null;
         weekStartDayOfWeek = null;
         accommodation = null;
+        hasConflict = false;
     }
     
     public List getCourseOfferings() {
@@ -359,5 +361,8 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     		if (((CourseOffering)i.next()).getReservation() != null) return true;
     	return false;
     }
+
+	public boolean isHasConflict() { return hasConflict; }
+	public void setHasConflict(boolean hasConflict) { this.hasConflict = hasConflict; }
 
 }

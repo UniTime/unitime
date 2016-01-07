@@ -50,6 +50,8 @@ import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassEditForm;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -60,6 +62,7 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -73,8 +76,11 @@ import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
+import org.unitime.timetable.util.RoomAvailability;
+import org.unitime.timetable.util.DefaultRoomAvailabilityService.MeetingTimeBlock;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
 
@@ -235,8 +241,15 @@ public class ClassDetailAction extends PreferencesAction {
 	        LookupTables.setupRoomGroups(request, c);   // Room Groups
 	        
 	        try {
-	        	ClassAssignmentProxy proxy = classAssignmentService.getAssignment();
-	        	Set<Assignment> conflicts = (proxy == null ? null : proxy.getConflicts(c));
+	            if (RoomAvailability.getInstance()!=null && !(RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService)) {
+	                Session session = c.getManagingDept().getSession();
+	                Date[] bounds = DatePattern.getBounds(session.getUniqueId());
+	                RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],RoomAvailabilityInterface.sClassType, false);
+	                RoomAvailability.setAvailabilityWarning(request, session, true, true);
+	            }
+
+	            ClassAssignmentProxy proxy = classAssignmentService.getAssignment();
+	        	Set<Assignment> conflicts = (proxy == null ? null : proxy.getConflicts(c.getUniqueId()));
 	        	if (conflicts != null && !conflicts.isEmpty()) {
 	        		TreeSet<Assignment> orderedConflicts = new TreeSet<Assignment>(new Comparator<Assignment>() {
 	        			ClassComparator cc = new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY);
@@ -312,6 +325,51 @@ public class ClassDetailAction extends PreferencesAction {
 								});
 	        		}
 	        		request.setAttribute("CLASS_CONFLICTS", table.printTable());
+	        	}
+	        	
+	        	Set<TimeBlock> ec = (proxy == null ? null : proxy.getConflictingTimeBlocks(c.getUniqueId()));
+	        	if (ec != null && !ec.isEmpty()) {
+	        		WebTable table = new WebTable(4, MSG.sectionTitleEventConflicts(), new String[] {
+        					MSG.columnEventName(),
+        					MSG.columnEventType(),
+        					MSG.columnEventDate(),
+        					MSG.columnEventTime()
+	        			}, new String[] {
+	        				"left",
+	        				"left",
+	        				"left",
+	        				"left"
+	        			}, new boolean[] {
+	        				true,
+	        				true,
+	        				true,
+	        				true
+	        		});
+	        		table.setBlankWhenSame(true);
+	        		Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_MEETING);
+	        		Formats.Format<Date> timeFormat = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
+	        		for (TimeBlock block: ec) {
+	        			String link = null;
+	        			if (block instanceof MeetingTimeBlock) {
+	        				MeetingTimeBlock mtb = (MeetingTimeBlock)block;
+	        				if (mtb.getEventId() != null && sessionContext.hasPermission(mtb.getEventId(), Right.EventDetail))
+	        					link = "onClick=\"showGwtDialog('Event Detail', 'gwt.jsp?page=events&menu=hide#event=" + mtb.getEventId() + "','900','85%');\"";
+	        			}
+	        			table.addLine(
+	        					link,
+	        					new String[] {
+	        							block.getEventName(),
+	        							block.getEventType(),
+	        							dateFormat.format(block.getStartTime()),
+	        							timeFormat.format(block.getStartTime()) + " - " + timeFormat.format(block.getEndTime())
+	        					}, new Comparable[] {
+	        							block.getEventName(),
+	        							block.getEventType(),
+	        							block.getStartTime(),
+	        							block.getEndTime()
+								});
+	        		}
+	        		request.setAttribute("EVENT_CONFLICTS", table.printTable());
 	        	}
 	        } catch (Exception e) {
 	        	Debug.error("Failed to compute conflicts: " + e.getMessage(), e);

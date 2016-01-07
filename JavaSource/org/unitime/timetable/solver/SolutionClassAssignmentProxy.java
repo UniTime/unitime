@@ -19,26 +19,43 @@
 */
 package org.unitime.timetable.solver;
 
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.Vector;
 
 import org.hibernate.ObjectNotFoundException;
+import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
+import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlockComparator;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.solver.course.ui.ClassTimeInfo;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
+import org.unitime.timetable.util.RoomAvailability;
 
 /**
  * @author Tomas Muller
@@ -86,23 +103,6 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 			if (solutionId.equals(a.getSolution().getUniqueId())) return a;
 		}
 		return null;
-		/*
-    	String subjectName = clazz.getSchedulingSubpart().getInstrOfferingConfig().getControllingCourseOffering().getSubjectAreaAbbv();
-    	if (iCachedSubjects.add(subjectName+"."+solutionId)) {
-        	Query q = (new AssignmentDAO()).getSession().createQuery(
-    				"select distinct a from Assignment as a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o where " +
-    				"a.solution.uniqueId=:solutionId and " +
-    				"o.isControl=true and o.subjectAreaAbbv=:subjectName");
-    		q.setLong("solutionId",solutionId);
-    		q.setString("subjectName",subjectName);
-    		for (Iterator i=q.list().iterator();i.hasNext();) {
-    			Assignment a = (Assignment)i.next();
-    			a.getAssignmentInfo("AssignmentInfo"); //force loading assignment info
-    			iCachedAssignments.put(a.getClassId(),a);
-    		}
-    	}
-		return (Assignment)iCachedAssignments.get(clazz.getUniqueId());
-		*/
     }
  
     public AssignmentPreferenceInfo getAssignmentInfo(Class_ clazz) throws Exception {
@@ -126,7 +126,107 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
     }
     
 	@Override
-	public Set<Assignment> getConflicts(Class_ clazz) throws Exception {
+	public boolean hasConflicts(Long offeringId) throws Exception {
+		InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId);
+		if (offering == null || offering.isNotOffered()) return false;
+		
+		for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
+			for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+				for (Class_ clazz: subpart.getClasses()) {
+					if (clazz.isCancelled()) continue;
+					Assignment assignment = getAssignment(clazz);
+					if (assignment == null) continue;
+					if (assignment.getRooms() != null)
+						for (Location room : assignment.getRooms()) {
+							if (!room.isIgnoreRoomCheck()) {
+								for (Assignment a : room.getAssignments(iSolutionIds))
+									if (!assignment.equals(a) && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareRoom(a.getClazz()))
+										return true;
+			            	}
+			            }
+					
+					if (clazz.getClassInstructors() != null)
+						for (ClassInstructor instructor: clazz.getClassInstructors()) {
+							if (!instructor.isLead()) continue;
+							for (DepartmentalInstructor di: DepartmentalInstructor.getAllForInstructor(instructor.getInstructor())) {
+								for (ClassInstructor ci : di.getClasses()) {
+				            		if (ci.equals(instructor)) continue;
+				            		Assignment a = getAssignment(ci.getClassInstructing());
+				            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareInstructor(a.getClazz()))
+				            			return true;
+				            	}
+			            	}
+						}
+					
+			        Class_ parent = clazz.getParentClass();
+			        while (parent!=null) {
+			        	Assignment a = getAssignment(parent);
+			        	if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
+			        		return true;
+			        	parent = parent.getParentClass();
+			        }
+			        
+			        for (Iterator<SchedulingSubpart> i = clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts().iterator(); i.hasNext();) {
+			        	SchedulingSubpart ss = i.next();
+			        	if (ss.getClasses().size() == 1) {
+			        		Class_ child = ss.getClasses().iterator().next();
+			        		if (clazz.equals(child)) continue;
+			        		Assignment a = getAssignment(child);
+			        		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
+			        			return true;
+			        	}
+			        }
+				}
+		
+		if (RoomAvailability.getInstance() != null) {
+ 			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
+ 			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
+        	Date[] bounds = DatePattern.getBounds(offering.getSessionId());
+ 			Calendar cal = Calendar.getInstance(Locale.US);
+    		cal.setTime(new Date());
+    		cal.set(Calendar.HOUR_OF_DAY, 0);
+    		cal.set(Calendar.MINUTE, 0);
+    		cal.set(Calendar.SECOND, 0);
+    		cal.set(Calendar.MILLISECOND, 0);
+    		Date today = cal.getTime();
+			for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
+				for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+					for (Class_ clazz: subpart.getClasses()) {
+						Assignment assignment = getAssignment(clazz);
+						if (assignment != null && assignment.getRooms() != null && !assignment.getRooms().isEmpty()) {
+				    		ClassTimeInfo period = new ClassTimeInfo(assignment);
+				    		for (Location room : assignment.getRooms()) {
+								if (!room.isIgnoreRoomCheck()) {
+						    		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
+						                    room.getUniqueId(),
+						                    bounds[0], bounds[1], 
+						                    RoomAvailabilityInterface.sClassType);
+						    		if (times != null && !times.isEmpty()) {
+						    			Collection<TimeBlock> timesToCheck = null;
+						    			if (!changePast || ignorePast) {
+						        			timesToCheck = new Vector();
+						        			for (TimeBlock time: times) {
+						        				if (!time.getEndTime().before(today))
+						        					timesToCheck.add(time);
+						        			}
+						        		} else {
+						        			timesToCheck = times;
+						        		}
+						        		if (period.overlaps(timesToCheck) != null) return true;
+						    		}
+								}
+				    		}
+						}
+					}
+		}
+		
+		return false;
+	}
+    
+	@Override
+	public Set<Assignment> getConflicts(Long classId) throws Exception {
+		if (classId == null) return null;
+		Class_ clazz = Class_DAO.getInstance().get(classId);
 		if (clazz == null || clazz.isCancelled()) return null;
 		Assignment assignment = getAssignment(clazz);
 		if (assignment == null) return null;
@@ -183,5 +283,56 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
         }
         
         return conflicts;
+	}
+	
+	@Override
+	public Set<TimeBlock> getConflictingTimeBlocks(Long classId) throws Exception {
+		if (classId == null) return null;
+		Class_ clazz = Class_DAO.getInstance().get(classId);
+		if (clazz == null || clazz.isCancelled()) return null;
+        Long solutionId = getSolutionId(clazz);
+		if (solutionId==null) return super.getConflictingTimeBlocks(classId);
+		
+		Set<TimeBlock> conflicts = new TreeSet<TimeBlock>(new TimeBlockComparator());
+		Assignment assignment = getAssignment(clazz);
+		if (assignment != null && assignment.getRooms() != null && !assignment.getRooms().isEmpty() && RoomAvailability.getInstance() != null) {
+        	Date[] bounds = DatePattern.getBounds(clazz.getSessionId());
+ 			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
+ 			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
+ 			Calendar cal = Calendar.getInstance(Locale.US);
+    		cal.setTime(new Date());
+    		cal.set(Calendar.HOUR_OF_DAY, 0);
+    		cal.set(Calendar.MINUTE, 0);
+    		cal.set(Calendar.SECOND, 0);
+    		cal.set(Calendar.MILLISECOND, 0);
+    		Date today = cal.getTime();
+    		ClassTimeInfo period = new ClassTimeInfo(assignment);
+    		
+			for (Location room : assignment.getRooms()) {
+				if (!room.isIgnoreRoomCheck()) {
+		    		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
+		                    room.getUniqueId(),
+		                    bounds[0], bounds[1], 
+		                    RoomAvailabilityInterface.sClassType);
+		    		if (times != null && !times.isEmpty()) {
+		    			Collection<TimeBlock> timesToCheck = null;
+		    			if (!changePast || ignorePast) {
+		        			timesToCheck = new Vector();
+		        			for (TimeBlock time: times) {
+		        				if (!time.getEndTime().before(today))
+		        					timesToCheck.add(time);
+		        			}
+		        		} else {
+		        			timesToCheck = times;
+		        		}
+		        		List<TimeBlock> overlaps = period.allOverlaps(timesToCheck);
+		        		if (overlaps != null)
+		    				conflicts.addAll(overlaps);
+		    		}
+				}
+    		}
+        }
+		
+		return conflicts;
 	}
 }

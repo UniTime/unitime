@@ -634,6 +634,18 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Credit")
 	String columnCredit();
 	
+	@DefaultMessage("Name")
+	String columnEventName();
+	
+	@DefaultMessage("Type")
+	String columnEventType();
+	
+	@DefaultMessage("Date")
+	String columnEventDate();
+	
+	@DefaultMessage("Time")
+	String columnEventTime();
+	
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
 	
@@ -1932,6 +1944,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Conflicting Classes")
 	String sectionTitleClassConflicts();
 	
+	@DefaultMessage("Conflicting Meetings")
+	String sectionTitleEventConflicts();
+
 	@DefaultMessage("Instructor Displayed")
 	String titleInstructorDisplayed();
 	
@@ -2126,4 +2141,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("No matching date pattern!")
 	String warnNoMatchingDatePattern();
+	
+	@DefaultMessage("One or more classes of this instructional offering are in a conflict.")
+	String warnOfferingHasConflictingClasses();
 }
