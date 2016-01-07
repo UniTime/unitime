@@ -86,7 +86,7 @@ public class TimetableManagerListAction extends Action {
         
         PdfWebTable table =  new TimetableManagerBuilder().getManagersTable(sessionContext, true, showAll);
         int order = WebTable.getOrder(sessionContext,"timetableManagerList.ord");
-        String tblData = (order>=1?table.printTable(order):table.printTable());
+        String tblData = table.printTable(order);
         
         if ("Export PDF".equals(request.getParameter("op"))) {
         	ExportUtils.exportPDF(
