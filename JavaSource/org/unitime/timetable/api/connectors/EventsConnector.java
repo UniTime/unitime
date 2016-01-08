@@ -32,11 +32,13 @@ import org.unitime.timetable.api.ApiConnector;
 import org.unitime.timetable.api.ApiHelper;
 import org.unitime.timetable.events.EventLookupBackend;
 import org.unitime.timetable.events.EventAction.EventContext;
+import org.unitime.timetable.events.EventDetailBackend;
 import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
@@ -74,6 +76,39 @@ public class EventsConnector extends ApiConnector {
 
 	@Override
 	public void doGet(ApiHelper helper) throws IOException {
+		if (helper.getParameter("eventId") != null) {
+			Event event = EventDAO.getInstance().get(helper.getRequiredParameterLong("eventId"));
+			if (event == null)
+				throw new IllegalArgumentException("Given event no longer exists.");
+			
+			Long sessionId = helper.getAcademicSessionId();
+			if (sessionId == null) {
+				if (event.getSession() != null)
+					sessionId = event.getSession().getUniqueId();
+				else {
+					for (Meeting m: event.getMeetings()) {
+						if (m.getLocation() != null) {
+							sessionId = m.getLocation().getSession().getUniqueId();
+							break;
+						}
+					}
+				}
+			}
+			if (sessionId == null)
+				throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
+			
+			helper.getSessionContext().checkPermissionAnyAuthority(sessionId, "Session", Right.ApiRetrieveEvents);
+			
+			EventDetailRpcRequest request = new EventDetailRpcRequest();
+			request.setEventId(event.getUniqueId());
+			request.setSessionId(sessionId);
+			
+			EventContext context = new EventContext(helper.getSessionContext(), helper.getSessionContext().getUser(), sessionId);
+			helper.setResponse(new EventDetailBackend().execute(request, context));
+			
+			return;
+		}
+
 		Long sessionId = helper.getAcademicSessionId();
 		if (sessionId == null)
 			throw new IllegalArgumentException("Academic session not provided, please set the term parameter.");
@@ -83,7 +118,6 @@ public class EventsConnector extends ApiConnector {
 			throw new IllegalArgumentException("Given academic session no longer exists.");
 		
 		helper.getSessionContext().checkPermissionAnyAuthority(session, Right.ApiRetrieveEvents);
-
 		EventLookupRpcRequest request = new EventLookupRpcRequest();
     	request.setSessionId(sessionId);
     	String id = helper.getParameter("id");
