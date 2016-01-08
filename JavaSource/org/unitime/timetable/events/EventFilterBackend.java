@@ -422,6 +422,18 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			}
 		}
 		
+		if (request.hasOptions("id") ) {
+			String q = "";
+			int idx = 0;
+			for (String id: request.getOptions("id")) {
+				if (!q.isEmpty()) q += ",";
+				q += ":Xid" + idx;
+                query.addParameter("id", "Xid" + idx, id);
+                idx ++;
+            }
+			query.addWhere("id", "e.uniqueId in (" + q + ")");
+		}
+
 		return query;
 	}
 

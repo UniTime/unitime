@@ -83,7 +83,6 @@ public class CalendarUtils {
 			c.set(Calendar.YEAR, sessionYear + 1);
 		}
 		c.set(Calendar.DAY_OF_YEAR, dayOfYear);
-		System.err.println(c.getTime() + " (" + c.getTime().getTime() + ")");
 		return c.getTime();
 	}
 }

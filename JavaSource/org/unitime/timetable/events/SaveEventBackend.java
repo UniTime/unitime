@@ -58,12 +58,16 @@ import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.Meeting.Status;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.UnavailableEvent;
+import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
@@ -282,7 +286,13 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					response.addCreatedMeeting(m);
 					meeting = new Meeting();
 					meeting.setEvent(event);
-					Location location = (m.hasLocation() ? LocationDAO.getInstance().get(m.getLocation().getId(), hibSession) : null);
+					Location location = null;
+					if (m.hasLocation()) {
+						if (m.getLocation().getId() != null)
+							location = LocationDAO.getInstance().get(m.getLocation().getId(), hibSession);
+						else if (m.getLocation().getName() != null)
+							location = Location.findByName(hibSession, request.getSessionId(), m.getLocation().getName());
+					}
 					if (location == null) throw new GwtRpcException(MESSAGES.failedSaveEventNoLocation(toString(m)));
 					meeting.setLocationPermanentId(location.getPermanentId());
 					meeting.setStatus(Meeting.Status.PENDING);
@@ -328,9 +338,14 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			}
 			
 			if (!remove.isEmpty()) {
-				for (Meeting m: remove) {
-					if (!context.hasPermission(m, Right.EventMeetingDelete))
+				for (Iterator<Meeting> i = remove.iterator(); i.hasNext(); ) {
+					Meeting m = i.next();
+					if (!context.hasPermission(m, Right.EventMeetingDelete)) {
+						if (m.getStatus() == Status.CANCELLED || m.getStatus() == Status.REJECTED) {
+							i.remove(); continue;
+						}
 						throw new GwtRpcException(MESSAGES.failedSaveEventCanNotDeleteMeeting(toString(m)));
+					}
 					MeetingInterface meeting = new MeetingInterface();
 					meeting.setId(m.getUniqueId());
 					meeting.setMeetingDate(m.getMeetingDate());
@@ -501,9 +516,26 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					for (RelatedObjectInterface r: request.getEvent().getRelatedObjects()) {
 						RelatedCourseInfo related = new RelatedCourseInfo();
 						related.setEvent(ce);
-						related.setOwnerId(r.getUniqueId());
-						related.setOwnerType(r.getType().ordinal());
-						related.setCourse(CourseOfferingDAO.getInstance().get(r.getSelection()[1], hibSession));
+						if (r.getSelection() != null) {
+							related.setOwnerId(r.getUniqueId());
+							related.setOwnerType(r.getType().ordinal());
+							related.setCourse(CourseOfferingDAO.getInstance().get(r.getSelection()[1], hibSession));
+						} else {
+							switch (r.getType()) {
+							case Course:
+								related.setOwner(CourseOfferingDAO.getInstance().get(r.getUniqueId()));
+								break;
+							case Class:
+								related.setOwner(Class_DAO.getInstance().get(r.getUniqueId()));
+								break;
+							case Config:
+								related.setOwner(InstrOfferingConfigDAO.getInstance().get(r.getUniqueId()));
+								break;
+							case Offering:
+								related.setOwner(InstructionalOfferingDAO.getInstance().get(r.getUniqueId()));
+								break;
+							}
+						}
 						ce.getRelatedCourses().add(related);
 					}
 			}
