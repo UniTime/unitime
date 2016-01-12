@@ -65,6 +65,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CacheElement;
 import org.unitime.timetable.onlinesectioning.HasCacheMode;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningActionFactory;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
@@ -88,6 +89,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	protected Log iLog = LogFactory.getLog(AbstractServer.class);
 	private DistanceMetric iDistanceMetric = null;
 	private DataProperties iConfig = null;
+	private OnlineSectioningActionFactory iActionFactory = null;
 	
 	protected AsyncExecutor iExecutor = null;
 	private Queue<Runnable> iExecutorQueue = new LinkedList<Runnable>();
@@ -101,6 +103,12 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		iConfig = new ServerConfig();
 		iDistanceMetric = new DistanceMetric(iConfig);
 		TravelTime.populateTravelTimes(iDistanceMetric, context.getAcademicSessionId());
+		try {
+			iActionFactory = ((OnlineSectioningActionFactory)Class.forName(ApplicationProperty.CustomizationOnlineSectioningActionFactory.value()).newInstance());
+		} catch (Exception e) {
+			LogFactory.getLog(OnlineSectioningServer.class).warn("Failed to initialize online sectioning action factory, using the default one.", e);
+			iActionFactory = new SimpleActionFactory();
+		}
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		try {
 			Session session = SessionDAO.getInstance().get(context.getAcademicSessionId(), hibSession);
@@ -332,13 +340,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	
 	@Override
 	public <X extends OnlineSectioningAction> X createAction(Class<X> clazz) {
-		try {
-			return clazz.newInstance();
-		} catch (InstantiationException e) {
-			throw new SectioningException(e.getMessage(), e);
-		} catch (IllegalAccessException e) {
-			throw new SectioningException(e.getMessage(), e);
-		}
+		return iActionFactory.createAction(clazz);
 	}
 
 	@Override
