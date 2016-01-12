@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.basic;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
@@ -39,9 +40,9 @@ import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 public class ListCourseOfferings implements OnlineSectioningAction<Collection<ClassAssignmentInterface.CourseAssignment>> {
 	private static final long serialVersionUID = 1L;
 	
-	private String iQuery = null;
-	private Integer iLimit = null;
-	private CourseMatcher iMatcher = null; 
+	protected String iQuery = null;
+	protected Integer iLimit = null;
+	protected CourseMatcher iMatcher = null; 
 	
 	public ListCourseOfferings forQuery(String query) {
 		iQuery = query; return this;
@@ -59,35 +60,43 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	public Collection<CourseAssignment> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Lock lock = server.readLock();
 		try {
-			ArrayList<ClassAssignmentInterface.CourseAssignment> ret = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
-			for (XCourseId id: server.findCourses(iQuery, iLimit, iMatcher)) {
-				XCourse c = server.getCourse(id.getCourseId());
-				if (c == null) continue;
-				CourseAssignment course = new CourseAssignment();
-				course.setCourseId(c.getCourseId());
-				course.setSubject(c.getSubjectArea());
-				course.setCourseNbr(c.getCourseNumber());
-				course.setTitle(c.getTitle());
-				course.setNote(c.getNote());
-				course.setCreditAbbv(c.getCreditAbbv());
-				course.setCreditText(c.getCreditText());
-				course.setTitle(c.getTitle());
-				course.setHasUniqueName(c.hasUniqueName());
-				course.setLimit(c.getLimit());
-				Collection<XCourseRequest> requests = server.getRequests(c.getOfferingId());
-				int enrl = 0;
-				if (requests != null) {
-					for (XCourseRequest r: requests)
-						if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(course.getCourseId()))
-							enrl ++;
-				}
-				course.setEnrollment(enrl);
-				ret.add(course);
-			}
-			return ret;
+			return listCourses(server, helper);
 		} finally {
 			lock.release();
 		}
+	}
+	
+	protected List<CourseAssignment> listCourses(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		List<CourseAssignment> ret = new ArrayList<CourseAssignment>();
+		for (XCourseId id: server.findCourses(iQuery, iLimit, iMatcher)) {
+			XCourse course = server.getCourse(id.getCourseId());
+			if (course != null)
+				ret.add(convert(course, server));
+		}
+		return ret;
+	}
+	
+	protected CourseAssignment convert(XCourse c, OnlineSectioningServer server) {
+		CourseAssignment course = new CourseAssignment();
+		course.setCourseId(c.getCourseId());
+		course.setSubject(c.getSubjectArea());
+		course.setCourseNbr(c.getCourseNumber());
+		course.setTitle(c.getTitle());
+		course.setNote(c.getNote());
+		course.setCreditAbbv(c.getCreditAbbv());
+		course.setCreditText(c.getCreditText());
+		course.setTitle(c.getTitle());
+		course.setHasUniqueName(c.hasUniqueName());
+		course.setLimit(c.getLimit());
+		Collection<XCourseRequest> requests = server.getRequests(c.getOfferingId());
+		int enrl = 0;
+		if (requests != null) {
+			for (XCourseRequest r: requests)
+				if (r.getEnrollment() != null && r.getEnrollment().getCourseId().equals(course.getCourseId()))
+					enrl ++;
+		}
+		course.setEnrollment(enrl);
+		return course;
 	}
 
 	@Override
