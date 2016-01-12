@@ -525,7 +525,7 @@ public class EnrollmentTable extends Composite {
 			}
 			@Override
 			public void onSuccess(String result) {
-				widget.lastRequest(student.getSessionId(), student.getId(), true);
+				widget.lastRequest(student.getSessionId(), student.getId(), true, true);
 				final UniTimeDialogBox d = new UniTimeDialogBox(true, false);
 				d.setWidget(widget);
 				d.setText(MESSAGES.dialogRegistration(student.getName()));

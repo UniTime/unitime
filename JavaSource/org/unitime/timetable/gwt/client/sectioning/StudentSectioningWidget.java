@@ -545,9 +545,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			@Override
 			public void onClick(ClickEvent event) {
 				clearMessage();
-				clear();
+				clear(false);
+				iStartOver.setVisible(false);
+				iStartOver.setEnabled(false);
 				addHistory();
-				lastRequest(iSessionSelector.getAcademicSessionId(), null, true);
+				lastRequest(iSessionSelector.getAcademicSessionId(), null, true, false);
 			}
 		});
 		
@@ -1264,7 +1266,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			}
 			iPrint.setVisible(true); iPrint.setEnabled(true);
-			iStartOver.setVisible(iSavedAssignment != null); iStartOver.setEnabled(iSavedAssignment != null);
+			iStartOver.setVisible(iSavedAssignment != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
+			iStartOver.setEnabled(iSavedAssignment != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
 			if (iExport != null) {
 				iExport.setVisible(true); iExport.setEnabled(true);
 			}
@@ -1320,7 +1323,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iCustomCheckbox.setVisible(false); iCustomCheckbox.setEnabled(false);
 		}
 		iPrint.setVisible(false); iPrint.setEnabled(false);
-		iStartOver.setVisible(false); iStartOver.setVisible(false);
 		if (iExport != null) {
 			iExport.setVisible(false); iExport.setEnabled(false);
 		}
@@ -1334,20 +1336,27 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		updateScheduleChangedNoteIfNeeded();
 	}
 	
-	public void clear() {
+	public void clear(boolean switchToRequests) {
 		if (iShowUnassignments != null)
 			iShowUnassignments.setVisible(false);
 		iSavedAssignment = null; iLastAssignment = null;
 		iCourseRequests.clear();
 		iLastResult.clear();
-		if (iRequests.isVisible()) {
+		iAssignments.clearData(true);
+		iAssignmentGrid.clear(true);
+		iShowUnassignments.setVisible(true);
+		if (iRequests.isVisible() && switchToRequests) {
 			prev();
 		}
 	}
 	
+	public void clear() {
+		clear(true);
+	}
+	
 	public void checkEligibility(final Long sessionId, final Long studentId, final boolean saved, final AsyncCallback<OnlineSectioningInterface.EligibilityCheck> ret) {
 		if (!iMode.isSectioning()) {
-			lastRequest(sessionId, studentId, saved);
+			lastRequest(sessionId, studentId, saved, true);
 			if (ret != null) ret.onSuccess(null);
 			return;
 		}
@@ -1376,7 +1385,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
 									iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
 								}
-								lastRequest(sessionId, studentId, saved);
+								lastRequest(sessionId, studentId, saved, true);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
 							@Override
@@ -1387,7 +1396,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
 									iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
 								}
-								lastRequest(sessionId, studentId, saved);
+								lastRequest(sessionId, studentId, saved, true);
 								if (ret != null) ret.onSuccess(iEligibilityCheck);
 							}
 							@Override
@@ -1407,7 +1416,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
 							iDegreePlan.setVisible(true); iDegreePlan.setEnabled(true);
 						}
-						lastRequest(sessionId, studentId, saved);
+						lastRequest(sessionId, studentId, saved, true);
 						if (ret != null) ret.onSuccess(iEligibilityCheck);
 					}
 				} else {
@@ -1431,7 +1440,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		});
 	}
 	
-	private void lastResult(final CourseRequestInterface request, boolean saved) {
+	private void lastResult(final CourseRequestInterface request, boolean saved, final boolean changeViewIfNeeded) {
 		AsyncCallback<ClassAssignmentInterface> callback = new AsyncCallback<ClassAssignmentInterface>() {
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
@@ -1440,8 +1449,22 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iSavedAssignment = saved;
 				iShowUnassignments.setVisible(true);
 				if (request.isSaved()) {
-					fillIn(saved);
-					updateHistory();
+					if (changeViewIfNeeded || iRequests.isVisible()) {
+						fillIn(saved);
+						updateHistory();
+					} else {
+						iLastAssignment = saved;
+						iLastResult = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
+						for (final ClassAssignmentInterface.CourseAssignment course: saved.getCourseAssignments()) {
+							if (course.isAssigned())
+								for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+									iLastResult.add(clazz.isDummy() ? null : clazz);
+								}
+						}
+						iStartOver.setVisible(iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
+						iStartOver.setEnabled(iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
+						LoadingWidget.getInstance().hide();
+					}
 				} else {
 					iCourseRequests.validate(new AsyncCallback<Boolean>() {
 						@Override
@@ -1477,24 +1500,24 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iSectioningService.lastResult(iOnline, request.getAcademicSessionId(), callback);
 	}
 	
-	public void lastRequest(Long sessionId, Long studentId, final boolean saved) {
+	public void lastRequest(Long sessionId, Long studentId, final boolean saved, final boolean changeViewIfNeeded) {
 		if (!LoadingWidget.getInstance().isShowing())
 			LoadingWidget.getInstance().show(MESSAGES.courseRequestsLoading());
 		
 		AsyncCallback<CourseRequestInterface> callback =  new AsyncCallback<CourseRequestInterface>() {
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
-				clear();
+				clear(changeViewIfNeeded);
 			}
 			public void onSuccess(final CourseRequestInterface request) {
+				clear(changeViewIfNeeded);
 				if (request.isSaved() && request.getCourses().isEmpty()) {
 					LoadingWidget.getInstance().hide();
 					return;
 				}
-				clear();
 				iCourseRequests.setRequest(request);
-				if (iSchedule.isVisible()) {
-					lastResult(request, saved);
+				if (iSchedule.isVisible() || iRequests.isVisible()) {
+					lastResult(request, saved, changeViewIfNeeded);
 				} else {
 					LoadingWidget.getInstance().hide();
 				}
@@ -1772,6 +1795,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	protected void setElibibilityCheckDuringEnrollment(EligibilityCheck check) {
 		iEligibilityCheck = check;
 		iCourseRequests.setCanWaitList(check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
+		iStartOver.setVisible(iSavedAssignment != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
+		iStartOver.setEnabled(iSavedAssignment != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
 		if (check.hasFlag(EligibilityFlag.CAN_ENROLL)) {
 			iEnroll.setVisible(true);
 			if (check.hasCheckboxMessage()) {
