@@ -185,4 +185,10 @@ public interface StudentSectioningConstants extends Constants {
 		"Waiting My Approval",
 	})
 	String[] consentTypeLabel();
+	
+	@DefaultStringArrayValue({
+		"[0-9]+",
+	})
+	@DoNotTranslate
+	String[] freeTimeDoNotParse();
 }

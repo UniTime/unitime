@@ -53,8 +53,10 @@ public class FreeTimeParser implements DataProvider<String, List<CourseRequestIn
 	public ArrayList<CourseRequestInterface.FreeTime> parseFreeTime(String text) throws IllegalArgumentException {
 		if (iValidCourseNames != null && iValidCourseNames.contains(text))
 			throw new IllegalArgumentException(MESSAGES.notFreeTimeIsCourse(text));
-		ArrayList<CourseRequestInterface.FreeTime> ret = new ArrayList<CourseRequestInterface.FreeTime>();
 		if (text.isEmpty()) throw new IllegalArgumentException(MESSAGES.courseSelectionNoFreeTime());
+		for (String dnp: CONSTANTS.freeTimeDoNotParse())
+			if (text.matches(dnp)) throw new IllegalArgumentException(MESSAGES.courseSelectionNoFreeTime());
+		ArrayList<CourseRequestInterface.FreeTime> ret = new ArrayList<CourseRequestInterface.FreeTime>();
 		ArrayList<Integer> lastDays = new ArrayList<Integer>();
 		String tokens[] = text.split("[,;]");
 		for (String token: tokens) {

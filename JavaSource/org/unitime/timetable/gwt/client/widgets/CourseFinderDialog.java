@@ -268,8 +268,11 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 			tab.addResponseHandler(new ResponseHandler() {
 				@Override
 				public void onResponse(ResponseEvent event) {
-					if (event.isValid())
+					if (event.isValid()) {
+						CourseFinderTab selected = getSelectedTab();
+						if (selected != null && selected.isCourseSelection() && selected.getValue() != null) return;
 						selectTab(tab);
+					}
 				}
 			});
 		}
