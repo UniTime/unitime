@@ -749,13 +749,10 @@ public class CourseOfferingEditAction extends Action {
 
     	frm.setAllowDemandCourseOfferings(true);
 
-        // Consent Type and Credit can be edited only on the controlling course offering
-        if (frm.getIsControl().booleanValue()) {
-            LookupTables.setupConsentType(request);
-            LookupTables.setupCourseCreditFormats(request); // Course Credit Formats
-            LookupTables.setupCourseCreditTypes(request); //Course Credit Types
-            LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
-        }
+        LookupTables.setupConsentType(request);
+        LookupTables.setupCourseCreditFormats(request); // Course Credit Formats
+        LookupTables.setupCourseCreditTypes(request); //Course Credit Types
+        LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
 
         CourseOffering co = new CourseOfferingDAO().get(frm.getCourseOfferingId());
         LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
