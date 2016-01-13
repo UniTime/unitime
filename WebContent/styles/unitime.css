@@ -3244,10 +3244,19 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ImageButton {
 	cursor: pointer;
   	cursor: hand;
+  	vertical-align: middle;
 }
 
 .unitime-ImageButton-disabled {
   cursor: default;
+}
+
+.unitime-ImageButton .gwt-Image {
+	float: left;
+}
+
+.unitime-ImageButton .gwt-Label {
+	float: left;
 }
 
 .unitime-AriaStatus {
@@ -4139,10 +4148,12 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-QuickAddButton .gwt-Image {
+	float: left;
+	padding-right: 5px;
 }
 
 .unitime-QuickAddButton .gwt-Label {
-	padding-left: 10px;
+	float: left;
 }
 
 .unitime-QuickAddButton:hover, .unitime-QuickAddButton:focus, .unitime-QuickAddButton:active {

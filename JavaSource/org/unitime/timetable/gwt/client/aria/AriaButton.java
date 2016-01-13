@@ -63,10 +63,49 @@ public class AriaButton extends Button implements HasAriaLabel {
 	
 	public AriaButton(ImageResource image, String html) {
 		super(html);
-		setHTML("<img src='" + image.getSafeUri().asString() + "' class='gwt-Image'></img><span class='gwt-Label'>" + html + "</span>");
+		super.setHTML("<img src='" + image.getSafeUri().asString() + "' class='gwt-Image'></img><span class='gwt-Label' style='padding-left: 5px;'>" + html + "</span>");
 		addStyleName("unitime-ImageButton");
+		setAriaLabel(UniTimeHeaderPanel.stripAccessKey(html));
+		Character accessKey = UniTimeHeaderPanel.guessAccessKey(html);
+		if (accessKey != null)
+			setAccessKey(accessKey);
+		ToolBox.setMinWidth(getElement().getStyle(), "75px");
+		addFocusHandler(new FocusHandler() {
+			@Override
+			public void onFocus(FocusEvent event) {
+				iFocused = true;
+			}
+		});
+		addBlurHandler(new BlurHandler() {
+			@Override
+			public void onBlur(BlurEvent event) {
+				iFocused = false;
+			}
+		});
 	}
 	
+	public AriaButton(String html, ImageResource image) {
+		super(html);
+		super.setHTML("<span class='gwt-Label' style='padding-right: 5px;'>" + html + "</span><img src='" + image.getSafeUri().asString() + "' class='gwt-Image'></img>");
+		addStyleName("unitime-ImageButton");
+		setAriaLabel(UniTimeHeaderPanel.stripAccessKey(html));
+		Character accessKey = UniTimeHeaderPanel.guessAccessKey(html);
+		if (accessKey != null)
+			setAccessKey(accessKey);
+		ToolBox.setMinWidth(getElement().getStyle(), "75px");
+		addFocusHandler(new FocusHandler() {
+			@Override
+			public void onFocus(FocusEvent event) {
+				iFocused = true;
+			}
+		});
+		addBlurHandler(new BlurHandler() {
+			@Override
+			public void onBlur(BlurEvent event) {
+				iFocused = false;
+			}
+		});
+	}
 	
 	@Override
 	public void setHTML(String html) {

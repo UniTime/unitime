@@ -145,4 +145,10 @@ public interface StudentSectioningResources extends ClientBundle {
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/add.png")
 	ImageResource quickAddCourse();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/arrow_left.png")
+	ImageResource arrowBack();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/arrow_right.png")
+	ImageResource arrowForward();
 }

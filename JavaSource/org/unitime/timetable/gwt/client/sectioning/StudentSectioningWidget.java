@@ -204,7 +204,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iDegreePlan.setEnabled(false);
 		leftFooterPanel.add(iDegreePlan);
 		
-		iRequests = new AriaButton(MESSAGES.buttonRequests());
+		iRequests = new AriaButton(RESOURCES.arrowBack(), MESSAGES.buttonRequests());
 		iRequests.setTitle(MESSAGES.hintRequests());
 		iRequests.setVisible(false);
 		iRequests.setEnabled(false);
@@ -230,7 +230,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iStartOver.setEnabled(false);
 		iStartOver.getElement().getStyle().setMarginLeft(4, Unit.PX);
 
-		iSchedule = new AriaButton(MESSAGES.buttonSchedule());
+		iSchedule = new AriaButton(MESSAGES.buttonSchedule(), RESOURCES.arrowForward());
 		iSchedule.setTitle(MESSAGES.hintSchedule());
 		if (mode.isSectioning())
 			rightFooterPanel.add(iSchedule);
