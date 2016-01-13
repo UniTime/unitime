@@ -231,6 +231,8 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
     	response.setCanSaveFilterDefaults(context.hasPermission(Right.HasRole));
     	if (context.isAuthenticated() && response.isCanSaveFilterDefaults() && request.hasMode()) {
 			response.setFilterDefault("filter", context.getUser().getProperty("Default[" + request.getMode() + ".filter]"));
+		} else if (request.hasMode()) {
+			response.setFilterDefault("filter", "EVENTS".equalsIgnoreCase(request.getMode()) ? "flag:Event" : "");
 		}
 		
 		return response;

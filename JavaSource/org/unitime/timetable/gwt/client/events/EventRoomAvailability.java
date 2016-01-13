@@ -174,7 +174,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			}
 		});
 		
-		iSession = new AcademicSessionSelectionBox(iHistoryToken.getParameter("term")) {
+		iSession = new AcademicSessionSelectionBox(iHistoryToken.getParameter("term"), "Events") {
 			@Override
 			protected void onInitializationSuccess(List<AcademicSession> sessions) {
 				iFilter.setVisible(sessions != null && !sessions.isEmpty());

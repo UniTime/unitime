@@ -69,10 +69,14 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 				selected = findSession(hibSession, "current");
 			} catch (GwtRpcException e) {}
 		
+		Right permission = Right.Events;
+		if (command.hasSource())
+			permission = Right.valueOf(command.getSource());
+		
 		TreeSet<Session> sessions = new TreeSet<Session>();
 		for (Session session: (List<Session>)hibSession.createQuery("select s from Session s").list()) {
 			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
-			if (!context.hasPermissionAnyAuthority(Right.Events, new SimpleQualifier("Session", session.getUniqueId()))) continue;
+			if (!context.hasPermissionAnyAuthority(permission, new SimpleQualifier("Session", session.getUniqueId()))) continue;
 			sessions.add(session);
 		}
 		

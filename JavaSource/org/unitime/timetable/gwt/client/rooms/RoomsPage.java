@@ -383,7 +383,7 @@ public class RoomsPage extends Composite {
 			iHeaderPanel = new UniTimeHeaderPanel(MESSAGES.sectFilter());
 			iFilterForm.addHeaderRow(iHeaderPanel);
 			
-			iSession = new AcademicSessionSelectionBox(iHistoryToken.getParameter("term")) {
+			iSession = new AcademicSessionSelectionBox(iHistoryToken.getParameter("term"), "Rooms") {
 				@Override
 				protected void onInitializationSuccess(List<AcademicSession> sessions) {
 					iFilterForm.setVisible(sessions != null && !sessions.isEmpty());
@@ -686,6 +686,8 @@ public class RoomsPage extends Composite {
 						}
 					});
 				} else {
+					if (result.hasFilterDefault("filter"))
+						iHistoryToken.setDefaultParameter("q", result.getFilterDefault("filter"));
 					iFilter.setDefaultValueProvider(null);
 				}
 				

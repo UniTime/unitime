@@ -287,7 +287,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 		});
 
-		iSession = new AcademicSessionSelectionBox(iHistoryToken.getParameter("term")) {
+		iSession = new AcademicSessionSelectionBox(iHistoryToken.getParameter("term"), "Events") {
 			@Override
 			protected void onInitializationSuccess(List<AcademicSession> sessions) {
 				iFilter.setVisible(sessions != null && !sessions.isEmpty());

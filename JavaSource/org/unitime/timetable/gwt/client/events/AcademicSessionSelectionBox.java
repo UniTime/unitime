@@ -53,11 +53,11 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 
 	private List<AcademicSessionChangeHandler> iChangeHandlers = new ArrayList<AcademicSessionChangeHandler>();
 	
-	public AcademicSessionSelectionBox(String term) {
+	public AcademicSessionSelectionBox(String term, String source) {
 		super(false);
 		
 		setHint(MESSAGES.waitLoadingSessions());
-		RPC.execute(new ListAcademicSessions(term), new AsyncCallback<GwtRpcResponseList<AcademicSession>>() {
+		RPC.execute(new ListAcademicSessions(term, source), new AsyncCallback<GwtRpcResponseList<AcademicSession>>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -263,12 +263,16 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 
 	public static class ListAcademicSessions implements GwtRpcRequest<GwtRpcResponseList<AcademicSession>> {
 		private String iTerm = null;
+		private String iSource = null;
 		
 		public ListAcademicSessions() {}
-		public ListAcademicSessions(String term) { iTerm = term; }
+		public ListAcademicSessions(String term, String source) { iTerm = term; iSource = source; }
 		
 		public boolean hasTerm() { return iTerm != null && !iTerm.isEmpty(); }
 		public String getTerm() { return iTerm; }
+		
+		public boolean hasSource() { return iSource != null && !iSource.isEmpty(); }
+		public String getSource() { return iSource; }
 		
 		@Override
 		public String toString() {
