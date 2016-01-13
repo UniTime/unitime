@@ -1364,4 +1364,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Alt {0}B.")
 	String degreeRequestedAlternativeSecondAlt(int priority);
+	
+	@DefaultMessage("Class Schedule")
+	String headerClassSchedule();
 }

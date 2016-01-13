@@ -4169,3 +4169,14 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-MultiSelect .item:hover {
 	background-color: #92c1f0;
 }
+
+.unitime-ClassSchedulePanel {
+	width: 100%;
+}
+
+.unitime-ClassScheduleTabPanel {
+	border: 1px solid #9CB0CE;
+	padding: 5px;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+}
