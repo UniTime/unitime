@@ -177,8 +177,8 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			iGrid.setWidget(idx, 7, delete);
 			delete.setAltText(ARIA.altDeleteRequest(i + 1));
 			c[0].setWidth("260px");
-			c[1].setWidth("170px");
-			c[2].setWidth("170px");
+			c[1].setWidth("155px");
+			c[2].setWidth("155px");
 			iGrid.setWidget(idx, 1, c[0]);
 			iGrid.setWidget(idx, 2, c[1]);
 			iGrid.setWidget(idx, 3, c[2]);
@@ -262,8 +262,8 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			iGrid.setWidget(idx, 6, delete);
 			delete.setAltText(ARIA.altDeleteAlternateRequest(i + 1));
 			c[0].setWidth("260px");
-			c[1].setWidth("170px");
-			c[2].setWidth("170px");
+			c[1].setWidth("155px");
+			c[2].setWidth("155px");
 			iGrid.setWidget(idx, 1, c[0]);
 			iGrid.setWidget(idx, 2, c[1]);
 			iGrid.setWidget(idx, 3, c[2]);
@@ -351,8 +351,8 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			delete.setAltText(ARIA.altDeleteRequest(i + 1));
 		}
 		c[0].setWidth("260px");
-		c[1].setWidth("170px");
-		c[2].setWidth("170px");
+		c[1].setWidth("155px");
+		c[2].setWidth("155px");
 		c[1].setEnabled(false);
 		c[2].setEnabled(false);
 		iGrid.setWidget(idx, 1, c[0]);
@@ -482,8 +482,8 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 			delete.setAltText(ARIA.altDeleteAlternateRequest(i + 1));
 		}
 		c[0].setWidth("260px");
-		c[1].setWidth("170px");
-		c[2].setWidth("170px");
+		c[1].setWidth("155px");
+		c[2].setWidth("155px");
 		c[1].setEnabled(false);
 		c[2].setEnabled(false);
 		iGrid.setWidget(idx, 1, c[0]);
