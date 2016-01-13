@@ -664,6 +664,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							public void onSuccess(ClassAssignmentInterface result) {
 								LoadingWidget.getInstance().hide();
 								iSavedAssignment = result;
+								iStartOver.setVisible(iSavedAssignment != null && !iSavedAssignment.getCourseAssignments().isEmpty());
+								iStartOver.setEnabled(iSavedAssignment != null && !iSavedAssignment.getCourseAssignments().isEmpty());
 								fillIn(result);
 								if (result.hasRequest())
 									iCourseRequests.setRequest(result.getRequest());
@@ -1310,8 +1312,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iEnroll.setEnabled(result.isCanEnroll() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL));
 			}
 			iPrint.setVisible(true); iPrint.setEnabled(true);
-			iStartOver.setVisible(iSavedAssignment != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
-			iStartOver.setEnabled(iSavedAssignment != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
+			iStartOver.setVisible(iSavedAssignment != null);
+			iStartOver.setEnabled(iSavedAssignment != null);
 			if (iExport != null) {
 				iExport.setVisible(true); iExport.setEnabled(true);
 			}
@@ -1499,8 +1501,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									iLastResult.add(clazz.isDummy() ? null : clazz);
 								}
 						}
-						iStartOver.setVisible(iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
-						iStartOver.setEnabled(iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
+						iStartOver.setVisible(true);
+						iStartOver.setEnabled(true);
 						LoadingWidget.getInstance().hide();
 					}
 				} else {
@@ -1833,8 +1835,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	protected void setElibibilityCheckDuringEnrollment(EligibilityCheck check) {
 		iEligibilityCheck = check;
 		iCourseRequests.setCanWaitList(check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
-		iStartOver.setVisible(iSavedAssignment != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
-		iStartOver.setEnabled(iSavedAssignment != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_RESET));
 		if (check.hasFlag(EligibilityFlag.CAN_ENROLL)) {
 			iEnroll.setVisible(true);
 			if (check.hasCheckboxMessage()) {
