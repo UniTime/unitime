@@ -951,7 +951,7 @@ public class CoursePermissions {
 		@Override
 		public boolean check(UserContext user, Class_ source) {
 			// Must have a committed solution (not the class per se, but the managing department)
-			if (source.getManagingDept() == null || source.getManagingDept().getSolverGroup() == null || source.getManagingDept().getSolverGroup().getCommittedSolution() == null)
+			if (!source.isCancelled() && (source.getManagingDept() == null || source.getManagingDept().getSolverGroup() == null || source.getManagingDept().getSolverGroup().getCommittedSolution() == null))
 				return false;
 
 			return !permissionOfferingLockNeeded.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()) &&
