@@ -103,6 +103,7 @@ public class RollForwardSessionForm extends ActionForm {
 	private String subpartLocationPrefsAction;
 	private String subpartTimePrefsAction;
 	private String classPrefsAction;
+	private String cancelledClassAction;
 	private Boolean rollForwardCurricula;
 	private Long sessionToRollCurriculaForwardFrom;
 	private String midtermExamsPrefsAction, finalExamsPrefsAction;
@@ -217,7 +218,13 @@ public class RollForwardSessionForm extends ActionForm {
 					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION)
 					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.PUSH_UP_ACTION)
 					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.ROLL_PREFS_ACTION)){
-				errors.add("invalidClassAction", new ActionMessage("errors.generic", "Invalid class preference roll forward action:  " + getClassPrefsAction()));			
+				errors.add("invalidClassAction", new ActionMessage("errors.generic", "Invalid class preference roll forward action:  " + getClassPrefsAction()));
+			}
+			if (getCancelledClassAction() != null
+					&& !getCancelledClassAction().equalsIgnoreCase(SessionRollForward.CancelledClassAction.KEEP.name())
+					&& !getCancelledClassAction().equalsIgnoreCase(SessionRollForward.CancelledClassAction.REOPEN.name())
+					&& !getCancelledClassAction().equalsIgnoreCase(SessionRollForward.CancelledClassAction.SKIP.name())){
+				errors.add("invalidCancelAction", new ActionMessage("errors.generic", "Invalid cancelled class roll forward action:  " + getCancelledClassAction()));
 			}
 			validateRollForward(errors, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), "Course Offerings", new ArrayList());
 			CourseOfferingDAO coDao = new CourseOfferingDAO();
@@ -354,6 +361,7 @@ public class RollForwardSessionForm extends ActionForm {
 		subpartLocationPrefsAction = null;
 		subpartTimePrefsAction = null;
 		classPrefsAction = null;
+		cancelledClassAction = null;
 		rollForwardCurricula = false;
 		sessionToRollCurriculaForwardFrom = null;
 		finalExamsPrefsAction = null;
@@ -765,7 +773,10 @@ public class RollForwardSessionForm extends ActionForm {
 	public void setClassPrefsAction(String classPrefsAction) {
 		this.classPrefsAction = classPrefsAction;
 	}
-	
+
+	public String getCancelledClassAction() { return cancelledClassAction; }
+	public void setCancelledClassAction(String cancelledClassAction) { this.cancelledClassAction = cancelledClassAction; }
+
 	public String getMidtermExamsPrefsAction() { return midtermExamsPrefsAction; }
 	public void setMidtermExamsPrefsAction(String midtermExamsPrefsAction) { this.midtermExamsPrefsAction = midtermExamsPrefsAction; }
 
@@ -840,6 +851,7 @@ public class RollForwardSessionForm extends ActionForm {
 		form.subpartLocationPrefsAction = subpartLocationPrefsAction;
 		form.subpartTimePrefsAction = subpartTimePrefsAction;
 		form.classPrefsAction = classPrefsAction;
+		form.cancelledClassAction = cancelledClassAction;
 		form.rollForwardCurricula = rollForwardCurricula;
 		form.sessionToRollCurriculaForwardFrom = sessionToRollCurriculaForwardFrom;
 		form.midtermExamsPrefsAction = midtermExamsPrefsAction;

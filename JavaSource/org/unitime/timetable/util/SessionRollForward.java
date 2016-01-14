@@ -165,6 +165,8 @@ public class SessionRollForward {
 	
 	private boolean classPrefsPushUp;
 	private boolean classRollForward;
+	
+	private CancelledClassAction cancelledClassAction = CancelledClassAction.REOPEN;
 
 	public static String ROLL_PREFS_ACTION = "rollUnchanged";
 	public static String DO_NOT_ROLL_ACTION = "doNotRoll";
@@ -172,6 +174,12 @@ public class SessionRollForward {
 	public static String EXAMS_NO_PREF = "doNotRoll";
 	public static String EXAMS_ROOM_PREFS = "rollRoomPrefs"; 
 	public static String EXAMS_ALL_PREF = "rollAllPrefs";
+	
+	public static enum CancelledClassAction {
+		REOPEN,
+		KEEP,
+		SKIP
+	}
 	
 	
 	public SessionRollForward(Log log) {
@@ -213,6 +221,11 @@ public class SessionRollForward {
 			classRollForward = false;
 		}
 	}
+	
+	public void setCancelledClassActionRollForwardParameter(String cancelledClassAction){
+		this.cancelledClassAction = (cancelledClassAction == null ? CancelledClassAction.REOPEN : CancelledClassAction.valueOf(cancelledClassAction));
+	}
+	
 	public void rollBuildingAndRoomDataForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollRoomDataForwardFrom());
@@ -1117,8 +1130,11 @@ public class SessionRollForward {
 				HashMap<String, BuildingPref> prefMap = new HashMap<String, BuildingPref>();
 				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
 				String key;
+				int clsCnt = 0;
 				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
 					Class_ c = (Class_)cIt.next();
+					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
+					clsCnt ++;
 					if (c.getBuildingPreferences() != null && !c.getBuildingPreferences().isEmpty()){
 						for (Iterator rfpIt = c.getBuildingPreferences().iterator(); rfpIt.hasNext();){
 							BuildingPref rfp = (BuildingPref) rfpIt.next();
@@ -1133,7 +1149,6 @@ public class SessionRollForward {
 						}
 					}
 				}
-				int clsCnt = ss.getClasses().size();
 				for (String pref : prefCount.keySet()){
 					if (prefCount.get(pref).intValue() == clsCnt){
 						createToBuildingPref(prefMap.get(pref), fromPrefGroup, toPrefGroup, toSession, locations, isExamPref);
@@ -1233,8 +1248,11 @@ public class SessionRollForward {
 				HashMap<String, RoomPref> prefMap = new HashMap<String, RoomPref>();
 				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
 				String key;
+				int clsCnt = 0;
 				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
 					Class_ c = (Class_)cIt.next();
+					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
+					clsCnt ++;
 					if (c.getRoomPreferences() != null && !c.getRoomPreferences().isEmpty()){
 						for (Iterator rfpIt = c.getRoomPreferences().iterator(); rfpIt.hasNext();){
 							RoomPref rfp = (RoomPref) rfpIt.next();
@@ -1249,7 +1267,6 @@ public class SessionRollForward {
 						}
 					}
 				}
-				int clsCnt = ss.getClasses().size();
 				for (String pref : prefCount.keySet()){
 					if (prefCount.get(pref).intValue() == clsCnt){
 						createToRoomPref(prefMap.get(pref), fromPrefGroup, toPrefGroup, toSession, locations);
@@ -1325,8 +1342,11 @@ public class SessionRollForward {
 				HashMap<String, RoomFeaturePref> prefMap = new HashMap<String, RoomFeaturePref>();
 				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
 				String key;
+				int clsCnt = 0;
 				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
 					Class_ c = (Class_)cIt.next();
+					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
+					clsCnt ++;
 					if (c.getRoomFeaturePreferences() != null && !c.getRoomFeaturePreferences().isEmpty()){
 						for (Iterator rfpIt = c.getRoomFeaturePreferences().iterator(); rfpIt.hasNext();){
 							RoomFeaturePref rfp = (RoomFeaturePref) rfpIt.next();
@@ -1341,7 +1361,6 @@ public class SessionRollForward {
 						}
 					}
 				}
-				int clsCnt = ss.getClasses().size();
 				for (String pref : prefCount.keySet()){
 					if (prefCount.get(pref).intValue() == clsCnt){
 						createToRoomFeaturePref(prefMap.get(pref), fromPrefGroup, toPrefGroup, toSession);
@@ -1407,8 +1426,11 @@ public class SessionRollForward {
 				HashMap<String, RoomGroupPref> prefMap = new HashMap<String, RoomGroupPref>();
 				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
 				String key;
+				int clsCnt = 0;
 				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
 					Class_ c = (Class_)cIt.next();
+					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
+					clsCnt ++;
 					if (c.getRoomGroupPreferences() != null && !c.getRoomGroupPreferences().isEmpty()){
 						for (Iterator rfpIt = c.getRoomGroupPreferences().iterator(); rfpIt.hasNext();){
 							RoomGroupPref rfp = (RoomGroupPref) rfpIt.next();
@@ -1423,7 +1445,6 @@ public class SessionRollForward {
 						}
 					}
 				}
-				int clsCnt = ss.getClasses().size();
 				for (String pref : prefCount.keySet()){
 					if (prefCount.get(pref).intValue() == clsCnt){
 						createToRoomGroupPref(prefMap.get(pref), fromPrefGroup, toPrefGroup, toSession);
@@ -1484,8 +1505,11 @@ public class SessionRollForward {
 				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
 				HashSet<TimePattern> timePatterns = new HashSet<TimePattern>();
 				String key;
+				int clsCnt = 0;
 				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
 					Class_ c = (Class_)cIt.next();
+					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
+					clsCnt ++;
 					if (c.getTimePreferences() != null && !c.getTimePreferences().isEmpty()){
 						for (Iterator tpIt = c.getTimePreferences().iterator(); tpIt.hasNext();){
 							TimePref tp = (TimePref) tpIt.next();
@@ -1501,7 +1525,6 @@ public class SessionRollForward {
 						}
 					}
 				}
-				int clsCnt = ss.getClasses().size();
 				for (String pref : prefCount.keySet()){
 					if (prefCount.get(pref).intValue() == clsCnt){
 						TimePref fromTimePref = prefMap.get(pref);
@@ -1869,6 +1892,7 @@ public class SessionRollForward {
 			instrOffrRollFwd.setClassPrefRollForwardParameter(rollForwardSessionForm.getClassPrefsAction());
 			instrOffrRollFwd.setSubpartLocationPrefRollForwardParameters(rollForwardSessionForm.getSubpartLocationPrefsAction());
 			instrOffrRollFwd.setSubpartTimePrefRollForwardParameters(rollForwardSessionForm.getSubpartTimePrefsAction());
+			instrOffrRollFwd.setCancelledClassActionRollForwardParameter(rollForwardSessionForm.getCancelledClassAction());
 			for (Iterator saIt = subjects.iterator(); saIt.hasNext();){
 				subjectArea = (SubjectArea) saIt.next();
 				SubjectArea.loadSubjectAreas(toSession.getUniqueId());
@@ -2904,5 +2928,8 @@ public class SessionRollForward {
 	public boolean isClassRollForward() {
 		return classRollForward;
 	}
-
+	
+	public CancelledClassAction getCancelledClassAction() {
+		return cancelledClassAction;
+	}
 }

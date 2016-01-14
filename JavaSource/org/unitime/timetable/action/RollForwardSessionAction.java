@@ -126,6 +126,9 @@ public class RollForwardSessionAction extends Action {
 		if (rollForwardSessionForm.getClassPrefsAction() == null){
 			rollForwardSessionForm.setClassPrefsAction(SessionRollForward.DO_NOT_ROLL_ACTION);
 		}
+		if (rollForwardSessionForm.getCancelledClassAction() == null) {
+			rollForwardSessionForm.setCancelledClassAction(SessionRollForward.CancelledClassAction.REOPEN.name());
+		}
 		if (rollForwardSessionForm.getMidtermExamsPrefsAction() == null)
 			rollForwardSessionForm.setMidtermExamsPrefsAction(SessionRollForward.EXAMS_ROOM_PREFS);
 		if (rollForwardSessionForm.getFinalExamsPrefsAction() == null)

@@ -187,8 +187,11 @@
 			<tt:propertyEquals name="unitime.rollforward.allowClassPrefs" value="true">
 				<tr><td></td><td><html:radio property="classPrefsAction" value="<%= SessionRollForward.ROLL_PREFS_ACTION %>"> Roll forward class level preferences</html:radio></td></tr>
 			</tt:propertyEquals>
-			</table>
-			</td>
+			<tr><td style="padding-top: 20px;" rowspan="3" valign="top">Cancelled Classes:</td>
+				<td style="padding-top: 20px;"><html:radio property="cancelledClassAction" value="<%= SessionRollForward.CancelledClassAction.KEEP.name() %>"> Roll forward cancelled classes as they are (keep)</html:radio></td></tr>
+			<tr><td><html:radio property="cancelledClassAction" value="<%= SessionRollForward.CancelledClassAction.REOPEN.name() %>"> Roll forward cancelled classes as offered (reopen)</html:radio></td></tr>
+			<tr><td><html:radio property="cancelledClassAction" value="<%= SessionRollForward.CancelledClassAction.SKIP.name() %>"> Do not roll forward cancelled classes (skip)</html:radio></td></tr>
+			</table></td>
 		</tr>
 		<tr>
 			<td valign="middle">
