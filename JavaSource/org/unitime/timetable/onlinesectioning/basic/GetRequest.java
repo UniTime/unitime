@@ -129,7 +129,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 						}
 					r.setWaitList(((XCourseRequest)cd).isWaitlist());
 					if (setReadOnly)
-						r.setReadOnly(((XCourseRequest)cd).getEnrollment() != null);
+						r.setReadOnly(((XCourseRequest)cd).getEnrolledCourseIndex());
 					if (r.hasRequestedCourse()) {
 						if (cd.isAlternative())
 							request.getAlternatives().add(r);

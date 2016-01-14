@@ -107,6 +107,10 @@ public class ImageButton extends Image implements HasEnabled, Focusable, HasAria
 			Roles.getButtonRole().setAriaDisabledState(getElement(), !enabled);
 		}
 	}
+	
+	public void setFace(ImageResource face) {
+		setResource(face);
+	}
 
 	@Override
 	public int getTabIndex() {

@@ -177,7 +177,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private String iFirstAlternative = null;
 		private String iSecondAlternative = null;
 		private Boolean iWaitList = false;
-		private Boolean iReadOnly = false;
+		private Integer iReadOnly = null;
 		
 		public Request() {}
 		
@@ -205,9 +205,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
 		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
 		
-		public boolean hasReadOnly() { return iReadOnly != null; }
-		public boolean isReadOnly() { return iReadOnly != null && iReadOnly.booleanValue(); }
-		public void setReadOnly(boolean readOnly) { iReadOnly = readOnly; }
+		public boolean isReadOnly() { return iReadOnly != null && iReadOnly.intValue() >= 0; }
+		public boolean isRequestedCourseReadOnly() { return iReadOnly != null && iReadOnly == 0; }
+		public boolean isFirstAlternativeReadOnly() { return iReadOnly != null && iReadOnly == 1; }
+		public boolean isSecondAlternativeReadOnly() { return iReadOnly != null && iReadOnly == 2; }
+		public void setReadOnly(Integer readOnly) { iReadOnly = readOnly; }
 		
 		public String toString() {
 			return (hasRequestedFreeTime() ? iRequestedFreeTime.toString() : hasRequestedCourse() ? iRequestedCourse : "-") +

@@ -100,6 +100,7 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 	private List<Validator<CourseSelection>> iValidators = new ArrayList<Validator<CourseSelection>>();
 	
 	private boolean iShowCourses = false, iShowDefaultSuggestions = false;
+	private boolean iSaved = false;
 	
 	public CourseSelectionSuggestBox() {
 		this(false, false);
@@ -297,7 +298,19 @@ public class CourseSelectionSuggestBox extends Composite implements CourseSelect
 			iSuggest.setEnabled(false);
 			iFinderButton.setEnabled(false);
 			iFinderButton.setTabIndex(-1);
+			if (iSaved) iFinderButton.setFace(RESOURCES.search_picker_Assigned());
 		}
+	}
+	
+	public void setSaved(boolean saved) {
+		iSaved = saved;
+		if (!isEnabled())
+			iFinderButton.setFace(saved ? RESOURCES.search_picker_Assigned() : RESOURCES.search_picker_Disabled());
+		iFinderButton.setTitle(saved ? MESSAGES.saved(getValue()) : iFinderButton.getAltText());
+	}
+	
+	public boolean isSaved() {
+		return iSaved;
 	}
 
 	@Override

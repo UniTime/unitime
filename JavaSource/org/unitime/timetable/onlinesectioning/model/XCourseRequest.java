@@ -159,6 +159,13 @@ public class XCourseRequest extends XRequest {
     	return false;
     }
     
+    public Integer getEnrolledCourseIndex() {
+    	if (iEnrollment == null) return null;
+    	for (int i = 0; i < iCourseIds.size(); i++)
+    		if (iCourseIds.get(i).getCourseId().equals(iEnrollment.getCourseId())) return i;
+    	return -1;
+    }
+    
     public XCourseId getCourseIdByOfferingId(Long offeringId) {
     	for (XCourseId id: iCourseIds)
     		if (id.getOfferingId().equals(offeringId)) return id;

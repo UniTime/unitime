@@ -134,6 +134,7 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 		other.hideSuggestionList();
 		String x = getError(); setError(other.getError()); other.setError(x);
 		boolean b = isEnabled(); setEnabled(other.isEnabled()); other.setEnabled(b);
+		boolean s = isSaved(); setSaved(other.isSaved()); other.setSaved(s);
 		if (iPrimary != null) {
 			x = getHint();
 			setHint(other.getHint());
@@ -153,6 +154,7 @@ public class CourseSelectionBox extends CourseSelectionSuggestBox {
 		if (other != null) other.hideSuggestionList();
 		setError(other == null ? null : other.getError());
 		setEnabled(other == null ? iPrimary == null || !iPrimary.getValue().isEmpty() : other.isEnabled());
+		setSaved(other == null ? false : other.isSaved());
 		if (iPrimary != null)
 			setHint(other == null ? "" : other.getHint());
 		setValue(other == null ? null : other.getValue(), false);

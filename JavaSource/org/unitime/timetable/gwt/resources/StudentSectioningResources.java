@@ -47,6 +47,9 @@ public interface StudentSectioningResources extends ClientBundle {
 	@Source("org/unitime/timetable/gwt/resources/icons/search_picker_Disabled.png")
 	ImageResource search_picker_Disabled();
 
+	@Source("org/unitime/timetable/gwt/resources/icons/search_picker_Assigned.png")
+	ImageResource search_picker_Assigned();
+
 	@Source("org/unitime/timetable/gwt/resources/icons/search_picker_Down.png")
 	ImageResource search_picker_Down();
 

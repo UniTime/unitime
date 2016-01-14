@@ -452,7 +452,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							}
 						r.setWaitList(((XCourseRequest)cd).isWaitlist());
 						if (setReadOnly)
-							r.setReadOnly(((XCourseRequest)cd).getEnrollment() != null);
+							r.setReadOnly(((XCourseRequest)cd).getEnrolledCourseIndex());
 						if (r.hasRequestedCourse()) {
 							if (cd.isAlternative())
 								request.getAlternatives().add(r);
