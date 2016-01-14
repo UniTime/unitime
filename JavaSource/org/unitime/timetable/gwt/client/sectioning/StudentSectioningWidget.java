@@ -618,12 +618,26 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iStartOver.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				clearMessage();
-				clear(false);
-				iStartOver.setVisible(false);
-				iStartOver.setEnabled(false);
-				addHistory();
-				lastRequest(iSessionSelector.getAcademicSessionId(), null, true, false);
+				if (isChanged()) {
+					UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.queryLeaveChanges(), new Command() {
+						@Override
+						public void execute() {
+							clearMessage();
+							clear(false);
+							iStartOver.setVisible(false);
+							iStartOver.setEnabled(false);
+							addHistory();
+							lastRequest(iSessionSelector.getAcademicSessionId(), null, true, false);
+						}
+					});
+				} else {
+					clearMessage();
+					clear(false);
+					iStartOver.setVisible(false);
+					iStartOver.setEnabled(false);
+					addHistory();
+					lastRequest(iSessionSelector.getAcademicSessionId(), null, true, false);
+				}
 			}
 		});
 		
