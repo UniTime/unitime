@@ -666,18 +666,20 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	int cnt = 0;
     	Iterator ssIt = this.getSubpartIds().iterator();
     	Iterator limitIt = this.getMinClassLimits().iterator();
+    	Iterator cancelIt = this.getIsCancelled().iterator();
 
     	Boolean enableForScheduling = null;
     	Boolean displayInstructor = null;
     	Boolean readOnlySubpart = null;
-    	while (ssIt.hasNext() && limitIt.hasNext()){
+    	while (ssIt.hasNext() && limitIt.hasNext() && cancelIt.hasNext()){
     		Long subpartId = Long.valueOf((String) ssIt.next());
     		Integer limit = new Integer((String) limitIt.next());
+    		boolean cancelled = "true".equals(cancelIt.next());
      		enableForScheduling = new Boolean(determineBooleanValueAtIndex(this.getEnabledForStudentScheduling(), cnt));    	   	
      		displayInstructor = new Boolean(determineBooleanValueAtIndex(this.getDisplayInstructors(), cnt));
        	   	readOnlySubpart = new Boolean(determineBooleanValueAtIndex(this.getReadOnlyClasses(), cnt));
      	   	
-    		int addLimit = (limit == null)?0:limit.intValue();
+    		int addLimit = (limit == null || cancelled)?0:limit.intValue();
     		Integer subtotalIndex = null;
 
     		if (!subpartToIndex.containsKey(subpartId)) {
