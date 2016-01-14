@@ -191,4 +191,8 @@ public interface StudentSectioningConstants extends Constants {
 	})
 	@DoNotTranslate
 	String[] freeTimeDoNotParse();
+	
+	@DefaultBooleanValue(true)
+	@DoNotTranslate
+	boolean startOverCanChangeView();
 }

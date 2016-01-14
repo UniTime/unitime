@@ -1489,7 +1489,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iSavedAssignment = saved;
 				iShowUnassignments.setVisible(true);
 				if (request.isSaved()) {
-					if (changeViewIfNeeded || iRequests.isVisible()) {
+					if ((changeViewIfNeeded || CONSTANTS.startOverCanChangeView()) || iRequests.isVisible()) {
 						fillIn(saved);
 						updateHistory();
 					} else {
@@ -1503,6 +1503,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 						iStartOver.setVisible(true);
 						iStartOver.setEnabled(true);
+						updateScheduleChangedNoteIfNeeded();
 						LoadingWidget.getInstance().hide();
 					}
 				} else {
