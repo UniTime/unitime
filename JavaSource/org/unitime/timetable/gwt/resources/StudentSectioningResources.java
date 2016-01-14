@@ -151,4 +151,13 @@ public interface StudentSectioningResources extends ClientBundle {
 
 	@Source("org/unitime/timetable/gwt/resources/icons/arrow_right.png")
 	ImageResource arrowForward();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/info.png")
+	ImageResource statusInfo();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/warn.png")
+	ImageResource statusWarning();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/alert.png")
+	ImageResource statusError();
 }

@@ -3654,25 +3654,35 @@ unitime-RoomSharingWidget .legend .blank {
   to { background-color: #cdf; }
 }
 
-.unitime-ScheduleBlankMessage {
+.unitime-ScheduleStatus {
+	margin: 4px 0px 1px 0px;
+	display: table;
+	width: 100%;
+}
+
+.unitime-ScheduleStatus .image {
+	padding: 5px;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.unitime-ScheduleStatus .message {
+	padding: 5px;
+	display: table-cell;
+	vertical-align: middle;
+	width: 100%;
 }
 
 .unitime-ScheduleMessage {
 	background-color: #d0e4f6;
-	padding: 1px 10px 1px 10px;
-	margin: 4px 0px 1px 0px;
 }
 
 .unitime-ScheduleWarningMessage {
 	background-color: #FFF0AB;
-	padding: 1px 10px 1px 10px;
-	margin: 4px 0px 1px 0px;
 }
 
 .unitime-ScheduleErrorMessage {
 	background-color: #FFD7D7;
-	padding: 1px 10px 1px 10px;
-	margin: 4px 0px 1px 0px;
 }
 
 .unitime-MainTable .text-red {
