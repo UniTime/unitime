@@ -860,16 +860,16 @@ public interface StudentSectioningMessages extends Messages {
 			"<br><br>Example: day: monday and (time: 730 or time: 830)")
 	String suggestionsFilterHint();
 	
-	@DefaultMessage("Changes to the selected free time {0} are in <font color='blue'>blue</font>, classes to be removed from the schedule are in <font color='red'>red</font>. Changes to other classes or free times are in <font color='black'>black</font>.")
+	@DefaultMessage("<span class='item' style='color:blue;'>Changes to the selected free time {0} are in blue,</span><span class='item' style='color:red;'> classes to be removed from the schedule are in red.</span><span class='item'> Changes to other classes or free times are in black.</span>")
 	String suggestionsLegendOnFreeTime(String freeTime);
 
-	@DefaultMessage("Changes to the selected class {0} are in <font color='blue'>blue</font>, classes to be removed from the schedule are in <font color='red'>red</font>. Changes to other classes or free times are in <font color='black'>black</font>.")
+	@DefaultMessage("<span class='item' style='color:blue;'>Changes to the selected class {0} are in blue,</span><span class='item' style='color:red;'> classes to be removed from the schedule are in red.</span><span class='item'> Changes to other classes or free times are in black.</span>")
 	String suggestionsLegendOnClass(String clazz);
 	
-	@DefaultMessage("Changes to the selected course {0} are in <font color='blue'>blue</font>, classes to be removed from the schedule are in <font color='red'>red</font>. Changes to other courses or free times are in <font color='black'>black</font>.")
+	@DefaultMessage("<span class='item' style='color:blue;'>Changes to the selected course {0} are in blue,</span><span class='item' style='color:red;'> classes to be removed from the schedule are in red.</span><span class='item'> Changes to other courses or free times are in black.</span>")
 	String suggestionsLegendOnCourse(String course);
 	
-	@DefaultMessage("Choices for the new course {0} are in <font color='blue'>blue</font>. Courses to be removed from the schedule are in <font color='red'>red</font>. Changes to other courses or free times are in <font color='black'>black</font>.")
+	@DefaultMessage("<span class='item' style='color:blue;'>Choices for the new course {0} are in blue.</span><span class='item' style='color:red;'> Courses to be removed from the schedule are in red.</span><span class='item'> Changes to other courses or free times are in black.</span>")
 	String suggestionsLegendOnNewCourse(String course);
 
 	@DefaultMessage("<u>S</u>earch")

@@ -177,7 +177,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		});
 
 		suggestionPanel.add(iFilterPanel);
-		suggestionPanel.setCellHorizontalAlignment(iFilter, HasHorizontalAlignment.ALIGN_CENTER);
+		suggestionPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 
 		iSuggestions = new WebTable();
 		iSuggestions.setHeader(new WebTable.Row(
@@ -198,6 +198,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			));
 		iSuggestions.setSelectSameIdRows(true);
 		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoading());
+		iSuggestions.setWidth("100%");
 		iSuggestionsScroll = new ScrollPanel(iSuggestions);
 		iSuggestionsScroll.getElement().getStyle().setHeight(400, Unit.PX);
 		iSuggestionsScroll.setStyleName("unitime-ScrollPanel");
@@ -206,10 +207,12 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iLegend = new HTML();
 		iLegend.setStyleName("unitime-SuggestionsLegend");
 		suggestionPanel.add(iLegend);
+		suggestionPanel.setCellHorizontalAlignment(iLegend, HasHorizontalAlignment.ALIGN_CENTER);
 
 		iMessages = new HTML();
 		iMessages.setStyleName("unitime-SuggestionsMessage");
 		suggestionPanel.add(iMessages);
+		suggestionPanel.setCellHorizontalAlignment(iMessages, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		iCallback = new AsyncCallback<Collection<ClassAssignmentInterface>>() {
 			public void onFailure(Throwable caught) {
