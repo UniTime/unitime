@@ -195,4 +195,8 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultBooleanValue(true)
 	@DoNotTranslate
 	boolean startOverCanChangeView();
+
+	@DefaultBooleanValue(true)
+	@DoNotTranslate
+	boolean listOfClassesUseLockIcon();
 }

@@ -23,7 +23,9 @@ import java.util.ArrayList;
 
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
+import org.unitime.timetable.gwt.client.aria.AriaToggleButton;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
+import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 
@@ -34,6 +36,7 @@ import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.resources.client.ImageResource;
@@ -45,6 +48,8 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasText;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -60,6 +65,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConst
 public class WebTable extends Composite {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
+	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 
 	private Row[] iHeader;
 	private String iEmptyMessage = MESSAGES.tableEmpty();
@@ -540,6 +546,57 @@ public class WebTable extends Composite {
 		@Override
 		public void setAriaLabel(String text) {
 			iCheck.setAriaLabel(text);
+		}
+	}
+	
+	public static class LockCell extends Cell implements HasAriaLabel {
+		private HasValue<Boolean> iCheck = null;
+		
+		public LockCell(boolean check, String text, String ariaLabel) {
+			super(null);
+			if (CONSTANTS.listOfClassesUseLockIcon()) {
+				iCheck = new AriaToggleButton(RESOURCES.locked(), RESOURCES.unlocked());
+			} else {
+				iCheck = new AriaCheckBox();
+			}
+			if (text != null)
+				((HasText)iCheck).setText(text);
+			iCheck.setValue(check);
+			((HasClickHandlers)iCheck).addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
+				}
+			});
+			if (ariaLabel != null) setAriaLabel(ariaLabel);
+		}
+		
+		public LockCell(boolean check, String ariaLabel) {
+			this(check, null, ariaLabel);
+		}
+		
+		public LockCell(boolean check, String ariaLabel, final String onTitle, final String offTitle) {
+			this(check, null, ariaLabel);
+			getWidget().setTitle(iCheck.getValue() ? onTitle : offTitle);
+			iCheck.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					getWidget().setTitle(event.getValue() ? onTitle : offTitle);
+				}
+			});
+		}
+		
+		public boolean isChecked() { return iCheck.getValue(); }
+		public String getValue() { return iCheck.getValue().toString(); }
+		public Widget getWidget() { return (Widget)iCheck; }
+
+		@Override
+		public String getAriaLabel() {
+			return ((HasAriaLabel)iCheck).getAriaLabel();
+		}
+
+		@Override
+		public void setAriaLabel(String text) {
+			((HasAriaLabel)iCheck).setAriaLabel(text);
 		}
 	}
 	
