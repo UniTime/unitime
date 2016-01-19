@@ -407,14 +407,14 @@ public class SolutionReportAction extends Action {
 	
 	public PdfWebTable getDeptBalancingReportTable(HttpServletRequest request, DeptBalancingReport deptBalancingReport, boolean noHtml) {
 		WebTable.setOrder(sessionContext,"solutionReports.deptBalancingReport.ord",request.getParameter("dept_ord"),1);
-		String[] header = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
-		String[] pos = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
+		String[] header = new String[2+deptBalancingReport.getSlotsPerDayNoEvening()/6];
+		String[] pos = new String[2+deptBalancingReport.getSlotsPerDayNoEvening()/6];
 		header[0]="Department";
 		pos[0]="left";
 		header[1]="Penalty";
 		pos[1]="center";
-		for (int i=0;i<Constants.SLOTS_PER_DAY_NO_EVENINGS/6;i++) {
-			header[i+2]=Constants.slot2str(Constants.DAY_SLOTS_FIRST + i*6);
+		for (int i=0;i<deptBalancingReport.getSlotsPerDayNoEvening()/6;i++) {
+			header[i+2]=Constants.slot2str(deptBalancingReport.getFirstDaySlot() + i*6);
 			pos[i+2]="center";
 		}
 		
@@ -427,14 +427,14 @@ public class SolutionReportAction extends Action {
         	for (Iterator it=deptBalancingReport.getGroups().iterator();it.hasNext();) {
         		DeptBalancingReport.DeptBalancingGroup g = (DeptBalancingReport.DeptBalancingGroup)it.next();
         		
-        		String[] line = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
-        		Comparable[] cmp = new Comparable[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
+        		String[] line = new String[2+deptBalancingReport.getSlotsPerDayNoEvening()/6];
+        		Comparable[] cmp = new Comparable[2+deptBalancingReport.getSlotsPerDayNoEvening()/6];
         		
         		line[0]=g.getDepartmentName();
         		cmp[0]=g.getDepartmentName();
         		int penalty = 0;
-        		for (int i=0;i<Constants.SLOTS_PER_DAY_NO_EVENINGS/6;i++) {
-        			int slot = Constants.DAY_SLOTS_FIRST + i*6;
+        		for (int i=0;i<deptBalancingReport.getSlotsPerDayNoEvening()/6;i++) {
+        			int slot = deptBalancingReport.getFirstDaySlot() + i*6;
         			int usage = g.getUsage(slot);
         			int limit = g.getLimit(slot);
         			if (usage>limit)
@@ -447,7 +447,7 @@ public class SolutionReportAction extends Action {
         			for (Enumeration e=classes.elements();e.hasMoreElements();) {
         				ClassAssignmentDetails ca = (ClassAssignmentDetails)e.nextElement();
         				int nrMeetings = 0;
-        				for (int j=0;j<Constants.NR_DAYS_WEEK;j++)
+        				for (int j = deptBalancingReport.getFirstWorkDay(); j<=deptBalancingReport.getLastWorkDay(); j++)
         					if ((Constants.DAY_CODES[j]&ca.getTime().getDays())!=0) nrMeetings++;
         				u+=nrMeetings;
         				if (u>limit && !over) {
@@ -756,14 +756,14 @@ public class SolutionReportAction extends Action {
 	
 	public PdfWebTable getSameSubpartBalancingReportTable(HttpServletRequest request, SameSubpartBalancingReport report, boolean noHtml) {
 		WebTable.setOrder(sessionContext,"solutionReports.sectBalancingReport.ord",request.getParameter("sect_ord"),1);
-		String[] header = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
-		String[] pos = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
+		String[] header = new String[2+report.getSlotsPerDayNoEvening()/6];
+		String[] pos = new String[2+report.getSlotsPerDayNoEvening()/6];
 		header[0]="Department";
 		pos[0]="left";
 		header[1]="Penalty";
 		pos[1]="center";
-		for (int i=0;i<Constants.SLOTS_PER_DAY_NO_EVENINGS/6;i++) {
-			header[i+2]=Constants.slot2str(Constants.DAY_SLOTS_FIRST + i*6);
+		for (int i=0;i<report.getSlotsPerDayNoEvening()/6;i++) {
+			header[i+2]=Constants.slot2str(report.getFirstDaySlot() + i*6);
 			pos[i+2]="center";
 		}
 		
@@ -776,14 +776,14 @@ public class SolutionReportAction extends Action {
         	for (Iterator it=report.getGroups().iterator();it.hasNext();) {
         		SameSubpartBalancingReport.SameSubpartBalancingGroup g = (SameSubpartBalancingReport.SameSubpartBalancingGroup)it.next();
         		
-        		String[] line = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
-        		Comparable[] cmp = new Comparable[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
+        		String[] line = new String[2+report.getSlotsPerDayNoEvening()/6];
+        		Comparable[] cmp = new Comparable[2+report.getSlotsPerDayNoEvening()/6];
         		
         		line[0]=g.getName();
         		cmp[0]=g.getName();
         		int penalty = 0;
-        		for (int i=0;i<Constants.SLOTS_PER_DAY_NO_EVENINGS/6;i++) {
-        			int slot = Constants.DAY_SLOTS_FIRST + i*6;
+        		for (int i=0;i<report.getSlotsPerDayNoEvening()/6;i++) {
+        			int slot = report.getFirstDaySlot() + i*6;
         			int usage = g.getUsage(slot);
         			int limit = g.getLimit(slot);
         			if (usage>limit)
@@ -796,7 +796,7 @@ public class SolutionReportAction extends Action {
         			for (Enumeration e=classes.elements();e.hasMoreElements();) {
         				ClassAssignmentDetails ca = (ClassAssignmentDetails)e.nextElement();
         				int nrMeetings = 0;
-        				for (int j=0;j<Constants.NR_DAYS_WEEK;j++)
+        				for (int j = report.getFirstWorkDay(); j<=report.getLastWorkDay(); j++)
         					if ((Constants.DAY_CODES[j]&ca.getTime().getDays())!=0) nrMeetings++;
         				u+=nrMeetings;
         				if (u>limit && !over) {

@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 
+import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
 import org.cpsolver.coursett.constraint.SpreadConstraint;
 import org.cpsolver.coursett.model.Lecture;
@@ -33,7 +34,6 @@ import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.solver.Solver;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
-import org.unitime.timetable.util.Constants;
 
 
 /**
@@ -42,14 +42,26 @@ import org.unitime.timetable.util.Constants;
 public class DeptBalancingReport implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private HashSet iGroups = new HashSet();
+	private int iFirstDaySlot, iLastDaySlot, iFirstWorkDay, iLastWorkDay;
 	
 	public DeptBalancingReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
+		iFirstDaySlot = model.getProperties().getPropertyInt("General.FirstDaySlot", Constants.DAY_SLOTS_FIRST);
+        iLastDaySlot = model.getProperties().getPropertyInt("General.LastDaySlot", Constants.DAY_SLOTS_LAST);
+        iFirstWorkDay = model.getProperties().getPropertyInt("General.FirstWorkDay", 0);
+        iLastWorkDay = model.getProperties().getPropertyInt("General.LastWorkDay", Constants.NR_DAYS_WEEK - 1);
 		for (DepartmentSpreadConstraint deptSpread: model.getDepartmentSpreadConstraints()) {
 			iGroups.add(new DeptBalancingGroup(solver,deptSpread));
 		}
 		
 	}
+	
+	public int getFirstDaySlot() { return iFirstDaySlot; }
+	public int getLastDaySlot() { return iLastDaySlot; }
+	public int getFirstWorkDay() { return iFirstWorkDay; }
+	public int getLastWorkDay() { return iLastWorkDay; }
+	public int getSlotsPerDayNoEvening() { return iLastDaySlot - iFirstDaySlot + 1; }
+	public int getNrWorkDays() { return iLastWorkDay - iFirstWorkDay + 1; }
 	
 	public Set getGroups() {
 		return iGroups;
@@ -67,17 +79,17 @@ public class DeptBalancingReport implements Serializable {
 			Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 			iDeptId = deptSpread.getDepartmentId();
 			iDeptName = deptSpread.getName();
-			iLimit = new int[Constants.SLOTS_PER_DAY_NO_EVENINGS][Constants.NR_DAYS_WEEK];
-			iUsage = new int[Constants.SLOTS_PER_DAY_NO_EVENINGS][Constants.NR_DAYS_WEEK];
-			iCourses = new HashSet[Constants.SLOTS_PER_DAY_NO_EVENINGS][Constants.NR_DAYS_WEEK];
+			iLimit = new int[iLastDaySlot - iFirstDaySlot + 1][iLastWorkDay - iFirstWorkDay + 1];
+			iUsage = new int[iLastDaySlot - iFirstDaySlot + 1][iLastWorkDay - iFirstWorkDay + 1];
+			iCourses = new HashSet[iLastDaySlot - iFirstDaySlot + 1][iLastWorkDay - iFirstWorkDay + 1];
 			Hashtable detailCache = new Hashtable();
 			SpreadConstraint.SpreadConstraintContext context = deptSpread.getContext(assignment);
-			for (int i=0;i<Constants.SLOTS_PER_DAY_NO_EVENINGS;i++) {
-				for (int j=0;j<Constants.NR_DAYS_WEEK;j++) {
-					iLimit[i][j]=context.getMaxCourses(i + Constants.DAY_SLOTS_FIRST, j);
-					iUsage[i][j]=context.getCourses(i + Constants.DAY_SLOTS_FIRST, j).size();
-					iCourses[i][j]=new HashSet(context.getCourses(i + Constants.DAY_SLOTS_FIRST, j).size());
-					for (Placement placement: context.getCourses(i + Constants.DAY_SLOTS_FIRST, j)) {
+			for (int i=0;i<iLastDaySlot - iFirstDaySlot + 1;i++) {
+				for (int j=0;j<iLastWorkDay - iFirstWorkDay + 1;j++) {
+					iLimit[i][j]=context.getMaxCourses(i + iFirstDaySlot, j + iFirstWorkDay);
+					iUsage[i][j]=context.getCourses(i + iFirstDaySlot, j + iFirstWorkDay).size();
+					iCourses[i][j]=new HashSet(context.getCourses(i + iFirstDaySlot, j + iFirstWorkDay).size());
+					for (Placement placement: context.getCourses(i + iFirstDaySlot, j + iFirstWorkDay)) {
 						Lecture lecture = (Lecture)placement.variable();
 						ClassAssignmentDetails ca = (ClassAssignmentDetails)detailCache.get(lecture.getClassId());
 						if (ca==null) {
@@ -93,46 +105,46 @@ public class DeptBalancingReport implements Serializable {
 		public Long getDepartmentId() { return iDeptId; }
 		public String getDepartmentName() {  return iDeptName; }
 		public int getLimit(int slot, int day) {
-			if (slot<Constants.DAY_SLOTS_FIRST || slot>Constants.DAY_SLOTS_LAST) return 0;
-			if (day>=Constants.NR_DAYS_WEEK) return 0;
-			return iLimit[slot-Constants.DAY_SLOTS_FIRST][day];
+			if (slot<iFirstDaySlot || slot>iLastDaySlot) return 0;
+			if (day<iFirstWorkDay || day>iLastWorkDay) return 0;
+			return iLimit[slot-iFirstDaySlot][day-iFirstWorkDay];
 		}
 		public int getUsage(int slot, int day) {
-			if (slot<Constants.DAY_SLOTS_FIRST || slot>Constants.DAY_SLOTS_LAST) return 0;
-			if (day>=Constants.NR_DAYS_WEEK) return 0;
-			return iUsage[slot-Constants.DAY_SLOTS_FIRST][day];
+			if (slot<iFirstDaySlot || slot>iLastDaySlot) return 0;
+			if (day<iFirstWorkDay || day>iLastWorkDay) return 0;
+			return iUsage[slot-iFirstDaySlot][day-iFirstWorkDay];
 		}
 		public Collection getClasses(int slot, int day) {
-			if (slot<Constants.DAY_SLOTS_FIRST || slot>Constants.DAY_SLOTS_LAST) return new HashSet(0);
-			if (day>=Constants.NR_DAYS_WEEK) return new HashSet(0);
-			return iCourses[slot-Constants.DAY_SLOTS_FIRST][day];
+			if (slot<iFirstDaySlot || slot>iLastDaySlot) return new HashSet(0);
+			if (day<iFirstWorkDay || day>iLastWorkDay) return new HashSet(0);
+			return iCourses[slot-iFirstDaySlot][day-iFirstWorkDay];
 		}
 		public int getLimit(int slot) {
-			if (slot<Constants.DAY_SLOTS_FIRST || slot>Constants.DAY_SLOTS_LAST) return 0;
+			if (slot<iFirstDaySlot || slot>iLastDaySlot) return 0;
 			int ret = 0;
-			for (int day=0;day<Constants.NR_DAYS_WEEK;day++)
-				ret += iLimit[slot-Constants.DAY_SLOTS_FIRST][day];
+			for (int day=0;day<iLastWorkDay - iFirstWorkDay + 1;day++)
+				ret += iLimit[slot-iFirstDaySlot][day-iFirstWorkDay];
 			return ret;
 		}
 		public int getUsage(int slot) {
-			if (slot<Constants.DAY_SLOTS_FIRST || slot>Constants.DAY_SLOTS_LAST) return 0;
+			if (slot<iFirstDaySlot || slot>iLastDaySlot) return 0;
 			int ret = 0;
-			for (int day=0;day<Constants.NR_DAYS_WEEK;day++)
-				ret += iUsage[slot-Constants.DAY_SLOTS_FIRST][day];
+			for (int day=0;day<iLastWorkDay - iFirstWorkDay + 1;day++)
+				ret += iUsage[slot-iFirstDaySlot][day-iFirstWorkDay];
 			return ret;
 		}
 		public int getExcess(int slot) {
-			if (slot<Constants.DAY_SLOTS_FIRST || slot>Constants.DAY_SLOTS_LAST) return 0;
+			if (slot<iFirstDaySlot || slot>iLastDaySlot) return 0;
 			int ret = 0;
-			for (int day=0;day<Constants.NR_DAYS_WEEK;day++)
-				ret += Math.max(0,iUsage[slot-Constants.DAY_SLOTS_FIRST][day]-iLimit[slot-Constants.DAY_SLOTS_FIRST][day]);
+			for (int day=0;day<iLastWorkDay - iFirstWorkDay + 1;day++)
+				ret += Math.max(0,iUsage[slot-iFirstDaySlot][day-iFirstWorkDay]-iLimit[slot-iFirstDaySlot][day-iFirstWorkDay]);
 			return ret;
 		}
 		public Collection getClasses(int slot) {
-			if (slot<Constants.DAY_SLOTS_FIRST || slot>Constants.DAY_SLOTS_LAST) return new HashSet(0);
+			if (slot<iFirstDaySlot || slot>iLastDaySlot) return new HashSet(0);
 			HashSet ret = new HashSet();
-			for (int day=0;day<Constants.NR_DAYS_WEEK;day++)
-				ret.addAll(iCourses[slot-Constants.DAY_SLOTS_FIRST][day]);
+			for (int day=0;day<iLastWorkDay - iFirstWorkDay + 1;day++)
+				ret.addAll(iCourses[slot-iFirstDaySlot][day-iFirstWorkDay]);
 			return ret;
 		}
 	}
