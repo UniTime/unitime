@@ -82,8 +82,9 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 	
 	protected static String time2string(int slot, int offset) {
 		int min = 5 * slot + offset;
-		if (min == 0 || min == 1440) return CONSTANTS.timeMidnight();
+		if (min == 0) return CONSTANTS.timeMidnight();
 		if (min == 720) return CONSTANTS.timeNoon();
+		if (min == 1440) return CONSTANTS.timeMidnightEnd();
 		int h = min / 60;
         int m = min % 60;
         if (CONSTANTS.useAmPm()) {

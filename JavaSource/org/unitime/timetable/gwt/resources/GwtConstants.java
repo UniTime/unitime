@@ -98,6 +98,9 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("midnight")
 	String timeMidnight();
 
+	@DefaultStringValue("midnight")
+	String timeMidnightEnd();
+
 	@DefaultStringValue("noon")
 	String timeNoon();
 	

@@ -667,7 +667,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	        if (constants != null && min == 720)
 	        	return constants.timeNoon();
 	        if (constants != null && min == 1440)
-	        	return constants.timeMidnight();
+	        	return constants.timeMidnightEnd();
 	        if (constants == null || constants.useAmPm()) {
 	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
 			} else {
