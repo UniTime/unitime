@@ -910,7 +910,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     	Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
-    		return super.currentSolution().getInfo();
+    		return super.currentSolution().getExtendedInfo();
     	} finally {
     		lock.unlock();
     	}

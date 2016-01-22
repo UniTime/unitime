@@ -10685,4 +10685,8 @@
 		<mysql>alter table %SCHEMA%.meeting modify meeting_date date not null</mysql>
 		<mysql>alter table %SCHEMA%.reservation modify expiration_date date</mysql>
 	</update>
+	<update version="157" date="21-Jan-2016" comment="Default search alogithm for course timetabling">
+		<sql>update %SCHEMA%.solver_parameter_def set default_value='GD' where name like 'General.SearchAlgorithm'</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set type='enum(IFS,GD,SA,Default,Experimental)' where name like 'General.SearchAlgorithm'</sql>
+	</update>
 </dbupdate>

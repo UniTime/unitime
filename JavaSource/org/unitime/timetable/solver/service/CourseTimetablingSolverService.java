@@ -167,12 +167,16 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 		properties.setProperty("General.SettingsId", settings.getUniqueId().toString());
 		
 		String algorithm = properties.getProperty("General.SearchAlgorithm", "Default");
-        if ("Experimental".equalsIgnoreCase(algorithm)) {
+        if ("Experimental".equalsIgnoreCase(algorithm) || "Deluge".equalsIgnoreCase(algorithm) || "GD".equalsIgnoreCase(algorithm) || "SA".equalsIgnoreCase(algorithm) || "Annealing".equalsIgnoreCase(algorithm)) {
         	properties.setProperty("Neighbour.Class", SimpleSearch.class.getName());
         	properties.setProperty("General.SearchIntensification", "false");
         	properties.setProperty("General.CompleteSolutionFixInterval", "-1");
         	properties.setProperty("General.IncompleteSolutionFixInterval", "-1");
-        } else if ("Default".equals(algorithm)) {
+        	if ("Deluge".equalsIgnoreCase(algorithm) || "GD".equalsIgnoreCase(algorithm))
+        		properties.setProperty("Search.GreatDeluge", "true");
+        	else if ("SA".equalsIgnoreCase(algorithm) || "Annealing".equalsIgnoreCase(algorithm))
+        		properties.setProperty("Search.GreatDeluge", "false");
+        } else if ("Default".equals(algorithm) || "Legacy".equals(algorithm) || "IFS".equals(algorithm)) {
         	properties.setProperty("Neighbour.Class", FixCompleteSolutionNeighbourSelection.class.getName());
         }
         

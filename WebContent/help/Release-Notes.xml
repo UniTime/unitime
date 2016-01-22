@@ -430,6 +430,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling Solver</name>
+			<description>
+				<line>Default search algorithm changed to use Great Deluge during the improvement phase.</line>
+			</description>
+		</item>
 	</category>
 </release>
 </release-history>
