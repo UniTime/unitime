@@ -45,6 +45,7 @@ public abstract class TimetableGridModel implements Serializable {
 	private transient HashSet<Integer>[][][] iRenderedDate = null;
 	private transient Hashtable<Integer,Hashtable<Long,Integer>> iIndex = null;
 	private int iFirstDay = -1;
+	private double iUtilization = 0.0;
 
 	public static final int sResourceTypeRoom = 0;
 	public static final int sResourceTypeInstructor = 1;
@@ -452,5 +453,8 @@ public abstract class TimetableGridModel implements Serializable {
                 setBackground(d, s, background);
             }
         }
-	}	
+	}
+	
+	public void setUtilization(double utilization) { iUtilization = utilization; }
+	public double getUtilization() { return iUtilization; }
 }

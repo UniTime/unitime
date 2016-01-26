@@ -21,8 +21,10 @@ package org.unitime.timetable.webutil.timegrid;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -42,6 +44,7 @@ import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomSharingModel;
 import org.cpsolver.coursett.model.Student;
+import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.model.Constraint;
@@ -66,7 +69,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		super();
 	}
 	
-	public SolverGridModel(Solver solver, RoomConstraint room, int firstDay, int bgMode, boolean showEvents) {
+	public SolverGridModel(Solver solver, RoomConstraint room, TimetableGridContext context) {
 		super(sResourceTypeRoom, room.getResourceId());
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		if (room instanceof DiscouragedRoomConstraint)
@@ -77,9 +80,9 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			setName(room.getRoomName());
 		setSize(room.getCapacity());
         setType(room.getType());
-		setFirstDay(firstDay);
+		setFirstDay(context.getFirstDay());
 		iRoomId = room.getResourceId();
-		if (firstDay<0) {
+		if (context.getFirstDay() < 0) {
 			Vector placements = new Vector();
 			for (Lecture lecture: room.variables()) {
 				Placement placement = assignment.getValue(lecture);
@@ -87,9 +90,9 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				if (placement.hasRoomLocation(iRoomId))
 						placements.add(placement);
 			}
-			init(solver, placements, bgMode, firstDay);
+			init(solver, placements, context.getBgMode(), context);
 		} else {
-			init(solver, room.getResourceOfWeek(assignment, firstDay), bgMode);
+			init(solver, room.getResourceOfWeek(assignment, context.getFirstDay()), context);
 		}
 		HashSet deptIds = new HashSet();
 		String deptIdsStr = solver.getProperties().getProperty("General.DepartmentIds");
@@ -115,34 +118,34 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
                 List<Placement> placements = (room.getAvailableArray()==null?null:room.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j]);
                 if (placements!=null && !placements.isEmpty()) {
                     for (Placement p: placements) {
-                    	if ((showEvents || p.getAssignmentId() != null) && done.add(p))
-                            init(solver, p, sBgModeNotAvailable, firstDay);
+                    	if ((context.isShowEvents() || p.getAssignmentId() != null) && done.add(p))
+                            init(solver, p, sBgModeNotAvailable, context);
                     }
                 }
 			}
 	}
 	
-	public SolverGridModel(Solver solver, InstructorConstraint instructor, int firstDay, int bgMode, boolean showEvents) {
+	public SolverGridModel(Solver solver, InstructorConstraint instructor, TimetableGridContext context) {
 		super(sResourceTypeInstructor, instructor.getResourceId());
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		setName(instructor.getName());
         setType(instructor.getType());
-		setFirstDay(firstDay);
-		if (firstDay<0) {
+		setFirstDay(context.getFirstDay());
+		if (context.getFirstDay() < 0) {
 			Vector placements = new Vector();
 			for (Lecture lecture: instructor.variables()) {
 				Placement placement = assignment.getValue(lecture);
 				if (placement != null)
 					placements.add(placement);
 			}
-			init(solver, placements, bgMode, firstDay);
+			init(solver, placements, context.getBgMode(), context);
 		} else {
-			init(solver, instructor.getContext(assignment).getResourceOfWeek(firstDay), bgMode);
+			init(solver, instructor.getContext(assignment).getResourceOfWeek(context.getFirstDay()), context);
 		}
 		if (instructor.getUnavailabilities()!=null) {
 			for (Placement p: instructor.getUnavailabilities()) {
-				if (showEvents || p.getAssignmentId() != null)
-					init(solver, p, sBgModeNotAvailable, firstDay);
+				if (context.isShowEvents() || p.getAssignmentId() != null)
+					init(solver, p, sBgModeNotAvailable, context);
 			}
 		}
 		for (Student student: ((TimetableModel)solver.currentSolution().getModel()).getAllStudents()) {
@@ -150,7 +153,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				for (Lecture lecture: student.getLectures()) {
 					Placement placement = assignment.getValue(lecture);
 					if (placement != null && !instructor.variables().contains(lecture)) {
-						TimetableGridCell cell = init(solver, placement, bgMode, firstDay);
+						TimetableGridCell cell = init(solver, placement, context.getBgMode(), context);
 						while (cell != null) {
 							cell.setName("<i>" + cell.getName() + "</i>");
 							cell.setRoomName("<i>" + cell.getRoomName() + "</i>");
@@ -162,26 +165,26 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		}
 	}
 	
-	public SolverGridModel(Solver solver, DepartmentSpreadConstraint dept, int firstDay, int bgMode) {
+	public SolverGridModel(Solver solver, DepartmentSpreadConstraint dept, TimetableGridContext context) {
 		super(sResourceTypeInstructor, dept.getDepartmentId().longValue());
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		setName(dept.getName());
 		setSize(dept.variables().size());
-		setFirstDay(firstDay);
+		setFirstDay(context.getFirstDay());
 		Vector placements = new Vector();
 		for (Lecture lecture: dept.variables()) {
 			Placement placement = assignment.getValue(lecture);
 			if (placement != null)
 				placements.add(placement);
 		}
-		init(solver, placements, bgMode, firstDay);
+		init(solver, placements, context.getBgMode(), context);
 	}
 
-	public SolverGridModel(Solver solver, String name, List<Student> students, int firstDay, int bgMode) {
+	public SolverGridModel(Solver solver, String name, List<Student> students, TimetableGridContext context) {
 		super(sResourceTypeCurriculum, -1l);
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		setName(name);
-		setFirstDay(firstDay);
+		setFirstDay(context.getFirstDay());
 		Hashtable<Long, String> groups = new Hashtable<Long, String>();
 		for (Object[] o: (List<Object[]>)CurriculumDAO.getInstance().getSession().createQuery(
 				"select c.course.instructionalOffering.uniqueId, g.name from CurriculumCourse c inner join c.groups g where " +
@@ -217,8 +220,9 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				size += w / cnt;
 		}
 		setSize((int) Math.round(size));
+		setUtilization(countUtilization(context, placements.keySet()));
 		for (Map.Entry<Placement, Double> entry: placements.entrySet()) {
-			TimetableGridCell cell = init(solver, entry.getKey(), (entry.getKey().variable().isCommitted() ? sBgModeNotAvailable : bgMode), firstDay);
+			TimetableGridCell cell = init(solver, entry.getKey(), (entry.getKey().variable().isCommitted() ? sBgModeNotAvailable : context.getBgMode()), context);
 			String group = (entry.getKey().variable().getConfiguration() == null ? null : groups.get(entry.getKey().variable().getConfiguration().getOfferingId()));
 			while (cell != null) {
 				cell.setRoomName(cell.getRoomName() + " (" + Math.round(entry.getValue()) + (group == null ? "" : ", " + group) + ")");
@@ -227,38 +231,43 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		}
 	}
 
-	private void init(Solver solver, Placement[] resource, int bgMode) {
-		Hashtable processed = new Hashtable();
+	private void init(Solver solver, Placement[] resource, TimetableGridContext context) {
+		Map<Lecture, TimetableGridCell> processed = new HashMap<Lecture, TimetableGridCell>();
+		List<Placement> placements = new ArrayList<Placement>();
 		for (int i=0;i<Constants.DAY_CODES.length;i++) {
 			for (int j=0;j<Constants.SLOTS_PER_DAY;j++) {
 				Placement placement = resource[i*Constants.SLOTS_PER_DAY+j];
 				if (placement==null) continue;
-				Lecture lecture = (Lecture)placement.variable();
+				Lecture lecture = placement.variable();
 				if (lecture.isCommitted()) continue;
-				TimetableGridCell cell = (TimetableGridCell)processed.get(lecture);
-				if (cell==null)
-					cell = createCell(solver, i,j,lecture, placement, bgMode);
-				else
+				TimetableGridCell cell = processed.get(lecture);
+				if (cell == null) {
+					cell = createCell(solver, i,j,lecture, placement, context.getBgMode());
+					processed.put(lecture, cell);
+					placements.add(placement);
+				} else {
 					cell = cell.copyCell(i,cell.getMeetingNumber()+1);
-				processed.put(lecture,cell);
+				}
 				addCell(i,j,cell);
 				j+=placement.getTimeLocation().getNrSlotsPerMeeting()-1;
 			}
 		}
+		setUtilization(countUtilization(context, placements));
 	}
 	
-	private void init(Solver solver, Collection<Placement> placements, int bgMode, int firstDay) {
+	private void init(Solver solver, Collection<Placement> placements, int bgMode, TimetableGridContext context) {
+		setUtilization(countUtilization(context, placements));
 		for (Placement placement: placements) {
 			if (placement.variable().isCommitted()) continue;
-			init(solver, placement, bgMode, firstDay);
+			init(solver, placement, bgMode, context);
 		}
 	}
 	
-	private TimetableGridCell init(Solver solver, Placement placement, int bgMode, int firstDay) {
+	private TimetableGridCell init(Solver solver, Placement placement, int bgMode, TimetableGridContext context) {
 		TimetableGridCell cell = null;
 		for (Enumeration<Integer> f=placement.getTimeLocation().getStartSlots();f.hasMoreElements();) {
 			int slot = f.nextElement();
-			if (firstDay>=0 && !placement.getTimeLocation().getWeekCode().get(firstDay+(slot/Constants.SLOTS_PER_DAY))) continue;
+			if (context.getFirstDay()>=0 && !placement.getTimeLocation().getWeekCode().get(context.getFirstDay()+(slot/Constants.SLOTS_PER_DAY))) continue;
 			if (cell==null) {
 				cell = createCell(solver, slot/Constants.SLOTS_PER_DAY,slot%Constants.SLOTS_PER_DAY,(Lecture)placement.variable(), placement, bgMode);
 			} else {
@@ -525,4 +534,35 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				lecture.getInstructorName(),
 				placement.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()) + " - " + placement.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm()));
 	}
+	
+    private double countUtilization(TimetableGridContext context, Iterable<Placement> placements) {
+    	Set<Integer> slots = new HashSet<Integer>();
+        for (Placement p: placements) {
+        	TimeLocation t = (p == null ? null : p.getTimeLocation());
+            if (t == null) continue;
+            int start = Math.max(context.getFirstSlot(), t.getStartSlot());
+            int stop = Math.min(context.getLastSlot(), t.getStartSlot() + t.getLength() - 1);
+            if (start > stop) continue;
+            if (context.getFirstDay() >= 0) {
+                for (int idx = context.getFirstDay(); idx < 7 + context.getFirstDay(); idx ++) {
+                	int dow = ((idx + context.getStartDayDayOfWeek()) % 7);
+                	if (t.getWeekCode().get(idx) && (t.getDayCode() & Constants.DAY_CODES[dow]) != 0 && (context.getDayCode() & Constants.DAY_CODES[dow]) != 0) {
+                		for (int slot = start; slot <= stop; slot ++)
+                			slots.add(288 * idx + slot);
+                	}
+                }
+            } else {
+                int idx = -1;
+                while ((idx = t.getWeekCode().nextSetBit(1 + idx)) >= 0) {
+                	int dow = ((idx + context.getStartDayDayOfWeek()) % 7);
+                	if (context.getDefaultDatePattern().get(idx) && (t.getDayCode() & Constants.DAY_CODES[dow]) != 0 && (context.getDayCode() & Constants.DAY_CODES[dow]) != 0) {
+                		for (int slot = start; slot <= stop; slot ++)
+                			slots.add(288 * idx + slot);
+                	}
+                }
+            }
+        }
+        return slots.size() / context.getNumberOfWeeks();
+    }
+	
 }

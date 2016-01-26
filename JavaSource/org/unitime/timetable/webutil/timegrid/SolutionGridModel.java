@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -70,11 +71,11 @@ public class SolutionGridModel extends TimetableGridModel {
 	private transient Long iRoomId = null;
 	private static DecimalFormat sDF = new DecimalFormat("0.0");
     
-	public SolutionGridModel(String solutionIdsStr, Location room, org.hibernate.Session hibSession, int firstDay, int bgMode, boolean showEvents) {
+	public SolutionGridModel(String solutionIdsStr, Location room, org.hibernate.Session hibSession, TimetableGridContext context) {
 		super(sResourceTypeRoom, room.getUniqueId().intValue());
 		setName(room.getLabel());
 		setSize(room.getCapacity().intValue());
-		setFirstDay(firstDay);
+		setFirstDay(context.getFirstDay());
 		iRoomId = room.getUniqueId();
 		Solution firstSolution = null;
 		String ownerIds = "";
@@ -94,7 +95,7 @@ public class SolutionGridModel extends TimetableGridModel {
 		Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.uniqueId=:resourceId");
 		q.setLong("resourceId", room.getUniqueId());
 		q.setCacheable(true);
-		init(q.list(),hibSession,firstDay,bgMode);
+		init(q.list(),hibSession,context);
 		
 		q = hibSession.createQuery("select distinct a from Room r inner join r.assignments as a "+
 		"where r.uniqueId=:roomId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
@@ -104,21 +105,9 @@ public class SolutionGridModel extends TimetableGridModel {
 		List commitedAssignments = q.list();
 		for (Iterator x=commitedAssignments.iterator();x.hasNext();) {
 			Assignment a = (Assignment)x.next();
-			init(a,hibSession,firstDay,sBgModeNotAvailable);
-			/*
-			int days = a.getDays().intValue();
-			int startSlot = a.getStartSlot().intValue();
-			int length = a.getTimePattern().getSlotsPerMtg().intValue();
-			if (a.getTimePattern().getType().intValue()==TimePattern.sTypeExactTime) {
-				length = TimePatternModel.getExactSlotsPerMtg(days, a.getClazz().getSchedulingSubpart().getMinutesPerWk().intValue());
-			}
-			for (int i=0;i<Constants.DAY_CODES.length;i++) {
-				if ((Constants.DAY_CODES[i]&days)==0) continue;
-				for (int j=startSlot;j<startSlot+length;j++)
-					setAvailable(i,j,false);
-			}
-			*/
+			init(a,hibSession,context.getFirstDay(),sBgModeNotAvailable);
 		}
+		setUtilization(getUtilization() + countUtilization(context, commitedAssignments));
 		RoomSharingModel sharing = room.getRoomSharingModel();
 		if (sharing!=null) {
 			for (int i=0;i<Constants.DAY_CODES.length;i++)
@@ -130,7 +119,7 @@ public class SolutionGridModel extends TimetableGridModel {
 						setAvailable(i,j,false);
 				}
 		}
-		if (showEvents && RoomAvailability.getInstance() != null) {
+		if (context.isShowEvents() && RoomAvailability.getInstance() != null) {
 	        Calendar startDateCal = Calendar.getInstance(Locale.US);
 	        // Range can be limited to classes time using
 	        // startDateCal.setTime(room.getSession().getSessionBeginDateTime());
@@ -180,7 +169,7 @@ public class SolutionGridModel extends TimetableGridModel {
 	        		TimetableGridCell cell = null;
 	        		for (Enumeration<Integer> f=timeLocation.getStartSlots();f.hasMoreElements();) {
 	        			int slot = f.nextElement();
-	        			if (firstDay>=0 && !timeLocation.getWeekCode().get(firstDay+(slot/Constants.SLOTS_PER_DAY))) continue;
+	        			if (context.getFirstDay()>=0 && !timeLocation.getWeekCode().get(context.getFirstDay()+(slot/Constants.SLOTS_PER_DAY))) continue;
 	        			if (cell==null) {
 	        				cell =  new TimetableGridCell(
 	        						slot/Constants.SLOTS_PER_DAY,
@@ -212,10 +201,10 @@ public class SolutionGridModel extends TimetableGridModel {
         setType(room instanceof Room ? ((Room)room).getRoomType().getUniqueId(): null);
 	}
 	
-	public SolutionGridModel(String solutionIdsStr, DepartmentalInstructor instructor, org.hibernate.Session hibSession, int firstDay, int bgMode, boolean showEvents) {
+	public SolutionGridModel(String solutionIdsStr, DepartmentalInstructor instructor, org.hibernate.Session hibSession, TimetableGridContext context) {
 		super(sResourceTypeInstructor, instructor.getUniqueId().intValue());
 		setName(instructor.getLastName()+", "+instructor.getFirstName()+(instructor.getMiddleName()==null?"":" "+instructor.getMiddleName()));
-		setFirstDay(firstDay);
+		setFirstDay(context.getFirstDay());
 		Solution firstSolution = null;
 		String ownerIds = "";
 		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
@@ -238,7 +227,7 @@ public class SolutionGridModel extends TimetableGridModel {
 				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.classInstructors as i where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.externalUniqueId = :extId" + check);
 				q.setString("extId", instructor.getExternalUniqueId());
 				q.setCacheable(true);
-				init(q.list(), hibSession, firstDay, bgMode);
+				init(q.list(), hibSession, context);
 				q = hibSession.createQuery("select distinct a from ClassInstructor i inner join i.classInstructing.assignments as a "+
 						"where i.instructor.externalUniqueId = :extId and a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId and a.solution.owner.uniqueId not in (" + ownerIds + ")" + check);
 				q.setString("extId",instructor.getExternalUniqueId());
@@ -249,7 +238,7 @@ public class SolutionGridModel extends TimetableGridModel {
 				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.clazz.classInstructors as i where a.solution.uniqueId in (" + solutionIdsStr + ") and i.instructor.uniqueId = :instructorId" + check);
 				q.setLong("instructorId", instructor.getUniqueId());
 				q.setCacheable(true);
-				init(q.list(),hibSession,firstDay,bgMode);
+				init(q.list(),hibSession,context);
 				q = hibSession.createQuery("select distinct a from ClassInstructor i inner join i.classInstructing.assignments as a "+
 						"where i.instructor.uniqueId = :instructorId and a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId and a.solution.owner.uniqueId not in (" + ownerIds + ")" + check);
 				q.setLong("instructorId",instructor.getUniqueId());
@@ -262,7 +251,7 @@ public class SolutionGridModel extends TimetableGridModel {
 				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.instructors as i where a.solution.uniqueId in ("+solutionIdsStr+") and i.externalUniqueId=:puid");
 				q.setString("puid", instructor.getExternalUniqueId());
 				q.setCacheable(true);
-				init(q.list(),hibSession,firstDay,bgMode);
+				init(q.list(),hibSession,context);
 				q = hibSession.createQuery("select distinct a from DepartmentalInstructor i inner join i.assignments as a "+
 						"where i.externalUniqueId=:puid and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
 				q.setString("puid",instructor.getExternalUniqueId());
@@ -273,7 +262,7 @@ public class SolutionGridModel extends TimetableGridModel {
 				Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.instructors as i where a.solution.uniqueId in ("+solutionIdsStr+") and i.uniqueId=:resourceId");
 				q.setLong("resourceId", instructor.getUniqueId());
 				q.setCacheable(true);
-				init(q.list(),hibSession,firstDay,bgMode);
+				init(q.list(),hibSession,context);
 				q = hibSession.createQuery("select distinct a from DepartmentalInstructor i inner join i.assignments as a "+
 						"where i.uniqueId=:instructorId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
 				q.setLong("instructorId",instructor.getUniqueId());
@@ -283,9 +272,10 @@ public class SolutionGridModel extends TimetableGridModel {
 			}
 		}
 		
+		setUtilization(getUtilization() + countUtilization(context, commitedAssignments));
 		for (Iterator x=commitedAssignments.iterator();x.hasNext();) {
 			Assignment a = (Assignment)x.next();
-			init(a,hibSession,firstDay,sBgModeNotAvailable);
+			init(a,hibSession,context.getFirstDay(),sBgModeNotAvailable);
 			/*
 			int days = a.getDays().intValue();
 			int startSlot = a.getStartSlot().intValue();
@@ -300,7 +290,7 @@ public class SolutionGridModel extends TimetableGridModel {
 			}
 			*/
 		}
-		if (showEvents && RoomAvailability.getInstance() != null) {
+		if (context.isShowEvents() && RoomAvailability.getInstance() != null) {
 	        Calendar startDateCal = Calendar.getInstance(Locale.US);
 	        // Range can be limited to classes time using
 	        // startDateCal.setTime(room.getSession().getSessionBeginDateTime());
@@ -351,7 +341,7 @@ public class SolutionGridModel extends TimetableGridModel {
 	        		TimetableGridCell cell = null;
 	        		for (Enumeration<Integer> f=timeLocation.getStartSlots();f.hasMoreElements();) {
 	        			int slot = f.nextElement();
-	        			if (firstDay>=0 && !timeLocation.getWeekCode().get(firstDay+(slot/Constants.SLOTS_PER_DAY))) continue;
+	        			if (context.getFirstDay()>=0 && !timeLocation.getWeekCode().get(context.getFirstDay()+(slot/Constants.SLOTS_PER_DAY))) continue;
 	        			if (cell==null) {
 	        				cell =  new TimetableGridCell(
 	        						slot/Constants.SLOTS_PER_DAY,
@@ -384,10 +374,10 @@ public class SolutionGridModel extends TimetableGridModel {
             setType(new Long(instructor.getPositionType().getSortOrder()));
 	}
 	
-	public SolutionGridModel(String solutionIdsStr, Department dept, org.hibernate.Session hibSession, int firstDay, int bgMode) {
+	public SolutionGridModel(String solutionIdsStr, Department dept, org.hibernate.Session hibSession, TimetableGridContext context) {
 		super(sResourceTypeInstructor, dept.getUniqueId().longValue());
 		setName(dept.getShortLabel());
-		setFirstDay(firstDay);
+		setFirstDay(context.getFirstDay());
 		Solution firstSolution = null;
 		String ownerIds = "";
 		for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
@@ -405,14 +395,15 @@ public class SolutionGridModel extends TimetableGridModel {
 		q.setLong("resourceId", dept.getUniqueId().longValue());
 		List a = q.list();
 		setSize(a.size());
-		init(a,hibSession,firstDay,bgMode);
+		init(a,hibSession,context);
 	}	
 	
-	private void init(List assignments, org.hibernate.Session hibSession, int firstDay, int bgMode) {
+	private void init(List assignments, org.hibernate.Session hibSession, TimetableGridContext context) {
 		for (Iterator i=assignments.iterator();i.hasNext();) {
 			Assignment assignment = (Assignment)i.next();
-			init(assignment, hibSession, firstDay, bgMode);
-		}		
+			init(assignment, hibSession, context.getFirstDay(), context.getBgMode());
+		}
+		setUtilization(countUtilization(context, assignments));
 	}
 	
 	public void init(Assignment assignment, org.hibernate.Session hibSession, int firstDay, int bgMode) {
@@ -634,4 +625,35 @@ public class SolutionGridModel extends TimetableGridModel {
 				instructors,
 				time);
 	}
+	
+    private double countUtilization(TimetableGridContext context, List assignments) {
+    	Set<Integer> slots = new HashSet<Integer>();
+        for (Iterator i = assignments.iterator(); i.hasNext(); ) {
+        	Assignment assignment = (Assignment) i.next();
+        	TimeLocation t = (assignment == null ? null : assignment.getTimeLocation());
+            if (t == null) continue;
+            int start = Math.max(context.getFirstSlot(), t.getStartSlot());
+            int stop = Math.min(context.getLastSlot(), t.getStartSlot() + t.getLength() - 1);
+            if (start > stop) continue;
+            if (context.getFirstDay() >= 0) {
+                for (int idx = context.getFirstDay(); idx < 7 + context.getFirstDay(); idx ++) {
+                	int dow = ((idx + context.getStartDayDayOfWeek()) % 7);
+                	if (t.getWeekCode().get(idx) && (t.getDayCode() & Constants.DAY_CODES[dow]) != 0 && (context.getDayCode() & Constants.DAY_CODES[dow]) != 0) {
+                		for (int slot = start; slot <= stop; slot ++)
+                			slots.add(288 * idx + slot);
+                	}
+                }
+            } else {
+                int idx = -1;
+                while ((idx = t.getWeekCode().nextSetBit(1 + idx)) >= 0) {
+                	int dow = ((idx + context.getStartDayDayOfWeek()) % 7);
+                	if (context.getDefaultDatePattern().get(idx) && (t.getDayCode() & Constants.DAY_CODES[dow]) != 0 && (context.getDayCode() & Constants.DAY_CODES[dow]) != 0) {
+                		for (int slot = start; slot <= stop; slot ++)
+                			slots.add(288 * idx + slot);
+                	}
+                }
+            }
+        }
+        return slots.size() / context.getNumberOfWeeks();
+    }	
 }

@@ -41,7 +41,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.SolutionReportForm;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
@@ -95,6 +97,12 @@ public class SolutionReportAction extends Action {
 		Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
 		BitSet sessionDays = session.getDefaultDatePattern().getPatternBitSet();
 		int startDayDayOfWeek = Constants.getDayOfWeek(session.getDefaultDatePattern().getStartDate());
+		Float nrWeeks = null;
+		if (ApplicationProperty.TimetableGridUtilizationSkipHolidays.isFalse()) {
+			DatePattern dp = session.getDefaultDatePatternNotNull();
+			if (dp != null)
+				nrWeeks = dp.getEffectiveNumberOfWeeks();
+		}
 		
 		SolverProxy solver = courseTimetablingSolverService.getSolver();
         if (solver==null) {
@@ -102,14 +110,14 @@ public class SolutionReportAction extends Action {
         } else {
         	try {
                 for (RoomType type : RoomType.findAll()) {
-                    RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, type.getUniqueId());
+                    RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, type.getUniqueId(), nrWeeks);
                     if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                         WebTable t = getRoomReportTable(request, roomReport, false, type.getUniqueId());
                         if (t!=null)
                             request.setAttribute("SolutionReport.roomReportTable."+type.getReference(), t.printTable(WebTable.getOrder(sessionContext,"solutionReports.roomReport.ord")));
                     }
                 }
-                RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, null);
+                RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, null, nrWeeks);
                 if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                     WebTable t = getRoomReportTable(request, roomReport, false, null);
                     if (t!=null)
@@ -149,7 +157,7 @@ public class SolutionReportAction extends Action {
     		
             boolean atLeastOneRoomReport = false;
             for (RoomType type : RoomType.findAll()) {
-                RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, type.getUniqueId());
+                RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, type.getUniqueId(), nrWeeks);
                 if (roomReport==null || roomReport.getGroups().isEmpty()) continue;
                 PdfWebTable table = getRoomReportTable(request, roomReport, true, type.getUniqueId());
                 if (table==null) continue;
@@ -162,7 +170,7 @@ public class SolutionReportAction extends Action {
                 doc.add(pdfTable);
                 atLeastOneRoomReport = true;
             }
-            RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, null);
+            RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, null, nrWeeks);
             if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                 PdfWebTable table = getRoomReportTable(request, roomReport, true, null);
                 if (table!=null) {

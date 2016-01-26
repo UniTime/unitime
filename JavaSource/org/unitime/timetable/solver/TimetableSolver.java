@@ -114,6 +114,7 @@ import org.unitime.timetable.solver.ui.StudentConflictsReport;
 import org.unitime.timetable.solver.ui.ViolatedDistrPreferencesReport;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
+import org.unitime.timetable.webutil.timegrid.TimetableGridContext;
 import org.unitime.timetable.webutil.timegrid.TimetableGridModel;
 
 
@@ -700,30 +701,30 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		});
 	}
     
-    public Vector getTimetableGridTables(String findString, int resourceType, int startDay, int bgMode, boolean showEvents) {
+    public Vector getTimetableGridTables(TimetableGridContext context) {
     	Vector models = new Vector();
-    	Query q = (findString == null ? null : new Query(findString));
+    	Query q = (context.getFilter() == null ? null : new Query(context.getFilter()));
     	Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
     		TimetableModel model = (TimetableModel)currentSolution().getModel();
-    		switch (resourceType) {
+    		switch (context.getResourceType()) {
     		case TimetableGridModel.sResourceTypeRoom:
     			for (RoomConstraint rc: model.getRoomConstraints()) {
     				if (!match(q, rc)) continue;
-    				models.add(new SolverGridModel(this,rc,startDay,bgMode,showEvents));
+    				models.add(new SolverGridModel(this,rc,context));
     			}
     			break;
     		case TimetableGridModel.sResourceTypeInstructor:
     			for (InstructorConstraint ic: model.getInstructorConstraints()) {
     				if (!match(q, ic.getName())) continue;
-    				models.add(new SolverGridModel(this,ic,startDay,bgMode,showEvents));
+    				models.add(new SolverGridModel(this,ic,context));
     			}
     			break;
     		case TimetableGridModel.sResourceTypeDepartment:
     			for (DepartmentSpreadConstraint dc: model.getDepartmentSpreadConstraints()) {
     				if (!match(q, dc.getName())) continue;
-    				models.add(new SolverGridModel(this,dc,startDay,bgMode));
+    				models.add(new SolverGridModel(this,dc,context));
     			}
     			break;
     		case TimetableGridModel.sResourceTypeCurriculum:
@@ -757,7 +758,7 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
     				}
     			}
 				for (Map.Entry<String, List<Student>> curriculum: curricula.entrySet()) {
-					models.add(new SolverGridModel(this, curriculum.getKey(), curriculum.getValue(), startDay, bgMode));
+					models.add(new SolverGridModel(this, curriculum.getKey(), curriculum.getValue(), context));
 				}
     			break;
     		}
@@ -1384,11 +1385,11 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 		}
 	}
 	
-	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType) {
+	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType, Float nrWeeks) {
 		Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
-			return new RoomReport(this, sessionDays, startDayDayOfWeek, roomType);
+			return new RoomReport(this, sessionDays, startDayDayOfWeek, roomType, nrWeeks);
 		} finally {
 			lock.unlock();
 		}

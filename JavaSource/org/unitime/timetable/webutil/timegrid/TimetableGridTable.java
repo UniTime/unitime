@@ -33,7 +33,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspWriter;
-
 import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
@@ -64,6 +63,7 @@ import org.unitime.timetable.util.RoomAvailability;
  */
 public class TimetableGridTable {
 	protected static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
+	protected static Formats.Format<Number> sUtF = Formats.getNumberFormat("0.00");
 	public static final int sDaysAll = 0;
 	public static final int sDaysAllExceptSat = 1;
 	public static final int sDaysMon = 2;
@@ -104,13 +104,17 @@ public class TimetableGridTable {
 	public static final int sOrderBySizeDesc = 3;
     public static final int sOrderByTypeAsc = 4;
     public static final int sOrderByTypeDesc = 5;
+    public static final int sOrderByUtilizationAsc = 6;
+    public static final int sOrderByUtilizationDesc = 7;
 	public static String[] sOrderBy = new String[] { 
 		"Name [asc]", 
 		"Name [desc]", 
 		"Size [asc]", 
 		"Size [desc]",
         "Type [asc]",
-        "Type [desc]"
+        "Type [desc]",
+        "Utilization [asc]",
+        "Utilization [desc]",
 	};
 
 	
@@ -347,8 +351,17 @@ public class TimetableGridTable {
 			sfx2 += "Vertical";
 		out.println("<tr valign='top'>");
 		out.println("<th class='Timetable"+(rowNumber==0?"Head":"")+"Cell"+sfx2+"'>");
-		if (isDispModePerWeek())
-			out.println(model.getName()+(model.getSize()>0?" ("+model.getSize()+")":""));
+		if (isDispModePerWeek()) {
+			out.println(model.getName());
+			if (getResourceType() == TimetableGridModel.sResourceTypeRoom)
+				out.println("<div style='white-space:nowrap;' title='capacity " + model.getSize() + " seats, utilization " + 
+						sUtF.format(model.getUtilization() / nrSlotsPerPeriod()) + " periods'  >(" +
+						model.getSize() + ", " + sUtF.format(model.getUtilization() / nrSlotsPerPeriod()) + ")</div>");
+			else if (getResourceType() == TimetableGridModel.sResourceTypeCurriculum)
+				out.println("<span style='white-space:nowrap;' title='" + model.getSize() + " students'  >(" + model.getSize() + ")</span>");
+			else if (model.getSize() > 0)
+				out.println("<span style='white-space:nowrap;' title='" + model.getSize() + " classes'  >(" + model.getSize() + ")</span>");
+		}
 		out.println("</th>");
 		if (isDispModePerWeekVertical()) {
 			for (int day=startDay(); day<=endDay(); day++) {
@@ -410,7 +423,15 @@ public class TimetableGridTable {
 		if (isDispModeInRow()) {
 			int maxIdx = model.getMaxIdx(startDay(),endDay(),firstSlot(),lastSlot());
 			out.println("<th rowspan='"+(1+maxIdx)+"' class='Timetable" + (rowNumber%10==0?"Head":"") + "Cell'>");
-			out.println(model.getName()+(model.getSize()>0?" ("+model.getSize()+")":""));
+			out.println(model.getName());
+			if (getResourceType() == TimetableGridModel.sResourceTypeRoom)
+				out.println("<div style='white-space:nowrap;' title='capacity " + model.getSize() + " seats, utilization " + 
+						sUtF.format(model.getUtilization() / nrSlotsPerPeriod()) + " periods'  >(" +
+						model.getSize() + ", " + sUtF.format(model.getUtilization() / nrSlotsPerPeriod()) + ")</div>");
+			else if (getResourceType() == TimetableGridModel.sResourceTypeCurriculum)
+				out.println("<span style='white-space:nowrap;' title='" + model.getSize() + " students'  >(" + model.getSize() + ")</span>");
+			else if (model.getSize() > 0)
+				out.println("<span style='white-space:nowrap;' title='" + model.getSize() + " classes'  >(" + model.getSize() + ")</span>");
 			out.println("</th>");
 			for (int idx=0;idx<=maxIdx;idx++) {
 				if (idx>0)
@@ -805,9 +826,9 @@ public class TimetableGridTable {
 		Session acadSession = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 		DatePattern defaultDatePattern = acadSession.getDefaultDatePatternNotNull();
     	iDefaultDatePatternName = (defaultDatePattern==null?null:defaultDatePattern.getName());
-		int startDay = (getWeek()==-100?-1:DateUtils.getFirstDayOfWeek(acadSession.getSessionStartYear(),getWeek())-acadSession.getDayOfYear(1,acadSession.getPatternStartMonth())-1);
+    	TimetableGridContext cx = new TimetableGridContext(this, acadSession);
 		if (solver!=null) {
-			iModels = solver.getTimetableGridTables(getFindString(), getResourceType(), startDay, getBgMode(), getShowEvents());
+			iModels = solver.getTimetableGridTables(cx);
 			Collections.sort(iModels,new TimetableGridModelComparator());
 			showUselessTimesIfDesired();
 			return true;
@@ -845,7 +866,7 @@ public class TimetableGridTable {
 				for (Iterator i=q.list().iterator();i.hasNext();) {
 					Location room = (Location)i.next();
 					if (!match(room)) continue;
-					iModels.add(new SolutionGridModel(solutionIdsStr, room, hibSession, startDay, getBgMode(), getShowEvents()));
+					iModels.add(new SolutionGridModel(solutionIdsStr, room, hibSession, cx));
 				}
 			} else if (getResourceType()==TimetableGridModel.sResourceTypeInstructor) {
 				if (RoomAvailability.getInstance() != null && getShowEvents()) {
@@ -882,7 +903,7 @@ public class TimetableGridTable {
 					String name = (instructor.getLastName()+", "+instructor.getFirstName()+" "+instructor.getMiddleName()).trim();
 					if (!match(name)) continue;
 					if (instructor.getExternalUniqueId()==null || instructor.getExternalUniqueId().length()<=0 || puids.add(instructor.getExternalUniqueId())) {
-                        SolutionGridModel m = new SolutionGridModel(solutionIdsStr, instructor, hibSession,startDay,getBgMode(), getShowEvents());
+                        SolutionGridModel m = new SolutionGridModel(solutionIdsStr, instructor, hibSession, cx);
                         m.setName(instructor.getName(instructorNameFormat));
 						iModels.add(m);
                     }
@@ -897,7 +918,7 @@ public class TimetableGridTable {
 					Department dept = (Department)i.next();
 					String name = dept.getAbbreviation();
 					if (!match(name)) continue;
-					iModels.add(new SolutionGridModel(solutionIdsStr, dept, hibSession, startDay, getBgMode()));
+					iModels.add(new SolutionGridModel(solutionIdsStr, dept, hibSession, cx));
 				}
 			}
 			if (tx!=null) tx.commit();
@@ -911,10 +932,8 @@ public class TimetableGridTable {
 		return true;
 	}
 		
-	public class TimetableGridModelComparator implements Comparator {
-		public int compare(Object o1, Object o2) {
-			TimetableGridModel m1 = (TimetableGridModel)o1;
-			TimetableGridModel m2 = (TimetableGridModel)o2;
+	public class TimetableGridModelComparator implements Comparator<TimetableGridModel> {
+		public int compareModels(TimetableGridModel m1, TimetableGridModel m2) {
 			switch (getOrderBy()) {
 				case sOrderByNameAsc :
 					return m1.getName().compareTo(m2.getName());
@@ -936,8 +955,18 @@ public class TimetableGridTable {
                         if (cmp!=0) return cmp;
                     }
                     return m2.getName().compareTo(m1.getName());
+                case sOrderByUtilizationAsc :
+                	return Double.compare(m1.getUtilization(), m2.getUtilization());
+                case sOrderByUtilizationDesc :
+                	return Double.compare(m2.getUtilization(), m1.getUtilization());
 			}
 			return 0;
+		}
+		
+		public int compare(TimetableGridModel m1, TimetableGridModel m2) {
+			int cmp = compareModels(m1, m2);
+			if (cmp != 0) return cmp;
+			return m1.getName().compareTo(m2.getName());
 		}
 	}
 	

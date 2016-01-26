@@ -1709,6 +1709,11 @@ public enum ApplicationProperty {
 	@Description("Timetable Grid: When class instructors are used (instead of solution instructors), display only instructors with the Check Conflicts toggle set." +
 			" That is, show all instructors that are assigned on a class (including those that are not checked for conflicts in course timetabling) when set to false.")
 	TimetableGridUseClassInstructorsCheckLead("tmtbl.timeGrid.useClassInstructors.checkConflicts"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Timetable Grid: skip holidays in room utilization computations")
+	TimetableGridUtilizationSkipHolidays("tmtbl.timeGrid.utilizationSkipHolidays"),
 
 	@Description("Contact Us: address")
 	ContactUsAddress("tmtbl.contact.address"),

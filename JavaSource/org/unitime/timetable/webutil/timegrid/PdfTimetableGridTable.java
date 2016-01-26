@@ -52,6 +52,7 @@ import com.lowagie.text.pdf.PdfWriter;
  */
 public class PdfTimetableGridTable {
 	protected static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
+	protected static Formats.Format<Number> sUtF = Formats.getNumberFormat("0.00");
 	private TimetableGridTable iTable = null;
 	private PdfWriter iWriter = null;
 	private Document iDocument = null;
@@ -210,15 +211,28 @@ public class PdfTimetableGridTable {
 			PdfPCell c = createCell();
 			c.setColspan(12);
 			c.setBorderWidthLeft(0);
-			addTextVertical(c, model.getName()+(model.getSize()>0?" ("+model.getSize()+")":""), true);
+			if (model.getResourceType() == TimetableGridModel.sResourceTypeRoom)
+				addTextVertical(c, "(" + model.getSize() + ", " + sUtF.format(model.getUtilization() / iTable.nrSlotsPerPeriod()) + ")");
+			else if (model.getResourceType() == TimetableGridModel.sResourceTypeCurriculum)
+				addTextVertical(c, "(" + model.getSize() + ")");
+			else if (model.getSize() > 0)
+				addTextVertical(c, "(" + model.getSize() + ")");
+			addTextVertical(c, model.getName(), true);
 			iPdfTable.addCell(c);
 		} else {
 			PdfPCell c = createCell();
 			c.setColspan(12);
 			if (iTable.isDispModeInRow())
 				addText(c, Constants.DAY_NAME[iDay], true);
-			else
-				addText(c, model.getName()+(model.getSize()>0?" ("+model.getSize()+")":""), true);
+			else {
+				addText(c, model.getName(), true);
+				if (model.getResourceType() == TimetableGridModel.sResourceTypeRoom)
+					addText(c, "(" + model.getSize() + ", " + sUtF.format(model.getUtilization() / iTable.nrSlotsPerPeriod()) + ")");
+				else if (model.getResourceType() == TimetableGridModel.sResourceTypeCurriculum)
+					addText(c, "(" + model.getSize() + ")");
+				else if (model.getSize() > 0)
+					addText(c, "(" + model.getSize() + ")");
+			}
 			iPdfTable.addCell(c);
 			for (int slot=iTable.firstSlot();slot<=iTable.lastSlot();slot+=iTable.nrSlotsPerPeriod()) {
 				int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;

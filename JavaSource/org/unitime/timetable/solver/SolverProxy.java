@@ -45,6 +45,7 @@ import org.unitime.timetable.solver.ui.SameSubpartBalancingReport;
 import org.unitime.timetable.solver.ui.SolverUnassignedClassesModel;
 import org.unitime.timetable.solver.ui.StudentConflictsReport;
 import org.unitime.timetable.solver.ui.ViolatedDistrPreferencesReport;
+import org.unitime.timetable.webutil.timegrid.TimetableGridContext;
 
 
 /**
@@ -84,7 +85,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public String getLog(int level, boolean includeDate) throws Exception;
 	public String getLog(int level, boolean includeDate, String fromStage) throws Exception;
 	public SolverUnassignedClassesModel getUnassignedClassesModel(String prefix) throws Exception;
-	public Vector getTimetableGridTables(String findString, int resourceType, int startDay, int bgMode, boolean showEvents) throws Exception;
+	public Vector getTimetableGridTables(TimetableGridContext context) throws Exception;
 	public ClassAssignmentDetails getClassAssignmentDetails(Long classId, boolean includeConstraints) throws Exception;
 	public Suggestions getSuggestions(SuggestionsModel model) throws Exception;
 	public void assign(Collection hints) throws Exception;
@@ -104,7 +105,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	
 	public void dispose() throws Exception;
 	
-	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType) throws Exception;
+	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType, Float nrWeeks) throws Exception;
 	public DeptBalancingReport getDeptBalancingReport() throws Exception;
 	public ViolatedDistrPreferencesReport getViolatedDistrPreferencesReport() throws Exception;
 	public DiscouragedInstructorBtbReport getDiscouragedInstructorBtbReport() throws Exception;

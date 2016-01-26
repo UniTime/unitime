@@ -53,28 +53,32 @@ public class RoomReport implements Serializable {
     private int iStartDayDayOfWeek = 0;
     private double iNrWeeks = 0.0;
 
-	public RoomReport(Solver<Lecture, Placement> solver, BitSet sessionDays, int startDayDayOfWeek, Long roomType) {
+	public RoomReport(Solver<Lecture, Placement> solver, BitSet sessionDays, int startDayDayOfWeek, Long roomType, Float nrWeeks) {
 		TimetableModel model = (TimetableModel) solver.currentSolution().getModel();
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		iSessionDays = sessionDays;
 		iStartDayDayOfWeek = startDayDayOfWeek;
         iRoomType = roomType;
         
-		// count number of weeks as a number of working days / 5
-        // (this is to avoid problems when the default date pattern does not contain Saturdays and/or Sundays)
-		int dow = iStartDayDayOfWeek;
-		int nrDays[] = new int[] {0, 0, 0, 0, 0, 0, 0};
-		for (int day = iSessionDays.nextSetBit(0); day < iSessionDays.length(); day++) {
-			if (iSessionDays.get(day)) nrDays[dow]++;
-			dow = (dow + 1) % 7;
+		if (nrWeeks == null) {
+			// count number of weeks as a number of working days / 5
+	        // (this is to avoid problems when the default date pattern does not contain Saturdays and/or Sundays)
+			int dow = iStartDayDayOfWeek;
+			int nrDays[] = new int[] {0, 0, 0, 0, 0, 0, 0};
+			for (int day = iSessionDays.nextSetBit(0); day < iSessionDays.length(); day++) {
+				if (iSessionDays.get(day)) nrDays[dow]++;
+				dow = (dow + 1) % 7;
+			}
+			iNrWeeks = 0.2 * (
+					nrDays[Constants.DAY_MON] +
+					nrDays[Constants.DAY_TUE] +
+					nrDays[Constants.DAY_WED] +
+					nrDays[Constants.DAY_THU] +
+					nrDays[Constants.DAY_FRI] );
+		} else {
+			iNrWeeks = nrWeeks;
 		}
-		iNrWeeks = 0.2 * (
-				nrDays[Constants.DAY_MON] +
-				nrDays[Constants.DAY_TUE] +
-				nrDays[Constants.DAY_WED] +
-				nrDays[Constants.DAY_THU] +
-				nrDays[Constants.DAY_FRI] );
-		
+
 		for (int i=0;i<sGroupSizes.length-1;i++) {
 			iGroups.add(new RoomAllocationGroup(sGroupSizes[i],sGroupSizes[i+1]));
 		}
