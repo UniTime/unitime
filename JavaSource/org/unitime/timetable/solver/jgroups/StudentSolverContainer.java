@@ -100,11 +100,12 @@ public class StudentSolverContainer implements SolverContainer<StudentSolverProx
 		iPassivation.start();
 		File folder = ApplicationProperties.getRestoreFolder();
 		if (!folder.exists() || !folder.isDirectory()) return;
-		
-		File[] files = folder.listFiles(new BackupFileFilter(true, false, SolverParameterGroup.sTypeStudent));
+
+		BackupFileFilter filter = new BackupFileFilter(true, false, SolverParameterGroup.sTypeStudent);
+		File[] files = folder.listFiles(filter);
 		for (int i=0;i<files.length;i++) {
 			File file = files[i];
-			String user = file.getName().substring("sct_".length(), file.getName().indexOf('.'));
+			String user = filter.getUser(file);
 			StudentSolver solver = new StudentSolver(new DataProperties(), new SolverOnDispose(user));
 			if (solver.restore(folder, user)) {
 				if (ApplicationProperties.getPassivationFolder() != null)

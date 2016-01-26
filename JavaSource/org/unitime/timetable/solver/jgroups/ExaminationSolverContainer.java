@@ -101,11 +101,11 @@ public class ExaminationSolverContainer implements SolverContainer<ExamSolverPro
 		File folder = ApplicationProperties.getRestoreFolder();
 		if (!folder.exists() || !folder.isDirectory()) return;
 		
-		File[] files = folder.listFiles(new BackupFileFilter(true, false, SolverParameterGroup.sTypeExam));
+		BackupFileFilter filter = new BackupFileFilter(true, false, SolverParameterGroup.sTypeExam);
+		File[] files = folder.listFiles(filter);
 		for (int i=0;i<files.length;i++) {
 			File file = files[i];
-			String user = file.getName().substring("exam_".length(), file.getName().indexOf('.'));
-            
+			String user = filter.getUser(file);
 			ExamSolver solver = new ExamSolver(new DataProperties(), new SolverOnDispose(user));
 			if (solver.restore(folder,user)) {
 				if (ApplicationProperties.getPassivationFolder() != null)

@@ -103,10 +103,11 @@ public class CourseSolverContainer implements SolverContainer<SolverProxy> {
 		sLog.info("Restore folder: " + folder);
 		if (!folder.exists() || !folder.isDirectory()) return;
 		
-		File[] files = folder.listFiles(new BackupFileFilter(true, false, SolverParameterGroup.sTypeCourse));
+		BackupFileFilter filter = new BackupFileFilter(true, false, SolverParameterGroup.sTypeCourse);
+		File[] files = folder.listFiles(filter);
 		for (int i=0;i<files.length;i++) {
 			File file = files[i];
-			String user = file.getName().substring(0,file.getName().indexOf('.'));
+			String user = filter.getUser(file);
             TimetableSolver solver = new TimetableSolver(new DataProperties(), new SolverOnDispose(user));
 			if (solver.restore(folder, user)) {
 				if (ApplicationProperties.getPassivationFolder() != null)

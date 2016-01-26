@@ -55,4 +55,19 @@ public class BackupFileFilter implements FileFilter {
 		}
 		return ((iAcceptXml && file.getName().endsWith(sXmlExtension)) || (iAcceptProperties && file.getName().endsWith(sPropertiesExtension)));
 	}
+
+	public String getUser(File file) {
+		if (accept(file)) {
+			String name = file.getName();
+			if (iType == SolverParameterGroup.sTypeExam) name = name.substring("exam_".length());
+			else if (iType == SolverParameterGroup.sTypeStudent) name = name.substring("sct_".length());
+			if (iAcceptXml && name.endsWith(sXmlExtension))
+				name = name.substring(0, name.length() - sXmlExtension.length());
+			else if (iAcceptProperties && name.endsWith(sPropertiesExtension))
+				name = name.substring(0, name.length() - sPropertiesExtension.length());
+			return name;
+		} else {
+			return null;
+		}
+	}
 }
