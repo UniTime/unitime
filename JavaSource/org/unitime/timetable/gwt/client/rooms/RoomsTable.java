@@ -537,6 +537,14 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		return operations;
 	}
 	
+	public boolean hasDepartmentOperations() {
+		return isVisible(RoomsColumn.EVENT_DEPARTMENT) || isVisible(RoomsColumn.DEPARTMENTS) || isVisible(RoomsColumn.CONTROL_DEPT);
+	}
+
+	public boolean hasOrientationOperations() {
+		return isVisible(RoomsColumn.AVAILABILITY) || isVisible(RoomsColumn.PERIOD_PREF) || isVisible(RoomsColumn.EVENT_AVAILABILITY);
+	}
+
 	public List<Operation> getDepartmentOperations() {
 		ArrayList<Operation> operations = new ArrayList<Operation>();
 		for (Operation operation: iDepartmentOperations)
@@ -889,7 +897,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 	
 	class RoomNameCell extends Label {
 		RoomNameCell(final RoomDetailInterface room) {
-			super(room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel());
+			super(room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel(), room.hasDisplayName());
 			addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
@@ -928,6 +936,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				}
 			});
 			setText(room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel());
+			setWordWrap(room.hasDisplayName());
 			addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {

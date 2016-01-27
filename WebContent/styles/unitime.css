@@ -3943,6 +3943,10 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-right: 3px;
 }
 
+.unitime-RoomGroups .description {
+	white-space: pre-wrap;
+}
+
 .unitime-RoomFeatures {
 	width: 100%;
 }

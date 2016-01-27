@@ -62,7 +62,6 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingDisplayMode;
-import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
 import com.google.gwt.aria.client.Roles;
@@ -223,108 +222,112 @@ public class RoomsPage extends Composite {
 					first = false;
 				}
 				
-				List<Operation> depts = iRoomsTable.getDepartmentOperations();
-				if (!depts.isEmpty()) {
-					MenuBar submenu = new MenuBar(true);
-					for (final Operation op: depts) {
-						MenuItem item = new MenuItem(op.getName(), true, new Command() {
-							@Override
-							public void execute() {
-								popup.hide();
-								op.execute();
-							}
-						});
-						if (op instanceof AriaOperation)
-							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
-						else
-							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
-						submenu.addItem(item);
-					}
-					MenuItem columns = new MenuItem(MESSAGES.opDepartmentFormat(), submenu);
-					columns.getElement().getStyle().setCursor(Cursor.POINTER);
-					menu.addItem(columns);
-					first = false;
-				}
-				
-				MenuBar orientation = null;
-				if (!RoomCookie.getInstance().isGridAsText() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.PERIOD_PREF) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
-					if (orientation == null) orientation = new MenuBar(true);
-					MenuItem item = new MenuItem(MESSAGES.opOrientationAsText(), true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							RoomCookie.getInstance().setOrientation(true, RoomCookie.getInstance().areRoomsHorizontal());
-							iRoomsTable.refreshTable();
-						}
-					});
-					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationAsText());
-					orientation.addItem(item);
-				}
-				if (RoomCookie.getInstance().isGridAsText() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.PERIOD_PREF) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
-					if (orientation == null) orientation = new MenuBar(true);
-					MenuItem item = new MenuItem(MESSAGES.opOrientationAsGrid(), true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							RoomCookie.getInstance().setOrientation(false, RoomCookie.getInstance().areRoomsHorizontal());
-							iRoomsTable.refreshTable();
-						}
-					});
-					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationAsGrid());
-					orientation.addItem(item);
-				}
-				if (!RoomCookie.getInstance().isGridAsText() && RoomCookie.getInstance().areRoomsHorizontal() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.PERIOD_PREF) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
-					if (orientation == null) orientation = new MenuBar(true);
-					MenuItem item = new MenuItem(MESSAGES.opOrientationVertical(), true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							RoomCookie.getInstance().setOrientation(false, false);
-							iRoomsTable.refreshTable();
-						}
-					});
-					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationVertical());
-					orientation.addItem(item);
-				}
-				if (!RoomCookie.getInstance().isGridAsText() && !RoomCookie.getInstance().areRoomsHorizontal() && (iRoomsTable.isVisible(RoomsColumn.AVAILABILITY) || iRoomsTable.isVisible(RoomsColumn.PERIOD_PREF) || iRoomsTable.isVisible(RoomsColumn.EVENT_AVAILABILITY))) {
-					if (orientation == null) orientation = new MenuBar(true);
-					MenuItem item = new MenuItem(MESSAGES.opOrientationHorizontal(), true, new Command() {
-						@Override
-						public void execute() {
-							popup.hide();
-							RoomCookie.getInstance().setOrientation(false, true);
-							iRoomsTable.refreshTable();
-						}
-					});
-					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationHorizontal());
-					orientation.addItem(item);
-				}
-				if (iProperties != null && iProperties.hasModes() && !RoomCookie.getInstance().isGridAsText()) {
-					boolean firstMode = true;
-					for (final RoomSharingDisplayMode mode: iProperties.getModes()) {
-						if (!mode.toHex().equals(RoomCookie.getInstance().getMode())) {
-							if (orientation == null) orientation = new MenuBar(true);
-							else if (firstMode) orientation.addSeparator();
-							firstMode = false;
-							MenuItem item = new MenuItem(mode.getName(), true, new Command() {
+				if (iRoomsTable.hasDepartmentOperations()) {
+					List<Operation> depts = iRoomsTable.getDepartmentOperations();
+					if (!depts.isEmpty()) {
+						MenuBar submenu = new MenuBar(true);
+						for (final Operation op: depts) {
+							MenuItem item = new MenuItem(op.getName(), true, new Command() {
 								@Override
 								public void execute() {
 									popup.hide();
-									RoomCookie.getInstance().setMode(RoomCookie.getInstance().areRoomsHorizontal(), mode.toHex());
-									iRoomsTable.refreshTable();
+									op.execute();
 								}
 							});
-							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), mode.getName());
-							orientation.addItem(item);
+							if (op instanceof AriaOperation)
+								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+							else
+								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+							submenu.addItem(item);
 						}
+						MenuItem columns = new MenuItem(MESSAGES.opDepartmentFormat(), submenu);
+						columns.getElement().getStyle().setCursor(Cursor.POINTER);
+						menu.addItem(columns);
+						first = false;
 					}
 				}
-				if (orientation != null) {
-					MenuItem columns = new MenuItem(MESSAGES.opOrientation(), orientation);
-					columns.getElement().getStyle().setCursor(Cursor.POINTER);
-					menu.addItem(columns);
-					first = false;
-				};
+
+				if (iRoomsTable.hasOrientationOperations()) {
+					MenuBar orientation = null;
+					if (!RoomCookie.getInstance().isGridAsText()) {
+						if (orientation == null) orientation = new MenuBar(true);
+						MenuItem item = new MenuItem(MESSAGES.opOrientationAsText(), true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								RoomCookie.getInstance().setOrientation(true, RoomCookie.getInstance().areRoomsHorizontal());
+								iRoomsTable.refreshTable();
+							}
+						});
+						Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationAsText());
+						orientation.addItem(item);
+					}
+					if (RoomCookie.getInstance().isGridAsText()) {
+						if (orientation == null) orientation = new MenuBar(true);
+						MenuItem item = new MenuItem(MESSAGES.opOrientationAsGrid(), true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								RoomCookie.getInstance().setOrientation(false, RoomCookie.getInstance().areRoomsHorizontal());
+								iRoomsTable.refreshTable();
+							}
+						});
+						Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationAsGrid());
+						orientation.addItem(item);
+					}
+					if (!RoomCookie.getInstance().isGridAsText() && RoomCookie.getInstance().areRoomsHorizontal()) {
+						if (orientation == null) orientation = new MenuBar(true);
+						MenuItem item = new MenuItem(MESSAGES.opOrientationVertical(), true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								RoomCookie.getInstance().setOrientation(false, false);
+								iRoomsTable.refreshTable();
+							}
+						});
+						Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationVertical());
+						orientation.addItem(item);
+					}
+					if (!RoomCookie.getInstance().isGridAsText() && !RoomCookie.getInstance().areRoomsHorizontal()) {
+						if (orientation == null) orientation = new MenuBar(true);
+						MenuItem item = new MenuItem(MESSAGES.opOrientationHorizontal(), true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								RoomCookie.getInstance().setOrientation(false, true);
+								iRoomsTable.refreshTable();
+							}
+						});
+						Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), MESSAGES.opOrientationHorizontal());
+						orientation.addItem(item);
+					}
+					if (iProperties != null && iProperties.hasModes() && !RoomCookie.getInstance().isGridAsText()) {
+						boolean firstMode = true;
+						for (final RoomSharingDisplayMode mode: iProperties.getModes()) {
+							if (!mode.toHex().equals(RoomCookie.getInstance().getMode())) {
+								if (orientation == null) orientation = new MenuBar(true);
+								else if (firstMode) orientation.addSeparator();
+								firstMode = false;
+								MenuItem item = new MenuItem(mode.getName(), true, new Command() {
+									@Override
+									public void execute() {
+										popup.hide();
+										RoomCookie.getInstance().setMode(RoomCookie.getInstance().areRoomsHorizontal(), mode.toHex());
+										iRoomsTable.refreshTable();
+									}
+								});
+								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), mode.getName());
+								orientation.addItem(item);
+							}
+						}
+					}
+					if (orientation != null) {
+						MenuItem columns = new MenuItem(MESSAGES.opOrientation(), orientation);
+						columns.getElement().getStyle().setCursor(Cursor.POINTER);
+						menu.addItem(columns);
+						first = false;
+					};
+				}
 				
 				for (final Operation op: iRoomsTable.getOtherOperations()) {
 					MenuItem item = new MenuItem(op.getName(), true, new Command() {

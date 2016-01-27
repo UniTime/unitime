@@ -176,9 +176,9 @@ public class RoomGroupsTable extends UniTimeTable<GroupInterface> {
 	protected Widget getCell(final GroupInterface group, final RoomGroupsColumn column, final int idx) {
 		switch (column) {
 		case NAME:
-			return new Label(group.getLabel() == null ? "" : group.getLabel());
+			return new Label(group.getLabel() == null ? "" : group.getLabel(), false);
 		case ABBREVIATION:
-			return new Label(group.getAbbreviation() == null ? "" : group.getAbbreviation());
+			return new Label(group.getAbbreviation() == null ? "" : group.getAbbreviation(), false);
 		case DEFAULT:
 			if (group.isDefault())
 				return new Image(RESOURCES.on());
@@ -187,9 +187,11 @@ public class RoomGroupsTable extends UniTimeTable<GroupInterface> {
 		case DEPARTMENT:
 			return new DepartmentCell(true, group.getDepartment());
 		case DESCRIPTION:
-			if (group.hasDescription())
-				return new HTML(group.getDescription());
-			else
+			if (group.hasDescription()) {
+				HTML html = new HTML(group.getDescription());
+				html.setStyleName("description");
+				return html;
+			} else
 				return null;
 		case ROOMS:
 			if (group.hasRooms())

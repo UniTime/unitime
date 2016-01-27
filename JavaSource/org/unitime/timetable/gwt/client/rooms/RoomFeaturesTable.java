@@ -167,14 +167,14 @@ public class RoomFeaturesTable extends UniTimeTable<FeatureInterface> {
 	protected Widget getCell(final FeatureInterface feature, final RoomFeaturesColumn column, final int idx) {
 		switch (column) {
 		case NAME:
-			return new Label(feature.getLabel() == null ? "" : feature.getLabel());
+			return new Label(feature.getLabel() == null ? "" : feature.getLabel(), false);
 		case ABBREVIATION:
-			return new Label(feature.getAbbreviation() == null ? "" : feature.getAbbreviation());
+			return new Label(feature.getAbbreviation() == null ? "" : feature.getAbbreviation(), false);
 		case TYPE:
 			if (feature.getType() == null)
 				return null;
 			else {
-				Label type = new Label(feature.getType().getAbbreviation());
+				Label type = new Label(feature.getType().getAbbreviation(), false);
 				type.setTitle(feature.getType().getLabel());
 				return type;
 			}
