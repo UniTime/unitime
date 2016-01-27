@@ -20,6 +20,7 @@
 package org.unitime.timetable.server.rooms;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -156,12 +157,10 @@ public class UpdateRoomFeatureBackend implements GwtRpcImplementation<UpdateRoom
 		}
 	}
 	
-	protected List<Location> lookupLocations(org.hibernate.Session hibSession, List<Long> ids, boolean future, Long sessionId) {
+	protected Collection<Location> lookupLocations(org.hibernate.Session hibSession, List<Long> ids, boolean future, Long sessionId) {
 		if (ids == null || ids.isEmpty()) return new ArrayList<Location>();
 		if (future) {
-			return (List<Location>)hibSession.createQuery(
-					"select l from Location l, Location o where o.uniqueId in :ids and l.session.uniqueId = :sessionId and l.permanentId = o.permanentId")
-					.setParameterList("ids", ids).setLong("sessionId", sessionId).list();
+			return Location.lookupFutureLocations(hibSession, ids, sessionId);
 		} else {
 			return (List<Location>)hibSession.createQuery("from Location where uniqueId in :ids").setParameterList("ids", ids).list();
 		}

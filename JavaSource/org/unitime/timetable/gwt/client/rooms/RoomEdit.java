@@ -502,6 +502,9 @@ public class RoomEdit extends Composite {
 		List<UniTimeTableHeader> ah = new ArrayList<UniTimeTableHeader>();
 		ah.add(new UniTimeTableHeader("&nbsp;"));
 		ah.add(new UniTimeTableHeader(MESSAGES.colName()));
+		ah.add(new UniTimeTableHeader(MESSAGES.colExternalId()));
+		ah.add(new UniTimeTableHeader(MESSAGES.colType()));
+		ah.add(new UniTimeTableHeader(MESSAGES.colCapacity()));
 		ah.add(new UniTimeTableHeader(MESSAGES.colSession()));
 		for (FutureOperation op: FutureOperation.values()) {
 			ah.add(new UniTimeTableHeader(getFutureOperationLabel(op)));
@@ -1100,6 +1103,9 @@ public class RoomEdit extends Composite {
 					}
 				});
 				line.add(new Label());
+				line.add(new Label());
+				line.add(new Label());
+				line.add(new Label());
 				line.add(new Label(session.getLabel()));
 				Integer flags = RoomCookie.getInstance().getFutureFlags(session.getId());
 				select.setValue(flags != null);
@@ -1118,15 +1124,19 @@ public class RoomEdit extends Composite {
 				iApplyTo.addRow(fr, line);
 			}
 			for (FutureOperation op: FutureOperation.values()) {
-				iApplyTo.setColumnVisible(3 + op.ordinal(), canFutureOperation(iRoom, op));
+				iApplyTo.setColumnVisible(6 + op.ordinal(), canFutureOperation(iRoom, op));
 			}
 			iApplyTo.setColumnVisible(1, false);
+			iApplyTo.setColumnVisible(2, false);
+			iApplyTo.setColumnVisible(3, false);
+			iApplyTo.setColumnVisible(4, false);
 			iForm.addRow(iApplyTo);
 			futureChanged();
 		} else if (iRoom.hasFutureRooms()) {
 			int row = iForm.addHeaderRow(iApplyToHeader);
 			iForm.getRowFormatter().addStyleName(row, "space-above");
 			iApplyTo.clearTable(1);
+			boolean hasExtId = false, hasType = false, hasCapacity = false;
 			for (FutureRoomInterface fr: iRoom.getFutureRooms()) {
 				List<Widget> line = new ArrayList<Widget>();
 				CheckBox select = new CheckBox(); 
@@ -1138,6 +1148,12 @@ public class RoomEdit extends Composite {
 					}
 				});
 				line.add(new FutureRoomNameCell(fr));
+				if (fr.hasExternalId()) hasExtId = true;
+				line.add(new Label(fr.hasExternalId() ? fr.getExternalId() : ""));
+				if (fr.hasType()) hasType = true;
+				line.add(new Label(fr.hasType() ? fr.getType() : ""));
+				if (fr.hasCapacity()) hasCapacity = true;
+				line.add(new Label(fr.hasCapacity() ? fr.getCapacity().toString() : ""));
 				line.add(new Label(fr.getSession().getLabel()));
 				Integer flags = RoomCookie.getInstance().getFutureFlags(fr.getSession().getId());
 				select.setValue(flags != null);
@@ -1149,9 +1165,12 @@ public class RoomEdit extends Composite {
 				iApplyTo.addRow(fr, line);
 			}
 			for (FutureOperation op: FutureOperation.values()) {
-				iApplyTo.setColumnVisible(3 + op.ordinal(), canFutureOperation(iRoom, op));
+				iApplyTo.setColumnVisible(6 + op.ordinal(), canFutureOperation(iRoom, op));
 			}
 			iApplyTo.setColumnVisible(1, true);
+			iApplyTo.setColumnVisible(2, hasExtId);
+			iApplyTo.setColumnVisible(3, hasType);
+			iApplyTo.setColumnVisible(4, hasCapacity);
 			iForm.addRow(iApplyTo);
 			futureChanged();
 		}
@@ -1668,7 +1687,7 @@ public class RoomEdit extends Composite {
 				if (ch.getValue()) {
 					int flags = 0;
 					for (FutureOperation op: FutureOperation.values()) {
-						CheckBox x = (CheckBox)iApplyTo.getWidget(i, 3 + op.ordinal());
+						CheckBox x = (CheckBox)iApplyTo.getWidget(i, 6 + op.ordinal());
 						if (x.getValue())
 							flags = op.set(flags);
 					}
@@ -1685,7 +1704,7 @@ public class RoomEdit extends Composite {
 				if (ch.getValue()) {
 					int flags = 0;
 					for (FutureOperation op: FutureOperation.values()) {
-						CheckBox x = (CheckBox)iApplyTo.getWidget(i, 3 + op.ordinal());
+						CheckBox x = (CheckBox)iApplyTo.getWidget(i, 6 + op.ordinal());
 						if (x.getValue())
 							flags = op.set(flags);
 					}
@@ -1707,12 +1726,12 @@ public class RoomEdit extends Composite {
 				if (ch.getValue()) {
 					int flags = 0;
 					for (FutureOperation op: FutureOperation.values()) {
-						CheckBox x = (CheckBox)iApplyTo.getWidget(i, 3 + op.ordinal());
+						CheckBox x = (CheckBox)iApplyTo.getWidget(i, 6 + op.ordinal());
 						if (x.getValue())
 							flags = op.set(flags);
 					}
 					if (flags == 0 && !includeWhenNoFlags) continue;
-					ret.add(iApplyTo.getData(1).getSession().getLabel());
+					ret.add(iApplyTo.getData(i).getSession().getLabel());
 				}
 			}
 			if (!ret.isEmpty())

@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.server.rooms;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -107,26 +108,18 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 		try {
 			switch (request.getOperation()) {
 			case DELETE:
-				Long permId = delete(request.getLocationId(), context, false);
-				if (permId != null && request.hasFutureFlags()) {
-					List<Location> futureLocations = LocationDAO.getInstance().getSession().createQuery(
-							"select l from Location l, Session s where " +
-							"l.permanentId = :permanentId and s.uniqueId = :sessionId and s.sessionBeginDateTime < l.session.sessionBeginDateTime " + 
-							"order by l.session.sessionBeginDateTime")
-							.setLong("permanentId", permId).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list();
+				Collection<Location> futureLocations = (request.hasFutureFlags() ? Location.getFutureLocations(request.getLocationId()) : null);
+				delete(request.getLocationId(), context, false);
+				if (futureLocations != null) {
 					for (Location loc: futureLocations)
 						if (request.getFutureFlag(loc.getUniqueId()) != null)
 							delete(loc.getUniqueId(), new EventContext(context, context.getUser(), loc.getSession().getUniqueId()), true);
 				}
 				break;
 			case UPDATE:
+				futureLocations = (request.hasFutureFlags() ? Location.getFutureLocations(request.getRoom().getUniqueId()) : null);
 				location = update(request.getRoom(), context, false, request.getFutureFlag(0l, FutureOperation.getFlagAllEnabled()));
-				if (location != null && request.hasFutureFlags()) {
-					List<Location> futureLocations = LocationDAO.getInstance().getSession().createQuery(
-							"select l from Location l, Session s where " +
-							"l.permanentId = :permanentId and s.uniqueId = :sessionId and s.sessionBeginDateTime < l.session.sessionBeginDateTime " + 
-							"order by l.session.sessionBeginDateTime")
-							.setLong("permanentId", location.getPermanentId()).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list();
+				if (futureLocations != null) {
 					for (Location loc: futureLocations) {
 						Integer flags = request.getFutureFlag(loc.getUniqueId());
 						if (flags != null) {

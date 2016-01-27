@@ -1081,6 +1081,9 @@ public class RoomInterface implements IsSerializable {
 		private Long iId;
 		private String iLabel;
 		private String iDisplayName;
+		private Integer iCapacity;
+		private String iType;
+		private String iExternalId;
 		private AcademicSessionInterface iSession;
 		private boolean iCanChange = false, iCanDelete = false;
 		
@@ -1099,6 +1102,18 @@ public class RoomInterface implements IsSerializable {
 		public String getDisplayName() { return iDisplayName; }
 		public void setDisplayName(String displayName) { iDisplayName = displayName; }
 		public boolean hasDisplayName() { return iDisplayName != null && !iDisplayName.isEmpty(); }
+		
+		public void setType(String type) { iType = type; }
+		public boolean hasType() { return iType != null && !iType.isEmpty(); }
+		public String getType() { return iType; }
+		
+		public void setExternalId(String externalId) { iExternalId = externalId; }
+		public boolean hasExternalId() { return iExternalId != null && !iExternalId.isEmpty(); }
+		public String getExternalId() { return iExternalId; }
+		
+		public void setCapacity(Integer capacity) { iCapacity = capacity; }
+		public boolean hasCapacity() { return iCapacity != null && iCapacity > 0; }
+		public Integer getCapacity() { return iCapacity; }
 		
 		public AcademicSessionInterface getSession() { return iSession; }
 		public void setSession(AcademicSessionInterface session) { iSession = session; }

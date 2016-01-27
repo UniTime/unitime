@@ -63,7 +63,6 @@ import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomTypeOption;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -203,15 +202,13 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 				response.setCanDelete(context.hasPermission(location, Right.NonUniversityLocationDelete));
 			}
 			
-			List<Location> futureLocations = LocationDAO.getInstance().getSession().createQuery(
-					"select l from Location l, Session s where " +
-					"l.permanentId = :permanentId and s.uniqueId = :sessionId and s.sessionBeginDateTime < l.session.sessionBeginDateTime " + 
-					"order by l.session.sessionBeginDateTime")
-					.setLong("permanentId", location.getPermanentId()).setLong("sessionId", context.getUser().getCurrentAcademicSessionId()).list();
-			for (Location loc: futureLocations) {
+			for (Location loc: location.getFutureLocations()) {
 				FutureRoomInterface f = new FutureRoomInterface(loc.getUniqueId(), loc.getLabel());
 				f.setSession(new AcademicSessionInterface(loc.getSession().getUniqueId(), loc.getSession().getAcademicTerm() + " " + loc.getSession().getAcademicYear()));
 				f.setDisplayName(loc.getDisplayName());
+				f.setExternalId(loc.getExternalUniqueId());
+				f.setCapacity(loc.getCapacity());
+				f.setType(loc.getRoomTypeLabel());
 				EventContext cx = new EventContext(context, context.getUser(), loc.getSession().getUniqueId());
 				if (loc instanceof Room) {
 					f.setCanDelete(cx.hasPermission(loc, Right.RoomDelete));

@@ -1082,4 +1082,54 @@ public abstract class Location extends BaseLocation implements Comparable {
     			).setLong("sessionId", sessionId).setString("name", name)
     			.setMaxResults(1).setCacheable(true).uniqueResult();
     }
+    
+    public static List<Location> getFutureLocations(Long locationId) {
+    	Location location = LocationDAO.getInstance().get(locationId);
+    	return location == null ? null : location.getFutureLocations();
+    }
+    
+    public abstract List<Location> getFutureLocations();
+
+	public static Collection<Location> lookupFutureLocations(org.hibernate.Session hibSession, List<Long> ids, Long sessionId) {
+		Map<Long, Location> locations = new HashMap<Long, Location>();
+		Set<Long> blacklist = new HashSet<Long>();
+		
+		for (Object[] o: (List<Object[]>)LocationDAO.getInstance().getSession().createQuery(
+    			"select l.uniqueId, f from Room l, Room f where " +
+    			"l.uniqueId in :ids and f.session.uniqueId = :sessionId and " +
+    			"l.session.academicInitiative = f.session.academicInitiative and l.session.sessionBeginDateTime < f.session.sessionBeginDateTime and " +
+    			"((l.permanentId = f.permanentId) or " + // match on permanent ids
+    			"(not exists (from Location x where x.permanentId = f.permanentId and x.session = l.session) and " + // no match on permanent id exist
+    			"l.roomType = f.roomType and " + // room type match
+    			"((length(f.externalUniqueId) > 0 and l.externalUniqueId = f.externalUniqueId) or " + // external id match
+    			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
+    			"f.building.abbreviation = l.building.abbreviation and f.roomNumber = l.roomNumber and f.capacity = l.capacity)))) " + // name & capacity match
+    			"order by f.session.sessionBeginDateTime"
+    			).setParameterList("ids", ids).setLong("sessionId", sessionId).setCacheable(true).list()) {
+    		if (locations.put((Long)o[0], (Location)o[1]) != null)
+    			blacklist.add((Long)o[0]);
+    	}
+		
+		for (Object[] o: (List<Object[]>)LocationDAO.getInstance().getSession().createQuery(
+    			"select l.uniqueId, f from NonUniversityLocation l, NonUniversityLocation f where " +
+    			"l.uniqueId in :ids and f.session.uniqueId = :sessionId and " +
+    			"l.session.academicInitiative = f.session.academicInitiative and l.session.sessionBeginDateTime < f.session.sessionBeginDateTime and " +
+    			"((l.permanentId = f.permanentId) or " + // match on permanent ids
+    			"(not exists (from Location x where x.permanentId = f.permanentId and x.session = l.session) and " + // no match on permanent id exist
+    			"l.roomType = f.roomType and " + // room type match
+    			"((length(f.externalUniqueId) > 0 and l.externalUniqueId = f.externalUniqueId) or " + // external id match
+    			"((f.externalUniqueId is null or length(f.externalUniqueId) = 0) and (l.externalUniqueId is null or length(l.externalUniqueId) = 0) and " + // no external id match
+    			"f.name = l.name and f.capacity = l.capacity)))) " + // name & capacity match
+    			"order by f.session.sessionBeginDateTime"
+    			).setParameterList("ids", ids).setLong("sessionId", sessionId).setCacheable(true).list()) {
+    		if (locations.put((Long)o[0], (Location)o[1]) != null)
+    			blacklist.add((Long)o[0]);
+    	}
+		
+		if (!blacklist.isEmpty())
+			for (Long id: blacklist)
+				locations.remove(id);
+		
+		return locations.values();
+	}
 }
