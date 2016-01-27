@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.rooms;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.rooms.RoomsTable.DepartmentCell;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
@@ -49,6 +50,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -98,7 +100,10 @@ public class RoomDetail extends Composite {
 		iHeader.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				hide();
+				if ("1".equals(Location.getParameter("back")))
+					ToolBox.open(GWT.getHostPageBaseURL() + "back.do");
+				else
+					hide();
 			}
 		});
 		

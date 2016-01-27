@@ -461,7 +461,7 @@ public class SavedHQLPage extends Composite {
 					else if ("__Subpart".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "schedulingSubpartDetail.do?ssuid=" + event.getData()[0]);
 					else if ("__Room".equals(iFirstField))
-						ToolBox.open(GWT.getHostPageBaseURL() + "roomDetail.do?id=" + event.getData()[0]);
+						ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=rooms&back=1&id=" + event.getData()[0]);
 					else if ("__Instructor".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "instructorDetail.do?instructorId=" + event.getData()[0]);
 					else if ("__Exam".equals(iFirstField))

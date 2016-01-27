@@ -283,7 +283,7 @@ public class SectioningReports extends Composite {
 					else if ("__Subpart".equals(iHead.getCell(0)))
 						ToolBox.open(GWT.getHostPageBaseURL() + "schedulingSubpartDetail.do?ssuid=" + event.getData().getCell(0));
 					else if ("__Room".equals(iHead.getCell(0)))
-						ToolBox.open(GWT.getHostPageBaseURL() + "roomDetail.do?id=" + event.getData().getCell(0));
+						ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=rooms&back=1&id=" + event.getData().getCell(0));
 					else if ("__Instructor".equals(iHead.getCell(0)))
 						ToolBox.open(GWT.getHostPageBaseURL() + "instructorDetail.do?instructorId=" + event.getData().getCell(0));
 					else if ("__Exam".equals(iHead.getCell(0)))
