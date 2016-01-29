@@ -32,16 +32,12 @@ import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
-import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
@@ -81,7 +77,6 @@ import org.unitime.timetable.util.Formats;
  */
 @GwtRpcImplements(SaveEventRpcRequest.class)
 public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApproveEventRpcResponse> {
-	private @Autowired ApplicationContext applicationContext;
 	
 	@Override
 	public SaveOrApproveEventRpcResponse execute(SaveEventRpcRequest request, EventContext context) {
@@ -140,7 +135,6 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 		try {
 			Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
 			Date now = new Date();
-			String uname = GwtRpcServlet.execute(new EventPropertiesRpcRequest(request.getSessionId()), applicationContext, context).getMainContact().getShortName();
 
 			Event event = null;
 			if (request.getEvent().getId() != null) {
@@ -397,8 +391,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				note.setEvent(event);
 				note.setNoteType(event.getUniqueId() == null ? EventNote.sEventNoteTypeCreateEvent : EventNote.sEventNoteTypeAddMeetings);
 				note.setTimeStamp(now);
-				note.setUser(uname);
-				note.setUserId(context.getUser().getExternalUserId());
+				note.setUser(context.getUser().getTrueName());
+				note.setUserId(context.getUser().getTrueExternalUserId());
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				note.setMeetings(EventInterface.toString(
 						response.getCreatedMeetings(),
@@ -408,7 +402,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				NoteInterface n = new NoteInterface();
 				n.setDate(now);
 				n.setMeetings(note.getMeetings());
-				n.setUser(uname);
+				n.setUser(context.getUser().getTrueName());
 				n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
 				n.setNote(note.getTextNote());
 				if (attachment != null) {
@@ -425,8 +419,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				note.setEvent(event);
 				note.setNoteType(EventNote.sEventNoteTypeEditEvent);
 				note.setTimeStamp(now);
-				note.setUser(uname);
-				note.setUserId(context.getUser().getExternalUserId());
+				note.setUser(context.getUser().getTrueName());
+				note.setUserId(context.getUser().getTrueExternalUserId());
 				note.setAffectedMeetings(updatedMeetings);
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				if (response.hasUpdatedMeetings())
@@ -437,7 +431,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				NoteInterface n = new NoteInterface();
 				n.setDate(now);
 				n.setMeetings(note.getMeetings());
-				n.setUser(uname);
+				n.setUser(context.getUser().getTrueName());
 				n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
 				n.setNote(note.getTextNote());
 				if (attachment != null && !attached) {
@@ -454,8 +448,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				note.setEvent(event);
 				note.setNoteType(EventNote.sEventNoteTypeDeletion);
 				note.setTimeStamp(now);
-				note.setUser(uname);
-				note.setUserId(context.getUser().getExternalUserId());
+				note.setUser(context.getUser().getTrueName());
+				note.setUserId(context.getUser().getTrueExternalUserId());
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				note.setMeetings(EventInterface.toString(
 						response.getDeletedMeetings(),
@@ -464,7 +458,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				NoteInterface n = new NoteInterface();
 				n.setDate(now);
 				n.setMeetings(note.getMeetings());
-				n.setUser(uname);
+				n.setUser(context.getUser().getTrueName());
 				n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
 				n.setNote(note.getTextNote());
 				if (attachment != null && !attached) {
@@ -481,8 +475,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				note.setEvent(event);
 				note.setNoteType(EventNote.sEventNoteTypeCancel);
 				note.setTimeStamp(now);
-				note.setUser(uname);
-				note.setUserId(context.getUser().getExternalUserId());
+				note.setUser(context.getUser().getTrueName());
+				note.setUserId(context.getUser().getTrueExternalUserId());
 				note.setAffectedMeetings(cancelledMeetings);
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				note.setMeetings(EventInterface.toString(
@@ -492,7 +486,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				NoteInterface n = new NoteInterface();
 				n.setDate(now);
 				n.setMeetings(note.getMeetings());
-				n.setUser(uname);
+				n.setUser(context.getUser().getTrueName());
 				n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
 				n.setNote(note.getTextNote());
 				if (attachment != null && !attached) {

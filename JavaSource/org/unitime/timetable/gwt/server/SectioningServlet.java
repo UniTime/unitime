@@ -673,7 +673,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid").setString("uid", password).list();
 				if (!student.isEmpty()) {
 					UserContext user = getSessionContext().getUser();
-					UniTimePrincipal principal = new UniTimePrincipal(user.getExternalUserId(), password, user.getName());
+					UniTimePrincipal principal = new UniTimePrincipal(user.getTrueExternalUserId(), password, user.getTrueName());
 					for (Student s: student) {
 						principal.addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
 						principal.setName(NameFormat.defaultFormat().format(s));
@@ -697,7 +697,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (student == null)
 					throw new SectioningException(MSG.exceptionLoginFailed());
 				UserContext user = getSessionContext().getUser();
-				UniTimePrincipal principal = new UniTimePrincipal(user.getExternalUserId(), student.getExternalUniqueId(), user.getName());
+				UniTimePrincipal principal = new UniTimePrincipal(user.getTrueExternalUserId(), student.getExternalUniqueId(), user.getTrueName());
 				principal.addStudentId(student.getSession().getUniqueId(), student.getUniqueId());
 				principal.setName(NameFormat.defaultFormat().format(student));
 				getSessionContext().setAttribute("user", principal);
@@ -1394,7 +1394,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			OnlineSectioningServer server = getServerInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId(), false);
 			
 			UserContext user = getSessionContext().getUser();
-			String approval = new Date().getTime() + ":" + user.getExternalUserId() + ":" + user.getName();
+			String approval = new Date().getTime() + ":" + user.getTrueExternalUserId() + ":" + user.getTrueName();
 			server.execute(server.createAction(ApproveEnrollmentsAction.class).withParams(offering.getUniqueId(), studentIds, courseIdsCanApprove, approval), currentUser());
 			
 			return approval;
@@ -1428,7 +1428,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			OnlineSectioningServer server = getServerInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId(), false);
 			
 			UserContext user = getSessionContext().getUser();
-			String approval = new Date().getTime() + ":" + user.getExternalUserId() + ":" + user.getName();
+			String approval = new Date().getTime() + ":" + user.getTrueExternalUserId() + ":" + user.getTrueName();
 			
 			return server.execute(server.createAction(RejectEnrollmentsAction.class).withParams(offering.getUniqueId(), studentIds, courseIdsCanApprove, approval), currentUser());
 		} catch (PageAccessException e) {
@@ -1934,8 +1934,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		String pin = (String)getSessionContext().getAttribute("pin");
 		if (user != null) {
 			OnlineSectioningLog.Entity.Builder entity = OnlineSectioningLog.Entity.newBuilder()
-					.setExternalId(user.getExternalUserId())
-					.setName(user.getName() == null ? user.getUsername() : user.getName())
+					.setExternalId(user.getTrueExternalUserId())
+					.setName(user.getTrueName() == null ? user.getUsername() : user.getTrueName())
 					.setType(getSessionContext().hasPermission(Right.StudentSchedulingAdvisor) ?
 							OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT);
 			if (pin != null) entity.addParameterBuilder().setKey("pin").setValue(pin);

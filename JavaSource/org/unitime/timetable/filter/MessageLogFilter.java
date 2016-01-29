@@ -66,7 +66,7 @@ public class MessageLogFilter implements Filter {
 		try {
 			UserContext user = getUser();
 			if (user != null) {
-				NDC.push("uid:" + user.getExternalUserId()); count++;
+				NDC.push("uid:" + user.getTrueExternalUserId()); count++;
 				if (user.getCurrentAuthority() != null) {
 					NDC.push("role:" + user.getCurrentAuthority().getRole()); count++;
 					Long sessionId = user.getCurrentAcademicSessionId();

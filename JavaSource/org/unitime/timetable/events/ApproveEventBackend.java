@@ -26,17 +26,13 @@ import java.util.Set;
 
 import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
-import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
@@ -55,7 +51,6 @@ import org.unitime.timetable.util.Formats;
 @GwtRpcImplements(ApproveEventRpcRequest.class)
 public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, SaveOrApproveEventRpcResponse>{
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	private @Autowired ApplicationContext applicationContext;
 	
 	@Override
 	public SaveOrApproveEventRpcResponse execute(ApproveEventRpcRequest request, EventContext context) {
@@ -73,7 +68,6 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 				throw new GwtRpcException(MESSAGES.failedApproveEventNoMeetings());
 
 			Date now = new Date();
-			String uname = GwtRpcServlet.execute(new EventPropertiesRpcRequest(request.getSessionId()), applicationContext, context).getMainContact().getShortName();
 	        
 	        Set<Meeting> affectedMeetings = new HashSet<Meeting>();
 	        meetings: for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); ) {
@@ -155,8 +149,8 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 				note.setNoteType(EventNote.sEventNoteTypeInquire);
 			}
 			note.setTimeStamp(now);
-			note.setUser(uname);
-			note.setUserId(context.getUser().getExternalUserId());
+			note.setUser(context.getUser().getTrueName());
+			note.setUserId(context.getUser().getTrueExternalUserId());
 			note.setAffectedMeetings(affectedMeetings);
 			note.setMeetings(EventInterface.toString(
 					response.getUpdatedMeetings(),
@@ -191,7 +185,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 			n.setId(note.getUniqueId());
 			n.setDate(now);
 			n.setMeetings(note.getMeetings());
-			n.setUser(uname);
+			n.setUser(context.getUser().getTrueName());
 			n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
 			n.setNote(request.getMessage());
 			n.setAttachment(attachment == null ? null : attachment.getName());

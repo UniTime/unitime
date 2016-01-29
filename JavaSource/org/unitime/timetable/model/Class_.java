@@ -1200,8 +1200,8 @@ public class Class_ extends BaseClass_ {
 			note.setEvent(event);
 			note.setNoteType(cancelled ? EventNote.sEventNoteTypeCancel : EventNote.sEventNoteTypeApproval);
 			note.setTimeStamp(new Date());
-			note.setUser(user.getName());
-			note.setUserId(user.getExternalUserId());
+			note.setUser(user.getTrueName());
+			note.setUserId(user.getTrueExternalUserId());
 			note.setTextNote(cancelled ? MSG.classNoteCancelled(getClassLabel(hibSession)) : MSG.classNoteReopened(getClassLabel(hibSession)));
 			if (getCommittedAssignment() == null)
 				note.setMeetings(MSG.classMeetingsNotApplicable());
@@ -1247,8 +1247,8 @@ public class Class_ extends BaseClass_ {
         				note.setEvent(event);
         				note.setNoteType(EventNote.sEventNoteTypeDeletion);
         				note.setTimeStamp(new Date());
-        				note.setUser(user.getName());
-        				note.setUserId(user.getExternalUserId());
+        				note.setUser(user.getTrueName());
+        				note.setUserId(user.getTrueExternalUserId());
         				note.setTextNote(MSG.classNoteUnassigned(oldAssignment.getPlacement().getName()));
         				note.setMeetings(MSG.classMeetingsNotApplicable());
         				event.getNotes().add(note);
@@ -1387,8 +1387,8 @@ public class Class_ extends BaseClass_ {
 				note.setEvent(event);
 				note.setNoteType(event.getUniqueId() == null ? EventNote.sEventNoteTypeCreateEvent : EventNote.sEventNoteTypeEditEvent);
 				note.setTimeStamp(new Date());
-				note.setUser(user.getName());
-				note.setUserId(user.getExternalUserId());
+				note.setUser(user.getTrueName());
+				note.setUserId(user.getTrueExternalUserId());
 				if (oldAssignment == null)
 					note.setTextNote(MSG.classNoteAssigned(a.getPlacement().getName()));
 				else

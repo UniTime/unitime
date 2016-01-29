@@ -176,4 +176,10 @@ public abstract class AbstractUserContext implements UserContext {
 		setProperty(property.key(), value);
 	}
 
+	@Override
+	public String getTrueName() { return getName(); }
+
+	@Override
+	public String getTrueExternalUserId() { return getExternalUserId(); }
+
 }

@@ -235,7 +235,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			q.setTimeStamp(new Date());
 			q.setTimeSpent(time);
 			q.setSessionId(context.getHttpSessionId());
-			q.setUid(context.isAuthenticated() ? context.getUser().getExternalUserId() : null);
+			q.setUid(context.isAuthenticated() ? context.getUser().getTrueExternalUserId() : null);
 			if (ApplicationProperty.QueryLogJSON.isTrue()) {
 				q.setQuery(iGson.toJson(request));
 			} else {

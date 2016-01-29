@@ -140,8 +140,8 @@ public class SectioningStatusFilterBackend implements GwtRpcImplementation<Secti
 		UniTimePrincipal principal = (UniTimePrincipal)context.getAttribute("user");
 		if (user != null) {
 			return OnlineSectioningLog.Entity.newBuilder()
-				.setExternalId(user.getExternalUserId())
-				.setName(user.getName() == null ? user.getUsername() : user.getName())
+				.setExternalId(user.getTrueExternalUserId())
+				.setName(user.getTrueName() == null ? user.getUsername() : user.getTrueName())
 				.setType(context.hasPermission(Right.StudentSchedulingAdvisor) ?
 						 OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT).build();
 		} else if (principal != null) {

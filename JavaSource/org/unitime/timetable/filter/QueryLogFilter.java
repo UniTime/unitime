@@ -93,7 +93,7 @@ public class QueryLogFilter implements Filter {
 				sessionId = r.getSession().getId();
 				UserContext user = getUser();
 				if (user != null)
-					userId = user.getExternalUserId();
+					userId = user.getTrueExternalUserId();
 			}
 		} catch (IllegalStateException e) {}
 		
@@ -135,7 +135,7 @@ public class QueryLogFilter implements Filter {
 				if (userId == null) {
 					UserContext user = getUser();
 					if (user != null)
-						q.setUid(user.getExternalUserId());
+						q.setUid(user.getTrueExternalUserId());
 				}
 			} catch (IllegalStateException e) {}
 			GwtCallInfo callInfo = GwtDispatcherServlet.getLastQuery();

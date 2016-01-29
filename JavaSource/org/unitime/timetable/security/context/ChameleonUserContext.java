@@ -72,5 +72,14 @@ public class ChameleonUserContext extends UniTimeUserContext implements UserCont
 	public String getName() {
 		return super.getName() + " (A)";
 	}
+	
+	@Override
+	public String getTrueName() {
+		return getOriginalUserContext().getName();
+	}
 
+	@Override
+	public String getTrueExternalUserId() {
+		return getOriginalUserContext().getExternalUserId();
+	}
 }

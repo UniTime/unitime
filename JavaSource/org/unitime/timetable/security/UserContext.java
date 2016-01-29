@@ -77,4 +77,8 @@ public interface UserContext extends UserDetails {
 	public static interface Chameleon {
 		public UserContext getOriginalUserContext();
 	}
+	
+	public String getTrueExternalUserId();
+	
+	public String getTrueName();
 }

@@ -558,5 +558,9 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 		public List<? extends UserAuthority> getAuthorities(String role, Qualifiable... filter) { return iContext.getAuthorities(role, filter); }
 		@Override
 		public Collection<? extends UserAuthority> getAuthorities() { return iContext.getAuthorities(); }
+		@Override
+		public String getTrueExternalUserId() { return iContext.getTrueExternalUserId(); }
+		@Override
+		public String getTrueName() { return iContext.getTrueName(); }
 	}
 }
