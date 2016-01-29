@@ -589,6 +589,20 @@ public class SavedHQLPage extends Composite {
 					});
 				}
 			});
+			iDialogHeader.addButton("export", MESSAGES.opScriptExport(), new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					RPC.execute(EncodeQueryRpcRequest.encode("output=hql.xml&id=" + iDialogQuery.getId()), new AsyncCallback<EncodeQueryRpcResponse>() {
+						@Override
+						public void onFailure(Throwable caught) {
+						}
+						@Override
+						public void onSuccess(EncodeQueryRpcResponse result) {
+							ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+						}
+					});
+				}
+			});
 			iDialogHeader.addButton("delete", MESSAGES.opQueryDelete(), 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -615,6 +629,7 @@ public class SavedHQLPage extends Composite {
 			iDialog.setWidget(iDialogForm);
 		}
 		iDialog.setText(q == null ? MESSAGES.dialogNewReport() : MESSAGES.dialogEditReport(q.getName()));
+		iDialogHeader.setEnabled("export", q != null);
 		iDialogHeader.setEnabled("delete", q != null);
 		iDialogHeader.clearMessage();
 		iDialogName.setText(q == null ? "" : q.getName());

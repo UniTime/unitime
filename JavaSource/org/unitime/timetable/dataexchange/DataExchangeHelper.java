@@ -91,6 +91,8 @@ public class DataExchangeHelper {
         sImportRegister.put("roomSharing", RoomSharingImport.class);
         sImportRegister.put("scripts", ScriptImport.class);
         sImportRegister.put("script", ScriptImport.class);
+        sImportRegister.put("reports", HQLImport.class);
+        sImportRegister.put("report", HQLImport.class);
     }
     
     public DataExchangeHelper() {

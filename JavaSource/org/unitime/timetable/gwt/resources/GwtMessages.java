@@ -297,6 +297,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Back")
 	String opQueryBack();
 	
+	@DefaultMessage("Export")
+	String opQueryExport();
+
 	@DefaultMessage("Save")
 	String opScriptSave();
 	

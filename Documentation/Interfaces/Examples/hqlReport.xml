@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE report PUBLIC "-//UniTime//UniTime HQL Reports DTD/EN" "http://www.unitime.org/interface/Reports.dtd">
+
+<!--
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ -->
+
+<reports created="Janyary 29, 2016">
+	<report name="TA: Courses that are instructed by students">
+		<flag>APPEARANCE_COURSES</flag>
+		<description>This report lists all courses from a particular department, that have at least one instructor assigned that is also a student in the same academic term.</description>
+		<query><![CDATA[select distinct
+  c.instructionalOffering.uniqueId as __Offering,
+  (c.subjectAreaAbbv || ' ' || c.courseNbr) as Course,
+  c.title as Title
+from
+  DepartmentalInstructor i inner join i.classes ci
+  inner join ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering o
+  inner join o.courseOfferings c, Student s
+where
+  i.department = %DEPARTMENT% and c.isControl = true and
+  i.externalUniqueId = s.externalUniqueId and i.department.session = s.session
+order by
+  Course]]></query>
+	</report>
+	<report name="TA: Courses that are instructed by students (including students)">
+		<flag>APPEARANCE_COURSES</flag>
+		<description>This report lists all courses from a particular department, that have at least one instructor assigned that is also a student in the same academic term. For each course, it also lists its student instructors.</description>
+		<query><![CDATA[select distinct
+  c.instructionalOffering.uniqueId as __Offering,
+  (c.subjectAreaAbbv || ' ' || c.courseNbr) as Course,
+  c.title as Title,
+  i.externalUniqueId as External_Id,
+  i.lastName as Last_Name, i.middleName as Middle_Name, i.firstName as First_Name,
+  case when p is null then 'Not Specified' else p.label end as Position
+from
+  DepartmentalInstructor i left join i.positionType p inner join i.classes ci
+  inner join ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering o
+  inner join o.courseOfferings c, Student s
+where
+  i.department = %DEPARTMENT% and c.isControl = true and
+  i.externalUniqueId = s.externalUniqueId and i.department.session = s.session
+order by
+  Course]]></query>
+	</report>
+	<report name="TA: Instructors that are also students">
+		<flag>APPEARANCE_COURSES</flag>
+		<description>This report list all instructors from a particular department, that are also students in the same academic term.</description>
+		<query><![CDATA[select
+  i.uniqueId as __Instructor,
+  i.externalUniqueId as PUID,
+  i.lastName as Last_Name, i.middleName as Middle_Name, i.firstName as First_Name,
+  (case when p is null then 'Not Specified' else p.label end) as Position
+from
+  DepartmentalInstructor i left join i.positionType p,
+  Student s
+where
+  i.department = %DEPARTMENT% and i.externalUniqueId = s.externalUniqueId and i.department.session = s.session
+order by
+  i.lastName, i.firstName]]></query>
+	</report>
+	<report name="TA: Instructors that are also students (including course assignments)">
+		<flag>APPEARANCE_COURSES</flag>
+		<description>This report lists all instructors from a particular department, that are also students in the same academic term. For each student, it also lists all courses he/she is assigned to as instructor.</description>
+		<query><![CDATA[select distinct
+  i.uniqueId as __Instructor,
+  i.externalUniqueId as External_Id,
+  i.lastName as Last_Name, i.middleName as Middle_Name, i.firstName as First_Name,
+  case when p is null then 'Not Specified' else p.label end as Position,
+  case when c is null then '' else (c.subjectAreaAbbv || ' ' || c.courseNbr) end as Course
+from
+  DepartmentalInstructor i left join i.positionType p left join i.classes ci
+  left join ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering o
+  left join o.courseOfferings c, Student s
+where
+  i.department = %DEPARTMENT% and i.externalUniqueId = s.externalUniqueId and i.department.session = s.session and (c is null or c.isControl = true)
+order by
+  i.lastName, i.firstName, Course]]></query>
+	</report>
+</reports>
