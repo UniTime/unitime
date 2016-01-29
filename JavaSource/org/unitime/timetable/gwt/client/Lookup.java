@@ -373,7 +373,8 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 						event.getValue().getLastName(),
 						event.getValue().getEmail(),
 						event.getValue().getPhone(),
-						event.getValue().getAcademicTitle());				
+						event.getValue().getAcademicTitle(),
+						event.getValue().getName());
 			}
 		});
 		lookup.setOptions(options);

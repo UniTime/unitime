@@ -27,7 +27,7 @@
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 
 <tiles:importAttribute />
-<html:form action="/chameleon">
+<html:form action="/chameleon" styleId="form">
 	
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -59,7 +59,7 @@
 		</logic:messagesPresent>
 		
 		<TR>
-			<TD width="200">Timetable Manager</TD>
+			<TD width="200">Timetable Manager:</TD>
 			<TD>
 				<html:select name="chameleonForm" property="puid">
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
@@ -69,6 +69,18 @@
 				
 			</TD>
 		</TR>
+		<logic:equal value="true" name="chameleonForm" property="canLookup">
+		<tt:propertyEquals name="unitime.chameleon.lookup" value="true">
+		<TR>
+			<TD>Other:</TD>
+			<TD>
+				<input type='hidden' name='uid' id='uid'>
+				<input type='hidden' name='uname' id='uname'>
+				<input type='button' value='Lookup' onclick="lookup();" style="btn">
+			</TD>
+		</TR>
+		</tt:propertyEquals>
+		</logic:equal>
 	
 		<TR>
 			<TD colspan="2" class="WelcomeRowHead">
@@ -85,5 +97,15 @@
 			</TD>
 		</TR>
 	</TABLE>
-</html:form>
+<script language="javascript">
+	function lookup() {
+		peopleLookup('', function(person) {
+			if (person) {
+				document.getElementById('uid').value = (person[0] == null ? '' : person[0]);
+				document.getElementById('uname').value = (person[7] == null ? '' : person[7]);
+				document.getElementById('form').submit();
+			}
+		}, "mustHaveExternalId");
+	}
+</script></html:form>
 

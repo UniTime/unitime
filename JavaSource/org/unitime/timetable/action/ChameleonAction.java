@@ -37,6 +37,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ChameleonForm;
 import org.unitime.timetable.security.SessionContext;
@@ -87,6 +88,8 @@ public class ChameleonAction extends Action {
         MessageResources rsc = getResources(request);
         
         ChameleonForm frm = (ChameleonForm) form;
+        frm.setCanLookup(sessionContext.hasPermission(Right.HasRole));
+
 		ActionMessages errors = new ActionMessages();
 
         String op = (request.getParameter("op")==null) 
@@ -101,11 +104,21 @@ public class ChameleonAction extends Action {
 		    op = rsc.getMessage("op.view");
 		
 		frm.setOp(op);
+
+		// Lookup
+		String uid = request.getParameter("uid");
+		if (uid != null && !uid.isEmpty() && ApplicationProperty.ChameleonAllowLookup.isTrue()) {
+			frm.setPuid(uid);
+			frm.setName(request.getParameter("uname"));
+			op = rsc.getMessage("button.changeUser");
+		}
         
 		// First Access - display blank form
         if ( op.equals(rsc.getMessage("op.view")) ) {
             LookupTables.setupTimetableManagers(request);
-        }        
+            if (user != null)
+            	frm.setPuid(user.getExternalUserId());
+        }
 		
         // Change User
         if ( op.equals(rsc.getMessage("button.changeUser")) ) {
@@ -152,7 +165,7 @@ public class ChameleonAction extends Action {
     	} else {
     		SecurityContextHolder.getContext().setAuthentication(
         			new ChameleonAuthentication(
-        					authentication, new ChameleonUserContext(frm.getPuid(), user)
+        					authentication, new ChameleonUserContext(frm.getPuid(), frm.getName(), user)
         			));
     	}
     }

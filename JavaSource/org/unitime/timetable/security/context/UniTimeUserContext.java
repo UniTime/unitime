@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Department;
@@ -58,6 +57,10 @@ public class UniTimeUserContext extends AbstractUserContext {
 	private String iId, iPassword, iName, iLogin, iEmail;
 	
 	public UniTimeUserContext(String userId, String login, String name, String password) {
+		this(userId, login, name, password, null);
+	}
+
+	protected UniTimeUserContext(String userId, String login, String name, String password, Long sessionId) {
 		iLogin = login; iPassword = password; iId = userId; iName = name;
 		org.hibernate.Session hibSession = TimetableManagerDAO.getInstance().createNewSession();
 		try {
@@ -76,8 +79,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					getProperties().put(setting.getKey().getKey(), setting.getValue());
 			}
 
-			Long sessionId = null;
-			if ("true".equals(ApplicationProperties.getProperty(ApplicationProperty.KeepLastUsedAcademicSession))) {
+			if (sessionId == null && ApplicationProperty.KeepLastUsedAcademicSession.isTrue()) {
 				String lastSessionId = getProperty(UserProperty.LastAcademicSession);
 				if (lastSessionId != null) sessionId = Long.valueOf(lastSessionId);
 			}

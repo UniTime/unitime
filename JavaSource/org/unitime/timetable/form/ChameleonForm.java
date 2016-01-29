@@ -41,6 +41,8 @@ public class ChameleonForm extends ActionForm {
 
 	private String puid;
     private String op;
+    private String name;
+    private boolean canLookup;
     
     // --------------------------------------------------------- Methods
 
@@ -67,6 +69,8 @@ public class ChameleonForm extends ActionForm {
     public void reset(ActionMapping mapping, HttpServletRequest request) {
         puid = null;
         op = null;
+        name = null;
+        canLookup = false;
     }
 
     public String getPuid() {
@@ -82,4 +86,9 @@ public class ChameleonForm extends ActionForm {
     public void setOp(String op) {
         this.op = op;
     }
+    
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public boolean isCanLookup() { return canLookup; }
+    public void setCanLookup(boolean canLookup) { this.canLookup = canLookup; }
 }

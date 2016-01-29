@@ -2083,6 +2083,11 @@ public enum ApplicationProperty {
 	@DefaultValue("998")
 	@Description("Maximum number of classes a scheduling subpart can contain.  Defaults to 998.")
 	SubpartMaxNumClasses("unitime.subpart.max_num_classes"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Chameleon: allow to swith into any user (not just timetable managers), using the People Lookup dialog")
+	ChameleonAllowLookup("unitime.chameleon.lookup"),
 	;
 
 	String iKey;

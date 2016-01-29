@@ -34,8 +34,8 @@ public class ChameleonUserContext extends UniTimeUserContext implements UserCont
 	private static final long serialVersionUID = 1L;
 	private UserContext iOriginalUser;
 	
-	public ChameleonUserContext(String userId, UserContext originalUser) {
-		super(userId, originalUser.getUsername(), originalUser.getName(), null);
+	public ChameleonUserContext(String userId, String userName, UserContext originalUser) {
+		super(userId, originalUser.getUsername(), userName, null, originalUser.getCurrentAcademicSessionId());
 		
 		// Original user is session dependent -> remove all session independent authorities from the new user
 		if (originalUser.getCurrentAuthority() == null || !originalUser.getCurrentAuthority().hasRight(Right.SessionIndependent)) {
