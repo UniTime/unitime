@@ -1838,20 +1838,42 @@ public class SessionRollForward {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollInstructorDataForwardFrom());
 		DepartmentalInstructor toInstructor = null;
-		DepartmentalInstructor fromInstructor = null;
 		DepartmentalInstructorDAO iDao = new DepartmentalInstructorDAO();
 		Department toDepartment = null;
-		Department fromDepartment = null;
+		ArrayList<String> deptsToRollDataFor = new ArrayList<String>();
+		for(String dept : rollForwardSessionForm.getRollForwardDepartmentIds()){
+			deptsToRollDataFor.add(dept);
+		}
+		
 		
 		try {
 			if (fromSession.getDepartments() != null){
-				for(Iterator dIt = fromSession.getDepartments().iterator(); dIt.hasNext();){
-					fromDepartment = (Department) dIt.next();
+				String existingQuery = "select di.department.deptCode || di.externalUniqueId from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is not null";
+				ArrayList<String> existingInstructors = (ArrayList<String>) iDao.getSession()
+						.createQuery(existingQuery)
+						.setLong("sessionId", toSession.getUniqueId().longValue())
+						.list();
+				
+				String existingNoExtIdQuery = "select di.department.deptCode || di.lastName || ',' || di.firstName || ',' || di.middleName from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is null";
+				ArrayList<String> existingNoExtIdInstructors = (ArrayList<String>) iDao.getSession()
+						.createQuery(existingNoExtIdQuery)
+						.setLong("sessionId", toSession.getUniqueId().longValue())
+						.list();
+				
+				for(Department fromDepartment: fromSession.getDepartments()){
 					if (fromDepartment != null && fromDepartment.getInstructors() != null && !fromDepartment.getInstructors().isEmpty()){
 						toDepartment = fromDepartment.findSameDepartmentInSession(toSession);
-						if (toDepartment != null){
-							for (Iterator iIt = fromDepartment.getInstructors().iterator(); iIt.hasNext();){
-								fromInstructor = (DepartmentalInstructor) iIt.next();
+						if (toDepartment != null && deptsToRollDataFor.contains(toDepartment.getUniqueId().toString())){
+							for (DepartmentalInstructor fromInstructor : fromDepartment.getInstructors()){
+								if (!(fromInstructor.getExternalUniqueId() == null) && !fromInstructor.getExternalUniqueId().isEmpty() && existingInstructors.contains(toDepartment.getDeptCode()+fromInstructor.getExternalUniqueId())){
+									iLog.info(fromInstructor.toString() + ": already exists in term, not rolling forward");
+									continue;
+								}
+								if ((fromInstructor.getExternalUniqueId() == null || fromInstructor.getExternalUniqueId().isEmpty()) && existingNoExtIdInstructors.contains(toDepartment.getDeptCode()+fromInstructor.getLastName()+","+fromInstructor.getFirstName()+","+fromInstructor.getMiddleName())){
+									iLog.info(fromInstructor.toString() + ": already exists in term, not rolling forward");
+									continue;
+								}
+
 								toInstructor = (DepartmentalInstructor) fromInstructor.clone();
 								toInstructor.setDepartment(toDepartment);
 								rollForwardBuildingPrefs(fromInstructor, toInstructor, toSession);

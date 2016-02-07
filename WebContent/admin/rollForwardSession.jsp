@@ -165,6 +165,16 @@
 			</td>			
 		</tr>
 		<tr>
+			<td valign="middle">
+			<table style="margin-left: 50px;"><tr>
+			    <td valign="top">For Departments:</td>
+			    <td><html:select size="<%=String.valueOf(Math.min(7,frm.getDepartments().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardDepartmentIds" multiple="true">
+					<html:optionsCollection property="departments" label="label" value="uniqueId" />
+				</html:select>
+			    </td></tr>
+			</table></td>
+		</tr>
+		<tr>
 			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCourseOfferings"/> Roll Course Offerings Forward From Session: 
 			<html:select style="width:200px;" property="sessionToRollCourseOfferingsForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>

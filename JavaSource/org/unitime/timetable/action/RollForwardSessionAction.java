@@ -44,7 +44,9 @@ import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.timetable.form.RollForwardSessionForm;
 import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
@@ -115,6 +117,7 @@ public class RollForwardSessionAction extends Action {
 	    
 		setToFromSessionsInForm(rollForwardSessionForm);
 		rollForwardSessionForm.setSubjectAreas(getSubjectAreas(rollForwardSessionForm.getSessionToRollForwardTo()));
+		rollForwardSessionForm.setDepartments(getDepartments(rollForwardSessionForm.getSessionToRollForwardTo()));
 		if (op == null)
 			setExpirationDates(rollForwardSessionForm);
 		if (rollForwardSessionForm.getSubpartLocationPrefsAction() == null){
@@ -275,9 +278,10 @@ public class RollForwardSessionAction extends Action {
         		sessionRollForward.rollSubjectAreasForward(iErrors, iForm);
         	}
 	        iProgress++;
-			if (iErrors.isEmpty()){
-				iForm.validateInstructorDataRollForward(toAcadSession, iErrors);
-			}
+//TODO: remove these lines of code once testing is complete	        
+//			if (iErrors.isEmpty()){
+//				iForm.validateInstructorDataRollForward(toAcadSession, iErrors);
+//			}
         	if (iErrors.isEmpty() && iForm.getRollForwardInstructorData()) {
 				setStatus("Instructors ...");
         		sessionRollForward.rollInstructorDataForward(iErrors, iForm);
@@ -394,10 +398,10 @@ public class RollForwardSessionAction extends Action {
 	}
 	
 	protected void setToFromSessionsInForm(RollForwardSessionForm rollForwardSessionForm){
-		List sessionList = new ArrayList();
+		List<Session> sessionList = new ArrayList<Session>();
 		sessionList.addAll(Session.getAllSessions());
-		rollForwardSessionForm.setFromSessions(new ArrayList());
-		rollForwardSessionForm.setToSessions(new ArrayList());
+		rollForwardSessionForm.setFromSessions(new ArrayList<Session>());
+		rollForwardSessionForm.setToSessions(new ArrayList<Session>());
 		Session session = null;
 		for (int i = (sessionList.size() - 1); i >= 0; i--){
 			session = (Session)sessionList.get(i);
@@ -412,13 +416,13 @@ public class RollForwardSessionAction extends Action {
 		}
 	}
 	
-	protected Set getSubjectAreas(Long selectedSessionId) {
-		Set subjects = new TreeSet();
+	protected Set<SubjectArea> getSubjectAreas(Long selectedSessionId) {
+		Set<SubjectArea> subjects = new TreeSet<SubjectArea>();
 		Session session = null;
 		if (selectedSessionId == null){
 			boolean found = false;
-			TreeSet allSessions = Session.getAllSessions();
-			List sessionList = new ArrayList();
+			TreeSet<Session> allSessions = Session.getAllSessions();
+			List<Session> sessionList = new ArrayList<Session>();
 			sessionList.addAll(Session.getAllSessions());
 			for (int i = (sessionList.size() - 1); i >= 0; i--){
 				session = (Session)sessionList.get(i);
@@ -440,6 +444,34 @@ public class RollForwardSessionAction extends Action {
 		return(subjects);
 	}
 	
+	protected Set<Department> getDepartments(Long selectedSessionId) {
+		Set<Department> departments = new TreeSet<Department>();
+		Session session = null;
+		if (selectedSessionId == null){
+			boolean found = false;
+			TreeSet<Session> allSessions = Session.getAllSessions();
+			List<Session> sessionList = new ArrayList<Session>();
+			sessionList.addAll(Session.getAllSessions());
+			for (int i = (sessionList.size() - 1); i >= 0; i--){
+				session = (Session)sessionList.get(i);
+				if (session.getStatusType().isAllowRollForward()){
+					found =  true;
+				}
+			}
+			if (!found){
+				session = null;
+				if (allSessions.size() > 0){
+					session = (Session)allSessions.last();
+				}
+			}
+		} else {
+			session = Session.getSessionById(selectedSessionId);
+		}
+		
+		if (session != null) departments = session.getDepartments();
+		return(departments);
+	}
+
 	protected void setExpirationDates(RollForwardSessionForm form) {
 		if (form.getSessionToRollForwardTo() != null) {
 			ReservationInterface.DefaultExpirationDates dates = GwtRpcServlet.execute(new ReservationInterface.ReservationDefaultExpirationDatesRpcRequest(form.getSessionToRollForwardTo()), applicationContext, sessionContext);

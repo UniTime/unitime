@@ -29,6 +29,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExamType;
@@ -66,11 +68,11 @@ public class RollForwardSessionForm extends ActionForm {
 	 * 
 	 */
 	private static final long serialVersionUID = 7553214589949959977L;
-	private Collection subjectAreas;
+	private Collection<SubjectArea> subjectAreas;
 	private String[] subjectAreaIds; 
 	private String buttonAction;
-	private Collection toSessions;
-	private Collection fromSessions;
+	private Collection<Session> toSessions;
+	private Collection<Session> fromSessions;
 	private Long sessionToRollForwardTo;
 	private Boolean rollForwardDatePatterns;
 	private Long sessionToRollDatePatternsForwardFrom;
@@ -82,13 +84,14 @@ public class RollForwardSessionForm extends ActionForm {
 	private Long sessionToRollManagersForwardFrom;
 	private Boolean rollForwardRoomData;
 	private Long sessionToRollRoomDataForwardFrom;
+	private Collection<Department> departments;
+	private String[] rollForwardDepartmentIds;
 	private Boolean rollForwardSubjectAreas;
 	private Long sessionToRollSubjectAreasForwardFrom;
 	private Boolean rollForwardInstructorData;
 	private Long sessionToRollInstructorDataForwardFrom;
 	private Boolean rollForwardCourseOfferings;
 	private Long sessionToRollCourseOfferingsForwardFrom;
-	private Collection availableRollForwardSubjectAreas;
 	private String[] rollForwardSubjectAreaIds;
 	private Boolean rollForwardClassInstructors;
 	private String[] rollForwardClassInstrSubjectIds;
@@ -135,11 +138,14 @@ public class RollForwardSessionForm extends ActionForm {
 	}
 	
 		
+	@SuppressWarnings("rawtypes")
 	private void validateRollForwardSessionHasNoDataOfType(ActionErrors errors, Session sessionToRollForwardTo, String rollForwardType, Collection checkCollection){
 		if (checkCollection != null && !checkCollection.isEmpty()){
 			errors.add("sessionHasData", new ActionMessage("errors.rollForward.sessionHasData", rollForwardType, sessionToRollForwardTo.getLabel()));			
 		}		
 	}
+
+	@SuppressWarnings("rawtypes")
 	protected void validateRollForward(ActionErrors errors, Session sessionToRollForwardTo, Long sessionIdToRollForwardFrom, String rollForwardType, Collection checkCollection){
 		validateRollForwardSessionHasNoDataOfType(errors, sessionToRollForwardTo, rollForwardType,  checkCollection);
 		Session sessionToRollForwardFrom = Session.getSessionById(sessionIdToRollForwardFrom);
@@ -179,7 +185,7 @@ public class RollForwardSessionForm extends ActionForm {
 	
 	public void validateBuildingAndRoomRollForward(Session toAcadSession,ActionErrors errors){
 		if (getRollForwardRoomData().booleanValue()){
-			validateRollForward(errors, toAcadSession, getSessionToRollRoomDataForwardFrom(), "Buildings", new ArrayList());
+			validateRollForward(errors, toAcadSession, getSessionToRollRoomDataForwardFrom(), "Buildings", new ArrayList<Building>());
 			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Buildings", Building.findAll(toAcadSession.getUniqueId()));
 			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Rooms", Location.findAll(toAcadSession.getUniqueId()));
 			RoomFeatureDAO rfDao = new RoomFeatureDAO();
@@ -226,7 +232,7 @@ public class RollForwardSessionForm extends ActionForm {
 					&& !getCancelledClassAction().equalsIgnoreCase(SessionRollForward.CancelledClassAction.SKIP.name())){
 				errors.add("invalidCancelAction", new ActionMessage("errors.generic", "Invalid cancelled class roll forward action:  " + getCancelledClassAction()));
 			}
-			validateRollForward(errors, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), "Course Offerings", new ArrayList());
+			validateRollForward(errors, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), "Course Offerings", new ArrayList<CourseOffering>());
 			CourseOfferingDAO coDao = new CourseOfferingDAO();
 			for (int i = 0; i < getRollForwardSubjectAreaIds().length; i++){
 				String queryStr = "from CourseOffering co where co.subjectArea.session.uniqueId = "
@@ -240,9 +246,9 @@ public class RollForwardSessionForm extends ActionForm {
 	
 	public void validateClassInstructorRollForward(Session toAcadSession,ActionErrors errors){
 		if (getRollForwardClassInstructors().booleanValue()){
-			validateRollForward(errors, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), "Class Instructors", new ArrayList());
+			validateRollForward(errors, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), "Class Instructors", new ArrayList<ClassInstructor>());
 			ClassInstructorDAO ciDao = new ClassInstructorDAO();
-			for (int i = 0; i < getRollForwardSubjectAreaIds().length; i++){
+			for (int i = 0; i < getRollForwardClassInstrSubjectIds().length; i++){
 				String queryStr = "from ClassInstructor c  inner join c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = "
 					+ toAcadSession.getUniqueId().toString()
 					+ " and co.isControl = 1 and co.subjectArea.uniqueId  = '"
@@ -310,7 +316,8 @@ public class RollForwardSessionForm extends ActionForm {
 		validateDatePatternRollForward(toAcadSession, errors);
 		validateTimePatternRollForward(toAcadSession, errors);
 		validateSubjectAreaRollForward(toAcadSession, errors);
-		validateInstructorDataRollForward(toAcadSession, errors);
+// TODO: remove this line of code once testing is done.
+//		validateInstructorDataRollForward(toAcadSession, errors);
 		validateCourseOfferingRollForward(toAcadSession, errors);
 		validateClassInstructorRollForward(toAcadSession, errors);
 		validateExamConfigurationRollForward(toAcadSession, errors);
@@ -325,7 +332,7 @@ public class RollForwardSessionForm extends ActionForm {
 	 * Method init
 	 */
 	public void init() {
-		subjectAreas = new ArrayList();
+		subjectAreas = new ArrayList<SubjectArea>();
 		subjectAreaIds = new String[0];
 		fromSessions = null;
 		toSessions = null;
@@ -340,13 +347,14 @@ public class RollForwardSessionForm extends ActionForm {
 		sessionToRollManagersForwardFrom = null;
 		rollForwardRoomData = new Boolean(false);
 		sessionToRollRoomDataForwardFrom = null;
+		setDepartments(new ArrayList<Department>());
+		setRollForwardDepartmentIds(new String[0]);
 		rollForwardSubjectAreas = new Boolean(false);
 		sessionToRollSubjectAreasForwardFrom = null;
 		rollForwardInstructorData = new Boolean(false);
 		sessionToRollInstructorDataForwardFrom = null;
 		rollForwardCourseOfferings = new Boolean(false);
 		sessionToRollCourseOfferingsForwardFrom = null;
-		availableRollForwardSubjectAreas = new ArrayList();
 		rollForwardSubjectAreaIds = new String[0];
 		rollForwardClassInstructors = new Boolean(false);
 		rollForwardClassInstrSubjectIds = new String[0];
@@ -405,21 +413,12 @@ public class RollForwardSessionForm extends ActionForm {
 		this.subjectAreaIds = subjectAreaIds;
 	}
 
-	public Collection getSubjectAreas() {
+	public Collection<SubjectArea> getSubjectAreas() {
 		return subjectAreas;
 	}
 
-	public void setSubjectAreas(Collection subjectAreas) {
+	public void setSubjectAreas(Collection<SubjectArea> subjectAreas) {
 		this.subjectAreas = subjectAreas;
-	}
-
-	public Collection getAvailableRollForwardSubjectAreas() {
-		return availableRollForwardSubjectAreas;
-	}
-
-	public void setAvailableRollForwardSubjectAreas(
-			Collection availableRollForwardSubjectAreas) {
-		this.availableRollForwardSubjectAreas = availableRollForwardSubjectAreas;
 	}
 
 	public Boolean getRollForwardCourseOfferings() {
@@ -547,6 +546,23 @@ public class RollForwardSessionForm extends ActionForm {
 		this.sessionToRollRoomDataForwardFrom = sessionToRollRoomDataForwardFrom;
 	}
 
+	public Collection<Department> getDepartments() {
+		return departments;
+	}
+
+	public void setDepartments(
+			Collection<Department> departments) {
+		this.departments = departments;
+	}
+
+	public String[] getRollForwardDepartmentIds() {
+		return rollForwardDepartmentIds;
+	}
+
+	public void setRollForwardDepartmentIds(String[] rollForwardDepartmentIds) {
+		this.rollForwardDepartmentIds = rollForwardDepartmentIds;
+	}
+
 	public Long getSessionToRollSubjectAreasForwardFrom() {
 		return sessionToRollSubjectAreasForwardFrom;
 	}
@@ -556,11 +572,11 @@ public class RollForwardSessionForm extends ActionForm {
 		this.sessionToRollSubjectAreasForwardFrom = sessionToRollSubjectAreasForwardFrom;
 	}
 
-	public Collection getFromSessions() {
+	public Collection<Session> getFromSessions() {
 		return fromSessions;
 	}
 
-	public void setFromSessions(Collection fromSessions) {
+	public void setFromSessions(Collection<Session> fromSessions) {
 		this.fromSessions = fromSessions;
 	}
 
@@ -607,12 +623,12 @@ public class RollForwardSessionForm extends ActionForm {
 	}
 
 
-	public Collection getToSessions() {
+	public Collection<Session> getToSessions() {
 		return toSessions;
 	}
 
 
-	public void setToSessions(Collection toSessions) {
+	public void setToSessions(Collection<Session> toSessions) {
 		this.toSessions = toSessions;
 	}
 
@@ -829,6 +845,8 @@ public class RollForwardSessionForm extends ActionForm {
 		form.rollForwardManagers = rollForwardManagers;
 		form.sessionToRollManagersForwardFrom = sessionToRollManagersForwardFrom;
 		form.rollForwardRoomData = rollForwardRoomData;
+		form.departments = departments;
+		form.rollForwardDepartmentIds = rollForwardDepartmentIds;
 		form.sessionToRollRoomDataForwardFrom = sessionToRollRoomDataForwardFrom;
 		form.rollForwardSubjectAreas = rollForwardSubjectAreas;
 		form.sessionToRollSubjectAreasForwardFrom = sessionToRollSubjectAreasForwardFrom;
@@ -836,7 +854,6 @@ public class RollForwardSessionForm extends ActionForm {
 		form.sessionToRollInstructorDataForwardFrom = sessionToRollInstructorDataForwardFrom;
 		form.rollForwardCourseOfferings = rollForwardCourseOfferings;
 		form.sessionToRollCourseOfferingsForwardFrom = sessionToRollCourseOfferingsForwardFrom;
-		form.availableRollForwardSubjectAreas = availableRollForwardSubjectAreas;
 		form.rollForwardSubjectAreaIds = rollForwardSubjectAreaIds;
 		form.rollForwardClassInstructors = rollForwardClassInstructors;
 		form.rollForwardClassInstrSubjectIds = rollForwardClassInstrSubjectIds;
