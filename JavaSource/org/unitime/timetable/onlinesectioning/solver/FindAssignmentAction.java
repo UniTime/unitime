@@ -610,7 +610,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								}
 							}
 						}
-						if (avEnrls.isEmpty()) ca.setNotAvailable(true);
+						if (avEnrls.isEmpty()) {
+							ca.setNotAvailable(true);
+							ca.setFull(course.getLimit() == 0);
+						}
 					}
 					ret.add(ca);
 				} else {

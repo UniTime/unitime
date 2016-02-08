@@ -316,6 +316,12 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("{0} is not available.")
 	String suggestionsNoChoices(String source);
+	
+	@DefaultMessage("{0} is not available (course is full).")
+	String suggestionsNoChoicesCourseIsFull(String source);
+	
+	@DefaultMessage("{0} conflicts with {1}.")
+	String suggestionsNoChoicesCourseIsConflicting(String course, String conflict);
 
 	@DefaultMessage("Free Time {0} {1} - {2}")
 	String freeTime(String days, String start, String end);
@@ -500,6 +506,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not available.")
 	String classNotAvailable();
 	
+	@DefaultMessage("Not available (course is full).")
+	String courseIsFull();
+
 	@DefaultMessage("Not assigned.")
 	String courseNotAssigned();
 
@@ -508,7 +517,7 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Wait-Listed")
 	String courseWaitListed();
-
+	
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWithFirst(String course);
 
@@ -1215,10 +1224,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Student update successfully requested. Please wait a while for the synchronization to take place.")
 	String requestStudentUpdateSuccess();
 	
-	@DefaultMessage("Click to lock the class. Alternatives cannot change classes that are locked, except of the one that was clicked.")
+	@DefaultMessage("Click to lock the class. Any course changes will not affect locked course.")
 	String hintUnlocked();
 	
-	@DefaultMessage("The class is locked. Alternatives cannot change classes that are locked, except of the one that was clicked.")
+	@DefaultMessage("The class is locked. Any course changes will not affect locked course.")
 	String hintLocked();
 	
 	@DefaultMessage("Students")
@@ -1242,7 +1251,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Add a new course to the schedule or drop an existing course from the schedule without going back to the Course Requests.")
 	String hintQuickAdd();
 
-	@DefaultMessage("Select a new course to add to the schedulue, or an existing course to drop from the schedule")
+	@DefaultMessage("Select a new course to add to the schedule or an existing course to drop from the schedule")
 	String dialogQuickAdd();
 
 	@DefaultMessage("Quick add failed.")

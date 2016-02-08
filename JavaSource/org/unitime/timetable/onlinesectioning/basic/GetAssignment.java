@@ -188,7 +188,19 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 								ca.addOverlap(ov);
 							}
 						}
-						if (avEnrls.isEmpty()) ca.setNotAvailable(true);
+						if (avEnrls.isEmpty()) {
+							ca.setNotAvailable(true);
+							if (course.getLimit() >= 0) {
+								Collection<XCourseRequest> requests = server.getRequests(course.getOfferingId());
+								int enrl = 0;
+								if (requests != null) {
+									for (XCourseRequest x: requests)
+										if (x.getEnrollment() != null && x.getEnrollment().getCourseId().equals(course.getCourseId()))
+											enrl ++;
+								}
+								ca.setFull(enrl >= course.getLimit());
+							}
+						}
 						if (!r.isWaitlist()) nrUnassignedCourses++;
 						int alt = nrUnassignedCourses;
 						for (XRequest q: student.getRequests()) {

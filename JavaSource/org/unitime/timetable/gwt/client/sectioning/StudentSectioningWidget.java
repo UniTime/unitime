@@ -1022,7 +1022,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
 						unassignedMessage += ".";
 					} else if (course.isNotAvailable()) {
-						unassignedMessage = MESSAGES.classNotAvailable();
+						if (course.isFull())
+							unassignedMessage = MESSAGES.courseIsFull();
+						else
+							unassignedMessage = MESSAGES.classNotAvailable();
 					} else if (course.isLocked()) {
 						unassignedMessage = MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr());
 					}

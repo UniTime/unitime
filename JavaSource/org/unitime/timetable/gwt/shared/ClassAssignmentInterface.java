@@ -87,7 +87,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Integer iLimit = null, iProjected = null, iEnrollment = null, iLastLike = null;
 		
 		private ArrayList<String> iOverlaps = null;
-		private boolean iNotAvailable = false, iLocked = false;
+		private boolean iNotAvailable = false, iFull = false, iLocked = false;
 		private String iInstead;
 		private boolean iWaitListed = false;
 		private String iEnrollmentMessage = null;
@@ -155,6 +155,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public boolean isNotAvailable() { return iNotAvailable; }
 		public void setNotAvailable(boolean notAvailable) { iNotAvailable = notAvailable; }
+		
+		public boolean isFull() { return iFull; }
+		public void setFull(boolean full) { iFull = full; }
 		
 		public boolean isLocked() { return iLocked; }
 		public void setLocked(boolean locked) { iLocked = locked; }

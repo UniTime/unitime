@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -31,10 +32,12 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.cpsolver.ifs.assignment.Assignment;
+import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.studentsct.extension.DistanceConflict;
 import org.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
+import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
@@ -334,6 +337,69 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
     		}
 			action.addEnrollment(solution);
         }
+		
+		// No suggestions -- compute conflicts with message
+		if (suggestions.isEmpty() && selectedRequest != null && selectedRequest instanceof CourseRequest) {
+			TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
+				@Override
+				public int compare(Enrollment o1, Enrollment o2) {
+					return o1.getRequest().compareTo(o2.getRequest());
+				}
+			});
+			Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
+			CourseRequest request = (CourseRequest)selectedRequest;
+			Course course = request.getCourses().get(0);
+			Collection<Enrollment> avEnrls = request.getAvaiableEnrollmentsSkipSameTime(assignment);
+			for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
+				Enrollment enrl = e.next();
+				for (Request q: enrl.getStudent().getRequests()) {
+					if (q.equals(request)) continue;
+					Enrollment x = assignment.getValue(q);
+					if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
+			        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
+			        	SctAssignment a = i.next();
+						if (a.isOverlapping(enrl.getAssignments())) {
+							overlap.add(x);
+							if (x.getRequest() instanceof CourseRequest) {
+								CourseRequest cr = (CourseRequest)x.getRequest();
+								TreeSet<Section> ss = overlapingSections.get(cr);
+								if (ss == null) { ss = new TreeSet<Section>(new AssignmentComparator<Section, Request, Enrollment>(assignment)); overlapingSections.put(cr, ss); }
+								ss.add((Section)a);
+							}
+						}
+			        }
+				}
+			}
+			String overlapMessage = null;
+			for (Iterator<Enrollment> i = overlap.iterator(); i.hasNext();) {
+				Enrollment q = i.next();
+				String ov = null;
+				if (q.getRequest() instanceof FreeTimeRequest) {
+					ov = OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest());
+				} else {
+					CourseRequest cr = (CourseRequest)q.getRequest();
+					Course o = q.getCourse();
+					ov = MSG.course(o.getSubjectArea(), o.getCourseNumber());
+					if (overlapingSections.get(cr).size() == 1)
+						for (Iterator<Section> j = overlapingSections.get(cr).iterator(); j.hasNext();) {
+							Section s = j.next();
+							ov += " " + s.getSubpart().getName();
+							if (i.hasNext()) ov += ",";
+						}
+				}
+				if (overlapMessage == null)
+					overlapMessage = ov;
+				else if (i.hasNext())
+					overlapMessage += MSG.conflictWithMiddle(ov);
+				else
+					overlapMessage += MSG.conflictWithLast(ov);
+			}
+			if (overlapMessage != null) {
+				messages.addMessage(MSG.suggestionsNoChoicesCourseIsConflicting(MSG.course(course.getSubjectArea(), course.getCourseNumber()), overlapMessage));
+			} else if (course.getLimit() == 0) {
+				messages.addMessage(MSG.suggestionsNoChoicesCourseIsFull(MSG.course(course.getSubjectArea(), course.getCourseNumber())));
+			}
+		}
         
 		long t4 = System.currentTimeMillis();
 		helper.debug("Sectioning took "+(t4-t0)+"ms (model "+(t1-t0)+"ms, solver init "+(t2-t1)+"ms, sectioning "+(t3-t2)+"ms, conversion "+(t4-t3)+"ms)");

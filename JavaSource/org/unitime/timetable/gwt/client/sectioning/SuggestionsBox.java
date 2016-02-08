@@ -467,6 +467,11 @@ public class SuggestionsBox extends UniTimeDialogBox {
 							iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText()));
 							ariaStatus = ARIA.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText());
 						}
+						if (!iMessages.getHTML().isEmpty()) {
+							iSuggestions.setEmptyMessage(iMessages.getHTML());
+							ariaStatus += "<br>" + iMessages.getHTML();
+							iMessages.setHTML("");
+						}
 					} else {
 						ariaStatus = ARIA.showingAlternatives(Integer.valueOf(rows.get(rows.size() - 1).getId()), iSource);
 					}
