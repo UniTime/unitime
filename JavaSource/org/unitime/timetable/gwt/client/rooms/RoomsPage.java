@@ -760,10 +760,12 @@ public class RoomsPage extends Composite {
 					}
 				}, MESSAGES.waitLoadingRoomDetails());
 			}
-		} else if (iRoomDetail.isVisible()) {
+		} else if (iRoomDetail != null && iRoomDetail.equals(iRootPanel.getWidget())) {
 			iRoomDetail.hide();
-		} else if (iRoomEdit.isVisible()) {
+		} else if (iRoomEdit != null && iRoomEdit.equals(iRootPanel.getWidget())) {
 			iRoomEdit.hide(iRoomEdit.getRoom(), false, null);
+		} else if (iRoomDepartmentsEdit != null && iRoomDepartmentsEdit.equals(iRootPanel.getWidget())) {
+			iRoomDepartmentsEdit.hide();
 		} else if (search) {
 			search(null);
 		}

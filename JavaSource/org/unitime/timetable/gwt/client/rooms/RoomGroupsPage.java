@@ -242,26 +242,7 @@ public class RoomGroupsPage extends Composite {
 		ClickHandler clickNew = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (iRoomGroupEdit == null) return;
-				Chip dept = iFilter.getChip("department");
-				iRoomGroupEdit.setGroup(null, dept == null ? null : dept.getValue());
-				LoadingWidget.execute(iFilter.getElementsRequest(), new AsyncCallback<FilterRpcResponse>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						iFilter.setErrorHint(MESSAGES.failedToLoadRooms(caught.getMessage()));
-						UniTimeNotifications.error(MESSAGES.failedToLoadRooms(caught.getMessage()), caught);
-					}
-					@Override
-					public void onSuccess(FilterRpcResponse result) {
-						iFilter.clearHint();
-						if (result == null || result.getResults() == null || result.getResults().isEmpty()) {
-							iFilter.setErrorHint(MESSAGES.errorNoRoomsMatchingFilter());
-						} else {
-							iRoomGroupEdit.setRooms(result.getResults());
-							iRoomGroupEdit.show();
-						}
-					}
-				}, MESSAGES.waitLoadingRooms());
+				edit(null);
 			}
 		};
 		
@@ -270,12 +251,14 @@ public class RoomGroupsPage extends Composite {
 			protected void onShow() {
 				RoomHint.hideHint();
 				iRootPanel.setWidget(iRoomGroupEdit);
+				changeUrl();
 			}
 			
 			@Override
 			protected void onHide(boolean refresh, GroupInterface group) {
 				iRootPanel.setWidget(iGroupsPanel);
 				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageRoomGroups());
+				changeUrl();
 				if (refresh && (iGroupsPanel.getRowFormatter().isVisible(iGlobalGroupsRow) || iGroupsPanel.getRowFormatter().isVisible(iDepartmentalGroupsRow))) search(group == null ? null : group.getId());
 			}
 		};
@@ -289,7 +272,7 @@ public class RoomGroupsPage extends Composite {
 				protected void onInitializationSuccess(List<AcademicSession> sessions) {
 					UniTimePageHeader.getInstance().getRight().setVisible(false);
 					UniTimePageHeader.getInstance().getRight().setPreventDefault(true);
-					setup(getAcademicSessionId(), CONSTANTS.searchWhenPageIsLoaded() && iHistoryToken.hasParameter("q"));
+					setup(getAcademicSessionId(), CONSTANTS.searchWhenPageIsLoaded() && (iHistoryToken.hasParameter("id") || iHistoryToken.hasParameter("q")));
 				}
 				
 				@Override
@@ -345,7 +328,7 @@ public class RoomGroupsPage extends Composite {
 			int filterRow = iGroupsPanel.addRow(iFilterPanel);
 			iGroupsPanel.getCellFormatter().setHorizontalAlignment(filterRow, 0, HasHorizontalAlignment.ALIGN_CENTER);
 			
-			setup(null, CONSTANTS.searchWhenPageIsLoaded() && iHistoryToken.hasParameter("q"));
+			setup(null, CONSTANTS.searchWhenPageIsLoaded() && (iHistoryToken.hasParameter("id") || iHistoryToken.hasParameter("q")));
 		}
 		
 		iGlobalGroupsHeader = new UniTimeHeaderPanel(MESSAGES.headerGlobalRoomGroups());
@@ -378,58 +361,16 @@ public class RoomGroupsPage extends Composite {
 		iGlobalGroupsTable.addMouseClickListener(new MouseClickListener<GroupInterface>() {
 			@Override
 			public void onMouseClick(final TableEvent<GroupInterface> event) {
-				GroupInterface group = event.getData();
-				if (group == null) return;
-				if (group.canEdit() || group.canDelete()) {
-					Chip dept = iFilter.getChip("department");
-					iRoomGroupEdit.setGroup(group, dept == null ? null : dept.getValue());
-					LoadingWidget.execute(iFilter.getElementsRequest(), new AsyncCallback<FilterRpcResponse>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							iFilter.setErrorHint(MESSAGES.failedToLoadRooms(caught.getMessage()));
-							UniTimeNotifications.error(MESSAGES.failedToLoadRooms(caught.getMessage()), caught);
-						}
-						@Override
-						public void onSuccess(FilterRpcResponse result) {
-							iFilter.clearHint();
-							if (result == null || result.getResults() == null || result.getResults().isEmpty()) {
-								iFilter.setErrorHint(MESSAGES.errorNoRoomsMatchingFilter());
-							} else {
-								iRoomGroupEdit.setRooms(result.getResults());
-								iRoomGroupEdit.show();
-							}
-						}
-					}, MESSAGES.waitLoadingRooms());
-				}
+				if (event.getData() != null && (event.getData().canDelete() || event.getData().canEdit()))
+					edit(event.getData());
 			}
 		});
 		
 		iDepartmentalGroupsTable.addMouseClickListener(new MouseClickListener<GroupInterface>() {
 			@Override
 			public void onMouseClick(final TableEvent<GroupInterface> event) {
-				GroupInterface group = event.getData();
-				if (group == null) return;
-				if (group.canEdit() || group.canDelete()) {
-					Chip dept = iFilter.getChip("department");
-					iRoomGroupEdit.setGroup(group, dept == null ? null : dept.getValue());
-					LoadingWidget.execute(iFilter.getElementsRequest(), new AsyncCallback<FilterRpcResponse>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							iFilter.setErrorHint(MESSAGES.failedToLoadRooms(caught.getMessage()));
-							UniTimeNotifications.error(MESSAGES.failedToLoadRooms(caught.getMessage()), caught);
-						}
-						@Override
-						public void onSuccess(FilterRpcResponse result) {
-							iFilter.clearHint();
-							if (result == null || result.getResults() == null || result.getResults().isEmpty()) {
-								iFilter.setErrorHint(MESSAGES.errorNoRoomsMatchingFilter());
-							} else {
-								iRoomGroupEdit.setRooms(result.getResults());
-								iRoomGroupEdit.show();
-							}
-						}
-					}, MESSAGES.waitLoadingRooms());
-				}
+				if (event.getData() != null && (event.getData().canDelete() || event.getData().canEdit()))
+					edit(event.getData());
 			}
 		});
 		
@@ -443,6 +384,29 @@ public class RoomGroupsPage extends Composite {
 				updateFilter(iGroupsPanel.getRowFormatter().isVisible(iGlobalGroupsRow) || iGroupsPanel.getRowFormatter().isVisible(iDepartmentalGroupsRow));
 			}
 		});
+	}
+	
+	protected void edit(GroupInterface group) {
+		if (iRoomGroupEdit == null) return;
+		Chip dept = iFilter.getChip("department");
+		iRoomGroupEdit.setGroup(group, dept == null ? null : dept.getValue());
+		LoadingWidget.execute(iFilter.getElementsRequest(), new AsyncCallback<FilterRpcResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				iFilter.setErrorHint(MESSAGES.failedToLoadRooms(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToLoadRooms(caught.getMessage()), caught);
+			}
+			@Override
+			public void onSuccess(FilterRpcResponse result) {
+				iFilter.clearHint();
+				if (result == null || result.getResults() == null || result.getResults().isEmpty()) {
+					iFilter.setErrorHint(MESSAGES.errorNoRoomsMatchingFilter());
+				} else {
+					iRoomGroupEdit.setRooms(result.getResults());
+					iRoomGroupEdit.show();
+				}
+			}
+		}, MESSAGES.waitLoadingRooms());
 	}
 	
 	private boolean iInitialized = false;
@@ -512,7 +476,22 @@ public class RoomGroupsPage extends Composite {
 		iFilter.setValue(iHistoryToken.getParameter("q"), true);
 		if (iSession instanceof AcademicSessionSelectionBox && iHistoryToken.isChanged("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation()) && iHistoryToken.getParameter("term") != null)
 			((AcademicSessionSelectionBox)iSession).selectSession(iHistoryToken.getParameter("term"), null);
-		if (iRoomGroupEdit.isVisible())
+		if (iHistoryToken.hasParameter("id")) {
+			String id = iHistoryToken.getParameter("id");
+			if ("add".equals(id)) {
+				if (iProperties != null && (iProperties.isCanAddDepartmentalRoomGroup() || iProperties.isCanAddGlobalRoomGroup()))
+					edit(null);
+			} else {
+				if (iGlobalGroupsTable != null)
+					for (GroupInterface g: iGlobalGroupsTable.getData())
+						if (g.getId().toString().equals(id) && (g.canEdit() || g.canDelete()))
+							edit(g);
+				if (iDepartmentalGroupsTable != null)
+					for (GroupInterface g: iDepartmentalGroupsTable.getData())
+						if (g.getId().toString().equals(id) && (g.canEdit() || g.canDelete()))
+							edit(g);
+			}
+		} else if (iRoomGroupEdit.equals(iRootPanel.getWidget()))
 			iRoomGroupEdit.hide();
 		else if (search)
 			search(null);
@@ -522,6 +501,8 @@ public class RoomGroupsPage extends Composite {
 		iHistoryToken.reset(null);
 		if (iSession instanceof AcademicSessionSelectionBox)
 			iHistoryToken.setParameter("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation());
+		if (iRoomGroupEdit.equals(iRootPanel.getWidget()))
+			iHistoryToken.setParameter("id", iRoomGroupEdit.getGroup() == null || iRoomGroupEdit.getGroup().getId() == null ? "add" : iRoomGroupEdit.getGroup().getId().toString());
 		iHistoryToken.setParameter("q", iFilter.getValue());
 		iHistoryToken.mark();
 		Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());

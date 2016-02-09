@@ -149,6 +149,10 @@ public class RoomDepartmentsEdit extends Composite {
 		Window.scrollTo(iLastScrollLeft, iLastScrollTop);
 	}
 	
+	public void hide() {
+		hide(true);
+	}
+	
 	protected void onHide(boolean refresh) {
 	}
 	
