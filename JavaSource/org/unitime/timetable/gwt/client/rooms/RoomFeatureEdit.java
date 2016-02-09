@@ -304,6 +304,10 @@ public class RoomFeatureEdit extends Composite {
 		onShow();
 		Window.scrollTo(0, 0);
 	}
+	
+	public void hide() {
+		hide(true, iFeature);
+	}
 
 	public void setFeature(FeatureInterface feature, String dept) {
 		iHeader.clearMessage();
@@ -464,4 +468,6 @@ public class RoomFeatureEdit extends Composite {
 			}
 		}
 	}
+	
+	public FeatureInterface getFeature() { return iFeature; }
 }

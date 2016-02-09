@@ -302,6 +302,10 @@ public class RoomGroupEdit extends Composite {
 		onShow();
 		Window.scrollTo(0, 0);
 	}
+	
+	public void hide() {
+		hide(true, iGroup);
+	}
 
 	public void setGroup(GroupInterface group, String dept) {
 		iHeader.clearMessage();

@@ -760,6 +760,10 @@ public class RoomsPage extends Composite {
 					}
 				}, MESSAGES.waitLoadingRoomDetails());
 			}
+		} else if (iRoomDetail.isVisible()) {
+			iRoomDetail.hide();
+		} else if (iRoomEdit.isVisible()) {
+			iRoomEdit.hide(iRoomEdit.getRoom(), false, null);
 		} else if (search) {
 			search(null);
 		}
@@ -894,6 +898,9 @@ public class RoomsPage extends Composite {
 		iHistoryToken.setParameter("q", iFilter.getValue());
 		if (iRoomDetail.equals(iRootPanel.getWidget())) {
 			iHistoryToken.setParameter("id", iRoomDetail.getRoom().getUniqueId() == null ? "add" : iRoomDetail.getRoom().getUniqueId().toString());
+		}
+		if (iRoomEdit.equals(iRootPanel.getWidget())) {
+			iHistoryToken.setParameter("id", iRoomEdit.getRoom().getUniqueId() == null ? "add" : iRoomEdit.getRoom().getUniqueId().toString());
 		}
 		iHistoryToken.mark();
 		Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());

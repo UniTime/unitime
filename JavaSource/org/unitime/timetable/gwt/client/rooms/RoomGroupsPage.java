@@ -512,7 +512,9 @@ public class RoomGroupsPage extends Composite {
 		iFilter.setValue(iHistoryToken.getParameter("q"), true);
 		if (iSession instanceof AcademicSessionSelectionBox && iHistoryToken.isChanged("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation()) && iHistoryToken.getParameter("term") != null)
 			((AcademicSessionSelectionBox)iSession).selectSession(iHistoryToken.getParameter("term"), null);
-		if (search)
+		if (iRoomGroupEdit.isVisible())
+			iRoomGroupEdit.hide();
+		else if (search)
 			search(null);
 	}
 	

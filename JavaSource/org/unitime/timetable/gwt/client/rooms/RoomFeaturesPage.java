@@ -512,7 +512,9 @@ public class RoomFeaturesPage extends Composite {
 		iFilter.setValue(iHistoryToken.getParameter("q"), true);
 		if (iSession instanceof AcademicSessionSelectionBox && iHistoryToken.isChanged("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation()) && iHistoryToken.getParameter("term") != null)
 			((AcademicSessionSelectionBox)iSession).selectSession(iHistoryToken.getParameter("term"), null);
-		if (search)
+		if (iRoomFeatureEdit.isVisible())
+			iRoomFeatureEdit.hide();
+		else if (search)
 			search(null);
 	}
 	
@@ -520,6 +522,9 @@ public class RoomFeaturesPage extends Composite {
 		iHistoryToken.reset(null);
 		if (iSession instanceof AcademicSessionSelectionBox)
 			iHistoryToken.setParameter("term", ((AcademicSessionSelectionBox)iSession).getAcademicSessionAbbreviation());
+		if (iRoomFeatureEdit.equals(iRootPanel.getWidget())) {
+			iHistoryToken.setParameter("id", iRoomFeatureEdit.getFeature().getId() == null ? "add" : iRoomFeatureEdit.getFeature().getId().toString());
+		}
 		iHistoryToken.setParameter("q", iFilter.getValue());
 		iHistoryToken.mark();
 		Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
