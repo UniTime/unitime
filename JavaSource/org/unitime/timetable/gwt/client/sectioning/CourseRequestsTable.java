@@ -54,6 +54,7 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
@@ -128,6 +129,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 
 		for (int i=0; i<CONSTANTS.numberOfCourses(); i++) {
 			iGrid.setText(idx, 0, MESSAGES.courseRequestsPriority(i+1));
+			iGrid.getCellFormatter().setHorizontalAlignment(idx, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 			final CourseSelectionBox[] c = new CourseSelectionBox[] {
 					new CourseSelectionBox(iSessionProvider, true, true),
 					new CourseSelectionBox(iSessionProvider, false, false),
@@ -218,6 +220,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 
 		for (int i=0; i<CONSTANTS.numberOfAlternatives(); i++) {
 			iGrid.setText(idx, 0, MESSAGES.courseRequestsAlternative(i+1));
+			iGrid.getCellFormatter().setHorizontalAlignment(idx, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 			final CourseSelectionBox[] c = new CourseSelectionBox[] {
 					new CourseSelectionBox(iSessionProvider, true, false),
 					new CourseSelectionBox(iSessionProvider, false, false),
@@ -294,6 +297,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 		int idx = 1 + i;
 		iGrid.insertRow(idx);
 		iGrid.setText(idx, 0, MESSAGES.courseRequestsPriority(i+1));
+		iGrid.getCellFormatter().setHorizontalAlignment(idx, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 		final CourseSelectionBox[] c = new CourseSelectionBox[] {
 				new CourseSelectionBox(iSessionProvider, true, true),
 				new CourseSelectionBox(iSessionProvider, false, false),
@@ -440,6 +444,7 @@ public class CourseRequestsTable extends Composite implements HasValue<CourseReq
 		int idx = 3 + iCourses.size() + i;
 		iGrid.insertRow(idx);
 		iGrid.setText(idx, 0, MESSAGES.courseRequestsAlternative(i+1));
+		iGrid.getCellFormatter().setHorizontalAlignment(idx, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 		final CourseSelectionBox[] c = new CourseSelectionBox[] {
 				new CourseSelectionBox(iSessionProvider, true, false),
 				new CourseSelectionBox(iSessionProvider, false, false),
