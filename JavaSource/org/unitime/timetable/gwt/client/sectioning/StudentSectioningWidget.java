@@ -167,7 +167,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			public void onValueChange(ValueChangeEvent<CourseRequestInterface> event) {
 				if (iLastAssignment == null || !iLastAssignment.isCanEnroll() || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL))
 					return;
-				if (!iScheduleChanged || MESSAGES.warnScheduleChanged().equals(iStatus.getMessage())) {
+				if (!iScheduleChanged || MESSAGES.warnScheduleChangedOnCourseRequest().equals(iStatus.getMessage())) {
 					courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
 						if (!course.isAssigned() || course.isFreeTime()) continue;
 						for (CourseRequestInterface.Request r: event.getValue().getCourses()) {
@@ -181,7 +181,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							if (r.hasSecondAlternative()  && course.equalsIgnoreCase(r.getSecondAlternative())) continue courses;
 						}
 						iScheduleChanged = true;
-						iStatus.warning(MESSAGES.warnScheduleChanged(), false);
+						iStatus.warning(MESSAGES.warnScheduleChangedOnCourseRequest(), false);
 						iEnroll.addStyleName("unitime-EnrollButton");
 						return;
 					}
@@ -1692,6 +1692,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 		if (iLastAssignment == null || !iLastAssignment.isCanEnroll() || iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.CAN_ENROLL))
 			return;
+		boolean cr = iSchedule.isVisible();
 		boolean empty = true;
 		if (iSavedAssignment != null)
 			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
@@ -1706,7 +1707,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (!clazz.isSaved() && !clazz.hasError()) {
 					iScheduleChanged = true;
 					iEnroll.addStyleName("unitime-EnrollButton");
-					iStatus.warning(empty ? MESSAGES.warnScheduleEmpty() : MESSAGES.warnScheduleChanged(), false);
+					if (cr)
+						iStatus.warning(empty ? MESSAGES.warnScheduleEmptyOnCourseRequest() : MESSAGES.warnScheduleChangedOnCourseRequest(), false);
+					else
+						iStatus.warning(empty ? MESSAGES.warnScheduleEmptyOnClassSchedule() : MESSAGES.warnScheduleChangedOnClassSchedule(), false);
 					return;
 				}
 			}
@@ -1720,7 +1724,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (clazz.isSaved() && !clazz.hasError()) {
 							iScheduleChanged = true;
 							iEnroll.addStyleName("unitime-EnrollButton");
-							iStatus.warning(MESSAGES.warnScheduleChanged(), false);
+							iStatus.warning(cr ? MESSAGES.warnScheduleChangedOnCourseRequest() : MESSAGES.warnScheduleChangedOnClassSchedule(), false);
 						}
 					}
 				}
@@ -1734,7 +1738,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					if (clazz.isSaved() && !clazz.hasError()) {
 						iScheduleChanged = true;
 						iEnroll.addStyleName("unitime-EnrollButton");
-						iStatus.warning(MESSAGES.warnScheduleChanged(), false);
+						iStatus.warning(cr ? MESSAGES.warnScheduleChangedOnCourseRequest() : MESSAGES.warnScheduleChangedOnClassSchedule(), false);
 					}
 				}
 			}
@@ -1753,7 +1757,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 			iScheduleChanged = true;
 			iEnroll.addStyleName("unitime-EnrollButton");
-			iStatus.warning(MESSAGES.warnScheduleChanged(), false);
+			iStatus.warning(cr ? MESSAGES.warnScheduleChangedOnCourseRequest() : MESSAGES.warnScheduleChangedOnClassSchedule(), false);
 		}
 	}
 	
