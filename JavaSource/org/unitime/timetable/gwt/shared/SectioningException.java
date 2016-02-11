@@ -30,6 +30,8 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class SectioningException extends GwtRpcException implements IsSerializable {
 	private static final long serialVersionUID = 1L;
 	private EligibilityCheck iCheck = null;
+	public static enum Type { INFO, WARNING, ERROR };
+	private Type iType = null;
 	
 	public SectioningException() {
 		super();
@@ -46,4 +48,20 @@ public class SectioningException extends GwtRpcException implements IsSerializab
 	public SectioningException withEligibilityCheck(EligibilityCheck check) { iCheck = check; return this; }
 	public boolean hasEligibilityCheck() { return iCheck != null; }
 	public EligibilityCheck getEligibilityCheck() { return iCheck; }
+	
+	public SectioningException withTypeInfo() { iType = Type.INFO; return this; }
+	public SectioningException withTypeWarning() { iType = Type.WARNING; return this; }
+	public SectioningException withTypeError() { iType = Type.ERROR; return this; }
+	public boolean hasType() { return iType != null; }
+	public boolean isInfo() { return iType != null && iType == Type.INFO; }
+	public boolean isWarning() { return iType != null && iType == Type.WARNING; }
+	public boolean isError() { return iType != null && iType == Type.ERROR; }
+	
+	@Override
+	public String toString() {
+		if (iType != null)
+			return iType.name() + ": " + getMessage();
+		else
+			return super.toString();
+	}
 }

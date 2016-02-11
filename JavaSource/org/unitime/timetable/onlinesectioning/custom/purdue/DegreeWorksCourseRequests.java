@@ -106,6 +106,10 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.dgw.activeOnly", "true"));
 	}
 	
+	protected String getDegreeWorksNoPlansMessage() {
+		return ApplicationProperties.getProperty("banner.dgw.noPlansMessage", "No active degree plan is available.");
+	}
+
 	protected String getBannerId(XStudent student) {
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
@@ -484,9 +488,13 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					plans.add(plan);
 			}
 			
+			if (plans.isEmpty())
+				throw new SectioningException(getDegreeWorksNoPlansMessage()).withTypeInfo();
+
 			return plans;
 		} catch (SectioningException e) {
-			helper.info("Failed to retrieve degree plans: " + e.getMessage());
+			if (!e.hasType())
+				helper.info("Failed to retrieve degree plans: " + e.getMessage());
 			throw e;
 		} catch (Exception e) {
 			helper.warn("Failed to retrieve degree plans: " + e.getMessage(), e);

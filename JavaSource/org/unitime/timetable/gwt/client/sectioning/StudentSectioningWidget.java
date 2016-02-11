@@ -294,7 +294,19 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
-						iStatus.error(MESSAGES.failedListDegreePlans(caught.getMessage()), caught);
+						if (caught instanceof SectioningException) {
+							SectioningException s = (SectioningException)caught;
+							if (s.isInfo())
+								iStatus.info(s.getMessage());
+							else if (s.isWarning())
+								iStatus.warning(s.getMessage());
+							else if (s.isError())
+								iStatus.error(s.getMessage());
+							else
+								iStatus.error(MESSAGES.failedListDegreePlans(s.getMessage()), s);
+						} else {
+							iStatus.error(MESSAGES.failedListDegreePlans(caught.getMessage()), caught);
+						}
 					}
 					@Override
 					public void onSuccess(List<DegreePlanInterface> result) {
