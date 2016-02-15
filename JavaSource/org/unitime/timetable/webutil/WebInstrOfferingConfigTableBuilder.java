@@ -277,8 +277,9 @@ public class WebInstrOfferingConfigTableBuilder extends
        	}
     }
     
-    protected TableCell buildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, int indentSpaces, boolean isEditable, String prevLabel){
-    	TableCell cell = super.buildPrefGroupLabel(co, prefGroup, indentSpaces, isEditable, prevLabel, null);
+    @Override
+    protected TableCell buildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, int indentSpaces, boolean isEditable, String prevLabel, String icon){
+    	TableCell cell = super.buildPrefGroupLabel(co, prefGroup, indentSpaces, isEditable, prevLabel, icon);
     	if ("PreferenceGroup".equals(getBackType()) && prefGroup.getUniqueId().toString().equals(getBackId()))
     		cell.addContent("<A name=\"back\"></A>");
     	return cell;

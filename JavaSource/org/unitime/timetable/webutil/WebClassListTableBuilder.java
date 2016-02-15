@@ -150,13 +150,16 @@ public class WebClassListTableBuilder extends
         table.tableComplete();
     }
 	
-    protected TableCell buildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, int indentSpaces, boolean isEditable, String prevLabel){
+	@Override
+    protected TableCell buildPrefGroupLabel(CourseOffering co, PreferenceGroup prefGroup, int indentSpaces, boolean isEditable, String prevLabel, String icon){
     	if (prefGroup instanceof Class_) {
     		TableCell cell = initNormalCell("", isEditable);
         	if (indentSpaces > 0) {
         		int pad = indentSpaces * indent;
+        		if (icon != null) pad -= indent;
         		cell.setStyle("padding-left: " + pad + "px;");
         	}
+            if (icon != null) cell.addContent(icon);
     		Class_ aClass = (Class_) prefGroup;
 	    	if(!isEditable){
 	    		cell.addContent("<font color='"+disabledColor+"'>");
@@ -186,7 +189,7 @@ public class WebClassListTableBuilder extends
         		cell.addContent(" (<span title='" + im.getLabel() + "'>" + im.getReference() + ")");
 	        return(cell);
         } else {
-        	return(super.buildPrefGroupLabel(co, prefGroup,indentSpaces, isEditable, null, null));
+        	return(super.buildPrefGroupLabel(co, prefGroup,indentSpaces, isEditable, prevLabel, icon));
         }
     }
 	
