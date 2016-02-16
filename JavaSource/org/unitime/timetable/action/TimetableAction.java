@@ -71,11 +71,16 @@ public class TimetableAction extends Action {
         
         if ("Show".equals(op)) {
         	table.setFindString(request.getParameter("filter"));
-        	if ("i".equals(request.getParameter("mode")))
+        	myForm.setFind(request.getParameter("filter"));
+        	if ("i".equals(request.getParameter("mode"))) {
         		table.setResourceType(TimetableGridModel.sResourceTypeInstructor);
-        	if ("r".equals(request.getParameter("mode")))
+        		myForm.setResource("Instructor");
+        	}
+        	if ("r".equals(request.getParameter("mode"))) {
         		table.setResourceType(TimetableGridModel.sResourceTypeRoom);
-        	load(myForm);
+        		myForm.setResource("Room");
+        	}
+        	save(myForm);
         }
         
 		myForm.setLoaded(table.reload(request, sessionContext, courseTimetablingSolverService.getSolver()));

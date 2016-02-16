@@ -735,10 +735,15 @@ public class TimetableGridTable {
 			public boolean match(String attr, String term) {
 				if (term.isEmpty()) return true;
 				if (attr == null) {
-					for (StringTokenizer s = new StringTokenizer(name, " ,"); s.hasMoreTokens(); ) {
-						String token = s.nextToken();
-						if (term.equalsIgnoreCase(token)) return true;
+					term: for (StringTokenizer s = new StringTokenizer(term, " ,"); s.hasMoreTokens(); ) {
+						String termToken = s.nextToken();
+						for (StringTokenizer t = new StringTokenizer(name, " ,"); t.hasMoreTokens(); ) {
+							String token = t.nextToken();
+							if (token.toLowerCase().startsWith(termToken.toLowerCase())) continue term;
+						}
+						return false;
 					}
+					return true;
 				} else if ("regex".equals(attr) || "regexp".equals(attr) || "re".equals(attr)) {
 					return name.matches(term);
 				} else if ("find".equals(attr)) {
