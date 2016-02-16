@@ -224,7 +224,6 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     protected void loadExams() {
-        if (SolverServerImplementation.getInstance() != null) HibernateUtil.clearCache();
         Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamTypeId);
         ExamType type = ExamTypeDAO.getInstance().get(iExamTypeId);
         boolean considerLimit = ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(type.getReference(), type.getType() != ExamType.sExamTypeFinal);

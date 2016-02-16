@@ -62,7 +62,9 @@ import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 /**
  * @author Tomas Muller
@@ -446,6 +448,10 @@ public class SolverServerImplementation extends AbstractSolverServer implements 
 	}
 	
 	public static SolverServer getInstance() {
+		if (sInstance == null && SpringApplicationContextHolder.isInitialized()) {
+			return ((SolverServerService)SpringApplicationContextHolder.getBean("solverServerService")).getLocalServer();
+		}
+
 		return sInstance;
 	}
 	

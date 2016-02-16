@@ -38,8 +38,6 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.solver.jgroups.CourseSolverContainer;
 import org.unitime.timetable.solver.jgroups.SolverServer;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
-import org.unitime.timetable.solver.service.SolverServerService;
-import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 
 /**
@@ -53,21 +51,8 @@ public class TimetableInfoUtil implements TimetableInfoFileProxy {
 	public static TimetableInfoUtil getLocalInstance() { return sInstance; }
 	
 	public static TimetableInfoFileProxy getInstance() {
-		SolverServer server = null;
-		try {
-			if (SpringApplicationContextHolder.isInitialized()) {
-				// Spring -> user solver server service
-				server = ((SolverServerService)SpringApplicationContextHolder.getBean("solverServerService")).getLocalServer();
-			} else {
-				// Standalone -> use get instance
-				server = SolverServerImplementation.getInstance();
-			}
-		} catch (NoClassDefFoundError e) {
-			// Standalone and unaware of Spring -> use get instance
-			server = SolverServerImplementation.getInstance();
-		}
-		
 		// Create the cluster instance
+		SolverServer server = SolverServerImplementation.getInstance();
 		if (server != null && server.getCourseSolverContainer() != null)
 			return ((CourseSolverContainer)server.getCourseSolverContainer()).getFileProxy();
 		

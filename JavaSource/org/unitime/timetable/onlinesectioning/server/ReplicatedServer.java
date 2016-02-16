@@ -61,8 +61,6 @@ import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.solver.jgroups.SolverServer;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
-import org.unitime.timetable.solver.service.SolverServerService;
-import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 /**
  * @author Tomas Muller
@@ -570,16 +568,7 @@ public class ReplicatedServer extends AbstractServer {
 	}
 
 	private static OnlineSectioningServer getLocalServer(Long sessionId) {
-		SolverServer server = null;
-		
-		if (SpringApplicationContextHolder.isInitialized()) {
-			// Spring -> user solver server service
-			server = ((SolverServerService)SpringApplicationContextHolder.getBean("solverServerService")).getLocalServer();
-		} else {
-			// Standalone -> use get instance
-			server = SolverServerImplementation.getInstance();
-		}
-		
+		SolverServer server = SolverServerImplementation.getInstance();
 		return server == null ? null : server.getOnlineStudentSchedulingContainer().getSolver(sessionId.toString());
 	}
 	
