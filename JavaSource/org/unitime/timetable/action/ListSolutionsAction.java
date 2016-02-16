@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,7 +59,6 @@ import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolutionDAO;
-import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
@@ -407,10 +407,10 @@ public class ListSolutionsAction extends Action {
 			boolean committedOnly = !sessionContext.hasPermission(Right.Solver);
 			boolean listAll = sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
 			
-			WebTable webTable = new WebTable( 16,
+			WebTable webTable = new WebTable( 15,
 					(committedOnly?"Committed Timetables":"Saved Timetables"), "listSolutions.do?ord=%%",
-					new String[] {"Created", "Settings", "Valid", "Commited", "Owner", "Assign", "Total", "Time", "Stud", "Room", "Distr", "Instr", "TooBig", "Useless", "Pert", "Note"},
-					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+					new String[] {"Created", "Settings", "Commited", "Owner", "Assign", "Total", "Time", "Stud", "Room", "Distr", "Instr", "TooBig", "Useless", "Pert", "Note"},
+					new String[] {"left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
 					null );
 			webTable.setRowStyle("white-space:nowrap");
 			
@@ -421,11 +421,12 @@ public class ListSolutionsAction extends Action {
 			if (listAll)
 				solutions = Solution.findBySessionId(sessionContext.getUser().getCurrentAcademicSessionId());
 			else {
-				solutions = new ArrayList();
-				for (Qualifiable owner: sessionContext.getUser().getCurrentAuthority().getQualifiers("SolverGroup")) {
-					SolverGroup sg = SolverGroupDAO.getInstance().get((Long)owner.getQualifierId());
-					solutions.addAll(sg.getSolutions());
-				}
+				List<Serializable> solverGroupIds = new ArrayList<Serializable>();
+				for (Qualifiable owner: sessionContext.getUser().getCurrentAuthority().getQualifiers("SolverGroup"))
+					solverGroupIds.add(owner.getQualifierId());
+				solutions = SolutionDAO.getInstance().getSession().createQuery(
+						"from Solution where owner.uniqueId in :solverGroupIds"
+						).setParameterList("solverGroupIds", solverGroupIds).list();
 			}
 			int nrLines = 0;
 			
@@ -483,7 +484,6 @@ public class ListSolutionsAction extends Action {
 					webTable.addLine(onClick, new String[] {
 							sDF.format(new Date(solution.getCreated().getTime())),
 							type,
-							(solution.isValid().booleanValue()?"<IMG border='0' align='absmiddle' src='images/accept.png'>":""),
 							(solution.isCommited().booleanValue()?sDF.format(new Date(solution.getCommitDate().getTime())):""),
 							ownerName, 
 							assigned,
@@ -500,7 +500,6 @@ public class ListSolutionsAction extends Action {
 						new Comparable[] {
 							solution.getCreated(),
 							type,
-							(solution.isValid().booleanValue()?new Integer(1):new Integer(0)), 
 							(solution.isCommited().booleanValue()?new Long(solution.getCommitDate().getTime()):new Long(0)),
 							ownerName,
 							assigned,
