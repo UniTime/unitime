@@ -20,10 +20,12 @@
 package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -33,6 +35,7 @@ import org.cpsolver.exam.model.ExamInstructor;
 import org.cpsolver.exam.model.ExamModel;
 import org.cpsolver.exam.model.ExamStudent;
 import org.cpsolver.ifs.model.Constraint;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
@@ -201,7 +204,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     	iSectionsIncludeCrosslistedDummies = new Vector();
     	for (ExamSectionInfo original: getSections()) {
         	ExamOwner owner = original.getOwner();
-            if (owner.getCourse().getInstructionalOffering().getCourseOfferings().size()>1) {
+            if (owner.getCourse().getInstructionalOffering().getCourseOfferings().size()>1 && owner.getOwnerType() != ExamOwner.sOwnerTypeCourse) {
             	Hashtable<Long, Set<Long>> studentsOfOwner = (students == null ? null : students.get(owner.getUniqueId()));
             	ExamSectionInfo section = new ExamSectionInfo(owner);
             	iSectionsIncludeCrosslistedDummies.add(section);
@@ -214,6 +217,8 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             		dummy.setCourse(course);
             		ExamSectionInfo dummySection = new ExamSectionInfo(dummy);
             		dummySection.setMaster(section);
+            		if (!section.getSubject().equals(dummy.getSubject()) && "cross-list".equalsIgnoreCase(ApplicationProperty.ExaminationReportsIncludeDifferentSubject.value()))
+            			section.addDifferentSubjectChild(dummySection);
             		if (students != null) {
                 		if (studentsOfOwner != null) {
                 			Set<Long> studentsOfCourse = studentsOfOwner.get(course.getUniqueId());
@@ -233,6 +238,17 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             	iSectionsIncludeCrosslistedDummies.add(original);
             }
         }
+    	if ("all".equalsIgnoreCase(ApplicationProperty.ExaminationReportsIncludeDifferentSubject.value())) {
+            for (ExamSectionInfo s1: iSectionsIncludeCrosslistedDummies)
+            	for (ExamSectionInfo s2: iSectionsIncludeCrosslistedDummies)
+            		if (!s1.getSubject().equals(s2.getSubject()))
+            			s1.addDifferentSubjectChild(s2);
+    	} else if ("cross-list all".equalsIgnoreCase(ApplicationProperty.ExaminationReportsIncludeDifferentSubject.value())) {
+            for (ExamSectionInfo s1: iSectionsIncludeCrosslistedDummies)
+            	for (ExamSectionInfo s2: iSectionsIncludeCrosslistedDummies)
+            		if (!s1.getSubject().equals(s2.getSubject()) && s1.getMaster() != null && s1.getMaster().equals(s2.getMaster()))
+            			s1.addDifferentSubjectChild(s2);
+    	}
     }
 
     
@@ -316,6 +332,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         protected transient ExamOwner iOwner = null;
         protected Set<Long> iStudentIds = null;
         protected ExamSectionInfo iMaster = null;
+        protected List<ExamSectionInfo> iDifferentSubjectChildren = null;
         public ExamSectionInfo(Long id, String name, Set<Long> studentIds) {
             iId = id;
             iName = name;
@@ -413,6 +430,14 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         public void setMaster(ExamSectionInfo master) {
         	iMaster = master;
         }
+        public void addDifferentSubjectChild(ExamSectionInfo child) {
+        	if (iDifferentSubjectChildren == null) iDifferentSubjectChildren = new ArrayList<ExamSectionInfo>();
+        	iDifferentSubjectChildren.add(child);
+        }
+        public boolean hasDifferentSubjectChildren() {
+        	return iDifferentSubjectChildren != null && !iDifferentSubjectChildren.isEmpty();
+        }
+        public List<ExamSectionInfo> getDifferentSubjectChildren() { return iDifferentSubjectChildren; }
     }
     
     public class ExamInstructorInfo implements Serializable, Comparable<ExamInstructorInfo> {

@@ -853,6 +853,13 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Examination PDF Reports: use class event to compute class meeting time")
 	ExaminationPdfReportsUseEventsForMeetingTimes("tmtbl.exam.report.meeting_time.use_events"),
+	
+	@DefaultValue("none")
+	@Description("Examination Reports: include different subject sections (set to none if disabled, "
+			+ "set to cross-list if only cross-listed sections under the controlling course are to be included, "
+			+ "set to cross-list all if all cross-listed sections under any cross-listed course are to be included, "
+			+ "set to all if all different subject sections are to be included)")
+	ExaminationReportsIncludeDifferentSubject("tmtbl.exam.report.differentSubjectSections"),
 
 	/**
 	 * Exams default start and stop offsets. This is to be used to reserve time for

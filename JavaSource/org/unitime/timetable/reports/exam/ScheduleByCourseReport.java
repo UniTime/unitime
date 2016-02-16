@@ -77,7 +77,9 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                 ExamSectionInfo  section = j.next();
                 if (iCoursePrinted && !section.getCourseNbr().equals(lastCourse)) { iCoursePrinted = false; iITypePrinted = false; }
                 if (iITypePrinted && !section.getItype().equals(lastItype)) iITypePrinted = false;
+                Iterator<ExamSectionInfo> ch = (section.hasDifferentSubjectChildren() ? section.getDifferentSubjectChildren().iterator() : null);
                 if (section.getExamAssignment().getRooms()==null || section.getExamAssignment().getRooms().isEmpty()) {
+                	if (getLineNumber()+1+(section.hasDifferentSubjectChildren()?section.getDifferentSubjectChildren().size():0)>iNrLines) newPage();
                     println(
                             rpad(iSubjectPrinted?"":subject, 7)+" "+
                             rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
@@ -89,25 +91,52 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                             (section.getExamAssignment()==null?"":iNoRoom)
                             );
                 } else {
-                    if (getLineNumber()+section.getExamAssignment().getRooms().size()>iNrLines) newPage();
+                    if (getLineNumber()+Math.max(section.getExamAssignment().getRooms().size(), section.hasDifferentSubjectChildren() ? section.getDifferentSubjectChildren().size() : 0)>iNrLines) newPage();
                     boolean firstRoom = true;
                     for (ExamRoomInfo room : section.getExamAssignment().getRooms()) {
-                        println(
-                                rpad(!firstRoom || iSubjectPrinted?"":subject, 7)+" "+
-                                rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
-                                (iItype?rpad(!firstRoom || iITypePrinted?"":section.getItype(), 6)+" ":"")+
-                                lpad(!firstRoom?"":section.getSection(), 9)+" "+
-                                rpad(!firstRoom?"":getMeetingTime(section),36)+" "+
-                                lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+"  "+
-                                rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),30)+" "+
-                                formatRoom(room.getName())+" "+
-                                lpad(""+room.getCapacity(),5)+" "+
-                                lpad(""+room.getExamCapacity(),5)
-                                );
+                    	ExamSectionInfo child = (firstRoom || ch == null || !ch.hasNext() ? null : ch.next());
+                    	if (child != null) {
+                    		println(
+                                    "w/" + rpad(child.getSubject(), 6)+
+                                    rpad(child.getCourseNbr(), 8)+" "+
+                                    (iItype?rpad(child.getItype(), 6)+" ":"")+
+                                    lpad(child.getSection(), 9)+" "+
+                                    rpad("",36)+" "+
+                                    lpad(String.valueOf(child.getNrStudents()),5)+"  "+
+                                    rpad("",30)+" "+
+                                    formatRoom(room.getName())+" "+
+                                    lpad(""+room.getCapacity(),5)+" "+
+                                    lpad(""+room.getExamCapacity(),5)
+                                    );
+                    	} else {
+                            println(
+                                    rpad(!firstRoom || iSubjectPrinted?"":subject, 7)+" "+
+                                    rpad(!firstRoom || iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
+                                    (iItype?rpad(!firstRoom || iITypePrinted?"":section.getItype(), 6)+" ":"")+
+                                    lpad(!firstRoom?"":section.getSection(), 9)+" "+
+                                    rpad(!firstRoom?"":getMeetingTime(section),36)+" "+
+                                    lpad(!firstRoom?"":String.valueOf(section.getNrStudents()),5)+"  "+
+                                    rpad(!firstRoom?"":(section.getExamAssignment()==null?"":section.getExamAssignment().getPeriodNameFixedLength()),30)+" "+
+                                    formatRoom(room.getName())+" "+
+                                    lpad(""+room.getCapacity(),5)+" "+
+                                    lpad(""+room.getExamCapacity(),5)
+                                    );
+                    	}
                         firstRoom = false;
                     }
                 }
-                if (iNewPage) {
+                while (ch != null && ch.hasNext()) {
+                	ExamSectionInfo child = ch.next();
+                	println(
+                            "w/" + rpad(child.getSubject(), 6)+
+                            rpad(child.getCourseNbr(), 8)+" "+
+                            (iItype?rpad(child.getItype(), 6)+" ":"")+
+                            lpad(child.getSection(), 9)+" "+
+                            rpad("",36)+" "+
+                            lpad(String.valueOf(child.getNrStudents()),5)
+                            );
+            	}
+                if (iNewPage || section.hasDifferentSubjectChildren()) {
                     iSubjectPrinted = iITypePrinted = iCoursePrinted = false;
                     lastItype = lastCourse = null;
                 } else {

@@ -84,10 +84,11 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
         		"Subject Course   "+(iItype?iExternal?"ExtnID ":"Type   ":"")+"Section   Date    Time   Name                      Type   Subject Course   "+(iItype?iExternal?"ExtnID ":"Type   ":"")+"Section   Time           ",
         		"------- -------- "+(iItype?"------ ":"")+"--------- ------- ------ ------------------------- ------ ------- -------- "+(iItype?"------ ":"")+"--------- ---------------"});
         printHeader();
+        boolean dirtyPage = false;
         for (Iterator<String> i = new TreeSet<String>(subject2courseSections.keySet()).iterator(); i.hasNext();) {
             String subject = i.next();
             TreeSet<ExamSectionInfo> sections = subject2courseSections.get(subject);
-            if (iSubjectPrinted) newPage();
+            if (iSubjectPrinted || dirtyPage) newPage();
             setPageName(subject); setCont(subject);
             iSubjectPrinted = false;
             for (Iterator<ExamSectionInfo> j = sections.iterator(); j.hasNext();) {
@@ -204,7 +205,158 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
                                     );
                             iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = !iNewPage;
                         }
-                    }                    
+                    }
+                }
+                boolean needReprintSubject = false;
+                if (section.hasDifferentSubjectChildren()) {
+                	for (ExamSectionInfo child: section.getDifferentSubjectChildren()) {
+                		boolean diffSubjectPrinted = false;
+                        students = new Vector<Long>(child.getStudentIds());
+                        Collections.sort(students,new Comparator<Long>() {
+                            public int compare(Long s1, Long s2) {
+                                int cmp = iStudentNames.get(s1).compareTo(iStudentNames.get(s2));
+                                if (cmp!=0) return cmp;
+                                return s1.compareTo(s2);
+                            }
+                        });
+                        for (Long studentId : students) {
+                            iStudentPrinted = false;
+                            if (iDirect) for (DirectConflict conflict : exam.getDirectConflicts()) {
+                                if (!conflict.getStudents().contains(studentId)) continue;
+                                iPeriodPrinted = false;
+                                if (conflict.getOtherExam()!=null) {
+                                    for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
+                                        if (!other.getStudentIds().contains(studentId)) continue;
+                                    	if (!iCoursePrinted) {
+                                    		println(
+                                                    rpad(iSubjectPrinted?"":subject,7)+" "+
+                                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
+                                                    (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
+                                                    lpad(iCoursePrinted?"":section.getSection(),9)+" "+
+                                                    rpad(iCoursePrinted?"":formatShortPeriodNoEndTime(exam),14)
+                                                    );
+                                            iSubjectPrinted = iCoursePrinted = !iNewPage;
+                                    	}
+                                        println(
+                                        	rpad(diffSubjectPrinted ? "" : "w/" +
+                                                rpad(child.getSubject(),6)+rpad(child.getCourseNbr(), 8)+" "+
+                                                (iItype?rpad(child.getItype(), 6)+" ":"")+lpad(child.getSection(),9)+" "+formatShortPeriodNoEndTime(exam), iItype ? 49 : 42) +
+                                        	rpad(iStudentPrinted?"":iStudentNames.get(studentId),25)+" "+
+                                        	rpad(iPeriodPrinted?"":"DIRECT",6)+" "+
+                                        	rpad(other.getSubject(),7)+" "+
+                                        	rpad(other.getCourseNbr(),8)+" "+
+                                        	(iItype?rpad(other.getItype(),6)+" ":"")+
+                                        	lpad(other.getSection(),9)+" "+
+                                        	other.getExamAssignment().getTimeFixedLength()
+                                        	);
+                                        iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = diffSubjectPrinted = needReprintSubject = !iNewPage;
+                                    }
+                                } else if (conflict.getOtherEventId()!=null) {
+                                	if (!iCoursePrinted) {
+                                		println(
+                                                rpad(iSubjectPrinted?"":subject,7)+" "+
+                                                rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
+                                                (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
+                                                lpad(iCoursePrinted?"":section.getSection(),9)+" "+
+                                                rpad(iCoursePrinted?"":formatShortPeriodNoEndTime(exam),14)
+                                                );
+                                        iSubjectPrinted = iCoursePrinted = !iNewPage;
+                                	}
+                                    if (conflict.isOtherClass()) {
+                                        println(
+                                        		rpad(diffSubjectPrinted ? "" : "w/" +
+                                                	rpad(child.getSubject(),6)+rpad(child.getCourseNbr(), 8)+" "+
+                                                	(iItype?rpad(child.getItype(), 6)+" ":"")+lpad(child.getSection(),9)+" "+formatShortPeriodNoEndTime(exam), iItype ? 49 : 42) +
+                                                rpad(iStudentPrinted?"":iStudentNames.get(studentId),25)+" "+
+                                                rpad(iPeriodPrinted?"":"CLASS",6)+" "+
+                                                rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getSubjectAreaAbbv(),7)+" "+
+                                                rpad(conflict.getOtherClass().getSchedulingSubpart().getControllingCourseOffering().getCourseNbr(),8)+" "+
+                                                (iItype?rpad(iExternal?conflict.getOtherClass().getExternalUniqueId():conflict.getOtherClass().getSchedulingSubpart().getItypeDesc(),6)+" ":"")+
+                                                lpad(iUseClassSuffix && conflict.getOtherClass().getClassSuffix()!=null?conflict.getOtherClass().getClassSuffix():conflict.getOtherClass().getSectionNumberString(),9)+" "+
+                                                getMeetingTime(conflict.getOtherEventTime())
+                                                );
+                                    } else {
+                                        println(
+                                        		rpad(diffSubjectPrinted ? "" : "w/" +
+                                                	rpad(child.getSubject(),6)+rpad(child.getCourseNbr(), 8)+" "+
+                                                	(iItype?rpad(child.getItype(), 6)+" ":"")+lpad(child.getSection(),9)+" "+formatShortPeriodNoEndTime(exam), iItype ? 49 : 42) +
+                                                rpad(iStudentPrinted?"":iStudentNames.get(studentId),25)+" "+
+                                                rpad(iPeriodPrinted?"":"EVENT",6)+" "+
+                                                rpad(conflict.getOtherEventName(),(iItype?33:26))+" "+
+                                                getMeetingTime(conflict.getOtherEventTime())
+                                                );
+                                    }
+                                    iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = diffSubjectPrinted = needReprintSubject = !iNewPage;
+                                }
+                            }
+                            if (iM2d) for (MoreThanTwoADayConflict conflict : exam.getMoreThanTwoADaysConflicts()) {
+                                if (!conflict.getStudents().contains(studentId)) continue;
+                                iPeriodPrinted = false;
+                                for (ExamAssignment otherExam : conflict.getOtherExams()) {
+                                    for (ExamSectionInfo other : otherExam.getSectionsIncludeCrosslistedDummies()) {
+                                        if (!other.getStudentIds().contains(studentId)) continue;
+                                    	if (!iCoursePrinted) {
+                                    		println(
+                                                    rpad(iSubjectPrinted?"":subject,7)+" "+
+                                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
+                                                    (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
+                                                    lpad(iCoursePrinted?"":section.getSection(),9)+" "+
+                                                    rpad(iCoursePrinted?"":formatShortPeriodNoEndTime(exam),14)
+                                                    );
+                                            iSubjectPrinted = iCoursePrinted = !iNewPage;
+                                    	}
+                                        println(
+                                        		rpad(diffSubjectPrinted ? "" : "w/" +
+                                                	rpad(child.getSubject(),6)+rpad(child.getCourseNbr(), 8)+" "+
+                                                	(iItype?rpad(child.getItype(), 6)+" ":"")+lpad(child.getSection(),9)+" "+formatShortPeriodNoEndTime(exam), iItype ? 49 : 42) +
+                                                rpad(iStudentPrinted?"":iStudentNames.get(studentId),25)+" "+
+                                                rpad(iPeriodPrinted?"":">2-DAY",6)+" "+
+                                                rpad(other.getSubject(),7)+" "+
+                                                rpad(other.getCourseNbr(),8)+" "+
+                                                (iItype?rpad(other.getItype(),6)+" ":"")+
+                                                lpad(other.getSection(),9)+" "+
+                                                other.getExamAssignment().getTimeFixedLength()
+                                                );
+                                        iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = diffSubjectPrinted = needReprintSubject = !iNewPage;
+                                    }
+                                }
+                            }
+                            if (iBtb) for (BackToBackConflict conflict : exam.getBackToBackConflicts()) {
+                                if (!conflict.getStudents().contains(studentId)) continue;
+                                iPeriodPrinted = false;
+                                for (ExamSectionInfo other : conflict.getOtherExam().getSectionsIncludeCrosslistedDummies()) {
+                                    if (!other.getStudentIds().contains(studentId)) continue;
+                                	if (!iCoursePrinted) {
+                                		println(
+                                                rpad(iSubjectPrinted?"":subject,7)+" "+
+                                                rpad(iCoursePrinted?"":section.getCourseNbr(), 8)+" "+
+                                                (iItype?rpad(iCoursePrinted?"":section.getItype(), 6)+" ":"")+
+                                                lpad(iCoursePrinted?"":section.getSection(),9)+" "+
+                                                rpad(iCoursePrinted?"":formatShortPeriodNoEndTime(exam),14)
+                                                );
+                                        iSubjectPrinted = iCoursePrinted = !iNewPage;
+                                	}
+                                    println(
+                                    		rpad(diffSubjectPrinted ? "" : "w/" +
+                                            	rpad(child.getSubject(),6)+rpad(child.getCourseNbr(), 8)+" "+
+                                            	(iItype?rpad(child.getItype(), 6)+" ":"")+lpad(child.getSection(),9)+" "+formatShortPeriodNoEndTime(exam), iItype ? 49 : 42) +
+                                            rpad(iStudentPrinted?"":iStudentNames.get(studentId),25)+" "+
+                                            rpad(iPeriodPrinted?"":"BTB",6)+" "+
+                                            rpad(other.getSubject(),7)+" "+
+                                            rpad(other.getCourseNbr(),8)+" "+
+                                            (iItype?rpad(other.getItype(),6)+" ":"")+
+                                            lpad(other.getSection(),9)+" "+
+                                            other.getExamAssignment().getTimeFixedLength()
+                                            );
+                                    iSubjectPrinted = iCoursePrinted = iStudentPrinted = iPeriodPrinted = diffSubjectPrinted = needReprintSubject = !iNewPage;
+                                }
+                            }                    
+                        }
+                	}                	
+                }
+                if (needReprintSubject) {
+                	iSubjectPrinted = false;
+                	dirtyPage = true;
                 }
             }
             setCont(null);
