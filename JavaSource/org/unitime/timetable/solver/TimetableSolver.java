@@ -86,12 +86,14 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
@@ -673,6 +675,9 @@ public class TimetableSolver extends ParallelSolver<Lecture, Placement> implemen
 					return rc.getName().matches(term);
 				} else if ("find".equals(attr)) {
 					return rc.getName().toLowerCase().indexOf(term.toLowerCase()) >= 0;
+				} else if ("type".equals(attr) && rc.getType() != null) {
+					RoomType type = RoomTypeDAO.getInstance().get(rc.getType());
+					return type != null && (term.equalsIgnoreCase(type.getReference()) || term.equalsIgnoreCase(type.getLabel()));
 				} else if ("size".equals(attr)) {
 					int min = 0, max = Integer.MAX_VALUE;
 					Size prefix = Size.eq;

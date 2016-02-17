@@ -58,7 +58,8 @@ public class TimetableGridContext implements Serializable {
 		iLastSlot = table.lastSlot();
 		iDayCode = 0;
 		for (int day = table.startDay(); day <= table.endDay(); day ++)
-			iDayCode += Constants.DAY_CODES[day];
+			if (!table.skipDay(day))
+				iDayCode += Constants.DAY_CODES[day];
 		iPattern = dp.getPatternBitSet();
 		iNrWeeks = dp.getEffectiveNumberOfWeeks();
 		
@@ -73,14 +74,14 @@ public class TimetableGridContext implements Serializable {
 	        		daysInWeek[dow] ++;
 	        	}
 	        }
-	        float weekDays = 1f / (table.endDay() - table.startDay() + 1);
+	        float weekDays = 1f / table.nrDays();
 	        if (weekDays >= 0.2f) {
 	        	iNrWeeks = weekDays * nrDays;
 	        } else {
 	        	iNrWeeks = 0.2f * (daysInWeek[0] + daysInWeek[1] + daysInWeek[2] + daysInWeek[3] + daysInWeek[4]);
 	        }
 		}
-		iSlotsPerWeek = (iLastSlot - iFirstSlot + 1) * (table.endDay() - table.startDay() + 1);
+		iSlotsPerWeek = (iLastSlot - iFirstSlot + 1) * table.nrDays();
 	}
 	
 	public String getFilter() { return iFilter; }

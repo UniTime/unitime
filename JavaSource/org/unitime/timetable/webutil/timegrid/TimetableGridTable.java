@@ -75,6 +75,8 @@ public class TimetableGridTable {
 	public static final int sDaysSun = 8;
 	public static final int sDaysMonThu = 9;
 	public static final int sDaysFriSat = 10;
+	public static final int sDaysMWF = 11;
+	public static final int sDaysTTh = 12;
 	public static String[] sDays = new String[] {
 			"All",
 			"All except Weekend",
@@ -86,7 +88,9 @@ public class TimetableGridTable {
 			"Saturday",
 			"Sunday",
 			"Monday - Thursday",
-			"Friday & Saturday"
+			"Friday & Saturday",
+			"Monday, Wednesday, Friday",
+			"Tuesday, Thursday",
 	};
 	public static final int sDispModeInRow   = 0;
 	public static final int sDispModePerWeekHorizontal = 1;
@@ -283,6 +287,8 @@ public class TimetableGridTable {
 			case sDaysSun : return 6;
 			case sDaysMonThu: return 0;
 			case sDaysFriSat : return 4;
+			case sDaysMWF: return 0;
+			case sDaysTTh: return 1;
 			default : return 0;
 		}			
 	}
@@ -300,8 +306,32 @@ public class TimetableGridTable {
 			case sDaysSun : return 6;
 			case sDaysMonThu: return 3;
 			case sDaysFriSat : return 5;
+			case sDaysMWF: return 4;
+			case sDaysTTh: return 3;
 			default : return 4;
-		}			
+		}
+	}
+	
+	public boolean skipDay(int day) {
+		switch (iDays) {
+		case sDaysMWF:
+			return day == 1 || day == 3;
+		case sDaysTTh:
+			return day == 2;
+		default:
+			return false;
+		}
+	}
+	
+	public int nrDays() {
+		switch (iDays) {
+		case sDaysMWF:
+			return 3;
+		case sDaysTTh:
+			return 2;
+		default:
+			return endDay() - startDay() + 1;
+		} 
 	}
 	
 	/*
@@ -365,6 +395,7 @@ public class TimetableGridTable {
 		out.println("</th>");
 		if (isDispModePerWeekVertical()) {
 			for (int day=startDay(); day<=endDay(); day++) {
+				if (skipDay(day)) continue;
 				boolean eol = (day==endDay());
 				out.println("<th colspan='"+(1+model.getMaxIdxForDay(day,firstSlot(),lastSlot()))+"'class='TimetableHeadCellVertical"+(eol?"EOL":"")+"'>");
 				out.println(Constants.DAY_NAME[day]);
@@ -372,6 +403,7 @@ public class TimetableGridTable {
 			}
 		} else { //isDispModeInRow() || isDispModePerWeekVertical()
 			for (int day=startDay();(isDispModeInRow() && day<=endDay()) || (isDispModePerWeek() && day==startDay());day++) {
+				if (skipDay(day)) continue;
 				for (int slot=firstSlot();slot<=lastSlot();slot+=nrSlotsPerPeriod()) {
 					int time = slot*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
 					boolean eod = (slot+nrSlotsPerPeriod()-1==lastSlot());
@@ -437,6 +469,7 @@ public class TimetableGridTable {
 				if (idx>0)
 					out.println("</tr><tr valign='top'>");
 				for (int day=startDay();day<=endDay();day++) {
+					if (skipDay(day)) continue;
 					for (int slot=firstSlot();slot<=lastSlot();slot++) {
 						int slotsToEnd = lastSlot()-slot+1;
 						TimetableGridCell cell = model.getCell(day,slot,idx);
@@ -500,6 +533,7 @@ public class TimetableGridTable {
 			}			
 		} else  if (isDispModePerWeekHorizontal()) {
 			for (int day=startDay();day<=endDay();day++) {
+				if (skipDay(day)) continue;
 				if (day>startDay())
 					out.println("</tr><tr valign='top'>");
 				int maxIdx = model.getMaxIdxForDay(day,firstSlot(),lastSlot());
@@ -579,7 +613,7 @@ public class TimetableGridTable {
 				int date = d + iFirstDay;
 				if (model.getFirstDay() >= 0 && (date < model.getFirstDay() || date > model.getFirstDay() + 6)) continue;
 				int day = d % 7;
-				if (day < startDay() || day > endDay()) continue;
+				if (day < startDay() || day > endDay() || skipDay(day)) continue;
 				boolean hasClasses = false;
 				for (int slot=firstSlot();slot<=lastSlot();slot++) {
 					if (model.getCell(day, slot, 0, date) != null) {
@@ -671,6 +705,7 @@ public class TimetableGridTable {
                 	out.println("<th class='TimetableHeadCellInVertical'>&nbsp;</th>");
                 }
                 for (int day=startDay();day<=endDay();day++) {
+                	if (skipDay(day)) continue;
                 	int maxIdx = model.getMaxIdxForDay(day,firstSlot(),lastSlot());
                 	for (int idx=0;idx<=maxIdx;idx++) {
                     	TimetableGridCell cell = model.getCell(day,slot, idx);
@@ -782,6 +817,8 @@ public class TimetableGridTable {
 					return location.getLabel().matches(term);
 				} else if ("find".equals(attr)) {
 					return location.getLabel().toLowerCase().indexOf(term.toLowerCase()) >= 0;
+				} else if ("type".equals(attr)) {
+					return term.equalsIgnoreCase(location.getRoomType().getReference()) || term.equalsIgnoreCase(location.getRoomType().getLabel());
 				} else if ("size".equals(attr)) {
 					int min = 0, max = Integer.MAX_VALUE;
 					Size prefix = Size.eq;

@@ -81,6 +81,7 @@ public class PdfTimetableGridTable {
 	
 		if (iTable.isDispModeInRow()) {
 			for (iDay=iTable.startDay();iDay<=iTable.endDay();iDay++) {
+				if (iTable.skipDay(iDay)) continue;
 				int rowNumber=0; 
 	        	for (Enumeration e = iTable.models().elements(); e.hasMoreElements(); rowNumber++) {
 	        		printToPdf((TimetableGridModel)e.nextElement(),rowNumber);
@@ -345,6 +346,7 @@ public class PdfTimetableGridTable {
 			}	
 		} else  if (iTable.isDispModePerWeekHorizontal()) {
 			for (int day=iTable.startDay();day<=iTable.endDay();day++) {
+				if (iTable.skipDay(day)) continue;
 				int maxIdx = model.getMaxIdxForDay(day,iTable.firstSlot(),iTable.lastSlot());
 				for (int idx=0;idx<=maxIdx;idx++) {
 					PdfPCell c = createCell();
@@ -412,7 +414,7 @@ public class PdfTimetableGridTable {
 				int date = d + iTable.iFirstDay;
 				if (model.getFirstDay() >= 0 && (date < model.getFirstDay() || date > model.getFirstDay() + 6)) continue;
 				int day = d % 7;
-				if (day < iTable.startDay() || day > iTable.endDay()) continue;
+				if (day < iTable.startDay() || day > iTable.endDay() || iTable.skipDay(day)) continue;
 				boolean hasClasses = false;
 				for (int slot=iTable.firstSlot();slot<=iTable.lastSlot();slot++) {
 					if (model.getCell(day, slot, 0, date) != null) {
@@ -478,6 +480,7 @@ public class PdfTimetableGridTable {
 			}
 		} else { //isDispModePerWeekVertical
 			for (int day=iTable.startDay();day<=iTable.endDay();day++) {
+				if (iTable.skipDay(day)) continue;
 				int maxIdx = model.getMaxIdxForDay(day,iTable.firstSlot(),iTable.lastSlot());
 				for (int idx=0;idx<=maxIdx;idx++) {
 					PdfPCell c = null;
