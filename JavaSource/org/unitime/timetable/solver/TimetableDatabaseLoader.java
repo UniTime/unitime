@@ -1624,11 +1624,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			maxSize = Math.max(maxSize, ((SchedulingSubpart)distributionObject.getPrefGroup()).getClasses().size());
     		}
     		Constraint gc[] = new Constraint[maxSize];
-    		Set gcClasses[] = new Set[maxSize];
+    		Set<Class_> gcClasses[] = new Set[maxSize];
     		for (int i=0;i<gc.length;i++) {
     			gc[i]=createGroupConstraint(pref);
     			if (gc[i]==null) return;
-    			gcClasses[i]=new HashSet();
+    			gcClasses[i]=new HashSet<Class_>();
     		}
     		List<Lecture> allLectureOfCorrectOrder = new ArrayList<Lecture>();
     		for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
@@ -1670,10 +1670,37 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	    	}
         	    	for (int j=0;j<gc.length;j++) {
         	    		Class_ clazz = null;
-        	    		for (Iterator k=gcClasses[j].iterator();k.hasNext() && clazz==null;) {
-        	    			clazz = getParentClass((Class_)k.next(),subpart);
+        	    		for (Iterator<Class_> k=gcClasses[j].iterator();k.hasNext() && clazz==null;) {
+        	    			clazz = getParentClass(k.next(), subpart);
         	    		}
-        	    		if (clazz==null) clazz = (Class_)classes.get(j%classes.size());
+        	    		if (clazz == null) {
+        	    			// no children in the list, filter out classes with wrong parent (there is a subpart parent but no class parent)
+        	    			List<Class_> adepts = new ArrayList<Class_>();
+        	    			adepts: for (Class_ adept: classes) {
+        	    		    	for (Class_ other: gcClasses[j])
+        	    		    		if (shareParent(other.getSchedulingSubpart(), adept.getSchedulingSubpart()) && !shareParent(other, adept))
+        	    		    			continue adepts;
+        	    		    	adepts.add(adept);
+        	    			}
+        	    			if (!adepts.isEmpty() && adepts.size() < classes.size()) {
+            	    			// there are adepts, but some classes have been filtered out -> we may need to skip some previous choices in the adept index
+        	    				int k = 0;
+        	    				for (int i = 0; i < j; i++) {
+        	    					adepts: for (Class_ adept: adepts) {
+        	    						for (Class_ other: gcClasses[i])
+        	    							if (shareParent(other.getSchedulingSubpart(), adept.getSchedulingSubpart()) && !shareParent(other, adept))
+        	    								continue adepts;
+        	    						// adept found for group i -> include it in the adept index
+        	    						k++; break;
+        	    					}
+        	    				}
+        	    				clazz = adepts.get(k % adepts.size());
+        	    			}
+        	    		}
+        	    		if (clazz == null) {
+        	    			// fallback -> take j-th class
+        	    			clazz = (Class_)classes.get(j%classes.size());
+        	    		}
         	    		
             			Lecture lecture = getLecture(clazz);
             			if (lecture==null) {
@@ -1878,6 +1905,20 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		return getParentClass(clazz.getParentClass(), parentSubpart);
 	}
     
+    private static boolean shareParent(Class_ c1, Class_ c2) {
+    	if (c1.getParentClass() == null) return false;
+    	for (Class_ p = c2.getParentClass(); p != null; p = p.getParentClass())
+    		if (c1.getParentClass().equals(p)) return true;
+    	return shareParent(c1.getParentClass(), c2);
+    }
+    
+    private static boolean shareParent(SchedulingSubpart s1, SchedulingSubpart s2) {
+    	if (s1.getParentSubpart() == null) return false;
+    	for (SchedulingSubpart p = s2.getParentSubpart(); p != null; p = p.getParentSubpart())
+    		if (s1.getParentSubpart().equals(p)) return true;
+    	return shareParent(s1.getParentSubpart(), s2);
+    }
+    
     public static class ChildrenFirstDistributionObjectComparator implements Comparator<DistributionObject> {
     	
     	public int compare(DistributionObject d1, DistributionObject d2) {
@@ -1907,6 +1948,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
     		if (getParentClass((Class_)s2.getClasses().iterator().next(),s1)!=null)
     			return 1; //c2 is child, c1 is parent
+    		
+    		// distribution objects share a parent, return the one with more classes first
+    		if (shareParent(s1, s2)) {
+    			if (s1.getClasses().size() < s2.getClasses().size())
+    				return 1;
+    			else if (s1.getClasses().size() > s2.getClasses().size())
+    				return -1;
+    		}
 
     		return d1.compareTo(d2);
     	}
