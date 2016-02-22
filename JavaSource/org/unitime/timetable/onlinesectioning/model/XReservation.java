@@ -125,22 +125,22 @@ public abstract class XReservation extends XReservationId implements Comparable<
         	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
         	break;
         case Group:
-        	setPriority(ApplicationProperty.ReservationPriorityIndividual.intValue());
-        	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitIndividual.isTrue());
-        	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedIndividual.isTrue());
-        	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
+        	setPriority(ApplicationProperty.ReservationPriorityGroup.intValue());
+        	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitGroup.isTrue());
+        	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedGroup.isTrue());
+        	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapGroup.isTrue());
         	break;
         case Curriculum:
-        	setPriority(ApplicationProperty.ReservationPriorityIndividual.intValue());
-        	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitIndividual.isTrue());
-        	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedIndividual.isTrue());
-        	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
+        	setPriority(ApplicationProperty.ReservationPriorityCurriculum.intValue());
+        	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitCurriculum.isTrue());
+        	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedCurriculum.isTrue());
+        	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapCurriculum.isTrue());
         	break;
         case Course:
-        	setPriority(ApplicationProperty.ReservationPriorityIndividual.intValue());
-        	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitIndividual.isTrue());
-        	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedIndividual.isTrue());
-        	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapIndividual.isTrue());
+        	setPriority(ApplicationProperty.ReservationPriorityCourse.intValue());
+        	setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitCourse.isTrue());
+        	setMustBeUsed(ApplicationProperty.ReservationMustBeUsedCourse.isTrue());
+        	setAllowOverlap(ApplicationProperty.ReservationAllowOverlapCourse.isTrue());
         	break;
         case Override:
         	setPriority(ApplicationProperty.ReservationPriorityOverride.intValue());
