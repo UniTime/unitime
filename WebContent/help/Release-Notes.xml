@@ -25,8 +25,23 @@
 <doc-title>UniTime 3.5 Release Notes</doc-title>
 
 <release>
-	<version>3.5.${build.number}</version>
+	<version>4.0.${build.number}</version>
 	<release-date>${build.date}</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Online Student Scheduling</name>
+			<description>
+				<line>Reservations: Fixed an issue that was causing the server to take all the properties (reservation priority, must be used, can assign over limit, allow overlap)
+				from parameters of individual reservations regardless of the reservation type.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.5.254</version>
+	<release-date>Thu, 3 Dec 2015</release-date>
 	<category>
 		<title>Bug Fixes</title>
 		<item>
