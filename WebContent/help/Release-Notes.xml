@@ -31,6 +31,21 @@
 	<category>
 		<title>Bug Fixes</title>
 		<item>
+			<name>Online Student Scheduling</name>
+			<description>
+				<line>Reservations: Fixed an issue that was causing the server to take all the properties (reservation priority, must be used, can assign over limit, allow overlap)
+				from parameters of individual reservations regardless of the reservation type.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.0.47</version>
+	<release-date>Thu, 3 Dec 2015</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
 			<name>Instructional Offering Detail</name>
 			<description>
 				<line>Curricula Table: Fixed a null pointer exception that sometimes occurs.</line>
