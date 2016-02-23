@@ -162,19 +162,43 @@ public class ExamEditForm extends PreferencesForm {
     
     public List getSubjectAreaList() { return subjectArea; }
     public List getSubjectArea() { return subjectArea; }
-    public Long getSubjectArea(int key) { return (Long)subjectArea.get(key); }
+    public Long getSubjectArea(int key) {
+    	try {
+    		return (Long)subjectArea.get(key);
+    	} catch (ClassCastException e) {
+    		return Long.valueOf(subjectArea.get(key).toString());
+    	}
+    }
     public void setSubjectArea(int key, Long value) { this.subjectArea.set(key, value); }
     public void setSubjectArea(List subjectArea) { this.subjectArea = subjectArea; }
     public List getCourseNbr() { return courseNbr; }
-    public Long getCourseNbr(int key) { return (Long)courseNbr.get(key); }
+    public Long getCourseNbr(int key) {
+    	try {
+    		return (Long)courseNbr.get(key);
+    	} catch (ClassCastException e) {
+    		return Long.valueOf(courseNbr.get(key).toString());
+    	}
+    }
     public void setCourseNbr(int key, Long value) { this.courseNbr.set(key, value); }
     public void setCourseNbr(List courseNbr) { this.courseNbr = courseNbr; }
     public List getItype() { return itype; }
-    public Long getItype(int key) { return (Long)itype.get(key); }
+    public Long getItype(int key) {
+    	try {
+    		return (Long)itype.get(key);
+    	} catch (ClassCastException e) {
+    		return Long.valueOf(itype.get(key).toString());
+    	}
+    }
     public void setItype(int key, Long value) { this.itype.set(key, value); }
     public void setItype(List itype) { this.itype = itype; }
     public List getClassNumber() { return classNumber; }
-    public Long getClassNumber(int key) { return (Long)classNumber.get(key); }
+    public Long getClassNumber(int key) {
+    	try {
+    		return (Long)classNumber.get(key);
+    	} catch (ClassCastException e) {
+    		return Long.valueOf(classNumber.get(key).toString());
+    	}
+    }
     public void setClassNumber(int key, Long value) { this.classNumber.set(key, value); }
     public void setClassNumber(List classNumber) { this.classNumber = classNumber; }
     

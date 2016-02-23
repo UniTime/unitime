@@ -130,15 +130,33 @@ public class ExamDistributionPrefsForm extends ActionForm {
 
     public List getSubjectAreaList() { return subjectArea; }
     public List getSubjectArea() { return subjectArea; }
-    public Long getSubjectArea(int key) { return (Long)subjectArea.get(key); }
+    public Long getSubjectArea(int key) {
+    	try {
+    		return (Long)subjectArea.get(key);
+    	} catch (ClassCastException e) {
+    		return Long.valueOf(subjectArea.get(key).toString());
+    	}
+    }
     public void setSubjectArea(int key, Long value) { this.subjectArea.set(key, value); }
     public void setSubjectArea(List subjectArea) { this.subjectArea = subjectArea; }
     public List getCourseNbr() { return courseNbr; }
-    public Long getCourseNbr(int key) { return (Long)courseNbr.get(key); }
+    public Long getCourseNbr(int key) {
+    	try {
+    		return (Long)courseNbr.get(key);
+    	} catch (ClassCastException e) {
+    		return Long.valueOf(courseNbr.get(key).toString());
+    	}
+    }
     public void setCourseNbr(int key, Long value) { this.courseNbr.set(key, value); }
     public void setCourseNbr(List courseNbr) { this.courseNbr = courseNbr; }
     public List getExam() { return exam; }
-    public Long getExam(int key) { return (Long)exam.get(key); }
+    public Long getExam(int key) {
+    	try {
+    		return (Long)exam.get(key);
+    	} catch (ClassCastException e) {
+    		return Long.valueOf(exam.get(key).toString());
+    	}
+    }
     public void setExam(int key, Long value) { this.exam.set(key, value); }
     public void setExam(List itype) { this.exam = itype; }
     
@@ -172,7 +190,7 @@ public class ExamDistributionPrefsForm extends ActionForm {
     public Collection getFilterSubjectAreas() { return filterSubjectAreas; }
     public void setFilterSubjectAreas(Collection filterSubjectAreas) { this.filterSubjectAreas = filterSubjectAreas;}
     
-    public Collection getCourseNbrs(int idx) { 
+    public Collection getCourseNbrs(int idx) {
         Vector ret = new Vector();
         boolean contains = false;
         if (getSubjectArea(idx)>=0) {

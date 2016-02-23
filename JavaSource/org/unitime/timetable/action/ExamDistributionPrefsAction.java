@@ -382,7 +382,8 @@ public class ExamDistributionPrefsAction extends Action {
         	HashSet addedExams = new HashSet();
         	int idx = 0;
         	for (Iterator i=frm.getExam().iterator();i.hasNext();) {
-        	    Long examId = (Long)i.next();
+        		Object o = i.next();
+        	    Long examId = (o instanceof Long ? (Long) o : Long.valueOf(o.toString()));
         	    if (examId<0) continue;
         	    
         	    Exam exam = new ExamDAO().get(examId, hibSession);
