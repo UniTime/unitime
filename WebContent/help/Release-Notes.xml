@@ -37,6 +37,12 @@
 				from parameters of individual reservations regardless of the reservation type.</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Timetabling</name>
+			<description>
+				<line>Add/Edit Examinations, Add/Edit Examination Distribution Preferences: avoid ClassCastException in certain setups (Java 8 with Tomcat 7)</line>
+			</description>
+		</item>
 	</category>
 </release>
 
