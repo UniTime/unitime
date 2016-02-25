@@ -72,10 +72,11 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 	private IdGenerator iLastStudentId = new IdGenerator();
 	private Hashtable<Long, Set<WeightedStudentId>> iDemands = new Hashtable<Long, Set<WeightedStudentId>>();
 	private Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
-	private Hashtable<Long, Hashtable<String, Set<String>>> iLoadedCurricula = new Hashtable<Long,Hashtable<String, Set<String>>>();
+	private Hashtable<String, Set<String>> iLoadedCurricula = new Hashtable<String, Set<String>>();
 	private Hashtable<Long, Hashtable<Long, Double>> iEnrollmentPriorities = new Hashtable<Long, Hashtable<Long, Double>>();
 	private HashSet<Long> iCheckedCourses = new HashSet<Long>();
 	private boolean iIncludeOtherStudents = true;
+	private boolean iIncludeOtherCourses = true;
 	private boolean iSetStudentCourseLimits = false;
 	private CurriculumEnrollmentPriorityProvider iEnrollmentPriorityProvider = null;
 	private DataProperties iProperties = null;
@@ -84,6 +85,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 		iProperties = config;
 		iStudentCourseRequests = new StudentCourseRequests(config);
 		iIncludeOtherStudents = config.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
+		iIncludeOtherCourses = config.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherCourses", config.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherCourses));
 		iSetStudentCourseLimits = config.getPropertyBoolean("CurriculaCourseDemands.SetStudentCourseLimits", iSetStudentCourseLimits);
 		iEnrollmentPriorityProvider = new DefaultCurriculumEnrollmentPriorityProvider(config);
 		if (config.getProperty("CurriculaCourseDemands.CurriculumEnrollmentPriorityProvider") != null) {
@@ -294,18 +296,17 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 		}
 		if (iCheckedCourses.add(course.getUniqueId())) {
 			int was = demands.size();
-			Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getUniqueId());
 			Set<WeightedStudentId> other = iStudentCourseRequests.getDemands(course);
 			if (other == null) {
 				sLog.debug(course.getCourseName() + " has no students.");
 			} else {
-				if (curricula == null || curricula.isEmpty()) {
+				if (iLoadedCurricula == null || iLoadedCurricula.isEmpty()) {
 					demands.addAll(other);
 				} else {
 					other: for (WeightedStudentId student: other) {
 						// if (student.getAreas().isEmpty()) continue; // ignore students w/o academic area
 						for (AreaCode area: student.getAreas()) {
-							Set<String> majors = curricula.get(area.getArea() + ":" + area.getCode());
+							Set<String> majors = iLoadedCurricula.get(area.getArea() + ":" + area.getCode());
 							if (majors != null && (majors.contains("") || student.match(area.getArea(), majors))) continue other; // all majors or match
 						}
 						demands.add(student);
@@ -351,6 +352,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 		private List<WeightedStudentId> iMadeUpStudents;
 		private Hashtable<Long, WeightedStudentId> iStudentIds;
 		private Hashtable<Long, CourseOffering> iCourses;
+		private Hashtable<WeightedStudentId, Set<CourseOffering>> iStudents;
 		
 		public Initialization(CurriculumClassification clasf, List<CurriculumClassification> templates, Map<CourseOffering, Set<WeightedStudentId>> courseRequest) {
 			iClassification = clasf;
@@ -362,14 +364,14 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 		public void setup(org.hibernate.Session hibSession) {
 			sLog.debug("Processing " + iClassification.getCurriculum().getAbbv() + " " + iClassification.getName() + " ... (" + iClassification.getNrStudents() + " students, " + iClassification.getCourses().size() + " iCourses)");
 			
-			Hashtable<WeightedStudentId, Set<CourseOffering>> students = new Hashtable<WeightedStudentId, Set<CourseOffering>>();
+			iStudents = new Hashtable<WeightedStudentId, Set<CourseOffering>>();
 			if (iCourseRequests != null) {
 				for (Map.Entry<CourseOffering, Set<WeightedStudentId>> entry: iCourseRequests.entrySet()) {
 					for (WeightedStudentId student: entry.getValue()) {
-						Set<CourseOffering> courses = students.get(student);
+						Set<CourseOffering> courses = iStudents.get(student);
 						if (courses == null) {
 							courses = new HashSet<CourseOffering>();
-							students.put(student, courses);
+							iStudents.put(student, courses);
 						}
 						courses.add(entry.getKey());
 					}
@@ -377,7 +379,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 			}
 			
 			float totalWeight = 0;
-			for (WeightedStudentId student: students.keySet())
+			for (WeightedStudentId student: iStudents.keySet())
 				totalWeight += student.getWeight();
 			
 			sLog.debug("  registered students: " + totalWeight + ", target: " + iClassification.getNrStudents());
@@ -395,14 +397,14 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 				}
 				for (int i = 0; i < studentsToMakeUp; i++) {
 					WeightedStudentId student = new WeightedStudentId(-iLastStudentId.newId(), iClassification);
-					students.put(student, new HashSet<CourseOffering>());
+					iStudents.put(student, new HashSet<CourseOffering>());
 					iMadeUpStudents.add(student);
 				}
 			} else if (totalWeight < iClassification.getNrStudents()) { // change weights to fit the requested size
 				factor = iClassification.getNrStudents() / totalWeight;
 				w = 1.0;
 				sLog.debug("    changing student weight " + factor + " times");
-				for (WeightedStudentId student: students.keySet())
+				for (WeightedStudentId student: iStudents.keySet())
 					student.setWeight(student.getWeight() * factor);
 			} else if (totalWeight > iClassification.getNrStudents()) {
 				sLog.debug("    more registered students than needed, keeping all");
@@ -438,7 +440,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 			List<CurStudent> curStudents = new ArrayList<CurStudent>();
 			iStudentIds = new Hashtable<Long, WeightedStudentId>();
 			int idx = 0;
-			for (WeightedStudentId student: students.keySet()) {
+			for (WeightedStudentId student: iStudents.keySet()) {
 				curStudents.add(new CurStudent(student.getStudentId() < 0 ? - (++idx) : student.getStudentId(), student.getWeight()));
 				iStudentIds.put(student.getStudentId() < 0 ? - idx : student.getStudentId(), student);
 			}
@@ -455,22 +457,6 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 				*/
 				iModel.addCourse(course.getCourse().getUniqueId(), course.getCourse().getCourseName(), size, iEnrollmentPriorityProvider.getEnrollmentPriority(course, course2groups));
 				iCourses.put(course.getCourse().getUniqueId(), course.getCourse());
-				Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getCourse().getUniqueId());
-				if (curricula == null) {
-					curricula = new Hashtable<String, Set<String>>();
-					iLoadedCurricula.put(course.getCourse().getUniqueId(), curricula);
-				}
-				Set<String> majors = curricula.get(iClassification.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation() + ":" + iClassification.getAcademicClassification().getCode());
-				if (majors == null) {
-					majors = new HashSet<String>();
-					curricula.put(iClassification.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation() + ":" + iClassification.getAcademicClassification().getCode(), majors);
-				}
-				if (iClassification.getCurriculum().getMajors().isEmpty()) {
-					majors.add("");
-				} else {
-					for (PosMajor mj: iClassification.getCurriculum().getMajors())
-						majors.add(mj.getCode());
-				}
 			}
 			computeTargetShare(iClassification, courses, course2groups, nrStudents, factor, w, iModel);
 			if (iSetStudentCourseLimits)
@@ -496,7 +482,7 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 			} else {
 				// initial iAssignment
 				for (CurStudent student: curStudents) { 
-					for (CourseOffering course: students.get(iStudentIds.get(student.getStudentId()))) {
+					for (CourseOffering course: iStudents.get(iStudentIds.get(student.getStudentId()))) {
 						CurCourse curCourse = iModel.getCourse(course.getUniqueId());
 						if (curCourse == null) continue;
 						CurVariable var = null;
@@ -567,6 +553,34 @@ public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
 					courseStudents.add(student);
 					studentCourses.add(new WeightedCourseOffering(co, student.getWeight()));
 				}
+				if (iIncludeOtherCourses) {
+					// include courses of the student that are not in the curriculum
+					for (CourseOffering co: iStudents.get(iStudentIds.get(student.getStudentId()))) {
+						CurCourse curCourse = iModel.getCourse(co.getUniqueId());
+						if (curCourse == null) {
+							Set<WeightedStudentId> courseStudents = iDemands.get(co.getUniqueId());
+							if (courseStudents == null) {
+								courseStudents = new HashSet<WeightedStudentId>();
+								iDemands.put(co.getUniqueId(), courseStudents);
+							}
+							courseStudents.add(student);
+							studentCourses.add(new WeightedCourseOffering(co, student.getWeight()));
+						}
+					}					
+				}
+			}
+			
+			// Update loaded curricula
+			Set<String> majors = iLoadedCurricula.get(iClassification.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation() + ":" + iClassification.getAcademicClassification().getCode());
+			if (majors == null) {
+				majors = new HashSet<String>();
+				iLoadedCurricula.put(iClassification.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation() + ":" + iClassification.getAcademicClassification().getCode(), majors);
+			}
+			if (iClassification.getCurriculum().getMajors().isEmpty()) {
+				majors.add("");
+			} else {
+				for (PosMajor mj: iClassification.getCurriculum().getMajors())
+					majors.add(mj.getCode());
 			}
 		}		
 		
