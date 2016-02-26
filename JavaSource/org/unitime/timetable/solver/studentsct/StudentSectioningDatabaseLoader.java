@@ -150,6 +150,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iCheckEnabledForScheduling = true;
 	private boolean iLoadRequestGroups = false;
 	private Query iStudentQuery = null;
+	private boolean iNoUnlimitedGroupReservations = false;
     
     private Progress iProgress = null;
     
@@ -175,6 +176,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iCheckEnabledForScheduling = model.getProperties().getPropertyBoolean("Load.CheckEnabledForScheduling", iCheckEnabledForScheduling);
         iLoadRequestGroups = model.getProperties().getPropertyBoolean("Load.RequestGroups", iLoadRequestGroups);
         iDatePatternFormat = ApplicationProperty.DatePatternFormatUseDates.value();
+        iNoUnlimitedGroupReservations = model.getProperties().getPropertyBoolean("Load.NoUnlimitedGroupReservations", iNoUnlimitedGroupReservations);
         
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -472,7 +474,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		List<Long> studentIds = new ArrayList<Long>();
         		for (org.unitime.timetable.model.Student s: ((StudentGroupReservation)reservation).getGroup().getStudents())
         			studentIds.add(s.getUniqueId());
-        		r = new GroupReservation(reservation.getUniqueId(), (reservation.getLimit() == null ? -1.0 : reservation.getLimit()),
+        		r = new GroupReservation(reservation.getUniqueId(),
+        				(reservation.getLimit() == null ? iNoUnlimitedGroupReservations ? studentIds.size() : -1.0 : reservation.getLimit()),
         				offering, studentIds);
         		r.setPriority(ApplicationProperty.ReservationPriorityGroup.intValue());
         		r.setAllowOverlap(ApplicationProperty.ReservationAllowOverlapGroup.isTrue());
@@ -575,7 +578,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		Reservation reservation = null;
     		for (Reservation r: course.getOffering().getReservations()) {
     			// Skip reservations with no space that can be skipped
-    			if (r.getLimit() >= 0.0 && r.getLimit() < 1.0 && !r.mustBeUsed()) continue;
+    			if (r.getReservationLimit() >= 0.0 && r.getReservationLimit() < 1.0 && !r.mustBeUsed()) continue;
     			
     			// Check applicability
     			boolean applicable = false;
