@@ -1183,7 +1183,7 @@ public class SectioningStatusPage extends Composite {
 			hGroup = new UniTimeTableHeader(MESSAGES.colGroup());
 			//hGroup.setWidth("100px");
 			header.add(hGroup);
-			addSortOperation(hMajor, StudentComparator.SortBy.GROUP, MESSAGES.colGroup());
+			addSortOperation(hGroup, StudentComparator.SortBy.GROUP, MESSAGES.colGroup());
 		}
 		
 		UniTimeTableHeader hAcmd = null;
@@ -1191,7 +1191,7 @@ public class SectioningStatusPage extends Composite {
 			hAcmd = new UniTimeTableHeader(MESSAGES.colAccommodation());
 			//hGroup.setWidth("100px");
 			header.add(hAcmd);
-			addSortOperation(hMajor, StudentComparator.SortBy.ACCOMODATION, MESSAGES.colAccommodation());
+			addSortOperation(hAcmd, StudentComparator.SortBy.ACCOMODATION, MESSAGES.colAccommodation());
 		}
 		
 		iStatusColumn = header.size() - 1;
