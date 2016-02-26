@@ -413,7 +413,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				for (XEInterface.Registration reg: original.registrations) {
 					if (reg.isRegistered()) {
 						registered.put(reg.courseReferenceNumber, reg);
-						if (!reg.canDrop(true))
+						if (!reg.canDrop(admin))
 							nodrop.add(reg.courseReferenceNumber);
 					} else {
 						notregistered.add(reg.courseReferenceNumber);
