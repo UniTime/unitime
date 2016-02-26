@@ -208,6 +208,7 @@ public class SessionRestore implements SessionRestoreInterface {
 		PersistentClass mapping = _RootDAO.getConfiguration().getClassMapping(table.getName());
 		Map<String, Integer> lengths = new HashMap<String, Integer>();
 		for (String property: metadata.getPropertyNames()) {
+			if ("org.unitime.timetable.model.CurriculumClassification.students".equals(metadata.getEntityName() + "." + property)) continue;
 			Type type = metadata.getPropertyType(property);
 			if (type instanceof StringType)
 				for (Iterator<?> i = mapping.getProperty(property).getColumnIterator(); i.hasNext(); ) {
@@ -548,12 +549,17 @@ public class SessionRestore implements SessionRestoreInterface {
 			}
 			if (getObject() instanceof SolverInfo) {
 				SolverInfo info = (SolverInfo)getObject();
-				TableData.Element element = getElement("value");
-				try {
-					Document value = new SAXReader().read(new StringReader(element.getValue(0)));
-					info.setValue(value);
-				} catch (DocumentException e) {
-					e.printStackTrace();
+				TableData.Element element = getElement("data");
+				if (element != null) { // use byte[] type
+					info.setData(element.getValueBytes(0).toByteArray());
+				} else { // fall back to XML
+					element = getElement("value");
+					try {
+						Document value = new SAXReader().read(new StringReader(element.getValue(0)));
+						info.setValue(value);
+					} catch (DocumentException e) {
+						sLog.warn("Failed to parse solver info for " + getId() + ": " + e.getMessage());
+					}
 				}
 			}
 			if (getObject() instanceof Department) {
