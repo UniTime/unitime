@@ -68,8 +68,7 @@ public class RoomsExportPDF extends RoomsExporter {
 
 	@Override
 	protected void print(ExportHelper helper, List<RoomDetailInterface> rooms, ExportContext context) throws IOException {
-		if (checkRights(helper))
-			helper.getSessionContext().hasPermission(Right.RoomsExportPdf);
+		helper.getSessionContext().checkPermission(Right.RoomsExportPdf);
 		
 		List<Column> columns = new ArrayList<Column>();
 		for (RoomsColumn column: RoomsColumn.values()) {

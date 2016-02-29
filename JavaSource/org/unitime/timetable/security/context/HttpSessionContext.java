@@ -34,6 +34,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 /**
  * @author Tomas Muller
@@ -45,6 +46,11 @@ public class HttpSessionContext implements SessionContext {
 	PermissionCheck unitimePermissionCheck;
 
 	public HttpSessionContext() {
+	}
+	
+	public HttpSessionContext(HttpSession session) {
+		iSession = session;
+		unitimePermissionCheck = (PermissionCheck)SpringApplicationContextHolder.getBean("unitimePermissionCheck");
 	}
 
 	@Override

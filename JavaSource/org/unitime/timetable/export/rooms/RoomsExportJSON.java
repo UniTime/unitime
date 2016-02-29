@@ -52,8 +52,7 @@ public class RoomsExportJSON extends RoomsExporter {
 	
 	@Override
 	protected void print(ExportHelper helper, List<RoomDetailInterface> rooms, ExportContext context) throws IOException {
-		if (checkRights(helper))
-			helper.getSessionContext().hasPermission(Right.RoomsExportJson);
+		helper.getSessionContext().checkPermission(Right.RoomsExportJson);
 		
 		helper.setup("application/json", reference(), false);
 		

@@ -347,11 +347,6 @@ public class EventsExportEventsToICal extends EventsExporter {
         return true;
 	}
 	
-	@Override
-	protected boolean checkRights() {
-		return false;
-	}
-	
 	public class ICalendarMeeting implements Comparable<ICalendarMeeting>{
 		private DateTime iStart, iEnd;
 		private String iLocation;

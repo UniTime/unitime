@@ -41,9 +41,6 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomFeaturesColumn;
 import org.unitime.timetable.gwt.shared.RoomInterface.SearchRoomFeaturesRequest;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.UserAuthority;
-import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.server.rooms.RoomFeaturesBackend;
 
 /**
@@ -79,24 +76,10 @@ public class RoomFeaturesExportCSV implements Exporter {
     	}
 		request.getFilter().setSessionId(sessionId);
 		
-		UserContext u = helper.getSessionContext().getUser();
-    	String user = helper.getParameter("user");
-    	if (u == null && user != null) {
-    		u = new UniTimeUserContext(user, null, null, null);
-    		String role = helper.getParameter("role");
-    		if (role != null) {
-    			for (UserAuthority a: u.getAuthorities()) {
-    				if (a.getAcademicSession() != null && a.getAcademicSession().getQualifierId().equals(sessionId) && role.equals(a.getRole())) {
-    					u.setCurrentAuthority(a); break;
-    				}
-    			}
-    		}
-    	}
-    	EventContext context = new EventContext(helper.getSessionContext(), u, sessionId);
-    	if (u != null && u.getExternalUserId() != null)
-    		request.getFilter().setOption("user", u.getExternalUserId());
-
-    	GwtRpcResponseList<FeatureInterface> Features = new RoomFeaturesBackend().execute(request, context);
+		EventContext context = new EventContext(helper.getSessionContext(), helper.getSessionContext().getUser(), sessionId);
+    	if (context.isAuthenticated() && context.getUser().getExternalUserId() != null)
+    		request.getFilter().setOption("user", context.getUser().getExternalUserId());
+    	GwtRpcResponseList<FeatureInterface> features = new RoomFeaturesBackend().execute(request, context);
     	
     	int dm = 0;
     	if (helper.getParameter("dm") != null)
@@ -113,10 +96,10 @@ public class RoomFeaturesExportCSV implements Exporter {
     			}
     		} catch (Exception e) {}
     		if (cmp != null)
-    			Collections.sort(Features, cmp);
+    			Collections.sort(features, cmp);
     	}
     	
-    	print(helper, Features, dm, request.getFilter().getOption("department"));
+    	print(helper, features, dm, request.getFilter().getOption("department"));
 	}
 	
 	protected void print(ExportHelper helper, List<FeatureInterface> features, int dm, String department) throws IOException {

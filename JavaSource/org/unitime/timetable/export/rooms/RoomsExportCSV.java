@@ -41,8 +41,7 @@ public class RoomsExportCSV extends RoomsExporter {
 	
 	@Override
 	protected void print(ExportHelper helper, List<RoomDetailInterface> rooms, ExportContext context) throws IOException {
-		if (checkRights(helper))
-			helper.getSessionContext().hasPermission(Right.RoomsExportCsv);
+		helper.getSessionContext().hasPermission(Right.RoomsExportCsv);
 		
 		List<Column> columns = new ArrayList<Column>();
 		for (RoomsColumn column: RoomsColumn.values()) {

@@ -41,9 +41,6 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomGroupsColumn;
 import org.unitime.timetable.gwt.shared.RoomInterface.SearchRoomGroupsRequest;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.UserAuthority;
-import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.server.rooms.RoomGroupsBackend;
 
 /**
@@ -79,23 +76,9 @@ public class RoomGroupsExportCSV implements Exporter {
     	}
 		request.getFilter().setSessionId(sessionId);
 		
-		UserContext u = helper.getSessionContext().getUser();
-    	String user = helper.getParameter("user");
-    	if (u == null && user != null) {
-    		u = new UniTimeUserContext(user, null, null, null);
-    		String role = helper.getParameter("role");
-    		if (role != null) {
-    			for (UserAuthority a: u.getAuthorities()) {
-    				if (a.getAcademicSession() != null && a.getAcademicSession().getQualifierId().equals(sessionId) && role.equals(a.getRole())) {
-    					u.setCurrentAuthority(a); break;
-    				}
-    			}
-    		}
-    	}
-    	EventContext context = new EventContext(helper.getSessionContext(), u, sessionId);
-    	if (u != null && u.getExternalUserId() != null)
-    		request.getFilter().setOption("user", u.getExternalUserId());
-
+    	EventContext context = new EventContext(helper.getSessionContext(), helper.getSessionContext().getUser(), sessionId);
+    	if (context.isAuthenticated() && context.getUser().getExternalUserId() != null)
+    		request.getFilter().setOption("user", context.getUser().getExternalUserId());
     	GwtRpcResponseList<GroupInterface> groups = new RoomGroupsBackend().execute(request, context);
     	
     	int dm = 0;

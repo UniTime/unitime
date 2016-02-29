@@ -47,12 +47,8 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
-import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.UserAuthority;
-import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.security.rights.Right;
 
 /**
@@ -103,28 +99,10 @@ public abstract class EventsExporter implements Exporter {
     	}
 		request.setRoomFilter(roomFilter);
     	
-    	UserContext u = helper.getSessionContext().getUser();
-    	String user = helper.getParameter("user");
-    	if (u == null && user != null && !checkRights()) {
-    		u = new UniTimeUserContext(user, null, null, null);
-    		String role = helper.getParameter("role");
-    		if (role != null) {
-    			for (UserAuthority a: u.getAuthorities()) {
-    				if (a.getAcademicSession() != null && a.getAcademicSession().getQualifierId().equals(sessionId) && role.equals(a.getRole())) {
-    					u.setCurrentAuthority(a); break;
-    				}
-    			}
-    		}
-    	}
-    	EventContext context = new EventContext(helper.getSessionContext(), u, sessionId);
-
-    	if (checkRights()) {
-    		context.checkPermission(Right.Events);
-    		if (request.getResourceType() == ResourceType.PERSON && !context.getUser().getExternalUserId().equals(request.getResourceExternalId()))
-    			context.checkPermission(Right.EventLookupSchedule);
-    	} else if (!helper.isRequestEncoded() && request.getResourceType() == ResourceType.PERSON) {
-    		throw new PageAccessException("Request parameters must be encrypted.");
-    	}
+    	EventContext context = new EventContext(helper.getSessionContext(), helper.getSessionContext().getUser(), sessionId);
+		context.checkPermission(Right.Events);
+		if (request.getResourceType() == ResourceType.PERSON && !context.getUser().getExternalUserId().equals(request.getResourceExternalId()))
+			context.checkPermission(Right.EventLookupSchedule);
     	
 		if (request.getResourceType() != ResourceType.ROOM && request.getResourceType() != ResourceType.PERSON && request.getResourceId() == null) {
 			String name = helper.getParameter("name");
@@ -171,10 +149,6 @@ public abstract class EventsExporter implements Exporter {
 	}
 	
 	protected abstract void print(ExportHelper helper, EventLookupRpcRequest request, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException;
-	
-	protected boolean checkRights() {
-		return true;
-	}
 	
 	protected void hideColumns(Printer out, List<EventInterface> events, int eventCookieFlags) {
 		for (EventFlag flag: EventFlag.values()) {
