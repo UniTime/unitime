@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<scripts created="Mon Feb 29 10:00 CEST 2016">
+<script name="Curricula: Create missing areas, majors and classifications" permission="Major Edit" engine="python" created="Mon Feb 29 03:11:02 EST 2016">
+  <description><![CDATA[Create all missing academic areas, majors, and classifications that are used in the last-like student course demands but not present in the selected academic session.]]></description>
+  <body><![CDATA[from org.unitime.timetable.model import AcademicArea, AcademicClassification, PosMajor
+from java.util import HashSet
+
+def getArea(area):
+    return hibSession.createQuery(
+        "from AcademicArea a where a.session.uniqueId = :sessionId and a.academicAreaAbbreviation = :area"
+        ).setLong("sessionId", session.getUniqueId()).setString("area", area).uniqueResult()
+
+def getMajor(area, major):
+    return hibSession.createQuery(
+        "select m from PosMajor m inner join m.academicAreas a where m.session.uniqueId = :sessionId and a.academicAreaAbbreviation = :area and m.code = :major"
+        ).setLong("sessionId", session.getUniqueId()).setString("area", area).setString("major", major).uniqueResult()
+
+def getClassification(clasf):
+    return hibSession.createQuery(
+        "from AcademicClassification c where c.session.uniqueId = :sessionId and c.code = :clasf"
+        ).setLong("sessionId", session.getUniqueId()).setString("clasf", clasf).uniqueResult()
+        
+areas = hibSession.createQuery(
+    "select distinct ac.academicArea from LastLikeCourseDemand d inner join d.student.academicAreaClassifications ac where d.subjectArea.session = :sessionId"
+    ).setLong("sessionId", session.getUniqueId()).list()
+
+for prevArea in areas:
+    area = getArea(prevArea.getAcademicAreaAbbreviation())
+    if not area:
+        log.info("Creating academic area %s" % prevArea.getAcademicAreaAbbreviation())
+        area = AcademicArea()
+        area.setSession(session)
+        area.setAcademicAreaAbbreviation(prevArea.getAcademicAreaAbbreviation())
+        area.setExternalUniqueId(prevArea.getExternalUniqueId())
+        area.setTitle(prevArea.getTitle())
+        area.setPosMajors(HashSet())
+        area.setPosMinors(HashSet())
+        hibSession.save(area)
+    
+majors = hibSession.createQuery(
+    "select distinct m from LastLikeCourseDemand d inner join d.student.posMajors m where d.subjectArea.session = :sessionId"
+    ).setLong("sessionId", session.getUniqueId()).list()
+
+for prevMajor in majors:
+    for prevArea in prevMajor.getAcademicAreas():
+        major = getMajor(prevArea.getAcademicAreaAbbreviation(), prevMajor.getCode())
+        if not major:
+            log.info("Creating major %s / %s" % (prevArea.getAcademicAreaAbbreviation(), prevMajor.getCode()))
+            major = PosMajor()
+            major.setSession(session)
+            major.setCode(prevMajor.getCode())
+            major.setExternalUniqueId(prevMajor.getExternalUniqueId())
+            major.setName(prevMajor.getName())
+            major.setAcademicAreas(HashSet())
+            major.getAcademicAreas().add(getArea(prevArea.getAcademicAreaAbbreviation()))
+            hibSession.save(major)
+
+clasfs = hibSession.createQuery(
+    "select distinct ac.academicClassification from LastLikeCourseDemand d inner join d.student.academicAreaClassifications ac where d.subjectArea.session = :sessionId"
+    ).setLong("sessionId", session.getUniqueId()).list()
+
+for prevClasf in clasfs:
+    clasf = getClassification(prevClasf.getCode())
+    if not clasf:
+        log.info("Creating classification %s" % prevClasf.getCode())
+        clasf = AcademicClassification()
+        clasf.setSession(session)
+        clasf.setCode(prevClasf.getCode())
+        clasf.setName(prevClasf.getName())
+        clasf.setExternalUniqueId(prevClasf.getExternalUniqueId())
+        hibSession.save(clasf)]]></body>
+</script>
+<script name="Curricula: Import Course Projections" permission="Curriculum Projection Rules Edit" engine="python" created="Mon Feb 29 03:11:13 EST 2016">
+  <description><![CDATA[This script imports course projections from a CSV file in the following format:<ol>
+<li>The file must contain a header line with the classification codes, e.g., Area,Major,01,02,03,...
+<li>Each line contains an academic area, a major, and a number of students for each applicable classification.
+<li>If the major cell is empty, the projection is for the whole academic area
+<li>There can be an optional column named Total at the end of the table which (if present) gets ignored.
+<li>If the Total column is present and there is only a number in the Total column, the projections are set proportionally and to meet the total.
+</ol>
+Example:<blockqoute><pre>
+Area ,Major, 01, 03, 05, 07,Total
+A    ,     ,100,100,100,100,  400
+B    ,   M1,100, 50,   ,   ,  150
+B    ,   M2,   , 50,100 ,   , 150
+C    ,     ,   ,   ,   ,   ,  200
+Total,     ,200,200,200,100,  900
+</pre></blockqoute>]]></description>
+  <parameter name="file" label="CSV File" type="file"/>
+  <body><![CDATA[import csv
+from org.unitime.timetable.model import CurriculumProjectionRule
+
+def loadAreaMajorClasf2ll():
+    area2major2clasf2ll = {}
+    counts = hibSession.createQuery(
+        "select a.academicAreaAbbreviation, m.code, f.code, count(distinct s) from LastLikeCourseDemand x inner join x.student s " +
+        "inner join s.academicAreaClassifications ac inner join ac.academicClassification f inner join ac.academicArea a " +
+        "inner join s.posMajors m where x.subjectArea.session.uniqueId = :sessionId " +
+        "group by a.academicAreaAbbreviation, m.code, f.code"
+        ).setLong("sessionId", session.getUniqueId()).list()
+    for line in counts:
+        area = line[0]
+        major = line[1]
+        clasf = line[2]
+        students = int(line[3])
+        if area not in area2major2clasf2ll: area2major2clasf2ll[area] = {}
+        majorClasf2ll = area2major2clasf2ll[area]
+        if major not in majorClasf2ll: majorClasf2ll[major] = {}
+        clasf2ll = majorClasf2ll[major]
+        clasf2ll[clasf] = students
+    return area2major2clasf2ll
+
+def countLastLike(area, major, area2major2clasf2ll):
+    if not area in area2major2clasf2ll: return 0
+    majorClasf2ll = area2major2clasf2ll[area]
+    if not major:
+        sum = {}
+        for m in majorClasf2ll.keys():
+            clasf2ll = majorClasf2ll[m]
+            for clasf in clasf2ll.keys():
+                if clasf not in sum:
+                    sum[clasf] = clasf2ll[clasf]
+                else:
+                    sum[clasf] = sum[clasf] + clasf2ll[clasf]
+        return sum
+    else:
+        if major in majorClasf2ll:
+            return majorClasf2ll[major]
+    return {}
+
+def getArea(area):
+    return hibSession.createQuery(
+        "from AcademicArea a where a.session.uniqueId = :sessionId and a.academicAreaAbbreviation = :area"
+        ).setLong("sessionId", session.getUniqueId()).setString("area", area).uniqueResult()
+
+def getMajor(area, major):
+    return hibSession.createQuery(
+        "select m from PosMajor m inner join m.academicAreas a where m.session.uniqueId = :sessionId and a.academicAreaAbbreviation = :area and m.code = :major"
+        ).setLong("sessionId", session.getUniqueId()).setString("area", area).setString("major", major).uniqueResult()
+
+def getClassification(clasf):
+    return hibSession.createQuery(
+        "from AcademicClassification c where c.session.uniqueId = :sessionId and c.code = :clasf"
+        ).setLong("sessionId", session.getUniqueId()).setString("clasf", clasf).uniqueResult()
+
+def process(header, line, area2major2clasf2ll):
+    area = line[0].strip()
+    aa = getArea(area)
+    if not aa:
+        log.warn('Academic area %s does not exist.' % area)
+        return
+    
+    major = line[1].strip()
+    am = None
+    if major:
+        am = getMajor(area, major)
+        if not am:
+            log.warn('Major %s does not exist for academic area %s.' % (major, area))
+            return
+    
+    last = len(header)
+    clasf2last = countLastLike(area, major, area2major2clasf2ll)
+    totalProj = 0
+    totalLast = 0
+    doneProj = 0
+    doneLast = 0 
+    rules = {}
+    
+    for i in xrange(2, len(line)):
+        if i >= len(header): break
+        if not line[i] or not line[i].strip(): continue
+        clasf = header[i].strip()
+        if clasf in ('Total', 'Totals'):
+            totalProj = int(line[i].strip())
+            continue
+        proj = int(line[i].strip())
+        if clasf not in clasf2last:
+            if proj > 0:
+                if major:
+                    log.warn('%s/%s does not have any last-like students in %s.' % (area, major, clasf))
+                else:
+                    log.warn('%s does not have any last-like students in %s.' % (area, clasf))
+            continue
+        ac = getClassification(clasf)
+        if not ac:
+            log.warn('Academic classification %s does not exist.' % clasf)
+            return
+        last = clasf2last[clasf]
+        if last > 0:
+            rule = CurriculumProjectionRule()
+            rule.setAcademicArea(aa)
+            rule.setMajor(am)
+            rule.setAcademicClassification(ac)
+            percentage = float(proj) / float(last)
+            rule.setProjection(percentage)
+            hibSession.save(rule)
+            log.info('%s, %s, %s, %d, %d, %1.2f' % (area, major, clasf, last, proj, percentage))
+            doneLast = doneLast + last
+            doneProj = doneProj + proj
+            rules[clasf] = proj
+            
+    for clasf in clasf2last.keys():
+        totalLast = totalLast + clasf2last[clasf]
+    
+    percentage = 0.0
+    if totalProj > doneProj and totalLast > doneLast:
+        percentage = float(totalProj - doneProj) / (totalLast - doneLast)
+    
+    for clasf in clasf2last.keys():
+        if clasf not in rules:
+            ac = getClassification(clasf)
+            if not ac:
+                log.warn('Academic classification %s does not exist.' % clasf)
+            rule = CurriculumProjectionRule()
+            rule.setAcademicArea(aa)
+            rule.setMajor(am)
+            rule.setAcademicClassification(ac)
+            rule.setProjection(percentage)
+            hibSession.save(rule)
+            log.warn('%s, %s, %s, %d, N/A, %1.2f' % (area, major, clasf, last, percentage))
+
+def execute():
+    offering = hibSession.createQuery(
+        "delete CurriculumProjectionRule where academicArea.uniqueId in (select a.uniqueId from AcademicArea a where a.session.uniqueId = :sessionId)"
+        ).setLong("sessionId", session.getUniqueId()).executeUpdate()
+        
+    area2major2clasf2ll = loadAreaMajorClasf2ll()
+    
+    lines = csv.reader(file.getString('utf-8').split('\n'), delimiter=",", quotechar='"')
+    header = None
+    for line in lines:
+        if not header:
+            header = line
+            continue
+        if line[0].strip() in ('Total', 'Totals'):
+            continue
+        process(header, line, area2major2clasf2ll)
+
+if not file:
+    log.error("No input file was provided.")
+else:
+    execute()]]></body>
+</script>
+</scripts>
