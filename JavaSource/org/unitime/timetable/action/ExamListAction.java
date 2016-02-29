@@ -282,22 +282,22 @@ public class ExamListAction extends Action {
                 for (Iterator j=exam.effectivePreferences(RoomPref.class).iterator();j.hasNext();) {
                     Preference pref = (Preference)j.next();
                     if (roomPref.length()>0) roomPref+=nl;
-                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") + PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") + pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText();
                 }
                 for (Iterator j=exam.effectivePreferences(BuildingPref.class).iterator();j.hasNext();) {
                     Preference pref = (Preference)j.next();
                     if (roomPref.length()>0) roomPref+=nl;
-                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText();
                 }
                 for (Iterator j=exam.effectivePreferences(RoomFeaturePref.class).iterator();j.hasNext();) {
                     Preference pref = (Preference)j.next();
                     if (roomPref.length()>0) roomPref+=nl;
-                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText();
                 }
                 for (Iterator j=exam.effectivePreferences(RoomGroupPref.class).iterator();j.hasNext();) {
                     Preference pref = (Preference)j.next();
                     if (roomPref.length()>0) roomPref+=nl;
-                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText();
                 }
                 if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
                     MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType());
@@ -308,7 +308,7 @@ public class ExamListAction extends Action {
 						for (Iterator j=exam.effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
 	                        Preference pref = (Preference)j.next();
 	                        if (perPref.length()>0) perPref+=nl;
-	                        perPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+	                        perPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText();
 						}
                 	} else {
                         PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea, exam.getExamType().getUniqueId());
@@ -322,7 +322,7 @@ public class ExamListAction extends Action {
     						for (Iterator j=exam.effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
     	                        Preference pref = (Preference)j.next();
     	                        if (perPref.length()>0) perPref+=nl;
-    	                        perPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+    	                        perPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText();
     						}
                         }
                 	}
@@ -330,7 +330,7 @@ public class ExamListAction extends Action {
                 for (Iterator j=exam.effectivePreferences(DistributionPref.class).iterator();j.hasNext();) {
                     DistributionPref pref = (DistributionPref)j.next();
                     if (distPref.length()>0) distPref+=nl;
-                    distPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(true, true, " (", ", ",")").replaceAll("&lt;","<").replaceAll("&gt;",">");
+                    distPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText(true, true, " (", ", ",")").replaceAll("&lt;","<").replaceAll("&gt;",">");
                 }
             }
             

@@ -521,6 +521,9 @@ public enum Right {
 	InstructionalMethods,
 	InstructionalMethodEdit,
 	
+	PreferenceLevels,
+	PreferenceLevelEdit,
+	
 	/** Administration: Defaults */
 	
 	ApplicationConfig,

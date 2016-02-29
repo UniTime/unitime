@@ -195,7 +195,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		}
 		
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
-			response.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), true));
+			response.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true));
 		}
 
 		for (AttachementType type: AttachementType.listTypes(AttachementType.VisibilityFlag.ROOM_PICTURE_TYPE)) {

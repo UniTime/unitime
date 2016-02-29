@@ -160,7 +160,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		department.setExtLabel(d.getExternalMgrLabel());
 		department.setTitle(d.getLabel());
 		if (pref != null && !PreferenceLevel.sNeutral.equals(pref.getPrefProlog()))
-			department.setPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2color(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), false));
+			department.setPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2color(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), false));
 		if (location != null)
 			department.setColor("#" + d.getRoomSharingColor(null));
 		return department;

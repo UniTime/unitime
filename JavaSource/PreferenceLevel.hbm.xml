@@ -23,9 +23,8 @@
 <hibernate-mapping package="org.unitime.timetable.model">
     <class
         name="PreferenceLevel"
-        table="preference_level"
-        mutable="false">
-        <cache usage="read-only"/>
+        table="preference_level">
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -56,6 +55,12 @@
             not-null="false"
             length="20"/>
 
+        <property
+            name="prefAbbv"
+            column="pref_abbv"
+            type="java.lang.String"
+            not-null="false"
+            length="10"/>
     </class>
 
 </hibernate-mapping>

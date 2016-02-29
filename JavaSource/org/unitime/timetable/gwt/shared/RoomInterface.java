@@ -1528,14 +1528,14 @@ public class RoomInterface implements IsSerializable {
 	}
 	
 	public static class PreferenceInterface implements IsSerializable {
-		private String iCode, iName;
+		private String iCode, iName, iAbbv;
 		private String iColor;
 		private Long iId;
 		private boolean iEditable;
 		
 		public PreferenceInterface() {}
-		public PreferenceInterface(Long id, String color, String code, String name, boolean editable) {
-			iId = id; iColor = color; iCode = code; iName = name; iEditable = editable;
+		public PreferenceInterface(Long id, String color, String code, String name, String abbv, boolean editable) {
+			iId = id; iColor = color; iCode = code; iName = name; iAbbv = abbv; iEditable = editable;
 		}
 		
 		public String getColor() { return iColor; }
@@ -1547,6 +1547,9 @@ public class RoomInterface implements IsSerializable {
 		public String getName() { return iName; }
 		public void setName(String name) { iName = name; }
 		
+		public String getAbbv() { return iAbbv; }
+		public void setAbbv(String abbv) { iAbbv = abbv; }
+
 		public Long getId() { return iId; }
 		public void setId(Long id) { iId = id; }
 		

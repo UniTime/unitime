@@ -281,22 +281,22 @@ public class PdfWorksheet {
             boolean allRoomReq = true;
             for (Iterator i=clazz.effectivePreferences(BuildingPref.class).iterator();i.hasNext();) {
                 Preference pref = (Preference)i.next();
-                roomPrefs.add(PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText());
+                roomPrefs.add(pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText());
                 allRoomReq=false;
             }
             for (Iterator i=clazz.effectivePreferences(RoomPref.class).iterator();i.hasNext();) {
                 Preference pref = (Preference)i.next();
-                roomPrefs.add(PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText());
+                roomPrefs.add(pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText());
                 if (!PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())) allRoomReq=false;
             }
             for (Iterator i=clazz.effectivePreferences(RoomFeaturePref.class).iterator();i.hasNext();) {
                 Preference pref = (Preference)i.next();
-                roomPrefs.add(PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText());
+                roomPrefs.add(pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText());
                 allRoomReq=false;
             }
             for (Iterator i=clazz.effectivePreferences(RoomGroupPref.class).iterator();i.hasNext();) {
                 Preference pref = (Preference)i.next();
-                roomPrefs.add(PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText());
+                roomPrefs.add(pref.getPrefLevel().getAbbreviation()+" "+pref.preferenceText());
                 allRoomReq=false;
             }
             if (allRoomReq) {

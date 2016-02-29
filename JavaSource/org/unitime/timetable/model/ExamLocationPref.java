@@ -47,7 +47,7 @@ public class ExamLocationPref extends BaseExamLocationPref implements Comparable
 	}
 	
 	public String toString() {
-	    return PreferenceLevel.prolog2abbv(getPrefLevel().getPrefProlog())+" "+getExamPeriod().getAbbreviation();
+	    return getPrefLevel().getAbbreviation()+" "+getExamPeriod().getAbbreviation();
 	}
 	
 }

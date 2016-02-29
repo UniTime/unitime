@@ -56,8 +56,6 @@ public class PreferenceLevel extends BasePreferenceLevel {
     /** preference to background color conversion */
     private static Hashtable sBgPref2color = null;
     
-    private static Hashtable sPref2abbv = null;
-
     public static String sProhibited = Constants.sPreferenceProhibited;
     public static String sRequired = Constants.sPreferenceRequired;
     public static String sStronglyDiscouraged = Constants.sPreferenceStronglyDiscouraged;
@@ -123,15 +121,6 @@ public class PreferenceLevel extends BasePreferenceLevel {
         sHexPref2color.put(sStronglyDiscouraged,"#f06428");
         sHexPref2color.put(sProhibited,"#c81e14");
         sHexPref2color.put(sNotAvailable,"#696969");
-        sPref2abbv = new Hashtable();
-        sPref2abbv.put(sRequired,"Req");
-        sPref2abbv.put(sStronglyPreferred,"StrPref");
-        sPref2abbv.put(sPreferred,"Pref"); //96f028
-        sPref2abbv.put(sNeutral,"");
-        sPref2abbv.put(sDiscouraged,"Disc"); //f0c828
-        sPref2abbv.put(sStronglyDiscouraged,"StrDisc");
-        sPref2abbv.put(sProhibited,"Proh");
-        sPref2abbv.put(sNotAvailable,"N/A");
     }
     
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -308,10 +297,8 @@ public class PreferenceLevel extends BasePreferenceLevel {
 	}
 
 	public static String prolog2abbv(String prologPref) {
-    	String ret = (String)sPref2abbv.get(prologPref);
-    	if (ret==null)
-    		ret = (String)sPref2abbv.get(sNeutral);
-    	return ret;
+		PreferenceLevel pref = getPreferenceLevel(prologPref);
+		return (pref == null ? null : pref.getPrefAbbv() == null ? "" : pref.getPrefAbbv());
 	}
 
 	public static String prolog2colorNohex(String prologPref) {
@@ -393,6 +380,9 @@ public class PreferenceLevel extends BasePreferenceLevel {
 	public boolean isHard() {
 		return sProhibited.equals(getPrefProlog()) || sRequired.equals(getPrefProlog());
 	}
-	
+
+	public String getAbbreviation() {
+		return getPrefAbbv() == null ? "" : getPrefAbbv();
+	}
     
 }

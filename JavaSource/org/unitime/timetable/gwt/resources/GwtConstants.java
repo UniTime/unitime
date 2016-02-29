@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.gwt.resources;
 
-import java.util.Map;
-
 /**
  * @author Tomas Muller
  */
@@ -334,16 +332,4 @@ public interface GwtConstants extends Constants {
 		
 	})
 	String[] reservationModeLabel();
-	
-	@DefaultStringMapValue({
-		"R", "Req",
-		"-2", "StrPref",
-		"-1", "Pref",
-		"0", "",
-		"1", "Disc",
-		"2", "StrDisc",
-		"P", "Proh",
-		"N", "N/A",
-	})
-	Map<String, String> preferenceAbbreviation();
 }

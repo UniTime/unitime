@@ -10689,4 +10689,26 @@
 		<sql>update %SCHEMA%.solver_parameter_def set default_value='GD' where name like 'General.SearchAlgorithm'</sql>
 		<sql>update %SCHEMA%.solver_parameter_def set type='enum(IFS,GD,SA,Default,Experimental)' where name like 'General.SearchAlgorithm'</sql>
 	</update>
+	<update version="158" date="29-Feb-2016" comment="Preference abbreviations">
+		<plsql>alter table %SCHEMA%.preference_level add pref_abbv varchar2(10 char)</plsql>
+		<mysql>alter table %SCHEMA%.preference_level add pref_abbv varchar(10)</mysql>
+ 		<sql>update %SCHEMA%.preference_level set pref_abbv='Req' where pref_prolog='R'</sql>
+		<sql>update %SCHEMA%.preference_level set pref_abbv='StrPref' where pref_prolog='-2'</sql>
+		<sql>update %SCHEMA%.preference_level set pref_abbv='Pref' where pref_prolog='-1'</sql>
+		<sql>update %SCHEMA%.preference_level set pref_abbv='' where pref_prolog='0'</sql>
+		<sql>update %SCHEMA%.preference_level set pref_abbv='Disc' where pref_prolog='1'</sql>
+		<sql>update %SCHEMA%.preference_level set pref_abbv='StrDisc' where pref_prolog='2'</sql>
+		<sql>update %SCHEMA%.preference_level set pref_abbv='Proh' where pref_prolog='P'</sql>
+		<sql>update %SCHEMA%.preference_level set pref_abbv='N/A' where pref_prolog='N'</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'PreferenceLevels'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'AttachementTypes'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'PreferenceLevelEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'AttachementTypeEdit'
+		</sql>
+	</update>
 </dbupdate>

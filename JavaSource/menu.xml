@@ -837,6 +837,12 @@
 					<hasPermission name="AttachementTypes"/>
 				</condition>
 			</item>
+			<item name="Preference Levels" page="admin" type="gwt">
+				<parameter name="type">preferences</parameter>
+				<condition>
+					<hasPermission name="PreferenceLevels"/>
+				</condition>
+			</item>
 			<separator/>
 			<item name="Consent Types" page="admin" type="gwt">
 				<parameter name="type">consent</parameter>

@@ -340,25 +340,25 @@ public class InstructorListBuilder {
 			for (Iterator i=di.effectivePreferences(RoomPref.class).iterator();i.hasNext();) {
 				RoomPref rp = (RoomPref)i.next();
 				if (rmPref.length()>0) rmPref += "\n";
-				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(rp.getPrefLevel().getPrefProlog())+" "+rp.getRoom().getLabel();
+				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()) + " " + rp.getPrefLevel().getAbbreviation()+" "+rp.getRoom().getLabel();
 			}
 			
 			for (Iterator i=di.effectivePreferences(BuildingPref.class).iterator();i.hasNext();) {
 				BuildingPref bp = (BuildingPref)i.next();
 				if (rmPref.length()>0) rmPref += "\n";
-				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(bp.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(bp.getPrefLevel().getPrefProlog())+" "+bp.getBuilding().getAbbreviation();
+				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(bp.getPrefLevel().getPrefProlog()) + " " + bp.getPrefLevel().getAbbreviation()+" "+bp.getBuilding().getAbbreviation();
 			}
 			
 			for (Iterator i=di.effectivePreferences(RoomFeaturePref.class).iterator();i.hasNext();) {
 				RoomFeaturePref rfp = (RoomFeaturePref)i.next();
 				if (rmPref.length()>0) rmPref += "\n";
-				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(rfp.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(rfp.getPrefLevel().getPrefProlog())+" "+rfp.getRoomFeature().getLabel();
+				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(rfp.getPrefLevel().getPrefProlog()) + " " + rfp.getPrefLevel().getAbbreviation()+" "+rfp.getRoomFeature().getLabel();
 			}
 
 			for (Iterator i=di.effectivePreferences(RoomGroupPref.class).iterator();i.hasNext();) {
 				RoomGroupPref rgp = (RoomGroupPref)i.next();
 				if (rmPref.length()>0) rmPref += "\n";
-				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(rgp.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(rgp.getPrefLevel().getPrefProlog())+" "+rgp.getRoomGroup().getName();
+				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(rgp.getPrefLevel().getPrefProlog()) + " " + rgp.getPrefLevel().getAbbreviation()+" "+rgp.getRoomGroup().getName();
 			}
 
 			//get time preference
@@ -387,7 +387,7 @@ public class InstructorListBuilder {
 			for (Iterator i=di.effectivePreferences(DistributionPref.class).iterator();i.hasNext();) {
 				DistributionPref dp = (DistributionPref)i.next();
 				if (distPref.length()>0) distPref += "\n";
-				distPref += "@@COLOR " + PreferenceLevel.prolog2color(dp.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(dp.getPrefLevel().getPrefProlog())+" "+dp.getDistributionType().getAbbreviation();
+				distPref += "@@COLOR " + PreferenceLevel.prolog2color(dp.getPrefLevel().getPrefProlog()) + " " + dp.getPrefLevel().getAbbreviation()+" "+dp.getDistributionType().getAbbreviation();
 			}
 			
 			TreeSet classes = new TreeSet(new ClassInstructorComparator(new ClassComparator(ClassComparator.COMPARE_BY_LABEL)));

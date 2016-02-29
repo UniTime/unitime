@@ -147,7 +147,7 @@ public class RoomsExportPDF extends RoomsExporter {
 			a = new A();
 			for (DepartmentInterface d: room.getDepartments()) {
 				if (d.getPreference() == null) continue;
-				a.add(new A(PreferenceLevel.prolog2abbv(d.getPreference().getCode()) + " " + context.dept2string(d, true)).color(d.getPreference().getColor()));
+				a.add(new A(d.getPreference().getAbbv() + " " + context.dept2string(d, true)).color(d.getPreference().getColor()));
 			}
 			return a;
 			

@@ -2515,6 +2515,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Room Features")
 	@DoNotTranslate
 	String pageRoomFeatures();
+	
+	@DefaultMessage("Preference Level")
+	@DoNotTranslate
+	String pagePreferenceLevel();
+
+	@DefaultMessage("Preference Levels")
+	@DoNotTranslate
+	String pagePreferenceLevels();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

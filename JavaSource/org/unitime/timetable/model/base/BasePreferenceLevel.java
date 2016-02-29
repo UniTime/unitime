@@ -34,12 +34,14 @@ public abstract class BasePreferenceLevel implements Serializable {
 	private Integer iPrefId;
 	private String iPrefProlog;
 	private String iPrefName;
+	private String iPrefAbbv;
 
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_PREF_ID = "prefId";
 	public static String PROP_PREF_PROLOG = "prefProlog";
 	public static String PROP_PREF_NAME = "prefName";
+	public static String PROP_PREF_ABBV = "prefAbbv";
 
 	public BasePreferenceLevel() {
 		initialize();
@@ -64,6 +66,9 @@ public abstract class BasePreferenceLevel implements Serializable {
 	public String getPrefName() { return iPrefName; }
 	public void setPrefName(String prefName) { iPrefName = prefName; }
 
+	public String getPrefAbbv() { return iPrefAbbv; }
+	public void setPrefAbbv(String prefAbbv) { iPrefAbbv = prefAbbv; }
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof PreferenceLevel)) return false;
 		if (getUniqueId() == null || ((PreferenceLevel)o).getUniqueId() == null) return false;
@@ -81,6 +86,7 @@ public abstract class BasePreferenceLevel implements Serializable {
 
 	public String toDebugString() {
 		return "PreferenceLevel[" +
+			"\n	PrefAbbv: " + getPrefAbbv() +
 			"\n	PrefId: " + getPrefId() +
 			"\n	PrefName: " + getPrefName() +
 			"\n	PrefProlog: " + getPrefProlog() +

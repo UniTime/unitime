@@ -2585,7 +2585,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			PreferenceLevel pref = PreferenceLevel.getPreferenceLevel(iAutoPrecedence);
 			if (pref == null) { // Lookup preference if needed
 				for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList())
-					if (iAutoPrecedence.equalsIgnoreCase(p.getPrefProlog()) || iAutoPrecedence.equalsIgnoreCase(p.getPrefName()) || iAutoPrecedence.equals(PreferenceLevel.prolog2abbv(p.getPrefProlog()))) {
+					if (iAutoPrecedence.equalsIgnoreCase(p.getPrefProlog()) || iAutoPrecedence.equalsIgnoreCase(p.getPrefName()) || iAutoPrecedence.equals(p.getAbbreviation())) {
 						pref = p; break;
 					}
 			}

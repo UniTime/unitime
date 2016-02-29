@@ -604,7 +604,7 @@ public abstract class Location extends BaseLocation implements Comparable {
             ExamLocationPref pref = (ExamLocationPref)i.next();
             if (!examType.equals(pref.getExamPeriod().getExamType())) continue;
             if (ret.length()>0) ret.append("\n");
-            ret.append(PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.getExamPeriod().getAbbreviation());
+            ret.append(pref.getPrefLevel().getAbbreviation()+" "+pref.getExamPeriod().getAbbreviation());
         }
         return ret.toString();
     }

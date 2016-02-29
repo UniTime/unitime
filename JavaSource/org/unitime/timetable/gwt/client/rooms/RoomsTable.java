@@ -1146,7 +1146,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				if (department.getPreference() == null) continue;
 				P p = new P("department");
 				if (abbv) {
-					String prefAbbv = CONSTANTS.preferenceAbbreviation().get(department.getPreference().getCode());
+					String prefAbbv = department.getPreference().getAbbv();
 					p.setText(MESSAGES.roomPreferenceShort(RoomsTable.toString(department, iExt), prefAbbv == null ? department.getPreference().getName() : prefAbbv));
 				} else {
 					p.setText(MESSAGES.roomPreference(RoomsTable.toString(department, iExt), department.getPreference().getName()));
@@ -1171,7 +1171,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			for (Map.Entry<DepartmentInterface, P> e: iP.entrySet()) {
 				DepartmentInterface department = e.getKey();
 				if (abbv) {
-					String prefAbbv = CONSTANTS.preferenceAbbreviation().get(department.getPreference().getCode());
+					String prefAbbv = department.getPreference().getAbbv();
 					e.getValue().setText(MESSAGES.roomPreferenceShort(RoomsTable.toString(department, iExt), prefAbbv == null ? department.getPreference().getName() : prefAbbv));
 				} else {
 					e.getValue().setText(MESSAGES.roomPreference(RoomsTable.toString(department, iExt), department.getPreference().getName()));

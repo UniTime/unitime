@@ -1255,7 +1255,7 @@ public class RoomListAction extends Action {
                     if (room==null) {
                         text[0] =
                             (location.isIgnoreRoomCheck().booleanValue()?"@@ITALIC ":"")+
-                            location.getLabel()+" ("+PreferenceLevel.prolog2abbv(roomPref.getPrefProlog())+")"+
+                            location.getLabel()+" ("+roomPref.getAbbreviation()+")"+
                             (location.isIgnoreRoomCheck().booleanValue()?"@@END_ITALIC ":"");
                     } else {
                         text[0] = 
@@ -1264,7 +1264,7 @@ public class RoomListAction extends Action {
                             (location.isIgnoreRoomCheck().booleanValue()?"@@END_ITALIC ":"");
                         text[1] = 
                             (location.isIgnoreRoomCheck().booleanValue()?"@@ITALIC ":"")+
-                            room.getRoomNumber()+" ("+PreferenceLevel.prolog2abbv(roomPref.getPrefProlog())+")"+
+                            room.getRoomNumber()+" ("+roomPref.getAbbreviation()+")"+
                             (location.isIgnoreRoomCheck().booleanValue()?"@@END_ITALIC ":"");
                     }
                 }
@@ -1746,10 +1746,10 @@ public class RoomListAction extends Action {
                 PreferenceLevel roomPref = location.getRoomPreferenceLevel(dept);
                 if (editable && roomPref!=null && !PreferenceLevel.sNeutral.equals(roomPref.getPrefProlog())) {
                     if (room==null) {
-                        text[0] = new CSVField(location.getLabel()+" ("+PreferenceLevel.prolog2abbv(roomPref.getPrefProlog())+")");
+                        text[0] = new CSVField(location.getLabel()+" ("+roomPref.getAbbreviation()+")");
                     } else {
                         text[0] = new CSVField(bldg==null?"":bldg.getAbbreviation());
-                        text[1] = new CSVField(room.getRoomNumber()+" ("+PreferenceLevel.prolog2abbv(roomPref.getPrefProlog())+")");
+                        text[1] = new CSVField(room.getRoomNumber()+" ("+roomPref.getAbbreviation()+")");
                     }
                 }
                 
