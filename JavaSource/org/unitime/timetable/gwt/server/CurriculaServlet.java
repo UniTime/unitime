@@ -2920,22 +2920,22 @@ public class CurriculaServlet implements CurriculaService {
 					List<CurriculumCourse> courses = course2curriculum.get(courseOffering.getUniqueId());
 					int demand = 0;
 					
-					if (courses != null) {
-						Map<Long, Integer> demands = new HashMap<Long, Integer>();
-						Map<Long, Integer> defaultDemands = new HashMap<Long, Integer>();
-						
-						TreeSet<Curriculum> related = new TreeSet<Curriculum>(new Comparator<Curriculum>() {
-							public int compare(Curriculum c1, Curriculum c2) {
-								// multiple majors first
-								if (c1.isMultipleMajors() != c2.isMultipleMajors())
-									return c1.isMultipleMajors() ? -1 : 1;
-								// more majors first
-								if (c1.getMajors().size() != c2.getMajors().size())
-									return c1.getMajors().size() > c2.getMajors().size() ? -1 : 1;
-								return c1.compareTo(c2);
-							}
-						});
-						
+					Map<Long, Integer> demands = new HashMap<Long, Integer>();
+					Map<Long, Integer> defaultDemands = new HashMap<Long, Integer>();
+					
+					TreeSet<Curriculum> related = new TreeSet<Curriculum>(new Comparator<Curriculum>() {
+						public int compare(Curriculum c1, Curriculum c2) {
+							// multiple majors first
+							if (c1.isMultipleMajors() != c2.isMultipleMajors())
+								return c1.isMultipleMajors() ? -1 : 1;
+							// more majors first
+							if (c1.getMajors().size() != c2.getMajors().size())
+								return c1.getMajors().size() > c2.getMajors().size() ? -1 : 1;
+							return c1.compareTo(c2);
+						}
+					});
+
+					if (courses != null)
 						for (CurriculumCourse course: courses) {
 							CurriculumClassification clasf = course.getClassification();
 							Curriculum curriculum = clasf.getCurriculum();
@@ -2961,71 +2961,70 @@ public class CurriculaServlet implements CurriculaService {
 							}
 							related.add(curriculum);
 						}
-						
-						for (Integer d: demands.values())
-							demand += d;
-						
-						for (Map.Entry<Long, Integer> entry: defaultDemands.entrySet())
-							if (!demands.containsKey(entry.getKey()))
-								demand += entry.getValue();
-						
-						if (area2major2clasf2ll != null) {
-							for (Curriculum curriculum: related) {
-								Map<String, Map<String, Set<Long>>> major2clasf2ll = area2major2clasf2ll.get(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
-								if (major2clasf2ll != null) {
-									if (curriculum.getMajors().isEmpty()) {
-										if (curriculum.isMultipleMajors()) {
-											Map<String, Set<Long>> clasf2ll = major2clasf2ll.get("");
-											if (clasf2ll != null)
-												for (AcademicClassification cc: classifications)
-													clasf2ll.remove(cc.getCode());
-										} else {
-											major2clasf2ll.clear();
-										}
+					
+					for (Integer d: demands.values())
+						demand += d;
+					
+					for (Map.Entry<Long, Integer> entry: defaultDemands.entrySet())
+						if (!demands.containsKey(entry.getKey()))
+							demand += entry.getValue();
+					
+					if (area2major2clasf2ll != null) {
+						for (Curriculum curriculum: related) {
+							Map<String, Map<String, Set<Long>>> major2clasf2ll = area2major2clasf2ll.get(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
+							if (major2clasf2ll != null) {
+								if (curriculum.getMajors().isEmpty()) {
+									if (curriculum.isMultipleMajors()) {
+										Map<String, Set<Long>> clasf2ll = major2clasf2ll.get("");
+										if (clasf2ll != null)
+											for (AcademicClassification cc: classifications)
+												clasf2ll.remove(cc.getCode());
 									} else {
-										if (curriculum.isMultipleMajors()) {
-											for (AcademicClassification cc: classifications) {
-												Set<Long> s = null;
+										major2clasf2ll.clear();
+									}
+								} else {
+									if (curriculum.isMultipleMajors()) {
+										for (AcademicClassification cc: classifications) {
+											Set<Long> s = null;
+											for (PosMajor m: curriculum.getMajors()) {
+												Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
+												Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(cc.getCode()));
+												if (e == null) {
+													if (s == null)
+														s = new HashSet<Long>();
+													else
+														s.clear();
+												} else {
+													if (s == null)
+														s = new HashSet<Long>(e);
+													else
+														s.retainAll(e);
+												}
+											}
+											if (s != null && !s.isEmpty()) {
 												for (PosMajor m: curriculum.getMajors()) {
 													Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
 													Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(cc.getCode()));
-													if (e == null) {
-														if (s == null)
-															s = new HashSet<Long>();
-														else
-															s.clear();
-													} else {
-														if (s == null)
-															s = new HashSet<Long>(e);
-														else
-															s.retainAll(e);
-													}
-												}
-												if (s != null && !s.isEmpty()) {
-													for (PosMajor m: curriculum.getMajors()) {
-														Map<String, Set<Long>> clasf2ll = major2clasf2ll.get(m.getCode());
-														Set<Long> e = (clasf2ll == null ? null : clasf2ll.get(cc.getCode()));
-														if (e != null) {
-															e.removeAll(s);
-															if (e.isEmpty())
-																clasf2ll.remove(cc.getCode());
-														}
+													if (e != null) {
+														e.removeAll(s);
+														if (e.isEmpty())
+															clasf2ll.remove(cc.getCode());
 													}
 												}
 											}
-										} else {
-											for (PosMajor m: curriculum.getMajors())
-												major2clasf2ll.remove(m.getCode());
 										}
+									} else {
+										for (PosMajor m: curriculum.getMajors())
+											major2clasf2ll.remove(m.getCode());
 									}
 								}
 							}
+						}
 
-							for (Map.Entry<String, Map<String, Map<String, Set<Long>>>> areaEmajor2clasf2ll: area2major2clasf2ll.entrySet()) {
-								for (Map.Entry<String, Map<String, Set<Long>>> majorEclasf2ll: areaEmajor2clasf2ll.getValue().entrySet()) {
-									for (Map.Entry<String, Set<Long>> clasfEll: majorEclasf2ll.getValue().entrySet()) {
-										demand += Math.round(getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue().size());	
-									}
+						for (Map.Entry<String, Map<String, Map<String, Set<Long>>>> areaEmajor2clasf2ll: area2major2clasf2ll.entrySet()) {
+							for (Map.Entry<String, Map<String, Set<Long>>> majorEclasf2ll: areaEmajor2clasf2ll.getValue().entrySet()) {
+								for (Map.Entry<String, Set<Long>> clasfEll: majorEclasf2ll.getValue().entrySet()) {
+									demand += Math.round(getProjection(rules == null ? null : rules.get(areaEmajor2clasf2ll.getKey()), majorEclasf2ll.getKey(), clasfEll.getKey()) * clasfEll.getValue().size());	
 								}
 							}
 						}						
