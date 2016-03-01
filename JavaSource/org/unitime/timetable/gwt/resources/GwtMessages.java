@@ -513,6 +513,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Configs / Subparts")
 	String colConfigsOrSubparts();
 	
+	@DefaultMessage("Configuration / Class")
+	String colConfigOrClass();
+	
 	@DefaultMessage("Class Number")
 	String colClassNumber();
 	
@@ -2093,6 +2096,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Configuration {0} ({1})")
 	String selectionConfiguration(String name, String limit);
+	
+	@DefaultMessage("Configuration {0}")
+	String labelConfiguration(String name);
 	
 	@DefaultMessage("unlimited")
 	String configUnlimited();
@@ -4133,4 +4139,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Application of this preference will remove all required preferences.")
 	String warnPreferenceUseNotRequired();
+	
+	@DefaultMessage("Cancelled")
+	String reservationCancelledClass();
 }

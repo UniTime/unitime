@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.server;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.shared.PageAccessException;
@@ -44,6 +46,7 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationFilterRp
 import org.unitime.timetable.interfaces.ExternalCourseOfferingReservationEditAction;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -56,6 +59,7 @@ import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Reservation;
@@ -82,6 +86,8 @@ import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.reservation.ReservationFilterBackend;
+import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.util.Constants;
 
 /**
@@ -89,6 +95,7 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("reservation.gwt")
 public class ReservationServlet implements ReservationService {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Logger sLog = Logger.getLogger(ReservationServlet.class);
 
@@ -96,6 +103,8 @@ public class ReservationServlet implements ReservationService {
 	private SessionContext getSessionContext() { return sessionContext; }
 	
 	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+	
+	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
 
 	@Override
 	@PreAuthorize("checkPermission('Reservations')")
@@ -162,6 +171,8 @@ public class ReservationServlet implements ReservationService {
 			course.setLimit(co.getReservation());
 			offering.getCourses().add(course);
 		}
+		String nameFormat = UserProperty.NameFormat.get(sessionContext.getUser());
+		ClassAssignmentProxy assignments = classAssignmentService.getAssignment();
 		List<InstrOfferingConfig> configs = new ArrayList<InstrOfferingConfig>(io.getInstrOfferingConfigs());
 		Collections.sort(configs, new InstrOfferingConfigComparator(null));
 		for (InstrOfferingConfig ioc: configs) {
@@ -170,6 +181,7 @@ public class ReservationServlet implements ReservationService {
 			config.setName(ioc.getName());
 			config.setAbbv(ioc.getName());
 			config.setLimit(ioc.isUnlimitedEnrollment() ? null : ioc.getLimit());
+			config.setInstructionalMethod(ioc.getInstructionalMethod() == null ? null : ioc.getInstructionalMethod().getLabel());
 			offering.getConfigs().add(config);
 			TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator());
 			subparts.addAll(ioc.getSchedulingSubparts());
@@ -190,6 +202,34 @@ public class ReservationServlet implements ReservationService {
 					clazz.setId(c.getUniqueId());
 					clazz.setAbbv(ss.getItypeDesc() + " " + c.getSectionNumberString(hibSession));
 					clazz.setName(c.getClassLabel(hibSession));
+					clazz.setExternalId(c.getClassSuffix(io.getControllingCourseOffering()));
+					if (assignments != null) {
+						try {
+							Assignment a = assignments.getAssignment(c);
+							if (a != null) {
+								clazz.setDate(a.getDatePattern() != null ? a.getDatePattern().getName() : null);
+								if (a.getTimeLocation() != null) {
+					    			String time = "";
+					   				for (Enumeration<Integer> e = a.getTimeLocation().getDays(); e.hasMoreElements(); )
+					   					time += CONSTANTS.shortDays()[e.nextElement()];
+					   				time += " " + a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()) +
+					   						" - " + a.getTimeLocation().getEndTimeHeader(CONSTANTS.useAmPm());
+					   				clazz.setTime(time);
+								}
+								if (a.getRooms() != null && !a.getRooms().isEmpty()) {
+									String rooms = "";
+									for (Location location: a.getRooms()) {
+										if (!rooms.isEmpty()) rooms += ", ";
+										rooms += location.getLabel();
+									}
+									clazz.setRoom(rooms);
+								}
+							}
+						} catch (Exception e) {}
+					}
+					clazz.setInstructor(c.instructorText(nameFormat, "; "));
+					if (c.isCancelled() != null)
+						clazz.setCancelled(c.isCancelled());
 					subpart.getClasses().add(clazz);
 					clazz.setSubpart(subpart);
 					clazz.setLimit(c.getClassLimit());

@@ -227,10 +227,15 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	
 	public static class Config extends IdName {
 		private List<Subpart> iSubparts = new ArrayList<Subpart>();
+		private String iInstructionalMethod = null;
 
 		public Config() { super(); }
 		
 		public List<Subpart> getSubparts() { return iSubparts; }
+		
+		public boolean hasInstructionalMethod() { return iInstructionalMethod != null && !iInstructionalMethod.isEmpty(); }
+		public String getInstructionalMethod() { return iInstructionalMethod; }
+		public void setInstructionalMethod(String instructionalMethod) { iInstructionalMethod = instructionalMethod; }
 	}
 
 	public static class Subpart extends IdName {
@@ -250,6 +255,12 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	public static class Clazz extends IdName {
 		private Subpart iSubpart = null;
 		private Long iParentId = null;
+		private String iExternalId = null;
+		private boolean iCancelled = false;
+		private String iTime = null;
+		private String iDate = null;
+		private String iRoom = null;
+		private String iInstructor = null;
 		
 		public Clazz() { super(); }
 		
@@ -257,6 +268,30 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public void setParentId(Long parentId) { iParentId = parentId; }
 		public Subpart getSubpart() { return iSubpart; }
 		public void setSubpart(Subpart subpart) { iSubpart = subpart; }
+		
+		public boolean hasExternalId() { return iExternalId != null && !iExternalId.isEmpty(); }
+		public String getExternalId() { return iExternalId; }
+		public void setExternalId(String externalId) { iExternalId = externalId; }
+		
+		public boolean isCancelled() { return iCancelled; }
+		public void setCancelled(boolean cancelled) { iCancelled = cancelled; }
+		
+		public boolean hasTime() { return iTime != null && !iTime.isEmpty(); }
+		public String getTime() { return iTime; }
+		public void setTime(String time) { iTime = time; }
+
+		public boolean hasDate() { return iDate != null && !iDate.isEmpty(); }
+		public String getDate() { return iDate; }
+		public void setDate(String date) { iDate = date; }
+
+		public boolean hasRoom() { return iRoom != null && !iRoom.isEmpty(); }
+		public String getRoom() { return iRoom; }
+		public void setRoom(String room) { iRoom = room; }
+
+		public boolean hasInstructor() { return iInstructor != null && !iInstructor.isEmpty(); }
+		public String getInstructor() { return iInstructor; }
+		public void setInstructor(String instructor) { iInstructor = instructor; }
+
 	}
 
 	public static class Offering extends IdName {

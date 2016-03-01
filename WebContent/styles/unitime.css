@@ -4210,3 +4210,18 @@ unitime-RoomSharingWidget .legend .blank {
 	-webkit-border-radius: 6px;
 	-moz-border-radius: 6px;
 }
+
+.unitime-RestrictionsTable .cancelled {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-RestrictionsNode {
+	display: block;
+}
+
+.unitime-RestrictionsNode .tree-icon {
+	vertical-align: top;
+	padding-top: 2px;
+	padding-right: 2px;
+}

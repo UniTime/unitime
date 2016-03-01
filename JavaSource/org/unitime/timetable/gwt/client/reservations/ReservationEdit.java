@@ -46,8 +46,6 @@ import org.unitime.timetable.gwt.services.ReservationServiceAsync;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
-import org.unitime.timetable.gwt.shared.ReservationInterface.Clazz;
-import org.unitime.timetable.gwt.shared.ReservationInterface.Config;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Course;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Area;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Curriculum;
@@ -55,7 +53,6 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.DefaultExpirationDa
 import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Offering;
 import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationDefaultExpirationDatesRpcRequest;
-import org.unitime.timetable.gwt.shared.ReservationInterface.Subpart;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -71,14 +68,11 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.Tree;
-import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -99,9 +93,7 @@ public class ReservationEdit extends Composite {
 	private UniTimeHeaderPanel iTitleAndButtons;
 	private UniTimeWidget<UniTimeTextBox> iLimit;
 	private UniTimeWidget<SingleDateSelector> iExpirationDate;
-	private Tree iStructure;
-	private HashMap<Long, ConfigSelection> iConfigs = new HashMap<Long, ConfigSelection>();
-	private HashMap<Long, ClassSelection> iClasses = new HashMap<Long, ClassSelection>();
+	private RestrictionsTable iRestrictions;
 	private HashMap<Long, Area> iAreas = new HashMap<Long, Area>();
 	private HashMap<Long, Curriculum> iCurricula = new HashMap<Long, Curriculum>();
 	private ListBox iClassifications, iMajors;
@@ -356,12 +348,6 @@ public class ReservationEdit extends Composite {
 		});
 
 		iLimit = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox(4, ValueBoxBase.TextAlignment.RIGHT));
-		iLimit.getWidget().addValueChangeHandler(new ValueChangeHandler<String>() {
-			@Override
-			public void onValueChange(ValueChangeEvent<String> event) {
-				computeLimit();
-			}
-		});
 		iReservedSpaceLine = iPanel.addRow(MESSAGES.propReservedSpace(), iLimit);
 		
 		iExpirationDate = new UniTimeWidget<SingleDateSelector>(new SingleDateSelector());
@@ -373,8 +359,8 @@ public class ReservationEdit extends Composite {
 		});
 		iExpirationLine = iPanel.addRow(MESSAGES.propExpirationDate(), iExpirationDate);
 		
-		iStructure = new Tree(RESOURCES, true);
-		iPanel.addRow(MESSAGES.propRestrictions(), iStructure);
+		iRestrictions = new RestrictionsTable(iLimit);
+		iPanel.addRow(MESSAGES.propRestrictions(), iRestrictions);
 		iPanel.getCellFormatter().setVerticalAlignment(iPanel.getRowCount() - 1, 0, HasVerticalAlignment.ALIGN_TOP);
 		
 		iStudents = new UniTimeWidget<TextArea>(new TextArea());
@@ -640,7 +626,7 @@ public class ReservationEdit extends Composite {
 			iCourseBox.setError(null);
 			iLimit.getWidget().setValue("", true);
 			iExpirationDate.getWidget().setValue(null);
-			iStructure.clear(); iClasses.clear(); iConfigs.clear();
+			iRestrictions.clear();
 			iType.getWidget().setSelectedIndex(0);
 			iGroup.getWidget().setSelectedIndex(0);
 			iArea.getWidget().setSelectedIndex(0);
@@ -696,16 +682,7 @@ public class ReservationEdit extends Composite {
 		if (!iCourseBox.isEnabled())
 			iCourseBox.setValue(iOffering.getAbbv(), false);
 
-		iStructure.clear(); iClasses.clear(); iConfigs.clear();
-		for (Config config: iOffering.getConfigs()) {
-			TreeItem configItem = new TreeItem(new ConfigSelection(config));
-			for (Subpart subpart: config.getSubparts()) {
-				if (subpart.getParentId() == null)
-					for (TreeItem item: addClasses(subpart, null))
-						configItem.addItem(item);
-			}
-			iStructure.addItem(configItem);
-		}
+		iRestrictions.setOffering(iOffering);
 		
 		iCourse.getWidget().clear();
 		iCourse.getWidget().addItem(MESSAGES.itemSelect(), "");
@@ -751,22 +728,6 @@ public class ReservationEdit extends Composite {
 				iPanel.getRowFormatter().setVisible(iCurriculumLine, "curriculum".equals(val) && iCurriculum.getWidget().getItemCount() > 1);
 			}
 		});
-		computeLimit();
-	}
-	
-	private List<TreeItem> addClasses(Subpart subpart, Long parent) {
-		List<TreeItem> ret = new ArrayList<TreeItem>();
-		for (Clazz clazz: subpart.getClasses()) {
-			if (parent != null && !parent.equals(clazz.getParentId())) continue;
-			TreeItem clazzItem = new TreeItem(new ClassSelection(clazz));
-			for (Subpart child: subpart.getConfig().getSubparts()) {
-				if (subpart.getId().equals(child.getParentId()))
-					for (TreeItem item: addClasses(child, clazz.getId()))
-						clazzItem.addItem(item);
-			}
-			ret.add(clazzItem);
-		}
-		return ret;
 	}
 	
 	private ReservationInterface.OverrideType getOverrideType(String ref) {
@@ -862,23 +823,7 @@ public class ReservationEdit extends Composite {
 		if (iReservation == null) return;
 		iLimit.getWidget().setValue(iReservation.getLimit() == null ? "" : iReservation.getLimit().toString());
 		iExpirationDate.getWidget().setValueInServerTimeZone(iReservation.getExpirationDate());
-		for (Clazz c: iReservation.getClasses()) {
-			ClassSelection s = iClasses.get(c.getId());
-			if (s != null) {
-				s.setValue(true);
-				s.propagateUp(true);
-				s.propagateDown(true);
-			}
-		}
-		for (Config c: iReservation.getConfigs()) {
-			ConfigSelection s = iConfigs.get(c.getId());
-			if (s != null) {
-				s.setValue(true);
-				s.propagate(true);
-			}
-		}
-		for (int i = 0; i < iStructure.getItemCount(); i++)
-			openNodes(iStructure.getItem(i));
+		iRestrictions.populate(iReservation);
 		if (iReservation instanceof ReservationInterface.OverrideReservation) {
 			select(iType.getWidget(), ((ReservationInterface.OverrideReservation)iReservation).getType().getReference());
 			String students = "";
@@ -920,15 +865,6 @@ public class ReservationEdit extends Composite {
 		typeChanged(false);
 		iType.setReadOnly(true);
 		iType.setText(iType.getWidget().getItemText(iType.getWidget().getSelectedIndex()));
-		computeLimit();
-	}
-	
-	private void openNodes(TreeItem item) {
-		CheckBox ch = (CheckBox)item.getWidget();
-		if (!ch.getValue() || ch.isEnabled()) return;
-		item.setState(true);
-		for (int i = 0; i < item.getChildCount(); i++)
-			openNodes(item.getChild(i));
 	}
 	
 	private void select(ListBox l, String value) {
@@ -1075,177 +1011,10 @@ public class ReservationEdit extends Composite {
 			o.setName(iOffering.getName());
 		}
 		r.setOffering(o);
-		for (ConfigSelection config: iConfigs.values()) {
-			if (config.getValue() && config.isEnabled()) {
-				Config c = new Config();
-				c.setId(config.getConfig().getId());
-				c.setName(config.getConfig().getName());
-				r.getConfigs().add(c);
-			}
-		}
-		for (ClassSelection clazz: iClasses.values()) {
-			if (clazz.getValue() && clazz.isEnabled()) {
-				Clazz c = new Clazz();
-				c.setId(clazz.getClazz().getId());
-				c.setName(clazz.getClazz().getName());
-				r.getClasses().add(c);
-			}
-		}
+		iRestrictions.validate(r);
 		return (ok ? r : null);
 	}
 
-	private class ClassSelection extends CheckBox implements ClickHandler {
-		private Clazz iClazz;
-		
-		public ClassSelection(Clazz clazz) {
-			setStyleName("unitime-LabelInsteadEdit");
-			setText(clazz.getAbbv() + " (" + clazz.getLimit() + ")");
-			iClazz = clazz;
-			addClickHandler(this);
-			iClasses.put(clazz.getId(), this);
-		}
-		
-		public Clazz getClazz() { return iClazz; }
-
-		@Override
-		public void onClick(ClickEvent event) {
-			propagateUp(getValue());
-			propagateDown(getValue());
-			computeLimit();
-		}
-		
-		private void propagateUp(boolean selected) {
-			if (getClazz().getParentId() == null) {
-				if (!selected) {
-					for (Subpart subpart: getClazz().getSubpart().getConfig().getSubparts()) {
-						if (subpart.getParentId() != null) continue;
-						for (Clazz c: subpart.getClasses()) {
-							if (iClasses.get(c.getId()).getValue()) return;
-						}
-					}
-				}
-				ConfigSelection config = iConfigs.get(getClazz().getSubpart().getConfig().getId());
-				if (config != null) {
-					config.setValue(selected);
-					config.setEnabled(!selected);
-				}
-			} else {
-				ClassSelection parent = iClasses.get(getClazz().getParentId());
-				if (!selected) {
-					for (Clazz c: getClazz().getSubpart().getClasses()) {
-						if (parent.getClazz().getId().equals(c.getParentId())) {
-							if (iClasses.get(c.getId()).getValue()) return;
-						}
-					}
-				}
-				parent.setValue(selected);
-				parent.setEnabled(!selected);
-				parent.propagateUp(selected);
-			}
-		}
-		
-		private void propagateDown(boolean selected) {
-			for (Subpart subpart: getClazz().getSubpart().getConfig().getSubparts()) {
-				if (getClazz().getSubpart().getId().equals(subpart.getParentId())) {
-					for (Clazz clazz: subpart.getClasses()) {
-						if (getClazz().getId().equals(clazz.getParentId())) {
-							ClassSelection child = iClasses.get(clazz.getId());
-							child.setValue(selected);
-							child.setEnabled(!selected);
-							child.propagateDown(selected);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private class ConfigSelection extends CheckBox implements ClickHandler {
-		private Config iConfig;
-		
-		public ConfigSelection(Config config) {
-			setStyleName("unitime-LabelInsteadEdit");
-			setText(MESSAGES.selectionConfiguration(config.getAbbv(), config.getLimit() == null ? MESSAGES.configUnlimited() : config.getLimit().toString()));
-			iConfig = config;
-			iConfigs.put(config.getId(), this);
-			addClickHandler(this);
-		}
-		
-		public Config getConfig() { return iConfig; }
-		
-		@Override
-		public void onClick(ClickEvent event) {
-			propagate(getValue());
-			computeLimit();
-		}
-		
-		private void propagate(boolean selected) {
-			for (Subpart subpart: getConfig().getSubparts()) {
-				for (Clazz clazz: subpart.getClasses()) {
-					ClassSelection child = iClasses.get(clazz.getId());
-					child.setValue(selected);
-					child.setEnabled(!selected);
-				}
-			}
-		}
-	}
-	
-	private void computeLimit() {
-		if (iOffering == null) {
-			iLimit.clearHint();
-			return;
-		}
-		// if (iLimit.isReadOnly()) return;
-		int total = 0, limit = -1;
-		boolean totalUnlimited = false, unlimited = false;
-		for (Config config: iOffering.getConfigs()) {
-			for (Subpart subpart: config.getSubparts()) {
-				int lim = 0; boolean selected = false;
-				for (Clazz clazz: subpart.getClasses()) {
-					ClassSelection child = iClasses.get(clazz.getId());
-					if (child.getValue()) {
-						lim += clazz.getLimit();
-						selected = true;
-					}
-				}
-				if (selected && (limit < 0 || limit > lim)) { limit = lim; }
-			}
-		}
-		int lim = 0; boolean selected = false;
-		for (Config config: iOffering.getConfigs()) {
-			if (config.getLimit() == null)
-				totalUnlimited = true;
-			else
-				total += config.getLimit();
-			ConfigSelection cfg = iConfigs.get(config.getId());
-			if (cfg != null && cfg.getValue()) {
-				selected = true;
-				if (cfg.getConfig().getLimit() == null)
-					unlimited = true;
-				else
-					lim += cfg.getConfig().getLimit();
-			}
-		}
-		if (selected && (limit < 0 || limit > lim)) { limit = lim; }
-		int entered = Integer.MAX_VALUE;
-		try {
-			entered = Integer.parseInt(iLimit.getWidget().getValue());
-		} catch (NumberFormatException e) {}
-		if (limit >= 0 || unlimited) {
-			if (unlimited || limit >= entered)
-				iLimit.clearHint();
-			else
-				iLimit.setHint(limit == 0 ? MESSAGES.hintNoSpaceSelected() : limit == 1 ? MESSAGES.hintOnlyOneSpaceSelected() : MESSAGES.hintOnlyNSpacesSelected(limit));
-		} else {
-			if (!iOffering.isOffered())
-				iLimit.setHint(MESSAGES.hintCourseNotOffered(iOffering.getAbbv()));
-			else if (totalUnlimited || total >= entered || entered == Integer.MAX_VALUE)
-				iLimit.clearHint();
-			else
-				iLimit.setHint(total == 0 ? MESSAGES.hintNoSpaceInCourse(iOffering.getAbbv()) : total == 1 ? MESSAGES.hintOnlyOneSpaceInCourse(iOffering.getAbbv()) : MESSAGES.hintOnlyNSpacesInCourse(total, iOffering.getAbbv()));
-		}
-	}
-	
 	public static class EditFinishedEvent {
 		private Long iReservationId;
 		public EditFinishedEvent(Long reservationId) {
