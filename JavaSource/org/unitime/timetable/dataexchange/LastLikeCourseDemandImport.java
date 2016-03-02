@@ -164,13 +164,13 @@ public class LastLikeCourseDemandImport extends BaseImport {
 				courseNumber = externalIdCourseNumber.get(externalIdStr);
 				permId = externalIdCoursePermId.get(externalIdStr);
 				if(area == null) {
-					System.out.println("Course not found " + externalIdStr + " not found");
+					warn("Course not found " + externalIdStr + " not found");
 					continue;
 				}
 			} else {
 				area = subjectAreas.get(subject);
 				if(area == null) {
-					System.out.println("Subject area " + subject + " not found");
+					warn("Subject area " + subject + " not found");
 					continue;
 				}
 				permId = courseOfferings.get(courseNumber + area.getUniqueId().toString());

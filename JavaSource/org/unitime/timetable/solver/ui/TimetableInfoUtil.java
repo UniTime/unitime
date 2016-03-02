@@ -114,7 +114,7 @@ public class TimetableInfoUtil implements TimetableInfoFileProxy {
 		try {
 			File file = new File(ApplicationProperties.getBlobFolder(),name);
 			if (file.exists()) {
-				System.out.println("Deleting info " + name + " as " + file + " (" + file.length() + " bytes)");
+				sLog.info("Deleting info " + name + " as " + file + " (" + file.length() + " bytes)");
 				file.delete();
 				return true;
 			}

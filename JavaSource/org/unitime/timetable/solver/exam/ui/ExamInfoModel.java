@@ -711,7 +711,7 @@ public class ExamInfoModel implements Serializable {
                         period.getExamType().getType() == ExamType.sExamTypeFinal ? RoomAvailabilityInterface.sFinalExamType : RoomAvailabilityInterface.sMidtermExamType);
                 if (times!=null) for (TimeBlock time : times) {
                     if (period.overlap(time)) {
-                        System.out.println("Room "+room.getLabel()+" is not avaiable due to "+time);
+                        sLog.info("Room "+room.getLabel()+" is not avaiable due to "+time);
                         continue rooms;
                     }
                 }

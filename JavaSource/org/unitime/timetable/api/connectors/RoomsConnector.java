@@ -210,8 +210,6 @@ public class RoomsConnector extends ApiConnector {
 		if (type == null) throw new IllegalArgumentException("Parameter 'contentType' was not provided.");
 		String reference = helper.getOptinalParameter("type", null);
 		
-		System.out.println("Uploaded file " + name + " of type " + type + " and size " + file.getBytes().length);
-		
 		LocationPicture picture = null;
 		for (LocationPicture p: location.getPictures()) {
 			if (p.getFileName().equals(name)) { picture = p; break; }
