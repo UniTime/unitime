@@ -607,7 +607,7 @@
 			<classpath refid="build.classpath"/>
 			<classpath path="${build.dir}"/>
 		</taskdef>
-		<export-translations>
+		<export-translations source="${src.dir}">
 			<bundle package="org.unitime.localization.messages" name="CourseMessages"/>
 			<bundle package="org.unitime.localization.messages" name="ConstantsMessages"/>
 			<bundle package="org.unitime.localization.messages" name="ExaminationMessages"/>

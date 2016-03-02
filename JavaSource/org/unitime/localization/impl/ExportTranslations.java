@@ -20,6 +20,7 @@
 package org.unitime.localization.impl;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -41,6 +42,7 @@ public class ExportTranslations {
 	private List<Locale> iLocales = new ArrayList<Locale>();
 	private File iBaseDir;
 	private String iTranslations = "Documentation/Translations";
+	private File iSource;
 	private Project iProject = null;
 	
 	public ExportTranslations() {}
@@ -48,6 +50,10 @@ public class ExportTranslations {
 	public void setProject(Project project) {
 		iProject = project;
 		iBaseDir = project.getBaseDir();
+	}
+	
+	public void setSource(String source) {
+		iSource = new File(source);
 	}
 	
 	public void setBaseDir(String baseDir) {
@@ -158,22 +164,27 @@ public class ExportTranslations {
     		for (Bundle bundle: iBundles) {
     			info("Loading " + bundle);
     			Class clazz = null;
+				File folder = null;
     			if (bundle.hasPackage()) {
     				try {
     					clazz =  Class.forName(bundle.getPackage() + "." + bundle.getName());
+    					folder = new File(iSource, bundle.getPackage().replace('.', File.separatorChar));
     				} catch (ClassNotFoundException e) {}
     			}
-    			try {
-    				clazz =  Class.forName(Localization.ROOT + bundle.getName());
-    			} catch (ClassNotFoundException e) {}
-    			try {
-    				if (clazz == null)
-    					clazz = Class.forName(Localization.GWTROOT + bundle.getName());
-    			} catch (ClassNotFoundException e) {}
-    			if (clazz == null) {
-    				error("Bundle " + bundle + " not found.");
-    				continue;
-    			}
+				try {
+					clazz = Class.forName(Localization.ROOT + bundle);
+					folder = new File(iSource, Localization.ROOT.replace('.', File.separatorChar));
+				} catch (ClassNotFoundException e) {}
+				try {
+					if (clazz == null) {
+						clazz = Class.forName(Localization.GWTROOT + bundle);
+						folder = new File(iSource, Localization.GWTROOT.replace('.', File.separatorChar));
+					}
+				} catch (ClassNotFoundException e) {}
+				if (clazz == null) {
+					error("Bundle " + bundle + " not found.");
+					continue;
+				}
     			
     			PrintStream out = new PrintStream(new File(translations, bundle.getName() + ".properties"));
     			
@@ -224,8 +235,16 @@ public class ExportTranslations {
     				
     				Properties properties = new Properties();
     				InputStream is = clazz.getClassLoader().getResourceAsStream(clazz.getName().replace('.', '/') + "_" + locale + ".properties");
-    				if (is != null)
+    				if (is != null) {
     					properties.load(is);
+    				} else {
+    					File file = new File(folder, bundle.getName() + "_" + locale.getValue() + ".properties");
+    					if (file.exists()) {
+    						FileReader r = new FileReader(file);
+    						properties.load(r);
+    						r.close();
+    					}
+    				}
 
     				out = new PrintStream(new File(translations, bundle.getName() + "_" + locale.getValue() + ".properties"));
     				
@@ -285,6 +304,7 @@ public class ExportTranslations {
 		try {
 			ExportTranslations task = new ExportTranslations();
 			task.setBaseDir(System.getProperty("source", "/Users/muller/git/unitime"));
+			task.setSource(System.getProperty("source", "/Users/muller/git/unitime") + File.separator + "JavaSource");
 			task.setBundles(System.getProperty("bundle", "CourseMessages,ConstantsMessages,ExaminationMessages,SecurityMessages,GwtConstants,GwtAriaMessages,GwtMessages,StudentSectioningConstants,StudentSectioningMessages"));
 			task.setLocales(System.getProperty("locale", "cs"));
 			task.execute();
