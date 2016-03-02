@@ -532,16 +532,16 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Time")
 	String columnExamTime();
 	
-	@DefaultMessage(" Type ")
+	@DefaultMessage("Type")
 	String columnDistrPrefType();
 	
-	@DefaultMessage(" Structure ")
+	@DefaultMessage("Structure")
 	String columnDistrPrefStructure();
 
-	@DefaultMessage(" Owner ")
+	@DefaultMessage("Owner")
 	String columnDistrPrefOwner();
 	
-	@DefaultMessage(" Class ")
+	@DefaultMessage("Class")
 	String columnDistrPrefClass();
 	
 	@DefaultMessage("Min Limit<br>per Class")
@@ -1578,43 +1578,43 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("ERRORS")
 	String errorsMultipleClassSetup();
 	
-	@DefaultMessage("Invalid room group: Check for duplicate / blank selection. ")
+	@DefaultMessage("Invalid room group: Check for duplicate / blank selection.")
 	String errorInvalidRoomGroup();
 	
-	@DefaultMessage("Invalid room group level. ")
+	@DefaultMessage("Invalid room group level.")
 	String errorInvalidRoomGroupLevel();
 	
-	@DefaultMessage("Invalid building preference: Check for duplicate / blank selection. ")
+	@DefaultMessage("Invalid building preference: Check for duplicate / blank selection.")
 	String errorInvalidBuildingPreference();
 	
-	@DefaultMessage("Invalid building preference level. ")
+	@DefaultMessage("Invalid building preference level.")
 	String errorInvalidBuildingPreferenceLevel();
 	
-	@DefaultMessage("Invalid distribution preference: Check for duplicate / blank selection. ")
+	@DefaultMessage("Invalid distribution preference: Check for duplicate / blank selection.")
 	String errorInvalidDistributionPreference();
 	
-	@DefaultMessage("Invalid date pattern preference: Check for duplicate / blank selection. ")
+	@DefaultMessage("Invalid date pattern preference: Check for duplicate / blank selection.")
 	String errorInvalidDatePatternPreference();
 
 	@DefaultMessage("Invalid distribution preference level.")
 	String errorInvalidDistributionPreferenceLevel();
 	
-	@DefaultMessage("Invalid room feature preference: Check for duplicate / blank selection. ")
+	@DefaultMessage("Invalid room feature preference: Check for duplicate / blank selection.")
 	String errorInvalidRoomFeaturePreference();
 	
-	@DefaultMessage("Invalid room feature preference level. ")
+	@DefaultMessage("Invalid room feature preference level.")
 	String errorInvalidRoomFeaturePreferenceLevel();
 
-	@DefaultMessage("Invalid instructor preference: Check for duplicate / blank selection. ")
+	@DefaultMessage("Invalid instructor preference: Check for duplicate / blank selection.")
 	String errorInvalidInstructorPreference();
 	
-	@DefaultMessage("Time pattern not selected. ")
+	@DefaultMessage("Time pattern not selected.")
 	String errorTimePatternNotSelected();
 	
-	@DefaultMessage("Invalid room preference: Check for duplicate / blank selection. ")
+	@DefaultMessage("Invalid room preference: Check for duplicate / blank selection.")
 	String errorInvalidRoomPreference();
 	
-	@DefaultMessage("Invalid room preference level. ")
+	@DefaultMessage("Invalid room preference level.")
 	String errorInvalidRoomPreferenceLevel();
 	
 	@DefaultMessage("Null Operation not supported.")
@@ -1695,7 +1695,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Reserved Space is required")
 	String errorRequiredReservedSpace();
 	
-	@DefaultMessage("Unique Id needed for operation. ")
+	@DefaultMessage("Unique Id needed for operation.")
 	String errorUniqueIdNeeded();
 	
 	@DefaultMessage("Class is required")
@@ -1797,10 +1797,10 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Generated method 'validate(...)' not implemented.")
 	String exceptionValidateNotImplemented();
 	
-	@DefaultMessage("Course Offering Id need for operation. ")
+	@DefaultMessage("Course Offering Id need for operation.")
 	String exceptionCourseOfferingIdNeeded();
 	
-	@DefaultMessage("You do not have any department to manage. ")
+	@DefaultMessage("You do not have any department to manage.")
 	String exceptionNoDepartmentToManage();
 	
 	@DefaultMessage("Null Operation not supported.")
@@ -1926,7 +1926,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Examination")
 	String sectionTitleExamination();
 	
-	@DefaultMessage("Configuration ")
+	@DefaultMessage("Configuration")
 	String sectionTitleConfiguration();
 	
 	@DefaultMessage("Instructor List")

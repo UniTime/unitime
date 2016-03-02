@@ -831,7 +831,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Student Conflicts:")
 	String propStudentConflicts();
 	
-	@DefaultMessage("Conflicts with: ")
+	@DefaultMessage("Conflicts with:")
 	String propConflicts();
 	
 	@DefaultMessage("Event Type:")
