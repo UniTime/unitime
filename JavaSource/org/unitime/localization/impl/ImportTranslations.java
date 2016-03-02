@@ -33,6 +33,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.unitime.localization.impl.ExportTranslations.Bundle;
 import org.unitime.localization.impl.ExportTranslations.Locale;
+import org.unitime.localization.messages.PageNames;
 import org.unitime.timetable.gwt.resources.Constants;
 import org.unitime.timetable.gwt.resources.Messages;
 
@@ -46,6 +47,7 @@ public class ImportTranslations {
 	private File iBaseDir;
 	private File iSource;
 	private String iTranslations = "Documentation/Translations";
+	private boolean iGeneratePageNames = false;
 
 	public ImportTranslations() {}
 	
@@ -96,6 +98,10 @@ public class ImportTranslations {
 
 	public void setTranslations(String translations) {
 		iTranslations = translations;
+	}
+
+	public void setGeneratePageNames(boolean generatePageNames) {
+		iGeneratePageNames = generatePageNames;
 	}
 	
     public void info(String message) {
@@ -225,57 +231,85 @@ public class ImportTranslations {
 					out.println("# See the License for the specific language governing permissions and");
 					out.println("# limitations under the License.");
 					out.println("#");
-					TreeSet<Method> methods = new TreeSet<Method>(new Comparator<Method>() {
-						@Override
-						public int compare(Method m1, Method m2) {
-							return m1.getName().compareTo(m2.getName());
-						}
-					});
-					for (Method method: clazz.getMethods()) methods.add(method);
-					for (Method method: methods) {
-						String value = null;
-						Messages.DefaultMessage dm = method.getAnnotation(Messages.DefaultMessage.class);
-						if (dm != null)
-							value = dm.value();
-						Constants.DefaultBooleanValue db = method.getAnnotation(Constants.DefaultBooleanValue.class);
-						if (db != null)
-							value = (db.value() ? "true" : "false");
-						Constants.DefaultDoubleValue dd = method.getAnnotation(Constants.DefaultDoubleValue.class);
-						if (dd != null)
-							value = String.valueOf(dd.value());
-						Constants.DefaultFloatValue df = method.getAnnotation(Constants.DefaultFloatValue.class);
-						if (df != null)
-							value = String.valueOf(df.value());
-						Constants.DefaultIntValue di = method.getAnnotation(Constants.DefaultIntValue.class);
-						if (di != null)
-							value = String.valueOf(di.value());					
-						Constants.DefaultStringValue ds = method.getAnnotation(Constants.DefaultStringValue.class);
-						if (ds != null)
-							value = ds.value();
-						Constants.DefaultStringArrayValue dsa = method.getAnnotation(Constants.DefaultStringArrayValue.class);
-						if (dsa != null)
-							value = array2string(dsa.value());
-						Constants.DefaultStringMapValue dsm = method.getAnnotation(Constants.DefaultStringMapValue.class);
-						if (dsm != null)
-							value = array2string(dsm.value());
-						if ("translateMessage".equals(method.getName())) continue;
-
-						String text = translation.getProperty(method.getName(), old.getProperty(method.getName()));
-						boolean doNotTranslate = (method.getAnnotation(Messages.DoNotTranslate.class) != null) || (method.getAnnotation(Constants.DoNotTranslate.class) != null);
-						if (text == null && (constants || doNotTranslate)) continue;
-						
-						out.println();
-						if (value != null)
-							out.println("# Default: " + unicodeEscape(value, false).trim());
-						if (text == null) {
+					
+					if (PageNames.class.equals(clazz) && iGeneratePageNames) {
+						TreeSet<String> names = new TreeSet<String>();
+						for (Object o: translation.keySet())
+							names.add((String)o);
+						Properties defaults = new Properties();
+						defaults.load(new FileReader(new File(translations, bundle.getName() + ".properties")));
+						for (Object o: defaults.keySet())
+							names.add((String)o);
+						for (String name: names) {
+							String value = defaults.getProperty(name);
+							out.println();
 							if (value != null)
-								out.println("# FIXME: Translate \"" + unicodeEscape(value, false) + "\"");
-							else
-								out.println("# FIXME: Translate " + method.getName());
-							out.println("# " + method.getName() + "=");
-						} else {
-							out.println(method.getName() + "=" + unicodeEscape(text, true));
-							empty = false;
+								out.println("# Default: " + unicodeEscape(value, false).trim());
+							String text = translation.getProperty(name);
+							if (text == null) {
+								if (value != null)
+									out.println("# FIXME: Translate \"" + unicodeEscape(value, false) + "\"");
+								else
+									out.println("# FIXME: Translate " + name);
+								out.println("# " + name + "=");
+							} else {
+								out.println(name + "=" + unicodeEscape(text, true));
+								empty = false;
+							}
+						}
+					} else {
+						TreeSet<Method> methods = new TreeSet<Method>(new Comparator<Method>() {
+							@Override
+							public int compare(Method m1, Method m2) {
+								return m1.getName().compareTo(m2.getName());
+							}
+						});
+						for (Method method: clazz.getMethods()) methods.add(method);
+						for (Method method: methods) {
+							String value = null;
+							Messages.DefaultMessage dm = method.getAnnotation(Messages.DefaultMessage.class);
+							if (dm != null)
+								value = dm.value();
+							Constants.DefaultBooleanValue db = method.getAnnotation(Constants.DefaultBooleanValue.class);
+							if (db != null)
+								value = (db.value() ? "true" : "false");
+							Constants.DefaultDoubleValue dd = method.getAnnotation(Constants.DefaultDoubleValue.class);
+							if (dd != null)
+								value = String.valueOf(dd.value());
+							Constants.DefaultFloatValue df = method.getAnnotation(Constants.DefaultFloatValue.class);
+							if (df != null)
+								value = String.valueOf(df.value());
+							Constants.DefaultIntValue di = method.getAnnotation(Constants.DefaultIntValue.class);
+							if (di != null)
+								value = String.valueOf(di.value());					
+							Constants.DefaultStringValue ds = method.getAnnotation(Constants.DefaultStringValue.class);
+							if (ds != null)
+								value = ds.value();
+							Constants.DefaultStringArrayValue dsa = method.getAnnotation(Constants.DefaultStringArrayValue.class);
+							if (dsa != null)
+								value = array2string(dsa.value());
+							Constants.DefaultStringMapValue dsm = method.getAnnotation(Constants.DefaultStringMapValue.class);
+							if (dsm != null)
+								value = array2string(dsm.value());
+							if ("translateMessage".equals(method.getName())) continue;
+
+							String text = translation.getProperty(method.getName(), old.getProperty(method.getName()));
+							boolean doNotTranslate = (method.getAnnotation(Messages.DoNotTranslate.class) != null) || (method.getAnnotation(Constants.DoNotTranslate.class) != null);
+							if (text == null && (constants || doNotTranslate)) continue;
+							
+							out.println();
+							if (value != null)
+								out.println("# Default: " + unicodeEscape(value, false).trim());
+							if (text == null) {
+								if (value != null)
+									out.println("# FIXME: Translate \"" + unicodeEscape(value, false) + "\"");
+								else
+									out.println("# FIXME: Translate " + method.getName());
+								out.println("# " + method.getName() + "=");
+							} else {
+								out.println(method.getName() + "=" + unicodeEscape(text, true));
+								empty = false;
+							}
 						}
 					}
 					

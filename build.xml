@@ -607,11 +607,12 @@
 			<classpath refid="build.classpath"/>
 			<classpath path="${build.dir}"/>
 		</taskdef>
-		<export-translations source="${src.dir}">
+		<export-translations source="${src.dir}" generatePageNames="true">
 			<bundle package="org.unitime.localization.messages" name="CourseMessages"/>
 			<bundle package="org.unitime.localization.messages" name="ConstantsMessages"/>
 			<bundle package="org.unitime.localization.messages" name="ExaminationMessages"/>
 			<bundle package="org.unitime.localization.messages" name="SecurityMessages"/>
+			<bundle package="org.unitime.localization.messages" name="PageNames"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="GwtConstants"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="GwtAriaMessages"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="GwtMessages"/>
@@ -643,11 +644,12 @@
 			<classpath refid="build.classpath"/>
 			<classpath path="${build.dir}"/>
 		</taskdef>
-		<import-translations source="${src.dir}">
+		<import-translations source="${src.dir}" generatePageNames="true">
 			<bundle package="org.unitime.localization.messages" name="CourseMessages"/>
 			<bundle package="org.unitime.localization.messages" name="ConstantsMessages"/>
 			<bundle package="org.unitime.localization.messages" name="ExaminationMessages"/>
 			<bundle package="org.unitime.localization.messages" name="SecurityMessages"/>
+			<bundle package="org.unitime.localization.messages" name="PageNames"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="GwtConstants"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="GwtAriaMessages"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="GwtMessages"/>

@@ -21,7 +21,6 @@ package org.unitime.localization.impl;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
@@ -31,6 +30,7 @@ import java.util.Properties;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.unitime.localization.messages.PageNames;
 import org.unitime.timetable.gwt.resources.Constants;
 import org.unitime.timetable.gwt.resources.Messages;
 
@@ -44,6 +44,7 @@ public class ExportTranslations {
 	private String iTranslations = "Documentation/Translations";
 	private File iSource;
 	private Project iProject = null;
+	private boolean iGeneratePageNames = false;
 	
 	public ExportTranslations() {}
 	
@@ -94,6 +95,10 @@ public class ExportTranslations {
 
 	public void setTranslations(String translations) {
 		iTranslations = translations;
+	}
+	
+	public void setGeneratePageNames(boolean generatePageNames) {
+		iGeneratePageNames = generatePageNames;
 	}
 	
 	private static String array2string(String[] value) {
@@ -194,47 +199,61 @@ public class ExportTranslations {
 					error("Bundle " + bundle + " not found.");
 					continue;
 				}
+				
     			
     			PrintStream out = new PrintStream(new File(translations, bundle.getName() + ".properties"));
+    			List<String> names = new ArrayList<String>();
     			
-    			for (Method method: clazz.getMethods()) {
-    				String value = null;
-    				Messages.DefaultMessage dm = method.getAnnotation(Messages.DefaultMessage.class);
-    				if (dm != null)
-    					value = dm.value();
-    				Constants.DefaultBooleanValue db = method.getAnnotation(Constants.DefaultBooleanValue.class);
-    				if (db != null)
-    					value = (db.value() ? "true" : "false");
-    				Constants.DefaultDoubleValue dd = method.getAnnotation(Constants.DefaultDoubleValue.class);
-    				if (dd != null)
-    					value = String.valueOf(dd.value());
-    				Constants.DefaultFloatValue df = method.getAnnotation(Constants.DefaultFloatValue.class);
-    				if (df != null)
-    					value = String.valueOf(df.value());
-    				Constants.DefaultIntValue di = method.getAnnotation(Constants.DefaultIntValue.class);
-    				if (di != null)
-    					value = String.valueOf(di.value());					
-    				Constants.DefaultStringValue ds = method.getAnnotation(Constants.DefaultStringValue.class);
-    				if (ds != null)
-    					value = ds.value();
-    				Constants.DefaultStringArrayValue dsa = method.getAnnotation(Constants.DefaultStringArrayValue.class);
-    				if (dsa != null)
-    					value = array2string(dsa.value());
-    				Constants.DefaultStringMapValue dsm = method.getAnnotation(Constants.DefaultStringMapValue.class);
-    				if (dsm != null)
-    					value = array2string(dsm.value());
-    				
-    				if ("translateMessage".equals(method.getName())) continue;
+    			if (PageNames.class.equals(clazz) && iGeneratePageNames) {
+					PageNameGenerator gen = new PageNameGenerator();
+					gen.setSource(iSource);
+					for (String name: gen.execute()) {
+						String prop = gen.name2property(name);
+	    				out.println("# " + prop);
+	    				out.println(prop + "=" + unicodeEscape(name, null));
+	    				names.add(prop);
+					}
+				} else {
+	    			for (Method method: clazz.getMethods()) {
+	    				names.add(method.getName());
+	    				String value = null;
+	    				Messages.DefaultMessage dm = method.getAnnotation(Messages.DefaultMessage.class);
+	    				if (dm != null)
+	    					value = dm.value();
+	    				Constants.DefaultBooleanValue db = method.getAnnotation(Constants.DefaultBooleanValue.class);
+	    				if (db != null)
+	    					value = (db.value() ? "true" : "false");
+	    				Constants.DefaultDoubleValue dd = method.getAnnotation(Constants.DefaultDoubleValue.class);
+	    				if (dd != null)
+	    					value = String.valueOf(dd.value());
+	    				Constants.DefaultFloatValue df = method.getAnnotation(Constants.DefaultFloatValue.class);
+	    				if (df != null)
+	    					value = String.valueOf(df.value());
+	    				Constants.DefaultIntValue di = method.getAnnotation(Constants.DefaultIntValue.class);
+	    				if (di != null)
+	    					value = String.valueOf(di.value());					
+	    				Constants.DefaultStringValue ds = method.getAnnotation(Constants.DefaultStringValue.class);
+	    				if (ds != null)
+	    					value = ds.value();
+	    				Constants.DefaultStringArrayValue dsa = method.getAnnotation(Constants.DefaultStringArrayValue.class);
+	    				if (dsa != null)
+	    					value = array2string(dsa.value());
+	    				Constants.DefaultStringMapValue dsm = method.getAnnotation(Constants.DefaultStringMapValue.class);
+	    				if (dsm != null)
+	    					value = array2string(dsm.value());
+	    				
+	    				if ("translateMessage".equals(method.getName())) continue;
 
-    				boolean doNotTranslate = (method.getAnnotation(Messages.DoNotTranslate.class) != null) || (method.getAnnotation(Constants.DoNotTranslate.class) != null);
-    				if (doNotTranslate) continue;
-    				
-    				if (value == null)
-    					warn("Property " + method.getName() + " has no default value!");
-    				
-    				out.println("# " + method.getName());
-    				out.println(method.getName() + "=" + unicodeEscape(value != null ? value : "", null));
-    			}
+	    				boolean doNotTranslate = (method.getAnnotation(Messages.DoNotTranslate.class) != null) || (method.getAnnotation(Constants.DoNotTranslate.class) != null);
+	    				if (doNotTranslate) continue;
+	    				
+	    				if (value == null)
+	    					warn("Property " + method.getName() + " has no default value!");
+	    				
+	    				out.println("# " + method.getName());
+	    				out.println(method.getName() + "=" + unicodeEscape(value != null ? value : "", null));
+	    			}					
+				}
     			
     			out.flush();
     			out.close();
@@ -257,17 +276,18 @@ public class ExportTranslations {
 
     				out = new PrintStream(new File(translations, bundle.getName() + "_" + locale.getValue() + ".properties"));
     				
-    				for (Method method: clazz.getMethods()) {
-    					String text = properties.getProperty(method.getName());
+    				for (String name: names) {
+    					String text = properties.getProperty(name);
     					if (text != null)
-    						out.println(method.getName() + "=" + unicodeEscape(text, locale.getValue()));
+    						out.println(name + "=" + unicodeEscape(text, locale.getValue()));
     				}
     				
     				out.flush();
     				out.close();
     			}
     		}
-    	} catch (IOException e) {
+    	} catch (Exception e) {
+    		e.printStackTrace();
     		throw new BuildException("Export failed: " + e.getMessage(), e);
     	}
     }
