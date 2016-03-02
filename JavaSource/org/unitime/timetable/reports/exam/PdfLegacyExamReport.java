@@ -609,7 +609,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientBCC(s.nextToken(), null);
                             for (Map.Entry<String, File> entry : files.entrySet()) {
-                            	mail.addAttachement(entry.getValue(), prefix+"_"+entry.getKey());
+                            	mail.addAttachment(entry.getValue(), prefix+"_"+entry.getKey());
                                 sLog.info("  Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
                             }
                             mail.send();
@@ -637,7 +637,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                     if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                         mail.addRecipientBCC(s.nextToken(), null);
                     for (Map.Entry<String, File> entry : output.entrySet()) {
-                    	mail.addAttachement(entry.getValue(), prefix+"_"+entry.getKey());
+                    	mail.addAttachment(entry.getValue(), prefix+"_"+entry.getKey());
                     }
                 	mail.send();
                     sLog.info("Email sent.");
@@ -669,7 +669,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             mail.addRecipientCC(s.nextToken(), null);
                         if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
-                        mail.addAttachement(report, prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
+                        mail.addAttachment(report, prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
                     	mail.send();
                         sLog.info("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>.");
                     } catch (Exception e) {
@@ -702,7 +702,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             mail.addRecipientCC(s.nextToken(), null);
                         if (System.getProperty("email.bcc")!=null) for (StringTokenizer s=new StringTokenizer(System.getProperty("email.bcc"),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
-                        mail.addAttachement(report, prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
+                        mail.addAttachment(report, prefix+(report.getName().endsWith(".txt")?".txt":".pdf"));
                     	mail.send();
                         sLog.info(" An email was sent to <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>.");
                     } catch (Exception e) {

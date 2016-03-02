@@ -831,10 +831,10 @@
 					<hasPermission name="StandardEventNotes"/>
 				</condition>
 			</item>
-			<item name="Attachement Types" page="admin" type="gwt">
-				<parameter name="type">attachementType</parameter>
+			<item name="Attachment Types" page="admin" type="gwt">
+				<parameter name="type">attachmentType</parameter>
 				<condition>
-					<hasPermission name="AttachementTypes"/>
+					<hasPermission name="AttachmentTypes"/>
 				</condition>
 			</item>
 			<item name="Preference Levels" page="admin" type="gwt">

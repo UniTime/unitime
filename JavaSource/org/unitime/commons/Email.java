@@ -72,14 +72,14 @@ public abstract class Email {
 		addRecipientCC(ApplicationProperty.EmailNotificationAddress.value(), ApplicationProperty.EmailNotificationAddressName.value());
 	}
 	
-	protected abstract void addAttachement(String name, DataHandler data) throws Exception;
+	protected abstract void addAttachment(String name, DataHandler data) throws Exception;
 	
-	public void addAttachement(File file, String name) throws Exception {
-		addAttachement(name == null ? file.getName() : name, new DataHandler(new FileDataSource(file)));
+	public void addAttachment(File file, String name) throws Exception {
+		addAttachment(name == null ? file.getName() : name, new DataHandler(new FileDataSource(file)));
 	}
 
-	public void addAttachement(final FormFile file) throws Exception {
-		addAttachement(file.getFileName(), 
+	public void addAttachment(final FormFile file) throws Exception {
+		addAttachment(file.getFileName(), 
 				new DataHandler(new DataSource() {
 					@Override
 					public OutputStream getOutputStream() throws IOException {
@@ -103,8 +103,8 @@ public abstract class Email {
 				}));
 	}
 	
-	public void addAttachement(DataSource source) throws Exception {
-		addAttachement(source.getName(), new DataHandler(source));
+	public void addAttachment(DataSource source) throws Exception {
+		addAttachment(source.getName(), new DataHandler(source));
 	}
 
 	public abstract void send() throws Exception;

@@ -155,7 +155,7 @@ public class EnrollmentAuditPdfReportAction extends Action {
                         if (myForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(myForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
                         for (Map.Entry<String, File> entry : output.entrySet()) {
-                        	mail.addAttachement(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+"_"+entry.getKey());
+                        	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+"_"+entry.getKey());
                         }
                         mail.send();
                         myForm.log("Email sent.");

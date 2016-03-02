@@ -17,26 +17,14 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.model.base;
 
-import org.unitime.timetable.model.AttachementType;
-import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.model.dao.AttachementTypeDAO;
+update rights set value='AttachmentTypeEdit' where value='AttachementTypeEdit';
+update rights set value='AttachmentTypes' where value='AttachementTypes';
 
-/**
- * Do not change this class. It has been automatically generated using ant create-model.
- * @see org.unitime.commons.ant.CreateBaseModelFromXml
+/*
+ * Update database version
  */
-public abstract class BaseAttachementTypeDAO extends _RootDAO<AttachementType,Long> {
 
-	private static AttachementTypeDAO sInstance;
+update application_config set value='159' where name='tmtbl.db.version';
 
-	public static AttachementTypeDAO getInstance() {
-		if (sInstance == null) sInstance = new AttachementTypeDAO();
-		return sInstance;
-	}
-
-	public Class<AttachementType> getReferenceClass() {
-		return AttachementType.class;
-	}
-}
+commit;

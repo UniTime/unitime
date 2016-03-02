@@ -295,7 +295,7 @@ public class DataImportAction extends Action {
                     	if (ApplicationProperty.EmailNotificationDataExchange.isTrue())
                     		mail.addNotifyCC();
                         if (!iImport && hasOutput() && output().exists()) 
-                        	mail.addAttachement(output(), iSessionName + "_" + iForm.getExportType().getType() + "." + output().getName().substring(output().getName().lastIndexOf('.') + 1));
+                        	mail.addAttachment(output(), iSessionName + "_" + iForm.getExportType().getType() + "." + output().getName().substring(output().getName().lastIndexOf('.') + 1));
                         mail.send();
                     } catch (Exception e) {
                     	error("Unable to send email: " + e.getMessage());

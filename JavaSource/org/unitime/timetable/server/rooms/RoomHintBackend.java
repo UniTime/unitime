@@ -32,7 +32,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintResponse;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
-import org.unitime.timetable.model.AttachementType;
+import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
@@ -106,8 +106,8 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    	
 	    	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getPictures())) {
 	    		if (picture.getType() != null && (
-	    				!AttachementType.VisibilityFlag.IS_IMAGE.in(picture.getType().getVisibility()) ||
-	    				!AttachementType.VisibilityFlag.SHOW_ROOM_TOOLTIP.in(picture.getType().getVisibility())
+	    				!AttachmentType.VisibilityFlag.IS_IMAGE.in(picture.getType().getVisibility()) ||
+	    				!AttachmentType.VisibilityFlag.SHOW_ROOM_TOOLTIP.in(picture.getType().getVisibility())
 	    				)) continue;
 	    		response.addPicture(new RoomPictureInterface(picture.getUniqueId(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), RoomPicturesBackend.getPictureType(picture.getType())));
 	    	}

@@ -43,7 +43,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
-import org.unitime.timetable.model.AttachementType;
+import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
@@ -198,7 +198,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 			response.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true));
 		}
 
-		for (AttachementType type: AttachementType.listTypes(AttachementType.VisibilityFlag.ROOM_PICTURE_TYPE)) {
+		for (AttachmentType type: AttachmentType.listTypes(AttachmentType.VisibilityFlag.ROOM_PICTURE_TYPE)) {
 			response.addPictureType(RoomPicturesBackend.getPictureType(type));
 		}
 

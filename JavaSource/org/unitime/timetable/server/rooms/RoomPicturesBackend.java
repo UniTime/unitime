@@ -42,14 +42,14 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureRequest.Apply;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureResponse;
-import org.unitime.timetable.model.AttachementType;
+import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.LocationPicture;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.NonUniversityLocationPicture;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomPicture;
-import org.unitime.timetable.model.dao.AttachementTypeDAO;
+import org.unitime.timetable.model.dao.AttachmentTypeDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -61,13 +61,13 @@ import org.unitime.timetable.security.rights.Right;
 public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequest, RoomPictureResponse> {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
-	public static AttachmentTypeInterface getPictureType(AttachementType type) {
+	public static AttachmentTypeInterface getPictureType(AttachmentType type) {
 		if (type == null) return null;
 		return new AttachmentTypeInterface(
 				type.getUniqueId(), type.getAbbreviation(), type.getLabel(),
-				AttachementType.VisibilityFlag.IS_IMAGE.in(type.getVisibility()),
-				AttachementType.VisibilityFlag.SHOW_ROOM_TOOLTIP.in(type.getVisibility()),
-				AttachementType.VisibilityFlag.SHOW_ROOMS_TABLE.in(type.getVisibility())
+				AttachmentType.VisibilityFlag.IS_IMAGE.in(type.getVisibility()),
+				AttachmentType.VisibilityFlag.SHOW_ROOM_TOOLTIP.in(type.getVisibility()),
+				AttachmentType.VisibilityFlag.SHOW_ROOMS_TABLE.in(type.getVisibility())
 				);
 	}
 	
@@ -132,7 +132,7 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 			else
 				response.setApply(Apply.THIS_SESSION_ONLY);
 			
-			for (AttachementType type: AttachementType.listTypes(AttachementType.VisibilityFlag.ROOM_PICTURE_TYPE)) {
+			for (AttachmentType type: AttachmentType.listTypes(AttachmentType.VisibilityFlag.ROOM_PICTURE_TYPE)) {
 				response.addPictureType(RoomPicturesBackend.getPictureType(type));
 			}
 			
@@ -155,12 +155,12 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 							((NonUniversityLocation)location).getPictures().add((NonUniversityLocationPicture)picture);
 						}
 						if (p.getPictureType() != null)
-							picture.setType(AttachementTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
+							picture.setType(AttachmentTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
 						hibSession.saveOrUpdate(picture);
 					}
 				} else if (picture != null) {
 					if (p.getPictureType() != null)
-						picture.setType(AttachementTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
+						picture.setType(AttachmentTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
 					hibSession.saveOrUpdate(picture);
 				}
 			}

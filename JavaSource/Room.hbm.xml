@@ -413,7 +413,7 @@
             
 		<many-to-one
 			name="type"
-			class="AttachementType"
+			class="AttachmentType"
 			column="type_id"
 			not-null="false"/>
 

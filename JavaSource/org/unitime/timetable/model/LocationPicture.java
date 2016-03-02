@@ -55,6 +55,6 @@ public abstract class LocationPicture extends BaseLocationPicture implements Com
 	}
 	
 	public boolean isImage() {
-		return getType() == null || AttachementType.VisibilityFlag.IS_IMAGE.in(getType().getVisibility());
+		return getType() == null || AttachmentType.VisibilityFlag.IS_IMAGE.in(getType().getVisibility());
 	}
 }

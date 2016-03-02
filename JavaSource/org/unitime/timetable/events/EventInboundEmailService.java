@@ -73,12 +73,12 @@ public class EventInboundEmailService {
 					body = (String)multi.getBodyPart(0).getContent();
 				}
 			}
-			BodyPart attachement = null;
+			BodyPart attachment = null;
 			if (message.getContent() instanceof MimeMultipart) {
 				MimeMultipart multi = (MimeMultipart)message.getContent();
 				for (int i = 1; i < multi.getCount(); i++) {
 					if (Part.ATTACHMENT.equalsIgnoreCase(multi.getBodyPart(i).getDisposition()) && multi.getBodyPart(i).getFileName() != null) {
-						attachement = multi.getBodyPart(i); break;
+						attachment = multi.getBodyPart(i); break;
 					}
 				}
 			}
@@ -101,7 +101,7 @@ public class EventInboundEmailService {
 			}
 			reader.close();
 			
-			if (text == null && attachement == null) return;
+			if (text == null && attachment == null) return;
 			
 			final EventNote note = new EventNote();
 			
@@ -124,10 +124,10 @@ public class EventInboundEmailService {
 			
 			note.setTextNote(text);
 			
-			if (attachement != null) {
-				note.setAttachedName(attachement.getFileName());
-				note.setAttachedContentType(attachement.getContentType());
-				InputStream input = attachement.getInputStream();
+			if (attachment != null) {
+				note.setAttachedName(attachment.getFileName());
+				note.setAttachedContentType(attachment.getContentType());
+				InputStream input = attachment.getInputStream();
 				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 				byte[] buffer = new byte[1024];
 				int len;

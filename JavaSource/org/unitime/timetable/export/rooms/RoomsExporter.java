@@ -49,8 +49,8 @@ import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
-import org.unitime.timetable.model.AttachementType;
-import org.unitime.timetable.model.AttachementType.VisibilityFlag;
+import org.unitime.timetable.model.AttachmentType;
+import org.unitime.timetable.model.AttachmentType.VisibilityFlag;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
@@ -142,7 +142,7 @@ public abstract class RoomsExporter implements Exporter {
     	for (RoomFeatureType type: new TreeSet<RoomFeatureType>(RoomFeatureTypeDAO.getInstance().findAll()))
     		ec.addRoomFeatureType(new FeatureTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.isShowInEventManagement()));
     	
-    	for (AttachementType type: AttachementType.listTypes(AttachementType.VisibilityFlag.ROOM_PICTURE_TYPE, VisibilityFlag.SHOW_ROOMS_TABLE))
+    	for (AttachmentType type: AttachmentType.listTypes(AttachmentType.VisibilityFlag.ROOM_PICTURE_TYPE, VisibilityFlag.SHOW_ROOMS_TABLE))
     		ec.addPictureType(RoomPicturesBackend.getPictureType(type));
     	
     	ec.setDepartment(request.getOption("department"));

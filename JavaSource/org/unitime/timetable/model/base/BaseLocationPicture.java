@@ -22,7 +22,7 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.unitime.timetable.model.AttachementType;
+import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.LocationPicture;
 
 /**
@@ -38,7 +38,7 @@ public abstract class BaseLocationPicture implements Serializable {
 	private String iContentType;
 	private Date iTimeStamp;
 
-	private AttachementType iType;
+	private AttachmentType iType;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_DATA_FILE = "dataFile";
@@ -72,8 +72,8 @@ public abstract class BaseLocationPicture implements Serializable {
 	public Date getTimeStamp() { return iTimeStamp; }
 	public void setTimeStamp(Date timeStamp) { iTimeStamp = timeStamp; }
 
-	public AttachementType getType() { return iType; }
-	public void setType(AttachementType type) { iType = type; }
+	public AttachmentType getType() { return iType; }
+	public void setType(AttachmentType type) { iType = type; }
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof LocationPicture)) return false;

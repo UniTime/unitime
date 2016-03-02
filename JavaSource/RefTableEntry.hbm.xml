@@ -310,7 +310,7 @@
         		type="boolean"/>
         </union-subclass>
         
-        <union-subclass name="AttachementType" table="attachment_type" abstract="false">
+        <union-subclass name="AttachmentType" table="attachment_type" abstract="false">
         	<property
         		name="abbreviation"
         		column="abbreviation"

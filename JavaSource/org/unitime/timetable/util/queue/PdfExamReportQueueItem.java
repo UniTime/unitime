@@ -453,7 +453,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                                     mail.addRecipientBCC(s.nextToken(), null);
                                 for (Map.Entry<String, File> entry : files.entrySet()) {
-                                	mail.addAttachement(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
+                                	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
                                     log("&nbsp;&nbsp;Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
                                 }
                                 mail.send();
@@ -481,7 +481,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
                         for (Map.Entry<String, File> entry : output.entrySet()) {
-                        	mail.addAttachement(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
+                        	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
                         }
                         mail.send();
                         log("Email sent.");
@@ -513,7 +513,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 mail.addRecipientCC(s.nextToken(), null);
                             if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientBCC(s.nextToken(), null);
-                            mail.addAttachement(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            mail.addAttachment(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
                             mail.send();
                             log("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>.");
                         } catch (Exception e) {
@@ -546,7 +546,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 mail.addRecipientCC(s.nextToken(), null);
                             if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientBCC(s.nextToken(), null);
-                            mail.addAttachement(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            mail.addAttachment(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
                             mail.send();
                             log("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>.");
                         } catch (Exception e) {

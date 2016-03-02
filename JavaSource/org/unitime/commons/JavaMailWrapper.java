@@ -132,12 +132,12 @@ public class JavaMailWrapper extends Email {
 	}
 	
 	@Override
-	protected void addAttachement(String name, DataHandler data) throws MessagingException {
-        BodyPart attachement = new MimeBodyPart();
-        attachement.setDataHandler(data);
-        attachement.setFileName(name);
-        attachement.setHeader("Content-ID", "<" + name + ">");
-        iBody.addBodyPart(attachement);
+	protected void addAttachment(String name, DataHandler data) throws MessagingException {
+        BodyPart attachment = new MimeBodyPart();
+        attachment.setDataHandler(data);
+        attachment.setFileName(name);
+        attachment.setHeader("Content-ID", "<" + name + ">");
+        iBody.addBodyPart(attachment);
 	}
 	
 	@Override

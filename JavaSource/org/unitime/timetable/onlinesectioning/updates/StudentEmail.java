@@ -252,7 +252,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							PrintWriter out = new PrintWriter(buffer);
 							generateTimetable(out, server, helper);
 							out.flush(); out.close();
-							email.addAttachement(new DataSource() {
+							email.addAttachment(new DataSource() {
 								@Override
 								public OutputStream getOutputStream() throws IOException {
 									throw new IOException("No output stream.");
@@ -277,7 +277,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						}
 						
 						if (iTimetableImage != null) {
-							email.addAttachement(new DataSource() {
+							email.addAttachment(new DataSource() {
 								@Override
 								public OutputStream getOutputStream() throws IOException {
 									throw new IOException("No output stream.");
@@ -304,7 +304,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 							try {
 								final String calendar = CalendarExport.getCalendar(server, student);
 								if (calendar != null)
-									email.addAttachement(new DataSource() {
+									email.addAttachment(new DataSource() {
 										@Override
 										public OutputStream getOutputStream() throws IOException {
 											throw new IOException("No output stream.");

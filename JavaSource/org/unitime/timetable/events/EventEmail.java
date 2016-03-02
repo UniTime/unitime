@@ -194,7 +194,7 @@ public class EventEmail {
 			if (context != null) {
 				final FileItem file = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
 				if (file != null) {
-					email.addAttachement(new DataSource() {
+					email.addAttachment(new DataSource() {
 						@Override
 						public OutputStream getOutputStream() throws IOException {
 							throw new IOException("No output stream.");
@@ -216,11 +216,11 @@ public class EventEmail {
 			}
 			
 			if (attachment() != null)
-				email.addAttachement(attachment());
+				email.addAttachment(attachment());
 			
 			final String ical = icalendar();
 			if (ical != null) {
-				email.addAttachement(new DataSource() {
+				email.addAttachment(new DataSource() {
 					@Override
 					public OutputStream getOutputStream() throws IOException {
 						throw new IOException("No output stream.");

@@ -515,8 +515,8 @@ public enum Right {
 	ExaminationStatuses,
 	ExaminationStatusEdit,
 	
-	AttachementTypes,
-	AttachementTypeEdit,
+	AttachmentTypes,
+	AttachmentTypeEdit,
 	
 	InstructionalMethods,
 	InstructionalMethodEdit,

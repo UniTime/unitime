@@ -42,7 +42,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomUpdateRpcRequest;
-import org.unitime.timetable.model.AttachementType;
+import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.LocationPicture;
 import org.unitime.timetable.model.NonUniversityLocation;
@@ -230,7 +230,7 @@ public class RoomsConnector extends ApiConnector {
 			}
 		}
 		if (type != null) picture.setContentType(type);
-		if (reference != null) picture.setType(AttachementType.findByReference(helper.getHibSession(), reference));
+		if (reference != null) picture.setType(AttachmentType.findByReference(helper.getHibSession(), reference));
 		picture.setTimeStamp(new Date());
 		picture.setDataFile(file.getBytes());
 		helper.getHibSession().saveOrUpdate(picture);

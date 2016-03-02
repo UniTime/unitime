@@ -21,14 +21,14 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-import org.unitime.timetable.model.AttachementType;
+import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.RefTableEntry;
 
 /**
  * Do not change this class. It has been automatically generated using ant create-model.
  * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public abstract class BaseAttachementType extends RefTableEntry implements Serializable {
+public abstract class BaseAttachmentType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String iAbbreviation;
@@ -38,11 +38,11 @@ public abstract class BaseAttachementType extends RefTableEntry implements Seria
 	public static String PROP_ABBREVIATION = "abbreviation";
 	public static String PROP_VISIBILITY = "visibility";
 
-	public BaseAttachementType() {
+	public BaseAttachmentType() {
 		initialize();
 	}
 
-	public BaseAttachementType(Long uniqueId) {
+	public BaseAttachmentType(Long uniqueId) {
 		setUniqueId(uniqueId);
 		initialize();
 	}
@@ -56,9 +56,9 @@ public abstract class BaseAttachementType extends RefTableEntry implements Seria
 	public void setVisibility(Integer visibility) { iVisibility = visibility; }
 
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof AttachementType)) return false;
-		if (getUniqueId() == null || ((AttachementType)o).getUniqueId() == null) return false;
-		return getUniqueId().equals(((AttachementType)o).getUniqueId());
+		if (o == null || !(o instanceof AttachmentType)) return false;
+		if (getUniqueId() == null || ((AttachmentType)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((AttachmentType)o).getUniqueId());
 	}
 
 	public int hashCode() {
@@ -67,11 +67,11 @@ public abstract class BaseAttachementType extends RefTableEntry implements Seria
 	}
 
 	public String toString() {
-		return "AttachementType["+getUniqueId()+" "+getLabel()+"]";
+		return "AttachmentType["+getUniqueId()+" "+getLabel()+"]";
 	}
 
 	public String toDebugString() {
-		return "AttachementType[" +
+		return "AttachmentType[" +
 			"\n	Abbreviation: " + getAbbreviation() +
 			"\n	Label: " + getLabel() +
 			"\n	Reference: " + getReference() +

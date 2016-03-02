@@ -21,10 +21,10 @@ package org.unitime.timetable.model;
 
 import java.util.List;
 
-import org.unitime.timetable.model.base.BaseAttachementType;
-import org.unitime.timetable.model.dao.AttachementTypeDAO;
+import org.unitime.timetable.model.base.BaseAttachmentType;
+import org.unitime.timetable.model.dao.AttachmentTypeDAO;
 
-public class AttachementType extends BaseAttachementType implements Comparable<AttachementType> {
+public class AttachmentType extends BaseAttachmentType implements Comparable<AttachmentType> {
 	private static final long serialVersionUID = 1L;
 	
 	public static enum VisibilityFlag {
@@ -45,27 +45,27 @@ public class AttachementType extends BaseAttachementType implements Comparable<A
 		}
 	}
 
-	public AttachementType() {
+	public AttachmentType() {
 		super();
 	}
 
 	@Override
-	public int compareTo(AttachementType a) {
+	public int compareTo(AttachmentType a) {
 		int cmp = getLabel().compareTo(a.getLabel());
 		if (cmp != 0) return cmp;
 		return getUniqueId().compareTo(a.getUniqueId());
 	}
 	
-	public static List<AttachementType> listTypes(int flag) {
+	public static List<AttachmentType> listTypes(int flag) {
 		if (flag == 0)
-			return AttachementTypeDAO.getInstance().getSession().createQuery(
-					"from AttachementType order by label").setCacheable(true).list();
+			return AttachmentTypeDAO.getInstance().getSession().createQuery(
+					"from AttachmentType order by label").setCacheable(true).list();
 		else
-			return AttachementTypeDAO.getInstance().getSession().createQuery(
-					"from AttachementType where bit_and(visibility, :flag) = :flag order by label").setInteger("flag", flag).setCacheable(true).list();
+			return AttachmentTypeDAO.getInstance().getSession().createQuery(
+					"from AttachmentType where bit_and(visibility, :flag) = :flag order by label").setInteger("flag", flag).setCacheable(true).list();
 	}
 	
-	public static List<AttachementType> listTypes(VisibilityFlag... flags) {
+	public static List<AttachmentType> listTypes(VisibilityFlag... flags) {
 		int flag = 0;
 		for (VisibilityFlag f: flags) {
 			flag = f.set(flag);
@@ -73,10 +73,10 @@ public class AttachementType extends BaseAttachementType implements Comparable<A
 		return listTypes(flag);
 	}
 	
-	public static AttachementType findByReference(org.hibernate.Session hibSession, String reference) {
+	public static AttachmentType findByReference(org.hibernate.Session hibSession, String reference) {
 		if (reference == null) return null;
-		return (AttachementType)hibSession.createQuery(
-				"from AttachementType t where t.reference = :reference")
+		return (AttachmentType)hibSession.createQuery(
+				"from AttachmentType t where t.reference = :reference")
 				.setString("reference", reference)
 				.setMaxResults(1).setCacheable(true).uniqueResult();
 	}

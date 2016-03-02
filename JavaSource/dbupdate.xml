@@ -10115,7 +10115,7 @@
 		</plsql>
 		<plsql>alter table %SCHEMA%.hashed_queries add constraint pk_hashed_queries primary key (query_hash)</plsql>
 	</update>
-	<update version="149" date="14-Aug-2015" comment="Room Attachement Types">
+	<update version="149" date="14-Aug-2015" comment="Room Attachment Types">
 		<plsql>
 			create table %SCHEMA%.attachment_type (
 				uniqueid number(20,0) constraint nn_attchtype_id not null,
@@ -10710,5 +10710,9 @@
 			select distinct r.role_id, 'PreferenceLevelEdit'
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'AttachementTypeEdit'
 		</sql>
+	</update>
+	<update version="159" date="2-Mar-2016" comment="Fix attachment typo">
+		<sql>update %SCHEMA%.rights set value='AttachmentTypes' where value='AttachementTypes'</sql>
+		<sql>update %SCHEMA%.rights set value='AttachmentTypeEdit' where value='AttachementTypeEdit'</sql>
 	</update>
 </dbupdate>

@@ -2478,13 +2478,13 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageEditRoom();
 	
-	@DefaultMessage("Attachement Type")
+	@DefaultMessage("Attachment Type")
 	@DoNotTranslate
-	String pageAttachementType();
+	String pageAttachmentType();
 	
-	@DefaultMessage("Attachement Types")
+	@DefaultMessage("Attachment Types")
 	@DoNotTranslate
-	String pageAttachementTypes();
+	String pageAttachmentTypes();
 	
 	@DefaultMessage("InstructionalMethod")
 	@DoNotTranslate
@@ -2708,7 +2708,7 @@ public interface GwtMessages extends Messages {
 	String conflictCannotMakeUnavailable(String locationName);
 
 	@DefaultMessage("<i>File {0} attached.</i>")
-	String noteAttachement(String fileName);
+	String noteAttachment(String fileName);
 	
 	@DefaultMessage("Confirmation emails are disabled.")
 	String emailDisabled();
@@ -3908,16 +3908,16 @@ public interface GwtMessages extends Messages {
 	String itemSeparatorPair(String firstItem, String lastItem);
 	
 	@DefaultMessage("Image")
-	String attachementFlagIsImage();
+	String attachmentFlagIsImage();
 	
 	@DefaultMessage("Room Picture Type")
-	String attachementTypeFlagRoomPicture();
+	String attachmentTypeFlagRoomPicture();
 	
 	@DefaultMessage("Show in Rooms Table")
-	String attachementTypeFlagShowRoomsTable();
+	String attachmentTypeFlagShowRoomsTable();
 	
 	@DefaultMessage("Show in Room Tooltip")
-	String attachementTypeFlagShowRoomTooltip();
+	String attachmentTypeFlagShowRoomTooltip();
 	
 	@DefaultMessage("Distance conflicts will be checked.")
 	String infoDistanceCheckOn();
