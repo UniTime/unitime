@@ -94,6 +94,7 @@
 			</TR></TABLE>
 		</tt:section-header>
 		</TD></TR>
+		<TR><TD colspan="2" align="center"><html:errors/></TD></TR>
 	</TABLE>
 </loc:bundle>
 
