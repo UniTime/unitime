@@ -19,14 +19,45 @@
  * limitations under the License.
  * 
  -->
-<script name="Thread Dump" permission="Script Edit" engine="ECMAScript" created="Wed Mar 02 15:46:16 EST 2016">
+<script name="Thread Dump" permission="Script Edit" engine="ECMAScript" created="Wed Mar 02 16:27:46 EST 2016">
   <description><![CDATA[Generate thread dump]]></description>
   <body><![CDATA[var dump = java.lang.management.ManagementFactory.getThreadMXBean().dumpAllThreads(true, true)
 
 var file = log.createOutput('dump', 'txt');
 var out = new java.io.PrintWriter(new java.io.FileWriter(file));
 for (var i = 0; i < dump.length; i++) {
-  out.println(dump[i].toString());
+  if (i > 0) out.println();
+  var d = dump[i];
+  out.print("\"" + d.getThreadName() + "\" Id=" + d.getThreadId() + " " + d.getThreadState());
+  if (d.getLockName() != null) out.print(" on " + d.getLockName());
+  if (d.getLockOwnerName() != null)
+    out.print(" owned by \"" + d.getLockOwnerName() + "\" Id=" + d.getLockOwnerId());
+  if (d.isSuspended()) out.print(" (suspended)");
+  if (d.isInNative()) out.print(" (in native)");
+  out.println();
+  var j = 0;
+  for (; j < d.getStackTrace().length; j++) {
+    var ste = d.getStackTrace()[j];
+    out.println("\tat " + ste);
+    if (j == 0 && d.getLockInfo() != null) {
+      if (d.getThreadState() == java.lang.Thread.State.BLOCKED)
+        out.println("\t-  blocked on " + d.getLockInfo());
+      else if (d.getThreadState() == java.lang.Thread.State.WAITING || d.getThreadState() == java.lang.Thread.State.TIMED_WAITING)
+        out.println("\t-  waiting on " + d.getLockInfo());
+    }
+    for (var k = 0; k < d.getLockedMonitors().length; k++) {
+      if (d.getLockedMonitors()[k].getLockedStackDepth() == j)
+        out.println("\t-  locked " + d.getLockedMonitors()[k]);
+    }
+  }
+  if (j < d.getStackTrace().length) out.println("\t...");
+  if (d.getLockedSynchronizers().length > 0) {
+    out.println();
+    out.println("\tNumber of locked synchronizers = " + d.getLockedSynchronizers().length);
+    for (var k = 0; k < d.getLockedSynchronizers().length; k++) {
+      out.println("\t- " + d.getLockedSynchronizers()[k]);
+    }
+  }
 }
 out.flush(); out.close();]]></body>
 </script>
