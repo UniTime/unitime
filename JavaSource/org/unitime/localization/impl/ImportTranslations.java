@@ -193,6 +193,7 @@ public class ImportTranslations {
 				
 				for (Locale locale: iLocales) {
 					debug("Locale " + locale);
+					boolean empty = true;
 					
 					File input = new File(translations, bundle.getName() + "_" + locale.getValue() + ".properties");
 					if (!input.exists()) continue;
@@ -274,11 +275,13 @@ public class ImportTranslations {
 							out.println("# " + method.getName() + "=");
 						} else {
 							out.println(method.getName() + "=" + unicodeEscape(text, true));
+							empty = false;
 						}
 					}
 					
 					out.flush();
 					out.close();
+					if (empty) output.delete();
 				}
 			}
 		} catch (Exception e) {

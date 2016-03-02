@@ -109,7 +109,7 @@ public class ExportTranslations {
         '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
     };
 
-    private static String unicodeEscape(String s) {
+    private static String unicodeEscape(String s, String locale) {
     	StringBuilder sb = new StringBuilder();
     	for (int i = 0; i < s.length(); i++) {
     	    char c = s.charAt(i);
@@ -121,6 +121,15 @@ public class ExportTranslations {
         		sb.append(hexChar[c & 0xF]);         // hex for the last group, e.g., the right most 4-bits
     	    } else if (c == '\n') {
     	    	sb.append("\\n");
+    	    } else if (c == '\"') {
+    	    	sb.append("\\\\\"");
+    	    } else if (c == '\\') {
+    	    	if (locale != null)
+    	    		sb.append("\\\\\\\\");
+    	    	else
+    	    		sb.append("\\\\");
+    	    } else if (c == ' ' && (i == 0 || i +1 == s.length())) {
+    	    	sb.append("\\\\ ");
     	    } else {
     	    	sb.append(c);
     	    }
@@ -224,7 +233,7 @@ public class ExportTranslations {
     					warn("Property " + method.getName() + " has no default value!");
     				
     				out.println("# " + method.getName());
-    				out.println(method.getName() + "=" + unicodeEscape(value != null ? value : ""));
+    				out.println(method.getName() + "=" + unicodeEscape(value != null ? value : "", null));
     			}
     			
     			out.flush();
@@ -251,7 +260,7 @@ public class ExportTranslations {
     				for (Method method: clazz.getMethods()) {
     					String text = properties.getProperty(method.getName());
     					if (text != null)
-    						out.println(method.getName() + "=" + unicodeEscape(text));
+    						out.println(method.getName() + "=" + unicodeEscape(text, locale.getValue()));
     				}
     				
     				out.flush();
