@@ -23,8 +23,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Properties;
+import java.util.TreeSet;
 
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.unitime.localization.impl.ExportTranslations.Bundle;
+import org.unitime.localization.impl.ExportTranslations.Locale;
 import org.unitime.timetable.gwt.resources.Constants;
 import org.unitime.timetable.gwt.resources.Messages;
 
@@ -32,6 +40,91 @@ import org.unitime.timetable.gwt.resources.Messages;
  * @author Tomas Muller
  */
 public class ImportTranslations {
+	private List<Bundle> iBundles = new ArrayList<Bundle>();
+	private List<Locale> iLocales = new ArrayList<Locale>();
+	private Project iProject;
+	private File iBaseDir;
+	private File iSource;
+	private String iTranslations = "Documentation/Translations";
+
+	public ImportTranslations() {}
+	
+	public void setProject(Project project) {
+		iProject = project;
+		iBaseDir = project.getBaseDir();
+	}
+	
+	public void setBaseDir(String baseDir) {
+		iBaseDir = new File(baseDir);
+	}
+	
+	public void setSource(String source) {
+		iSource = new File(source);
+	}
+	
+	public Bundle createBundle() {
+		Bundle bundle = new Bundle();
+		iBundles.add(bundle);
+		return bundle;
+	}
+	
+	public void addBundle(Bundle bundle) {
+		iBundles.add(bundle);
+	}
+	
+	public void setBundles(String bundles) {
+		for (String name: bundles.split(",")) {
+			addBundle(new Bundle(name));
+		}
+	}
+	
+	public Locale createLocale() {
+		Locale locale = new Locale();
+		iLocales.add(locale);
+		return locale;
+	}
+	
+	public void addLocale(Locale locale) {
+		iLocales.add(locale);
+	}
+	
+	public void setLocales(String locales) {
+		for (String value: locales.split(",")) {
+			addLocale(new Locale(value));
+		}
+	}
+
+	public void setTranslations(String translations) {
+		iTranslations = translations;
+	}
+	
+    public void info(String message) {
+    	if (iProject != null)
+    		iProject.log(message);
+    	else
+    		System.out.println("     [info] " + message);
+    }
+    
+    public void warn(String message) {
+    	if (iProject != null)
+    		iProject.log(message, Project.MSG_WARN);
+    	else
+    		System.out.println("  [warning] " +message);
+    }
+    
+    public void debug(String message) {
+    	if (iProject != null)
+    		iProject.log(message, Project.MSG_DEBUG);
+    	else
+    		System.out.println("    [debug] " +message);
+    }
+
+    public void error(String message) {
+    	if (iProject != null)
+    		iProject.log(message, Project.MSG_ERR);
+    	else
+    		System.out.println("    [error] " +message);
+    }
 	
 	private static String array2string(String[] value) {
 		String ret = "";
@@ -67,43 +160,47 @@ public class ImportTranslations {
     	return sb.toString();
     }	
 
-	public static void main(String[] args) {
+    public void execute() throws BuildException {
 		try {
-			String bundles = System.getProperty("bundle", "CourseMessages,ConstantsMessages,ExaminationMessages,SecurityMessages,GwtConstants,GwtMessages,StudentSectioningConstants,StudentSectioningMessages");
-			String locales = System.getProperty("locale", "cs");
-			String source = System.getProperty("source", "/Users/muller/git/unitime");
-			File translations = new File(new File(source), "Documentation/Translations");
+			File translations = new File(iBaseDir, iTranslations);
+			info("Importing translations from: " + translations);
 			
-			for (String bundle: bundles.split(",")) {
-				System.out.println("Loading " + bundle);
+			for (Bundle bundle: iBundles) {
+    			info("Loading " + bundle);
 				Class clazz = null;
 				File folder = null;
+    			if (bundle.hasPackage()) {
+    				try {
+    					clazz =  Class.forName(bundle.getPackage() + "." + bundle.getName());
+    					folder = new File(iSource, bundle.getPackage().replace('.', File.separatorChar));
+    				} catch (ClassNotFoundException e) {}
+    			}
 				try {
 					clazz = Class.forName(Localization.ROOT + bundle);
-					folder = new File(new File(source), "JavaSource" + File.separator + Localization.ROOT.replace('.', File.separatorChar));
+					folder = new File(iSource, Localization.ROOT.replace('.', File.separatorChar));
 				} catch (ClassNotFoundException e) {}
 				try {
 					if (clazz == null) {
 						clazz = Class.forName(Localization.GWTROOT + bundle);
-						folder = new File(new File(source), "JavaSource" + File.separator + Localization.GWTROOT.replace('.', File.separatorChar));
+						folder = new File(iSource, Localization.GWTROOT.replace('.', File.separatorChar));
 					}
 				} catch (ClassNotFoundException e) {}
 				if (clazz == null) {
-					System.err.println("Bundle " + bundle + " not found.");
+					error("Bundle " + bundle + " not found.");
 					continue;
 				}
 				boolean constants = Constants.class.isAssignableFrom(clazz);
 				
-				for (String locale: locales.split(",")) {
-					System.out.println(" -- " + locale);
+				for (Locale locale: iLocales) {
+					debug("Locale " + locale);
 					
-					File input = new File(translations, bundle + "_" + locale + ".properties");
+					File input = new File(translations, bundle.getName() + "_" + locale.getValue() + ".properties");
 					if (!input.exists()) continue;
 					
 					Properties translation = new Properties();
 					translation.load(new FileReader(input));
 					
-					File output = new File(folder, bundle + "_" + locale + ".properties");
+					File output = new File(folder, bundle.getName() + "_" + locale.getValue() + ".properties");
 					
 					Properties old = new Properties();
 					if (output.exists()) old.load(new FileReader(output));
@@ -127,8 +224,14 @@ public class ImportTranslations {
 					out.println("# See the License for the specific language governing permissions and");
 					out.println("# limitations under the License.");
 					out.println("#");
-					
-					for (Method method: clazz.getMethods()) {
+					TreeSet<Method> methods = new TreeSet<Method>(new Comparator<Method>() {
+						@Override
+						public int compare(Method m1, Method m2) {
+							return m1.getName().compareTo(m2.getName());
+						}
+					});
+					for (Method method: clazz.getMethods()) methods.add(method);
+					for (Method method: methods) {
 						String value = null;
 						Messages.DefaultMessage dm = method.getAnnotation(Messages.DefaultMessage.class);
 						if (dm != null)
@@ -179,7 +282,20 @@ public class ImportTranslations {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new BuildException("Import failed: " + e.getMessage(), e);
 		}
 	}
+    
+	public static void main(String[] args) {
+		try {
+			ImportTranslations task = new ImportTranslations();
+			task.setBaseDir(System.getProperty("source", "/Users/muller/git/unitime"));
+			task.setSource(System.getProperty("source", "/Users/muller/git/unitime") + File.separator + "JavaSource");
+			task.setBundles(System.getProperty("bundle", "CourseMessages,ConstantsMessages,ExaminationMessages,SecurityMessages,GwtConstants,GwtAriaMessages,GwtMessages,StudentSectioningConstants,StudentSectioningMessages"));
+			task.setLocales(System.getProperty("locale", "cs"));
+			task.execute();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}    
 }

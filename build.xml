@@ -586,6 +586,78 @@
         <delete dir="${build.dir}" failonerror="false"/>
 		<delete dir="${temp.dir}" failonerror="false"/>
 	</target>
+	
+	<target name="export-translations" depends="init">
+        <path id="build.classpath">
+            <fileset dir="${lib.dir}">
+            	<include name="*.jar"/>
+            </fileset>
+			<fileset dir="${3rd_party.dir}">
+				<include name="*.jar" />
+			</fileset>
+        </path>
+		<javac destdir="${build.dir}" debug="true" encoding="utf-8" includeantruntime="false">
+			<src path="${src.dir}" />
+			<classpath refid="build.classpath"/>
+			<include name="org/unitime/localization/impl/ExportTranslations.java"/>
+			<include name="org/unitime/localization/messages/**"/>
+			<include name="org/unitime/timetable/gwt/resources/**"/>
+		</javac>
+		<taskdef name="export-translations" classname="org.unitime.localization.impl.ExportTranslations">
+			<classpath refid="build.classpath"/>
+			<classpath path="${build.dir}"/>
+		</taskdef>
+		<export-translations>
+			<bundle package="org.unitime.localization.messages" name="CourseMessages"/>
+			<bundle package="org.unitime.localization.messages" name="ConstantsMessages"/>
+			<bundle package="org.unitime.localization.messages" name="ExaminationMessages"/>
+			<bundle package="org.unitime.localization.messages" name="SecurityMessages"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="GwtConstants"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="GwtAriaMessages"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="GwtMessages"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningConstants"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningMessages"/>
+			<locale value="cs"/>
+		</export-translations>
+        <delete dir="${build.dir}" failonerror="false"/>
+		<delete dir="${temp.dir}" failonerror="false"/>
+	</target>
+	
+	<target name="import-translations" depends="init">
+        <path id="build.classpath">
+            <fileset dir="${lib.dir}">
+            	<include name="*.jar"/>
+            </fileset>
+			<fileset dir="${3rd_party.dir}">
+				<include name="*.jar" />
+			</fileset>
+        </path>
+		<javac destdir="${build.dir}" debug="true" encoding="utf-8" includeantruntime="false">
+			<src path="${src.dir}" />
+			<classpath refid="build.classpath"/>
+			<include name="org/unitime/localization/impl/ImportTranslations.java"/>
+			<include name="org/unitime/localization/messages/**"/>
+			<include name="org/unitime/timetable/gwt/resources/**"/>
+		</javac>
+		<taskdef name="import-translations" classname="org.unitime.localization.impl.ImportTranslations">
+			<classpath refid="build.classpath"/>
+			<classpath path="${build.dir}"/>
+		</taskdef>
+		<import-translations source="${src.dir}">
+			<bundle package="org.unitime.localization.messages" name="CourseMessages"/>
+			<bundle package="org.unitime.localization.messages" name="ConstantsMessages"/>
+			<bundle package="org.unitime.localization.messages" name="ExaminationMessages"/>
+			<bundle package="org.unitime.localization.messages" name="SecurityMessages"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="GwtConstants"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="GwtAriaMessages"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="GwtMessages"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningConstants"/>
+			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningMessages"/>
+			<locale value="cs"/>
+		</import-translations>
+        <delete dir="${build.dir}" failonerror="false"/>
+		<delete dir="${temp.dir}" failonerror="false"/>
+	</target>
 
 	<target name="build" depends="load-properties,compile-war,done" />
 	<target name="dist" depends="load-properties,compile-war,help,build-dist,done" />
