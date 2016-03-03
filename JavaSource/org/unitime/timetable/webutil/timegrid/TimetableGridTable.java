@@ -36,9 +36,11 @@ import javax.servlet.jsp.JspWriter;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
@@ -62,6 +64,7 @@ import org.unitime.timetable.util.RoomAvailability;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 public class TimetableGridTable {
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 	protected static Formats.Format<Number> sUtF = Formats.getNumberFormat("0.00");
 	public static final int sDaysAll = 0;
@@ -398,7 +401,7 @@ public class TimetableGridTable {
 				if (skipDay(day)) continue;
 				boolean eol = (day==endDay());
 				out.println("<th colspan='"+(1+model.getMaxIdxForDay(day,firstSlot(),lastSlot()))+"'class='TimetableHeadCellVertical"+(eol?"EOL":"")+"'>");
-				out.println(Constants.DAY_NAME[day]);
+				out.println(CONSTANTS.days()[day]);
 				out.println("</th>");
 			}
 		} else { //isDispModeInRow() || isDispModePerWeekVertical()
@@ -410,7 +413,7 @@ public class TimetableGridTable {
 					boolean eol = (eod && (isDispModePerWeek() ||  day==endDay()));
 					out.println("<th colspan='"+nrSlotsPerPeriod()+"' class='Timetable" + (rowNumber==0?"Head":"") + "Cell" + (eol?"EOL":eod?"EOD":"") + "'>");
 					if (isDispModeInRow())
-						out.println(Constants.DAY_NAME[day]+"<br>");
+						out.println(CONSTANTS.days()[day]+"<br>");
 					out.println(Constants.toTime(time));
 					out.println("</th>");
 				}
@@ -537,7 +540,7 @@ public class TimetableGridTable {
 				if (day>startDay())
 					out.println("</tr><tr valign='top'>");
 				int maxIdx = model.getMaxIdxForDay(day,firstSlot(),lastSlot());
-				out.println("<th rowspan='"+(1+maxIdx)+"' class='TimetableCell'>"+Constants.DAY_NAME[day]+"</th>");
+				out.println("<th rowspan='"+(1+maxIdx)+"' class='TimetableCell'>"+CONSTANTS.days()[day]+"</th>");
 				for (int idx=0;idx<=maxIdx;idx++) {
 					if (idx>0)
 						out.println("</tr><tr valign='top'>");
@@ -627,7 +630,7 @@ public class TimetableGridTable {
 					out.println("</tr><tr valign='top'>");
 				}
 				int maxIdx = model.getMaxIdxForDay(day,firstSlot(),lastSlot(),date);
-				out.println("<th rowspan='"+(1+maxIdx)+"' class='TimetableCell'>"+Constants.DAY_NAME[day]+ " " + sDF.format(c.getTime()) + "</th>");
+				out.println("<th rowspan='"+(1+maxIdx)+"' class='TimetableCell'>"+CONSTANTS.days()[day]+ " " + sDF.format(c.getTime()) + "</th>");
 				for (int idx=0;idx<=maxIdx;idx++) {
 					if (idx>0)
 						out.println("</tr><tr valign='top'>");

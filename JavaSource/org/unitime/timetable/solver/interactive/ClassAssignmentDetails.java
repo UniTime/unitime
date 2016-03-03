@@ -50,9 +50,11 @@ import org.cpsolver.ifs.solver.Solver;
 import org.hibernate.Session;
 import org.unitime.commons.Debug;
 import org.unitime.commons.NaturalOrderComparator;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -84,6 +86,7 @@ import org.unitime.timetable.webutil.timegrid.SolverGridModel;
  * @author Tomas Muller
  */
 public class ClassAssignmentDetails implements Serializable, Comparable {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	private static final long serialVersionUID = 1L;
 	public static DecimalFormat sDF = new DecimalFormat("0.###",new java.text.DecimalFormatSymbols(Locale.US));
 	public static DecimalFormat sJenrDF = new DecimalFormat("0",new java.text.DecimalFormatSymbols(Locale.US));
@@ -511,8 +514,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		public int getDatePatternPreference() { return iDatePatternPref; }
 		public String getDaysName() {
 			StringBuffer ret = new StringBuffer();
-			for (int i=0;i<Constants.DAY_NAMES_SHORT.length;i++)
-				if ((Constants.DAY_CODES[i] & iDays)!=0) ret.append(Constants.DAY_NAMES_SHORT[i]);
+			for (int i=0;i<CONSTANTS.shortDays().length;i++)
+				if ((Constants.DAY_CODES[i] & iDays)!=0) ret.append(CONSTANTS.shortDays()[i]);
 			return ret.toString(); 
 		}
 		public String getStartTime() {

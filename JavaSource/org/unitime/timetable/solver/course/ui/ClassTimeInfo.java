@@ -28,7 +28,9 @@ import java.util.List;
 import java.util.Locale;
 
 import org.cpsolver.ifs.util.ToolBox;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
@@ -43,6 +45,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	private static final long serialVersionUID = -342155197631035341L;
     private Long iClassId;
 
@@ -135,29 +138,23 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
         StringBuffer sb = new StringBuffer();
         for (int i=0;i<Constants.DAY_CODES.length;i++)
             if ((iDayCode & Constants.DAY_CODES[i])!=0)
-                sb.append(Constants.DAY_NAMES_SHORT[i]);
+                sb.append(CONSTANTS.shortDays()[i]);
         return sb.toString(); 
     }
 
     public String getStartTimeHeader() { 
     	int min = iStartSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-        int h = min/60;
-        int m = min%60;
-        return (h>12?h-12:h)+":"+(m<10?"0":"")+m+(h>=12?"p":"a");
+    	return Constants.toTime(min);
     }
 
     public String getEndTimeHeader() { 
     	int min = (iStartSlot + iLength) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - getBreakTime();
-        int m = min % 60;
-        int h = min / 60;
-        return (h>12?h-12:h)+":"+(m<10?"0":"")+m+(h>=12?"p":"a");
+    	return Constants.toTime(min);
     }
 
     public String getEndTimeHeaderNoAdj() { 
     	int min = (iStartSlot + iLength) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
-        int m = min % 60;
-        int h = min / 60;
-        return (h>12?h-12:h)+":"+(m<10?"0":"")+m+(h>=12?"p":"a");
+    	return Constants.toTime(min);
     }
 
     public int getStartSlot() { return iStartSlot; }

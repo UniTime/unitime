@@ -563,7 +563,7 @@ public class PersonalizedExamReportAction extends Action {
                 int dayCode = getDaysCode(meetings);
                 String days = "";
                 for (int i=0;i<Constants.DAY_CODES.length;i++)
-                    if ((dayCode & Constants.DAY_CODES[i])!=0) days += Constants.DAY_NAMES_SHORT[i];
+                    if ((dayCode & Constants.DAY_CODES[i])!=0) days += CONSTANTS.shortDays()[i];
                 meetingTime += " "+days;
                 Meeting first = (Meeting)meetings.first();
                 meetingTime += " "+first.startTime()+" - "+first.stopTime();
@@ -1335,7 +1335,7 @@ public class PersonalizedExamReportAction extends Action {
             int dayCode = getDaysCode(meetings);
             String days = "";
             for (int i=0;i<Constants.DAY_CODES.length;i++)
-                if ((dayCode & Constants.DAY_CODES[i])!=0) days += Constants.DAY_NAMES_SHORT[i];
+                if ((dayCode & Constants.DAY_CODES[i])!=0) days += CONSTANTS.shortDays()[i];
             meetingTime += days;
             Meeting first = (Meeting)meetings.first();
             meetingTime += " "+first.startTime()+" - "+first.stopTime();

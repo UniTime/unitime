@@ -63,7 +63,6 @@ import org.unitime.timetable.solver.course.ui.ClassAssignmentInfo;
 import org.unitime.timetable.solver.course.ui.ClassInstructorInfo;
 import org.unitime.timetable.solver.course.ui.ClassRoomInfo;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DefaultExternalClassNameHelper;
 import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.Navigation;
@@ -1452,7 +1451,7 @@ public class Class_ extends BaseClass_ {
 		if (a!=null) {
 				Enumeration<Integer> e = a.getTimeLocation().getDays();
 				while (e.hasMoreElements()){
-					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
+					sb.append(CONSTANTS.shortDays()[e.nextElement()]);
 				}
 				sb.append(" ");
 				sb.append(a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()));

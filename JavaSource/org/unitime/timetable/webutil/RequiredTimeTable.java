@@ -25,8 +25,10 @@ import java.awt.image.WritableRaster;
 
 import javax.servlet.ServletRequest;
 
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Constants;
@@ -38,6 +40,8 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class RequiredTimeTable {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	
     public static String getTimeGridSize(UserContext user) {
     	return UserProperty.GridSize.get(user);
     }
@@ -74,13 +78,14 @@ public class RequiredTimeTable {
     	StringBuffer sb = new StringBuffer();
     	
     	int days = 0;
+    	int startSlot = -1;
     	int hour = -1;
     	int min = -1;
     	int morn = -1;
     	
     	try {
     		days = getModel().getExactDays();
-    		int startSlot = getModel().getExactStartSlot();
+    		startSlot = getModel().getExactStartSlot();
     		int startMin = startSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
     		if (startMin>=0) {
     			min = startMin % 60;
@@ -93,7 +98,7 @@ public class RequiredTimeTable {
     	
     	if (editable) {
         	for (int i=0;i<Constants.DAY_CODES.length;i++) {
-        		sb.append("<input type='checkbox' name='"+iName+"_d"+i+"' "+((days&Constants.DAY_CODES[i])!=0?"checked":"")+" "+"/>"+Constants.DAY_NAME[i]+"&nbsp;&nbsp;\n");
+        		sb.append("<input type='checkbox' name='"+iName+"_d"+i+"' "+((days&Constants.DAY_CODES[i])!=0?"checked":"")+" "+"/>"+CONSTANTS.days()[i]+"&nbsp;&nbsp;\n");
         	}
         	
         	sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
@@ -108,8 +113,8 @@ public class RequiredTimeTable {
         		sb.append("<option value='"+i+"' "+(i==min?"selected":"")+">"+(i<10?"0":"")+i+"</option>\n");
         	sb.append("</select> <select name='"+iName+"_morn' "+">\n");
         	sb.append("<option value=''></option>\n");
-        	sb.append("<option value='1' "+(morn==1?"selected":"")+">am</option>\n");
-        	sb.append("<option value='0' "+(morn==0?"selected":"")+">pm</option>\n");
+        	sb.append("<option value='1' "+(morn==1?"selected":"")+">" + CONSTANTS.timeAm() + "</option>\n");
+        	sb.append("<option value='0' "+(morn==0?"selected":"")+">" + CONSTANTS.timePm() + "</option>\n");
         	sb.append("</select>");
         } else {
         	int nrDays = 0;
@@ -118,9 +123,9 @@ public class RequiredTimeTable {
     		}
     		for (int i=0;i<Constants.DAY_CODES.length;i++) {
     			if ((days&Constants.DAY_CODES[i])!=0) 
-    				sb.append(nrDays==1?Constants.DAY_NAME[i]:Constants.DAY_NAMES_SHORT[i]);
+    				sb.append(nrDays==1?CONSTANTS.days()[i]:CONSTANTS.shortDays()[i]);
     		}
-    		sb.append(" "+hour+":"+(min<10?"0":"")+min+(morn==1?"a":"p"));
+    		sb.append(" " + Constants.slot2str(startSlot));
     	}
 
     	return sb.toString();

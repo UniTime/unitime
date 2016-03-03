@@ -210,7 +210,7 @@ public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingMod
 	}
 	
 	public String getDayHeader(int day) {
-		return Constants.DAY_NAME[day];
+		return CONSTANTS.days()[day];
 	}
 	
 	public void setPreference(int day, int time, String pref) {
@@ -410,7 +410,7 @@ public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingMod
          		   //all week
          	   } else {
          		   for (int a=i;a<=endDay;a++)
-         			   sb.append(nrDays==1?Constants.DAY_NAME[a]:Constants.DAY_NAMES_SHORT[a]);
+         			   sb.append(nrDays==1?CONSTANTS.days()[a]:CONSTANTS.shortDays()[a]);
          	   }
          	   if (j==0 && endTime+1==getNrTimes()) {
          		   //all day

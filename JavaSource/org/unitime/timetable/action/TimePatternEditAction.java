@@ -48,8 +48,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.TimePatternEditForm;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -71,6 +73,7 @@ import org.unitime.timetable.util.duration.DurationModel;
  */
 @Service("/timePatternEdit")
 public class TimePatternEditAction extends Action {
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Autowired SessionContext sessionContext;
 
@@ -268,7 +271,7 @@ public class TimePatternEditAction extends Action {
             		int nrDays = 0;
             		for (int j=0;j<Constants.DAY_CODES.length;j++) {
             			if ((Constants.DAY_CODES[j]&dayCode)!=0) { 
-            				name += Constants.DAY_NAMES_SHORT[j];
+            				name += CONSTANTS.shortDays()[j];
             				nrDays ++;
             			}
             		}

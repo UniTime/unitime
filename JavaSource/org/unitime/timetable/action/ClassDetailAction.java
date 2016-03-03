@@ -75,7 +75,6 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
@@ -294,7 +293,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        			if (t != null) {
 	           				Enumeration<Integer> e = t.getDays();
 	           				while (e.hasMoreElements()){
-	           					time += Constants.DAY_NAMES_SHORT[e.nextElement()];
+	           					time += CONST.shortDays()[e.nextElement()];
 	           				}
 	           				time += " " + t.getStartTimeHeader(CONST.useAmPm()) + "-" + t.getEndTimeHeader(CONST.useAmPm());
 	        			}

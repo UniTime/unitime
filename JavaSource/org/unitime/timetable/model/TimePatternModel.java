@@ -76,7 +76,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
 	    	iDayCodes = new int[Constants.NR_DAYS];
 	    	for (int i=0;i<Constants.NR_DAYS;i++) {
 	    		iDayCodes[i]=Constants.DAY_CODES[i];
-	    		iDays[i]=Constants.DAY_NAME[i];
+	    		iDays[i]=CONSTANTS.days()[i];
 	    	}
 	    	iMinutes = new int[Constants.SLOTS_PER_DAY];
 	    	for (int i=0;i<Constants.SLOTS_PER_DAY;i++) {
@@ -99,9 +99,9 @@ public class TimePatternModel implements RequiredTimeTableModel {
 	    		for (int i=0;i<Constants.DAY_CODES.length;i++) {
 	    			if ((Constants.DAY_CODES[i]&dayCode)==0) continue;
 	    			if (pattern.getNrMeetings().intValue()<=1)
-	    				iDays[idx] += Constants.DAY_NAME[i];
+	    				iDays[idx] += CONSTANTS.days()[i];
 	    			else
-	    				iDays[idx] += Constants.DAY_NAMES_SHORT[i];
+	    				iDays[idx] += CONSTANTS.shortDays()[i];
 	    		}
 	    	}
 	    	
@@ -480,7 +480,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
     		StringBuffer sb = new StringBuffer();
     		for (int i=0;i<Constants.DAY_CODES.length;i++) {
     			if ((Constants.DAY_CODES[i]&days)!=0)
-    				sb.append(Constants.DAY_NAMES_SHORT[i]);
+    				sb.append(CONSTANTS.shortDays()[i]);
     		}
     		sb.append(" ");
     		sb.append(Constants.toTime(startSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN));
@@ -547,12 +547,18 @@ public class TimePatternModel implements RequiredTimeTableModel {
              			  if ((iDayCodes[a] & Constants.DAY_CODES[x])!=0)
              				 thisDay = true;
              		  if (thisDay)
-             			  sb.append(nrDays==1?Constants.DAY_NAME[x]:Constants.DAY_NAMES_SHORT[x]);
+             			  sb.append(nrDays==1?CONSTANTS.days()[x]:CONSTANTS.shortDays()[x]);
              	  }
-             	  if (iTimePattern!=null && sb.toString().endsWith(" MTWThF"))
-             		  sb.delete(sb.length()-7, sb.length());
-             	  if (iTimePattern==null && sb.toString().endsWith(" MTWThFSSu"))
-             		  sb.delete(sb.length()-10, sb.length());
+             	  String d1 = " ";
+             	  String d2 = " ";
+             	  for (int x = 0; x < 7; x++) {
+             		 if (x < 5) d1 += CONSTANTS.shortDays()[x];
+             		  d2 += CONSTANTS.shortDays()[x];
+             	  }
+             	  if (iTimePattern!=null && sb.toString().endsWith(d1))
+             		  sb.delete(sb.length()-d1.length(), sb.length());
+             	  if (iTimePattern==null && sb.toString().endsWith(d2))
+             		  sb.delete(sb.length()-d2.length(), sb.length());
              	  if (j==0 && endTime+1==iMinutes.length) {
              		  //all day
              	  } else {

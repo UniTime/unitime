@@ -27,6 +27,8 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
@@ -51,6 +53,7 @@ import com.lowagie.text.pdf.PdfWriter;
  * @author Tomas Muller
  */
 public class PdfTimetableGridTable {
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 	protected static Formats.Format<Number> sUtF = Formats.getNumberFormat("0.00");
 	private TimetableGridTable iTable = null;
@@ -224,7 +227,7 @@ public class PdfTimetableGridTable {
 			PdfPCell c = createCell();
 			c.setColspan(12);
 			if (iTable.isDispModeInRow())
-				addText(c, Constants.DAY_NAME[iDay], true);
+				addText(c, CONSTANTS.days()[iDay], true);
 			else {
 				addText(c, model.getName(), true);
 				if (model.getResourceType() == TimetableGridModel.sResourceTypeRoom)
@@ -352,7 +355,7 @@ public class PdfTimetableGridTable {
 					PdfPCell c = createCell();
 					c.setBorderWidthTop(0);
 					if (idx==0)
-						addText(c, Constants.DAY_NAME[day], true);
+						addText(c, CONSTANTS.days()[day], true);
 					c.setBorderWidthBottom(idx==maxIdx?1:0);
 					c.setColspan(12);
 					iPdfTable.addCell(c);
@@ -427,7 +430,7 @@ public class PdfTimetableGridTable {
 					PdfPCell c = createCell();
 					c.setBorderWidthTop(0);
 					if (idx==0)
-						addText(c, Constants.DAY_NAME[day]+" "+sDF.format(cal.getTime()), true);
+						addText(c, CONSTANTS.days()[day]+" "+sDF.format(cal.getTime()), true);
 					c.setBorderWidthBottom(idx==maxIdx?1:0);
 					c.setColspan(12);
 					iPdfTable.addCell(c);
@@ -536,7 +539,7 @@ public class PdfTimetableGridTable {
 					c.setBorderWidthTop(0);
 					c.setBorderWidthLeft(0);
 					if (idx==0)
-						addTextVertical(c, Constants.DAY_NAME[day], true);
+						addTextVertical(c, CONSTANTS.days()[day], true);
 					c.setBorderWidthBottom(idx==maxIdx?1:0);
 					c.setColspan(12);
 					iPdfTable.addCell(c);

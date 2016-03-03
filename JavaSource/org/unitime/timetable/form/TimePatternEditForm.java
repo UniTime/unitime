@@ -35,6 +35,8 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.TimePattern;
@@ -54,6 +56,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 public class TimePatternEditForm extends ActionForm {
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	private static final long serialVersionUID = 2957933039987971879L;
 	private String iOp;
     private Long iUniqueId;
@@ -356,7 +359,7 @@ public class TimePatternEditForm extends ActionForm {
 				if ((dayCode&Constants.DAY_CODES[j])!=0) nrDays++;
 			for (int j=0;j<Constants.NR_DAYS;j++) {
 				if ((Constants.DAY_CODES[j]&dayCode)==0) continue;
-				sb.append(nrDays==1?Constants.DAY_NAME[j]:Constants.DAY_NAMES_SHORT[j]);
+				sb.append(nrDays==1?CONSTANTS.days()[j]:CONSTANTS.shortDays()[j]);
 			}
 			if (i.hasNext())
 				sb.append(delim);
@@ -381,12 +384,12 @@ public class TimePatternEditForm extends ActionForm {
 			if (token.length()==0) return dayCode;
 			else return -1;
 		}
-		if (token.startsWith(Constants.DAY_NAMES_SHORT[day])) {
-			int code = getDayCode(token.substring(Constants.DAY_NAMES_SHORT[day].length()),day+1,dayCode + Constants.DAY_CODES[day]);
+		if (token.startsWith(CONSTANTS.shortDays()[day])) {
+			int code = getDayCode(token.substring(CONSTANTS.shortDays()[day].length()),day+1,dayCode + Constants.DAY_CODES[day]);
 			if (code>=0) return code;
 		}
-		if (token.startsWith(Constants.DAY_NAME[day])) {
-			int code = getDayCode(token.substring(Constants.DAY_NAME[day].length()),day+1,dayCode + Constants.DAY_CODES[day]);
+		if (token.startsWith(CONSTANTS.days()[day])) {
+			int code = getDayCode(token.substring(CONSTANTS.days()[day].length()),day+1,dayCode + Constants.DAY_CODES[day]);
 			if (code>=0) return code;
 		}
 		return getDayCode(token, day+1, dayCode);
