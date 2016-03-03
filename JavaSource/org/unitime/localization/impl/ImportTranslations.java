@@ -237,7 +237,15 @@ public class ImportTranslations {
 						for (Object o: translation.keySet())
 							names.add((String)o);
 						Properties defaults = new Properties();
-						defaults.load(new FileReader(new File(translations, bundle.getName() + ".properties")));
+						File defaultFile = new File(translations, bundle.getName() + ".properties");
+						if (defaultFile.exists()) {
+							defaults.load(new FileReader(defaultFile));
+						} else {
+							PageNameGenerator gen = new PageNameGenerator();
+							gen.setSource(iSource);
+							gen.execute();
+							defaults = gen.getProperties();
+						}
 						for (Object o: defaults.keySet())
 							names.add((String)o);
 						for (String name: names) {
