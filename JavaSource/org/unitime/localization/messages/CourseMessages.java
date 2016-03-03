@@ -436,6 +436,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Room Cap")
 	String columnAssignedRoomCapacity();
 	
+	@DefaultMessage("Date")
+	String columnAssignedDatePattern();
+	
 	@DefaultMessage("Name")
 	String columnInstructorName();
 
@@ -444,7 +447,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Check Conflicts")
 	String columnInstructorCheckConflicts();
-	
+
 	@DefaultMessage("&nbsp;Check<br>Conflicts")
 	String columnInstructorCheckConflictsBr();
 	
@@ -588,6 +591,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Enroll")
 	String columnEnroll();
+	
+	@DefaultMessage("Enrollment")
+	String columnEnrollment();
 	
 	@DefaultMessage("Nbr<br>Rms")
 	String columnNbrRms();
@@ -752,6 +758,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Edit Class")
 	String actionEditClass();
+
+	@DefaultMessage("Edit Instructor")
+	String actionEditInstructor();	
+	
+	@DefaultMessage("Edit Preferences")
+	String actionEditInstructorPreferences();
 	
 	@DefaultMessage("Add Distribution Preference")
 	String actionAddDistributionPreference();
@@ -779,7 +791,7 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Next")
 	String actionNextSubpart();
-	
+
 	@DefaultMessage("Next")
 	String actionNextInstructor();
 	
@@ -794,7 +806,10 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Back")
 	String actionBackSubpartDetail();
-	
+
+	@DefaultMessage("Back")
+	String actionBackInstructorDetail();
+
 	@DefaultMessage("Back")
 	String actionBackToDetail();
 	
@@ -890,6 +905,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Delete")
 	String actionRemoveInstructor();
+	
+	@DefaultMessage("Show Preferences")
+	String actionDisplayInstructorPreferences();
+
+	@DefaultMessage("Hide Preferences")
+	String actionHideInstructorPreferences();
 	
 	@DefaultMessage("Add Examination")
 	String actionAddExamination();
@@ -1004,6 +1025,12 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("E")
 	String accessEditClass();
+
+	@DefaultMessage("I")
+	String accessEditInstructor();
+
+	@DefaultMessage("P")
+	String accessEditInstructorPreferences();
 	
 	@DefaultMessage("A")
 	String accessAddDistributionPreference();
@@ -1116,6 +1143,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("A")
 	String accessAddNewInstructor();
 	
+	@DefaultMessage("H")
+	String accessHideInstructorPreferences();
+
+	@DefaultMessage("S")
+	String accessShowInstructorPreferences();
+
 	@DefaultMessage("X")
 	String accessAddExamination();
 	
@@ -1191,6 +1224,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("B")
 	String accessBackToInstructors();
 	
+	@DefaultMessage("B")
+	String accessBackInstructorDetail();
+	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
 
@@ -1211,6 +1247,12 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Edit Class (Alt+{0})")
 	String titleEditClass(String accessKey);
+
+	@DefaultMessage("Edit Instructor (Alt+{0})")
+	String titleEditInstructor(String accessKey);
+	
+	@DefaultMessage("Edit Instructor Preferences(Alt+{0})")
+	String titleEditInstructorPreferences(String accessKey);
 	
 	@DefaultMessage("Add Distribution Preference (Alt+{0})")
 	String titleAddDistributionPreference(String accessKey);
@@ -1235,6 +1277,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update and go to previous Instructional Offering (Alt+{0})")
 	String titlePreviousIOWithUpdate(String accessKey);
+	
+	@DefaultMessage("Go to previous Instructor (Alt+{0})")
+	String titlePreviousInstructor(String accessKey);
 	
 	@DefaultMessage("Update and go to previous Instructor (Alt+{0})")
 	String titlePreviousInstructorWithUpdate(String accessKey);
@@ -1262,6 +1307,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update and go to next Instructor (Alt+{0})")
 	String titleNextInstructorWithUpdate(String accessKey);
+
+	@DefaultMessage("Go to next Instructor (Alt+{0})")
+	String titleNextInstructor(String accessKey);
 	
 	@DefaultMessage("Update and go to next Examination (Alt+{0})")
 	String titleNextExaminationWithUpdate(String accessKey);
@@ -1520,6 +1568,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Look for matches in Staff List and Directory (Alt+{0})")
 	String titleLookupInstructor(String accessKey);
+
+	@DefaultMessage("Back to Instructors (Alt+{0})")
+	String titleBackInstructorDetail(String accessKey);
 	
 	@DefaultMessage("Back to Instructors (Alt+{0})")
 	String titleBackToInstructors(String accessKey);
@@ -1559,6 +1610,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("ERRORS")
 	String errorsClassDetail();
+
+	@DefaultMessage("ERRORS")
+	String errorsInstructorDetail();
 	
 	@DefaultMessage("ERRORS")
 	String errorsSubpartDetail();
@@ -1773,6 +1827,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("No instructor was selected from the list")
 	String errorNoInstructorSelectedFromList();
 	
+	@DefaultMessage("This instructor is allowed to teach two back-to-back classes that are too far away.")
+	String descriptionInstructorIgnoreTooFar();
+	
 	@DefaultMessage("Instructor Info not supplied.")
 	String exceptionInstructorInfoNotSupplied();
 	
@@ -1944,6 +2001,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Conflicting Classes")
 	String sectionTitleClassConflicts();
 	
+	@DefaultMessage("Class Assignments")
+	String sectionTitleClassAssignments();
+	
 	@DefaultMessage("Conflicting Meetings")
 	String sectionTitleEventConflicts();
 
@@ -1952,6 +2012,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Instructor Not Displayed")
 	String titleInstructorNotDisplayed();	
+
+	@DefaultMessage("Hide Instructor Preferences (Alt+{0})")
+	String titleHideInstructorPreferences(String accessKey);	
+
+	@DefaultMessage("Show Instructor Preferences (Alt+{0})")
+	String titleShowInstructorPreferences(String accessKey);	
 	
 	@DefaultMessage("Enabled for Student Scheduling")
 	String titleEnabledForStudentScheduling();
