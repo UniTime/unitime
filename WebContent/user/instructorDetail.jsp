@@ -25,6 +25,7 @@
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
 <%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
@@ -40,6 +41,7 @@
 </SCRIPT>
 
 <html:form action="instructorDetail">
+  	<loc:bundle name="CourseMessages"> 
 	<html:hidden property="instructorId"/>
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>
@@ -56,29 +58,41 @@
 					</tt:section-title>
 				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorEdit')">
 					<html:submit property="op" 
-						styleClass="btn" accesskey="I" titleKey="title.editInstructorInfo" >
-						<bean:message key="button.editInstructorInfo" />
+							styleClass="btn" 
+							accesskey="<%=MSG.accessEditInstructor() %>" 
+							title="<%=MSG.titleEditInstructor(MSG.accessEditInstructor()) %>" >
+							<loc:message name="actionEditInstructor" />
 					</html:submit>
 				</sec:authorize>
 				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorPreferences')">
 					<html:submit property="op" 
-						styleClass="btn" accesskey="P" titleKey="title.editInstructorPref" >
-						<bean:message key="button.editInstructorPref" />
+							styleClass="btn" 
+							accesskey="<%=MSG.accessEditInstructorPreferences() %>" 
+							title="<%=MSG.titleEditInstructorPreferences(MSG.accessEditInstructorPreferences()) %>" >
+							<loc:message name="actionEditInstructorPreferences" />
 					</html:submit>
 				</sec:authorize> 
 				<logic:notEmpty name="<%=frmName%>" property="previousId">
 					<html:submit property="op" 
-							styleClass="btn" accesskey="P" titleKey="title.previousInstructor">
-						<bean:message key="button.previousInstructor" />
-					</html:submit> 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessPreviousInstructor() %>" 
+							title="<%=MSG.titlePreviousInstructor(MSG.accessPreviousInstructor()) %>" >
+							<loc:message name="actionPreviousInstructor" />
+					</html:submit>
 				</logic:notEmpty>
 				<logic:notEmpty name="<%=frmName%>" property="nextId">
 					<html:submit property="op" 
-						styleClass="btn" accesskey="N" titleKey="title.nextInstructor">
-						<bean:message key="button.nextInstructor" />
+							styleClass="btn" 
+							accesskey="<%=MSG.accessNextInstructor() %>" 
+							title="<%=MSG.titleNextInstructor(MSG.accessNextInstructor()) %>" >
+							<loc:message name="actionNextInstructor" />
 					</html:submit> 
 				</logic:notEmpty>
-				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
+				<tt:back styleClass="btn" 
+					name="<%=MSG.actionBackInstructorDetail()%>" 
+					title="<%=MSG.titleBackInstructorDetail(MSG.accessBackInstructorDetail())%>" 
+					accesskey="<%=MSG.accessBackInstructorDetail() %>" 
+					type="PreferenceGroup">
 					<bean:write name="<%=frmName%>" property="instructorId"/>
 				</tt:back>
 				</tt:section-header>
@@ -88,7 +102,7 @@
 		<logic:messagesPresent>
 		<TR>
 			<TD colspan="2" align="left" class="errorCell">
-					<B><U>ERRORS</U></B><BR>
+					<B><U><loc:message name="errorsInstructorDetail"/></U></B><BR>
 				<BLOCKQUOTE>
 				<UL>
 				    <html:messages id="error">
@@ -103,39 +117,45 @@
 		</logic:messagesPresent>
 		
 		<TR>
-			<TD>External Id:</TD><TD> <bean:write name="<%=frmName%>" property="puId" /></TD>
+			<TD><loc:message name="propertyExternalId"></loc:message></TD>
+			<TD> <bean:write name="<%=frmName%>" property="puId" /></TD>
 		</TR>
 		<logic:notEmpty name="<%=frmName%>" property="careerAcct">
 			<TR>
-				<TD>Account Name:</TD><TD> <bean:write name="<%=frmName%>" property="careerAcct" /></TD>
+				<TD><loc:message name="propertyAccountName"></loc:message></TD>
+				<TD> <bean:write name="<%=frmName%>" property="careerAcct" /></TD>
 			</TR>
 		</logic:notEmpty>
 		<logic:notEmpty name="<%=frmName%>" property="email">
 			<TR>
-				<TD>Email:</TD><TD> <bean:write name="<%=frmName%>" property="email" /></TD>
+				<TD><loc:message name="propertyEmail"></loc:message></TD>
+				<TD> <bean:write name="<%=frmName%>" property="email" /></TD>
 			</TR>
 		</logic:notEmpty>
 		<TR>
-			<TD>Position:</TD><TD> <bean:write name="<%=frmName%>" property="posType" /></TD>
+			<TD><loc:message name="propertyInstructorPosition"></loc:message></TD>
+			<TD> <bean:write name="<%=frmName%>" property="posType" /></TD>
 		</TR>
 		<logic:notEmpty name="<%=frmName%>" property="note">
 			<TR>
-				<TD valign="top">Note:</TD><TD> <bean:write name="<%=frmName%>" property="note" filter="false"/></TD>
+				<TD valign="top"><loc:message name="propertyNote"></loc:message></TD>
+				<TD> <bean:write name="<%=frmName%>" property="note" filter="false"/></TD>
 			</TR>
 		</logic:notEmpty>
 		<logic:equal name="<%=frmName%>" property="ignoreDist" value="true">
 			<TR>
-				<TD>Ignore Too Far:</TD>
-				<TD><font color='red'>ENABLED</font>&nbsp;&nbsp; -- <i>This instructor is allowed to teach two back-to-back classes that are too far away.
+				<TD><loc:message name="propertyIgnoreTooFar"></loc:message></TD>
+				<TD><font color='red'>ENABLED</font>&nbsp;&nbsp; -- 
+					<i><loc:message name="descriptionInstructorIgnoreTooFar"></loc:message>
 				</i></TD>
 			</TR>
 		</logic:equal>
 
 <!-- Class Assignments -->
 		<TR>
-			<TD colspan="2">
+			<TD colspan="2" align="left">
 				&nbsp;<BR>
-				<DIV class="WelcomeRowHead">Class Assignments</DIV>
+				<tt:section-title><loc:message name="sectionTitleClassAssignments"/></tt:section-title>
 			</TD>
 		</TR>
 		<TR>
@@ -175,11 +195,12 @@
 			<TD colspan="2" valign="middle">
 				<br>
 				<tt:section-title>
-					<a style="border:0;background:0" accesskey="H" 
-						title="Hide Instructor Preferences (ALT+H)"
-						href="javascript:instructorEditForm.op2.value='Hide Instructor Preferences'; instructorEditForm.submit();">
+					<a style="border:0;background:0" 
+						accesskey="<%=MSG.accessHideInstructorPreferences()%>" 
+						title="<%=MSG.titleHideInstructorPreferences(MSG.accessHideInstructorPreferences()) %>"
+						href="javascript:instructorEditForm.op2.value='<%=MSG.actionHideInstructorPreferences() %>'; instructorEditForm.submit();">
 					<img border='0' src='images/collapse_node_btn.gif' /></a>
-					Preferences
+					<loc:message name="sectionTitlePreferences"/>
 				</tt:section-title>
 			</TD>
 		</TR>
@@ -191,9 +212,10 @@
 			<TD colspan="2" valign="middle">
 				<br>
 				<tt:section-title>
-					<a style="border:0;background:0" accesskey="S" 
-						title="Show Instructor Preferences (ALT+S)"
-						href="javascript:instructorEditForm.op2.value='Show Instructor Preferences'; instructorEditForm.submit();">
+					<a style="border:0;background:0" 
+						accesskey="<%=MSG.accessShowInstructorPreferences()%>" 
+						title="<%=MSG.titleShowInstructorPreferences(MSG.accessShowInstructorPreferences()) %>"
+						href="javascript:instructorEditForm.op2.value='<%=MSG.actionDisplayInstructorPreferences() %>'; instructorEditForm.submit();">
 						<img border='0' src='images/expand_node_btn.gif' /></a>
 					Preferences
 					<!--  op2.value='Show Instructor Preferences';submit(); -->
@@ -233,7 +255,7 @@
 				</html:submit> 
 			<% } %>
 --%>
-				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorEdit')">
+<%--			<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorEdit')">
 					<html:submit property="op" 
 						styleClass="btn" accesskey="I" titleKey="title.editInstructorInfo" >
 						<bean:message key="button.editInstructorInfo" />
@@ -260,6 +282,49 @@
 				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
 					<bean:write name="<%=frmName%>" property="instructorId"/>
 				</tt:back>
+--%>
+
+				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorEdit')">
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessEditInstructor() %>" 
+							title="<%=MSG.titleEditInstructor(MSG.accessEditInstructor()) %>" >
+							<loc:message name="actionEditInstructor" />
+					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorPreferences')">
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessEditInstructorPreferences() %>" 
+							title="<%=MSG.titleEditInstructorPreferences(MSG.accessEditInstructorPreferences()) %>" >
+							<loc:message name="actionEditInstructorPreferences" />
+					</html:submit>
+				</sec:authorize> 
+				<logic:notEmpty name="<%=frmName%>" property="previousId">
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessPreviousInstructor() %>" 
+							title="<%=MSG.titlePreviousInstructor(MSG.accessPreviousInstructor()) %>" >
+							<loc:message name="actionPreviousInstructor" />
+					</html:submit>
+				</logic:notEmpty>
+				<logic:notEmpty name="<%=frmName%>" property="nextId">
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessNextInstructor() %>" 
+							title="<%=MSG.titleNextInstructor(MSG.accessNextInstructor()) %>" >
+							<loc:message name="actionNextInstructor" />
+					</html:submit> 
+				</logic:notEmpty>
+				<tt:back styleClass="btn" 
+					name="<%=MSG.actionBackInstructorDetail()%>" 
+					title="<%=MSG.titleBackInstructorDetail(MSG.accessBackInstructorDetail())%>" 
+					accesskey="<%=MSG.accessBackInstructorDetail() %>" 
+					type="PreferenceGroup">
+					<bean:write name="<%=frmName%>" property="instructorId"/>
+				</tt:back>
+
+
 <%--
 				<html:submit property="op" 
 					styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
@@ -270,5 +335,6 @@
 		</TR>
 	
 	</TABLE>
+	</loc:bundle>
 </html:form>
 

@@ -43,6 +43,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
@@ -88,11 +89,13 @@ import org.unitime.timetable.webutil.Navigation;
  * XDoclet definition:
  * @struts.action path="/instructorDetail" name="instructorEditForm" input="/user/instructorDetail.jsp" scope="request"
  *
- * @author Tomas Muller, Stephanie Schluttenhofer
+ * @author Tomas Muller, Zuzana Mullerova, Stephanie Schluttenhofer
  */
 @Service("/instructorDetail")
 public class InstructorDetailAction extends PreferencesAction {
-	public static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	public static GwtConstants CONST = Localization.create(GwtConstants.class);
 	
 	@Autowired SessionContext sessionContext;
 	
@@ -123,7 +126,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        super.execute(mapping, form, request, response);
 
 			InstructorEditForm frm = (InstructorEditForm) form;
-	        MessageResources rsc = getResources(request);
+//	        MessageResources rsc = getResources(request);
 	        ActionMessages errors = new ActionMessages();
 	        
 	        //Read parameters
@@ -146,12 +149,12 @@ public class InstructorDetailAction extends PreferencesAction {
 	            throw new Exception ("Null Operation not supported.");
 	        
 	        // Read instructor id from form
-	        if(op.equals(rsc.getMessage("button.editInstructorInfo"))
-	                || op.equals(rsc.getMessage("button.editInstructorPref"))
-	                || op.equals(rsc.getMessage("button.backToInstructorList"))
-	                || op.equals(rsc.getMessage("button.displayPrefs"))
-	                || op.equals(rsc.getMessage("button.nextInstructor"))
-	                || op.equals(rsc.getMessage("button.previousInstructor"))
+	        if(op.equals(MSG.actionEditInstructor())
+	                || op.equals(MSG.actionEditInstructorPreferences())
+	                || op.equals(MSG.actionBackToInstructors())
+	                || op.equals(MSG.actionDisplayInstructorPreferences())
+	                || op.equals(MSG.actionNextInstructor())
+	                || op.equals(MSG.actionPreviousInstructor())
 	                ) {
 	        	instructorId = frm.getInstructorId();
 	        }else {
@@ -166,7 +169,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	            throw new Exception ("Instructor Info not supplied.");
 	        
 	        // Cancel - Go back to Instructors List Screen
-	        if(op.equals(rsc.getMessage("button.backToInstructorList")) 
+	        if(op.equals(MSG.actionBackToInstructors()) 
 	                && instructorId!=null && instructorId.trim()!="") {
 	        	response.sendRedirect( response.encodeURL("instructorList.do"));
 	        	return null;
@@ -177,7 +180,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        DepartmentalInstructor inst = idao.get(new Long(instructorId));
 	        
 	        //Edit Information - Redirect to info edit screen
-	        if(op.equals(rsc.getMessage("button.editInstructorInfo")) 
+	        if(op.equals(MSG.actionEditInstructor()) 
 	                && instructorId!=null && instructorId.trim()!="") {
 	        	
 			    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorEdit);
@@ -187,7 +190,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        }
 	        
 	        // Edit Preference - Redirect to prefs edit screen
-	        if(op.equals(rsc.getMessage("button.editInstructorPref")) 
+	        if(op.equals(MSG.actionEditInstructorPreferences()) 
 	                && instructorId!=null && instructorId.trim()!="") {
 	        	
 			    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences);
@@ -196,12 +199,12 @@ public class InstructorDetailAction extends PreferencesAction {
 	        	return null;
 	        }
 	        	        
-            if (op.equals(rsc.getMessage("button.nextInstructor"))) {
+            if (op.equals(MSG.actionNextInstructor())) {
             	response.sendRedirect(response.encodeURL("instructorDetail.do?instructorId="+frm.getNextId()));
             	return null;
             }
             
-            if (op.equals(rsc.getMessage("button.previousInstructor"))) {
+            if (op.equals(MSG.actionPreviousInstructor())) {
             	response.sendRedirect(response.encodeURL("instructorDetail.do?instructorId="+frm.getPreviousId()));
             	return null;
             }
@@ -212,7 +215,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        BackTracker.markForBack(
 	        		request,
 	        		"instructorDetail.do?instructorId=" + instructorId,
-	        		"Instructor ("+ (frm.getName()==null?"null":frm.getName().trim()) +")",
+	        		MSG.backInstructor(frm.getName()==null?"null":frm.getName().trim()),
 	        		true, false);
 
 	        //load class assignments
@@ -228,13 +231,16 @@ public class InstructorDetailAction extends PreferencesAction {
 			    	(hasTimetable? 
 			    			new WebTable( 9,
 			    					null,
-			    					new String[] {"Class", "Check Conflicts", "Share", "Limit", "Enrollment", "Manager", "Time", "Date", "Room"},
+			    					new String[] {MSG.columnClass(), MSG.columnInstructorCheckConflicts(), MSG.columnInstructorShare(),
+			    							MSG.columnLimit(), MSG.columnEnrollment(), MSG.columnManager(), MSG.columnAssignedTime(), 
+			    							MSG.columnAssignedDatePattern(), MSG.columnAssignedRoom()},
 			    					new String[] {"left", "left","left", "left", "left", "left", "left", "left", "left"},
 			    					null )
 			    	:
 		    			new WebTable( 5,
 		    					null,
-		    					new String[] {"Class", "Check Conflicts", "Share", "Limit", "Manager"},
+		    					new String[] {MSG.columnClass(), MSG.columnInstructorCheckConflicts(), MSG.columnInstructorShare(),
+		    							MSG.columnLimit(), MSG.columnManager()},
 		    					new String[] {"left", "left","left", "left", "left"},
 		    					null )
 			    	);
@@ -415,12 +421,12 @@ public class InstructorDetailAction extends PreferencesAction {
 
 			frm.setDisplayPrefs(CommonValues.Yes.eq(sessionContext.getUser().getProperty(UserProperty.DispInstructorPrefs)));
 			
-			if (op.equals(rsc.getMessage("button.displayPrefs")) || "true".equals(request.getParameter("showPrefs"))) { 
+			if (op.equals(MSG.actionDisplayInstructorPreferences()) || "true".equals(request.getParameter("showPrefs"))) { 
 				frm.setDisplayPrefs(true);
 				sessionContext.getUser().setProperty(UserProperty.DispInstructorPrefs, CommonValues.Yes.value());
 			}
 			
-			if (op.equals(rsc.getMessage("button.hidePrefs")) || "false".equals(request.getParameter("showPrefs"))) {
+			if (op.equals(MSG.actionHideInstructorPreferences()) || "false".equals(request.getParameter("showPrefs"))) {
 				frm.setDisplayPrefs(false);
 				sessionContext.getUser().setProperty(UserProperty.DispInstructorPrefs, CommonValues.No.value());
 			}
