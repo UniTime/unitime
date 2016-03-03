@@ -94,60 +94,69 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 			
 			iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, server.getAcademicSession().isSectioningEnabled() && CustomStudentEnrollmentHolder.isAllowWaitListing());
 			
-			Student student = (iStudentId == null ? null : StudentDAO.getInstance().get(iStudentId, helper.getHibSession()));
-			if (student == null) {
-				if (!iCheck.hasFlag(EligibilityFlag.IS_ADMIN) && !iCheck.hasFlag(EligibilityFlag.IS_ADVISOR) && !iCheck.hasFlag(EligibilityFlag.IS_GUEST)
-						&& server.getAcademicSession().isSectioningEnabled()) {
-					iCheck.setMessage(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
-					if (CustomStudentEnrollmentHolder.hasProvider() && CustomStudentEnrollmentHolder.getProvider().isCanRequestUpdates()) {
-						// UniTime does not know about the student, but there is an enrollment provider capable of requesting updates -> use check eligibility to request an update
-						CustomStudentEnrollmentHolder.getProvider().checkEligibility(server, helper, iCheck, new XStudent(null, helper.getUser().getExternalId(), helper.getUser().getName()));
+			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
+			XStudent xstudent = null;
+			try {
+				Student student = (iStudentId == null ? null : StudentDAO.getInstance().get(iStudentId, hibSession));
+				if (student == null) {
+					if (!iCheck.hasFlag(EligibilityFlag.IS_ADMIN) && !iCheck.hasFlag(EligibilityFlag.IS_ADVISOR) && !iCheck.hasFlag(EligibilityFlag.IS_GUEST)
+							&& server.getAcademicSession().isSectioningEnabled()) {
+						iCheck.setMessage(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));
+						if (CustomStudentEnrollmentHolder.hasProvider() && CustomStudentEnrollmentHolder.getProvider().isCanRequestUpdates()) {
+							hibSession.close(); hibSession = null;
+							// UniTime does not know about the student, but there is an enrollment provider capable of requesting updates -> use check eligibility to request an update
+							CustomStudentEnrollmentHolder.getProvider().checkEligibility(server, helper, iCheck, new XStudent(null, helper.getUser().getExternalId(), helper.getUser().getName()));
+						}
 					}
+					logCheck(action, iCheck);
+					action.setResult(OnlineSectioningLog.Action.ResultType.NULL);
+					return iCheck;
 				}
-				logCheck(action, iCheck);
-				action.setResult(OnlineSectioningLog.Action.ResultType.NULL);
-				return iCheck;
-			}
-			
-			action.getStudentBuilder().setExternalId(student.getExternalUniqueId());
-			action.getStudentBuilder().setName(helper.getStudentNameFormat().format(student));
-			
-			StudentSectioningStatus status = student.getSectioningStatus();
-			if (status == null) status = student.getSession().getDefaultSectioningStatus();
-			boolean disabled = (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled));
-			
-			boolean noenrl = (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment));
-			if (noenrl && status.hasOption(StudentSectioningStatus.Option.admin) && iCheck.hasFlag(EligibilityFlag.IS_ADMIN))
-				noenrl = false;
-			if (noenrl && status.hasOption(StudentSectioningStatus.Option.advisor) && iCheck.hasFlag(EligibilityFlag.IS_ADVISOR))
-				noenrl = false;
-			
-			if (status != null && !status.hasOption(StudentSectioningStatus.Option.waitlist))
-				iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, false);
-			
-			if (disabled)
-				iCheck.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, false);
-			
-			if (server.getAcademicSession().isSectioningEnabled()) {
-				if (!noenrl)
-					iCheck.setFlag(EligibilityFlag.CAN_ENROLL, true);
-			} else {
-				iCheck.setFlag(EligibilityFlag.CAN_ENROLL, false);
+				
+				action.getStudentBuilder().setExternalId(student.getExternalUniqueId());
+				action.getStudentBuilder().setName(helper.getStudentNameFormat().format(student));
+				
+				StudentSectioningStatus status = student.getSectioningStatus();
+				if (status == null) status = student.getSession().getDefaultSectioningStatus();
+				boolean disabled = (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled));
+				
+				boolean noenrl = (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment));
+				if (noenrl && status.hasOption(StudentSectioningStatus.Option.admin) && iCheck.hasFlag(EligibilityFlag.IS_ADMIN))
+					noenrl = false;
+				if (noenrl && status.hasOption(StudentSectioningStatus.Option.advisor) && iCheck.hasFlag(EligibilityFlag.IS_ADVISOR))
+					noenrl = false;
+				
+				if (status != null && !status.hasOption(StudentSectioningStatus.Option.waitlist))
+					iCheck.setFlag(EligibilityFlag.CAN_WAITLIST, false);
+				
+				if (disabled)
+					iCheck.setFlag(EligibilityFlag.CAN_USE_ASSISTANT, false);
+				
+				if (server.getAcademicSession().isSectioningEnabled()) {
+					if (!noenrl)
+						iCheck.setFlag(EligibilityFlag.CAN_ENROLL, true);
+				} else {
+					iCheck.setFlag(EligibilityFlag.CAN_ENROLL, false);
+				}
+
+				if (status != null && status.getMessage() != null)
+					iCheck.setMessage(status.getMessage());
+				else if (disabled)
+					iCheck.setMessage(MSG.exceptionAccessDisabled());
+				else if (noenrl)
+					iCheck.setMessage(MSG.exceptionEnrollmentDisabled());
+					
+				xstudent = server.getStudent(iStudentId);
+			} finally {
+				if (hibSession != null) hibSession.close();
 			}
 
-			if (status != null && status.getMessage() != null)
-				iCheck.setMessage(status.getMessage());
-			else if (disabled)
-				iCheck.setMessage(MSG.exceptionAccessDisabled());
-			else if (noenrl)
-				iCheck.setMessage(MSG.exceptionEnrollmentDisabled());
-				
-			XStudent xstudent = server.getStudent(iStudentId);
-			if (xstudent == null && student != null) {
+			if (xstudent == null && iStudentId != null) {
 				// Server does not know about the student, but he/she is in the database --> try to reload it
 				server.createAction(ReloadStudent.class).forStudents(iStudentId).execute(server, helper);
 				xstudent = server.getStudent(iStudentId);
 			}
+
 			if (xstudent == null) {
 				if (!iCheck.hasMessage())
 					iCheck.setMessage(MSG.exceptionEnrollNotStudent(server.getAcademicSession().toString()));

@@ -270,6 +270,11 @@
 					onclick="doit.value=this.value;">
 					<loc:message name="actionExportPdf"/>
 				</html:submit> 
+				<html:submit
+					accesskey="<%=MSG.accessExportCsv()%>" styleClass="btn" title='<%=MSG.titleExportCsv(MSG.accessExportCsv())%>'
+					onclick="doit.value=this.value;">
+					<loc:message name="actionExportCsv"/>
+				</html:submit> 
 				</sec:authorize>
 
 				<sec:authorize access="hasPermission(null, 'Department', 'InstructionalOfferingsWorksheetPDF')">

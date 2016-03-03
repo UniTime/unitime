@@ -308,6 +308,14 @@
 					onclick="doit.value=this.value;">
 					<loc:message name="actionExportPdf"/>
 				</html:submit> 
+				&nbsp;&nbsp;&nbsp;
+				<html:submit
+					accesskey="<%=MSG.accessExportCsv()%>" 
+					styleClass="btn" 
+					title='<%=MSG.titleExportCsv(MSG.accessExportCsv())%>'
+					onclick="doit.value=this.value;">
+					<loc:message name="actionExportCsv"/>
+				</html:submit> 
 				</sec:authorize>
 			</TD>
 			<TD width='100%'></TD>

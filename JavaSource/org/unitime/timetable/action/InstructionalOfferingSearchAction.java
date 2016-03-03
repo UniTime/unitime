@@ -20,6 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -58,6 +59,7 @@ import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.PdfWorksheet;
 import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.csv.CsvInstructionalOfferingTableBuilder;
 import org.unitime.timetable.webutil.pdf.PdfInstructionalOfferingTableBuilder;
 
 
@@ -209,6 +211,36 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
         	OutputStream out = ExportUtils.getPdfOutputStream(response, "offerings");
         	
             new PdfInstructionalOfferingTableBuilder().pdfTableForInstructionalOfferings(out,
+                        WebSolver.getClassAssignmentProxy(request.getSession()),
+                        WebSolver.getExamSolver(request.getSession()),
+                        frm, 
+                        frm.getSubjectAreaIds(), 
+                        sessionContext,  
+                        true, 
+                        frm.getCourseNbr()==null || frm.getCourseNbr().length()==0);
+            
+            out.flush(); out.close();
+            
+            return null;
+        }
+        
+        return fwd;
+	}
+	
+	public ActionForward exportCsv(
+			ActionMapping mapping,
+			ActionForm form,
+			HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+	    
+        ActionForward fwd = searchInstructionalOfferings(mapping, form, request, response);
+        
+        InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
+        
+        if (getErrors(request).isEmpty()) {
+        	PrintWriter out = ExportUtils.getCsvWriter(response, "offerings");
+        	
+            new CsvInstructionalOfferingTableBuilder().csvTableForInstructionalOfferings(out,
                         WebSolver.getClassAssignmentProxy(request.getSession()),
                         WebSolver.getExamSolver(request.getSession()),
                         frm, 

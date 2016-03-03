@@ -22,7 +22,6 @@ package org.unitime.localization.messages;
 import org.unitime.timetable.action.ClassSearchAction;
 import org.unitime.timetable.action.InstructionalOfferingSearchAction;
 
-
 /**
  * @author Tomas Muller, Zuzana Mullerova
  */
@@ -309,6 +308,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Default")
 	String dropDefaultDatePattern();
+	
+	@DefaultMessage("Name")
+	String columnName();
 	
 	@DefaultMessage("External Id")
 	String columnExternalId();
@@ -748,6 +750,10 @@ public interface CourseMessages extends Messages {
 	@StrutsAction("exportPdf")
 	String actionExportPdf();
 
+	@DefaultMessage("Export CSV")
+	@StrutsAction("exportCsv")
+	String actionExportCsv();
+
 	@DefaultMessage("Worksheet PDF")
 	@StrutsAction("worksheetPdf")
 	String actionWorksheetPdf();
@@ -1017,6 +1023,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("P")
 	String accessExportPdf();
 	
+	@DefaultMessage("C")
+	String accessExportCsv();
+
 	@DefaultMessage("W")
 	String accessWorksheetPdf();
 
@@ -1238,6 +1247,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Export PDF (Alt+{0})")
 	String titleExportPdf(String accessKey);
+
+	@DefaultMessage("Export CSV (Alt+{0})")
+	String titleExportCsv(String accessKey);
 
 	@DefaultMessage("Export Worksheet PDF (Alt+{0})")
 	String titleWorksheetPdf(String accessKey);
@@ -2210,4 +2222,13 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("One or more classes of this instructional offering are in a conflict.")
 	String warnOfferingHasConflictingClasses();
+	
+	@DefaultMessage("Managed As {0}")
+	String crossListManagedAs(String course);
+	
+	@DefaultMessage("Class Assignments")
+	String classAssignmentsAdditionalNote();
+	
+	@DefaultMessage("Cancelled")
+	String statusCancelled();
 }

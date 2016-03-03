@@ -20,6 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -68,6 +69,7 @@ import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.csv.CsvClassListTableBuilder;
 import org.unitime.timetable.webutil.pdf.PdfClassListTableBuilder;
 
 
@@ -107,6 +109,14 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 		return performAction(mapping, form, request, response, "exportPdf");
 	}
 	
+	public ActionForward exportCsv(
+			ActionMapping mapping,
+			ActionForm form,
+			HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		
+		return performAction(mapping, form, request, response, "exportCsv");
+	}
 	
 	public ActionForward performAction(
 			ActionMapping mapping,
@@ -194,6 +204,20 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 				return null;
 			}
 			
+			if ("exportCsv".equals(action)) {
+	    		PrintWriter out = ExportUtils.getCsvWriter(response, "classes");
+				
+				new CsvClassListTableBuilder().csvTableForClasses(out,
+						WebSolver.getClassAssignmentProxy(request.getSession()),
+			    		WebSolver.getExamSolver(request.getSession()),
+			    		classListForm, 
+			    		sessionContext);
+				
+				out.flush(); out.close();
+				
+				return null;
+			}
+
 			BackTracker.markForBack(
 					request, 
 					"classSearch.do?doit=Search&loadFilter=1"+ids+"&courseNbr="+classListForm.getCourseNbr(), 
