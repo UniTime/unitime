@@ -25,6 +25,7 @@
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
 <%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles"%>
+<%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
@@ -36,30 +37,31 @@
 %>
 
 <html:form action="/classAssignmentsReportSearch">
+<loc:bundle name="CourseMessages">
 	<TABLE border="0" cellspacing="5" width='100%'>
 		<TR>
 			<TD>
-				<script language="JavaScript" type="text/javascript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
+				<script language="JavaScript" type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
 				<TABLE border="0" cellspacing="0" cellpadding="3">
 					<TR>
 						<TD>
-							<B>Manager:</B>
+							<B><loc:message name="filterManager"/></B>
 						</TD>
 						<TD>
 							<html:select property="filterManager">	
-								<html:option value="">All</html:option>				
-								<html:option value="-2">Department</html:option>
+								<html:option value=""><loc:message name="dropManagerAll"/></html:option>				
+								<html:option value="-2"><loc:message name="dropDeptDepartment"/></html:option>
 								<html:options collection="<%=Department.EXTERNAL_DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="managingDeptLabel" />
 							</html:select>
 						</TD>
 					</TR>
 					<TR>
 						<TD>
-							<B>Instructional Type:</B>
+							<B><loc:message name="filterInstructionalType"/></B>
 						</TD>
 						<TD>
 							<html:select property="filterIType">
-								<html:option value="">All</html:option>
+								<html:option value=""><loc:message name="dropITypeAll"/></html:option>
 								<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
 							</html:select>
 						</TD>
@@ -76,29 +78,31 @@
 					--%>
 					<TR>
 						<TD>
-							<B>Assigned Time:</B>
+							<B><loc:message name="filterAssignedTime"/></B>
 						</TD>
 						<TD>
-							<html:checkbox property="filterAssignedTimeMon"/>
-							Mon&nbsp;
-							<html:checkbox property="filterAssignedTimeTue"/>
-							Tue&nbsp;
-							<html:checkbox property="filterAssignedTimeWed"/>
-							Wed&nbsp;
-							<html:checkbox property="filterAssignedTimeThu"/>
-							Thu&nbsp;
-							<html:checkbox property="filterAssignedTimeFri"/>
-							Fri&nbsp;
-							<html:checkbox property="filterAssignedTimeSat"/>
-							Sat&nbsp;
-							<html:checkbox property="filterAssignedTimeSun"/>
-							Sun
+							<loc:bundle name="ConstantsMessages" id="CONST">
+								<html:checkbox property="filterAssignedTimeMon"/>
+								<loc:message name="mon" id="CONST"/>&nbsp;
+								<html:checkbox property="filterAssignedTimeTue"/>
+								<loc:message name="tue" id="CONST"/>&nbsp;
+								<html:checkbox property="filterAssignedTimeWed"/>
+								<loc:message name="wed" id="CONST"/>&nbsp;
+								<html:checkbox property="filterAssignedTimeThu"/>
+								<loc:message name="thu" id="CONST"/>&nbsp;
+								<html:checkbox property="filterAssignedTimeFri"/>
+								<loc:message name="fri" id="CONST"/>&nbsp;
+								<html:checkbox property="filterAssignedTimeSat"/>
+								<loc:message name="sat" id="CONST"/>&nbsp;
+								<html:checkbox property="filterAssignedTimeSun"/>
+								<loc:message name="sun" id="CONST"/>&nbsp;
+							</loc:bundle>
 						</TD>
 					</TR>
 					<TR>
 						<TD></TD>
 						<TD>
-							from
+							<loc:message name="filterTimeFrom"/>
 							<html:select property="filterAssignedTimeHour">
 								<html:options property="filterAssignedTimeHours"/>
 							</html:select>
@@ -110,14 +114,14 @@
 								<html:options property="filterAssignedTimeAmPms"/>
 							</html:select>
 							&nbsp;&nbsp;
-							for
+							<loc:message name="filterTimeFor"/>
 							<html:text property="filterAssignedTimeLength" size="3" maxlength="4"/>
-							minutes
+							<loc:message name="filterTimeMinutes"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD>
-							<B>Assigned Room:</B>
+							<B><loc:message name="filterAssignedRoom"/></B>
 						</TD>
 						<TD colspan='2'>
 							<html:text property="filterAssignedRoom" size="25"/>
@@ -125,7 +129,7 @@
 					</TR>
 					<TR>
 						<TD>
-							<B>Sort By:</B>
+							<B><loc:message name="filterSortBy"/></B>
 						</TD>
 						<TD>
 							<html:select property="sortBy">
@@ -133,16 +137,16 @@
 							</html:select>
 							<BR>
 							<html:checkbox property="sortByKeepSubparts"/>
-							Sort classes only within scheduling subparts
+							<loc:message name="checkSortWithinSubparts"/>
 						</TD>
 					</TR>
 					<TR>
 						<TD>
-							<B>Cross Lists:</B>
+							<B><loc:message name="filterCrossList"/></B>
 						</TD>
 						<TD>
 							<html:checkbox property="showCrossListedClasses"/>
-							Show cross-listed classes
+							<loc:message name="showCrossListedClasses"/>
 						</TD>
 					</TR>
 					<TR>
@@ -167,7 +171,7 @@
 		<TD><TABLE border="0" cellspacing="5">
 		<TR>
 			<TD valign="top">
-				<b>Subject:</b>
+				<b><loc:message name="filterSubject"/></b>
 			</TD>
 			<TD>
 				<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="classAssignmentsReportForm" styleClass="cmb" property="subjectAreaIds" multiple="true">
@@ -176,19 +180,19 @@
 			</TD>
 			<TD align="left" valign="top" nowrap>
 				&nbsp;&nbsp;&nbsp;
-				<html:submit property="doit" onclick="displayLoading();" accesskey="S" styleClass="btn" titleKey="title.searchClassAssignments">
-					<bean:message key="button.searchClasses" />
+				<html:submit property="doit" onclick="displayLoading();" accesskey="<%=MSG.accessSearchClasses()%>" styleClass="btn" title="<%=MSG.titleSearchClasses(MSG.accessSearchClasses())%>">
+					<loc:message name="actionSearchClassAssignments"/>
 				</html:submit>
 				<sec:authorize access="hasPermission(null, 'Session', 'ClassAssignmentsExportPdf')">
 					&nbsp;&nbsp;&nbsp;
-					<html:submit property="doit" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
-						<bean:message key="button.exportPDF" />
+					<html:submit property="doit" accesskey="<%=MSG.accessExportPdf()%>" styleClass="btn" title='<%=MSG.titleExportPdf(MSG.accessExportPdf())%>'>
+						<loc:message name="actionExportPdf"/>
 					</html:submit>
 				</sec:authorize>
 				<sec:authorize access="hasPermission(null, 'Session', 'ClassAssignmentsExportCsv')">
 					&nbsp;&nbsp;&nbsp;
-					<html:submit property="doit" accesskey="C" styleClass="btn" titleKey="title.exportCSV">
-						<bean:message key="button.exportCSV" />
+					<html:submit property="doit" accesskey="<%=MSG.accessExportCsv()%>"  styleClass="btn" title='<%=MSG.titleExportCsv(MSG.accessExportCsv())%>'>
+						<loc:message name="actionExportCsv"/>
 					</html:submit>
 				</sec:authorize>
 			</TD>
@@ -200,6 +204,7 @@
 			</TD>
 		</TR>
 	</TABLE>
+</loc:bundle>
 </html:form>
 
 <logic:notEmpty name="body2">

@@ -78,7 +78,6 @@ import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 import org.unitime.timetable.webutil.WebInstructionalOfferingTableBuilder;
@@ -654,7 +653,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     			StringBuffer sb = new StringBuffer();
    				Enumeration<Integer> e = a.getTimeLocation().getDays();
    				while (e.hasMoreElements()){
-   					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
+   					sb.append(CONSTANTS.shortDays()[e.nextElement()]);
    				}
    				sb.append(" ");
    				sb.append(a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()));

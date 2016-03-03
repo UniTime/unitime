@@ -945,7 +945,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     			StringBuffer sb = new StringBuffer();
    				Enumeration<Integer> e = a.getTimeLocation().getDays();
    				while (e.hasMoreElements()){
-   					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
+   					sb.append(CONSTANTS.shortDays()[e.nextElement()]);
    				}
    				sb.append(" ");
    				sb.append(a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()));

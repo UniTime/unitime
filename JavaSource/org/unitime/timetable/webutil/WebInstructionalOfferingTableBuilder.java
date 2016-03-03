@@ -88,7 +88,6 @@ import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 
 
@@ -1096,7 +1095,7 @@ public class WebInstructionalOfferingTableBuilder {
     			}
    				Enumeration<Integer> e = a.getTimeLocation().getDays();
    				while (e.hasMoreElements()){
-   					sb.append(Constants.DAY_NAMES_SHORT[e.nextElement()]);
+   					sb.append(CONSTANTS.shortDays()[e.nextElement()]);
    				}
    				sb.append(" ");
    				sb.append(a.getTimeLocation().getStartTimeHeader(CONSTANTS.useAmPm()));

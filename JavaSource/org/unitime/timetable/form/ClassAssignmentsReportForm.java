@@ -27,6 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -36,6 +38,7 @@ import org.unitime.timetable.util.LookupTables;
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 public class ClassAssignmentsReportForm extends ActionForm implements ClassListFormInterface {
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	/**
 	 * Comment for <code>serialVersionUID</code>
 	 */
@@ -233,7 +236,7 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		return new String[] { "", "00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55" };
 	}
 	public String[] getFilterAssignedTimeAmPms() {
-		return new String[] { "", "am", "pm"};
+		return new String[] { "", MSG.timeAm(), MSG.timePm()};
 	}
 	public String[] getFilterAssignedTimeLengths() {
 		String[] ret = new String[41];
@@ -284,7 +287,7 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		try {
 			int hour = Integer.parseInt(filterAssignedTimeHour);
 			int min = Integer.parseInt(filterAssignedTimeMin);
-			boolean morn = !("pm".equals(filterAssignedTimeAmPm));
+			boolean morn = !(MSG.timePm().equals(filterAssignedTimeAmPm));
 			if (hour==12) hour=0;
 			int startTime = ((hour+(morn?0:12))%24)*60 + min;
 			return (startTime - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;			
@@ -303,7 +306,7 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 			if (hour==0) hour = 12;
 			filterAssignedTimeHour = String.valueOf(hour);
 			filterAssignedTimeMin = (min<10?"0":"")+min;
-			filterAssignedTimeAmPm = (morn?"am":"pm");
+			filterAssignedTimeAmPm = (morn?MSG.timeAm():MSG.timePm());
 			
 		} else {
 			filterAssignedTimeHour = "";

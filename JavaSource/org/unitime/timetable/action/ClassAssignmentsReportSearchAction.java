@@ -21,8 +21,6 @@ package org.unitime.timetable.action;
 
 import java.io.OutputStream;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +33,10 @@ import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.impl.LocalizedLookupDispatchAction;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.localization.messages.Messages;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
 import org.unitime.timetable.form.ClassListFormInterface;
@@ -49,7 +51,6 @@ import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
-import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.CsvClassAssignmentExport;
@@ -60,7 +61,8 @@ import org.unitime.timetable.webutil.pdf.PdfClassAssignmentReportListTableBuilde
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
 @Service("/classAssignmentsReportSearch")
-public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatchAction {
+public class ClassAssignmentsReportSearchAction extends LocalizedLookupDispatchAction {
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 	@Autowired SessionContext sessionContext;
 	
@@ -68,15 +70,6 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 	
 	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 
-	protected Map getKeyMethodMap() {
-	      Map map = new HashMap();
-	      map.put("button.searchClasses", "searchClasses");
-	      map.put("button.cancel", "searchClasses");
-	      map.put("button.exportPDF", "exportPdf");
-	      map.put("button.exportCSV", "exportCsv");
-	      return map;
-	}
-	
 	private void initializeFilters(HttpServletRequest request, ClassAssignmentsReportForm classListForm){
 	    if ("1".equals(request.getParameter("loadFilter"))) {
             ClassAssignmentsReportSearchAction.setupGeneralFormFilters(sessionContext.getUser(), classListForm);
@@ -173,7 +166,7 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 		Collection classes = classListForm.getClasses();
 		if (classes.isEmpty()) {
 		    ActionMessages errors = new ActionMessages();
-		    errors.add("searchResult", new ActionMessage("errors.generic", "No records matching the search criteria were found."));
+		    errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorNoRecords()));
 		    saveErrors(request, errors);
 		    return mapping.findForward("showClassAssignmentsReportSearch");
 		} else {
@@ -194,7 +187,7 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 				BackTracker.markForBack(
 						request, 
 						"classAssignmentsReportSearch.do?doit=Search&loadFilter=1"+ids, 
-						"Class Assignments ("+names+")", 
+						MSG.backClassAssignments(names.toString()), 
 						true, true);
 			} else if ("exportPdf".equals(action)) {
 				OutputStream out = ExportUtils.getPdfOutputStream(response, "classassign");
@@ -216,5 +209,10 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 			return mapping.findForward("showClassAssignmentsReportList");
 		}
 
+	}
+
+	@Override
+	protected Messages getMessages() {
+		return MSG;
 	}
 }

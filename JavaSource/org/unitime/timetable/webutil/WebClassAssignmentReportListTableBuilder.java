@@ -64,7 +64,7 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
 	}
 	
 	protected String additionalNote(){
-		return(" Room Assignments");
+		return(" " + MSG.classAssignmentsAdditionalNote());
 	}
 	
 	@Override

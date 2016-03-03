@@ -19,6 +19,7 @@
 */
 package org.unitime.localization.messages;
 
+import org.unitime.timetable.action.ClassAssignmentsReportSearchAction;
 import org.unitime.timetable.action.ClassSearchAction;
 import org.unitime.timetable.action.InstructionalOfferingSearchAction;
 
@@ -743,6 +744,13 @@ public interface CourseMessages extends Messages {
 	)
 	String actionSearchClasses();
 	
+	@DefaultMessage("Search")
+	@StrutsAction(
+		value = "searchClasses",
+		apply = ClassAssignmentsReportSearchAction.class
+	)
+	String actionSearchClassAssignments();
+
 	@DefaultMessage("Search")
 	String actionSearchInstructors();
 
@@ -1910,6 +1918,9 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Classes ({0})")
 	String backClasses(String classes);
+	
+	@DefaultMessage("Class Assignments ({0})")
+	String backClassAssignments(String classes);
 	
 	@DefaultMessage("Class ({0})")
 	String backClass(String className);
