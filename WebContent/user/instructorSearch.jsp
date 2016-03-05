@@ -45,7 +45,9 @@
 				<B><loc:message name="propertyDepartment"/></B>
 				<html:select property="deptUniqueId"
 					onchange="displayLoading(); submit()">
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+					<loc:bundle name="ConstantsMessages" id="CONST">
+					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><loc:message name="select" id="CONST"/></html:option>
+					</loc:bundle>
 					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" 
 						property="value" labelProperty="label"/>
 				</html:select>

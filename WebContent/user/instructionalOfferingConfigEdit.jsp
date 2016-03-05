@@ -260,7 +260,9 @@
 			<TD><loc:message name="filterInstructionalType"/></TD>
 			<TD>
 				<html:select property="itype" onchange="javascript: itypeChanged(this);">
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+					<loc:bundle name="ConstantsMessages" id="CONST">
+						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><loc:message name="select" id="CONST"/></html:option>
+					</loc:bundle>
 					<html:options collection="<%=ItypeDesc.ITYPE_ATTR_NAME%>" property="itype" labelProperty="desc" />
 					<html:option value="more" style="background-color:rgb(223,231,242);">More Options &gt;&gt;&gt;</html:option>
 				</html:select>

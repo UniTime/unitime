@@ -243,7 +243,9 @@
 							<TD align="left" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<html:select style="width:200px;" property='<%= "instructorUids[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(10000 + ctr.intValue())%>">
-										<html:option value="<%= Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+										<loc:bundle name="ConstantsMessages" id="CONST">	
+											<html:option value="<%= Constants.BLANK_OPTION_VALUE%>"><loc:message name="select" id="CONST"/></html:option>
+										</loc:bundle>
 										<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="nameLastFirst" />
 									</html:select>
 								</logic:equal>
