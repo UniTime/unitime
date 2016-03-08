@@ -1275,8 +1275,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	
 	public static List<Collection<Section>> getSections(DistributionPref pref, SectionProvider classTable) {
 		List<Collection<Section>> ret = new ArrayList<Collection<Section>>();
-    	int groupingType = (pref.getGrouping() == null ? DistributionPref.sGroupingNone : pref.getGrouping().intValue());
-    	if (groupingType == DistributionPref.sGroupingProgressive) {
+		DistributionPref.Structure structure = pref.getStructure();
+		if (structure == null) structure = DistributionPref.Structure.AllClasses;
+    	if (structure == DistributionPref.Structure.Progressive) {
     		int maxSize = 0;
     		for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
         		DistributionObject distributionObject = (DistributionObject)i.next();
@@ -1322,7 +1323,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		}
     		for (Set<Section> s: sections)
     			ret.add(s);
-    	} else if (groupingType == DistributionPref.sGroupingOneOfEach) {
+    	} else if (structure == DistributionPref.Structure.OneOfEach) {
     		List<Section> sections = new ArrayList<Section>();
     		List<Integer> counts = new ArrayList<Integer>();
         	for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
@@ -1369,7 +1370,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	    	}        	        	    		
         		}
         	}
-			if (groupingType == DistributionPref.sGroupingPairWise) {
+        	if (structure == DistributionPref.Structure.Pairwise) {
 	        	if (sections.size() >= 2) {
 	        		for (int idx1 = 0; idx1 < sections.size() - 1; idx1++) {
 	        			Section s1 = sections.get(idx1);
@@ -1381,13 +1382,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	        			}
 	        		}
 	        	}
-			} else if (groupingType == DistributionPref.sGroupingNone) {
+			} else if (structure == DistributionPref.Structure.AllClasses) {
 				ret.add(sections);
 			} else {
+		    	int grouping = 2;
+		    	switch (structure) {
+		    	case GroupsOfTwo: grouping = 2; break;
+		    	case GroupsOfThree: grouping = 3; break;
+		    	case GroupsOfFour: grouping = 4; break;
+		    	case GroupsOfFive: grouping = 5; break;
+		    	}
 				List<Section> s = new ArrayList<Section>();
 				for (Section section: sections) {
 					s.add(section);
-					if (s.size() == groupingType) {
+					if (s.size() == grouping) {
 						ret.add(s); s = new ArrayList<Section>();
 					}
 				}

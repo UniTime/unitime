@@ -33,6 +33,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DistributionPref;
@@ -55,6 +57,7 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
  */
 @Service("/distributionPrefsAjax")
 public class DistributionPrefsAjax extends Action {
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         
         response.addHeader("Content-Type", "text/xml; charset=UTF-8");
@@ -107,9 +110,10 @@ public class DistributionPrefsAjax extends Action {
     
     protected void coumputeGroupingDesc(String groupingId, PrintWriter out) throws Exception {
         try {
-            for (int i=0;i<DistributionPref.sGroupings.length;i++)
-                if (DistributionPref.sGroupings[i].equals(groupingId))
-                    print(out, "desc", DistributionPref.getGroupingDescription(i).replaceAll("<", "@lt@").replaceAll(">", "@gt@").replaceAll("\"","@quot@").replaceAll("&","@amp@"));
+        	for (DistributionPref.Structure structure: DistributionPref.Structure.values()) {
+        		if (structure.getName().equals(groupingId))
+        			print(out, "desc", structure.getDescription().replaceAll("<", "@lt@").replaceAll(">", "@gt@").replaceAll("\"","@quot@").replaceAll("&","@amp@"));
+        	}
         } catch (Exception e) {
             print(out, "desc", "");
         }
@@ -182,7 +186,7 @@ public class DistributionPrefsAjax extends Action {
             setCacheable(true).
             setLong("schedulingSubpartId", Long.parseLong(schedulingSubpartId)).
             list());
-        print(out, "-1", "All");
+        print(out, "-1", MSG.dropDistrPrefAll());
         boolean suffix = ApplicationProperty.DistributionsShowClassSufix.isTrue();
         for (Iterator i=classes.iterator();i.hasNext();) {
             Class_ c = (Class_)i.next();

@@ -118,9 +118,9 @@ public class DistributionPrefsTableBuilder {
 		
 		Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 		if (title==null)
-			title = session.getLabel()+" Distribution Preferences";
+			title = session.getLabel()+" "+MSG.pageTitleDistributionPreferencesPdf();
 		else
-			title += " - "+session.getLabel()+" Distribution Preferences";
+			title += " - "+session.getLabel()+" "+MSG.pageTitleDistributionPreferencesPdf();
 		
 		toPdfTable(out, context, prefs, title); 
 	}
@@ -215,7 +215,8 @@ public class DistributionPrefsTableBuilder {
         	title = "<table width='100%'><tr><td width='100%'>" + 
         		 	"<DIV class=\"WelcomeRowHeadNoLine\">" + MSG.sectionTitleDistributionPreferences() +"</DIV>"+
         		 	"</td><td style='padding-bottom: 2px'>"+
-        		 	"<input type=\"submit\" name=\"op\" class=\"btn\" accesskey='A' title='Add New Distribution Preference (Alt+A)' value=\"Add Distribution Preference\">"+
+        		 	"<input type=\"submit\" name=\"op\" class=\"btn\" accesskey=\"" + MSG.accessAddDistributionPreference() + "\" " + 
+        		 	"title=\"" + MSG.titleAddDistributionPreference(MSG.accessAddDistributionPreference()) + "\" " + "value=\"" + MSG.actionAddDistributionPreference() + "\">"+
         		 	"</td></tr></table>";
         }
         
@@ -255,7 +256,7 @@ public class DistributionPrefsTableBuilder {
         		if (i2.hasNext()) objStr += "<BR>";
         	}
 
-            String groupingText = dp.getGroupingName();
+            String groupingText = dp.getStructureName();
             Comparable groupingCmp = (dp.getGrouping()==null?"0":dp.getGrouping().toString());
 
             if (pg instanceof DepartmentalInstructor) {
@@ -274,7 +275,7 @@ public class DistributionPrefsTableBuilder {
         		ownerType = "";
         		for (Department owner: owners)
         			ownerType += (ownerType.isEmpty() ? "" : "<br>") + owner.getManagingDeptAbbv();
-        		groupingText = "Instructor "+instructor.getName(instructorFormat);
+        		groupingText = MSG.columnInstructor() + " "+instructor.getName(instructorFormat);
         		groupingCmp = instructor.getName(instructorFormat);
                 //prefEditable = false;
         		if (owners.isEmpty()) continue;
@@ -328,7 +329,7 @@ public class DistributionPrefsTableBuilder {
         PdfWebTable tbl = new PdfWebTable(5, 
         		title,  
     			null,
-    			new String[] {"Preference", "Type", "Structure", "Owner", "Class" },
+    			new String[] {MSG.columnDistrPrefLevel(), MSG.columnDistrPrefType(), MSG.columnDistrPrefStructure(), MSG.columnDistrPrefOwner(), MSG.columnDistrPrefClass()},
     			new String[] { "left", "left", "left", "left", "left"},
     			new boolean[] { true, true, true, true, true} );
         
@@ -358,7 +359,7 @@ public class DistributionPrefsTableBuilder {
         		if (i2.hasNext()) objStr += "\n";
         	}
 
-            String groupingText = dp.getGroupingName();
+            String groupingText = dp.getStructureName();
             Comparable groupingCmp = (dp.getGrouping()==null?"0":dp.getGrouping().toString());
 
             if (pg instanceof DepartmentalInstructor) {
@@ -373,7 +374,7 @@ public class DistributionPrefsTableBuilder {
         			if (objStr.length()>0) objStr += "\n";
             		objStr += clazz.getClassInstructing().getClassLabel(suffix);
         		}
-        		groupingText = "Instructor "+instructor.getName(instructorFormat);
+        		groupingText = MSG.columnInstructor()+" "+instructor.getName(instructorFormat);
         		groupingCmp = instructor.getName(instructorFormat);
         	}
              
@@ -401,7 +402,7 @@ public class DistributionPrefsTableBuilder {
         }
         
         if (nrPrefs==0)
-            tbl.addLine(null,  new String[] { "No preferences found", "", "", "", "" }, null);
+            tbl.addLine(null,  new String[] {MSG.errorNoDistributionPreferencesFound(), "", "", "", "" }, null);
         
         int ord = WebTable.getOrder(context, "distPrefsTable.ord");
         ord = (ord>0?1:-1)*(1+Math.abs(ord));

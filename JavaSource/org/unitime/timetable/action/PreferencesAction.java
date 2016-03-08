@@ -631,7 +631,7 @@ public class PreferencesAction extends Action {
             dp.setOwner(pg);
             dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
             dp.setDistributionType(dist);
-            dp.setGrouping(new Integer(DistributionPref.sGroupingNone));
+            dp.setStructure(DistributionPref.Structure.AllClasses);
 
             s.add(dp);
         }

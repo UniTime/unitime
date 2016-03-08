@@ -138,6 +138,15 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Distribution:")
 	String propertyDistribution();
+
+	@DefaultMessage("Distribution Type:")
+	String propertyDistributionType();
+
+	@DefaultMessage("Structure:")
+	String propertyDistributionStructure();
+
+	@DefaultMessage("Preference:")
+	String propertyDistributionPreference();
 	
 	@DefaultMessage("Initial Assignment:")
 	String propertyInitialAssignment();
@@ -297,6 +306,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("All")
 	String dropDeptAll();
+	
+	@DefaultMessage("All")
+	String dropDistrPrefAll();
 	
 	@DefaultMessage("All")
 	String dropManagerAll();
@@ -550,6 +562,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Class")
 	String columnDistrPrefClass();
 	
+	@DefaultMessage("Preference")
+	String columnDistrPrefLevel();
+	
 	@DefaultMessage("Min Limit<br>per Class")
 	String columnSubpartMinLimitPerClass();
 	
@@ -715,6 +730,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("All courses are currently being offered for {0} subject.")
 	String errorAllCoursesOffered(String subjectAreaAbbv);
 	
+	@DefaultMessage("No preferences found")
+	String errorNoDistributionPreferencesFound();
+	
 	@DefaultMessage("Sort By:")
 	String filterSortBy();
 	
@@ -736,6 +754,9 @@ public interface CourseMessages extends Messages {
 		apply = InstructionalOfferingSearchAction.class
 	)
 	String actionSearchInstructionalOfferings();
+	
+	@DefaultMessage("Search")
+	String actionSearchDistributionPreferences();
 	
 	@DefaultMessage("Search")
 	@StrutsAction(
@@ -781,6 +802,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Add Distribution Preference")
 	String actionAddDistributionPreference();
+
+	@DefaultMessage("Add New Distribution Preference")
+	String actionAddNewDistributionPreference();
+	
+	@DefaultMessage("Add Class")
+	String actionAddClassToDistribution();
 	
 	@DefaultMessage("Assign")
 	String actionOpenClassAssignmentDialog();
@@ -819,6 +846,9 @@ public interface CourseMessages extends Messages {
 	String actionBackClassDetail();
 	
 	@DefaultMessage("Back")
+	String actionBackDistributionPreference();
+	
+	@DefaultMessage("Back")
 	String actionBackSubpartDetail();
 
 	@DefaultMessage("Back")
@@ -832,6 +862,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update")
 	String actionUpdatePreferences();
+	
+	@DefaultMessage("Update")
+	String actionUpdateDistributionPreference();
+	
+	@DefaultMessage("Save")
+	String actionSaveNewDistributionPreference();
 	
 	@DefaultMessage("Update")
 	String actionUpdateExamination();
@@ -920,6 +956,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Delete")
 	String actionRemoveInstructor();
 	
+	@DefaultMessage("Delete")
+	String actionDeleteDistributionPreference();
+	
 	@DefaultMessage("Show Preferences")
 	String actionDisplayInstructorPreferences();
 
@@ -967,6 +1006,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Delete")
 	String actionDeleteIO();
+	
+	@DefaultMessage("Delete")
+	String actionDelete();
 	
 	@DefaultMessage("Back")
 	String actionBackToIOList();
@@ -1027,6 +1069,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("S")
 	String accessSearchInstructors();
+	
+	@DefaultMessage("S")
+	String accessSearchDistributionPreferences();
 
 	@DefaultMessage("P")
 	String accessExportPdf();
@@ -1039,7 +1084,7 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("A")
 	String accessAddNewInstructionalOffering();
-
+	
 	@DefaultMessage("E")
 	String accessEditClass();
 
@@ -1089,6 +1134,9 @@ public interface CourseMessages extends Messages {
 	String accessBackClassDetail();
 	
 	@DefaultMessage("B")
+	String accessBackDistributionPreference();
+	
+	@DefaultMessage("B")
 	String accessBackSubpartDetail();
 	
 	@DefaultMessage("B")
@@ -1115,6 +1163,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("U")
 	String accessUpdateCourseOffering();
 	
+	@DefaultMessage("U")
+	String accessUpdateDistributionPreference();
+
+	@DefaultMessage("S")
+	String accessSaveNewDistributionPreference();
+	
 	@DefaultMessage("S")
 	String accessSaveCourseOffering();
 	
@@ -1126,6 +1180,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("C")
 	String accessClearClassPreferences();
+	
+	@DefaultMessage("C")
+	String accessAddClassToDistribution();
 
 	@DefaultMessage("C")
 	String accessClearSubpartPreferences();
@@ -1159,6 +1216,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("A")
 	String accessAddNewInstructor();
+
+	@DefaultMessage("A")
+	String accessAddNewDistributionPreference();
 	
 	@DefaultMessage("H")
 	String accessHideInstructorPreferences();
@@ -1174,6 +1234,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("D")
 	String accessDeleteConfiguration();
+	
+	@DefaultMessage("D")
+	String accessDeleteDistributionPreference();
 	
 	@DefaultMessage("A")
 	String accessAddInstructionalTypeToConfig();
@@ -1246,6 +1309,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Search/Display Offerings (Alt+{0})")
 	String titleSearchInstructionalOfferings(String accessKey);
+	
+	@DefaultMessage("Search Distribution Preferences (Alt+{0})")
+	String titleSearchDistributionPreferences(String accessKey);
 
 	@DefaultMessage("Search/Display Classes (Alt+{0})")
 	String titleSearchClasses(String accessKey);
@@ -1264,9 +1330,12 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Add New Offering (Alt+{0})")
 	String titleAddNewInstructionalOffering(String accessKey);
-
+	
 	@DefaultMessage("Edit Class (Alt+{0})")
 	String titleEditClass(String accessKey);
+	
+	@DefaultMessage("Add Class (Alt+{0})")
+	String titleAddClassToDistribution(String accessKey);
 
 	@DefaultMessage("Edit Instructor (Alt+{0})")
 	String titleEditInstructor(String accessKey);
@@ -1274,8 +1343,17 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Edit Instructor Preferences(Alt+{0})")
 	String titleEditInstructorPreferences(String accessKey);
 	
+	@DefaultMessage("Move Up")
+	String titleMoveUp();
+	
+	@DefaultMessage("Move Down")
+	String titleMoveDown();
+	
 	@DefaultMessage("Add Distribution Preference (Alt+{0})")
 	String titleAddDistributionPreference(String accessKey);
+	
+	@DefaultMessage("Add New Distribution Preference (Alt+{0})")
+	String titleAddNewDistributionPreference(String accessKey);
 	
 	@DefaultMessage("Open Class Assignment Dialog (Alt+{0})")
 	String titleOpenClassAssignmentDialog(String accessKey);
@@ -1352,6 +1430,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Update Class Setup (Alt+{0})")
 	String titleUpdateMultipleClassSetup(String accessKey);
 	
+	@DefaultMessage("Update Distribution Preference (Alt+{0})")
+	String titleUpdateDistributionPreference(String accessKey);
+
+	@DefaultMessage("Save New Distribution Preference (Alt+{0})")
+	String titleSaveNewDistributionPreference(String accessKey);
+	
 	@DefaultMessage("Return to %% (Alt+{0})")
 	String titleBackClassDetail(String accessKey);
 	
@@ -1420,6 +1504,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Delete Configuration (Alt+{0})")
 	String titleDeleteConfiguration(String accessKey);
+	
+	@DefaultMessage("Delete Distribution Preference (Alt+{0})")
+	String titleDeleteDistributionPreference(String accessKey);
 	
 	@DefaultMessage("Save Examination (Alt+{0})")
 	String titleSaveExamination(String accessKey);
@@ -1532,6 +1619,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Return to %% (Alt+{0})")
 	String titleBackIODetail(String accessKey);	
 	
+	@DefaultMessage("Return to %% (Alt+{0})")
+	String titleBackDistributionPreference(String accessKey);	
+	
 	@DefaultMessage("Controlling Course")
 	String titleControllingCourse();
 	
@@ -1588,7 +1678,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Look for matches in Staff List and Directory (Alt+{0})")
 	String titleLookupInstructor(String accessKey);
-
+	
 	@DefaultMessage("Back to Instructors (Alt+{0})")
 	String titleBackInstructorDetail(String accessKey);
 	
@@ -1625,8 +1715,32 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Course Number cannot be matched to regular expression: {0}. Reason: {1}")
 	String errorCourseDoesNotMatchRegEx(String regEx, String reason);
 	
+	@DefaultMessage("Select a distribution type.")
+	String errorSelectDistributionType();
+
+	@DefaultMessage("Select a preference level.")
+	String errorSelectDistributionPreferenceLevel();
+	
+	@DefaultMessage("Invalid class selections: Check for duplicate / blank selection.")
+	String errorInvalidClassSelectionDP();
+	
+	@DefaultMessage("Invalid class selections: Select at least one subpart.")
+	String errorInvalidClassSelectionDPSubpart();
+	
+	@DefaultMessage("Invalid class selections: Select at least two classes.")
+	String errorInvalidClassSelectionDPMinTwoClasses();
+
+	@DefaultMessage("Invalid class selections: An individual class cannot be selected if the entire subpart has been selected.")
+	String errorInvalidClassSelectionDPIndividualClass();
+	
 	@DefaultMessage("ERRORS") //preferable to use this than errors for each page
 	String errors();
+	
+	@DefaultMessage("No classes exist for the given subpart")
+	String errorNoClassesExist();
+	
+	@DefaultMessage("No subparts exist for the given course")
+	String errorNoSupbartsExist();
 	
 	@DefaultMessage("ERRORS")
 	String errorsClassDetail();
@@ -1918,7 +2032,10 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Classes ({0})")
 	String backClasses(String classes);
-	
+
+	@DefaultMessage("Distribution Preferences")
+	String backDistributionPreferences();
+		
 	@DefaultMessage("Class Assignments ({0})")
 	String backClassAssignments(String classes);
 	
@@ -1973,6 +2090,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Room Group Preferences")
 	String sectionTitleRoomGroupPreferences();
 	
+	@DefaultMessage("Classes in Distribution")
+	String sectionTitleClassesInDistribution();
+	
 	@DefaultMessage("Room Preferences")
 	String sectionTitleRoomPreferences();
 	
@@ -1987,6 +2107,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Distribution Preferences")
 	String sectionTitleDistributionPreferences();
+	
+	@DefaultMessage("Add Distribution Preference")
+	String sectionTitleAddDistributionPreference();
+	
+	@DefaultMessage("Edit Distribution Preference")
+	String sectionTitleEditDistributionPreference();
 	
 	@DefaultMessage("Date Pattern Preferences")
 	String sectionTitleDatePatternPreferences();
@@ -2242,4 +2368,124 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Cancelled")
 	String statusCancelled();
-}
+	
+	@DefaultMessage("The constraint will apply to all classes in the selected distribution set. "+
+			"For example, a Back-to-Back constraint among three classes seeks to place all three classes "+
+			"sequentially in time such that there are no intervening class times (transition time between "+
+			"classes is taken into account, e.g., if the first class ends at 8:20, the second has to start at 8:30).")
+	String distributionStructureDescriptionAllClasses();
+	
+	@DefaultMessage("The distribution constraint is created between classes in one scheduling subpart and the "+
+			"appropriate class(es) in one or more other subparts. This structure links child and parent "+
+			"classes together if subparts have been grouped. Otherwise the first class in one subpart is "+
+			"linked to the the first class in the second subpart, etc.")
+	String distributionStructureDescriptionProgressive();
+	
+	@DefaultMessage("The distribution constraint is applied only on subsets containing two classes in the selected "+
+			"distribution set.  A constraint is posted between the first two classes (in the order listed), "+
+			"then between the second two classes, etc.")
+	String distributionStructureDescriptionGroupsOfTwo();
+	
+	@DefaultMessage("The distribution constraint is applied only on subsets containing three classes in the selected "+
+			"distribution set.  A constraint is posted between the first three classes (in the order listed), "+
+			"then between the second three classes, etc.")
+	String distributionStructureDescriptionGroupsOfThree();
+	
+	@DefaultMessage("The distribution constraint is applied only on subsets containing four classes in the selected "+
+			"distribution set.  A constraint is posted between the first four classes (in the order listed), "+
+			"then between the second four classes, etc.")
+	String distributionStructureDescriptionGroupsOfFour();
+
+	@DefaultMessage("The distribution constraint is applied only on subsets containing five classes in the selected "+
+			"distribution set.  A constraint is posted between the first five classes (in the order listed), "+
+			"then between the second five classes, etc.")
+	String distributionStructureDescriptionGroupsOfFive();
+	
+	@DefaultMessage("The distribution constraint is created between every pair of classes in the selected distribution set. "+
+			"Therefore, if n classes are in the set, n(n-1)/2 constraints will be posted among the classes. "+
+			"This structure should not be used with \"required\" or \"prohibited\" preferences on sets containing "+
+			"more than a few classes.")
+	String distributionStructureDescriptionPairwise();
+	
+	@DefaultMessage("The distribution constraint is created for each combination of classes such that one class is taken from each " +
+			"line representing a class or a scheduling subpart. " +
+			"For instance, if the constraint is put between three scheduling subparts, a constraint will be posted between " +
+			"each combination of three classes, each from one of the three subparts. If a constraint is put between a class and " +
+			"a scheduling subpart, there will be a binary constraint posted between the class and each of the classes of the scheduling subpart.")
+	String distributionStructureDescriptionOneOfEach();
+	
+	@DefaultMessage("All Classes")
+	String distributionStructureNameAllClasses();
+	
+	@DefaultMessage("Progressive")
+	String distributionStructureNameProgressive();
+
+	@DefaultMessage("Groups of Two")
+	String distributionStructureNameGroupsOfTwo();
+
+	@DefaultMessage("Groups of Three")
+	String distributionStructureNameGroupsOfThree();
+
+	@DefaultMessage("Groups of Four")
+	String distributionStructureNameGroupsOfFour();
+
+	@DefaultMessage("Groups Of Five")
+	String distributionStructureNameGroupsOfFive();
+
+	@DefaultMessage("Pairwise")
+	String distributionStructureNamePairwise();
+
+	@DefaultMessage("One Of Each")
+	String distributionStructureNameOneOfEach();
+
+	@DefaultMessage("{0}")
+	String distributionStructureLabelAllClasses(String content);
+
+	@DefaultMessage("{0} Progressive")
+	String distributionStructureLabelProgressive(String content);
+
+	@DefaultMessage("{0} Groups of Two")
+	String distributionStructureLabelGroupsOfTwo(String content);
+
+	@DefaultMessage("{0} Groups of Three")
+	String distributionStructureLabelGroupsOfThree(String content);
+
+	@DefaultMessage("{0} Groups of Four")
+	String distributionStructureLabelGroupsOfFour(String content);
+
+	@DefaultMessage("{0} Groups Of Five")
+	String distributionStructureLabelGroupsOfFive(String content);
+
+	@DefaultMessage("{0} Pairwise")
+	String distributionStructureLabelPairwise(String content);
+
+	@DefaultMessage("{0} One Of Each")
+	String distributionStructureLabelOneOfEach(String content);
+	
+	@DefaultMessage("{0}")
+	String distributionStructureAbbreviationAllClasses(String content);
+
+	@DefaultMessage("{0} Prg")
+	String distributionStructureAbbreviationProgressive(String content);
+
+	@DefaultMessage("{0} Go2")
+	String distributionStructureAbbreviationGroupsOfTwo(String content);
+
+	@DefaultMessage("{0} Go3")
+	String distributionStructureAbbreviationGroupsOfThree(String content);
+
+	@DefaultMessage("{0} Go4")
+	String distributionStructureAbbreviationGroupsOfFour(String content);
+
+	@DefaultMessage("{0} Go5")
+	String distributionStructureAbbreviationGroupsOfFive(String content);
+
+	@DefaultMessage("{0} Pair")
+	String distributionStructureAbbreviationPairwise(String content);
+
+	@DefaultMessage("{0} OoE")
+	String distributionStructureAbbreviationOneOfEach(String content);
+	
+	@DefaultMessage("Distribution Preferences")
+	String pageTitleDistributionPreferencesPdf()
+;}

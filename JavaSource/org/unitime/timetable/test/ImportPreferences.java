@@ -526,7 +526,7 @@ public class ImportPreferences {
 				Preference p = (Preference)j.next();
 				if (p instanceof DistributionPref) {
 					DistributionPref dp = (DistributionPref)p;
-					sLog.info("Removing existing distribution preference "+dp.getPrefLevel().getPrefName()+" "+dp.getDistributionType().getLabel()+" "+dp.getGroupingSufix()+" between");
+					sLog.info("Removing existing distribution preference "+dp.getPrefLevel().getPrefName()+" "+dp.getLabel()+" between");
 					for (Iterator k=dp.getDistributionObjects().iterator();k.hasNext();) {
 						DistributionObject dobj = (DistributionObject)k.next();
 						if (dobj.getPrefGroup() instanceof Class_) {

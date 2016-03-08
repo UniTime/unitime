@@ -291,8 +291,9 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 
 	public static List<Collection<Class_>> getSections(DistributionPref pref) {
 		List<Collection<Class_>> ret = new ArrayList<Collection<Class_>>();
-    	int groupingType = (pref.getGrouping() == null ? DistributionPref.sGroupingNone : pref.getGrouping().intValue());
-    	if (groupingType == DistributionPref.sGroupingProgressive) {
+		DistributionPref.Structure structure = pref.getStructure();
+		if (structure == null) structure = DistributionPref.Structure.AllClasses;
+    	if (structure == DistributionPref.Structure.Progressive) {
     		int maxSize = 0;
     		for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
         		DistributionObject distributionObject = (DistributionObject)i.next();
@@ -338,7 +339,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     		}
     		for (Set<Class_> s: sections)
     			ret.add(s);
-    	} else if (groupingType == DistributionPref.sGroupingOneOfEach) {
+    	} else if (structure == DistributionPref.Structure.OneOfEach) {
     		List<Class_> sections = new ArrayList<Class_>();
     		List<Integer> counts = new ArrayList<Integer>();
         	for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
@@ -372,7 +373,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
         	    	sections.addAll(classes);
         		}
         	}
-			if (groupingType == DistributionPref.sGroupingPairWise) {
+        	if (structure == DistributionPref.Structure.Pairwise) {
 	        	if (sections.size() >= 2) {
 	        		for (int idx1 = 0; idx1 < sections.size() - 1; idx1++) {
 	        			Class_ s1 = sections.get(idx1);
@@ -384,13 +385,20 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 	        			}
 	        		}
 	        	}
-			} else if (groupingType == DistributionPref.sGroupingNone) {
+			} else if (structure == DistributionPref.Structure.AllClasses) {
 				ret.add(sections);
 			} else {
+		    	int grouping = 2;
+		    	switch (structure) {
+		    	case GroupsOfTwo: grouping = 2; break;
+		    	case GroupsOfThree: grouping = 3; break;
+		    	case GroupsOfFour: grouping = 4; break;
+		    	case GroupsOfFive: grouping = 5; break;
+		    	}
 				List<Class_> s = new ArrayList<Class_>();
 				for (Class_ section: sections) {
 					s.add(section);
-					if (s.size() == groupingType) {
+					if (s.size() == grouping) {
 						ret.add(s); s = new ArrayList<Class_>();
 					}
 				}

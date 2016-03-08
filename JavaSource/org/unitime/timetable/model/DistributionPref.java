@@ -32,6 +32,8 @@ import org.hibernate.Hibernate;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.base.BaseDistributionPref;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.PreferenceGroupDAO;
@@ -41,63 +43,79 @@ import org.unitime.timetable.model.dao._RootDAO;
  * @author Tomas Muller, Stephanie Schluttenhofer
  */
 public class DistributionPref extends BaseDistributionPref {
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private static final long serialVersionUID = 1L;
 
 	/** Request Attribute name for Dist Prefs **/
 	public static final String DIST_PREF_REQUEST_ATTR = "distPrefs";
 	
-	public static final int sGroupingNone = 0;
-	public static final int sGroupingProgressive = 1;
-	public static final int sGroupingByTwo = 2;
-	public static final int sGroupingByThree = 3;
-	public static final int sGroupingByFour = 4;
-	public static final int sGroupingByFive = 5;
-	public static final int sGroupingPairWise = 6;
-	public static final int sGroupingOneOfEach = 7;
-	
-	//TODO put this stuff into the database (as a some kind of DistributionPreferenceGroupingType object)
-	public static String[] sGroupings = new String[] { "All Classes", "Progressive", "Groups of Two", "Groups of Three", "Groups of Four", "Groups of Five", "Pairwise", "One of Each"};
-	public static String[] sGroupingsSufix = new String[] {""," Progressive"," Groups of Two"," Groups of Three"," Groups of Four"," Groups of Five", " Pairwise", "One of Each"};
-	public static String[] sGroupingsSufixShort = new String[] {""," Prg"," Go2"," Go3"," Go4"," Go5", " Pair", " OoE"};
-	public static String[] sGroupingsDescription = new String[] {
-		//All Classes
-		"The constraint will apply to all classes in the selected distribution set. "+
-		"For example, a Back-to-Back constraint among three classes seeks to place all three classes "+
-		"sequentially in time such that there are no intervening class times (transition time between "+
-		"classes is taken into account, e.g., if the first class ends at 8:20, the second has to start at 8:30).",
-		//Progressive
-		"The distribution constraint is created between classes in one scheduling subpart and the "+
-		"appropriate class(es) in one or more other subparts. This structure links child and parent "+
-		"classes together if subparts have been grouped. Otherwise the first class in one subpart is "+
-		"linked to the the first class in the second subpart, etc.",
-		//Groups of Two
-		"The distribution constraint is applied only on subsets containing two classes in the selected "+
-		"distribution set.  A constraint is posted between the first two classes (in the order listed), "+
-		"then between the second two classes, etc.",
-		//Groups of Three
-		"The distribution constraint is applied only on subsets containing three classes in the selected "+
-		"distribution set.  A constraint is posted between the first three classes (in the order listed), "+
-		"then between the second three classes, etc.",
-		//Groups of Four
-		"The distribution constraint is applied only on subsets containing four classes in the selected "+
-		"distribution set.  A constraint is posted between the first four classes (in the order listed), "+
-		"then between the second four classes, etc.",
-		//Groups of Five
-		"The distribution constraint is applied only on subsets containing five classes in the selected "+
-		"distribution set.  A constraint is posted between the first five classes (in the order listed), "+
-		"then between the second five classes, etc.",
-		//Pairwise
-		"The distribution constraint is created between every pair of classes in the selected distribution set. "+
-		"Therefore, if n classes are in the set, n(n-1)/2 constraints will be posted among the classes. "+
-		"This structure should not be used with \"required\" or \"prohibited\" preferences on sets containing "+
-		"more than a few classes.",
-		//One of each
-		"The distribution constraint is created for each combination of classes such that one class is taken from each " +
-		"line representing a class or a scheduling subpart. " +
-		"For instance, if the constraint is put between three scheduling subparts, a constraint will be posted between " +
-		"each combination of three classes, each from one of the three subparts. If a constraint is put between a class and " +
-		"a scheduling subpart, there will be a binary constraint posted between the class and each of the classes of the scheduling subpart."
-	};
+	public static enum Structure {
+		AllClasses,
+		Progressive,
+		GroupsOfTwo,
+		GroupsOfThree,
+		GroupsOfFour,
+		GroupsOfFive,
+		Pairwise,
+		OneOfEach,
+		;
+		
+		public String getDescription() {
+			switch (this) {
+			case AllClasses: return MSG.distributionStructureDescriptionAllClasses();
+			case Progressive: return MSG.distributionStructureDescriptionProgressive();
+			case GroupsOfTwo: return MSG.distributionStructureDescriptionGroupsOfTwo();
+			case GroupsOfThree: return MSG.distributionStructureDescriptionGroupsOfThree();
+			case GroupsOfFour: return MSG.distributionStructureDescriptionGroupsOfFour();
+			case GroupsOfFive: return MSG.distributionStructureDescriptionGroupsOfFive();
+			case Pairwise: return MSG.distributionStructureDescriptionPairwise();
+			case OneOfEach: return MSG.distributionStructureDescriptionOneOfEach();
+			default: return null;
+			}
+		}
+		
+		public String getName() {
+			switch (this) {
+			case AllClasses: return MSG.distributionStructureNameAllClasses();
+			case Progressive: return MSG.distributionStructureNameProgressive();
+			case GroupsOfTwo: return MSG.distributionStructureNameGroupsOfTwo();
+			case GroupsOfThree: return MSG.distributionStructureNameGroupsOfThree();
+			case GroupsOfFour: return MSG.distributionStructureNameGroupsOfFour();
+			case GroupsOfFive: return MSG.distributionStructureNameGroupsOfFive();
+			case Pairwise: return MSG.distributionStructureNamePairwise();
+			case OneOfEach: return MSG.distributionStructureNameOneOfEach();
+			default: return null;
+			}
+		}
+		
+		public String getLabel(String content) {
+			switch (this) {
+			case AllClasses: return MSG.distributionStructureLabelAllClasses(content);
+			case Progressive: return MSG.distributionStructureLabelProgressive(content);
+			case GroupsOfTwo: return MSG.distributionStructureLabelGroupsOfTwo(content);
+			case GroupsOfThree: return MSG.distributionStructureLabelGroupsOfThree(content);
+			case GroupsOfFour: return MSG.distributionStructureLabelGroupsOfFour(content);
+			case GroupsOfFive: return MSG.distributionStructureLabelGroupsOfFive(content);
+			case Pairwise: return MSG.distributionStructureLabelPairwise(content);
+			case OneOfEach: return MSG.distributionStructureLabelOneOfEach(content);
+			default: return content + null;
+			}
+		}
+
+		public String getAbbreviation(String content) {
+			switch (this) {
+			case AllClasses: return MSG.distributionStructureAbbreviationAllClasses(content);
+			case Progressive: return MSG.distributionStructureAbbreviationProgressive(content);
+			case GroupsOfTwo: return MSG.distributionStructureAbbreviationGroupsOfTwo(content);
+			case GroupsOfThree: return MSG.distributionStructureAbbreviationGroupsOfThree(content);
+			case GroupsOfFour: return MSG.distributionStructureAbbreviationGroupsOfFour(content);
+			case GroupsOfFive: return MSG.distributionStructureAbbreviationGroupsOfFive(content);
+			case Pairwise: return MSG.distributionStructureAbbreviationPairwise(content);
+			case OneOfEach: return MSG.distributionStructureAbbreviationOneOfEach(content);
+			default: return content + null;
+			}
+		}
+	}
 	
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public DistributionPref () {
@@ -118,16 +136,7 @@ public class DistributionPref extends BaseDistributionPref {
 	}
 
     public String preferenceText(boolean includeDistrObjects, boolean abbv, String objQuotationLeft, String objSeparator, String objQuotationRight) {
-    	StringBuffer sb = new StringBuffer();
-    	if (abbv) {
-    		sb.append(getDistributionType().getAbbreviation().replaceAll("<","&lt;").replaceAll(">","&gt;"));
-    		if (!new Integer(-1).equals(getGrouping()))
-    		    sb.append(sGroupingsSufixShort[getGrouping()==null?0:getGrouping().intValue()]);
-    	} else {
-    		sb.append(getDistributionType().getLabel());
-    		if (!new Integer(-1).equals(getGrouping()))
-    		    sb.append(sGroupingsSufix[getGrouping()==null?0:getGrouping().intValue()]);
-    	}
+    	StringBuffer sb = new StringBuffer((abbv ? getAbbreviation() : getLabel()).replaceAll("<","&lt;").replaceAll(">","&gt;"));
     	if (includeDistrObjects) {
     		if (getDistributionObjects()!=null && !getDistributionObjects().isEmpty()) {
     			sb.append(objQuotationLeft);
@@ -152,7 +161,7 @@ public class DistributionPref extends BaseDistributionPref {
     			}
     		}
     	}
-    	return(sb.toString());
+		return sb.toString();
     }
     
     public String preferenceHtml() {
@@ -262,17 +271,12 @@ public class DistributionPref extends BaseDistributionPref {
     	}
     }
     
-    public String getGroupingName() {
-        if (new Integer(-1).equals(getGrouping())) return null;
-    	return sGroupings[getGrouping()==null?0:getGrouping().intValue()];
-    }
-    public String getGroupingSufix() {
-        if (new Integer(-1).equals(getGrouping())) return null;
-    	return sGroupingsSufix[getGrouping()==null?0:getGrouping().intValue()];
+    public String getStructureName() {
+    	return (getStructure() == null ? null : getStructure().getName());
     }
     
-    public static String getGroupingDescription(int grouping) {
-    	return sGroupingsDescription[grouping];
+    public String getStructureDescription() {
+    	return (getStructure() == null ? null : getStructure().getDescription());
     }
     
     public static Collection getPreferences(Long sessionId, Long ownerId, boolean useControllingCourseOfferingManager, Long uniqueId) {
@@ -458,5 +462,24 @@ public class DistributionPref extends BaseDistributionPref {
                 return ret;
             }
         };
+    }
+    
+    public Structure getStructure() {
+    	if (getGrouping() == null || getGrouping() < 0) return null;
+    	return Structure.values()[getGrouping()];
+    }
+    
+    public void setStructure(Structure structure) {
+    	setGrouping(structure.ordinal());
+    }
+    
+    public String getLabel() {
+    	String label = getDistributionType().getLabel();
+    	return getStructure() == null ? label : getStructure().getLabel(label);
+    }
+    
+    public String getAbbreviation() {
+    	String abbv = getDistributionType().getAbbreviation();
+    	return getStructure() == null ? abbv : getStructure().getAbbreviation(abbv);
     }
 }

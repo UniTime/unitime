@@ -110,6 +110,7 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TravelTime;
+import org.unitime.timetable.model.DistributionPref.Structure;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
@@ -1563,9 +1564,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private void errorAddGroupConstraintNotFound(DistributionPref pref, Class_ clazz) {
         if (pref.getOwner()!=null && pref.getOwner() instanceof DepartmentalInstructor) 
-            iProgress.message(msglevel("notLoadedInInstrPref", Progress.MSGLEVEL_INFO), "Lecture "+getClassLabel(clazz)+" not found/loaded, but used in distribution preference "+pref.getDistributionType().getLabel()+pref.getGroupingSufix());
+            iProgress.message(msglevel("notLoadedInInstrPref", Progress.MSGLEVEL_INFO), "Lecture "+getClassLabel(clazz)+" not found/loaded, but used in distribution preference "+pref.getLabel());
         else
-            iProgress.message(msglevel("notLoadedInDistPref", Progress.MSGLEVEL_WARN), "Lecture "+getClassLabel(clazz)+" not found/loaded, but used in distribution preference "+pref.getDistributionType().getLabel()+pref.getGroupingSufix());
+            iProgress.message(msglevel("notLoadedInDistPref", Progress.MSGLEVEL_WARN), "Lecture "+getClassLabel(clazz)+" not found/loaded, but used in distribution preference "+pref.getLabel());
     }
     
     private Lecture getLecture(Class_ clazz) {
@@ -1613,8 +1614,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void loadGroupConstraint(DistributionPref pref) {
-    	int groupingType = (pref.getGrouping()==null?DistributionPref.sGroupingNone:pref.getGrouping().intValue());
-    	if (groupingType==DistributionPref.sGroupingProgressive) {
+    	Structure structure = pref.getStructure();
+    	if (structure == null) structure = DistributionPref.Structure.AllClasses;
+    	if (structure == DistributionPref.Structure.Progressive) {
     		int maxSize = 0;
     		for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
         		DistributionObject distributionObject = (DistributionObject)i.next();
@@ -1665,7 +1667,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	    	List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
         	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
         	    	if (classes.isEmpty()) {
-        	    		iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getDistributionType().getLabel()+pref.getGroupingSufix() + " refers to a scheduling subpart " + getSubpartLabel(subpart) + " with no classes.");
+        	    		iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel() + " refers to a scheduling subpart " + getSubpartLabel(subpart) + " with no classes.");
         	    		continue;
         	    	}
         	    	for (int j=0;j<gc.length;j++) {
@@ -1711,7 +1713,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             			gcClasses[j].add(clazz);
         	    	}
         		} else {
-        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getDistributionType().getLabel()+pref.getGroupingSufix()+" refers to unsupported object "+distributionObject.getPrefGroup());
+        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel()+" refers to unsupported object "+distributionObject.getPrefGroup());
         		}
         	}
     		for (int i=0;i<gc.length;i++) {
@@ -1721,7 +1723,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				addGroupConstraint(gc[i]);
     			}
     		}
-    	} else if (groupingType==DistributionPref.sGroupingPairWise) {
+    	} else if (structure == DistributionPref.Structure.Pairwise) {
     		List<Lecture> lectures = new ArrayList<Lecture>();
         	for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
         		DistributionObject distributionObject = (DistributionObject)i.next();
@@ -1744,11 +1746,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             			lectures.add(lecture);
         	    	}
         		} else {
-        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getDistributionType().getLabel()+pref.getGroupingSufix()+" refers to unsupported object "+distributionObject.getPrefGroup());
+        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel()+" refers to unsupported object "+distributionObject.getPrefGroup());
         		}
         	}
         	if (lectures.size()<2) {
-        		iProgress.message(msglevel("distrPrefIncomplete", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getDistributionType().getLabel()+pref.getGroupingSufix()+" refers to less than two classes");
+        		iProgress.message(msglevel("distrPrefIncomplete", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel()+" refers to less than two classes");
         	} else {
         		for (int idx1=0;idx1<lectures.size()-1;idx1++) {
         			Lecture l1 = lectures.get(idx1);
@@ -1762,7 +1764,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			}
         		}
         	}
-    	} else if (groupingType == DistributionPref.sGroupingOneOfEach) {
+    	} else if (structure == DistributionPref.Structure.OneOfEach) {
     		List<Lecture> lectures = new ArrayList<Lecture>();
     		List<Integer> counts = new ArrayList<Integer>();
         	for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
@@ -1787,7 +1789,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             			lectures.add(lecture); count++;
         	    	}
         		} else {
-        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getDistributionType().getLabel()+pref.getGroupingSufix()+" refers to unsupported object "+distributionObject.getPrefGroup());
+        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel()+" refers to unsupported object "+distributionObject.getPrefGroup());
         		}
     			if (count > 0) counts.add(count);
         	}
@@ -1802,6 +1804,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		}
         	}
     	} else {
+	    	Integer grouping = null;
+	    	switch (structure) {
+	    	case GroupsOfTwo: grouping = 2; break;
+	    	case GroupsOfThree: grouping = 3; break;
+	    	case GroupsOfFour: grouping = 4; break;
+	    	case GroupsOfFive: grouping = 5; break;
+	    	}
     		Constraint gc = createGroupConstraint(pref);
     		if (gc==null) return;
         	for (Iterator i=pref.getOrderedSetOfDistributionObjects().iterator();i.hasNext();) {
@@ -1813,7 +1822,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         				errorAddGroupConstraintNotFound(pref, clazz); continue;
         			}
         			gc.addVariable(lecture);
-            		if (groupingType>=DistributionPref.sGroupingByTwo && gc.variables().size()==groupingType) {
+        			if (grouping != null && gc.variables().size() == grouping) {
             			addGroupConstraint(gc);
             			gc=createGroupConstraint(pref);
             			if (gc==null) return;
@@ -1828,14 +1837,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             				errorAddGroupConstraintNotFound(pref, clazz); continue;
             			}
             			gc.addVariable(lecture);
-                		if (groupingType>=DistributionPref.sGroupingByTwo && gc.variables().size()==groupingType) {
+                		if (grouping != null && gc.variables().size() == grouping) {
                				addGroupConstraint(gc); 
                 			gc=createGroupConstraint(pref);
                 			if (gc==null) return;
                 		}
         	    	}
         		} else {
-        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getDistributionType().getLabel()+pref.getGroupingSufix()+" refers to unsupported object "+distributionObject.getPrefGroup());
+        			iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getLabel()+" refers to unsupported object "+distributionObject.getPrefGroup());
         		}
         	}
        		addGroupConstraint(gc);

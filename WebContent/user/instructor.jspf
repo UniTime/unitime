@@ -188,7 +188,9 @@
 			<TD><loc:message name="propertyInstructorPosition"/></TD>
 			<TD>
 				<html:select property="posType" size="1">  
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+					<loc:bundle name="ConstantsMessages" id="CONST">
+						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><loc:message name="select" id="CONST"/></html:option>
+					</loc:bundle>
 					<html:options collection="<%=PositionType.POSTYPE_ATTR_NAME%>" 
 						property="value" labelProperty="label"/>
 				</html:select>

@@ -179,7 +179,9 @@
 				<html:select
 					name="crossListsModifyForm"									
 					property="addCourseOfferingId">
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+					<loc:bundle name="ConstantsMessages" id="CONST">
+						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><loc:message name="select" id="CONST"/></html:option>
+					</loc:bundle>
 					<html:options collection="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="courseNameWithTitle" />
 				</html:select>
 				</td><td style="padding-left: 5px;">
