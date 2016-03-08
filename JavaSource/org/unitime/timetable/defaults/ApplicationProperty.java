@@ -123,7 +123,7 @@ public enum ApplicationProperty {
 	DatabaseUpdateFile("tmtbl.db.update"),
 
 	@DefaultValue("en")
-	@Description("All Pages: default locale (e.g., en for english)")
+	@Description("All Pages: default locale (e.g., en for English)")
 	Locale("unitime.locale"),
 
 	@Description("Configuration: data folder (defaults to Tomcat/data/unitime)")
@@ -494,7 +494,7 @@ public enum ApplicationProperty {
 	 */
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Data Exchange: trim leading zeros from extednal user id")
+	@Description("Data Exchange: trim leading zeros from external user id")
 	DataExchangeTrimLeadingZerosFromExternalIds("tmtbl.data.exchange.trim.externalId"),
 
 	@Type(Boolean.class)
@@ -557,7 +557,7 @@ public enum ApplicationProperty {
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Online Student Scheduling: save course requests during the scheduling assistent mode")
+	@Description("Online Student Scheduling: save course requests during the scheduling assistant mode")
 	OnlineSchedulingSaveRequests("unitime.enrollment.requests.save"),
 
 	@Type(Boolean.class)
@@ -566,7 +566,7 @@ public enum ApplicationProperty {
 	OnlineSchedulingEmailConfirmation("unitime.enrollment.email"),
 
 	@Type(Boolean.class)
-	@Description("Online Student Scheduling: allow student to select over-expected sections (even if there is a choise avoiding them)")
+	@Description("Online Student Scheduling: allow student to select over-expected sections (even if there is a choice avoiding them)")
 	OnlineSchedulingAllowOverExpected("unitime.sectioning.allowOverExpected"),
 
 	@Type(Boolean.class)
@@ -628,7 +628,7 @@ public enum ApplicationProperty {
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Room Availability: enable instructor unavailabilty; instructor unavailabilty includes special and course-related events that are approved and where the instructor is the main contact or he/she is present in the additional contacts of the event")
+	@Description("Room Availability: enable instructor unavailability; instructor unavailability includes special and course-related events that are approved and where the instructor is the main contact or he/she is present in the additional contacts of the event")
 	RoomAvailabilityIncludeInstructors("unitime.events.instructorUnavailability"),
 
 	@Type(Boolean.class)
@@ -660,7 +660,7 @@ public enum ApplicationProperty {
 
 	@Type(Boolean.class)
 	@DefaultValue("true")
-	@Description("Scheduling Subpart Credit: editation allowed")
+	@Description("Scheduling Subpart Credit: edit allowed")
 	SubpartCreditEditable("tmtbl.subpart.credit.editable"),
 
 	@Type(Boolean.class)
@@ -791,7 +791,7 @@ public enum ApplicationProperty {
 	ExaminationReportsClassSufix("tmtbl.exam.report.suffix"),
 
 	@DefaultValue("")
-	@Description("Examination Reports: text to be displayed when an exam has no room assinged (e.g., INSTR OFFC)")
+	@Description("Examination Reports: text to be displayed when an exam has no room assigned (e.g., INSTR OFFC)")
 	ExaminationsNoRoomText("tmtbl.exam.report.noroom"),
 
 	@Description("Examination Reports: room code (e.g., LAMB F101:A,ELLT 116:E,STEW 183:L,STEW 130:F)")
@@ -909,7 +909,7 @@ public enum ApplicationProperty {
 	ExaminationTravelTimeCourse("tmtbl.exam.eventConflicts.travelTime.courseEvent"),
 
 	@Type(Boolean.class)
-	@Description("Examinations: use class / course limits to compute examination size instead of the actuall enrollment (defaults to false, except of final exams where it is true)")
+	@Description("Examinations: use class / course limits to compute examination size instead of the actual enrollment (defaults to false, except of final exams where it is true)")
 	@Parameter("examination type")
 	ExaminationSizeUseLimitInsteadOfEnrollment("tmtbl.exam.useLimit.%"),
 
@@ -935,7 +935,7 @@ public enum ApplicationProperty {
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Examination Name: if there is an examiantion for a cross-listed instructional offering, name the examination after all the courses (not just after the controlling one)")
+	@Description("Examination Name: if there is an examination for a cross-listed instructional offering, name the examination after all the courses (not just after the controlling one)")
 	ExaminationNameExpandCrossListedOfferingsToCourses("tmtbl.exam.name.expandCrosslistedOfferingToCourses"),
 
 	/**
@@ -1009,7 +1009,7 @@ public enum ApplicationProperty {
 	 * in time and day of week with the class (if not preference is set by the user).
 	 */
 	@DefaultValue("0")
-	@Description("Examination Preferences: default prefence for an evening class exam of % examination type (R for required, -2 strongly preferred, -1 preferred, 0 rule disabled, 1 discouraged, 2 strongly discouraged, P prohibited)")
+	@Description("Examination Preferences: default preference for an evening class exam of % examination type (R for required, -2 strongly preferred, -1 preferred, 0 rule disabled, 1 discouraged, 2 strongly discouraged, P prohibited)")
 	@Parameter("examination type")
 	ExamDefaultsEveningClassPreference("tmtbl.exam.defaultPrefs.%.eveningClasses.pref"),
 
@@ -1025,7 +1025,7 @@ public enum ApplicationProperty {
 	 * For an exam that is attached to a class -> put room preference on a room (if it allows exams) of the class.
 	 */
 	@DefaultValue("0")
-	@Description("Examination Preferences: default room prefence for a class exam of % examination type (R for required, -2 strongly preferred, -1 preferred, 0 rule disabled, 1 discouraged, 2 strongly discouraged, P prohibited)")
+	@Description("Examination Preferences: default room preference for a class exam of % examination type (R for required, -2 strongly preferred, -1 preferred, 0 rule disabled, 1 discouraged, 2 strongly discouraged, P prohibited)")
 	@Parameter("examination type")
 	ExamDefaultsOriginalRoomPreference("tmtbl.exam.defaultPrefs.%.originalRoom.pref"),
 
@@ -1035,7 +1035,7 @@ public enum ApplicationProperty {
 	 * For an exam that is attached to a class -> put building preference on a room of the class.
 	 */
 	@DefaultValue("0")
-	@Description("Examination Preferences: default building prefence for a class exam of % examination type (R for required, -2 strongly preferred, -1 preferred, 0 rule disabled, 1 discouraged, 2 strongly discouraged, P prohibited)")
+	@Description("Examination Preferences: default building preference for a class exam of % examination type (R for required, -2 strongly preferred, -1 preferred, 0 rule disabled, 1 discouraged, 2 strongly discouraged, P prohibited)")
 	@Parameter("examination type")
 	ExamDefaultsOriginalBuildingPreference("tmtbl.exam.defaultPrefs.%.originalBuilding.pref"),
 
@@ -1122,22 +1122,22 @@ public enum ApplicationProperty {
 
 	@Type(Double.class)
 	@DefaultValue("0.03")
-	@Description("Makup Curriculum: minimal procentual projection across all the classifications (for a course to show up)")
+	@Description("Re-Create Curriculum: minimal percentual projection across all the classifications (for a course to show up)")
 	CurriculumLastLikeDemandsTotalShareLimit("tmtbl.curriculum.lldemands.totalShareLimit"),
 
 	@Type(Double.class)
 	@DefaultValue("0.0")
-	@Description("Makup Curriculum: minimal procentual projection")
+	@Description("Re-Create Curriculum: minimal percentual projection")
 	CurriculumLastLikeDemandsShareLimit("tmtbl.curriculum.lldemands.shareLimit"),
 
 	@Type(Integer.class)
 	@DefaultValue("0")
-	@Description("Makup Curriculum: minimal number of last-like students")
+	@Description("Re-Create Curriculum: minimal number of last-like students")
 	CurriculumLastLikeDemandsEnrollmentLimit("tmtbl.curriculum.lldemands.enrlLimit"),
 
 	@Type(Integer.class)
 	@DefaultValue("-1")
-	@Description("Events: indicate that a meeting is on an unusual time (too early); the value is the last time slot that is considered too early (e.g., 72 means 6 am)")
+	@Description("Events: indicate that a meeting is at an unusual time (too early); the value is the last time slot that is considered too early (e.g., 72 means 6 am)")
 	EventTooEarlySlot("unitime.event.tooEarly"),
 
 	@Type(Integer.class)
@@ -1246,7 +1246,7 @@ public enum ApplicationProperty {
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Contact Us: also send an autoreply message back to the user (if false, the user is CC-ed in the original message); this is handy when sending emails to users can fail (e.g., because of an invalid email address)")
+	@Description("Contact Us: send an autoreply message back to the user (if false, the user is CC-ed in the original message); this is handy when sending emails to users can fail (e.g., because of an invalid email address)")
 	EmailInquiryAutoreply("unitime.email.inquiry.autoreply"),
 
 	@Type(Boolean.class)
@@ -1343,7 +1343,7 @@ public enum ApplicationProperty {
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Clustering: form solver cluster to communitace between solver servers")
+	@Description("Clustering: form solver cluster to communicate between solver servers")
 	@Since(3.5)
 	SolverClusterEnabled("unitime.solver.cluster"),
 
@@ -1405,7 +1405,7 @@ public enum ApplicationProperty {
 	@DefaultValue("alternate")
 	@Description("Date Pattern Display Format: display the start and end date of a class instead of the date pattern name when:\n" +
 			" never ... always use date pattern name,\n" +
-			" external ... when the date pattern is of external type,\n" +
+			" external ... when the date pattern is of the external type,\n" +
 			" alternate ... when the date pattern is NOT of alternative weeks type,\n" +
 			" always ... always use first date - last date format instead of the date pattern name"
 			)
@@ -1458,10 +1458,10 @@ public enum ApplicationProperty {
 	@Description("People Lookup LDAP: academic title attribute")
 	PeopleLookupLdapAcademicTitleAttribute("tmtbl.lookup.ldap.title"),
 
-	@Description("Reservations: default reservation expiration date for all reservation types (given either in the number of days relative to the academic session begin date, or as a date in yyyy-mm-dd format)")
+	@Description("Reservations: default reservation expiration date for all reservation types (given either in the number of days relative to the academic session begin date or as a date in yyyy-mm-dd format)")
 	ReservationExpirationDateGlobal("unitime.reservations.expiration_date"),
 
-	@Description("Reservations: default reservation expiration date for reservation of type % (given either in the number of days relative to the academic session begin date, or as a date in yyyy-mm-dd format)")
+	@Description("Reservations: default reservation expiration date for reservation of type % (given either in the number of days relative to the academic session begin date or as a date in yyyy-mm-dd format)")
 	@Parameter("reservation type")
 	ReservationExpirationDate("unitime.reservations.%.expiration_date"),
 
@@ -1520,7 +1520,7 @@ public enum ApplicationProperty {
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Solver: serialize uniuqe ids in the XML Export")
+	@Description("Solver: serialize unique ids in the XML Export")
 	SolverXMLExportConvertIds("unitime.solution.export.id-conv"),
 
 	/**
@@ -1708,13 +1708,13 @@ public enum ApplicationProperty {
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Timetable Grid: When class instructors are used (instead of solution instructors), consider Display Instructors flag on the class." +
-			" That is, hide instructors on classes that does not show instructors when set to true.")
+			" That is, hide instructors on classes that do not show instructors when set to true.")
 	TimetableGridUseClassInstructorsCheckClassDisplayInstructors("tmtbl.timeGrid.useClassInstructors.checkDisplayInstructor"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")
 	@Description("Timetable Grid: When class instructors are used (instead of solution instructors), display only instructors with the Check Conflicts toggle set." +
-			" That is, show all instructors that are assigned on a class (including those that are not checked for conflicts in course timetabling) when set to false.")
+			" That is, show all instructors that are assigned to a class (including those that are not checked for conflicts in course timetabling) when set to false.")
 	TimetableGridUseClassInstructorsCheckLead("tmtbl.timeGrid.useClassInstructors.checkConflicts"),
 	
 	@Type(Boolean.class)
@@ -1797,7 +1797,7 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
-	@Description("Instructor Add/Edit: allow editation of external id")
+	@Description("Instructor Add/Edit: allow edit of external id")
 	InstructorAllowEditExternalId("tmtbl.instructor.allowExternalIdEdit"),
 	
 	@Type(Class.class)
@@ -1839,7 +1839,7 @@ public enum ApplicationProperty {
 	@Description("DefaultCourseDetailsProvider: if course details are downloaded (unitime.custom.default.course_download is true), "
 			+"this property contains a list of regular expressions that are used to reformat the content. This property "
 			+"can contain multiple lines with the following sequence:"
-			+"\n  1st regural expression,\n  1st replacement,\n  2nd regular expression,\n  2nd replacement,\n  ...\n"
+			+"\n  1st regular expression,\n  1st replacement,\n  2nd regular expression,\n  2nd replacement,\n  ...\n"
 			+"Example:\n  (?i)<a href=\"[^>]*\">\n  <b>\n  (?i)</a>\n  </b>")
 	CustomizationDefaultCourseDetailsModifiers("unitime.custom.default.course_modifiers"),
 	
@@ -1926,22 +1926,22 @@ public enum ApplicationProperty {
 
 	@Type(Boolean.class)
 	@DefaultValue("true")
-	@Description("Reservations: Individual reservation allow time conflicts")
+	@Description("Reservations: Individual reservation allows time conflicts")
 	ReservationAllowOverlapIndividual("unitime.reservation.allowOverlap.individual"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Reservations: Group reservation allow time conflicts")
+	@Description("Reservations: Group reservation allows time conflicts")
 	ReservationAllowOverlapGroup("unitime.reservation.allowOverlap.group"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Reservations: Course reservation allow time conflicts")
+	@Description("Reservations: Course reservation allows time conflicts")
 	ReservationAllowOverlapCourse("unitime.reservation.allowOverlap.course"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Reservations: Curriculum reservation allow time conflicts")
+	@Description("Reservations: Curriculum reservation allows time conflicts")
 	ReservationAllowOverlapCurriculum("unitime.reservation.allowOverlap.curriculum"),
 	
 	@Description("CAS Authentication: user external id attribute, if not set uid translation will take place instead")
@@ -1982,17 +1982,17 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
-	@Description("Online Student Scheduling: confirmation email attach ICS (iCalendar) file")
+	@Description("Online Student Scheduling: confirmation email has the ICS (iCalendar) file attached")
 	OnlineSchedulingEmailICalendar("unitime.enrollment.email.ics"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
-	@Description("Online Student Scheduling: confirmation email attach timetable grid as image")
+	@Description("Online Student Scheduling: confirmation email has the timetable grid as image attached")
 	OnlineSchedulingEmailIncludeImage("unitime.enrollment.email.grid"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")
-	@Description("Online Student Scheduling: confirmation email attach message as html file")
+	@Description("Online Student Scheduling: confirmation email has the message as html file")
 	OnlineSchedulingEmailIncludeMessage("unitime.enrollment.email.message"),
 	
 	@Type(String.class)
@@ -2059,13 +2059,13 @@ public enum ApplicationProperty {
 	ApiCanUseAPIToken("unitime.api.canUseToken"),
 	
 	@Type(Boolean.class)
-	@Description("API: hiberna cache mode for the % API connector")
+	@Description("API: hibernate cache mode for the % API connector")
 	@Parameter("connector name")
 	ApiCacheMode("unitime.api.%.cacheMode"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("API: trim leading zeros from extednal user id")
+	@Description("API: trim leading zeros from external user id")
 	ApiTrimLeadingZerosFromUserExternalIds("unitime.api.user.id-trim"),
 	
 	@Description("Student Group Timetable: minimal enrollment for a class event to appear in the table (given as % of the group size or as an absolute number)")
@@ -2088,12 +2088,12 @@ public enum ApplicationProperty {
 
 	@Type(Integer.class)
 	@DefaultValue("998")
-	@Description("Maximum number of classes a scheduling subpart can contain.  Defaults to 998.")
+	@Description("Instructional Offering Config: maximum number of classes a scheduling subpart can contain.  Defaults to 998.")
 	SubpartMaxNumClasses("unitime.subpart.max_num_classes"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
-	@Description("Chameleon: allow to swith into any user (not just timetable managers), using the People Lookup dialog")
+	@Description("Chameleon: allow to switch into any user (not just timetable managers), using the People Lookup dialog")
 	ChameleonAllowLookup("unitime.chameleon.lookup"),
 	;
 
