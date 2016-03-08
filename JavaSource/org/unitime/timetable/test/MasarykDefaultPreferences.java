@@ -229,7 +229,7 @@ public class MasarykDefaultPreferences {
                     	dp.setDistributionType(sameDaysType);
         				dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(sameDay ? PreferenceLevel.sStronglyDiscouraged : PreferenceLevel.sProhibited));
         				dp.setDistributionObjects(new HashSet<DistributionObject>());
-        				dp.setGrouping(DistributionPref.sGroupingProgressive);
+        				dp.setStructure(DistributionPref.Structure.AllClasses);
         				dp.setOwner(ss.getManagingDept());
         				SchedulingSubpart x = ss;
         				int index = 1;
@@ -488,7 +488,7 @@ public class MasarykDefaultPreferences {
             	dp.setDistributionType(meetWithType);
 				dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
 				dp.setDistributionObjects(new HashSet<DistributionObject>());
-				dp.setGrouping(DistributionPref.sGroupingNone);
+				dp.setStructure(DistributionPref.Structure.AllClasses);
 				int index = 1;
 				int total = 0;
             	for (Class_ c: classes) {

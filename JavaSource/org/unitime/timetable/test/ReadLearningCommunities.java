@@ -167,7 +167,7 @@ public class ReadLearningCommunities {
                 	dpLinkedSections = new DistributionPref();
                 	dpLinkedSections.setDistributionType(linkedSections);
                 	dpLinkedSections.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
-                	dpLinkedSections.setGrouping(DistributionPref.sGroupingNone);
+                	dpLinkedSections.setStructure(DistributionPref.Structure.AllClasses);
                 	dpLinkedSections.setDistributionObjects(new HashSet<DistributionObject>());
                 	distPrefs.add(dpLinkedSections);
                 	studentGroup = new StudentGroup();

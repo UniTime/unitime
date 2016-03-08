@@ -202,7 +202,7 @@ public class FixCourseTimetablingInconsistencies {
 						dp.setOwner(a.getClazz().getManagingDept());
 						dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
 						dp.setDistributionObjects(new HashSet<DistributionObject>());
-						dp.setGrouping(DistributionPref.sGroupingNone);
+						dp.setStructure(DistributionPref.Structure.AllClasses);
 						DistributionObject o1 = new DistributionObject();
 						o1.setDistributionPref(dp);
 						o1.setPrefGroup(a.getClazz());
@@ -567,7 +567,7 @@ public class FixCourseTimetablingInconsistencies {
 						dp.setOwner(a.getClazz().getManagingDept());
 						dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
 						dp.setDistributionObjects(new HashSet<DistributionObject>());
-						dp.setGrouping(DistributionPref.sGroupingNone);
+						dp.setStructure(DistributionPref.Structure.AllClasses);
 						DistributionObject o1 = new DistributionObject();
 						o1.setDistributionPref(dp);
 						o1.setPrefGroup(a.getClazz());

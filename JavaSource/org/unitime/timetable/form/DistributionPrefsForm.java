@@ -32,6 +32,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.util.DynamicList;
@@ -49,6 +51,9 @@ import org.unitime.timetable.util.DynamicListObjectFactory;
  */
 public class DistributionPrefsForm extends ActionForm {
 
+	// Messages
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
 	private static final long serialVersionUID = 6316876654471770646L;
 	// --------------------------------------------------------- Class Variables
     public static final String SUBJ_AREA_ATTR_LIST = "subjectAreaList";
@@ -123,7 +128,7 @@ public class DistributionPrefsForm extends ActionForm {
         if(distType==null || distType.equals(Preference.BLANK_PREF_VALUE)) {
 	        errors.add("distType", 
 	                new ActionMessage(
-	                        "errors.generic", "Select a distribution type. ") );
+	                        "errors.generic", MSG.errorSelectDistributionType()) );
         }
         
         /*
@@ -139,7 +144,8 @@ public class DistributionPrefsForm extends ActionForm {
         if(prefLevel==null || prefLevel.equals(Preference.BLANK_PREF_VALUE)) {
 	        errors.add("prefLevel", 
 	                new ActionMessage(
-	                        "errors.generic", "Select a preference level. ") );
+	                        "errors.generic", 
+	                        MSG.errorSelectDistributionPreferenceLevel()) );
         }
         
         // Check duplicate / blank selections
@@ -147,24 +153,26 @@ public class DistributionPrefsForm extends ActionForm {
 	        errors.add("classes", 
 	                new ActionMessage(
 	                        "errors.generic", 
-	                        "Invalid class selections: Check for duplicate / blank selection. ") );
+	                        MSG.errorInvalidClassSelectionDP()) );
         }
         
         // Save/Update clicked
-        if(op.equals(rsc.getMessage("button.addNew"))
-                || op.equals(rsc.getMessage("button.update")) ) {
+        if(op.equals(MSG.accessSaveNewDistributionPreference())
+                || op.equals(MSG.accessUpdateDistributionPreference()) ) {
             
             // At least one row of subpart should exist
             if(subjectArea.size()==0)
     	        errors.add("classes", 
     	                new ActionMessage(
-    	                        "errors.generic", "Invalid class selections: Select at least one subpart. ") );
+    	                        "errors.generic", 
+    	                        MSG.errorInvalidClassSelectionDPSubpart()) );
 
             // At least 2 rows should exist if one is a class
             if(subjectArea.size()==1 && !classNumber.get(0).toString().equals(ALL_CLASSES_SELECT))
     	        errors.add("classes", 
     	                new ActionMessage(
-    	                        "errors.generic", "Invalid class selections: Select at least two classes. ") );
+    	                        "errors.generic", 
+    	                        MSG.errorInvalidClassSelectionDPMinTwoClasses()) );
             
             // Class cannot be specified if its subpart is already specified
             if(subjectArea.size()>1) {
@@ -178,7 +186,7 @@ public class DistributionPrefsForm extends ActionForm {
                 	        errors.add("classes", 
                 	                new ActionMessage(
                 	                        "errors.generic", 
-                	                        "Invalid class selections: An individual class cannot be selected if the entire subpart has been selected . ") );
+                	                        MSG.errorInvalidClassSelectionDPIndividualClass()) );
                 	        break;
                         }
                         else 
@@ -189,7 +197,7 @@ public class DistributionPrefsForm extends ActionForm {
                 	        errors.add("classes", 
                 	                new ActionMessage(
                 	                        "errors.generic", 
-                	                        "Invalid class selections: An individual class cannot be selected if the entire subpart has been selected . ") );
+                	                        MSG.errorInvalidClassSelectionDPIndividualClass()) );
                 	        break;
                         }
                         else 
@@ -484,14 +492,20 @@ public class DistributionPrefsForm extends ActionForm {
 	}
 
 	public String getGrouping() { return grouping; }
-	public int getGroupingInt() {
-		for (int i=0;i<DistributionPref.sGroupings.length;i++)
-			if (DistributionPref.sGroupings[i].equals(grouping)) return i;
-		return DistributionPref.sGroupingNone;
+	public DistributionPref.Structure getStructure() {
+		for (DistributionPref.Structure structure: DistributionPref.Structure.values()) {
+			if (structure.getName().equals(grouping)) return structure;
+		}
+		return DistributionPref.Structure.AllClasses;
 	}
 	public void setGrouping(String grouping) { this.grouping = grouping; }
-	public void setGroupingInt(int grouping) { this.grouping = DistributionPref.sGroupings[grouping]; }
-	public String[] getGroupings() { return DistributionPref.sGroupings; }
+	public void setStructure(DistributionPref.Structure structure) { this.grouping = (structure == null ? DistributionPref.Structure.AllClasses.getName() : structure.getName()); }
+	public String[] getGroupings() {
+		String[] ret = new String[DistributionPref.Structure.values().length];
+		for (int i = 0; i < DistributionPref.Structure.values().length; i++)
+			ret[i] = DistributionPref.Structure.values()[i].getName();
+		return ret;
+	}
 
     /**
      * @param subjectAreaId Subject area of the new class (optional, null otherwise)

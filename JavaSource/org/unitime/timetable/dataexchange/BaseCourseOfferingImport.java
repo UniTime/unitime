@@ -2082,7 +2082,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		} else {
 			DistributionPref dp = new DistributionPref();
 			dp.setDistributionType(distributionType);
-			dp.setGrouping(DistributionPref.sGroupingNone);
+			dp.setStructure(DistributionPref.Structure.AllClasses);
 			dp.setPrefLevel(requiredPrefLevel);
 			dp.setOwner(clazz.getSchedulingSubpart().getControllingDept());
 			for (Iterator<Class_> cIt = classes.iterator(); cIt.hasNext();){

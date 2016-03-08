@@ -48,6 +48,7 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.DistributionPrefsForm;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -89,6 +90,7 @@ import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
 @Service("/distributionPrefs")
 public class DistributionPrefsAction extends Action {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	public static GwtConstants CONST = Localization.create(GwtConstants.class);
 	
 	@Autowired SessionContext sessionContext;
 
@@ -155,7 +157,7 @@ public class DistributionPrefsAction extends Action {
         Vector subjectAreaList = setupSubjectAreas(request); // Subject Areas
 
         // Add / Update distribution pref
-        if(op.equals(rsc.getMessage("button.save")) || op.equals(rsc.getMessage("button.update")) ) {
+        if(op.equals(MSG.actionSaveNewDistributionPreference()) || op.equals(MSG.actionUpdateDistributionPreference()) ) {
             Debug.debug("Saving distribution pref ...");
             errors = frm.validate(mapping, request);
             if(errors.size()==0) {
@@ -179,7 +181,7 @@ public class DistributionPrefsAction extends Action {
         }
         
         // Delete distribution object / pref
-        if(op.equals(rsc.getMessage("button.delete"))) {
+        if(op.equals(MSG.actionDeleteDistributionPreference())) {
             if(deleteType.equals("distObject")) {
                 frm.removeFromLists(Integer.parseInt(deleteId));
             }
@@ -193,7 +195,7 @@ public class DistributionPrefsAction extends Action {
         }
         
         // Add new class - redirect from SchedulingSubpartEdit / ClassEdit
-        if(op.equals(rsc.getMessage("button.addDistPref")) || MSG.actionAddDistributionPreference().equals(op)) {
+        if(op.equals(MSG.actionAddDistributionPreference()) || MSG.actionAddDistributionPreference().equals(op)) {
             Debug.debug("Adding new Class via redirect ...");
 	        frm.setDistType(Preference.BLANK_PREF_VALUE);
 	        frm.setGrouping(Preference.BLANK_PREF_VALUE);
@@ -207,7 +209,7 @@ public class DistributionPrefsAction extends Action {
         }
         
         // Add new class
-        if(op.equals(rsc.getMessage("button.addClass_"))) {
+        if(op.equals(MSG.actionAddClassToDistribution())) {
             Debug.debug("Adding new Class ...");
             String subjAreaId = null;
             if(subjectAreaList.size()==1)
@@ -217,7 +219,7 @@ public class DistributionPrefsAction extends Action {
     	    request.setAttribute("addedClass", ""+(frm.getSubjectArea().size()-1));
         }
         
-        if (op.equals(rsc.getMessage("button.search")) || op.equals(rsc.getMessage("button.exportPDF"))) {
+        if (op.equals(MSG.actionSearchDistributionPreferences()) || op.equals(MSG.actionExportPdf())) {
         	String subjectAreaId = frm.getFilterSubjectAreaId();
         	String courseNbr = frm.getFilterCourseNbr();
         	if (subjectAreaId!=null && subjectAreaId.length()>0)
@@ -229,7 +231,7 @@ public class DistributionPrefsAction extends Action {
         	else
         		sessionContext.removeAttribute(SessionAttribute.OfferingsCourseNumber);
         	
-        	if (op.equals(rsc.getMessage("button.exportPDF")))
+        	if (op.equals(MSG.actionExportPdf()))
         		op="export"; 
         	else 
         		op="view";
@@ -297,7 +299,7 @@ public class DistributionPrefsAction extends Action {
         }	    
         
         if (frm.getGrouping()!=null && !frm.getGrouping().equals(Preference.BLANK_PREF_VALUE)) {
-        	frm.setGroupingDescription(DistributionPref.getGroupingDescription(frm.getGroupingInt()));
+        	frm.setGroupingDescription(frm.getStructure().getDescription());
         }
 
         if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
@@ -330,7 +332,7 @@ public class DistributionPrefsAction extends Action {
             BackTracker.markForBack(
             		request,
             		"distributionPrefs.do",
-            		"Distribution Preferences",
+            		MSG.backDistributionPreferences(),
             		true, true);
             return mapping.findForward("list");
         }
@@ -479,7 +481,7 @@ public class DistributionPrefsAction extends Action {
 	                        subpartList = new Vector();
 	                        errors.add("classes", 
 	                                	new ActionMessage("errors.generic",
-	                                	       "No subparts exist for the given course" ) );
+	                                	       MSG.errorNoSupbartsExist()));
 	                    }
 	                    
 	                    // Process subpart selection
@@ -522,7 +524,7 @@ public class DistributionPrefsAction extends Action {
     	                        classNumList = new Vector();
     	                        errors.add("classes", 
     	                                	new ActionMessage("errors.generic",
-    	                                	       "No classes exist for the given subpart" ) );
+    	                                	       MSG.errorNoClassesExist() ) );
 	                        }
 	                    }
 	                }
@@ -556,7 +558,7 @@ public class DistributionPrefsAction extends Action {
         DistributionPrefDAO dpDao = new DistributionPrefDAO();
         DistributionPref dp = dpDao.get(new Long(distPrefId));
         frm.setDistType(dp.getDistributionType().getUniqueId().toString());
-        frm.setGrouping(dp.getGroupingName());
+        frm.setStructure(dp.getStructure());
         frm.setOwner(dp.getOwner().getUniqueId().toString());
         frm.setPrefLevel(dp.getPrefLevel().getPrefId().toString());
         frm.setDistPrefId(distPrefId);
@@ -680,7 +682,7 @@ public class DistributionPrefsAction extends Action {
             } else dp = new DistributionPref();
             
             dp.setDistributionType(new DistributionTypeDAO().get( new Long(frm.getDistType()), hibSession));
-            dp.setGrouping(new Integer(frm.getGroupingInt()));
+            dp.setStructure(frm.getStructure());
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(frm.getPrefLevel()) ));
         
         	Department owningDept = null;
