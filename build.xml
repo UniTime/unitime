@@ -588,6 +588,7 @@
 	</target>
 	
 	<target name="export-translations" depends="init">
+		<echo message="Exporting translations for ${locale} ..."/>
         <path id="build.classpath">
             <fileset dir="${lib.dir}">
             	<include name="*.jar"/>
@@ -618,13 +619,14 @@
 			<bundle package="org.unitime.timetable.gwt.resources" name="GwtMessages"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningConstants"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningMessages"/>
-			<locale value="cs"/>
+			<locale value="${locale}"/>
 		</export-translations>
         <delete dir="${build.dir}" failonerror="false"/>
 		<delete dir="${temp.dir}" failonerror="false"/>
 	</target>
 	
 	<target name="import-translations" depends="init">
+		<echo message="Importing translations for ${locale} ..."/>
         <path id="build.classpath">
             <fileset dir="${lib.dir}">
             	<include name="*.jar"/>
@@ -655,7 +657,7 @@
 			<bundle package="org.unitime.timetable.gwt.resources" name="GwtMessages"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningConstants"/>
 			<bundle package="org.unitime.timetable.gwt.resources" name="StudentSectioningMessages"/>
-			<locale value="cs"/>
+			<locale value="${locale}"/>
 		</import-translations>
         <delete dir="${build.dir}" failonerror="false"/>
 		<delete dir="${temp.dir}" failonerror="false"/>
