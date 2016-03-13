@@ -41,6 +41,7 @@ import org.cpsolver.exam.criteria.RoomPenalty;
 import org.cpsolver.exam.criteria.RoomSizePenalty;
 import org.cpsolver.exam.criteria.RoomSplitPenalty;
 import org.cpsolver.exam.criteria.StudentBackToBackConflicts;
+import org.cpsolver.exam.criteria.StudentDirectConflicts;
 import org.cpsolver.exam.criteria.StudentDistanceBackToBackConflicts;
 import org.cpsolver.exam.criteria.StudentMoreThan2ADayConflicts;
 import org.cpsolver.exam.criteria.StudentNotAvailableConflicts;
@@ -102,7 +103,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     public ExamAssignment(org.cpsolver.exam.model.Exam exam, ExamPlacement placement, Assignment<org.cpsolver.exam.model.Exam, ExamPlacement> assignment) {
         super(exam);
         if (placement!=null) {
-            iNrDirectConflicts = (int)exam.getModel().getCriterion(StudentDistanceBackToBackConflicts.class).getValue(assignment, placement, null) +
+            iNrDirectConflicts = (int)exam.getModel().getCriterion(StudentDirectConflicts.class).getValue(assignment, placement, null) +
             					 (int)exam.getModel().getCriterion(StudentNotAvailableConflicts.class).getValue(assignment, placement, null);
             iNrMoreThanTwoADayConflicts = (int)exam.getModel().getCriterion(StudentMoreThan2ADayConflicts.class).getValue(assignment, placement, null);
             iNrBackToBackConflicts = (int)exam.getModel().getCriterion(StudentBackToBackConflicts.class).getValue(assignment, placement, null);
