@@ -133,7 +133,7 @@
 		</TR>
 
 		<TR>
-			<TD valign="middle" colspan='2' align="right" style='border-top:1px solid black'>
+			<TD valign="middle" colspan='2' align="right" style='border-top:1px solid #9CB0CE; padding-top: 4px;'>
 				<html:submit property="op" accesskey="S" value="Submit" styleClass="btn" />
 				<html:submit property="op" accesskey="C" value="Cancel" styleClass="btn" />
 			</TD>
