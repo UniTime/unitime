@@ -26,6 +26,7 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.security.UserContext;
 
 /**
@@ -50,10 +51,19 @@ public class Property  extends BodyTagSupport {
 	
 	protected String getProperty(String defaultValue) {
 		if (isUser() && getUser() != null) {
-			return getUser().getProperty(getName(), ApplicationProperties.getProperty(getName(), defaultValue));
+			String value = getUser().getProperty(getName(), ApplicationProperties.getProperty(getName()));
+			if (value != null) return value;
 		} else {
-			return ApplicationProperties.getProperty(getName(), defaultValue);
+			String value = ApplicationProperties.getProperty(getName());
+			if (value != null) return value;
 		}
+		if (defaultValue != null) return defaultValue;
+		ApplicationProperty property = ApplicationProperty.fromKey(getName());
+		return (property == null ? null : property.defaultValue());
+	}
+
+	protected String getProperty() {
+		return getProperty(null);
 	}
 
 	public int doStartTag() throws JspException {
@@ -63,7 +73,7 @@ public class Property  extends BodyTagSupport {
 	public int doEndTag() throws JspException {
         try {
             String body = (getBodyContent()==null?null:getBodyContent().getString());
-            String value = ApplicationProperties.getProperty(iName, body);
+            String value = getProperty(body);
             if (value!=null)
                 pageContext.getOut().println(value);
         } catch (Exception e) {

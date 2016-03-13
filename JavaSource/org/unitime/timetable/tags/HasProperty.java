@@ -19,41 +19,11 @@
 */
 package org.unitime.timetable.tags;
 
-import javax.servlet.jsp.tagext.BodyTagSupport;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.security.UserContext;
-
-
 /**
  * @author Tomas Muller
  */
-public class HasProperty extends BodyTagSupport {
+public class HasProperty extends Property {
 	private static final long serialVersionUID = 5400060812896606098L;
-	private String iName;
-	public String getName() { return iName; }
-	public void setName(String name) { iName = name; }
-	
-	private boolean iUser = false;
-	public boolean isUser() { return iUser; }
-	public void setUser(boolean user) { iUser = user; }
-	
-	private UserContext getUser() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserContext)
-			return (UserContext)authentication.getPrincipal();
-		return null;
-	}
-	
-	protected String getProperty() {
-		if (isUser() && getUser() != null) {
-			return getUser().getProperty(getName(), ApplicationProperties.getProperty(getName()));
-		} else {
-			return ApplicationProperties.getProperty(getName());
-		}
-	}
 
 	public int doStartTag() {
 		return EVAL_BODY_BUFFERED;
