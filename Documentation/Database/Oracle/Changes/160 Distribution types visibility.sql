@@ -19,7 +19,7 @@
 */
 
 alter table distribution_type add visible number(1) default 1;
-alter table distribution_type add constraint nn_distribution_type_visible (visible is not null);
+alter table distribution_type add constraint nn_distribution_type_visible check (visible is not null);
 
 /*
  * Update database version
