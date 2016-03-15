@@ -39,6 +39,7 @@ for (var i = 2; i <= 6; i++) {
   type.setAbbreviation('Max ' + i + ' Days');
   type.setInstructorPref(true);
   type.setExamPref(false);
+  type.setVisible(true);
   hibSession.saveOrUpdate(type);
 }
 

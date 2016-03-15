@@ -134,6 +134,7 @@ public class DistributionTypeEditAction extends Action {
 	                distType.setDescr(x.getDescr());
 	                distType.setInstructorPref(x.isInstructorPref()==null?Boolean.FALSE:x.isInstructorPref());
 	                distType.setLabel(x.getLabel());
+	                distType.setVisible(x.isVisible() == null ? Boolean.FALSE : x.isVisible());
 	                HashSet oldDepts = new HashSet(distType.getDepartments());
 	                for (Enumeration e=myForm.getDepartmentIds().elements();e.hasMoreElements();) {
 	                    Long departmentId = (Long)e.nextElement();

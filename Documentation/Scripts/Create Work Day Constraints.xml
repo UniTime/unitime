@@ -39,6 +39,7 @@ for (var i = 6; i <= 12; i++) {
   type.setAbbreviation(i + 'h Work-Day');
   type.setInstructorPref(true);
   type.setExamPref(false);
+  type.setVisible(true);
   hibSession.saveOrUpdate(type);
 }
 

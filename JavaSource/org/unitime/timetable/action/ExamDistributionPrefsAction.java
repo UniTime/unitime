@@ -113,8 +113,6 @@ public class ExamDistributionPrefsAction extends Action {
         }
 
 		// Set lookup tables lists
-        //LookupTables.setupPrefLevels(request);	 // Preference Levels
-        LookupTables.setupExamDistribTypes(request, sessionContext); // Distribution Types
         LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamView); // Exam Types
         request.setAttribute("examTypesAdd", ExamType.findAllApplicable(sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamEdit));
 
@@ -253,9 +251,11 @@ public class ExamDistributionPrefsAction extends Action {
         	if (prefs.size()==1)
         		frm.setPrefLevel(((PreferenceLevel)prefs.firstElement()).getPrefId().toString());
         	request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, prefs);
+        	LookupTables.setupExamDistribTypes(request, sessionContext, dist);
         } else {
         	request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, new Vector(0));
         	frm.setDescription("");
+        	LookupTables.setupExamDistribTypes(request, sessionContext, null);
         }	    
         
         if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {

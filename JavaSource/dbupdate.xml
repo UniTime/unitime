@@ -10715,4 +10715,9 @@
 		<sql>update %SCHEMA%.rights set value='AttachmentTypes' where value='AttachementTypes'</sql>
 		<sql>update %SCHEMA%.rights set value='AttachmentTypeEdit' where value='AttachementTypeEdit'</sql>
 	</update>
+	<update version="160" date="15-Mar-2016" comment="Distribution types visibility">
+		<plsql>alter table %SCHEMA%.distribution_type add visible number(1) default 1</plsql>
+		<plsql>alter table %SCHEMA%.distribution_type add constraint nn_distribution_type_visible (visible is not null)</plsql>
+		<mysql>alter table %SCHEMA%.distribution_type add visible int(1) not null default 1</mysql>
+	</update>
 </dbupdate>

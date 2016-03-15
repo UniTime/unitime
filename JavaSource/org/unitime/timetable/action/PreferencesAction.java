@@ -152,7 +152,6 @@ public class PreferencesAction extends Action {
 		// Load Combo Box Lists 
         LookupTables.setupItypes(request,true);		 // Itypes
         LookupTables.setupPrefLevels(request);	 // Preference Levels
-        LookupTables.setupInstructorDistribTypes(request, sessionContext); // Distribution Types
         
         return mapping.findForward(mapping.getInput());
     }

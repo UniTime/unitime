@@ -36,7 +36,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
@@ -178,6 +177,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        // If subpart id is not null - load subpart info
 	        DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
 	        DepartmentalInstructor inst = idao.get(new Long(instructorId));
+	        LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
 	        
 	        //Edit Information - Redirect to info edit screen
 	        if(op.equals(MSG.actionEditInstructor()) 

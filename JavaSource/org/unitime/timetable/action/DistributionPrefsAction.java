@@ -152,8 +152,6 @@ public class DistributionPrefsAction extends Action {
         }
         
 		// Set lookup tables lists
-        //LookupTables.setupPrefLevels(request);	 // Preference Levels
-        LookupTables.setupDistribTypes(request, sessionContext); // Distribution Types
         Vector subjectAreaList = setupSubjectAreas(request); // Subject Areas
 
         // Add / Update distribution pref
@@ -293,9 +291,11 @@ public class DistributionPrefsAction extends Action {
         	if (prefs.size()==1)
         		frm.setPrefLevel(((PreferenceLevel)prefs.firstElement()).getPrefId().toString());
         	request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, prefs);
+        	LookupTables.setupDistribTypes(request, sessionContext, dist);
         } else {
         	request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, new Vector(0));
         	frm.setDescription("");
+            LookupTables.setupDistribTypes(request, sessionContext, null);
         }	    
         
         if (frm.getGrouping()!=null && !frm.getGrouping().equals(Preference.BLANK_PREF_VALUE)) {

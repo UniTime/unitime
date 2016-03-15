@@ -93,6 +93,12 @@
                 type="java.lang.Boolean"
                 not-null="true"/>
 
+            <property
+                name="visible"
+                column="visible"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
             <set
                 name="departments"
                 table="dist_type_dept"

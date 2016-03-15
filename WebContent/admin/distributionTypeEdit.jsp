@@ -75,6 +75,13 @@
 				<html:errors property="examPref"/>
 			</td>
 		</tr>
+		<tr>
+			<td>Visible:</td>
+			<td>
+				<html:checkbox property="visible"/>
+				<html:errors property="visible"/>
+			</td>
+		</tr>
 		<logic:equal name="distributionTypeEditForm" property="examPref" value="false">
 			<tr>
 				<td>Allow Instructor Preference:</td>

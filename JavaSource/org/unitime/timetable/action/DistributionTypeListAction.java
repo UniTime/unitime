@@ -34,6 +34,7 @@ import org.hibernate.HibernateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -75,15 +76,15 @@ public class DistributionTypeListAction extends Action {
 		sessionContext.checkPermission(Right.DistributionTypes);
 		
 		List<DistributionType> distTypes = new ArrayList<DistributionType>();
-		distTypes.addAll(DistributionType.findAll(false,false));
-		distTypes.addAll(DistributionType.findAll(false,true));
+		distTypes.addAll(DistributionType.findAll(false, false, null));
+		distTypes.addAll(DistributionType.findAll(false, true, null));
 		
-	    WebTable webTable = new WebTable( 10,
+	    WebTable webTable = new WebTable( 11,
 	    	    "Distribution Types",
 	    	    "distributionTypeList.do?ord=%%",
-	    	    new String[] {"Id", "Reference", "Abbreviation", "Name", "Type", "Allow Instructor Preference", "Sequencing Required", "Allow Preferences", "Departments", "Description"},
-	    	    new String[] {"left", "left", "left", "left", "center", "center", "center", "center", "left", "left"}, 
-	    	    new boolean[] {true, true, true, true, true, true, true, true, true, true} );
+	    	    new String[] {"Id", "Reference", "Abbreviation", "Name", "Type", "Visible", "Allow Instructor Preference", "Sequencing Required", "Allow Preferences", "Departments", "Description"},
+	    	    new String[] {"left", "left", "left", "left", "left", "center", "center", "center", "center", "left", "left"}, 
+	    	    new boolean[] {true, true, true, true, true, true, true, true, true, true, true} );
 	    
 	    WebTable.setOrder(sessionContext,"DistributionTypeList.ord",request.getParameter("ord"),1);
 	    boolean edit = sessionContext.hasPermission(Right.DistributionTypeEdit);
@@ -115,7 +116,7 @@ public class DistributionTypeListAction extends Action {
 		    	deptCmp += x.getDeptCode();
 		    	if (i.hasNext()) { deptStr += ", "; deptCmp += ","; }
 		    }
-		    webTable.addLine(
+		    WebTableLine line = webTable.addLine(
 		    	edit ? "onClick=\"document.location='distributionTypeEdit.do?id="+d.getUniqueId()+"';\"" : null,
 		    	new String[] {
 		    		d.getRequirementId().toString(),
@@ -123,6 +124,7 @@ public class DistributionTypeListAction extends Action {
 		    		d.getAbbreviation(),
 		    		d.getLabel(),
 		    		d.isExamPref().booleanValue()?"Examination":"Course",
+		    		d.isVisible() ? "Yes" : "No",
 		    		d.isExamPref().booleanValue()?"N/A":d.isInstructorPref().booleanValue()?"Yes":"No",
 		    		d.isSequencingRequired()?"Yes":"No",
 		    		allowPref,
@@ -135,12 +137,15 @@ public class DistributionTypeListAction extends Action {
 		    		d.getAbbreviation(),
 		    		d.getLabel(),
 		    		new Integer(d.isExamPref().booleanValue()?1:0),
+		    		d.isVisible(),
 		    		new Integer(d.isInstructorPref().booleanValue()?1:0),
 		    		new Integer(d.isSequencingRequired()?1:0),
 		    		null,
 		    		deptCmp,
 		    		d.getDescr()
 		    	},null);
+		    if (!d.isVisible())
+		    	line.setStyle("color:gray;");
 	    }
 	    
 	    request.setAttribute("table",webTable.printTable(WebTable.getOrder(sessionContext,"DistributionTypeList.ord")));

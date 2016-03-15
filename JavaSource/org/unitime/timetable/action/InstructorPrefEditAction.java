@@ -148,7 +148,8 @@ public class InstructorPrefEditAction extends PreferencesAction {
             
             // If subpart id is not null - load subpart info
             DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
-            DepartmentalInstructor inst = idao.get(new Long(instructorId)); 
+            DepartmentalInstructor inst = idao.get(new Long(instructorId));
+            LookupTables.setupInstructorDistribTypes(request, sessionContext, inst);
             
             // Cancel - Go back to Instructors Detail Screen
             if(op.equals(MSG.actionBackToDetail()) 

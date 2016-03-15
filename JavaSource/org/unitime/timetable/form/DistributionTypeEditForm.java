@@ -124,6 +124,12 @@ public class DistributionTypeEditForm extends RefTableEntryEditForm {
 	public void setDescription(String description) {
 		((DistributionType)refTableEntry).setDescr(description);
 	}
+	public boolean isVisible() {
+		return ((DistributionType)refTableEntry).isVisible();
+	}
+	public void setVisible(boolean visible) {
+		((DistributionType)refTableEntry).setVisible(visible);
+	}
 	
 	public Vector getDepartmentIds() { return iDepartmentIds; }
 	public void setDepartmentIds(Vector departmentIds) { iDepartmentIds = departmentIds; }

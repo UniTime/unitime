@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -54,46 +53,54 @@ public class DistributionType extends BaseDistributionType implements Comparable
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public static Set findAll()  throws HibernateException {
-		return findAll(false,false);
+		return findAll(false, false, null);
 	}
 
-	public static Set<DistributionType> findAll(boolean instructorPrefOnly, boolean examPref) throws HibernateException {
-    	return new TreeSet<DistributionType>((new DistributionTypeDAO()).
-			getSession().
-			createQuery("select t from DistributionType t where t.examPref="+examPref+(instructorPrefOnly?" and t.instructorPref=true":"")).
-			setCacheable(true).
-			list());
+	public static Set<DistributionType> findAll(boolean instructorPrefOnly, boolean examPref, Boolean visible) throws HibernateException {
+    	return new TreeSet<DistributionType>(
+    			DistributionTypeDAO.getInstance().getSession().createQuery("select t from DistributionType t where t.examPref=" + examPref +
+					(instructorPrefOnly ? " and t.instructorPref=true" : "") +
+					(visible != null ? " and t.visible=" + visible : "")
+					).setCacheable(true).list());
 	}
 	
-	public static Set<DistributionType> findApplicable(SessionContext context, boolean instructorPrefOnly, boolean examPref) throws Exception {
+	public static Set<DistributionType> findApplicable(SessionContext context, boolean instructorPrefOnly, boolean examPref, DistributionType current) throws Exception {
+		Set<DistributionType> types = null;
 		if (context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent))
-			return findAll(instructorPrefOnly, examPref);
-    	TreeSet<DistributionType> ret = new TreeSet<DistributionType>();
-    	Set<Department> userDepartments = Department.getUserDepartments(context.getUser()); 
-    	types: for (DistributionType dt: findAll(instructorPrefOnly,examPref)) {
-    		Set<Department> depts = dt.getDepartments(context.getUser().getCurrentAcademicSessionId());
-    		if (depts.isEmpty()) {
-    			ret.add(dt);
-    		} else {
-    			for (Department d: depts)
-    				if (userDepartments.contains(d)) {
-    					ret.add(dt); continue types;
-    				}
-    		}
-    	}
-    	return ret;
+			types = findAll(instructorPrefOnly, examPref, true);
+		else {
+			types = new TreeSet<DistributionType>();
+	    	Set<Department> userDepartments = Department.getUserDepartments(context.getUser()); 
+	    	types: for (DistributionType dt: findAll(instructorPrefOnly, examPref, true)) {
+	    		Set<Department> depts = dt.getDepartments(context.getUser().getCurrentAcademicSessionId());
+	    		if (depts.isEmpty()) {
+	    			types.add(dt);
+	    		} else {
+	    			for (Department d: depts)
+	    				if (userDepartments.contains(d)) {
+	    					types.add(dt); continue types;
+	    				}
+	    		}
+	    	}
+		}
+		if (current != null && !types.contains(current))
+			types.add(current);
+    	return types;
     }
 
 	public static Set findApplicable(Department dept, boolean instructorPrefOnly, boolean examPref) throws Exception {
-		if (dept==null) return findAll(instructorPrefOnly, examPref);
-		TreeSet ret = new TreeSet();
-    	for (Iterator i=findAll(instructorPrefOnly, examPref).iterator();i.hasNext();) {
-    		DistributionType dt = (DistributionType)i.next();
-    		Set depts = dt.getDepartments(dept.getSession().getUniqueId());
-    		if (depts.isEmpty() || depts.contains(dept))
-    			ret.add(dt);
-    	}
-    	return ret;
+		Set<DistributionType> types = null;
+		if (dept == null) {
+			types = findAll(instructorPrefOnly, examPref, true);
+		} else {
+			types = new TreeSet();
+			for (DistributionType dt: findAll(instructorPrefOnly, examPref, true)) {
+	    		Set depts = dt.getDepartments(dept.getSession().getUniqueId());
+	    		if (depts.isEmpty() || depts.contains(dept))
+	    			types.add(dt);
+	    	}
+		}
+    	return types;
     }
 	
 	public boolean isApplicable(Department dept) {

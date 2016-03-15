@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -42,6 +43,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamType;
@@ -166,16 +168,23 @@ public class LookupTables {
      * @param request
      * @throws Exception
      */
-    public static void setupDistribTypes(HttpServletRequest request, SessionContext context) throws Exception {
-        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(context, false, false));
+    public static void setupDistribTypes(HttpServletRequest request, SessionContext context, DistributionType current) throws Exception {
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(context, false, false, current));
     }
     
-    public static void setupExamDistribTypes(HttpServletRequest request, SessionContext context) throws Exception {
-        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(context, false, true));
+    public static void setupExamDistribTypes(HttpServletRequest request, SessionContext context, DistributionType current) throws Exception {
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(context, false, true, current));
     }
 
-    public static void setupInstructorDistribTypes(HttpServletRequest request, SessionContext context) throws Exception {
-        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(context, true, false));
+    public static void setupInstructorDistribTypes(HttpServletRequest request, SessionContext context, PreferenceGroup pg) throws Exception {
+    	Set<DistributionType> types = DistributionType.findApplicable(context, true, false, null);
+    	if (pg != null)
+    		for (Iterator i = pg.getDistributionPreferences().iterator(); i.hasNext(); ) {
+    			DistributionPref dp = (DistributionPref)i.next();
+    			if (!types.contains(dp.getDistributionType()))
+    				types.add(dp.getDistributionType());
+    		}
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, types);
     }
 
     public static void setupExaminationPeriods(HttpServletRequest request, Long sessionId, Long examType) throws Exception {

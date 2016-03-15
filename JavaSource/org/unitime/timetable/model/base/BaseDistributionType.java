@@ -41,6 +41,7 @@ public abstract class BaseDistributionType extends RefTableEntry implements Seri
 	private String iAbbreviation;
 	private Boolean iInstructorPref;
 	private Boolean iExamPref;
+	private Boolean iVisible;
 
 	private Set<Department> iDepartments;
 
@@ -51,6 +52,7 @@ public abstract class BaseDistributionType extends RefTableEntry implements Seri
 	public static String PROP_ABBREVIATION = "abbreviation";
 	public static String PROP_INSTRUCTOR_PREF = "instructorPref";
 	public static String PROP_EXAM_PREF = "examPref";
+	public static String PROP_VISIBLE = "visible";
 
 	public BaseDistributionType() {
 		initialize();
@@ -87,6 +89,10 @@ public abstract class BaseDistributionType extends RefTableEntry implements Seri
 	public Boolean getExamPref() { return iExamPref; }
 	public void setExamPref(Boolean examPref) { iExamPref = examPref; }
 
+	public Boolean isVisible() { return iVisible; }
+	public Boolean getVisible() { return iVisible; }
+	public void setVisible(Boolean visible) { iVisible = visible; }
+
 	public Set<Department> getDepartments() { return iDepartments; }
 	public void setDepartments(Set<Department> departments) { iDepartments = departments; }
 	public void addTodepartments(Department department) {
@@ -121,6 +127,7 @@ public abstract class BaseDistributionType extends RefTableEntry implements Seri
 			"\n	RequirementId: " + getRequirementId() +
 			"\n	SequencingRequired: " + getSequencingRequired() +
 			"\n	UniqueId: " + getUniqueId() +
+			"\n	Visible: " + getVisible() +
 			"]";
 	}
 }
