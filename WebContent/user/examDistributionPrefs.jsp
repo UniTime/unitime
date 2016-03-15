@@ -190,7 +190,7 @@
 					property='<%= "subjectArea[" + ctr + "]" %>' 
 					onchange="<%= \"javascript: doReload('subjectArea', '\" + ctr + \"');\" %>"
 					styleId='<%="subjectArea"+ctr%>' >
-					<html:option value="-">-</html:option>
+					<html:option value="-1">-</html:option>
 					<html:optionsCollection property="filterSubjectAreas" label="subjectAreaAbbreviation" value="uniqueId"/>
 				</html:select>
 
