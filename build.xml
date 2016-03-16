@@ -646,7 +646,7 @@
 			<classpath refid="build.classpath"/>
 			<classpath path="${build.dir}"/>
 		</taskdef>
-		<import-translations source="${src.dir}" generatePageNames="true">
+		<import-translations source="${src.dir}" generatePageNames="true" encoding="${file.encoding}">
 			<bundle package="org.unitime.localization.messages" name="CourseMessages"/>
 			<bundle package="org.unitime.localization.messages" name="ConstantsMessages"/>
 			<bundle package="org.unitime.localization.messages" name="ExaminationMessages"/>

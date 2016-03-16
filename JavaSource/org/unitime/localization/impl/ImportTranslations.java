@@ -20,7 +20,9 @@
 package org.unitime.localization.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -48,6 +50,7 @@ public class ImportTranslations {
 	private File iSource;
 	private String iTranslations = "Documentation/Translations";
 	private boolean iGeneratePageNames = false;
+	private String iEncoding = "UTF-8";
 
 	public ImportTranslations() {}
 	
@@ -62,6 +65,10 @@ public class ImportTranslations {
 	
 	public void setSource(String source) {
 		iSource = new File(source);
+	}
+	
+	public void setEncoding(String encoding) {
+		iEncoding = encoding;
 	}
 	
 	public Bundle createBundle() {
@@ -205,7 +212,7 @@ public class ImportTranslations {
 					if (!input.exists()) continue;
 					
 					Properties translation = new Properties();
-					translation.load(new FileReader(input));
+					translation.load(new InputStreamReader(new FileInputStream(input), iEncoding));
 					
 					File output = new File(folder, bundle.getName() + "_" + locale.getValue() + ".properties");
 					
