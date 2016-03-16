@@ -41,19 +41,19 @@ public interface GwtAriaMessages extends Messages {
 	String showingOneSuggestion(String suggestion);
 	
 	@DefaultMessage("There are {0, number} suggestions to {1}. Use up and down arrows to navigate. First suggestion is {2}.")
-	String showingMultipleSuggestions(@PluralCount int nbrSuggestions, String query, String suggestion);
+	String showingMultipleSuggestions(int nbrSuggestions, String query, String suggestion);
 	
 	@DefaultMessage("There are {0, number} suggestions. Use up and down arrows to navigate. First suggestion is {1}.")
-	String showingMultipleSuggestionsNoQuery(@PluralCount int nbrSuggestion, String suggestion);
+	String showingMultipleSuggestionsNoQuery(int nbrSuggestion, String suggestion);
 	
 	@DefaultMessage("There are {0, number} suggestions. Use up and down arrows to navigate.")
-	String showingMultipleSuggestionsNoQueryNoneSelected(@PluralCount int nbrSuggestion);
+	String showingMultipleSuggestionsNoQueryNoneSelected(int nbrSuggestion);
 	
 	@DefaultMessage("There are {0, number} suggestions to {1}. Use up and down arrows to navigate.")
-	String showingMultipleSuggestionsNoneSelected(@PluralCount int nbrSuggestions, String query);
+	String showingMultipleSuggestionsNoneSelected(int nbrSuggestions, String query);
 
 	@DefaultMessage("Suggestion {0, number} of {1, number}. {2}")
-	String onSuggestion(@PluralCount int index, @PluralCount int nbrSuggestions, String suggestion);
+	String onSuggestion(int index, int nbrSuggestions, String suggestion);
 	
 	@DefaultMessage("Suggestion: {0}")
 	String onSuggestionNoCount(String suggestion);
@@ -95,70 +95,70 @@ public interface GwtAriaMessages extends Messages {
 	String sessionSelectorDialogOpened();
 
 	@DefaultMessage("Academic session selection dialog opened, please select an academic session. Use Alt + Up and Alt + Down to navigate, Alt + Enter to confirm the selection. Academic session {0} of {1}: {3} {2} campus {4}.")
-	String sessionSelectorDialogOpenedWithSelection(@PluralCount int index, @PluralCount int nbrSuggestions, String year, String term, String campus);
+	String sessionSelectorDialogOpenedWithSelection(int index, int nbrSuggestions, String year, String term, String campus);
 	
 	@DefaultMessage("Academic session {0} of {1}: {3} {2} campus {4}.")
-	String sessionSelectorShowingSession(@PluralCount int index, @PluralCount int nbrSuggestions, String year, String term, String campus);
+	String sessionSelectorShowingSession(int index, int nbrSuggestions, String year, String term, String campus);
 	
 	@DefaultMessage("Academic session {1} {0} campus {2} selected.")
 	String sessionSelectorDialogSelected(String year, String term, String campus);
 	
 	@DefaultMessage("Priority {0, number} course or free time request.")
-	String titleRequestedCourse(@PluralCount int priority);
+	String titleRequestedCourse(int priority);
 	
 	@DefaultMessage("First alternative to the priority {0, number} course request.")
-	String titleRequestedCourseFirstAlternative(@PluralCount int priority);
+	String titleRequestedCourseFirstAlternative(int priority);
 
 	@DefaultMessage("Second alternative to the priority {0, number} course request.")
-	String titleRequestedCourseSecondAlternative(@PluralCount int priority);
+	String titleRequestedCourseSecondAlternative(int priority);
 	
 	@DefaultMessage("Priority {0, number} alternate course request. Access key {1}.")
-	String titleRequestedAlternate(@PluralCount int priority, String accessKey);
+	String titleRequestedAlternate(int priority, String accessKey);
 	
 	@DefaultMessage("First alternative to the priority {0, number} alternate course request.")
-	String titleRequestedAlternateFirstAlternative(@PluralCount int priority);
+	String titleRequestedAlternateFirstAlternative(int priority);
 
 	@DefaultMessage("Second alternative to the priority {0, number} alternate course request.")
-	String titleRequestedAlternateSecondAlternative(@PluralCount int priority);
+	String titleRequestedAlternateSecondAlternative(int priority);
 	
 	@DefaultMessage("Check to wait list priority {0, number} course request, if it is not available.")
-	String titleRequestedWaitList(@PluralCount int priority);
+	String titleRequestedWaitList(int priority);
 	
 	@DefaultMessage("Check to wait list for {0} course request.")
 	String titleRequestedWaitListForCourse(String course);
 	
 	@DefaultMessage("Opens Course Finder dialog for priority {0, number} course or free time request.")
-	String altRequestedCourseFinder(@PluralCount int priority);
+	String altRequestedCourseFinder(int priority);
 
 	@DefaultMessage("Opens Course Finder dialog for priority {0, number} first alternative course request.")
-	String altRequestedCourseFirstAlternativeFinder(@PluralCount int priority);
+	String altRequestedCourseFirstAlternativeFinder(int priority);
 
 	@DefaultMessage("Opens Course Finder dialog for priority {0, number} second alternative course request.")
-	String altRequestedCourseSecondAlternativeFinder(@PluralCount int priority);
+	String altRequestedCourseSecondAlternativeFinder(int priority);
 	
 	@DefaultMessage("Opens Course Finder dialog for priority {0, number} alternate course request.")
-	String altRequestedAlternateFinder(@PluralCount int priority);
+	String altRequestedAlternateFinder(int priority);
 
 	@DefaultMessage("Opens Course Finder dialog for priority {0, number} first alternative alternate course request.")
-	String altRequestedAlternateFirstFinder(@PluralCount int priority);
+	String altRequestedAlternateFirstFinder(int priority);
 
 	@DefaultMessage("Opens Course Finder dialog for priority {0, number} second alternative alternate course request.")
-	String altRequestedAlternateSecondFinder(@PluralCount int priority);
+	String altRequestedAlternateSecondFinder(int priority);
 	
 	@DefaultMessage("Swaps priority {0, number} course request with priority {1, number} course request including alternatives and wait list information.")
-	String altSwapCourseRequest(@PluralCount int p1, @PluralCount int p2);
+	String altSwapCourseRequest(int p1, int p2);
 	
 	@DefaultMessage("Delete priority {0, number} course request including alternatives and wait list information.")
-	String altDeleteRequest(@PluralCount int p1);
+	String altDeleteRequest(int p1);
 	
 	@DefaultMessage("Swaps priority {0, number} alternate course request with priority {1, number} alternate course request including alternatives and wait list information.")
-	String altSwapAlternateRequest(@PluralCount int p1, @PluralCount int p2);
+	String altSwapAlternateRequest(int p1, int p2);
 	
 	@DefaultMessage("Swaps priority {0, number} course request with priority {1, number} alternate course request including alternatives and wait list information.")
-	String altSwapCourseAlternateRequest(@PluralCount int p1, @PluralCount int p2);
+	String altSwapCourseAlternateRequest(int p1, int p2);
 	
 	@DefaultMessage("Delete priority {0, number} alternate course request including alternatives and wait list information.")
-	String altDeleteAlternateRequest(@PluralCount int p1);
+	String altDeleteAlternateRequest(int p1);
 	
 	@DefaultMessage("Course Finder dialog opened.")
 	String courseFinderDialogOpened();
@@ -179,16 +179,16 @@ public interface GwtAriaMessages extends Messages {
 	String courseFinderNoCourse();
 	
 	@DefaultMessage("Course {0} of {1}: {2} {3}")
-	String courseFinderSelected(@PluralCount int index, @PluralCount int nbrSuggestions, String subject, String course);
+	String courseFinderSelected(int index, int nbrSuggestions, String subject, String course);
 
 	@DefaultMessage("Course {0} of {1}: {2} {3} entitled {4}")
-	String courseFinderSelectedWithTitle(@PluralCount int index, @PluralCount int nbrSuggestions, String subject, String course, String title);
+	String courseFinderSelectedWithTitle(int index, int nbrSuggestions, String subject, String course, String title);
 
 	@DefaultMessage("Course {0} of {1}: {2} {3} entitled {4} with note {5}")
-	String courseFinderSelectedWithTitleAndNote(@PluralCount int index, @PluralCount int nbrSuggestions, String subject, String course, String title, String note);
+	String courseFinderSelectedWithTitleAndNote(int index, int nbrSuggestions, String subject, String course, String title, String note);
 
 	@DefaultMessage("Course {0} of {1}: {2} {3} with note {4}")
-	String courseFinderSelectedWithNote(@PluralCount int index, @PluralCount int nbrSuggestions, String subject, String course, String note);
+	String courseFinderSelectedWithNote(int index, int nbrSuggestions, String subject, String course, String note);
 	
 	@DefaultMessage("Free Time {0}")
 	String courseFinderSelectedFreeTime(String ft);
@@ -206,7 +206,7 @@ public interface GwtAriaMessages extends Messages {
 	String classAssignment(String clazz, String assignment);
 	
 	@DefaultMessage("Class {0} of {1}: {2}")
-	String classSelected(@PluralCount int index, @PluralCount int nbrSuggestions, String clazz);
+	String classSelected(int index, int nbrSuggestions, String clazz);
 	
 	@DefaultMessage("Free Time {0}")
 	String freeTimeAssignment(String assignment);
@@ -245,10 +245,10 @@ public interface GwtAriaMessages extends Messages {
 	String suggestionsNoAlternativeWithFilter(String source, String filter);
 	
 	@DefaultMessage("There are {0, number} alternatives to {1}. Use up and down arrows to navigate. To select an alternative press enter. Press Escape to hide alternatives. To filter alternatives type in a text and click the Search button.")
-	String showingAlternatives(@PluralCount int nbrSuggestions, String query);
+	String showingAlternatives(int nbrSuggestions, String query);
 	
 	@DefaultMessage("Alternative {0, number} of {1, number}. {2}")
-	String showingAlternative(@PluralCount int index, @PluralCount int nbrAlternatives, String alternative);
+	String showingAlternative(int index, int nbrAlternatives, String alternative);
 
 	@DefaultMessage("Selected alternative {0}")
 	String selectedAlternative(String alternative);
@@ -317,10 +317,10 @@ public interface GwtAriaMessages extends Messages {
 	String roomSelection(String value);
 	
 	@DefaultMessage("Tab {0} of {1}: {2}, press enter to select")
-	String tabNotSelected(@PluralCount int index, @PluralCount int nbrTabs, String name);
+	String tabNotSelected(int index, int nbrTabs, String name);
 	
 	@DefaultMessage("Tab {0} of {1}: {2} selected")
-	String tabSelected(@PluralCount int index, @PluralCount int nbrTabs, String name);
+	String tabSelected(int index, int nbrTabs, String name);
 	
 	@DefaultMessage("Selected tab {0}")
 	String onTabSelected(String name);
@@ -341,7 +341,7 @@ public interface GwtAriaMessages extends Messages {
 	String datesDayOfWeekSelection(String dayOfWeek, String month);
 	
 	@DefaultMessage("Week {0} starting {1}")
-	String datesWeekSelection(@PluralCount int weekNumber, String firstDate);
+	String datesWeekSelection(int weekNumber, String firstDate);
 	
 	@DefaultMessage("No dates are selected.")
 	String datesNothingSelected();
@@ -404,10 +404,10 @@ public interface GwtAriaMessages extends Messages {
 	String selectionAvailable();
 	
 	@DefaultMessage("Select meetings. Showing rooms {1} to {2} and {0} days. Use arrows to navigate, enter to select.")
-	String meetingSelectionDescriptionRoomsHorizontal(@PluralCount int nrDays, @PluralCount int firstRoom, @PluralCount int lastRoom);
+	String meetingSelectionDescriptionRoomsHorizontal(int nrDays, int firstRoom, int lastRoom);
 	
 	@DefaultMessage("Select meetings. Showing days {1} to {2} and {0} rooms. Use arrows to navigate, enter to select.")
-	String meetingSelectionDescriptionDatesHorizontal(@PluralCount int nrRooms, @PluralCount int firstDay, @PluralCount int lastDay);
+	String meetingSelectionDescriptionDatesHorizontal(int nrRooms, int firstDay, int lastDay);
 	
 	@DefaultMessage("Selected {0} in {1}")
 	String dateRoomSelected(String date, String room);
@@ -440,16 +440,16 @@ public interface GwtAriaMessages extends Messages {
 	String peopleLookupName();
 	
 	@DefaultMessage("There are {0, number} degree plans available. Use up and down arrows to navigate. To select a plan press Enter. Press Escape to hide plans.")
-	String showingDegreePlans(@PluralCount int nbrDegreePlans);
+	String showingDegreePlans(int nbrDegreePlans);
 	
 	@DefaultMessage("Degree plan {0, number} of {1, number}. {2} of {3}. Last modified {4,localdatetime,MMMM dd} by {5}")
-	String showingDegreePlan(@PluralCount int index, @PluralCount int nbrAlternatives, String description, String degree, Date modifiedDate, String modifedWho);
+	String showingDegreePlan(int index, int nbrAlternatives, String description, String degree, Date modifiedDate, String modifedWho);
 
 	@DefaultMessage("Selected degree plan {0} of {1}.")
 	String selectedDegreePlan(String description, String degree);
 	
 	@DefaultMessage("Line {0} of {1}.")
-	String selectedLine(@PluralCount int index, @PluralCount int nbrAlternatives);
+	String selectedLine(int index, int nbrAlternatives);
 	
 	@DefaultMessage("Placeholder {0}.")
 	String degreePlaceholder(String description);
@@ -464,7 +464,7 @@ public interface GwtAriaMessages extends Messages {
 	String degreeCourseNotOffered(String course, String description);
 	
 	@DefaultMessage("Course {0}, {1}. There are {2} matching courses are available.")
-	String degreeCourseWithChoice(String course, String description, @PluralCount int courses);
+	String degreeCourseWithChoice(String course, String description, int courses);
 	
 	@DefaultMessage("Course {0}, {1}.")
 	String degreeCourse(String course, String description);
