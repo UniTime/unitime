@@ -33,27 +33,27 @@
 		<item>
 			<name>Class Duration Types</name>
 			<description>
-				<line>Added ability to define different ways how class duration is entered and used in the system (to extend the formal Minutes per Week selection).</line>
+				<line>Added ability to define different ways how class duration is entered and used in the system (to extend the former Minutes per Week selection).</line>
 				<line>There is a new page (Administration > Other > Class Duration Types), where the class duration types can be managed.
 					<line>Permission ClassDurationTypes is needed to access the page, ClassDurationTypeEdit is needed to make changes.</line>
 				</line>
 				<line>Default duration type can be defined on an academic session, it can be overridden on the instructional offering configuration level (Instructional Offering Configuration page).
-					<line>Name of the default duration type is used in the column headers (Classes, Instructional Offerings), abbreviation is used to suffix durations that are using a non-default duration type.</line>
+					<line>Name of the default duration type is used in the column headers (Classes, Instructional Offerings), abbreviations are used to suffix durations that are using a non-default duration type.</line>
 				</line>
 				<line>Following class duration types have been implemented:
-					<line>Minutes per Week (default): this is the existing behavior (minutes per week == number of meetings x minutes per meeting)</line>
-					<line>Average Weekly Minutes: average number of minutes a class takes during a week (weekly minutes = number of meetings x minutes per meeting x number of weeks of the data pattern / number of weeks in the term)
+					<line>Minutes per Week (default): this is the existing behavior (minutes per week == number of meetings in a week x minutes per meeting)</line>
+					<line>Average Weekly Minutes: average number of minutes a class takes during a week (weekly minutes = number of meetings x minutes per meeting x number of weeks of the date pattern / number of weeks in the term)
 						<line>Parameter: number of weeks in the term (defaults to the number of weeks of the default date pattern)</line>
 					</line>
-					<line>Semester Minutes: number of minutes in the semester (semester minutes == number of meetings x minutes per meeting x number of weeks of the data pattern)</line>
-					<line>Semester Hours: number of hours in the semester (semester hours == number of meetings x minutes per meeting x number of weeks of the data pattern / minutes in an hour)
-						<line>Parameter: number of minutes in an hour (defaults to 50)</line>
+					<line>Semester Minutes: number of minutes in the semester (semester minutes == number of meetings x minutes per meeting x number of weeks of the date pattern)</line>
+					<line>Semester Hours: number of hours in the semester (semester hours == number of meetings x minutes per meeting x number of weeks of the date pattern / minutes in an hour)
+						<line>Parameter: number of minutes in an hour (defaults to 50); an hour is meant as a lesson or "hour of instruction"</line>
 					</line>
 					<line>Meetings Minutes: number of minutes of all the meetings, excluding vacations (meeting minutes == number of meetings based on the date pattern x minutes per meeting)
 						<line>Parameters: allowed variation of the meeting minutes, expressed as lower and upper bound (defaults to 0.95,1.10 -- meaning a class can have 5% less time, combinations with 10% more time will be also considered).</line>
 						<line>If the number of meetings based on the date pattern exceeds the desired number of meeting minutes, only meetings covering the given number of meeting minutes are created.</line>
 					</line>
-					<line>Meeting Hours: just like meeting minutes, but with hours (semester hours == number of meetings based on the date pattern x minutes per meeting / minutes in an hour)
+					<line>Meeting Hours: just like meeting minutes, but with hours (meeting hours == number of meetings based on the date pattern x minutes per meeting / minutes in an hour)
 						<line>Parameters: number of minutes in an hour and the allowed variation of the meeting minutes (defaults to 50,0.95,1.10 -- 50 minutes in an hour, 5% less time allowed, combinations with up to 10% excess time are considered).</line>
 					</line>
 				</line>
@@ -70,7 +70,7 @@
 				<line>Cancelled classes retain their committed assignment, but the appropriate class event is cancelled.</line>
 				<line>Cancelled classes are not loaded into the course timetabling solver.</line>
 				<line>Cancelled classes cannot be edited or re-assigned and they do not block the room or instructor.</line>
-				<line>When a cancelled classes is reopened, the appropriate event is also re-approved.
+				<line>When a cancelled class is reopened, the appropriate event is also re-approved.
 					<line>This could cause conflicts, that have to be manually resolved.</line>
 				</line>
 				<line>In student scheduling, cancelled classes are avoided (no valid enrollment can contain a cancelled class).</line>
@@ -96,7 +96,7 @@
 					<line>The table is only visible when the class is conflicting with some other class (or classes).</line>
 					<line>The same checking as on the Class Assignment page is used.</line>
 				</line>
-				<line>Instructional Offering Detail: Highlight conflicting classes with light red background.
+				<line>Instructional Offering Detail: Highlight conflicting classes with a light red background.
 					<line>Conflicting classes are listed in the tool-tip (more details are provided on the Class Detail page, see above).</line>
 				</line>
 				<line>Conflict checking: avoid showing conflicts between classes that can overlap because of the Can Share Room or the Meet Together distribution.</line>
@@ -108,7 +108,7 @@
 				<line>Added instructional methods lookup table. Each method has a reference and a label.</line>
 				<line>Example instructional methods: Online, Hybrid, or Face-to-Face.</line>
 				<line>Instructional offering configuration can have an instructional method set.</line>
-				<line>If set, instructional method appear on various pages, including the Scheduling Assistant and Events.</line>
+				<line>If set, instructional method appears on various pages, including the Scheduling Assistant and Events.</line>
 				<line>It is usually included in the Type column, next to the instructional type, e.g., Lecture (Online).</line>
 			</description>
 		</item>
@@ -128,7 +128,7 @@
 		<item>
 			<name>Reservations</name>
 			<description>
-				<line>Remember last sort in the reservation cookie.</line>
+				<line>Remember the last sort in the reservation cookie.</line>
 				<line>Added Previous / Next buttons (Edit Reservation).</line>
 				<line>Added confirmation message when deleting a reservation (Edit Reservation).</line>
 			</description>
@@ -166,7 +166,7 @@
 			<description>
 				<line>The page can be used to assign multiple rooms to a particular department or examination problem).</line>
 				<line>The page is only accessible when a department or an examination problem is selected in the Room Filter.</line>
-				<line>The page is now using the same table of rooms as the Rooms page and it is populated by all the rooms matching the Room Filter (except of the selected department / examination problem).</line>
+				<line>The page is now using the same table of rooms as the Rooms page and it is populated by all the rooms matching the Room Filter (except the selected department / examination problem).</line>
 				<line>Rooms not matching the Room Filter are left unchanged.</line>
 			</description>
 		</item>
@@ -176,7 +176,7 @@
 				<line>The Room Groups and Room Features pages also use the Room Filter to list rooms (and matching room features and groups).</line>
 				<line>The Add and Edit pages are also using the same table as on the Rooms page with the list of rooms populated by all the rooms matching the Room Filter.</line>
 				<line>Rooms not matching the Room Filter are left unchanged.</line>
-				<line>When creating / updated a room group or feature, it is possible to select one or more future academic sessions that would be updated as well.
+				<line>When creating / updating a room group or feature, it is possible to select one or more future academic sessions that would be updated as well.
 					<line>Besides of the properties of the group (or feature) like name, abbreviation department, etc., only rooms with a change are updated.</line>
 					<line>This means that the future group (or feature) is NOT reset to the rooms that are currently selected on the group (or feature).</line>
 				</line>
@@ -199,7 +199,7 @@
 					<line>If this relation is defined, only the selected manager(s) can view, edit, or timetable the given examination problem (based on the status).</line>
 					<line>If this relation is NOT defined, all examination managers can view, edit, or timetable all examination problems.</line>
 					<line>This relation is also to be edited on the Administration > Academic Sessions > Examination Statuses page.</line>
-					<line>Only managers with a role that is academic session dependent and that allows to access the examination solver are listed.</line>
+					<line>Only managers with a role that is academic session dependent and that allows accessing the examination solver are listed.</line>
 				</line>
 			</description>
 		</item>
@@ -229,7 +229,7 @@
 					<line>Perturbations: same time assigned (% of same time section assigned over all course requests with initial enrollment)</line>
 				</line>
 				<line>When Sectioning.KeepInitialAssignments is set to true (defaults to false), only the initial value is in the variable’s domain (when there is an initial value).
-					<line>Also there is a new global constraint (named FixInitialAssignments) that prevents unassignment of an initial value by another global constraint (limits, reservations).</line>
+					<line>Also, there is a new global constraint (named FixInitialAssignments) that prevents unassignment of an initial value by another global constraint (limits, reservations).</line>
 				</line>
 			</description>
 		</item>
@@ -239,7 +239,7 @@
 				<line>Added ability to keep students of the same group together.</line>
 				<line>Measured as an average probability of two students (of a group) that are requesting the same course being given the same section (of the same subpart).</line>
 				<line>There is a new weight (named StudentWeights.SameGroup, defaults to 0.1) expressing how much this criterion affects the student weight (in both priority and equal weighting).
-					<line>This means that if a student is being enrolled into a completely different section, weight of such an enrollment is decreased by 10%
+					<line>This means that if a student is being enrolled into a completely different section, the weight of such an enrollment is decreased by 10%
 						(the metric reflects how much are the students spread between the sections of the course).</line>
 				</line>
 				<line>There is a new Request Groups report on the Student Scheduling Solver Reports page.</line>
@@ -321,7 +321,7 @@
 				</line>
 				<line>When there is an Arrange Hours class in the schedule, the following message is displayed at the top of the Time Grid tab.
 					<line>This schedule only displays classes with assigned time. To see your full list of classes, please open the List of classes tab.</line>
-					<line>The message has light blue background, same as other info messages.</line>
+					<line>The message has a light blue background, same as other info messages.</line>
 				</line>
 			</description>
 		</item>
