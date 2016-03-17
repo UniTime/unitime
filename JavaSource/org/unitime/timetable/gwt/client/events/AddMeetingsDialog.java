@@ -1199,7 +1199,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			iHoverDate = null; iHoverLoc = null;
 		}
 	}
-		
+	
 	public Set<MeetingConflictInterface> getConflicts(Integer date, Entity room) {
 		Set<MeetingConflictInterface> conflicts = new HashSet<MeetingConflictInterface>();
 		if (iConflicts != null) {
@@ -1221,7 +1221,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	public void setSelected(Integer date, Entity room, boolean selected) {
 		String dateStr = sAriaDateFormat.format(iDates.getDate(date));
 		String roomStr = room.getName();
-		if (!"1".equals(room.getProperty("overbook", "0"))) {
+		if (!"1".equals(room.getProperty("overbook", "0")) && selected) {
 			Set<MeetingConflictInterface> conf = getConflicts(date, room);
 			if (conf != null && !conf.isEmpty()) {
 				AriaStatus.getInstance().setText(ARIA.dateRoomCanNotSelect(dateStr, roomStr));
