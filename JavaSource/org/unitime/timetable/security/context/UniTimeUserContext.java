@@ -317,6 +317,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 	public void setProperty(String key, String value) {
 		if (value != null && value.isEmpty()) value = null;
 		super.setProperty(key, value);
+		if (getExternalUserId() == null || getExternalUserId().isEmpty()) return;
 		org.hibernate.Session hibSession = UserDataDAO.getInstance().createNewSession();
 		try {
 			Settings settings = (Settings)hibSession.createQuery("from Settings where key = :key")

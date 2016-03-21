@@ -46,6 +46,14 @@
 				<line>Neutral preference check corrected: do not roll or create Neutral room preferences on departments.</line>
 			</description>
 		</item>
+		<item>
+			<name>Anonymous User Context</name>
+			<description>
+				<line>UserContext.setProperty: do not set user data for an anonymous user.
+					<line>This fixes the "ORA-01400: cannot insert NULL into (USER_DATA.EXTERNAL_UID)" exception when using an ICS feed that was created for an unauthenticated user.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
