@@ -21,7 +21,7 @@
  * 
  -->
 
-	<!-- staffMember ==> Required:  externamId, firstName, lastName, positionType, department
+	<!-- staffMember ==> Required:  externalId, firstName, lastName, positionType, department
 	                     Optional:  middleName, email, acadTitle
 	-->
 <staff campus="PWL" term="Fal" year="2010">
