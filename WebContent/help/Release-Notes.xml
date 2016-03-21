@@ -29,6 +29,22 @@
 	<version>4.1.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Events: List of Meetings</name>
+			<description>
+				<line>Make sure all the lines of event name, section, and title are always displayed (e.g., when sorting by date and looking at a cross-listed class).</line>
+				<line>Split instructors over multiple meeting lines (just like event name, section, title and note).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+	
+<release>
+	<version>4.1.164</version>
+	<release-date>Fri, 18 Mar 2016</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Class Duration Types</name>

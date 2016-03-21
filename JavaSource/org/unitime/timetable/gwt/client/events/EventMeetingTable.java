@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
+import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
@@ -1132,7 +1133,14 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 		
 		if (event != null && event.hasInstructors()) {
-			row.add(new HTML(event.getInstructorNames("<br>", MESSAGES), false));
+			if (getMode().hasFlag(ModeFlag.ShowEventDetails)) {
+				List<String> names = new ArrayList<String>();
+				for (ContactInterface instructor: event.getInstructors())
+					names.add(instructor.getName(MESSAGES));
+				row.add(new MultiLineCell(names));
+			} else {
+				row.add(new HTML(event.getInstructorNames("<br>", MESSAGES), false));
+			}
 		} else if (event != null && event.hasSponsor()) {
 			row.add(new Label(event.getSponsor().getName()));
 		} else {
@@ -1525,6 +1533,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			int line = 0;
 			for (int row = 1; row < getRowCount(); row++) {
 				EventMeetingRow data = getData(row);
+				EventMeetingRow next = (row + 1 < getRowCount() ? getData(row + 1) : null);
+				boolean hasNext = (next != null && data.hasParent() == next.hasParent() && data.getEventId().equals(next.getEventId()));
 				if (!data.hasParent()) {
 					if (eventId == null || !eventId.equals(data.getEventId())) {
 						line = 0;
@@ -1533,7 +1543,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						for (int col: eventCols) {
 							Widget w = getWidget(row, col);
 							if (w instanceof MultiLineCell)
-								((MultiLineCell)w).showLine(line);
+								((MultiLineCell)w).showLine(line, hasNext);
 							else
 								w.setVisible(true);
 						}
@@ -1543,7 +1553,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						for (int col: eventCols) {
 							Widget w = getWidget(row, col);
 							if (w instanceof MultiLineCell)
-								((MultiLineCell)w).showLine(line);
+								((MultiLineCell)w).showLine(line, hasNext);
 							else
 								w.setVisible(false);
 						}
@@ -1554,7 +1564,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						for (int col: eventCols) {
 							Widget w = getWidget(row, col);
 							if (w instanceof MultiLineCell)
-								((MultiLineCell)w).showLine(line);
+								((MultiLineCell)w).showLine(line, hasNext);
 							else
 								w.setVisible(true);
 						}
@@ -1562,7 +1572,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						for (int col: eventCols) {
 							Widget w = getWidget(row, col);
 							if (w instanceof MultiLineCell)
-								((MultiLineCell)w).showLine(line);
+								((MultiLineCell)w).showLine(line, hasNext);
 							else
 								w.setVisible(false);
 						}
@@ -1571,7 +1581,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				eventId = (data.hasParent() ? null : data.getEventId());
 				conflictId = (data.hasParent() ? data.getEventId() : null);
 				line++;
-			}			
+			}
 		}
 	}
 	
@@ -2017,7 +2027,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			super();
 			setWordWrap(false);
 			iValue = value;
-			showLine(null);
+			showLine(0, false);
 		}
 		
 		public MultiLineCell(String... values) {
@@ -2026,20 +2036,16 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			iValue = new ArrayList<String>();
 			for (String value: values)
 				iValue.add(value);
-			showLine(null);
+			showLine(0, false);
 		}
 		
-		public void showLine(Integer line) {
-			if (line != null) {
-				setHTML(line >= 0 && line < iValue.size() ? iValue.get(line) : "");
-			} else {
-				String html = "";
-				for (String value: iValue) {
-					if (!html.isEmpty()) html += "<br>";
-					html += value;
-				}
-				setHTML(html);
+		public void showLine(int line, boolean hasNext) {
+			String html = (line >= 0 && line < iValue.size() ? iValue.get(line) : "");
+			if (!hasNext && line >= 0 && line + 1 < iValue.size()) {
+				for (int i = line + 1; i < iValue.size(); i++)
+					html += "<br>" + iValue.get(i);
 			}
+			setHTML(html);
 		}
 	}
 	
