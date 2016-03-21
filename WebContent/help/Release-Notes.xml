@@ -38,6 +38,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other</title>
+		<item>
+			<name>Roll Forward: Room Preferences on Departments</name>
+			<description>
+				<line>Neutral preference check corrected: do not roll or create Neutral room preferences on departments.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 	

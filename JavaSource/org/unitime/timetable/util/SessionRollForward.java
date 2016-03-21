@@ -515,7 +515,7 @@ public class SessionRollForward {
 			toDept.addToroomDepts(toRoomDept);
 			rdDao.saveOrUpdate(toRoomDept);
 			PreferenceLevel fromRoomPrefLevel = fromLocation.getRoomPreferenceLevel(fromRoomDept.getDepartment());
-			if (!fromRoomPrefLevel.equals(PreferenceLevel.sNeutral)){
+			if (!fromRoomPrefLevel.getPrefProlog().equals(PreferenceLevel.sNeutral)){
 				RoomPref toRoomPref = new RoomPref();
 				toRoomPref.setOwner(toDept);
 				toRoomPref.setPrefLevel(fromRoomPrefLevel);
