@@ -50,6 +50,16 @@
 		</item>
 	</category>
 	<category>
+		<title>Rooms</title>
+		<item>
+			<name>Add/Edit Room: Data Validation</name>
+			<description>
+				<line>Room must have at least one department check disabled.</line>
+			</description>
+		</item>
+	</category>
+	
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Roll Forward: Room Preferences on Departments</name>

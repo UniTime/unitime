@@ -1502,7 +1502,7 @@ public class RoomEdit extends Composite {
 			iRoom.getPictures().addAll(iPictures.getData());
 		}
 		
-		if (iProperties.isCanEditDepartments() || (iRoom.getUniqueId() == null && iProperties.isCanChangeAvailability()) || iRoom.isCanChangeAvailability()) {
+		if (CONSTANTS.checkRoomHasNoDepartment() && (iProperties.isCanEditDepartments() || (iRoom.getUniqueId() == null && iProperties.isCanChangeAvailability()) || iRoom.isCanChangeAvailability())) {
 			boolean hasDepartment = (iRoom.getEventDepartment() != null);
 			if (!hasDepartment && iRoomSharing.getModel() != null) {
 				for (RoomSharingOption opt: iRoomSharing.getModel().getOptions()) {

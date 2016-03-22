@@ -332,4 +332,8 @@ public interface GwtConstants extends Constants {
 		
 	})
 	String[] reservationModeLabel();
+	
+	@DefaultBooleanValue(false)
+	@DoNotTranslate
+	boolean checkRoomHasNoDepartment();
 }
