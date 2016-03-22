@@ -39,6 +39,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Online Student Scheduling Dashboard during registration</name>
+			<description>
+				<line>Fixed the ability to use the Online Student Scheduling Dashboard during student registration phase (null exception when executing an action).
+					<line>The issue was created in commit e486db4, with the ability to provide a custom action factory.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>Roll Forward: Room Preferences on Departments</name>
