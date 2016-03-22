@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseNonUniversityLocation;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
@@ -91,13 +92,18 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		}
 		NonUniversityLocation newNonUniversityLocation = null;
 		NonUniversityLocationDAO nulDao = new NonUniversityLocationDAO();
-		
-		String query = "from NonUniversityLocation nul inner join RoomDept rd where nul.permanentId = '" + getPermanentId() + "'";
-		query += " and nul.session.uniqueId = " + newSession.getUniqueId().toString();
-		query += " and rd.control = " + 1;
-		query += " and rd.department.uniqueId =" + getControllingDepartment().getUniqueId();
-		newNonUniversityLocation = (NonUniversityLocation)nulDao.getQuery(query).uniqueResult();
-		 
+
+		newNonUniversityLocation = (NonUniversityLocation) nulDao.getSession().createCriteria(NonUniversityLocation.class)
+				.add(Restrictions.eq("permanentId", getPermanentId()))
+				.add(Restrictions.eq("session.uniqueId", newSession.getUniqueId()))
+				.setCacheable(true).uniqueResult();
+		if (newNonUniversityLocation == null && getExternalUniqueId() != null) {
+			newNonUniversityLocation = (NonUniversityLocation) nulDao.getSession().createCriteria(NonUniversityLocation.class)
+					.add(Restrictions.eq("externalUniqueId", getExternalUniqueId()))
+					.add(Restrictions.eq("session.uniqueId", newSession.getUniqueId()))
+					.setCacheable(true).uniqueResult();
+		}
+
 		return(newNonUniversityLocation);
 	}
 	

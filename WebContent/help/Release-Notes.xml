@@ -77,6 +77,14 @@
 			</description>
 		</item>
 		<item>
+			<name>Roll Forward: Examination Configuration</name>
+			<description>
+				<line>Non-university location lookup: only lookup the location by its permanent id and session id (just like for the ordinary rooms).
+					<line>This fixes the issue of rolling forward examination room information when the non-university location does not have a controlling department.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Anonymous User Context</name>
 			<description>
 				<line>UserContext.setProperty: do not set user data for an anonymous user.
