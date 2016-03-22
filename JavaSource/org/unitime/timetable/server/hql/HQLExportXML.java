@@ -66,10 +66,9 @@ public class HQLExportXML implements Exporter {
 				"http://www.unitime.org/interface/Reports.dtd");
 		Element reportEl = document.addElement("report");
 		reportEl.addAttribute("name", report.getName());
-		Element flagsEl = reportEl.addElement("flags");
 		for (SavedHQL.Flag flag : SavedHQL.Flag.values()) {
 			if (report.isSet(flag))
-				flagsEl.addElement("flag").setText(flag.name());
+				reportEl.addElement("flag").setText(flag.name());
 		}
 		if (report.getDescription() != null)
 			reportEl.addElement("description").add(new DOMCDATA(report.getDescription()));

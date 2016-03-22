@@ -54,6 +54,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: HQL Reports</name>
+			<description>
+				<line>Changed the exported report XML to comply with the Reports.dtd (flag elements are directly under report element).</line>
+				<line>Changed the importer to import both versions of the XML (flag elements are under report or under flags element).</line>
+			</description>
+		</item>
 	</category>
 </release>
 

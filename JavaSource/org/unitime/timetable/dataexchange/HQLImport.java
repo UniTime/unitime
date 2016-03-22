@@ -62,7 +62,8 @@ public class HQLImport extends BaseImport {
 			report.setName(name);
 		}
 		report.setType(0);
-		for (Iterator i = reportEl.elementIterator("flag"); i.hasNext();) {
+		Element flags = reportEl.element("flags");
+		for (Iterator i = (flags == null ? reportEl : flags).elementIterator("flag"); i.hasNext();) {
 			Element e = (Element) i.next();
 			SavedHQL.Flag flag = SavedHQL.Flag.valueOf(e.getTextTrim());
 			if (flag != null)
