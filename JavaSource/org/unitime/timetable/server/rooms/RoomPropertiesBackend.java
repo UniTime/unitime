@@ -77,8 +77,8 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		RoomPropertiesInterface response = new RoomPropertiesInterface();
 		
 		if (context.getUser() != null) {
-			Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
-			response.setAcademicSession(new AcademicSessionInterface(context.getUser().getCurrentAcademicSessionId(), session.getAcademicTerm() + " " + session.getAcademicYear()));
+			Session session = SessionDAO.getInstance().get(request.hasSessionId() ? request.getSessionId() : context.getUser().getCurrentAcademicSessionId());
+			response.setAcademicSession(new AcademicSessionInterface(session.getUniqueId(), session.getAcademicTerm() + " " + session.getAcademicYear()));
 		}
 		
 		response.setCanEditDepartments(context.hasPermission(Right.EditRoomDepartments));

@@ -57,6 +57,15 @@
 				<line>Room must have at least one department check disabled.</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Room: Room X does not exist</name>
+			<description>
+				<line>Corrected returned session information when the academic session is changed on the Rooms page (event management).
+					<line>When user did not have a matching role in the selected academic session, wrong session information was returned.</line>
+					<line>This caused some issues when the user attempted to edit the room in such a case.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	
 	<category>
