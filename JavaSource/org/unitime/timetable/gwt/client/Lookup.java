@@ -117,7 +117,7 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 		setWidget(iPanel);
 		
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
-		header.add(new UniTimeTableHeader(MESSAGES.colName()));
+		header.add(new UniTimeTableHeader(MESSAGES.colNamePerson()));
 		header.add(new UniTimeTableHeader(MESSAGES.colEmail()));
 		header.add(new UniTimeTableHeader(MESSAGES.colPhone()));
 		header.add(new UniTimeTableHeader(MESSAGES.colDepartment()));
