@@ -67,7 +67,15 @@
 			</description>
 		</item>
 	</category>
-	
+	<category>
+		<title>Localization</title>
+		<item>
+			<name>Class Detail: Instructors</name>
+			<description>
+				<line>The small table with instructors now has localized headers.</line>
+			</description>
+		</item>
+	</category>
 	<category>
 		<title>Other</title>
 		<item>
