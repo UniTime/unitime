@@ -136,7 +136,7 @@ public class EventDetail extends Composite {
 		iContacts.setStyleName("unitime-EventContacts");
 		
 		List<Widget> contactHeader = new ArrayList<Widget>();
-		contactHeader.add(new UniTimeTableHeader(MESSAGES.colName()));
+		contactHeader.add(new UniTimeTableHeader(MESSAGES.colNamePerson()));
 		contactHeader.add(new UniTimeTableHeader(MESSAGES.colEmail()));
 		contactHeader.add(new UniTimeTableHeader(MESSAGES.colPhone()));
 		iContacts.addRow(null, contactHeader);

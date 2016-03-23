@@ -447,6 +447,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Name")
 	String colName();
 	
+	@DefaultMessage("Name")
+	String colNamePerson();
+	
 	@DefaultMessage("Course")
 	String colCourse();
 	
