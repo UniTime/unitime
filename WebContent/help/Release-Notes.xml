@@ -48,6 +48,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Detail: Enrollments</name>
+			<description>
+				<line>Fixed a Null exception preventing the Enrollment table from showing on a class.
+					<line>The issue was introduced by commit 811bade, with the ability to exclude certain departments from student scheduling.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Rooms</title>

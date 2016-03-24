@@ -980,16 +980,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				Class_ clazz = (classOrOfferingId < 0 ? Class_DAO.getInstance().get(-classOrOfferingId, hibSession) : null);
 				if (offering == null && clazz == null) 
 					throw new SectioningException(MSG.exceptionBadClassOrOffering());
-				Long offeringId = (clazz == null ? offering.getUniqueId() : clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
+				if (offering == null)
+					offering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering();
+				Long offeringId = offering.getUniqueId();
 				
-				getSessionContext().checkPermission(offering != null ? offering : clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering(), Right.OfferingEnrollments);
+				getSessionContext().checkPermission(offering, Right.OfferingEnrollments);
 
-				OnlineSectioningServer server = getServerInstance(
-						clazz == null ?
-						offering.getControllingCourseOffering().getSubjectArea().getSessionId() :
-						clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getSessionId(),
-						false
-						);
+				OnlineSectioningServer server = getServerInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId(), false);
 				
 				if (server == null || !offering.isAllowStudentScheduling()) {
 					NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingStudentNameFormat.value());
