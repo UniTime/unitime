@@ -130,6 +130,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.waitlist", "false"));
 	}
 	
+	protected float getMaxCredit(boolean admin) {
+		if (admin) {
+			String maxCredit = ApplicationProperties.getProperty("banner.xe.admin.maxCredit");
+			if (maxCredit != null) return Float.parseFloat(maxCredit);
+		}
+		return Float.parseFloat(ApplicationProperties.getProperty("banner.xe.maxCredit", "-1"));
+	}
+
 	protected String getBannerId(XStudent student) {
 		String id = student.getExternalId();
 		while (id.length() < 9) id = "0" + id;
@@ -344,6 +352,27 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			boolean admin = manager & isBannerAdmin();
 			if (helper.isDebugEnabled())
 				helper.debug("Enrolling " + student.getName() + " to " + enrollments + " (term: " + term + ", id:" + getBannerId(student) + (admin ? ", admin" : pin != null ? ", pin:" + pin : "") + ")");
+			
+			float maxCredit = getMaxCredit(admin);
+			if (maxCredit > 0f) {
+				float enrolled = 0f;
+				for (XRequest r: student.getRequests())
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						XCourse course = (cr.getEnrollment() == null ? null : server.getCourse(cr.getEnrollment().getCourseId()));
+						if (course != null && course.hasCredit())
+							enrolled += course.getCreditInfo().getMinCredit();
+					}
+				// Check credits
+				float credit = 0f;
+				for (EnrollmentRequest req: enrollments) {
+					if (req.getCourse().hasCredit())
+						credit += req.getCourse().getCreditInfo().getMinCredit();
+				}
+				if (credit > maxCredit && credit > enrolled) {
+					throw new SectioningException(ApplicationProperties.getProperty("banner.xe.messages.maxCredit", "Maximum hours exceeded."));
+				}
+			}
 			
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
