@@ -68,4 +68,14 @@ public class VariableFixedCreditUnitConfig extends BaseVariableFixedCreditUnitCo
 		return(newCreditConfig);
 	}
 
+	@Override
+	public float getMinCredit() {
+		return (getMinUnits() == null ? 0f : getMinUnits());
+	}
+
+	@Override
+	public float getMaxCredit() {
+		return (getMaxUnits() == null ? 0f: getMaxUnits());
+	}
+
 }

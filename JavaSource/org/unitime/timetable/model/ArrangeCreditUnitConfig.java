@@ -62,5 +62,14 @@ public class ArrangeCreditUnitConfig extends BaseArrangeCreditUnitConfig {
 		baseClone(newCreditConfig);
 		return (newCreditConfig);
 	}
-	
+
+	@Override
+	public float getMinCredit() {
+		return 0f;
+	}
+
+	@Override
+	public float getMaxCredit() {
+		return 0f;
+	}
 }

@@ -54,9 +54,9 @@ public class XSubpart implements Serializable, Externalizable {
     private List<XSection> iSections = new ArrayList<XSection>();
     private Long iConfigId = null;
     private Long iParentId = null;
-    private String iCreditAbbv = null, iCreditText = null;
+    private XCredit iCredit = null;
     private boolean iAllowOverlap = false;
-    private Map<Long, String[]> iCreditByCourse = new HashMap<Long, String[]>();
+    private Map<Long, XCredit> iCreditByCourse = new HashMap<Long, XCredit>();
 
     public XSubpart() {}
     
@@ -73,14 +73,12 @@ public class XSubpart implements Serializable, Externalizable {
         	iName += " (" + subpart.getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")";
         iConfigId = subpart.getInstrOfferingConfig().getUniqueId();
         iParentId = subpart.getParentSubpart() == null ? null : subpart.getParentSubpart().getUniqueId();
-        if (subpart.getCredit() != null) {
-        	iCreditAbbv = subpart.getCredit().creditAbbv();
-        	iCreditText = subpart.getCredit().creditText();
-        }
+        if (subpart.getCredit() != null)
+        	iCredit = new XCredit(subpart.getCredit());
         if (courseCredit) {
         	for (CourseOffering co: subpart.getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
         		if (co.getCredit() != null)
-        			iCreditByCourse.put(co.getUniqueId(), new String[] {co.getCredit().creditAbbv(), co.getCredit().creditText()});
+        			iCreditByCourse.put(co.getUniqueId(), new XCredit(co.getCredit()));
         	}
         }
         for (Class_ clazz: subpart.getClasses())
@@ -96,20 +94,12 @@ public class XSubpart implements Serializable, Externalizable {
     	iName = subpart.getName();
     	iConfigId = subpart.getConfig().getId();
     	iParentId = (subpart.getParent() == null ? null : subpart.getParent().getId());
-    	if (subpart.getCredit() != null) {
-        	int split = subpart.getCredit().indexOf('|');
-        	if (split >= 0) {
-        		iCreditAbbv = subpart.getCredit().substring(0, split);
-        		iCreditText = subpart.getCredit().substring(split + 1);
-        	}
-    	}
+    	if (subpart.getCredit() != null)
+    		iCredit = new XCredit(subpart.getCredit());
     	if (courseCredit) {
     		for (Course course: subpart.getConfig().getOffering().getCourses()) {
-    			if (course.getCredit() != null) {
-    				int split = course.getCredit().indexOf('|');
-    	        	if (split >= 0)
-    	        		iCreditByCourse.put(course.getId(), new String[] {course.getCredit().substring(0, split), course.getCredit().substring(split + 1)});
-    			}
+    			if (course.getCredit() != null)
+    				iCreditByCourse.put(course.getId(), new XCredit(course.getCredit()));
     		}
     	}
     	for (Section section: subpart.getSections())
@@ -170,20 +160,24 @@ public class XSubpart implements Serializable, Externalizable {
      * Get credit (Online Student Scheduling only)
      */
     public String getCreditAbbv(Long courseId) {
-    	String[] credit = (courseId != null ? iCreditByCourse.get(courseId) : null);
-    	return (credit != null ? credit[0] : iCreditAbbv);
+    	XCredit credit = (courseId != null ? iCreditByCourse.get(courseId) : null);
+    	return (credit != null ? credit.getAbbreviation() : iCredit != null ? iCredit.getAbbreviation() : null);
     }
     public String getCreditText(Long courseId) {
-    	String[] credit = (courseId != null ? iCreditByCourse.get(courseId) : null);
-    	return (credit != null ? credit[1] : iCreditText);
+    	XCredit credit = (courseId != null ? iCreditByCourse.get(courseId) : null);
+    	return (credit != null ? credit.getText() : iCredit != null ? iCredit.getText() : null);
+    }
+    public XCredit getCreditInfo(Long courseId) {
+    	XCredit credit = (courseId != null ? iCreditByCourse.get(courseId) : null);
+    	return (credit != null ? credit : iCredit);
     }
     public String getCredit(Long courseId) {
     	if (courseId != null) {
-        	String[] credit = iCreditByCourse.get(courseId);
+    		XCredit credit = iCreditByCourse.get(courseId);
         	if (credit != null)
-        		return credit[0] + "|" + credit[1];
+        		return credit.getAbbreviation() + "|" + credit.getText();
     	}
-    	return iCreditAbbv == null ? null : iCreditAbbv + "|" + iCreditText;
+    	return iCredit == null ? null : iCredit.getAbbreviation() + "|" + iCredit.getText();
     }
     
     @Override
@@ -212,15 +206,14 @@ public class XSubpart implements Serializable, Externalizable {
 		iParentId = in.readLong();
 		if (iParentId < 0) iParentId = null;
 		
-		iCreditAbbv = (String)in.readObject();
-		iCreditText = (String)in.readObject();
+		iCredit = (in.readBoolean() ? new XCredit(in) : null);
 		
 		iAllowOverlap = in.readBoolean();
 		
 		int nrCredits = in.readInt();
 		iCreditByCourse.clear();
 		for (int i = 0; i < nrCredits; i++)
-			iCreditByCourse.put(in.readLong(), new String[] {(String)in.readObject(), (String)in.readObject()});
+			iCreditByCourse.put(in.readLong(), new XCredit(in));
 	}
 
 	@Override
@@ -236,16 +229,16 @@ public class XSubpart implements Serializable, Externalizable {
 		out.writeLong(iConfigId);
 		out.writeLong(iParentId == null ? -1l : iParentId);
 		
-		out.writeObject(iCreditAbbv);
-		out.writeObject(iCreditText);
+		out.writeBoolean(iCredit != null);
+		if (iCredit != null)
+			iCredit.writeExternal(out);
 		
 		out.writeBoolean(iAllowOverlap);
 		
 		out.writeInt(iCreditByCourse.size());
-		for (Map.Entry<Long, String[]> entry: iCreditByCourse.entrySet()) {
+		for (Map.Entry<Long, XCredit> entry: iCreditByCourse.entrySet()) {
 			out.writeLong(entry.getKey());
-			out.writeObject(entry.getValue()[0]);
-			out.writeObject(entry.getValue()[1]);
+			entry.getValue().writeExternal(out);
 		}
 	}
 

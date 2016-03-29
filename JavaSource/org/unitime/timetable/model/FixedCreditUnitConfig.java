@@ -64,5 +64,14 @@ public class FixedCreditUnitConfig extends BaseFixedCreditUnitConfig {
 		newCreditConfig.setFixedUnits(getFixedUnits());
 		return (newCreditConfig);
 	}
-	
+
+	@Override
+	public float getMinCredit() {
+		return (getFixedUnits() == null ? 0f : getFixedUnits());
+	}
+
+	@Override
+	public float getMaxCredit() {
+		return (getFixedUnits() == null ? 0f : getFixedUnits());
+	}
 }

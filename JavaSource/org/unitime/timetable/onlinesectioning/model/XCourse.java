@@ -49,7 +49,7 @@ public class XCourse extends XCourseId {
     private int iLimit = 0;
     private int iProjected = 0;
     private Integer iWkEnroll = null, iWkChange = null, iWkDrop = null;
-    private String iCreditAbbv = null, iCreditText = null;
+    private XCredit iCredit = null;
 
     public XCourse() {
     	super();
@@ -87,10 +87,8 @@ public class XCourse extends XCourseId {
 			iConsentLabel = course.getConsentType().getLabel();
 			iConsentAbbv = course.getConsentType().getAbbv();
 		}
-        if (course.getCredit() != null) {
-        	iCreditAbbv = course.getCredit().creditAbbv();
-        	iCreditText = course.getCredit().creditText();
-        }
+        if (course.getCredit() != null)
+        	iCredit = new XCredit(course.getCredit());
     }
     
     public XCourse(Course course) {
@@ -100,13 +98,8 @@ public class XCourse extends XCourseId {
 		iNote = course.getNote();
         iLimit = course.getLimit();
         iProjected = course.getProjected();
-        if (course.getCredit() != null) {
-        	int split = course.getCredit().indexOf('|');
-        	if (split >= 0) {
-        		iCreditAbbv = course.getCredit().substring(0, split);
-        		iConsentLabel = course.getCredit().substring(split + 1);
-        	}
-        }
+        if (course.getCredit() != null)
+        	iCredit = new XCredit(course.getCredit());
     }
 
     /** Subject area */
@@ -145,9 +138,11 @@ public class XCourse extends XCourseId {
     /**
      * Get credit (Online Student Scheduling only)
      */
-    public String getCreditAbbv() { return iCreditAbbv; }
-    public String getCreditText() { return iCreditText; }
-    public String getCredit() { return getCreditAbbv() == null ? null : getCreditAbbv() + "|" + getCreditText(); }
+	public XCredit getCreditInfo() { return iCredit; }
+	public boolean hasCredit() { return iCredit != null; }
+    public String getCreditAbbv() { return (iCredit == null ? null : iCredit.getAbbreviation()); }
+    public String getCreditText() { return (iCredit == null ? null : iCredit.getText()); }
+    public String getCredit() { return (iCredit == null ? null : iCredit.getAbbreviation() + "|" + iCredit.getText()); }
 	
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -164,8 +159,7 @@ public class XCourse extends XCourseId {
 		iWkEnroll = (in.readBoolean() ? in.readInt() : null);
 		iWkChange = (in.readBoolean() ? in.readInt() : null);
 		iWkDrop = (in.readBoolean() ? in.readInt() : null);
-		iCreditAbbv = (String)in.readObject();
-		iCreditText = (String)in.readObject();
+		iCredit = (in.readBoolean() ? new XCredit(in) : null);
 	}
 
 	@Override
@@ -189,8 +183,9 @@ public class XCourse extends XCourseId {
 		out.writeBoolean(iWkDrop != null);
 		if (iWkDrop != null)
 			out.writeInt(iWkDrop);
-		out.writeObject(iCreditAbbv);
-		out.writeObject(iCreditText);
+		out.writeBoolean(iCredit != null);
+		if (iCredit != null)
+			iCredit.writeExternal(out);
 	}
 	
 	public static class XCourseSerializer implements Externalizer<XCourse> {

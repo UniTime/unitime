@@ -131,6 +131,9 @@ public abstract class CourseCreditUnitConfig extends BaseCourseCreditUnitConfig 
 		newCreditConfig.setDefinesCreditAtCourseLevel(isDefinesCreditAtCourseLevel());
 	}
 	
+	public abstract float getMinCredit();
+	public abstract float getMaxCredit();
+	
 	public abstract Object clone();
 	
 	public String toString(){
