@@ -156,6 +156,9 @@ public class XEInterface {
 		public List<TimeTicket> timeTickets;
 		public Boolean validStudent;
 		public String registrationException;
+
+		public Integer minHours;
+		public Integer maxHours;
 	}
 	
 	public static class CourseReferenceNumber {
