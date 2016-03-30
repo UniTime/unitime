@@ -322,25 +322,51 @@ public class EventsExportEventsToICal extends EventsExporter {
             	vevent.setDateTimeStamp(ts);
             }
             
-            if (event.hasInstructors()) {
-            	int idx = 0;
-            	for (ContactInterface instructor: event.getInstructors()) {
-            		if (idx++ == 0) {
-            			Organizer organizer = new Organizer(instructor.getName(MESSAGES), (instructor.hasEmail() ? instructor.getEmail() : ""));
-            			vevent.setOrganizer(organizer);
-            		} else {
-                		Attendee attendee = new Attendee(instructor.getName(MESSAGES), (instructor.hasEmail() ? instructor.getEmail() : ""));
-                		attendee.setRole(Role.CHAIR);
-                		vevent.addAttendee(attendee);
-            		}
-            	}
-            } else if (event.hasSponsor()) {
-    			Organizer organizer = new Organizer(event.getSponsor().getName(), (event.getSponsor().hasEmail() ? event.getSponsor().getEmail() : ""));
-    			vevent.setOrganizer(organizer);
-            } else if (event.hasContact()) {
-    			Organizer organizer = new Organizer(event.getContact().getName(MESSAGES), (event.getContact().hasEmail() ? event.getContact().getEmail() : ""));
-    			vevent.setOrganizer(organizer);
+            if (ApplicationProperty.EventCalendarSetOrganizer.isTrue()) {
+                if (event.hasInstructors()) {
+                	int idx = 0;
+                	for (ContactInterface instructor: event.getInstructors()) {
+                		if (idx++ == 0) {
+                			Organizer organizer = new Organizer(instructor.getName(MESSAGES), (instructor.hasEmail() ? instructor.getEmail() : ""));
+                			vevent.setOrganizer(organizer);
+                		} else {
+                    		Attendee attendee = new Attendee(instructor.getName(MESSAGES), (instructor.hasEmail() ? instructor.getEmail() : ""));
+                    		attendee.setRole(Role.CHAIR);
+                    		vevent.addAttendee(attendee);
+                		}
+                	}
+                } else if (event.hasSponsor()) {
+        			Organizer organizer = new Organizer(event.getSponsor().getName(), (event.getSponsor().hasEmail() ? event.getSponsor().getEmail() : ""));
+        			vevent.setOrganizer(organizer);
+                } else if (event.hasContact()) {
+        			Organizer organizer = new Organizer(event.getContact().getName(MESSAGES), (event.getContact().hasEmail() ? event.getContact().getEmail() : ""));
+        			vevent.setOrganizer(organizer);
+                }
+            } else {
+                if (event.hasInstructors()) {
+                	int idx = 0;
+                	for (ContactInterface instructor: event.getInstructors()) {
+                		if (idx++ == 0) {
+                			Attendee organizer = new Attendee(instructor.getName(MESSAGES), (instructor.hasEmail() ? instructor.getEmail() : ""));
+                			organizer.setRole(Role.ORGANIZER);
+                			vevent.addAttendee(organizer);
+                		} else {
+                    		Attendee attendee = new Attendee(instructor.getName(MESSAGES), (instructor.hasEmail() ? instructor.getEmail() : ""));
+                    		attendee.setRole(Role.CHAIR);
+                    		vevent.addAttendee(attendee);
+                		}
+                	}
+                } else if (event.hasSponsor()) {
+                	Attendee organizer = new Attendee(event.getSponsor().getName(), (event.getSponsor().hasEmail() ? event.getSponsor().getEmail() : ""));
+        			organizer.setRole(Role.ORGANIZER);
+        			vevent.addAttendee(organizer);
+                } else if (event.hasContact() && event.getType() != EventType.Class && event.getType() != EventType.FinalExam && event.getType() != EventType.MidtermExam) {
+                	Attendee organizer = new Attendee(event.getContact().getName(MESSAGES), (event.getContact().hasEmail() ? event.getContact().getEmail() : ""));
+                	organizer.setRole(Role.ORGANIZER);
+            		vevent.addAttendee(organizer);
+                }
             }
+
             ical.addEvent(vevent);
         }
 

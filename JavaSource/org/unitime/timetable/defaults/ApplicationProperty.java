@@ -1165,6 +1165,11 @@ public enum ApplicationProperty {
 	@Description("Event ICS Calendar: include instructor names in the event description")
 	EventCalendarDisplayInstructorsInDescription("unitime.events.ics_instructors_in_description"),
 
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Event ICS Calendar: set main contact as organizer")
+	EventCalendarSetOrganizer("unitime.events.ics_set_organizer"),
+
 	@Type(Class.class)
 	@Implements(Email.class)
 	@DefaultValue("org.unitime.commons.JavaMailWrapper")

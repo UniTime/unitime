@@ -37,6 +37,15 @@
 				<line>Split instructors over multiple meeting lines (just like event name, section, title and note).</line>
 			</description>
 		</item>
+		<item>
+			<name>iCalendar Export</name>
+			<description>
+				<line>Added ability to avoid setting the ORGANIZER of an event (using the ATTENDEE with the ORGANIZER role instead).
+					<line>This was done in an attempt to avoid receiving unsolicited accept/decline messages while keeping the instructor (or the main contact) of the event visible.</line>
+					<line>This feature is driven by the application property unitime.events.ics_set_organizer, which defaults to true (the existing behavior).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
