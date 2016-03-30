@@ -378,7 +378,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						credit += req.getCourse().getCreditInfo().getMinCredit();
 				}
 				if (credit > maxCredit && credit > enrolled) {
-					throw new SectioningException(ApplicationProperties.getProperty("banner.xe.messages.maxCredit", "Maximum hours exceeded."));
+					throw new SectioningException(ApplicationProperties.getProperty("banner.xe.messages.maxCredit", "Maximum of {max} hours exceeded.")
+							.replace("{max}", String.valueOf(maxCredit > enrolled ? maxCredit : enrolled)).replace("{credit}", String.valueOf(credit)));
 				}
 			}
 			
@@ -467,7 +468,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						credit += req.getCourse().getCreditInfo().getMinCredit();
 				}
 				if (credit > original.maxHours) {
-					throw new SectioningException(ApplicationProperties.getProperty("banner.xe.messages.maxHours", "Maximum hours exceeded."));
+					throw new SectioningException(ApplicationProperties.getProperty("banner.xe.messages.maxHours", "Maximum of {max} hours exceeded.")
+							.replace("{max}", String.valueOf(original.maxHours)).replace("{credit}", String.valueOf(credit)));
 				}
 			}
 			
