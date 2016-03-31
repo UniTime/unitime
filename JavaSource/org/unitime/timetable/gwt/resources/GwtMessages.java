@@ -2532,6 +2532,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Preference Levels")
 	@DoNotTranslate
 	String pagePreferenceLevels();
+	
+	@DefaultMessage("Instructor Attribute Type")
+	@DoNotTranslate
+	String pageInstructorAttribute();
+	
+	@DefaultMessage("Instructor Attribute Types")
+	@DoNotTranslate
+	String pageInstructorAttributes();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -3266,6 +3274,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Highlight In Events")
 	String fieldHighlightInEvents();
+	
+	@DefaultMessage("Conjunctive")
+	String fieldConjunctive();
+
+	@DefaultMessage("Required Attribute")
+	String fieldRequiredAttribute();
 
 	@DefaultMessage("Access")
 	String toggleAccess();

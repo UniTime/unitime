@@ -820,6 +820,12 @@
 					<hasPermission name="InstructionalMethods"/>
 				</condition>
 			</item>
+			<item name="Instructor Attribute Types" page="admin" type="gwt">
+				<parameter name="type">attributeType</parameter>
+				<condition>
+					<hasPermission name="InstructorAttributeTypes"/>
+				</condition>
+			</item>
 			<item name="Sponsoring Organizations" page="sponsoringOrgList.do">
 				<condition>
 					<hasPermission name="SponsoringOrganizations"/>
