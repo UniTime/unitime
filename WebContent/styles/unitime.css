@@ -3725,6 +3725,10 @@ unitime-RoomSharingWidget .legend .blank {
 	text-decoration: underline;	
 }
 
+.unitime-Rooms .departments .all {
+	font-style: italic;
+}
+
 .unitime-Rooms .map {
 	border: 1px solid #9CB0CE;
 	max-width: 150px;

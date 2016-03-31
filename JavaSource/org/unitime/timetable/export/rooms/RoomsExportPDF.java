@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.PDFPrinter;
 import org.unitime.timetable.export.PDFPrinter.A;
+import org.unitime.timetable.export.PDFPrinter.F;
 import org.unitime.timetable.gwt.shared.RoomInterface.AttachmentTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
@@ -195,6 +196,7 @@ public class RoomsExportPDF extends RoomsExporter {
 			
 		case DEPARTMENTS:
 			if (!room.hasDepartments()) return new A();
+			if (context.isAllDepartments(room.getDepartments())) return new A(MESSAGES.departmentsAllLabel()).set(F.ITALIC);
 			a = new A();
 			for (DepartmentInterface d: room.getDepartments()) {
 				A b = new A(context.dept2string(d, true)).color(d.getColor());

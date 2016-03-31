@@ -1888,6 +1888,7 @@ public class RoomInterface implements IsSerializable {
 		private List<BuildingInterface> iBuildings = new ArrayList<BuildingInterface>();
 		private List<FeatureTypeInterface> iFeatureTypes = new ArrayList<FeatureTypeInterface>();
 		private List<DepartmentInterface> iDepartments = new ArrayList<DepartmentInterface>();
+		private int iNrDepartments = 0;
 		private List<ExamTypeInterface> iExamTypes = new ArrayList<ExamTypeInterface>();
 		private List<GroupInterface> iGroups = new ArrayList<GroupInterface>();
 		private List<FeatureInterface> iFeatures = new ArrayList<FeatureInterface>();
@@ -2011,6 +2012,9 @@ public class RoomInterface implements IsSerializable {
 					return department;
 			return null;
 		}
+		
+		public void setNrDepartments(int nrDepartments) { iNrDepartments = nrDepartments; }
+		public int getNrDepartments() { return iNrDepartments; }
 		
 		public void addExamType(ExamTypeInterface examType) { iExamTypes.add(examType); }
 		public List<ExamTypeInterface> getExamTypes() { return iExamTypes; }

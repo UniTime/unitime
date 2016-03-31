@@ -732,7 +732,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			return new AvailabilityCell(room, false);
 			
 		case DEPARTMENTS:
-			return new DepartmentCell(true, room.getDepartments(), room.getControlDepartment());
+			return new DepartmentCell(true, room.getDepartments(), room.getControlDepartment(), isAllDepartments(room));
 		
 		case CONTROL_DEPT:
 			return new DepartmentCell(true, room.getControlDepartment());
@@ -1115,19 +1115,26 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			}
 		}
 		
-		public DepartmentCell(boolean ext, List<DepartmentInterface> departments, DepartmentInterface control) {
+		public DepartmentCell(boolean ext, List<DepartmentInterface> departments, DepartmentInterface control, boolean all) {
 			super("departments");
 			iExt = ext;
-			for (DepartmentInterface department: departments) {
-				P p = new P("department");
-				p.setText(RoomsTable.toString(department, iExt));
-				if (department.getTitle() != null) p.setTitle(department.getTitle());
-				if (department.getColor() != null)
-					p.getElement().getStyle().setColor(department.getColor());
-				if (department.equals(control))
-					p.addStyleName("control");
-				iP.put(department, p);
+			if (all) {
+				P p = new P("department", "all");
+				p.setText(MESSAGES.departmentsAllLabel());
+				p.setTitle(MESSAGES.departmentsAllTitle());
 				add(p);
+			} else {
+				for (DepartmentInterface department: departments) {
+					P p = new P("department");
+					p.setText(RoomsTable.toString(department, iExt));
+					if (department.getTitle() != null) p.setTitle(department.getTitle());
+					if (department.getColor() != null)
+						p.getElement().getStyle().setColor(department.getColor());
+					if (department.equals(control))
+						p.addStyleName("control");
+					iP.put(department, p);
+					add(p);
+				}				
 			}
 		}
 		
@@ -1478,5 +1485,9 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		} else {
 			return null;
 		}
+	}
+	
+	public boolean isAllDepartments(RoomDetailInterface room) {
+		return room.getDepartments().size() > 3 && iProperties.getNrDepartments() == room.getDepartments().size();
 	}
 }

@@ -51,6 +51,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.AttachmentType.VisibilityFlag;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
@@ -101,6 +102,7 @@ public abstract class RoomsExporter implements Exporter {
     	ExportContext ec = new ExportContext();
     	if (helper.getParameter("dm") != null)
     		ec.setDepartmentMode(Integer.parseInt(helper.getParameter("dm")));
+    	ec.setNrDepartments(Department.findAllBeingUsed(sessionId).size());
     	
     	FilterRpcResponse response = new FilterRpcResponse();
     	new RoomDetailsBackend().enumarate(request, response, context); 
@@ -224,6 +226,7 @@ public abstract class RoomsExporter implements Exporter {
 		private String iDepartment = null;
 		private List<FeatureTypeInterface> iFeatureTypes = new ArrayList<FeatureTypeInterface>();
 		private List<AttachmentTypeInterface> iPictureTypes = new ArrayList<AttachmentTypeInterface>();
+		private int iNrDepartments = 0;
 		private int iDepartmentMode = 0;
 		private int iRoomCookieFlags = 0;
 		private boolean iGridAsText = false;
@@ -263,6 +266,8 @@ public abstract class RoomsExporter implements Exporter {
 		public Format<Number> getAreaFormat() { return iAreaFormat; }
 		public Format<Number> getCoordinateFormat() { return iCoordinateFormat; }
 		
+		public void setNrDepartments(int nrDepartments) { iNrDepartments = nrDepartments; }
+		
 		protected String dept2string(DepartmentInterface d, boolean ext) {
 			if (d == null) return "";
 			switch (getDepartmentMode()) {
@@ -275,8 +280,13 @@ public abstract class RoomsExporter implements Exporter {
 			}
 		}
 		
+		protected boolean isAllDepartments(Collection<DepartmentInterface> departments) {
+			return departments.size() > 3 && iNrDepartments == departments.size();
+		}
+		
 		protected String dept2string(Collection<DepartmentInterface> departments, boolean ext) {
 			if (departments == null || departments.isEmpty()) return "";
+			if (isAllDepartments(departments)) return MESSAGES.departmentsAllLabel();
 			String ret = "";
 			for (DepartmentInterface d: departments) {
 				ret += (ret.isEmpty() ? "" : getSeparator()) + dept2string(d, ext);

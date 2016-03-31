@@ -4145,4 +4145,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Cancelled")
 	String reservationCancelledClass();
+	
+	@DefaultMessage("All")
+	String departmentsAllLabel();
+
+	@DefaultMessage("All Departments")
+	String departmentsAllTitle();
 }

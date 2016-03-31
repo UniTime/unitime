@@ -144,6 +144,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 			department.setCanEditRoomSharing(context.hasPermission(d, Right.EditRoomDepartments));
 			response.addDepartment(department);
 		}
+		response.setNrDepartments(Department.findAllBeingUsed(response.getAcademicSessionId()).size());
 		
 		response.setHorizontal(context.getUser() == null ? false : CommonValues.HorizontalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
 		response.setGridAsText(context.getUser() == null ? false : CommonValues.TextGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
