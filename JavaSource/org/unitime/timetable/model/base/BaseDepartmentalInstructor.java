@@ -29,8 +29,10 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.InstructorAttribute;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.PreferenceGroup;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Roles;
 
 /**
@@ -49,14 +51,17 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	private String iNote;
 	private String iEmail;
 	private Boolean iIgnoreToFar;
+	private Float iMaxLoad;
 
 	private PositionType iPositionType;
 	private Department iDepartment;
 	private Roles iRole;
+	private PreferenceLevel iTeachingPreference;
 	private Set<ClassInstructor> iClasses;
 	private Set<Exam> iExams;
 	private Set<Assignment> iAssignments;
 	private Set<InstructionalOffering> iOfferings;
+	private Set<InstructorAttribute> iAttributes;
 
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_CAREER_ACCT = "careerAcct";
@@ -67,6 +72,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	public static String PROP_NOTE = "note";
 	public static String PROP_EMAIL = "email";
 	public static String PROP_IGNORE_TOO_FAR = "ignoreToFar";
+	public static String PROP_MAX_LOAD = "maxLoad";
 
 	public BaseDepartmentalInstructor() {
 		initialize();
@@ -107,6 +113,9 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	public Boolean getIgnoreToFar() { return iIgnoreToFar; }
 	public void setIgnoreToFar(Boolean ignoreToFar) { iIgnoreToFar = ignoreToFar; }
 
+	public Float getMaxLoad() { return iMaxLoad; }
+	public void setMaxLoad(Float maxLoad) { iMaxLoad = maxLoad; }
+
 	public PositionType getPositionType() { return iPositionType; }
 	public void setPositionType(PositionType positionType) { iPositionType = positionType; }
 
@@ -115,6 +124,9 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 
 	public Roles getRole() { return iRole; }
 	public void setRole(Roles role) { iRole = role; }
+
+	public PreferenceLevel getTeachingPreference() { return iTeachingPreference; }
+	public void setTeachingPreference(PreferenceLevel teachingPreference) { iTeachingPreference = teachingPreference; }
 
 	public Set<ClassInstructor> getClasses() { return iClasses; }
 	public void setClasses(Set<ClassInstructor> classes) { iClasses = classes; }
@@ -144,6 +156,13 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 		iOfferings.add(instructionalOffering);
 	}
 
+	public Set<InstructorAttribute> getAttributes() { return iAttributes; }
+	public void setAttributes(Set<InstructorAttribute> attributes) { iAttributes = attributes; }
+	public void addToattributes(InstructorAttribute instructorAttribute) {
+		if (iAttributes == null) iAttributes = new HashSet<InstructorAttribute>();
+		iAttributes.add(instructorAttribute);
+	}
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof DepartmentalInstructor)) return false;
 		if (getUniqueId() == null || ((DepartmentalInstructor)o).getUniqueId() == null) return false;
@@ -169,10 +188,12 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 			"\n	FirstName: " + getFirstName() +
 			"\n	IgnoreToFar: " + getIgnoreToFar() +
 			"\n	LastName: " + getLastName() +
+			"\n	MaxLoad: " + getMaxLoad() +
 			"\n	MiddleName: " + getMiddleName() +
 			"\n	Note: " + getNote() +
 			"\n	PositionType: " + getPositionType() +
 			"\n	Role: " + getRole() +
+			"\n	TeachingPreference: " + getTeachingPreference() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

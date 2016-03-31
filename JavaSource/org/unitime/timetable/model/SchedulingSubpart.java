@@ -742,6 +742,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	newSchedulingSubpart.setItype(getItype());
     	newSchedulingSubpart.setMinutesPerWk(getMinutesPerWk());
     	newSchedulingSubpart.setStudentAllowOverlap(isStudentAllowOverlap());
+    	newSchedulingSubpart.setTeachingLoad(getTeachingLoad());
     	return(newSchedulingSubpart);
     }
 

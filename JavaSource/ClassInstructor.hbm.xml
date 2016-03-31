@@ -65,5 +65,10 @@
             update="true"
             foreign-key="fk_class_instr_instr"/>
 
+        <property
+            name="tentative"
+            type="java.lang.Boolean"
+            column="tentative"
+            not-null="true"/>
     </class>
 </hibernate-mapping>

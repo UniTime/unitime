@@ -221,5 +221,38 @@
 
         </union-subclass>
 
+        <union-subclass
+            name="InstructorAttributePref"
+            table="attribute_pref"
+            abstract="false">
+            <many-to-one
+                name="attribute"
+                class="InstructorAttribute"
+                column="attribute_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                lazy="false"
+                fetch="join"
+                foreign-key="fk_attribute_pref_attribute"/>
+
+        </union-subclass>
+        
+        <union-subclass
+            name="InstructorCoursePref"
+            table="course_pref"
+            abstract="false">
+            <many-to-one
+                name="course"
+                class="CourseOffering"
+                column="course_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                lazy="false"
+                fetch="join"
+                foreign-key="fk_course_pref_course"/>
+
+        </union-subclass>
     </class>
 </hibernate-mapping>

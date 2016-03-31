@@ -1132,6 +1132,7 @@ public class Class_ extends BaseClass_ {
 				newCi.setInstructor(ci.getInstructor());
 				newCi.setLead(ci.isLead());
 				newCi.setPercentShare(ci.getPercentShare());
+				newCi.setTentative(ci.isTentative());
 				ci.getInstructor().addToclasses(newCi);
 				newClass.addToclassInstructors(newCi);
 			}

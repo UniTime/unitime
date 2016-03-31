@@ -189,6 +189,12 @@
                 type="java.lang.Long"
                 not-null="false"
                 length="20"/>
+
+            <property
+                name="teachingLoad"
+                column="teaching_load"
+                type="java.lang.Float"
+                not-null="false"/>
         </union-subclass>
 
         <union-subclass
@@ -952,6 +958,28 @@
                 column="role_id"
                 not-null="false"
                 foreign-key="fk_instructor_role"/>
+
+	        <set name="attributes" table="instructor_attributes">
+	        	<cache include="non-lazy" usage="transactional"/>
+	        	<key column="instructor_id" foreign-key="fk_instrattributes_instructor"/>
+	        	<many-to-many
+	        		class="InstructorAttribute"
+	        		column="attribute_id"
+	        		foreign-key="fk_instrattributes_attribute"/>
+	        </set>
+
+            <many-to-one
+                name="teachingPreference"
+                class="PreferenceLevel"
+                column="teaching_pref_id"
+                not-null="false"
+                foreign-key="fk_dept_instr_teach_pref"/>
+
+            <property
+                name="maxLoad"
+                column="max_load"
+                type="java.lang.Float"
+                not-null="false"/>
         </union-subclass>
         <union-subclass name="Exam" table="exam">
             <many-to-one

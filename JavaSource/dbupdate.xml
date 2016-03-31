@@ -10720,4 +10720,255 @@
 		<plsql>alter table %SCHEMA%.distribution_type add constraint nn_distribution_type_visible check (visible is not null)</plsql>
 		<mysql>alter table %SCHEMA%.distribution_type add visible int(1) not null default 1</mysql>
 	</update>
+	<update version="161" date="21-Mar-2016" comment="Instructor attributes">
+		<!-- InstructorAttributeType  -->
+		<plsql>
+			create table %SCHEMA%.attribute_type (
+				uniqueid number(20,0) constraint nn_attribute_type_uniqueid not null,
+				reference varchar2(20) constraint nn_attribute_type_reference not null,
+				label varchar2(60) constraint nn_attribute_type_label not null,
+				conjunctive number(1,0) constraint nn_attribute_type_conjunctive not null,
+				required number(1,0) constraint nn_attribute_type_required not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.attribute_type add constraint pk_attribute_type primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.attribute_type (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				conjunctive int(1) not null,
+				required int(1) not null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			insert into %SCHEMA%.attribute_type (uniqueid, reference, label, conjunctive, required) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'Performance', 'Performance Level', 0, 1)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.attribute_type (uniqueid, reference, label, conjunctive, required) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'Skill', 'Skill', 1, 1)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.attribute_type (uniqueid, reference, label, conjunctive, required) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'Qualification', 'Qualification', 0, 1)
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.attribute_type (uniqueid, reference, label, conjunctive, required) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'Cerfification', 'Cerfification', 0, 1)
+		</plsql>
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.attribute_type (uniqueid, reference, label, conjunctive, required) values
+			(%ID%+0, 'Performance', 'Performance Level', 0, 1),
+			(%ID%+1, 'Skill', 'Skill', 1, 1),
+			(%ID%+2, 'Qualification', 'Qualification', 0, 1),
+			(%ID%+3, 'Cerfification', 'Cerfification', 0, 1)
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>		
+		<!-- InstructorAttribute -->
+		<plsql>
+			create table %SCHEMA%.attribute (
+				uniqueid number(20,0) constraint nn_attribute_uniqueid not null,
+				code varchar2(20) constraint nn_attribute_code not null,
+				name varchar2(60) constraint nn_attribute_name not null,
+				type_id number(20,0) constraint nn_attribute_type not null,
+				parent_id number(20,0),
+				session_id number(20,0) constraint nn_attribute_session not null,
+				department_id number(20,0),
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.attribute add constraint pk_attribute primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.attribute (
+				uniqueid decimal(20,0) primary key not null,
+				code varchar(20) not null,
+				name varchar(60) not null,
+				type_id decimal(20,0) not null,
+				parent_id decimal(20,0),
+				session_id decimal(20,0) not null,
+				department_id decimal(20,0)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.attribute add constraint fk_attribute_type foreign key (type_id)
+			references %SCHEMA%.attribute_type (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.attribute add constraint fk_attribute_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.attribute add constraint fk_attribute_department foreign key (department_id)
+			references %SCHEMA%.department (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.attribute add constraint fk_attribute_parent foreign key (parent_id)
+			references %SCHEMA%.attribute (uniqueid) on delete set null
+		</sql>
+		<!-- InstructorAttribute.instructors -->
+		<plsql>
+			create table %SCHEMA%.instructor_attributes (
+				attribute_id number(20,0) constraint nn_instrattributes_attribute not null,
+				instructor_id number(20,0) constraint nn_instrattributes_instructor not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.instructor_attributes add constraint pk_instructor_attributes primary key (attribute_id, instructor_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.instructor_attributes (
+				attribute_id decimal(20,0) not null,
+				instructor_id decimal(20,0) not null,
+				primary key (attribute_id, instructor_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.instructor_attributes add constraint fk_instrattributes_attribute foreign key (attribute_id)
+			references %SCHEMA%.attribute (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.instructor_attributes add constraint fk_instrattributes_instructor foreign key (instructor_id)
+			references %SCHEMA%.departmental_instructor (uniqueid) on delete cascade
+		</sql>
+		<!-- InstructorAttributePref -->
+		<plsql>
+			create table %SCHEMA%.attribute_pref (
+				uniqueid number(20,0) constraint nn_attribute_pref_uniqueid not null,
+				owner_id number(20,0) constraint nn_attribute_pref_owner not null,
+				pref_level_id number(20,0) constraint nn_attribute_pref_pref not null,
+				attribute_id number(20,0) constraint nn_attribute_pref_attribute not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.attribute_pref add constraint pk_attribute_pref primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.attribute_pref (
+				uniqueid decimal(20,0) primary key not null,
+				owner_id decimal(20,0) not null,
+				pref_level_id decimal(20,0) not null,
+				attribute_id decimal(20,0) not null
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.attribute_pref add constraint fk_attribute_pref_pref foreign key (pref_level_id)
+			references %SCHEMA%.preference_level (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.attribute_pref add constraint fk_attribute_pref_attribute foreign key (attribute_id)
+			references %SCHEMA%.attribute (uniqueid) on delete cascade
+		</sql>
+		<!-- DepartmentalInstructor -->
+		<mysql>
+			alter table %SCHEMA%.departmental_instructor add teaching_pref_id decimal(20,0)
+		</mysql>
+		<mysql>
+			alter table %SCHEMA%.departmental_instructor add max_load float
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.departmental_instructor add teaching_pref_id number(20,0)
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.departmental_instructor add max_load float
+		</plsql>
+		<sql>
+			alter table %SCHEMA%.departmental_instructor add constraint fk_dept_instr_teach_pref foreign key (teaching_pref_id)
+			references %SCHEMA%.preference_level (uniqueid) on delete set null
+		</sql>
+		<!-- CoursePref -->
+		<plsql>
+			create table %SCHEMA%.course_pref (
+				uniqueid number(20,0) constraint nn_course_pref_uniqueid not null,
+				owner_id number(20,0) constraint nn_course_pref_owner not null,
+				pref_level_id number(20,0) constraint nn_course_pref_pref not null,
+				course_id number(20,0) constraint nn_course_pref_course not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.course_pref add constraint pk_course_pref primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.course_pref (
+				uniqueid decimal(20,0) primary key not null,
+				owner_id decimal(20,0) not null,
+				pref_level_id decimal(20,0) not null,
+				course_id decimal(20,0) not null
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.course_pref add constraint fk_course_pref_pref foreign key (pref_level_id)
+			references %SCHEMA%.preference_level (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.course_pref add constraint fk_course_pref_course foreign key (course_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete cascade
+		</sql>
+		<!-- SchedulingSubpart -->
+		<mysql>
+			alter table %SCHEMA%.scheduling_subpart add teaching_load float
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.scheduling_subpart add teaching_load float
+		</plsql>
+		<!-- ClassInstructor -->
+		<mysql>
+			alter table %SCHEMA%.class_instructor add tentative int(1) not null default 0
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.class_instructor add tentative number(1,0) default 0
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.class_instructor add constraint nn_class_instructor_tentative check (tentative is not null)
+		</plsql>
+		<!-- Permissions -->
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorAttributeTypes'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'RoomFeatureTypes'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorAttributeTypeEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'RoomFeatureTypeEdit'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorAssignmentPreferences'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'InstructorPreferences'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorClearAssignmentPreferences'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'InstructorEditClearPreferences'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorAttributes'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'Instructors'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorAttributeAdd'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'InstructorAdd'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorAttributeEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'InstructorEdit'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorAttributeDelete'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'InstructorDelete'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorAttributeAssign'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'InstructorPreferences'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorGlobalAttributeEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'GlobalRoomFeatureEdit'
+		</sql>
+	</update>
 </dbupdate>

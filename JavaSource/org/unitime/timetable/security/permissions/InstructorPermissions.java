@@ -28,6 +28,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructorAttribute;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -138,7 +139,7 @@ public class InstructorPermissions {
 	
 	@PermissionForRight(Right.InstructorEditClearPreferences)
 	public static class InstructorEditClearPreferences extends InstructorPreferences {}
-	
+
 	@PermissionForRight(Right.InstructorAdd)
 	public static class InstructorAdd implements Permission<Department> {
 		@Autowired PermissionDepartment permissionDepartment;
@@ -180,4 +181,56 @@ public class InstructorPermissions {
 		@Override
 		public Class<Department> type() { return Department.class; }
 	}
+
+
+	@PermissionForRight(Right.InstructorAssignmentPreferences)
+	public static class InstructorAssignmentPreferences extends InstructorPreferences {}
+	
+	@PermissionForRight(Right.InstructorClearAssignmentPreferences)
+	public static class InstructorClearAssignmentPreferences extends InstructorEditClearPreferences {}
+
+	@PermissionForRight(Right.InstructorAttributes)
+	public static class InstructorAttributes extends Instructors {}
+	
+	@PermissionForRight(Right.InstructorAttributeAdd)
+	public static class InstructorAttributeAdd extends Instructors {}
+	
+	@PermissionForRight(Right.InstructorAttributeEdit)
+	public static class InstructorAttributeEdit implements Permission<InstructorAttribute> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, InstructorAttribute source) {
+			if (source.getDepartment() != null)
+				return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit);
+			else
+				return user.getCurrentAuthority().hasRight(Right.InstructorGlobalAttributeEdit) && permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.OwnerEdit);
+		}
+
+		@Override
+		public Class<InstructorAttribute> type() { return InstructorAttribute.class; }
+	}
+	
+	@PermissionForRight(Right.InstructorAttributeDelete)
+	public static class InstructorAttributeDelete extends InstructorAttributeEdit {}
+	
+	@PermissionForRight(Right.InstructorAttributeAssign)
+	public static class InstructorAttributeAssign implements Permission<InstructorAttribute> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, InstructorAttribute source) {
+			if (source.getDepartment() != null)
+				return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit);
+			else
+				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.OwnerLimitedEdit);
+		}
+
+		@Override
+		public Class<InstructorAttribute> type() { return InstructorAttribute.class; }
+	}
+	
+	
 }

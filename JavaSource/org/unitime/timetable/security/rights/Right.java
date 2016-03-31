@@ -37,6 +37,7 @@ import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.InstructorAttribute;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
@@ -168,6 +169,15 @@ public enum Right {
     InstructorEditClearPreferences(DepartmentalInstructor.class),
     InstructorDelete(DepartmentalInstructor.class),
     InstructorPreferences(DepartmentalInstructor.class),
+    InstructorAssignmentPreferences(DepartmentalInstructor.class),
+    InstructorClearAssignmentPreferences(DepartmentalInstructor.class),
+    
+    InstructorAttributes(Department.class),
+    InstructorAttributeAdd(Department.class),
+    InstructorAttributeEdit(InstructorAttribute.class),
+    InstructorAttributeDelete(InstructorAttribute.class),
+    InstructorAttributeAssign(InstructorAttribute.class),
+    InstructorGlobalAttributeEdit,
     
 	Rooms(Session.class),
 	RoomsExportPdf(Session.class),
@@ -523,6 +533,9 @@ public enum Right {
 	
 	PreferenceLevels,
 	PreferenceLevelEdit,
+	
+	InstructorAttributeTypes,
+	InstructorAttributeTypeEdit,
 	
 	/** Administration: Defaults */
 	

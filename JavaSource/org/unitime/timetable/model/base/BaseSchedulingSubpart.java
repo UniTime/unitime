@@ -46,6 +46,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	private String iCourseName;
 	private Integer iLimit;
 	private Long iUniqueIdRolledForwardFrom;
+	private Float iTeachingLoad;
 
 	private Session iSession;
 	private ItypeDesc iItype;
@@ -61,6 +62,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	public static String PROP_STUDENT_ALLOW_OVERLAP = "studentAllowOverlap";
 	public static String PROP_SUBPART_SUFFIX = "schedulingSubpartSuffixCache";
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
+	public static String PROP_TEACHING_LOAD = "teachingLoad";
 
 	public BaseSchedulingSubpart() {
 		initialize();
@@ -95,6 +97,9 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
+
+	public Float getTeachingLoad() { return iTeachingLoad; }
+	public void setTeachingLoad(Float teachingLoad) { iTeachingLoad = teachingLoad; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -157,6 +162,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 			"\n	ParentSubpart: " + getParentSubpart() +
 			"\n	SchedulingSubpartSuffixCache: " + getSchedulingSubpartSuffixCache() +
 			"\n	StudentAllowOverlap: " + getStudentAllowOverlap() +
+			"\n	TeachingLoad: " + getTeachingLoad() +
 			"\n	UniqueId: " + getUniqueId() +
 			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +
 			"]";

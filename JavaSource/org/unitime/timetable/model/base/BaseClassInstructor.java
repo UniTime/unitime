@@ -35,6 +35,7 @@ public abstract class BaseClassInstructor implements Serializable {
 	private Long iUniqueId;
 	private Integer iPercentShare;
 	private Boolean iLead;
+	private Boolean iTentative;
 
 	private Class_ iClassInstructing;
 	private DepartmentalInstructor iInstructor;
@@ -42,6 +43,7 @@ public abstract class BaseClassInstructor implements Serializable {
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_PERCENT_SHARE = "percentShare";
 	public static String PROP_IS_LEAD = "lead";
+	public static String PROP_TENTATIVE = "tentative";
 
 	public BaseClassInstructor() {
 		initialize();
@@ -63,6 +65,10 @@ public abstract class BaseClassInstructor implements Serializable {
 	public Boolean isLead() { return iLead; }
 	public Boolean getLead() { return iLead; }
 	public void setLead(Boolean lead) { iLead = lead; }
+
+	public Boolean isTentative() { return iTentative; }
+	public Boolean getTentative() { return iTentative; }
+	public void setTentative(Boolean tentative) { iTentative = tentative; }
 
 	public Class_ getClassInstructing() { return iClassInstructing; }
 	public void setClassInstructing(Class_ classInstructing) { iClassInstructing = classInstructing; }
@@ -91,6 +97,7 @@ public abstract class BaseClassInstructor implements Serializable {
 			"\n	Instructor: " + getInstructor() +
 			"\n	Lead: " + getLead() +
 			"\n	PercentShare: " + getPercentShare() +
+			"\n	Tentative: " + getTentative() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

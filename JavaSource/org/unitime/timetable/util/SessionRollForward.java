@@ -2192,6 +2192,7 @@ public class SessionRollForward {
 							DepartmentalInstructor toDeptInstr = null;
 							for (Iterator ciIt = fromClass.getClassInstructors().iterator(); ciIt.hasNext();){
 								fromClassInstr = (ClassInstructor) ciIt.next();
+								if (fromClassInstr.isTentative()) continue;
 								toDeptInstr = fromClassInstr.getInstructor().findThisInstructorInSession(toSession.getUniqueId(), hibSession);
 								if (toDeptInstr != null){
 									toClassInstr = new ClassInstructor();

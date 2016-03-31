@@ -213,5 +213,6 @@
 	<mapping resource="ClusterDiscovery.hbm.xml"/>
 	<mapping resource="ExamStatus.hbm.xml"/>
 	<mapping resource="HashedQuery.hbm.xml"/>
+	<mapping resource="InstructorAttribute.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>

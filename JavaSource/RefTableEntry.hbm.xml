@@ -337,5 +337,20 @@
         		column="visible"
         		type="boolean"/>
         </union-subclass>
+
+        <union-subclass name="InstructorAttributeType"
+        	table="attribute_type"
+        	abstract="false">
+            <property
+                name="conjunctive"
+                column="conjunctive"
+                type="java.lang.Boolean"
+                not-null="true"/>
+            <property
+                name="required"
+                column="required"
+                type="java.lang.Boolean"
+                not-null="true"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>
