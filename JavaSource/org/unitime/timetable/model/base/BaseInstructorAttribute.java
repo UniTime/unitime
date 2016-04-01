@@ -44,6 +44,7 @@ public abstract class BaseInstructorAttribute implements Serializable {
 	private InstructorAttribute iParentAttribute;
 	private Session iSession;
 	private Department iDepartment;
+	private Set<InstructorAttribute> iChildAttributes;
 	private Set<DepartmentalInstructor> iInstructors;
 
 	public static String PROP_UNIQUEID = "uniqueId";
@@ -81,6 +82,13 @@ public abstract class BaseInstructorAttribute implements Serializable {
 
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
+
+	public Set<InstructorAttribute> getChildAttributes() { return iChildAttributes; }
+	public void setChildAttributes(Set<InstructorAttribute> childAttributes) { iChildAttributes = childAttributes; }
+	public void addTochildAttributes(InstructorAttribute instructorAttribute) {
+		if (iChildAttributes == null) iChildAttributes = new HashSet<InstructorAttribute>();
+		iChildAttributes.add(instructorAttribute);
+	}
 
 	public Set<DepartmentalInstructor> getInstructors() { return iInstructors; }
 	public void setInstructors(Set<DepartmentalInstructor> instructors) { iInstructors = instructors; }

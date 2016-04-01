@@ -30,6 +30,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructorAttribute;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -232,5 +233,18 @@ public class InstructorPermissions {
 		public Class<InstructorAttribute> type() { return InstructorAttribute.class; }
 	}
 	
+	@PermissionForRight(Right.InstructorGlobalAttributeEdit)
+	public static class InstructorGlobalAttributeEdit implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.OwnerEdit);
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+	}
+
 	
 }

@@ -126,6 +126,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         SIMPLE_EDIT("Configuration"),
         DATA_IMPORT_RESERVATIONS("Data Import: Reservations"),
         OFFERING_DETAIL("Instructional Offering Detail"),
+        INSTRUCTOR_ATTRIBUTE_EDIT("Instructor Attribute Edit"),
         ;
         
         private String iTitle;

@@ -336,4 +336,7 @@ public interface GwtConstants extends Constants {
 	@DefaultBooleanValue(false)
 	@DoNotTranslate
 	boolean checkRoomHasNoDepartment();
+	
+	@DefaultStringValue("#0.###")
+	String teachingLoadFormat();
 }

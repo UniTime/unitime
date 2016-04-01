@@ -60,6 +60,11 @@
 					<hasPermission name="Instructors"/>
 				</condition>
 			</item>
+			<item name="Instructor Attributes" page="instructorattributes" type="gwt">
+				<condition>
+					<hasPermission name="InstructorAttributes"/>
+				</condition>
+			</item>
 			<separator/>
 			<menu name="Rooms" page="roomSearch.do">
 				<condition>

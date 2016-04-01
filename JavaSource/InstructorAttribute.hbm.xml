@@ -59,6 +59,15 @@
         	column="parent_id"
         	foreign-key="fk_attribute_parent"
         	not-null="false"/>
+        
+        <set
+        	name="childAttributes"
+        	inverse="true"
+        	table="attribute">
+        	<cache include="non-lazy" usage="transactional"/>
+        	<key column="parent_id" foreign-key="fk_attribute_parent"/>
+        	<one-to-many class="InstructorAttribute"/>
+        </set>
 
         <many-to-one
         	name="session"

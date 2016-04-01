@@ -19,7 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.List;
+
+import org.hibernate.HibernateException;
 import org.unitime.timetable.model.base.BaseInstructorAttribute;
+import org.unitime.timetable.model.dao.InstructorAttributeDAO;
 
 public class InstructorAttribute extends BaseInstructorAttribute implements Comparable<InstructorAttribute> {
 	private static final long serialVersionUID = 331064011983395675L;
@@ -34,4 +38,25 @@ public class InstructorAttribute extends BaseInstructorAttribute implements Comp
 		if (cmp != 0) return cmp;
 		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(s.getUniqueId() == null ? -1 : s.getUniqueId());
 	}
+	
+	public static List<InstructorAttribute> getAllGlobalAttributes(Long sessionId) throws HibernateException {
+		return (List<InstructorAttribute>)InstructorAttributeDAO.getInstance().getSession().createQuery(
+				"from InstructorAttribute ia where ia.session.uniqueId = :sessionId and ia.department is null order by name"
+				).setLong("sessionId", sessionId).setCacheable(true).list();
+	}
+
+	public static List<InstructorAttribute> getAllDepartmentalAttributes(Long departmentId) throws HibernateException {
+		return (List<InstructorAttribute>)InstructorAttributeDAO.getInstance().getSession().createQuery(
+				"from InstructorAttribute ia where ia.department.uniqueId = :departmentId order by name"
+				).setLong("departmentId", departmentId).setCacheable(true).list();
+	}
+	
+	public boolean isParentOf(InstructorAttribute attribute) {
+		while (attribute != null) {
+			if (this.equals(attribute.getParentAttribute())) return true;
+			attribute = attribute.getParentAttribute();
+		}
+		return false;
+	}
+
 }

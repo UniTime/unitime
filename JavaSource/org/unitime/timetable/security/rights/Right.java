@@ -177,7 +177,7 @@ public enum Right {
     InstructorAttributeEdit(InstructorAttribute.class),
     InstructorAttributeDelete(InstructorAttribute.class),
     InstructorAttributeAssign(InstructorAttribute.class),
-    InstructorGlobalAttributeEdit,
+    InstructorGlobalAttributeEdit(Session.class),
     
 	Rooms(Session.class),
 	RoomsExportPdf(Session.class),

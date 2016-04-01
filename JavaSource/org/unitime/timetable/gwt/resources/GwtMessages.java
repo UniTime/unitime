@@ -764,6 +764,21 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Description")
 	String colDescription();
+	
+	@DefaultMessage("Instructors")
+	String colInstructors();
+	
+	@DefaultMessage("Position")
+	String colPosition();
+
+	@DefaultMessage("Preference")
+	String colTeachingPreference();
+
+	@DefaultMessage("Maximal Load")
+	String colMaxLoad();
+	
+	@DefaultMessage("Parent")
+	String colParentAttribute();
 
 	@DefaultMessage("pending")
 	String approvalNotApproved();
@@ -1190,6 +1205,18 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("<u>D</u>elete Room Feature")
 	String buttonDeleteRoomFeature();
+
+	@DefaultMessage("<u>A</u>dd New")
+	String buttonAddNewInstructorAttribute();
+
+	@DefaultMessage("<u>C</u>reate Attribute")
+	String buttonCreateInstructorAttribute();
+
+	@DefaultMessage("<u>U</u>pdate Attribute")
+	String buttonUpdateInstructorAttribute();
+
+	@DefaultMessage("<u>D</u>elete Attribute")
+	String buttonDeleteInstructorAttribute();
 	
 	@DefaultMessage("OK")
 	String buttonConfirmOK();
@@ -1428,6 +1455,21 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Deleting room feature ...")
 	String waitDeletingRoomFeature();
 	
+	@DefaultMessage("Loading instructor attributes...")
+	String waitLoadingInstructorAttributes();
+
+	@DefaultMessage("Saving instructor attribute ...")
+	String waitSavingInstructorAttribute();
+	
+	@DefaultMessage("Updating instructor attribute ...")
+	String waitUpdatingInstructorAttribute();
+	
+	@DefaultMessage("Deleting instructor attribute ...")
+	String waitDeletingInstructorAttribute();
+	
+	@DefaultMessage("Loading instructors...")
+	String waitLoadingInstructors();
+
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
 	
@@ -1656,6 +1698,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to load room features: {0}")
 	String failedToLoadRoomFeatures(String reason);
 	
+	@DefaultMessage("Failed to load instructor attributes: {0}")
+	String failedToLoadInstructorAttributes(String reason);
+
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
 	
@@ -1685,6 +1730,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("The requested time {0} is unusual, please look at it closely.")
 	String warnMeetingTooEarly(String time);
+	
+	@DefaultMessage("{0} has no external id.")
+	String warnInstructorHasNoExternalId(String name);
 
 	@DefaultMessage("No date is selected.")
 	String errorNoDateSelected();
@@ -1893,6 +1941,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to update the room feature: {0}")
 	String errorFailedToUpdateRoomFeature(String message);
 
+	@DefaultMessage("Failed to delete the instructor attribute: {0}")
+	String errorFailedToDeleteInstructorAttribute(String message);
+
+	@DefaultMessage("Failed to save the instructor attribute: {0}")
+	String errorFailedToSaveInstructorAttribute(String message);
+	
+	@DefaultMessage("Failed to update the instructor attribute: {0}")
+	String errorFailedToUpdateInstructorAttribute(String message);
+
 	@DefaultMessage("Building {0} does not exist.")
 	String errorBuildingNotExist(String bldgAbbv);
 	
@@ -1911,11 +1968,17 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("There are no room features created.")
 	String errorNoRoomFeatures();
 	
+	@DefaultMessage("There are no instructor attributes created.")
+	String errorNoInstructorAttributes();
+
 	@DefaultMessage("Name is required.")
 	String errorNameIsEmpty();
 	
 	@DefaultMessage("Abbreviation is required.")
 	String errorAbbreviationIsEmpty();
+	
+	@DefaultMessage("Attribute type must be selected.")
+	String errorNoAttributeTypeSelected();
 	
 	@DefaultMessage("Department must be selected.")
 	String errorNoDepartmentSelected();
@@ -1935,6 +1998,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Room feature {0} already exists in {1}.")
 	String errorRoomFeatureAlreadyExists(String name, String session);
 	
+	@DefaultMessage("Instructor attribute {0} does not exist.")
+	String errorInstructorAttributeDoesNotExist(Long id);
+	
+	@DefaultMessage("Instructor attribute {0} already exists in {1}.")
+	String errorInstructorAttributeAlreadyExists(String name, String session);
+
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
 	
@@ -2535,9 +2604,21 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Instructor Attribute Type")
 	@DoNotTranslate
-	String pageInstructorAttribute();
+	String pageInstructorAttributeType();
 	
 	@DefaultMessage("Instructor Attribute Types")
+	@DoNotTranslate
+	String pageInstructorAttributeTypes();
+	
+	@DefaultMessage("Add Instructor Attribute")
+	@DoNotTranslate
+	String pageAddInstructorAttribute();
+	
+	@DefaultMessage("Edit Instructor Attribute")
+	@DoNotTranslate
+	String pageEditInstructorAttribute();
+	
+	@DefaultMessage("Instructor Attributes")
 	@DoNotTranslate
 	String pageInstructorAttributes();
 
@@ -2552,7 +2633,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("No Type")
 	String itemNoFeatureType();
-	
+
 	@DefaultMessage("Add Meetings...")
 	String dialogAddMeetings();
 	
@@ -2865,6 +2946,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Default")
 	String itemDefault();
 	
+	@DefaultMessage("No Parent")
+	String itemInstructorAttributeNoParent();
+	
 	@DefaultMessage("{0} seats")
 	String hintRoomCapacity(String size);
 	
@@ -3094,6 +3178,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Applies To:")
 	String propApplyToFutureSessions();
+
+	@DefaultMessage("Type:")
+	String propInstructorAttributeType();
+
+	@DefaultMessage("Parent:")
+	String propInstructorAttributeParent();
+
+	@DefaultMessage("Global:")
+	String propGlobalInstructorAttribute();
 
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -3436,6 +3529,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Rooms")
 	String headerRooms();
+	
+	@DefaultMessage("Global Instructor Attributes")
+	String headerGlobalInstructorAttributes();
+	
+	@DefaultMessage("Departmental Instructor Attributes")
+	String headerDepartmentalInstructorAttributes();
+	
+	@DefaultMessage("Instructors")
+	String headerInstructors();
 	
 	@DefaultMessage("The selected offering has no curricula.")
 	String offeringHasNoCurricula();

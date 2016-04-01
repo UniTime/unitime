@@ -49,7 +49,7 @@ public class InstructorAttributeTypes implements AdminTable {
 	
 	@Override
 	public PageName name() {
-		return new PageName(MESSAGES.pageInstructorAttribute(), MESSAGES.pageInstructorAttributes());
+		return new PageName(MESSAGES.pageInstructorAttributeType(), MESSAGES.pageInstructorAttributeTypes());
 	}
 
 	@Override

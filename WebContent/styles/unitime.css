@@ -4229,3 +4229,12 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-top: 2px;
 	padding-right: 2px;
 }
+
+.unitime-InstructorAttributes {
+	width: 100%;
+}
+
+.unitime-InstructorAttributes .instructors .instructor {
+	display: inline-block;
+	padding-right: 3px;
+}
