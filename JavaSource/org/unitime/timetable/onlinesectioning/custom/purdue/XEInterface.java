@@ -157,8 +157,8 @@ public class XEInterface {
 		public Boolean validStudent;
 		public String registrationException;
 
-		public Integer minHours;
-		public Integer maxHours;
+		public Float minHours;
+		public Float maxHours;
 	}
 	
 	public static class CourseReferenceNumber {

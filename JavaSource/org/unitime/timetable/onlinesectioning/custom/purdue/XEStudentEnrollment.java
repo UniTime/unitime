@@ -63,6 +63,8 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
+import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.Formats.Format;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -77,6 +79,7 @@ import com.google.gson.JsonSerializer;
 public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	private static Logger sLog = Logger.getLogger(XEStudentEnrollment.class);
 	private static StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
+	protected static Format<Number> sCreditFormat = Formats.getNumberFormat("0.##");
 	
 	private Client iClient;
 	private ExternalTermProvider iExternalTermProvider;
@@ -146,8 +149,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("banner.xe.checkMaxHours", "false"));
 	}
 
-	protected int getMaxHoursDefault() {
-		return Integer.parseInt(ApplicationProperties.getProperty("banner.xe.maxHoursDefault", "18"));
+	protected float getMaxHoursDefault() {
+		return Float.parseFloat(ApplicationProperties.getProperty("banner.xe.maxHoursDefault", "18"));
 	}
 
 	protected String getBannerId(XStudent student) {
@@ -383,7 +386,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 				if (credit > maxCredit && credit > enrolled) {
 					throw new SectioningException(ApplicationProperties.getProperty("banner.xe.messages.maxCredit", "Maximum of {max} hours exceeded.")
-							.replace("{max}", String.valueOf(maxCredit > enrolled ? maxCredit : enrolled)).replace("{credit}", String.valueOf(credit)));
+							.replace("{max}", sCreditFormat.format(maxCredit > enrolled ? maxCredit : enrolled)).replace("{credit}", sCreditFormat.format(credit)));
 				}
 			}
 			
@@ -466,8 +469,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			
 			// Check max hours
 			if (isCheckMaxHours(admin)) {
-				Integer maxHours = original.maxHours;
-				if (maxHours == null || maxHours.intValue() == 0)
+				Float maxHours = original.maxHours;
+				if (maxHours == null || maxHours <= 0)
 					maxHours = getMaxHoursDefault();
 				float credit = 0f;
 				for (EnrollmentRequest req: enrollments) {
@@ -476,7 +479,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				}
 				if (credit > maxHours) {
 					throw new SectioningException(ApplicationProperties.getProperty("banner.xe.messages.maxHours", "Maximum of {max} hours exceeded.")
-							.replace("{max}", String.valueOf(maxHours)).replace("{credit}", String.valueOf(credit)));
+							.replace("{max}", sCreditFormat.format(maxHours)).replace("{credit}", sCreditFormat.format(credit)));
 				}
 			}
 			
