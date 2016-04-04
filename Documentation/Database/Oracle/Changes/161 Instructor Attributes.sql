@@ -42,7 +42,7 @@ create table attribute (
 	type_id number(20,0) constraint nn_attribute_type not null,
 	parent_id number(20,0),
 	session_id number(20,0) constraint nn_attribute_session not null,
-	department_id number(20,0),
+	department_id number(20,0)
 );
 alter table attribute add constraint pk_attribute primary key (uniqueid)
 
