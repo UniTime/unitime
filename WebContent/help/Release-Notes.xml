@@ -84,6 +84,12 @@
 			</description>
 		</item>
 		<item>
+			<name>Rooms: Sort</name>
+			<description>
+				<line>Corrected sort by a number when there are Nulls in the table.</line>
+			</description>
+		</item>
+		<item>
 			<name>Rooms: All Departments</name>
 			<description>
 				<line>When a room is being shared among all departments (and there are more than three departments), display All instead of listing all the departments in the Departments column.</line>
