@@ -65,6 +65,6 @@ public class RoomGroupPref extends BaseRoomGroupPref {
     }
 
 	public String preferenceTitle() {
-		return getPrefLevel().getPrefName()+" Room Group "+getRoomGroup().getNameWithTitle();
+		return MSG.prefTitleRoomGroup(getPrefLevel().getPrefName(), getRoomGroup().getNameWithTitle());
 	}
 }

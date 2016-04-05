@@ -76,6 +76,6 @@ public class RoomFeaturePref extends BaseRoomFeaturePref {
     }
 
 	public String preferenceTitle() {
-		return getPrefLevel().getPrefName()+" Room Feature "+getRoomFeature().getLabelWithType();
+		return MSG.prefTitleRoomFeature(getPrefLevel().getPrefName(), getRoomFeature().getLabelWithType());
 	}
 }

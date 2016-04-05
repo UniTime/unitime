@@ -26,6 +26,8 @@ import java.util.Vector;
 
 import org.hibernate.ObjectNotFoundException;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BasePreferenceGroup;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -39,6 +41,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  */
 public abstract class PreferenceGroup extends BasePreferenceGroup {
 	private static final long serialVersionUID = 1L;
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public PreferenceGroup () {
@@ -205,19 +208,19 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     		RequiredTimeTable rtt = tp.getRequiredTimeTable(assignment == null ? null : assignment.getTimeLocation());
     		String owner = "";
     		if (tp.getOwner() != null && tp.getOwner() instanceof Class_) {
-    			owner = " (class)";
+    			owner = " (" + MSG.prefOwnerClass() + ")";
     		} else if (tp.getOwner() != null && tp.getOwner() instanceof SchedulingSubpart) {
-    			owner = " (scheduling subpart)";
+    			owner = " (" + MSG.prefOwnerSchedulingSubpart() + ")";
     		} else if (tp.getOwner() != null && tp.getOwner() instanceof DepartmentalInstructor) {
-    			owner = " (instructor)";
+    			owner = " (" + MSG.prefOwnerInstructor() + ")";
     		} else if (tp.getOwner() != null && tp.getOwner() instanceof Exam) {
-    			owner = " (examination)";
+    			owner = " (" + MSG.prefOwnerExamination() + ")";
     		} else if (tp.getOwner() != null && tp.getOwner() instanceof Department) {
-    			owner = " (department)";
+    			owner = " (" + MSG.prefOwnerDepartment() + ")";
     		} else if (tp.getOwner() != null && tp.getOwner() instanceof Session) {
-    			owner = " (session)";
+    			owner = " (" + MSG.prefOwnerSession() + ")";
     		} else {
-    			owner = " (combined)";
+    			owner = " (" + MSG.prefOwnerCombined() + ")";
     		}
     		String hint = rtt.print(false, timeVertical, true, false, rtt.getModel().getName() + owner).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
         	if (gridAsText || rtt.getModel().isExactTime()) {

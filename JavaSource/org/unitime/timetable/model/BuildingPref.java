@@ -84,25 +84,25 @@ public class BuildingPref extends BaseBuildingPref {
 		sb.append("style='" + style + "' ");
 		String owner = "";
 		if (getOwner() != null && getOwner() instanceof Class_) {
-			owner = " (class)";
+			owner = " (" + MSG.prefOwnerClass() + ")";
 		} else if (getOwner() != null && getOwner() instanceof SchedulingSubpart) {
-			owner = " (scheduling subpart)";
+			owner = " (" + MSG.prefOwnerSchedulingSubpart() + ")";
 		} else if (getOwner() != null && getOwner() instanceof DepartmentalInstructor) {
-			owner = " (instructor)";
+			owner = " (" + MSG.prefOwnerInstructor() + ")";
 		} else if (getOwner() != null && getOwner() instanceof Exam) {
-			owner = " (examination)";
+			owner = " (" + MSG.prefOwnerExamination() + ")";
 		} else if (getOwner() != null && getOwner() instanceof Department) {
-			owner = " (department)";
+			owner = " (" + MSG.prefOwnerDepartment() + ")";
 		} else if (getOwner() != null && getOwner() instanceof Session) {
-			owner = " (session)";
+			owner = " (" + MSG.prefOwnerSession() + ")";
 		}
-		sb.append("onmouseover=\"showGwtRoomHint(this, '-" + getBuilding().getUniqueId() + "', '" + getPrefLevel().getPrefName() + " Building {0}" + owner + "');\" onmouseout=\"hideGwtRoomHint();\">");
+		sb.append("onmouseover=\"showGwtRoomHint(this, '-" + getBuilding().getUniqueId() + "', '" + getPrefLevel().getPrefName() + " " + MSG.prefBuilding() + " {0}" + owner + "');\" onmouseout=\"hideGwtRoomHint();\">");
     	sb.append(this.preferenceAbbv());
     	sb.append("</span>");
     	return (sb.toString());
     }
 
 	public String preferenceTitle() {
-    	return getPrefLevel().getPrefName() + " Building " + getBuilding().getName();
+    	return MSG.prefTitleBuilding(getPrefLevel().getPrefName(), getBuilding().getName());
 	}
 }

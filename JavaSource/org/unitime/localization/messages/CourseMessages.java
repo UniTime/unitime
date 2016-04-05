@@ -2487,5 +2487,44 @@ public interface CourseMessages extends Messages {
 	String distributionStructureAbbreviationOneOfEach(String content);
 	
 	@DefaultMessage("Distribution Preferences")
-	String pageTitleDistributionPreferencesPdf()
-;}
+	String pageTitleDistributionPreferencesPdf();
+	
+	@DefaultMessage("class")
+	String prefOwnerClass();
+
+	@DefaultMessage("scheduling subpart")
+	String prefOwnerSchedulingSubpart();
+	
+	@DefaultMessage("instructor")
+	String prefOwnerInstructor();
+	
+	@DefaultMessage("department")
+	String prefOwnerDepartment();
+	
+	@DefaultMessage("examination")
+	String prefOwnerExamination();
+	
+	@DefaultMessage("session")
+	String prefOwnerSession();
+	
+	@DefaultMessage("combined")
+	String prefOwnerCombined();
+	
+	@DefaultMessage("{0} Room {1}")
+	String prefTitleRoom(String preference, String owner);
+	
+	@DefaultMessage("{0} Room Group {1}")
+	String prefTitleRoomGroup(String preference, String owner);
+	
+	@DefaultMessage("{0} Room Feature {1}")
+	String prefTitleRoomFeature(String preference, String owner);
+	
+	@DefaultMessage("{0} Building {1}")
+	String prefTitleBuilding(String preference, String owner);
+	
+	@DefaultMessage("Room")
+	String prefRoom();
+	
+	@DefaultMessage("Building")
+	String prefBuilding();
+}

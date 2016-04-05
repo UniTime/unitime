@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.model;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BasePreference;
 
@@ -29,6 +31,7 @@ import org.unitime.timetable.model.base.BasePreference;
  */
 public abstract class Preference extends BasePreference implements Comparable {
 	private static final long serialVersionUID = 1L;
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
     /** Blank Pref Value **/
     public static final String BLANK_PREF_VALUE = "-";
@@ -63,17 +66,17 @@ public abstract class Preference extends BasePreference implements Comparable {
 		sb.append("style='" + style + "' ");
 		String owner = "";
 		if (getOwner() != null && getOwner() instanceof Class_) {
-			owner = " (class)";
+			owner = " (" + MSG.prefOwnerClass() + ")";
 		} else if (getOwner() != null && getOwner() instanceof SchedulingSubpart) {
-			owner = " (scheduling subpart)";
+			owner = " (" + MSG.prefOwnerSchedulingSubpart() + ")";
 		} else if (getOwner() != null && getOwner() instanceof DepartmentalInstructor) {
-			owner = " (instructor)";
+			owner = " (" + MSG.prefOwnerInstructor() + ")";
 		} else if (getOwner() != null && getOwner() instanceof Exam) {
-			owner = " (examination)";
+			owner = " (" + MSG.prefOwnerExamination() + ")";
 		} else if (getOwner() != null && getOwner() instanceof Department) {
-			owner = " (department)";
+			owner = " (" + MSG.prefOwnerDepartment() + ")";
 		} else if (getOwner() != null && getOwner() instanceof Session) {
-			owner = " (session)";
+			owner = " (" + MSG.prefOwnerSession() + ")";
 		}
 		sb.append("onmouseover=\"showGwtHint(this, '" + preferenceTitle() + owner + "');\" onmouseout=\"hideGwtHint();\">");
 		
