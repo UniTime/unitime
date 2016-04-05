@@ -439,6 +439,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Distribution")
 	String columnDistributionPref();
 	
+	@DefaultMessage("Course")
+	String columnCoursePref();
+
 	@DefaultMessage("Room")
 	String columnAllRoomPref();
 	
@@ -670,6 +673,18 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Time")
 	String columnEventTime();
 	
+	@DefaultMessage("Teaching<BR>Preference")
+	String columnTeachingPreference();
+	
+	@DefaultMessage("Teaching\nPreference")
+	String columnTeachingPreferencePDF();
+	
+	@DefaultMessage("Maximal<BR>Load")
+	String columnMaxTeachingLoad();
+	
+	@DefaultMessage("Maximal\nLoad")
+	String columnMaxTeachingLoadPDF();
+
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
 	

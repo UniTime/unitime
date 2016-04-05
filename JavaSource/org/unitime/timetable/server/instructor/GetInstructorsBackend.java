@@ -76,7 +76,7 @@ public class GetInstructorsBackend implements GwtRpcImplementation<GetInstructor
 			}
 			PreferenceLevel pref = instructor.getTeachingPreference();
 			if (pref == null) pref = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sProhibited);
-			i.setTeachingPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true));
+			i.setTeachingPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2color(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true));
 			i.setMaxLoad(instructor.getMaxLoad());
 			for (InstructorAttribute attribute: instructor.getAttributes()) {
 				AttributeInterface a = new AttributeInterface();

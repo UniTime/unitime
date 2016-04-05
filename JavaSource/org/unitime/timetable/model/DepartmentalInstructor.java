@@ -522,4 +522,12 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
         	lookup = (ExternalUidLookup)Class.forName(className).newInstance();
         return (lookup == null ? null : lookup.doLookup(externalId));
     }
+    
+    public Set<InstructorAttribute> getAttributes(InstructorAttributeType type) {
+    	Set<InstructorAttribute> ret = new TreeSet<InstructorAttribute>();
+    	for (InstructorAttribute a: getAttributes()) {
+    		if (type.equals(a.getType())) ret.add(a);
+    	}
+    	return ret;
+    }
 }

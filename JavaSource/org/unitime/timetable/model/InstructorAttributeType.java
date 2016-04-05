@@ -21,10 +21,18 @@ package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BaseInstructorAttributeType;
 
-public class InstructorAttributeType extends BaseInstructorAttributeType {
+public class InstructorAttributeType extends BaseInstructorAttributeType implements Comparable<InstructorAttributeType> {
+	private static final long serialVersionUID = 1L;
 
 	public InstructorAttributeType() {
 		super();
+	}
+
+	@Override
+	public int compareTo(InstructorAttributeType o) {
+		int cmp = getLabel().compareTo(o.getLabel());
+		if (cmp != 0) return cmp;
+		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(o.getUniqueId() == null ? -1 : o.getUniqueId());
 	}
 
 }
